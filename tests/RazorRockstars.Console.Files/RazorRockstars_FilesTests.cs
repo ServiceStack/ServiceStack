@@ -49,6 +49,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void RunFor10Mins()
         {
+            Process.Start(BaseUri);
             Thread.Sleep(TimeSpan.FromMinutes(10));
         }
 
@@ -160,11 +161,17 @@ namespace RazorRockstars.Console.Files
         static string ViewMarkdownPartial = "<!--view:MarkdownPartial.md-->";
         static string ViewRazorPartialModel = "<!--view:RazorPartialModel.cshtml-->";
         static string ViewPartialChildModel = "<!--view:PartialChildModel.cshtml-->";
+        static string ViewContentPartialModel = "<!--view:ContentPartialModel.cshtml-->";
+        static string ViewPagesPartialModel = "<!--view:PagesPartialModel.cshtml-->";
+
+        static string SectionPartialHeaderSection = "<!--section:PartialHeaderSection-->";
 
         static string View_Default = "<!--view:default.cshtml-->";
         static string View_Pages_Default = "<!--view:Pages/default.cshtml-->";
         static string View_Pages_Dir_Default = "<!--view:Pages/Dir/default.cshtml-->";
         static string ViewM_Pages_Dir2_Default = "<!--view:Pages/Dir2/default.md-->";
+        static string View_RequestFilters = "<!--view:RequestFilters.cshtml-->";
+        static string View_RequestFiltersPage = "<!--view:RequestFiltersPage.cshtml-->";
 
         static string Template_Layout = "<!--template:_Layout.cshtml-->";
         static string Template_Pages_Layout = "<!--template:Pages/_Layout.cshtml-->";
@@ -276,11 +283,18 @@ namespace RazorRockstars.Console.Files
         public void Can_get_default_razor_pages()
         {
             Assert200(Host + "/",
-                View_Default, Template_SimpleLayout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel);
+                View_Default, Template_SimpleLayout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel, ViewContentPartialModel, ViewPagesPartialModel);
             Assert200(Host + "/Pages/",
-                View_Pages_Default, Template_Pages_Layout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel);
+                View_Pages_Default, Template_Pages_Layout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel, ViewPagesPartialModel);
             Assert200(Host + "/Pages/Dir/",
                 View_Pages_Dir_Default, Template_SimpleLayout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel);
+        }
+
+        [Test]
+        public void Can_get_default_file()
+        {
+            Assert200(Host + "/default_file",
+                View_Default, Template_SimpleLayout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel, ViewContentPartialModel, ViewPagesPartialModel);
         }
 
         [Test]
@@ -329,6 +343,12 @@ namespace RazorRockstars.Console.Files
         }
 
         [Test]
+        public void Can_render_PartialHeaderSection_in_PartialChildModel()
+        {
+            Assert200(Host + "/partialmodel", Template_PartialModel, ViewPartialChildModel, SectionPartialHeaderSection);
+        }
+
+        [Test]
         public void Does_return_populated_error_page()
         {
             AssertStatus(Host + "/modelerror?message=Custom_Error_Message", HttpStatusCode.BadRequest,
@@ -346,6 +366,46 @@ namespace RazorRockstars.Console.Files
                 "<!--view:ModelError.cshtml-->",
                 "<p>ResponseStatus: ArgumentException</p>",
                 "<p>ResponseStatus: Custom_Error_Message_Only</p>");
+        }
+
+        [Test]
+        public void Does_render_partials_inside_sections()
+        {
+            Assert200(Host + "/Pages/",
+                View_Pages_Default, 
+                "<h3>Inside SectionHead</h3>",
+                "<h3>Inside PartialChildModel</h3>",
+                "<!--view:PartialChildModel.cshtml-->");
+        }
+
+        [Test]
+        public void Does_shortcircuit_RequestFilters()
+        {
+            Assert200(Host + "/RequestFilters",
+                View_RequestFilters,
+                "<h3>QueryStrings:0</h3>");
+
+            Assert200(Host + "/RequestFilters?a=querystring",
+                View_RequestFilters,
+                "<h3>QueryStrings:0</h3>");
+        }
+
+        [Test]
+        public void Does_shortcircuit_RequestFiltersPage_testing_Layout()
+        {
+            Assert200(Host + "/RequestFiltersPage",
+                View_RequestFiltersPage,
+                "<h3>QueryStrings:0</h3>");
+
+            Assert200(Host + "/RequestFiltersPage?a=querystring",
+                View_RequestFiltersPage,
+                "<h3>QueryStrings:0</h3>");
+        }
+
+        [Test]
+        public void Does_not_allow_direct_access_to_ViewPages()
+        {
+            AssertStatus(Host + "/Views/SimpleView", HttpStatusCode.NotFound);
         }
     }
 }

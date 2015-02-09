@@ -1,7 +1,7 @@
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+using ServiceStack.Web;
 
 namespace ServiceStack.Serialization
 {
@@ -9,7 +9,7 @@ namespace ServiceStack.Serialization
     {
         public static KeyValueDataContractDeserializer Instance = new KeyValueDataContractDeserializer();
 
-        public object Parse(NameValueCollection nameValues, Type returnType)
+        public object Parse(INameValueCollection nameValues, Type returnType)
         {
             return Parse(nameValues.ToDictionary(), returnType);
         }

@@ -5,6 +5,7 @@
     <version>4.0.0</version>
     <authors>Joshua Lewis, ServiceStack contributors</authors> 
     <owners>Joshua Lewis, ServiceStack contributors</owners>
+    <summary>An NHibernate IUserAuthRepository to persist User registration and auth info in any RDBMS NHibernate supports</summary>
     <description>
         An NHibernate IUserAuthRepository to persist User registration and authentication info in any RDBMS NHibernate supports.
         Implements ServiceStack's built-in AuthProvider Model:
@@ -12,16 +13,16 @@
         inc. Twitter, Facebook, Basic, Digest, Credentials Auth modes out-of-the-box.
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>ServiceStack Authentication Authorization NHibernate SQLServer Sqlite Oracle MySql PostgreSQL POCO Code-First</tags>
     <language>en-US</language> 
-    <copyright>ServiceStack 2013 and contributors</copyright>
+    <copyright>ServiceStack 2014 and contributors</copyright>
     <dependencies>
       <dependency id="ServiceStack" version="4.0" />
-      <dependency id="Iesi.Collections" />
-      <dependency id="NHibernate" />
-      <dependency id="FluentNHibernate" />
+      <dependency id="NHibernate" version="4.0.1.4000" />
+      <dependency id="Iesi.Collections" version="4.0.1.4000" />
+      <dependency id="FluentNHibernate" version="1.4.0.0" />
     </dependencies>
   </metadata>
   <files>

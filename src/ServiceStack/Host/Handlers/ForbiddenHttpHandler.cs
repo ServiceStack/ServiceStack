@@ -5,25 +5,24 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-    public class ForbiddenHttpHandler
-        : IServiceStackHttpHandler, IHttpHandler
+    public class ForbiddenHttpHandler : HttpAsyncTaskHandler
     {
 		public bool? IsIntegratedPipeline { get; set; }
 		public string WebHostPhysicalPath { get; set; }
 		public List<string> WebHostRootFileNames { get; set; }
-		public string ApplicationBaseUrl { get; set; }
+		public string WebHostUrl { get; set; }
 		public string DefaultRootFileName { get; set; }
 		public string DefaultHandler { get; set; }
 
-        public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+        public override void ProcessRequest(IRequest request, IResponse response, string operationName)
         {
             response.ContentType = "text/plain";
             response.StatusCode = 403;
 
-		    response.EndHttpHandlerRequest(skipClose: true, afterBody: r => {
+		    response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => {
                 r.Write("Forbidden\n\n");
 
-                r.Write("\nRequest.HttpMethod: " + request.HttpMethod);
+                r.Write("\nRequest.HttpMethod: " + request.Verb);
                 r.Write("\nRequest.PathInfo: " + request.PathInfo);
                 r.Write("\nRequest.QueryString: " + request.QueryString);
 
@@ -37,8 +36,8 @@ namespace ServiceStack.Host.Handlers
                         r.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
                     if (!WebHostRootFileNames.IsEmpty())
                         r.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
-                    if (!ApplicationBaseUrl.IsNullOrEmpty())
-                        r.Write("\nApp.ApplicationBaseUrl: " + ApplicationBaseUrl);
+                    if (!WebHostUrl.IsNullOrEmpty())
+                        r.Write("\nApp.WebHostUrl: " + WebHostUrl);
                     if (!DefaultRootFileName.IsNullOrEmpty())
                         r.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
                     if (!DefaultHandler.IsNullOrEmpty())
@@ -49,7 +48,7 @@ namespace ServiceStack.Host.Handlers
             });
 		}
 
-        public void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContextBase context)
         {
             var request = context.Request;
             var response = context.Response;
@@ -57,7 +56,7 @@ namespace ServiceStack.Host.Handlers
             response.ContentType = "text/plain";
             response.StatusCode = 403;
 
-            response.EndHttpHandlerRequest(skipClose:true, afterBody: r=> {
+            response.EndHttpHandlerRequest(skipClose:true, afterHeaders: r=> {
                 r.Write("Forbidden\n\n");
 
                 r.Write("\nRequest.HttpMethod: " + request.HttpMethod);
@@ -74,15 +73,15 @@ namespace ServiceStack.Host.Handlers
                         r.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
                     if (!WebHostRootFileNames.IsEmpty())
                         r.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
-                    if (!ApplicationBaseUrl.IsNullOrEmpty())
-                        r.Write("\nApp.ApplicationBaseUrl: " + ApplicationBaseUrl);
+                    if (!WebHostUrl.IsNullOrEmpty())
+                        r.Write("\nApp.ApplicationBaseUrl: " + WebHostUrl);
                     if (!DefaultRootFileName.IsNullOrEmpty())
                         r.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
                 }
             });
 		}
 
-        public bool IsReusable
+        public override bool IsReusable
         {
             get { return true; }
         }

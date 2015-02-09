@@ -1,4 +1,5 @@
-﻿using Funq;
+﻿using System.Net;
+using Funq;
 using NUnit.Framework;
 using ServiceStack.Formats;
 using ServiceStack.Text;
@@ -60,7 +61,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Xml));
                 });
 
-            Assert.That(response, Is.EqualTo("<CustomRoute xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.servicestack.net/types\"><Data>foo</Data></CustomRoute>"));
+            Assert.That(response, Is.EqualTo("<?xml version=\"1.0\" encoding=\"utf-8\"?><CustomRoute xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.servicestack.net/types\"><Data>foo</Data></CustomRoute>"));
         }
 
         [Test]
@@ -85,8 +86,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Csv));
                 });
+            
+            var lf = System.Environment.NewLine;
+			Assert.That(response, Is.EqualTo("Data{0}foo{0}".Fmt(lf)));
+        }
 
-            Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
+        [Test]
+        public void Can_download_route_with_dot_seperator()
+        {
+            var response = Config.AbsoluteBaseUri.CombineWith("/customdot/id.data")
+                .GetJsonFromUrl()
+                .FromJson<CustomRouteDot>();
+
+            Assert.That(response.Id, Is.EqualTo("id"));
+            Assert.That(response.Data, Is.EqualTo("data"));
         }
     }
 
@@ -111,9 +124,96 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Data { get; set; }
     }
 
+    [Route("/customdot/{Id}.{Data}")]
+    public class CustomRouteDot : IReturn<CustomRouteDot>
+    {
+        public string Id { get; set; }
+        public string Data { get; set; }
+    }
+
     public class CustomRouteService : IService
     {
         public object Any(CustomRoute request)
+        {
+            return request;
+        }
+
+        public object Any(CustomRouteDot request)
+        {
+            return request;
+        }
+    }
+
+    [TestFixture]
+    public class ModifiedRouteTests
+    {
+        private ModifiedRouteAppHost appHost;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            appHost = new ModifiedRouteAppHost();
+            appHost.Init();
+            appHost.Start(Config.AbsoluteBaseUri);
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
+        [Test]
+        public void Can_download_modified_routes()
+        {
+            try
+            {
+                var notFound = Config.AbsoluteBaseUri.CombineWith("/modified/foo.csv")
+                    .GetStringFromUrl();
+                Assert.Fail("Existing route should be modified");
+            }
+            catch (WebException ex)
+            {
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotFound));
+            }
+
+            var response = Config.AbsoluteBaseUri.CombineWith("/api/modified/foo.csv")
+                .GetStringFromUrl();
+            
+            var lf = System.Environment.NewLine;
+			Assert.That(response, Is.EqualTo("Data{0}foo{0}".Fmt(lf)));
+
+        }
+    }
+
+    public class ModifiedRouteAppHost : AppHostHttpListenerBase
+    {
+        public ModifiedRouteAppHost() : base(typeof(BufferedRequestTests).Name, typeof(CustomRouteService).Assembly) { }
+
+        public override void Configure(Container container)
+        {
+        }
+
+        public override RouteAttribute[] GetRouteAttributes(System.Type requestType)
+        {
+            var routes = base.GetRouteAttributes(requestType);
+            if (requestType != typeof(ModifiedRoute)) return routes;
+
+            routes.Each(x => x.Path = "/api" + x.Path);
+            return routes;
+        }
+    }
+
+    [Route("/modified")]
+    [Route("/modified/{Data}")]
+    public class ModifiedRoute : IReturn<ModifiedRoute>
+    {
+        public string Data { get; set; }
+    }
+
+    public class ModifiedRouteService : IService
+    {
+        public object Any(ModifiedRoute request)
         {
             return request;
         }

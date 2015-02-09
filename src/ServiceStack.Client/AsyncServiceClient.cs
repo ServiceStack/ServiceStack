@@ -1,10 +1,12 @@
+// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 #if NETFX_CORE
@@ -51,6 +53,8 @@ namespace ServiceStack
 
         public bool StoreCookies { get; set; }
 
+        public INameValueCollection Headers { get; set; }
+
         public CookieContainer CookieContainer { get; set; }
 
         /// <summary>
@@ -87,15 +91,19 @@ namespace ServiceStack
 
         public StreamDeserializerDelegate StreamDeserializer { get; set; }
 
+        public string UserAgent { get; set; }
+
+        public bool CaptureSynchronizationContext { get; set; }
+
         public bool HandleCallbackOnUiThread { get; set; }
 
         public bool EmulateHttpViaPost { get; set; }
 
-        public ProgressDelegate OnDownloadProgress { get; set; } 
+        public ProgressDelegate OnDownloadProgress { get; set; }
 
-#if SILVERLIGHT
+        public ProgressDelegate OnUploadProgress { get; set; }
+
         public bool ShareCookiesWithBrowser { get; set; }
-#endif
 
         internal Action CancelAsyncFn;
 
@@ -134,8 +142,7 @@ namespace ServiceStack
             if (httpMethod == null) throw new ArgumentNullException("httpMethod");
 
             var requestUri = absoluteUrl;
-            var httpGetOrDeleteOrHead = (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "HEAD");
-            var hasQueryString = request != null && httpGetOrDeleteOrHead;
+            var hasQueryString = request != null && !httpMethod.HasRequestBody();
             if (hasQueryString)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
@@ -155,6 +162,7 @@ namespace ServiceStack
                 Request = request,
                 OnSuccess = onSuccess,
                 OnError = onError,
+                UseSynchronizationContext = CaptureSynchronizationContext ? SynchronizationContext.Current : null,
                 HandleCallbackOnUIThread = HandleCallbackOnUiThread,
             };
             requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
@@ -165,12 +173,9 @@ namespace ServiceStack
         private void SendWebRequestAsync<TResponse>(string httpMethod, object request,
             AsyncState<TResponse> state, HttpWebRequest webRequest)
         {
-            var httpGetOrDeleteOrHead = (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "HEAD");
             webRequest.Accept = string.Format("{0}, */*", ContentType);
 
-            //Methods others than GET and POST are only supported by Client request creator, see
-            //http://msdn.microsoft.com/en-us/library/cc838250(v=vs.95).aspx
-            if (this.EmulateHttpViaPost && httpMethod != "GET" && httpMethod != "POST")
+            if (this.EmulateHttpViaPost)
             {
                 webRequest.Method = "POST";
                 webRequest.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
@@ -180,14 +185,21 @@ namespace ServiceStack
                 webRequest.Method = httpMethod;
             }
 
-            if (this.Credentials != null) webRequest.Credentials = this.Credentials;
-            if (this.AlwaysSendBasicAuthHeader) webRequest.AddBasicAuth(this.UserName, this.Password);
+            PclExportClient.Instance.AddHeader(webRequest, Headers);
+
+            //EmulateHttpViaPost is also forced for SL5 clients sending non GET/POST requests
+            PclExport.Instance.Config(webRequest, userAgent: UserAgent);
+
+            if (this.Credentials != null) 
+                webRequest.Credentials = this.Credentials;
+            if (this.AlwaysSendBasicAuthHeader) 
+                webRequest.AddBasicAuth(this.UserName, this.Password);
 
             ApplyWebRequestFilters(webRequest);
 
             try
             {
-                if (!httpGetOrDeleteOrHead && request != null)
+                if (webRequest.Method.HasRequestBody())
                 {
                     webRequest.ContentType = ContentType;
                     webRequest.BeginGetRequestStream(RequestCallback<TResponse>, state);
@@ -212,7 +224,11 @@ namespace ServiceStack
                 var req = requestState.WebRequest;
 
                 var stream = req.EndGetRequestStream(asyncResult);
-                StreamSerializer(null, requestState.Request, stream);
+
+                if (requestState.Request != null)
+                {
+                    StreamSerializer(null, requestState.Request, stream);
+                }
 
                 stream.EndWriteStream();
 
@@ -346,7 +362,7 @@ namespace ServiceStack
                             }
                         }
 
-                        this.SynchronizeCookies();
+                        PclExportClient.Instance.SynchronizeCookies(this);
 
                         requestState.HandleSuccess(response);
                     }
@@ -382,21 +398,28 @@ namespace ServiceStack
                 var serviceEx = new WebServiceException(errorResponse.StatusDescription)
                 {
                     StatusCode = (int)errorResponse.StatusCode,
+                    StatusDescription = errorResponse.StatusDescription,
                 };
 
                 try
                 {
                     using (var stream = errorResponse.GetResponseStream())
                     {
-                        //Uncomment to Debug exceptions:
-                        //var strResponse = new StreamReader(stream).ReadToEnd();
-                        //Console.WriteLine("Response: " + strResponse);
-                        //stream.Position = 0;
-                        serviceEx.ResponseBody = stream.ReadFully().FromUtf8Bytes();
+                        var bytes = stream.ReadFully();
+                        serviceEx.ResponseBody = bytes.FromUtf8Bytes();
 
-                        stream.ResetStream();
-
-                        serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
+                        if (stream.CanSeek)
+                        {
+                            PclExport.Instance.ResetStream(stream);
+                            serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
+                        }
+                        else //Android
+                        {
+                            using (var ms = new MemoryStream(bytes))
+                            {
+                                serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), ms);
+                            }
+                        }
                         state.HandleError((TResponse)serviceEx.ResponseDto, serviceEx);
                     }
                 }
@@ -406,6 +429,7 @@ namespace ServiceStack
                     Log.Debug(string.Format("WebException Reading Response Error: {0}", innerEx.Message), innerEx);
                     state.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx) {
                         StatusCode = (int)errorResponse.StatusCode,
+                        StatusDescription = errorResponse.StatusDescription,
                     });
                 }
                 return;

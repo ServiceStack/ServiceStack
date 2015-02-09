@@ -30,12 +30,12 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
 
         class TestHandler : ServiceStackHandlerBase
         {
-            public override object CreateRequest(IHttpRequest request, string operationName)
+            public override object CreateRequest(IRequest request, string operationName)
             {
                 throw new NotImplementedException();
             }
 
-            public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+            public override object GetResponse(IRequest httpReq, object request)
             {
                 throw new NotImplementedException();
             }
@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
             var request = new Mock<IHttpRequest>();
             request.Expect(req => req.UserHostAddress).Returns(format);
             request.Expect(req => req.IsSecureConnection).Returns(false);
-            request.Expect(req => req.HttpMethod).Returns("GET");
+            request.Expect(req => req.Verb).Returns("GET");
 
             Assert.AreEqual(expected | RequestAttributes.HttpGet | RequestAttributes.InSecure, request.Object.GetAttributes());
         }

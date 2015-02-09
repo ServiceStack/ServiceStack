@@ -32,11 +32,15 @@ namespace ServiceStack.Messaging.Redis
     public class RedisMqServer : IMessageService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(RedisMqServer));
-        public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
+        public const int DefaultRetryCount = 1; //Will be a total of 2 attempts
 
-        public int RetryCount { get; protected set; }
+        public int RetryCount { get; set; }
 
-        public int? KeepAliveRetryAfterMs { get; set; }
+        public int? KeepAliveRetryAfterMs
+        {
+            get { return RedisPubSub.KeepAliveRetryAfterMs; }
+            set { RedisPubSub.KeepAliveRetryAfterMs = value; }
+        }
 
         public IMessageFactory MessageFactory { get; private set; }
 
@@ -75,7 +79,14 @@ namespace ServiceStack.Messaging.Redis
             }
         }
 
+        public IRedisPubSubServer RedisPubSub { get; set; }
+
         private readonly IRedisClientsManager clientsManager; //Thread safe redis client/conn factory
+
+        public IRedisClientsManager ClientsManager
+        {
+            get { return clientsManager; }
+        }
 
         public IMessageQueueClient CreateMessageQueueClient()
         {
@@ -91,20 +102,6 @@ namespace ServiceStack.Messaging.Redis
         public bool DisablePublishingResponses
         {
             set { PublishResponsesWhitelist = value ? new string[0] : null; }
-        }
-
-        //Stats
-        private long timesStarted = 0;
-        private long noOfErrors = 0;
-        private int noOfContinuousErrors = 0;
-        private string lastExMsg = null;
-        private int status;
-
-        private Thread bgThread; //Subscription controller thread
-        private long bgThreadCount = 0;
-        public long BgThreadCount
-        {
-            get { return Interlocked.CompareExchange(ref bgThreadCount, 0, 0); }
         }
 
         private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap
@@ -125,17 +122,20 @@ namespace ServiceStack.Messaging.Redis
             int retryCount = DefaultRetryCount, TimeSpan? requestTimeOut = null)
         {
             this.clientsManager = clientsManager;
+            RedisPubSub = new RedisPubSubServer(clientsManager, QueueNames.TopicIn)
+            {
+                OnInit = OnInit,
+                OnStart = OnStart,
+                OnStop = OnStop,
+                OnError = OnError,
+                OnMessage = OnMessage,
+            };
+
             this.RetryCount = retryCount;
             //this.RequestTimeOut = requestTimeOut;
             this.MessageFactory = new RedisMessageFactory(clientsManager);
             this.ErrorHandler = ex => Log.Error("Exception in Redis MQ Server: " + ex.Message, ex);
             this.KeepAliveRetryAfterMs = 2000;
-
-            var failoverHost = clientsManager as IRedisFailover;
-            if (failoverHost != null)
-            {
-                failoverHost.OnFailover.Add(OnFailover);
-            }
         }
 
         public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn)
@@ -162,6 +162,8 @@ namespace ServiceStack.Messaging.Redis
 
             handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
             handlerThreadCountMap[typeof(T)] = noOfThreads;
+
+            LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, handlerMap.Count);
         }
 
         protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessage<T>, Exception> processExceptionEx)
@@ -174,7 +176,23 @@ namespace ServiceStack.Messaging.Redis
             };
         }
 
-        public void Init()
+        public void OnError(Exception ex)
+        {
+            if (ErrorHandler != null)
+                ErrorHandler(ex);
+        }
+
+        public void OnStart()
+        {
+            StartWorkerThreads();
+        }
+
+        public void OnStop()
+        {
+            StopWorkerThreads();
+        }
+
+        public void OnInit()
         {
             if (workers == null)
             {
@@ -228,195 +246,29 @@ namespace ServiceStack.Messaging.Redis
             }
         }
 
-        public void Start()
+        public void OnMessage(string channel, string msg)
         {
-            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started)
+            if (!string.IsNullOrEmpty(msg))
             {
-                //Start any stopped worker threads
-                StartWorkerThreads();
-                return;
-            }
-            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
-                throw new ObjectDisposedException("MQ Host has been disposed");
-
-            //Only 1 thread allowed past
-            if (Interlocked.CompareExchange(ref status, WorkerStatus.Starting, WorkerStatus.Stopped) == WorkerStatus.Stopped) //Should only be 1 thread past this point
-            {
-                try
+                int[] workerIndexes;
+                if (queueWorkerIndexMap.TryGetValue(msg, out workerIndexes))
                 {
-                    Init();
-
-                    if (workers == null || workers.Length == 0)
+                    foreach (var workerIndex in workerIndexes)
                     {
-                        Log.Warn("Cannot start a MQ Server with no Message Handlers registered, ignoring.");
-                        Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Starting);
-                        return;
+                        workers[workerIndex].NotifyNewMessage();
                     }
-
-                    SleepBackOffMultiplier(Interlocked.CompareExchange(ref noOfContinuousErrors, 0, 0));
-
-                    StartWorkerThreads();
-
-                    //Don't kill us if we're the thread that's retrying to Start() after a failure.
-                    if (bgThread != Thread.CurrentThread)
-                    {
-                        KillBgThreadIfExists();
-
-                        bgThread = new Thread(RunLoop)
-                        {
-                            IsBackground = true,
-                            Name = "Redis MQ Server " + Interlocked.Increment(ref bgThreadCount)
-                        };
-                        bgThread.Start();
-                        Log.Debug("Started Background Thread: " + bgThread.Name);
-                    }
-                    else
-                    {
-                        Log.Debug("Retrying RunLoop() on Thread: " + bgThread.Name);
-                        RunLoop();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ex.Message.Print();
-                    if (this.ErrorHandler != null) this.ErrorHandler(ex);
                 }
             }
         }
 
-        private IRedisClient masterClient;
-        private void RunLoop()
+        public void Start()
         {
-            if (Interlocked.CompareExchange(ref status, WorkerStatus.Started, WorkerStatus.Starting) != WorkerStatus.Starting) return;
-            Interlocked.Increment(ref timesStarted);
-
-            try
-            {
-                //RESET
-                while (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started)
-                {
-                    using (var redisClient = clientsManager.GetReadOnlyClient())
-                    {
-                        masterClient = redisClient;
-
-                        //Record that we had a good run...
-                        Interlocked.CompareExchange(ref noOfContinuousErrors, 0, noOfContinuousErrors);
-
-                        using (var subscription = redisClient.CreateSubscription())
-                        {
-                            subscription.OnUnSubscribe = channel => Log.Debug("OnUnSubscribe: " + channel);
-
-                            subscription.OnMessage = (channel, msg) =>
-                            {
-                                if (msg == WorkerStatus.StopCommand)
-                                {
-                                    Log.Debug("Stop Command Issued");
-
-                                    if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Started) != WorkerStatus.Started)
-                                        Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Stopping);
-
-                                    Log.Debug("UnSubscribe From All Channels...");
-                                    subscription.UnSubscribeFromAllChannels(); //Un block thread.
-                                    return;
-                                }
-                                if (msg == WorkerStatus.ResetCommand)
-                                {
-                                    subscription.UnSubscribeFromAllChannels(); //Un block thread.
-                                    return;
-                                }
-
-                                if (!string.IsNullOrEmpty(msg))
-                                {
-                                    int[] workerIndexes;
-                                    if (queueWorkerIndexMap.TryGetValue(msg, out workerIndexes))
-                                    {
-                                        foreach (var workerIndex in workerIndexes)
-                                        {
-                                            workers[workerIndex].NotifyNewMessage();
-                                        }
-                                    }
-                                }
-                            };
-
-                            subscription.SubscribeToChannels(QueueNames.TopicIn); //blocks thread
-                            masterClient = null;
-                        }
-                    }
-                }
-
-                StopWorkerThreads();
-            }
-            catch (Exception ex)
-            {
-                lastExMsg = ex.Message;
-                Interlocked.Increment(ref noOfErrors);
-                Interlocked.Increment(ref noOfContinuousErrors);
-
-                if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Started) != WorkerStatus.Started)
-                    Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Stopping);
-
-                StopWorkerThreads();
-
-                if (this.ErrorHandler != null) 
-                    this.ErrorHandler(ex);
-
-
-                if (KeepAliveRetryAfterMs != null)
-                {
-                    Thread.Sleep(KeepAliveRetryAfterMs.Value);
-                    Start();
-                }
-            }
+            RedisPubSub.Start();
         }
 
         public void Stop()
         {
-            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
-                throw new ObjectDisposedException("MQ Host has been disposed");
-
-            if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopping, WorkerStatus.Started) == WorkerStatus.Started)
-            {
-                Log.Debug("Stopping MQ Host...");
-
-                //Unblock current bgthread by issuing StopCommand
-                try
-                {
-                    using (var redis = clientsManager.GetClient())
-                    {
-                        redis.PublishMessage(QueueNames.TopicIn, WorkerStatus.StopCommand);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (this.ErrorHandler != null) this.ErrorHandler(ex);
-                    Log.Warn("Could not send STOP message to bg thread: " + ex.Message);
-                }
-            }
-        }
-
-        private void OnFailover(IRedisClientsManager clientsManager)
-        {
-            try
-            {
-                if (masterClient != null)
-                {
-                    //New thread-safe client with same connection info as connected master
-                    using (var currentlySubscribedClient = ((RedisClient)masterClient).CloneClient())
-                    {
-                        currentlySubscribedClient.PublishMessage(QueueNames.TopicIn, WorkerStatus.ResetCommand);
-                    }
-                }
-                else
-                {
-                    Restart();
-                }
-            }
-            catch (Exception ex)
-            {
-                if (this.ErrorHandler != null) this.ErrorHandler(ex);
-                Log.Warn("Error trying to UnSubscribeFromChannels in OnFailover. Restarting...", ex);
-                Restart();
-            }
+            RedisPubSub.Stop();
         }
 
         public void Restart()
@@ -475,90 +327,6 @@ namespace ServiceStack.Messaging.Redis
             }
         }
 
-        private void KillBgThreadIfExists()
-        {
-            if (bgThread != null && bgThread.IsAlive)
-            {
-                //give it a small chance to die gracefully
-                if (!bgThread.Join(500))
-                {
-                    //Ideally we shouldn't get here, but lets try our hardest to clean it up
-                    Log.Warn("Interrupting previous Background Thread: " + bgThread.Name);
-                    bgThread.Interrupt();
-                    if (!bgThread.Join(TimeSpan.FromSeconds(3)))
-                    {
-                        Log.Warn(bgThread.Name + " just wont die, so we're now aborting it...");
-                        bgThread.Abort();
-                    }
-                }
-                bgThread = null;
-            }
-        }
-
-        readonly Random rand = new Random(Environment.TickCount);
-        private void SleepBackOffMultiplier(int continuousErrorsCount)
-        {
-            if (continuousErrorsCount == 0) return;
-            const int MaxSleepMs = 60 * 1000;
-
-            //exponential/random retry back-off.
-            var nextTry = Math.Min(
-                rand.Next((int)Math.Pow(continuousErrorsCount, 3), (int)Math.Pow(continuousErrorsCount + 1, 3) + 1),
-                MaxSleepMs);
-
-            Log.Debug("Sleeping for {0}ms after {1} continuous errors".Fmt(nextTry, continuousErrorsCount));
-
-            Thread.Sleep(nextTry);
-        }
-
-        public virtual void Dispose()
-        {
-            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
-                return;
-
-            Stop();
-
-            if (Interlocked.CompareExchange(ref status, WorkerStatus.Disposed, WorkerStatus.Stopped) != WorkerStatus.Stopped)
-                Interlocked.CompareExchange(ref status, WorkerStatus.Disposed, WorkerStatus.Stopping);
-
-            try
-            {
-                DisposeWorkerThreads();
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error DisposeWorkerThreads(): ", ex);
-            }
-
-            try
-            {
-                Thread.Sleep(100); //give it a small chance to die gracefully
-                KillBgThreadIfExists();
-            }
-            catch (Exception ex)
-            {
-                if (this.ErrorHandler != null) this.ErrorHandler(ex);
-            }
-        }
-
-        public string GetStatus()
-        {
-            switch (Interlocked.CompareExchange(ref status, 0, 0))
-            {
-                case WorkerStatus.Disposed:
-                    return "Disposed";
-                case WorkerStatus.Stopped:
-                    return "Stopped";
-                case WorkerStatus.Stopping:
-                    return "Stopping";
-                case WorkerStatus.Starting:
-                    return "Starting";
-                case WorkerStatus.Started:
-                    return "Started";
-            }
-            return null;
-        }
-
         public IMessageHandlerStats GetStats()
         {
             lock (workers)
@@ -569,19 +337,19 @@ namespace ServiceStack.Messaging.Redis
             }
         }
 
+        public string GetStatus()
+        {
+            return RedisPubSub.GetStatus();
+        }
+
         public string GetStatsDescription()
         {
             lock (workers)
             {
                 var sb = new StringBuilder("#MQ SERVER STATS:\n");
-                sb.AppendLine("===============");
-                sb.AppendLine("Current Status: " + GetStatus());
                 sb.AppendLine("Listening On: " + string.Join(", ", workers.ToList().ConvertAll(x => x.QueueName).ToArray()));
-                sb.AppendLine("Times Started: " + Interlocked.CompareExchange(ref timesStarted, 0, 0));
-                sb.AppendLine("Num of Errors: " + Interlocked.CompareExchange(ref noOfErrors, 0, 0));
-                sb.AppendLine("Num of Continuous Errors: " + Interlocked.CompareExchange(ref noOfContinuousErrors, 0, 0));
-                sb.AppendLine("Last ErrorMsg: " + lastExMsg);
-                sb.AppendLine("===============");
+                sb.Append(RedisPubSub.GetStatsDescription());
+
                 foreach (var worker in workers)
                 {
                     sb.AppendLine(worker.GetStats().ToString());
@@ -591,9 +359,46 @@ namespace ServiceStack.Messaging.Redis
             }
         }
 
+        public virtual void Dispose()
+        {
+            try
+            {
+                DisposeWorkerThreads();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error DisposeWorkerThreads(): ", ex);
+            }
+
+            RedisPubSub.Dispose();
+        }
+
         public List<string> WorkerThreadsStatus()
         {
             return workers.ToList().ConvertAll(x => x.GetStatus());
+        }
+
+        public long ExpireTemporaryQueues(int afterMs = 10*60*1000)
+        {
+            using (var redis = clientsManager.GetClient())
+            {
+                var tmpWildCard = QueueNames.TempMqPrefix + "*";
+                var itemsExpired = redis.ExecLuaAsInt(@"
+                        local count = 0
+                        local pattern = KEYS[1]
+                        local timeMs = tonumber(ARGV[1])
+                        local keys = redis.call('KEYS',pattern)
+                        for i,k in pairs(keys) do
+                            count = count + 1
+                            redis.call('PEXPIRE', k, timeMs)
+                        end
+                        return count
+                    ",
+                    keys: new[] { tmpWildCard },
+                    args: new[] { afterMs.ToString() });
+
+                return itemsExpired;
+            }
         }
     }
 }

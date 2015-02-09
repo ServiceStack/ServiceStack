@@ -1,4 +1,4 @@
-See [www.servicestack.net](http://www.servicestack.net/) for an overview.
+See [servicestack.net/features](http://servicestack.net/features) for an overview.
 
 Join the [ServiceStack Google+ Community](https://plus.google.com/u/0/communities/112445368900682590445) or
 follow [@ServiceStack](http://twitter.com/servicestack) for project updates. 
@@ -15,7 +15,7 @@ This example is also available as a [stand-alone integration test](https://githu
 
 ```csharp
 //Web Service Host Configuration
-public class AppHost : AppHostHttpListenerBase
+public class AppHost : AppSelfHostBase
 {
     public AppHost() : base("TODOs Tests", typeof(Todo).Assembly) {}
 
@@ -75,28 +75,28 @@ public class TodosService : Service
 }
 ```
 
-### Calling the above TODO REST service from any C#/.NET Client
+### [Calling the above TODO REST service from any C#/.NET Client](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client)
 
 ```csharp
 //no code-gen required, can re-use above DTO's
 
-var restClient = new JsonServiceClient(BaseUri);
-List<Todo> all = restClient.Get(new Todos());     		// Count = 0
+var client = new JsonServiceClient(BaseUri);
+List<Todo> all = client.Get(new Todos());     		// Count = 0
 
-var todo = restClient.Post(
-    new Todo { Content = "New TODO", Order = 1 }); 	    // todo.Id = 1
-all = restClient.Get(new Todos());						// Count = 1
+var todo = client.Post(
+    new Todo { Content = "New TODO", Order = 1 }); 	// todo.Id = 1
+all = client.Get(new Todos());						// Count = 1
 
 todo.Content = "Updated TODO";
-todo = restClient.Put(todo);							// todo.Content = Updated TODO
+todo = client.Put(todo);							// todo.Content = Updated TODO
 
-restClient.Delete(new Todos(todo.Id));
-all = restClient.Get(new Todos());						// Count = 0
+client.Delete(new Todos(todo.Id));
+all = client.Get(new Todos());						// Count = 0
 ```
 
 ### Calling the TODO REST service from jQuery
 
-    $.getJSON(baseUri, function(todos) {
+    $.getJSON(baseUri + "/todos", function(todos) {
     	alert(todos.length == 1);
     });
 
@@ -104,7 +104,7 @@ all = restClient.Get(new Todos());						// Count = 0
 
     var client = new JsonClient(baseUri);
     client.todos()
-    	.then((todos) => alert(todos.length == 1) ); 
+    	.then((todos) => alert(todos.length == 1)); 
 
 That's all the application code required to create a simple REST web service.
 
@@ -114,19 +114,17 @@ That's all the application code required to create a simple REST web service.
  * [Example Apps and Demos](http://stackoverflow.com/questions/15862634/in-what-order-are-the-servicestack-examples-supposed-to-be-grokked/15869816#15869816)
  * [Community resources](https://github.com/ServiceStack/ServiceStack/wiki/Community-Resources)
 
-### [Release Notes](https://github.com/ServiceStack/ServiceStack/wiki/Release-Notes)
+### [Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/release-notes.md)
 
 ## Download
 
-If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to install ServiceStack via NuGet:
+If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to: 
 
-ServiceStack binaries only: Minimal installation of ServiceStack containing only the core-binaries (.NET 3.5+)
-![Install-Pacakage ServiceStack](http://www.servicestack.net/img/nuget-servicestack.png)
+### [Install ServiceStack via NuGet](https://servicestack.net/download).
 
-ServiceStack with Razor Support: Create an empty ASP.NET Web or Console Application and (.NET 4.0+)
-![Install-Pacakage ServiceStack.Razor2](http://www.servicestack.net/img/nuget-servicestack.razor.png)
+_Latest v4+ on NuGet is a commercial release with [free quotas](https://servicestack.net/download#free-quotas)._
 
-_Commercial support will be available for ServiceStack, contact team@servicestack.net for details_
+### [Docs and Downloads for older v3 BSD releases](https://github.com/ServiceStackV3/ServiceStackV3)
 
 ### Examples
 
@@ -142,10 +140,10 @@ extracting them from the published NuGet packages. The url to download a nuget p
     
  So to get the core ServiceStack and ServiceStack.Text libs in OSX/Linux (or using gnu tools for Windows) you can just do:
 
-    wget -O ServiceStack http://packages.nuget.org/api/v1/package/ServiceStack/3.9.62
+    wget -O ServiceStack http://packages.nuget.org/api/v1/package/ServiceStack/3.9.71
     unzip ServiceStack 'lib/*'
     
-    wget -O ServiceStack.Text http://packages.nuget.org/api/v1/package/ServiceStack.Text/3.9.62
+    wget -O ServiceStack.Text http://packages.nuget.org/api/v1/package/ServiceStack.Text/3.9.71
     unzip ServiceStack.Text 'lib/*'
 
 which will download and extract the dlls into your local local `lib/` folder.
@@ -153,12 +151,11 @@ which will download and extract the dlls into your local local `lib/` folder.
 ## Copying
 
 Since September 2013, ServiceStack source code is available under GNU Affero General Public License/FOSS License Exception, see license.txt in the source. 
-Alternative commercial licensing is also available, contact team@servicestack.net for details.
+Alternative commercial licensing is also available, see https://servicestack.net/pricing for details.
 
 ## Contributing
 
-Commits should be made to the **v3-fixes** branch so they can be merged into both **v3** and **master** (v4) release branches. 
-Contributors need to approve the [Contributor License Agreement](https://docs.google.com/forms/d/16Op0fmKaqYtxGL4sg7w_g-cXXyCoWjzppgkuqzOeKyk/viewform) before any code will be reviewed, see the [Contributing wiki](https://github.com/ServiceStack/ServiceStack/wiki/Contributing) for more details. 
+Contributors need to approve the [Contributor License Agreement](https://docs.google.com/forms/d/16Op0fmKaqYtxGL4sg7w_g-cXXyCoWjzppgkuqzOeKyk/viewform) before any code will be reviewed, see the [Contributing wiki](https://github.com/ServiceStack/ServiceStack/wiki/Contributing) for more details. All contributions must include tests verifying the desired behavior.
 
 ## OSS Libraries used
 
@@ -484,6 +481,20 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [mhanney](https://github.com/mhanney) (Michael Hanney)
  - [bcms](https://github.com/bcms)
  - [mgravell](https://github.com/mgravell) (Marc Gravell)
+ - [lafama](https://github.com/lafama) (Denis Ndwiga)
+ - [jamesgroat](https://github.com/jamesgroat) (James Groat)
+ - [jamesearl](https://github.com/jamesearl) (James Cunningham)
+ - [remkoboschker](https://github.com/remkoboschker) (Remko Boschker)
+ - [shelakel](https://github.com/shelakel)
+ - [schmidt4brains](https://github.com/schmidt4brains) (Doug Schmidt)
+ - [joplaal](https://github.com/joplaal)
+ - [aifdsc](https://github.com/aifdsc) (Stephan Desmoulin)
+ - [nicklarsen](https://github.com/nicklarsen) (NickLarsen)
+ - [connectassist](https://github.com/connectassist) (Carl Healy)
+ - [et1975](https://github.com/et1975) (Eugene Tolmachev)
+ - [barambani](https://github.com/barambani)
+ - [nhalm](https://github.com/et1975)
+
 
 ***
 

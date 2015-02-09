@@ -40,5 +40,10 @@ namespace ServiceStack
                 return fs.ReadFully();
             }
         }
+
+        public static string ReadAllText(this FileInfo file)
+        {
+            return file.ReadFully().FromUtf8Bytes();
+        }
 	}
 }

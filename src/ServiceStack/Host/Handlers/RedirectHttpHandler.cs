@@ -5,31 +5,35 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-	public class RedirectHttpHandler
-		: IServiceStackHttpHandler, IHttpHandler
-	{
-		public string RelativeUrl { get; set; }
+    public class RedirectHttpHandler : HttpAsyncTaskHandler
+    {
+        public RedirectHttpHandler()
+        {
+            this.RequestName = GetType().Name;
+        }
 
-		public string AbsoluteUrl { get; set; }
+        public string RelativeUrl { get; set; }
 
-		/// <summary>
-		/// Non ASP.NET requests
-		/// </summary>
-		/// <param name="request"></param>
-		/// <param name="response"></param>
-		/// <param name="operationName"></param>
-		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
-		{
-			if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
-				throw new ArgumentNullException("RelativeUrl or AbsoluteUrl");
+        public string AbsoluteUrl { get; set; }
 
-			if (!string.IsNullOrEmpty(AbsoluteUrl))
-			{
-				response.StatusCode = (int)HttpStatusCode.Redirect;
-				response.AddHeader(HttpHeaders.Location, this.AbsoluteUrl);
-			}
-			else
-			{
+        /// <summary>
+        /// Non ASP.NET requests
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="response"></param>
+        /// <param name="operationName"></param>
+        public override void ProcessRequest(IRequest request, IResponse response, string operationName)
+        {
+            if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
+                throw new ArgumentNullException("RelativeUrl or AbsoluteUrl");
+
+            if (!string.IsNullOrEmpty(AbsoluteUrl))
+            {
+                response.StatusCode = (int)HttpStatusCode.Redirect;
+                response.AddHeader(HttpHeaders.Location, this.AbsoluteUrl);
+            }
+            else
+            {
                 var absoluteUrl = request.GetApplicationUrl();
                 if (!string.IsNullOrEmpty(RelativeUrl))
                 {
@@ -41,31 +45,31 @@ namespace ServiceStack.Host.Handlers
                         absoluteUrl = request.AbsoluteUri.CombineWith(this.RelativeUrl);
                 }
                 response.StatusCode = (int)HttpStatusCode.Redirect;
-				response.AddHeader(HttpHeaders.Location, absoluteUrl);
-			}
+                response.AddHeader(HttpHeaders.Location, absoluteUrl);
+            }
 
-            response.EndHttpHandlerRequest(skipClose:true);
+            response.EndHttpHandlerRequest(skipClose: true);
         }
 
         /// <summary>
         /// ASP.NET requests
         /// </summary>
         /// <param name="context"></param>
-		public void ProcessRequest(HttpContext context)
-		{
-        	var request = context.Request;
-			var response = context.Response;
+        public override void ProcessRequest(HttpContextBase context)
+        {
+            var request = context.Request;
+            var response = context.Response;
 
-			if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
-				throw new ArgumentNullException("RelativeUrl or AbsoluteUrl");
+            if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
+                throw new ArgumentNullException("RelativeUrl or AbsoluteUrl");
 
-			if (!string.IsNullOrEmpty(AbsoluteUrl))
-			{
-				response.StatusCode = (int)HttpStatusCode.Redirect;
-				response.AddHeader(HttpHeaders.Location, this.AbsoluteUrl);
-			}
-            else 
-			{
+            if (!string.IsNullOrEmpty(AbsoluteUrl))
+            {
+                response.StatusCode = (int)HttpStatusCode.Redirect;
+                response.AddHeader(HttpHeaders.Location, this.AbsoluteUrl);
+            }
+            else
+            {
                 var absoluteUrl = request.GetApplicationUrl();
                 if (!string.IsNullOrEmpty(RelativeUrl))
                 {
@@ -76,16 +80,11 @@ namespace ServiceStack.Host.Handlers
                     else
                         absoluteUrl = request.Url.AbsoluteUri.CombineWith(this.RelativeUrl);
                 }
-			    response.StatusCode = (int)HttpStatusCode.Redirect;
+                response.StatusCode = (int)HttpStatusCode.Redirect;
                 response.AddHeader(HttpHeaders.Location, absoluteUrl);
-			}
+            }
 
-            response.EndHttpHandlerRequest(closeOutputStream:true);
-		}
-
-		public bool IsReusable
-		{
-			get { return false; }
-		}
-	}
+            response.EndHttpHandlerRequest(closeOutputStream: true);
+        }
+    }
 }

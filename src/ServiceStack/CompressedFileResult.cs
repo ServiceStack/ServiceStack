@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 #if NETFX_CORE

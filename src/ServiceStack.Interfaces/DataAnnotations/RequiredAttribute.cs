@@ -5,6 +5,6 @@
 namespace ServiceStack.DataAnnotations
 {
     public class RequiredAttribute : AttributeBase
-    {         
+    {
     }
 }

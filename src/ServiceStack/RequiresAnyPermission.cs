@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -26,7 +27,7 @@ namespace ServiceStack
         public RequiresAnyPermissionAttribute(params string[] permissions)
             : this(ApplyTo.All, permissions) { }
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             base.Execute(req, res, requestDto); //first check if session is authenticated
             if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
@@ -41,7 +42,7 @@ namespace ServiceStack
             res.EndRequest();
         }
 
-        public bool HasAnyPermissions(IHttpRequest req, IAuthSession session, IAuthRepository userAuthRepo = null)
+        public bool HasAnyPermissions(IRequest req, IAuthSession session, IAuthRepository userAuthRepo = null)
         {
             if (HasAnyPermissions(session)) return true;
 
@@ -65,6 +66,7 @@ namespace ServiceStack
         {
             return this.RequiredPermissions
                 .Any(requiredPermission => session != null
+                    && session.UserAuthId != null 
                     && session.HasPermission(requiredPermission));
         }
     }

@@ -40,9 +40,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 	public class TestFilterAttribute : ResponseFilterAttribute
 	{
-		public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
-		{
-		}
+		public override void Execute(IRequest req, IResponse res, object responseDto) {}
 	}
 
 	[Route("/hello2")]

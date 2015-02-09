@@ -26,11 +26,11 @@ namespace ServiceStack.Host.Handlers
     }
 
     public class Soap12MessageOneWayHttpHandler
-        : Soap12Handler, IHttpHandler
+        : Soap12Handler
     {
         public Soap12MessageOneWayHttpHandler() : base(RequestAttributes.Soap12) { }
 
-        public new void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContextBase context)
         {
             if (context.Request.HttpMethod == HttpMethods.Get)
             {
@@ -43,11 +43,11 @@ namespace ServiceStack.Host.Handlers
         }
     }
 
-    public class Soap12MessageReplyHttpHandler : Soap12Handler, IHttpHandler
+    public class Soap12MessageReplyHttpHandler : Soap12Handler
     {
         public Soap12MessageReplyHttpHandler() : base(RequestAttributes.Soap12) { }
 
-        public new void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContextBase context)
         {
             if (context.Request.HttpMethod == HttpMethods.Get)
             {
@@ -59,15 +59,15 @@ namespace ServiceStack.Host.Handlers
             var responseMessage = Send(null);
 
             context.Response.ContentType = GetSoapContentType(context.Request.ContentType);
-            using (var writer = XmlWriter.Create(context.Response.OutputStream))
+            using (var writer = CreateXmlWriter(context.Response.OutputStream))
             {
                 responseMessage.WriteMessage(writer);
             }
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            if (httpReq.HttpMethod == HttpMethods.Get)
+            if (httpReq.Verb == HttpMethods.Get)
             {
                 var wsdl = new Soap12WsdlMetadataHandler();
                 wsdl.Execute(httpReq, httpRes);
@@ -76,8 +76,10 @@ namespace ServiceStack.Host.Handlers
 
             var responseMessage = Send(null, httpReq, httpRes);
 
-            httpRes.ContentType = GetSoapContentType(httpReq.ContentType);
-            using (var writer = XmlWriter.Create(httpRes.OutputStream))
+            if (httpRes.IsClosed)
+                return;
+
+            using (var writer = CreateXmlWriter(httpRes.OutputStream))
             {
                 responseMessage.WriteMessage(writer);
             }

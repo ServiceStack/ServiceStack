@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public int Priority { get; set; }
 
-        public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
+        public void RequestFilter(IRequest req, IResponse res, object requestDto)
         {
             var dto = (AttributeFiltered)requestDto;
             dto.AttrsExecuted.Add(GetType().Name);
@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
         }
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             var dto = (AttributeFiltered)requestDto;
             dto.AttrsExecuted.Add(GetType().Name);
@@ -79,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public int Priority { get; set; }
 
-        public void ResponseFilter(IHttpRequest req, IHttpResponse res, object response)
+        public void ResponseFilter(IRequest req, IResponse res, object response)
         {
             var dto = response.GetResponseDto() as AttributeFilteredResponse;
             dto.ResponseFilterExecuted = true;
@@ -102,7 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
         }
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object responseDto)
+        public override void Execute(IRequest req, IResponse res, object responseDto)
         {
             var dto = responseDto as AttributeFilteredResponse;
             dto.ContextualResponseFilterExecuted = true;
@@ -111,7 +111,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class ThrowingFilterAttribute : RequestFilterAttribute
     {
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             throw new ArgumentException("exception message");
         }
@@ -163,8 +163,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class AttributeFiltersTest
     {
-        private const string ListeningOn = "http://localhost:82/";
-        private const string ServiceClientBaseUri = "http://localhost:82/";
+        private const string ListeningOn = "http://localhost:1337/";
+        private const string ServiceClientBaseUri = "http://localhost:1337/";
 
         public class AttributeFiltersAppHostHttpListener
             : AppHostHttpListenerBase
@@ -286,7 +286,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Priority = int.MinValue;
             }
 
-            public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+            public override void Execute(IRequest req, IResponse res, object requestDto)
             {
                 var dto = (AttributeFiltered)requestDto;
                 dto.AttrsExecuted.Add(GetType().Name);

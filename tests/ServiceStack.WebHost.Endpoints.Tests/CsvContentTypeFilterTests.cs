@@ -110,7 +110,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_download_CSV_movies_using_csv_Accept_and_RestPath()
 		{
-			var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "movies");
+			var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "all-movies");
             req.Accept = MimeTypes.Csv;
 
 			var res = req.GetResponse();
@@ -129,11 +129,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "csv/reply/Hello?Name=World!");
 
 			var res = req.GetResponse();
-            Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
+			Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
 			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Hello.csv"));
-
-            var csv = res.ReadToEnd();
-			Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
+			
+			var csv = res.ReadToEnd();
+			var lf = Environment.NewLine;
+			Assert.That(csv, Is.EqualTo("Result{0}\"Hello, World!\"{0}".Fmt(lf)));
 
 			Console.WriteLine(csv);
 		}
@@ -142,14 +143,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public void Can_download_CSV_Hello_using_csv_Accept_and_RestPath()
 		{
 			var req = (HttpWebRequest)WebRequest.Create(ListeningOn + "hello/World!");
-            req.Accept = MimeTypes.Csv;
+			req.Accept = MimeTypes.Csv;
 
 			var res = req.GetResponse();
-            Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
+			Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
 			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Hello.csv"));
-
-            var csv = res.ReadToEnd();
-            Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
+			
+			var csv = res.ReadToEnd();
+			var lf = Environment.NewLine;
+			Assert.That(csv, Is.EqualTo("Result{0}\"Hello, World!\"{0}".Fmt(lf)));
 
 			Console.WriteLine(csv);
 		}

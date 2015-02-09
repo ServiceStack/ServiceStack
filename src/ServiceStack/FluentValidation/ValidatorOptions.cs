@@ -19,7 +19,7 @@
 namespace ServiceStack.FluentValidation
 {
     using System;
-#if !WINDOWS_PHONE
+#if !WP
     using System.ComponentModel;
     //using System.ComponentModel.DataAnnotations;
 #endif
@@ -62,7 +62,7 @@ namespace ServiceStack.FluentValidation
             if (memberInfo == null) return null;
             return GetDisplayName(memberInfo);
             /*string name = null;
-#if !WINDOWS_PHONE
+#if !WP
             var displayAttribute = (DisplayAttribute)Attribute.GetCustomAttribute(memberInfo, typeof(DisplayAttribute));
 
             if(displayAttribute != null) {
@@ -70,7 +70,7 @@ namespace ServiceStack.FluentValidation
             }
 #endif
 
-#if !SILVERLIGHT
+#if !SL5
             // Silverlight doesn't have DisplayAttribute.
             if(string.IsNullOrEmpty(name)) {
                 // Couldn't find a name from a DisplayAttribute. Try DisplayNameAttribute instead.
@@ -91,7 +91,7 @@ namespace ServiceStack.FluentValidation
 
             string name = null;
 
-#if !WINDOWS_PHONE
+#if !WP
             name = (from attr in attributes
                     where attr.type.Name == "DisplayAttribute"
                     let method = attr.type.GetMethod("GetName", BindingFlags.Instance | BindingFlags.Public)
@@ -99,7 +99,7 @@ namespace ServiceStack.FluentValidation
                     select method.Invoke(attr.attr, null) as string).FirstOrDefault();
 #endif
 
-#if !SILVERLIGHT
+#if !SL5
             if (string.IsNullOrEmpty(name)) {
                 name = (from attr in attributes
                         where attr.type.Name == "DisplayNameAttribute"

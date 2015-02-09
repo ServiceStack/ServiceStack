@@ -120,7 +120,7 @@ namespace ServiceStack.FluentValidation.Internal
                 return new ChildValidatorAdaptor(childValidator);
             }
 
-            throw new InvalidOperationException(string.Format("The validator '{0}' cannot validate members of type '{1}' - the types are not compatible.", childValidator.GetType().Name, rule.TypeToValidate.Name));
+            throw new InvalidOperationException(string.Format("The validator '{0}' cannot validate members of type '{1}' - the types are not compatible.", childValidator.GetType().GetOperationName(), rule.TypeToValidate.GetOperationName()));
         }
 
         private static bool DoesImplementCompatibleIEnumerable(Type propertyType, IValidator childValidator) {
@@ -147,7 +147,7 @@ namespace ServiceStack.FluentValidation.Internal
             return x => action((T)x);
         }
 
-#if WINDOWS_PHONE
+#if WP
         // WP7 doesn't support expression tree compilation.
         // As a workaround, this extension method falls back to delegate compilation. 
         // However, it only supports simple property references, ie x => x.SomeProperty

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>ServiceStack.Razor.BuildTask</id>
+    <title>ServiceStack.Razor.BuildTask - MSBuild Task to compile Razor Views as a build-step</title>
+    <version>4.0.0</version>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
+    <summary>MSBuild Task to generate and compile Service Stack Razor Views as a build-step, ready for instant use at run-time</summary>
+    <description>
+      ServiceStack Razor Documentation: http://razor.servicestack.net
+
+      Compile Razor Views into a compiled .dll you can use in ServiceStack hosts to eliminate Razor View compilation at runtime for instant start-up times.
+    </description>
+    <projectUrl>http://razor.servicestack.net</projectUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
+    <tags>Razor ViewEngine View Templates Controllers Mono ASP.NET Self-Host ServiceStack</tags>
+    <language>en-US</language>
+    <copyright>Copyright 2013 Service Stack</copyright>
+    <dependencies>
+      <dependency id="ServiceStack.Razor" version="4.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="build\**\*.*" target="build" />
+    <file src="tools\**\*.*" target="tools" />
+  </files>
+</package>

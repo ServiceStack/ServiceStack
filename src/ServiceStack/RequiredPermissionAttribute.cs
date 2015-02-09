@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -26,32 +27,33 @@ namespace ServiceStack
         public RequiredPermissionAttribute(params string[] permissions)
             : this(ApplyTo.All, permissions) {}
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
+            if (HostContext.AppHost.HasValidAuthSecret(req))
+                return;
+
             base.Execute(req, res, requestDto); //first check if session is authenticated
             if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
             var session = req.GetSession();
+
+            if (session != null && session.HasRole(RoleNames.Admin))
+                return;
+
             if (HasAllPermissions(req, session)) return;
 
             if (DoHtmlRedirectIfConfigured(req, res)) return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = "Invalid Permission";
+            res.StatusDescription = ErrorMessages.InvalidPermission.Localize(req);
             res.EndRequest();
         }
 
-        public bool HasAllPermissions(IHttpRequest req, IAuthSession session, IAuthRepository userAuthRepo=null)
+        public bool HasAllPermissions(IRequest req, IAuthSession session, IAuthRepository userAuthRepo=null)
         {
             if (HasAllPermissions(session)) return true;
 
-            if (userAuthRepo == null) 
-                userAuthRepo = req.TryResolve<IAuthRepository>();
-
-            if (userAuthRepo == null) return false;
-
-            var userAuth = userAuthRepo.GetUserAuth(session, null);
-            session.UpdateSession(userAuth);
+            session.UpdateFromUserAuthRepo(req, userAuthRepo);
 
             if (HasAllPermissions(session))
             {
@@ -63,9 +65,32 @@ namespace ServiceStack
 
         public bool HasAllPermissions(IAuthSession session)
         {
-            return this.RequiredPermissions
-                .All(requiredPermission => session != null 
-                    && session.HasPermission(requiredPermission));
+            if (session == null)
+                return false;
+
+            return this.RequiredPermissions.All(session.HasPermission);
+        }
+
+        protected bool Equals(RequiredPermissionAttribute other)
+        {
+            return base.Equals(other) 
+                && Equals(RequiredPermissions, other.RequiredPermissions);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((RequiredPermissionAttribute) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (base.GetHashCode()*397) ^ (RequiredPermissions != null ? RequiredPermissions.GetHashCode() : 0);
+            }
         }
     }
 

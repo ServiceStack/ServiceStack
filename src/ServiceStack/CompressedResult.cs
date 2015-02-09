@@ -37,7 +37,9 @@ namespace ServiceStack
 
         public IContentTypeWriter ResponseFilter { get; set; }
 
-        public IRequestContext RequestContext { get; set; }
+        public IRequest RequestContext { get; set; }
+
+        public int PaddingLength { get; set; }
 
         public IDictionary<string, string> Options
         {
@@ -68,8 +70,14 @@ namespace ServiceStack
 
         public void WriteTo(Stream responseStream)
         {
+            var response = RequestContext != null ? RequestContext.Response : null;
+            if (response != null)
+                response.SetContentLength(this.Contents.LongLength + PaddingLength);
+
             responseStream.Write(this.Contents, 0, this.Contents.Length);
             //stream.Write(this.Contents, Adler32ChecksumLength, this.Contents.Length - Adler32ChecksumLength);
+
+            responseStream.Flush();
         }
 
     }

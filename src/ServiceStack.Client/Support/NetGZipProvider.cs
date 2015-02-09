@@ -1,9 +1,8 @@
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !(SL5 || XBOX || ANDROID || __IOS__)
 using System.IO;
 using System.IO.Compression;
 using System.Text;
 using ServiceStack.Caching;
-using ServiceStack.Text;
 
 namespace ServiceStack.Support
 {
@@ -28,7 +27,7 @@ namespace ServiceStack.Support
             using (var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress))
             {
                 var utf8Bytes = zipStream.ReadFully();
-                return Encoding.UTF8.GetString(utf8Bytes);
+                return Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
             }
         }
     }

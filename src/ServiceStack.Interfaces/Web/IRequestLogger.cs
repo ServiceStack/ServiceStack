@@ -47,11 +47,11 @@ namespace ServiceStack.Web
 		/// <summary>
 		/// Log a request
 		/// </summary>
-		/// <param name="requestContext">The RequestContext</param>
+		/// <param name="request">The RequestContext</param>
 		/// <param name="requestDto">Request DTO</param>
 		/// <param name="response">Response DTO or Exception</param>
 		/// <param name="elapsed">How long did the Request take</param>
-		void Log(IRequestContext requestContext, object requestDto, object response, TimeSpan elapsed);
+		void Log(IRequest request, object requestDto, object response, TimeSpan elapsed);
 
 		/// <summary>
 		/// View the most recent logs

@@ -8,27 +8,70 @@ namespace ServiceStack.Configuration
 {
     public delegate string ParsingStrategyDelegate(string originalSetting);
 
-    public class AppSettingsBase : IAppSettings
+    public class AppSettingsBase : IAppSettings, ISettingsWriter
     {
         protected ISettings settings;
-        const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
+        protected ISettingsWriter settingsWriter; 
+
+        protected const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
+
+        public string Tier { get; set; }
 
         public ParsingStrategyDelegate ParsingStrategy { get; set; }
 
         public AppSettingsBase(ISettings settings=null)
         {
+            Init(settings);
+        }
+
+        protected void Init(ISettings settings)
+        {
             this.settings = settings;
+            this.settingsWriter = settings as ISettingsWriter;
         }
 
         public virtual string GetNullableString(string name)
         {
-            var value = settings.Get(name);
+            var value = Tier != null
+                ? Get("{0}.{1}".Fmt(Tier, name)) ?? Get(name)
+                : Get(name);
+
             return ParsingStrategy != null
                 ? ParsingStrategy(value)
                 : value;
         }
 
+        public string Get(string name)
+        {
+            if (settingsWriter != null)
+            {
+                var value = settingsWriter.Get(name);
+                if (value != null)
+                    return value;
+            }
+            return settings.Get(name);
+        }
+
+        public virtual List<string> GetAllKeys()
+        {
+            var keys = settings.GetAllKeys().ToHashSet();
+            if (settingsWriter != null)
+                settingsWriter.GetAllKeys().Each(x => keys.Add(x));
+
+            return keys.ToList();
+        }
+
+        public virtual bool Exists(string key)
+        {
+            return GetNullableString(key) != null;
+        }
+
         public virtual string GetString(string name)
+        {
+            return GetNullableString(name);
+        }
+
+        public virtual string GetRequiredString(string name)
         {
             var value = GetNullableString(name);
             if (value == null)
@@ -42,7 +85,9 @@ namespace ServiceStack.Configuration
         public virtual IList<string> GetList(string key)
         {
             var value = GetString(key);
-            return ConfigUtils.GetListFromAppSettingValue(value);
+            return value == null 
+                ? new List<string>() 
+                : ConfigUtils.GetListFromAppSettingValue(value);
         }
 
         public virtual IDictionary<string, string> GetDictionary(string key)
@@ -66,10 +111,13 @@ namespace ServiceStack.Configuration
         {
             var stringValue = GetNullableString(name);
 
-            T deserializedValue;
+            T ret = defaultValue;
             try
             {
-                deserializedValue = TypeSerializer.DeserializeFromString<T>(stringValue);
+                if (stringValue != null)
+                {
+                    ret = TypeSerializer.DeserializeFromString<T>(stringValue);
+                }
             }
             catch (Exception ex)
             {
@@ -80,9 +128,15 @@ namespace ServiceStack.Configuration
                 throw new ConfigurationErrorsException(message, ex);
             }
 
-            return stringValue != null
-                       ? deserializedValue
-                       : defaultValue;
+            return ret;
+        }
+
+        public virtual void Set<T>(string key, T value)
+        {
+            if (settingsWriter == null)
+                settingsWriter = new DictionarySettings();
+
+            settingsWriter.Set(key, value);
         }
     }
 

@@ -9,19 +9,18 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-	public class NotFoundHttpHandler
-		: IServiceStackHttpHandler, IHttpHandler
+    public class NotFoundHttpHandler : HttpAsyncTaskHandler
 	{
         private static readonly ILog Log = LogManager.GetLogger(typeof(NotFoundHttpHandler));
 
 		public bool? IsIntegratedPipeline { get; set; }
 		public string WebHostPhysicalPath { get; set; }
 		public List<string> WebHostRootFileNames { get; set; }
-		public string ApplicationBaseUrl { get; set; }
+		public string WebHostUrl { get; set; }
 		public string DefaultRootFileName { get; set; }
 		public string DefaultHandler { get; set; }
 
-		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		public override void ProcessRequest(IRequest request, IResponse response, string operationName)
 		{
             Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
 
@@ -30,8 +29,7 @@ namespace ServiceStack.Host.Handlers
             if (HostContext.DebugMode)
             {
                 text.AppendLine("Handler for Request not found: \n\n")
-                    .AppendLine("Request.HttpMethod: " + request.HttpMethod)
-                    .AppendLine("Request.HttpMethod: " + request.HttpMethod)
+                    .AppendLine("Request.HttpMethod: " + request.Verb)
                     .AppendLine("Request.PathInfo: " + request.PathInfo)
                     .AppendLine("Request.QueryString: " + request.QueryString)
                     .AppendLine("Request.RawUrl: " + request.RawUrl);
@@ -43,18 +41,18 @@ namespace ServiceStack.Host.Handlers
 
 		    response.ContentType = "text/plain";
 			response.StatusCode = 404;
-            response.EndHttpHandlerRequest(skipClose: true, afterBody: r => r.Write(text.ToString()));
+            response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text.ToString()));
 		}
 
-		public void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContextBase context)
 		{
 			var request = context.Request;
 			var response = context.Response;
 
-			var httpReq = new AspNetRequest("NotFoundHttpHandler", request);
+            var httpReq = context.ToRequest(GetType().GetOperationName());
 			if (!request.IsLocal)
 			{
-				ProcessRequest(httpReq, new AspNetResponse(response), null);
+                ProcessRequestAsync(httpReq, httpReq.Response, null);
 				return;
 			}
 
@@ -97,8 +95,8 @@ namespace ServiceStack.Host.Handlers
 				sb.AppendLine("App.WebHostPhysicalPath: " + WebHostPhysicalPath);
 			if (!WebHostRootFileNames.IsEmpty())
 				sb.AppendLine("App.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
-			if (!ApplicationBaseUrl.IsNullOrEmpty())
-				sb.AppendLine("App.ApplicationBaseUrl: " + ApplicationBaseUrl);
+			if (!WebHostUrl.IsNullOrEmpty())
+				sb.AppendLine("App.ApplicationBaseUrl: " + WebHostUrl);
 			if (!DefaultRootFileName.IsNullOrEmpty())
 				sb.AppendLine("App.DefaultRootFileName: " + DefaultRootFileName);
 			if (!DefaultHandler.IsNullOrEmpty())
@@ -108,10 +106,10 @@ namespace ServiceStack.Host.Handlers
 
 			response.ContentType = "text/plain";
 			response.StatusCode = 404;
-            response.EndHttpHandlerRequest(skipClose:true, afterBody: r => r.Write(sb.ToString()));
+            response.EndHttpHandlerRequest(skipClose:true, afterHeaders: r => r.Write(sb.ToString()));
 		}
 
-		public bool IsReusable
+		public override bool IsReusable
 		{
 			get { return true; }
 		}

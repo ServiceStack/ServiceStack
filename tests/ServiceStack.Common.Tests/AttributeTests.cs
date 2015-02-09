@@ -76,12 +76,12 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void Normal_attribute_returns_1_in_AllAttributes()
+        public void Normal_attribute_returns_all_in_AllAttributes()
         {
             var o = new ManyAttr();
 
-            Assert.That(o.GetType().AllAttributes<NormalAttribute>().Length, Is.EqualTo(1));
-            Assert.That(o.GetType().AllAttributes<INormalAttribute>().Length, Is.EqualTo(1));
+            Assert.That(o.GetType().AllAttributes<NormalAttribute>().Length, Is.EqualTo(2));
+            Assert.That(o.GetType().AllAttributes<INormalAttribute>().Length, Is.EqualTo(2));
         }
 
         [Test]
@@ -96,23 +96,12 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_add_attributes_at_runtime_to_BaseAttribute()
         {
-            TypeDescriptor.AddAttributes(typeof(RuntimeManyBaseAttr), new BaseAttribute("b3"));
+            typeof(RuntimeManyBaseAttr).AddAttributes(new BaseAttribute("b3"));
 
             var o = new RuntimeManyBaseAttr();
 
             Assert.That(o.GetType().AllAttributes<BaseAttribute>().Length, Is.EqualTo(3));
             Assert.That(o.GetType().AllAttributes<IBaseAttribute>().Length, Is.EqualTo(3));
-        }
-
-        [Test]
-        public void Cannot_add_attributes_at_runtime_to_NormalAttribute()
-        {
-            TypeDescriptor.AddAttributes(typeof(RuntimeManyNormalAttr), new NormalAttribute("a3"));
-
-            var o = new RuntimeManyNormalAttr();
-
-            Assert.That(o.GetType().AllAttributes<NormalAttribute>().Length, Is.EqualTo(1));
-            Assert.That(o.GetType().AllAttributes<INormalAttribute>().Length, Is.EqualTo(1));
         }
     }
 }

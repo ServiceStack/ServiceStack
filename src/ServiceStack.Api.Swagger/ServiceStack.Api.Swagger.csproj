@@ -30,8 +30,21 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\ServiceStack.Api.Swagger.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Signed|AnyCPU'">
+    <OutputPath>bin\Signed\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -46,38 +59,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Support\IOrderedDictionary.cs" />
+    <Compile Include="Support\OrderedDictionary.cs" />
     <Compile Include="SwaggerApiService.cs" />
     <Compile Include="SwaggerFeature.cs" />
     <Compile Include="SwaggerResourcesService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="swagger-ui\css\hightlight.default.css" />
-    <Content Include="swagger-ui\css\screen.css" />
-    <Content Include="swagger-ui\images\logo_small.png" />
-    <Content Include="swagger-ui\images\pet_store_api.png" />
-    <Content Include="swagger-ui\images\throbber.gif" />
-    <Content Include="swagger-ui\images\wordnik_api.png" />
-    <Content Include="swagger-ui\index.html" />
-    <Content Include="swagger-ui\lib\backbone-min.js" />
-    <Content Include="swagger-ui\lib\handlebars-1.0.rc.1.js" />
-    <Content Include="swagger-ui\lib\highlight.7.3.pack.js" />
-    <Content Include="swagger-ui\lib\jquery-1.8.0.min.js" />
-    <Content Include="swagger-ui\lib\jquery.ba-bbq.min.js" />
-    <Content Include="swagger-ui\lib\jquery.slideto.min.js" />
-    <Content Include="swagger-ui\lib\jquery.wiggle.min.js" />
-    <Content Include="swagger-ui\lib\swagger.js" />
-    <Content Include="swagger-ui\lib\underscore-min.js" />
-    <Content Include="swagger-ui\swagger-ui.js" />
-    <Content Include="swagger-ui\swagger-ui.min.js" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
@@ -85,7 +76,34 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="swagger-ui\LICENSE" />
+    <EmbeddedResource Include="swagger-ui-bootstrap\index.html" />
+    <EmbeddedResource Include="swagger-ui-bootstrap\jiko.js" />
+    <EmbeddedResource Include="swagger-ui-bootstrap\swagger-like-template.html" />
+    <EmbeddedResource Include="swagger-ui\css\screen.css" />
+    <EmbeddedResource Include="swagger-ui\images\logo_small.png" />
+    <EmbeddedResource Include="swagger-ui\images\pet_store_api.png" />
+    <EmbeddedResource Include="swagger-ui\images\throbber.gif" />
+    <EmbeddedResource Include="swagger-ui\images\wordnik_api.png" />
+    <EmbeddedResource Include="swagger-ui\index.html" />
+    <EmbeddedResource Include="swagger-ui\lib\backbone-min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\handlebars-1.0.0.js" />
+    <EmbeddedResource Include="swagger-ui\lib\highlight.7.3.pack.js" />
+    <EmbeddedResource Include="swagger-ui\lib\jquery-1.8.0.min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\jquery.ba-bbq.min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\jquery.slideto.min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\jquery.wiggle.min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\shred.bundle.js" />
+    <EmbeddedResource Include="swagger-ui\lib\shred\content.js" />
+    <EmbeddedResource Include="swagger-ui\lib\swagger.js" />
+    <EmbeddedResource Include="swagger-ui\lib\underscore-min.js" />
+    <EmbeddedResource Include="swagger-ui\swagger-ui.js" />
+    <EmbeddedResource Include="swagger-ui\swagger-ui.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="swagger-ui\css\reset.css" />
+    <EmbeddedResource Include="swagger-ui\images\explorer_icons.png" />
+    <EmbeddedResource Include="swagger-ui\lib\swagger-oauth.js" />
+    <EmbeddedResource Include="swagger-ui\o2c.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

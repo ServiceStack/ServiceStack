@@ -13,7 +13,7 @@ namespace ServiceStack.Common.Tests.Text
 	}
 
 	[TestFixture]
-	public class AdhocJsTests
+    public class AdhocJsTests
 	{
 		[Test]
 		public void Can_Deserialize()

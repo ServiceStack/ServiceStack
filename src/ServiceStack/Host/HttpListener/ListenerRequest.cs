@@ -9,23 +9,27 @@ using System.Net;
 using System.Text;
 using System.Web;
 using Funq;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
 {
     public partial class ListenerRequest : IHttpRequest
     {
-        private static readonly string physicalFilePath;
-        private readonly HttpListenerRequest request;
         public Container Container { get; set; }
+        private readonly HttpListenerRequest request;
+        private readonly IHttpResponse response;
 
-        static ListenerRequest()
+        public ListenerRequest(HttpListenerContext httpContext, string operationName, RequestAttributes requestAttributes)
         {
-            physicalFilePath = "~".MapAbsolutePath();
+            this.OperationName = operationName;
+            this.RequestAttributes = requestAttributes;
+            this.request = httpContext.Request;
+            this.response = new ListenerResponse(httpContext.Response);
+
+            this.RequestPreferences = new RequestPreferences(this);
         }
 
-        public HttpListenerRequest Request
+        public HttpListenerRequest HttpRequest
         {
             get { return request; }
         }
@@ -35,24 +39,36 @@ namespace ServiceStack.Host.HttpListener
             get { return request; }
         }
 
-        public ListenerRequest(HttpListenerRequest request)
-            : this(null, request) { }
-
-        public ListenerRequest(
-            string operationName, HttpListenerRequest request)
+        public IResponse Response
         {
-            this.OperationName = operationName;
-            this.request = request;
+            get { return response; }
         }
+
+        public IHttpResponse HttpResponse
+        {
+            get { return response; }
+        }
+
+        public RequestAttributes RequestAttributes { get; set; }
+
+        public IRequestPreferences RequestPreferences { get; private set; }
 
         public T TryResolve<T>()
         {
+            if (typeof(T) == typeof(IHttpRequest))
+                throw new Exception("You don't need to use IHttpRequest.TryResolve<IHttpRequest> to resolve itself");
+
+            if (typeof(T) == typeof(IHttpResponse))
+                throw new Exception("Resolve IHttpResponse with 'Response' property instead of IHttpRequest.TryResolve<IHttpResponse>");
+
             return Container == null
                 ? HostContext.TryResolve<T>()
                 : Container.TryResolve<T>();
         }
 
         public string OperationName { get; set; }
+
+        public object Dto { get; set; }
 
         public string GetRawBody()
         {
@@ -90,6 +106,22 @@ namespace ServiceStack.Host.HttpListener
             }
         }
 
+        public int? XForwardedPort
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedPort]) ? (int?)null : int.Parse(request.Headers[HttpHeaders.XForwardedPort]);
+            }
+        }
+
+        public string XForwardedProtocol
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedProtocol]) ? null : request.Headers[HttpHeaders.XForwardedProtocol];
+            }
+        }
+
         public string XRealIp
         {
             get
@@ -112,7 +144,7 @@ namespace ServiceStack.Host.HttpListener
 
         public bool IsSecureConnection
         {
-            get { return request.IsSecureConnection; }
+            get { return request.IsSecureConnection || XForwardedProtocol == "https"; }
         }
 
         public string[] AcceptTypes
@@ -129,9 +161,16 @@ namespace ServiceStack.Host.HttpListener
         private string responseContentType;
         public string ResponseContentType
         {
-            get { return responseContentType ?? (responseContentType = this.GetResponseContentType()); }
-            set { this.responseContentType = value; }
+            get { return responseContentType 
+                ?? (responseContentType = this.GetResponseContentType()); }
+            set
+            {
+                this.responseContentType = value;
+                HasExplicitResponseContentType = true;
+            }
         }
+
+        public bool HasExplicitResponseContentType { get; private set; }
 
         private string pathInfo;
         public string PathInfo
@@ -140,7 +179,7 @@ namespace ServiceStack.Host.HttpListener
             {
                 if (this.pathInfo == null)
                 {
-                    var mode = HostContext.Config.ServiceStackHandlerFactoryPath;
+                    var mode = HostContext.Config.HandlerFactoryPath;
 
                     var pos = request.RawUrl.IndexOf("?");
                     if (pos != -1)
@@ -187,20 +226,22 @@ namespace ServiceStack.Host.HttpListener
             get { return request.UserAgent; }
         }
 
-        public NameValueCollection Headers
+        private NameValueCollectionWrapper headers;
+        public INameValueCollection Headers
         {
-            get { return request.Headers; }
+            get { return headers ?? (headers = new NameValueCollectionWrapper(request.Headers)); }
         }
 
-        private NameValueCollection queryString;
-        public NameValueCollection QueryString
+        private NameValueCollectionWrapper queryString;
+        public INameValueCollection QueryString
         {
-            get { return queryString ?? (queryString = HttpUtility.ParseQueryString(request.Url.Query)); }
+            get { return queryString ?? (queryString = new NameValueCollectionWrapper(HttpUtility.ParseQueryString(request.Url.Query))); }
         }
 
-        public NameValueCollection FormData
+        private NameValueCollectionWrapper formData;
+        public INameValueCollection FormData
         {
-            get { return this.Form; }
+            get { return formData ?? (formData = new NameValueCollectionWrapper(this.Form)); }
         }
 
         public bool IsLocal
@@ -214,9 +255,14 @@ namespace ServiceStack.Host.HttpListener
             get
             {
                 return httpMethod
-                    ?? (httpMethod = Param(HttpHeaders.XHttpMethodOverride)
+                    ?? (httpMethod = this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
                     ?? request.HttpMethod);
             }
+        }
+
+        public string Verb
+        {
+            get { return HttpMethod; }
         }
 
         public string Param(string name)
@@ -231,9 +277,11 @@ namespace ServiceStack.Host.HttpListener
             get { return request.ContentType; }
         }
 
+        public Encoding contentEncoding;
         public Encoding ContentEncoding
         {
-            get { return request.ContentEncoding; }
+            get { return contentEncoding ?? request.ContentEncoding; }
+            set { contentEncoding = value; }
         }
 
         public Uri UrlReferrer
@@ -275,11 +323,6 @@ namespace ServiceStack.Host.HttpListener
         public long ContentLength
         {
             get { return request.ContentLength64; }
-        }
-
-        public string ApplicationFilePath
-        {
-            get { return physicalFilePath; }
         }
 
         private IHttpFile[] httpFiles;

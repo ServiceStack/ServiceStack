@@ -1,0 +1,10 @@
+﻿@model List<Rockstar>
+
+<div id="sidebar">
+    <h4>Pages Razor Partial with Model</h4>
+    @foreach (var rockstar in Model) {
+        <li>@rockstar.FirstName - @rockstar.LastName (<a href="?Age=@rockstar.Age">@rockstar.Age</a>)</li>
+    }
+</div>
+
+<!--view:PagesPartialModel.cshtml-->

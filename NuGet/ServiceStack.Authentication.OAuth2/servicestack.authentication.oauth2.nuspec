@@ -4,8 +4,8 @@
     <id>ServiceStack.Authentication.OAuth2</id> 
     <title>OAuth2 Providers for ServiceStack - inc. Google, LinkedIn</title>
     <version>4.0.0</version> 
-    <authors>Demis Bellot</authors> 
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors> 
+    <owners>Service Stack</owners>
     <summary>OpenId Auth Providers for ServiceStack - inc. Google, LinkedIn</summary>
     <description>
         Adds OAuth2 Providers for use in ServiceStack Web and REST Services. 
@@ -15,18 +15,18 @@
         https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>OAuth OAuth2 Google LinkedIn Authentication Auth Provider ServiceStack Web Services</tags>
     <language>en-US</language>
-    <copyright>Copyright 2013 Service Stack</copyright>
+    <copyright>Copyright 2014 Service Stack</copyright>
     <dependencies>
         <dependency id="ServiceStack" version="4.0" />
-        <dependency id="DotNetOpenAuth.Ultimate" />
+        <dependency id="DotNetOpenAuth.Ultimate" version="4.3.4.13329" />
     </dependencies> 
   </metadata>
   <files>
-      <file src="lib\**\*.*" target="lib" />
-      <file src="..\..\src\ServiceStack.Authentication.OAuth2\**\*.cs" target="src" />
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Authentication.OAuth2\**\*.cs" target="src" />
   </files>
 </package>

@@ -1,9 +1,6 @@
 using System.Net;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Razor.Managers;
-using ServiceStack.Support;
-using ServiceStack.Support.WebHost;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Razor
@@ -21,13 +18,16 @@ namespace ServiceStack.Razor
             PathInfo = pathInfo;
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes);
+            if (httpRes.IsClosed) return;
+
             httpRes.ContentType = MimeTypes.Html;
             if (RazorFormat == null)
                 RazorFormat = RazorFormat.Instance;
 
-            var contentPage = RazorPage ?? RazorFormat.FindByPathInfo(PathInfo);
+            var contentPage = RazorPage ?? RazorFormat.GetContentPage(PathInfo);
             if (contentPage == null)
             {
                 httpRes.StatusCode = (int)HttpStatusCode.NotFound;
@@ -49,12 +49,12 @@ namespace ServiceStack.Razor
             RazorFormat.ProcessRazorPage(httpReq, contentPage, model, httpRes);
         }
 
-        public override object CreateRequest(IHttpRequest request, string operationName)
+        public override object CreateRequest(IRequest request, string operationName)
         {
             return null;
         }
 
-        public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+        public override object GetResponse(IRequest httpReq, object request)
         {
             return null;
         }

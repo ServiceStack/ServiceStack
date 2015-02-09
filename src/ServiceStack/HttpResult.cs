@@ -1,4 +1,4 @@
-#if !SILVERLIGHT
+#if !SL5
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -195,38 +195,68 @@ namespace ServiceStack
 
         public IContentTypeWriter ResponseFilter { get; set; }
 
-        public IRequestContext RequestContext { get; set; }
+        public IRequest RequestContext { get; set; }
 
         public string View { get; set; }
 
         public string Template { get; set; }
 
+        public int PaddingLength { get; set; }
+
         public void WriteTo(Stream responseStream)
         {
+            try
+            {
+                WriteTo(responseStream, PaddingLength);
+                responseStream.Flush();
+            }
+            finally
+            {
+                DisposeStream();
+            }
+        }
+
+        private void WriteTo(Stream responseStream, int paddingLength)
+        {
+            var response = RequestContext != null ? RequestContext.Response : null;
             if (this.FileInfo != null)
             {
+                if (response != null)
+                    response.SetContentLength(FileInfo.Length + paddingLength);
+
                 using (var fs = this.FileInfo.OpenRead())
                 {
                     fs.WriteTo(responseStream);
-                    responseStream.Flush();
+                    return;
                 }
-                return;
             }
 
             if (this.ResponseStream != null)
             {
-                this.ResponseStream.WriteTo(responseStream);
-                responseStream.Flush();
-                DisposeStream();
+                if (response != null)
+                {
+                    var ms = ResponseStream as MemoryStream;
+                    if (ms != null)
+                    {
+                        var bytes = ms.ToArray();
+                        response.SetContentLength(bytes.LongLength + paddingLength);
 
+                        responseStream.Write(bytes, 0, bytes.Length);
+                        return;
+                    }
+                }
+
+                this.ResponseStream.WriteTo(responseStream);
                 return;
             }
 
             if (this.ResponseText != null)
             {
-                var bytes = System.Text.Encoding.UTF8.GetBytes(this.ResponseText);
+                var bytes = Encoding.UTF8.GetBytes(this.ResponseText);
+                if (response != null)
+                    response.SetContentLength(bytes.LongLength + paddingLength);
+
                 responseStream.Write(bytes, 0, bytes.Length);
-                responseStream.Flush();
                 return;
             }
 
@@ -238,6 +268,9 @@ namespace ServiceStack
             var bytesResponse = this.Response as byte[];
             if (bytesResponse != null)
             {
+                if (response != null)
+                    response.SetContentLength(bytesResponse.LongLength + paddingLength);
+
                 responseStream.Write(bytesResponse, 0, bytesResponse.Length);
                 return;
             }
@@ -257,13 +290,16 @@ namespace ServiceStack
             get { return AllowsPartialResponse && RequestContext.GetHeader(HttpHeaders.Range) != null && GetContentLength() != null; }
         }
 
-        public void WritePartialTo(IHttpResponse response)
+        public void WritePartialTo(IResponse response)
         {
             var contentLength = GetContentLength().GetValueOrDefault(int.MaxValue); //Safe as guarded by IsPartialRequest
             var rangeHeader = RequestContext.GetHeader(HttpHeaders.Range);
 
             long rangeStart, rangeEnd;
             rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
+
+            if (rangeEnd > contentLength - 1)
+                rangeEnd = contentLength - 1;
 
             response.AddHttpRangeResponseHeaders(rangeStart, rangeEnd, contentLength);
 
@@ -277,8 +313,14 @@ namespace ServiceStack
             }
             else if (ResponseStream != null)
             {
-                ResponseStream.WritePartialTo(outputStream, rangeStart, rangeEnd);
-                DisposeStream();
+                try
+                {
+                    ResponseStream.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                }
+                finally 
+                {
+                    DisposeStream();
+                }
             }
             else if (ResponseText != null)
             {
@@ -326,7 +368,37 @@ namespace ServiceStack
             };
         }
 
-        public void DisposeStream()
+        /// <summary>
+        /// Respond with a 'Soft redirect' so smart clients (e.g. ajax) have access to the response and 
+        /// can decide whether or not they should redirect
+        /// </summary>
+        public static HttpResult SoftRedirect(string newLocationUri, object response = null)
+        {
+            return new HttpResult(response)
+            {
+                Headers =
+                {
+                    { HttpHeaders.XLocation, newLocationUri },
+                }
+            };
+        }
+
+        /// <summary>
+        /// Decorate the response with an additional client-side event to instruct participating 
+        /// smart clients (e.g. ajax) with hints to transparently invoke client-side functionality
+        /// </summary>
+        public static HttpResult TriggerEvent(object response, string eventName, string value=null)
+        {
+            return new HttpResult(response)
+            {
+                Headers =
+                {
+                    { HttpHeaders.XTrigger, eventName + (value != null ? ":" + value : "") },
+                }
+            };
+        }
+
+        private void DisposeStream()
         {
             try
             {

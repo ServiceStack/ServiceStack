@@ -23,7 +23,7 @@ namespace ServiceStack.Formats
 			});
 		}
 
-		public void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
+		public void SerializeToStream(IRequest requestContext, object request, Stream stream)
 		{
 			CsvSerializer.SerializeToStream(request, stream);
 		}

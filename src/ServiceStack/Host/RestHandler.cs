@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -22,7 +23,7 @@ namespace ServiceStack.Host
             return HostContext.ServiceController.GetRestPathForRequest(httpMethod, pathInfo);
         }
 
-        private static string GetSanitizedPathInfo(string pathInfo, out string contentType)
+        public static string GetSanitizedPathInfo(string pathInfo, out string contentType)
         {
             contentType = null;
             if (HostContext.Config.AllowRouteContentTypeExtensions)
@@ -59,17 +60,28 @@ namespace ServiceStack.Host
         // Set from SSHHF.GetHandlerForPathInfo()
         public string ResponseContentType { get; set; }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override bool RunAsAsync()
+        {
+            return true;
+        }
+
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             try
             {
-                if (HostContext.ApplyPreRequestFilters(httpReq, httpRes)) return;
-
-                var restPath = GetRestPath(httpReq.HttpMethod, httpReq.PathInfo);
+                var appHost = HostContext.AppHost;
+                if (appHost.ApplyPreRequestFilters(httpReq, httpRes)) 
+                    return EmptyTask;
+                
+                var restPath = GetRestPath(httpReq.Verb, httpReq.PathInfo);
                 if (restPath == null)
-                    throw new NotSupportedException("No RestPath found for: " + httpReq.HttpMethod + " " + httpReq.PathInfo);
+                {
+                    return new NotSupportedException("No RestPath found for: " + httpReq.Verb + " " + httpReq.PathInfo)
+                        .AsTaskException();
+                }
+                httpReq.SetRoute(restPath as RestPath);
 
-                operationName = restPath.RequestType.Name;
+                operationName = restPath.RequestType.GetOperationName();
 
                 var callback = httpReq.GetJsonpCallback();
                 var doJsonp = HostContext.Config.AllowJsonpRequests
@@ -79,59 +91,60 @@ namespace ServiceStack.Host
                     httpReq.ResponseContentType = ResponseContentType;
 
                 var responseContentType = httpReq.ResponseContentType;
-                HostContext.AssertContentType(responseContentType);
+                appHost.AssertContentType(responseContentType);
 
-                var request = GetRequest(httpReq, restPath);
-                if (HostContext.ApplyRequestFilters(httpReq, httpRes, request)) return;
+                var request = httpReq.Dto = CreateRequest(httpReq, restPath);
 
-                var response = GetResponse(httpReq, httpRes, request);
-                if (HostContext.ApplyResponseFilters(httpReq, httpRes, response)) return;
+                if (appHost.ApplyRequestFilters(httpReq, httpRes, request)) 
+                    return EmptyTask;
 
-                if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
+                var rawResponse = GetResponse(httpReq, request);
+                return HandleResponse(rawResponse, response => 
                 {
-                    JsvReplyHandler.WriteDebugResponse(httpRes, response);
-                    return;
-                }
+                    if (appHost.ApplyResponseFilters(httpReq, httpRes, response)) 
+                        return EmptyTask;
 
-                if (doJsonp && !(response is CompressedResult))
-                    httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
-                else
-                    httpRes.WriteToResponse(httpReq, response);
+                    if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
+                        return WriteDebugResponse(httpRes, response);
+
+                    if (doJsonp && !(response is CompressedResult))
+                        return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+                    
+                    return httpRes.WriteToResponse(httpReq, response);
+                },  
+                ex => !HostContext.Config.WriteErrorsToResponse 
+                    ? ex.AsTaskException() 
+                    : HandleException(httpReq, httpRes, operationName, ex));
             }
             catch (Exception ex)
             {
-                if (!HostContext.Config.WriteErrorsToResponse) throw;
-                HandleException(httpReq, httpRes, operationName, ex);
+                return !HostContext.Config.WriteErrorsToResponse 
+                    ? ex.AsTaskException() 
+                    : HandleException(httpReq, httpRes, operationName, ex);
             }
         }
 
-        public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+        public override object GetResponse(IRequest request, object requestDto)
         {
-            var requestContentType = ContentFormat.GetEndpointAttributes(httpReq.ResponseContentType);
+            var requestContentType = ContentFormat.GetEndpointAttributes(request.ResponseContentType);
 
-            return ExecuteService(request,
-                HandlerAttributes | requestContentType | httpReq.GetAttributes(), httpReq, httpRes);
+            request.RequestAttributes |= HandlerAttributes | requestContentType;
+
+            return ExecuteService(requestDto, request);
         }
 
-        private static object GetRequest(IHttpRequest httpReq, IRestPath restPath)
+        public static object CreateRequest(IRequest httpReq, IRestPath restPath)
         {
-            var requestType = restPath.RequestType;
             using (Profiler.Current.Step("Deserialize Request"))
             {
                 try
                 {
-                    var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
-                    if (requestDto != null) return requestDto;
+                    var dtoFromBinder = GetCustomRequestFromBinder(httpReq, restPath.RequestType);
+                    if (dtoFromBinder != null) 
+                        return dtoFromBinder;
 
                     var requestParams = httpReq.GetRequestParams();
-                    requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
-
-                    string contentType;
-                    var pathInfo = !restPath.IsWildCardPath 
-                        ? GetSanitizedPathInfo(httpReq.PathInfo, out contentType)
-                        : httpReq.PathInfo;
-
-                    return restPath.CreateRequest(pathInfo, requestParams, requestDto);
+                    return CreateRequest(httpReq, restPath, requestParams);
                 }
                 catch (SerializationException e)
                 {
@@ -144,16 +157,28 @@ namespace ServiceStack.Host
             }
         }
 
+        public static object CreateRequest(IRequest httpReq, IRestPath restPath, Dictionary<string, string> requestParams)
+        {
+            var requestDto = CreateContentTypeRequest(httpReq, restPath.RequestType, httpReq.ContentType);
+
+            string contentType;
+            var pathInfo = !restPath.IsWildCardPath
+                ? GetSanitizedPathInfo(httpReq.PathInfo, out contentType)
+                : httpReq.PathInfo;
+
+            return restPath.CreateRequest(pathInfo, requestParams, requestDto);
+        }
+
         /// <summary>
         /// Used in Unit tests
         /// </summary>
         /// <returns></returns>
-        public override object CreateRequest(IHttpRequest httpReq, string operationName)
+        public override object CreateRequest(IRequest httpReq, string operationName)
         {
             if (this.RestPath == null)
                 throw new ArgumentNullException("No RestPath found");
 
-            return GetRequest(httpReq, this.RestPath);
+            return CreateRequest(httpReq, this.RestPath);
         }
     }
 

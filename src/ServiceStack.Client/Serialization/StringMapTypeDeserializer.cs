@@ -31,7 +31,7 @@ namespace ServiceStack.Serialization
 
         private readonly Type type;
         private readonly Dictionary<string, PropertySerializerEntry> propertySetterMap
-            = new Dictionary<string, PropertySerializerEntry>(StringExtensions.InvariantComparerIgnoreCase());
+            = new Dictionary<string, PropertySerializerEntry>(PclExport.Instance.InvariantComparerIgnoreCase);
 
         internal StringMapTypeDeserializer(Type type, ILog log) : this(type)
         {
@@ -112,7 +112,7 @@ namespace ServiceStack.Serialization
                         continue;
                     }
 
-                    if (Type.GetTypeCode(propertySerializerEntry.PropertyType) == TypeCode.Boolean)
+                    if (propertySerializerEntry.PropertyType == typeof(bool))
                     {
                         //InputExtensions.cs#530 MVC Checkbox helper emits extra hidden input field, generating 2 values, first is the real value
                         propertyTextValue = propertyTextValue.SplitOnFirst(',').First(); 

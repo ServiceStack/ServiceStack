@@ -1,7 +1,4 @@
-﻿
-
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
-namespace ServiceStack.Web
+﻿namespace ServiceStack.Web
 {
     /// <summary>
     /// This interface can be implemented by an attribute
@@ -22,7 +19,7 @@ namespace ServiceStack.Web
         /// <param name="req">The http request wrapper</param>
         /// <param name="res">The http response wrapper</param>
         /// <param name="requestDto">The request DTO</param>
-        void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto);
+        void RequestFilter(IRequest req, IResponse res, object requestDto);
 
         /// <summary>
         /// A new shallow copy of this filter is used on every request.
@@ -31,4 +28,3 @@ namespace ServiceStack.Web
         IHasRequestFilter Copy();
     }
 }
-#endif

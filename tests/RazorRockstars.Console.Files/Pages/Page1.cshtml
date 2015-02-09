@@ -1,6 +1,5 @@
 ﻿@inherits ViewPage
-
-﻿@{
+@{
     ViewBag.Title = "Page1";
     int age = 0;
     var hasAge = Request.QueryString["Age"] != null && int.TryParse(Model.Age, out age);

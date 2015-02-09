@@ -1,7 +1,11 @@
-﻿using System;
+﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+using System;
 using System.Net;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 
@@ -66,13 +70,13 @@ namespace ServiceStack
         private readonly ILog log = LogManager.GetLogger(typeof(HttpListenerBase));
 
         protected AppHostHttpListenerPoolBase(string serviceName, params Assembly[] assembliesWithServices)
-            : this(serviceName, 500, assembliesWithServices) { }
+            : this(serviceName, CalculatePoolSize(), assembliesWithServices) { }
 
         protected AppHostHttpListenerPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
 
         protected AppHostHttpListenerPoolBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-            : this(serviceName, handlerPath, 500, assembliesWithServices) { }
+            : this(serviceName, handlerPath, CalculatePoolSize(), assembliesWithServices) { }
 
         protected AppHostHttpListenerPoolBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, handlerPath, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
@@ -99,18 +103,13 @@ namespace ServiceStack
             }
         }
 
-        public override void Start(string urlBase)
-        {
-            Start(urlBase, Listen);
-        }
-
         private bool IsListening
         {
             get { return this.IsStarted && this.Listener != null && this.Listener.IsListening; }
         }
 
         // Loop here to begin processing of new requests.
-        private void Listen(object state)
+        protected override void Listen(object state)
         {
             while (IsListening)
             {
@@ -169,24 +168,14 @@ namespace ServiceStack
                 listenForNextRequest.Set();
             }
 
-            log.InfoFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
+            if (Config.DebugMode)
+                log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
             RaiseReceiveWebRequest(context);
 
-
             threadPoolManager.Peek(() =>
             {
-                try
-                {
-                    ProcessRequest(context);
-                }
-                catch (Exception ex)
-                {
-                    string error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
-                    log.ErrorFormat(error);
-
-                    HandleError(ex, context);
-                }
+                InitTask(context);
 
                 threadPoolManager.Free();
             }).Start();

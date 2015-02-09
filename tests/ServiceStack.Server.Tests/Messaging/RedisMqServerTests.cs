@@ -148,6 +148,7 @@ namespace ServiceStack.Server.Tests.Messaging
         public void Only_allows_1_BgThread_to_run_at_a_time()
         {
             var mqHost = CreateMqServer();
+            var redisPubSub = (RedisPubSubServer)mqHost.RedisPubSub;
 
             mqHost.RegisterHandler<Reverse>(x => x.GetBody().Value.Reverse());
             mqHost.RegisterHandler<Rot13>(x => x.GetBody().Value.ToRot13());
@@ -155,7 +156,7 @@ namespace ServiceStack.Server.Tests.Messaging
             5.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Start()));
             Thread.Sleep(1000);
             Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
-            Assert.That(mqHost.BgThreadCount, Is.EqualTo(1));
+            Assert.That(redisPubSub.BgThreadCount, Is.EqualTo(1));
 
             10.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Stop()));
             Thread.Sleep(1000);
@@ -165,7 +166,7 @@ namespace ServiceStack.Server.Tests.Messaging
             Thread.Sleep(1000);
             Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
 
-            Assert.That(mqHost.BgThreadCount, Is.EqualTo(2));
+            Assert.That(redisPubSub.BgThreadCount, Is.EqualTo(2));
 
             Debug.WriteLine(mqHost.GetStats());
 

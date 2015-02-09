@@ -10,7 +10,6 @@ namespace ServiceStack
     {
         public ApiMemberAttribute()
         {
-            ParameterType = "path";
             DataType = "string";
         }
 
@@ -20,7 +19,7 @@ namespace ServiceStack
         public string Verb { get; set; }
 
         /// <summary>
-        /// Gets or sets parameter type: It can be only one of the following: path, query, body, or header.
+        /// Gets or sets parameter type: It can be only one of the following: path, query, body, form, or header.
         /// </summary>
         public string ParameterType { get; set; }
 
@@ -56,5 +55,10 @@ namespace ServiceStack
         /// For query params, this specifies that a comma-separated list of values can be passed to the API. For path and body types, this field cannot be true.
         /// </summary>
         public bool AllowMultiple { get; set; }
+
+        /// <summary>
+        /// Gets or sets route to which applies attribute, matches using StartsWith. By default applies to all routes. 
+        /// </summary>
+        public string Route { get; set; }
     }
 }

@@ -7,9 +7,11 @@ namespace ServiceStack
     /// Attribute marks that specific response class has support for Cross-origin resource sharing (CORS, see http://www.w3.org/TR/access-control/). CORS allows to access resources from different domain which usually forbidden by origin policy. 
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class EnableCorsAttribute : AttributeBase, IHasResponseFilter
+    public class EnableCorsAttribute : AttributeBase, IHasRequestFilter
     {
         public int Priority { get { return 0; } }
+
+        public bool AutoHandleOptionRequests { get; set; }
 
         private readonly string allowedOrigins;
         private readonly string allowedMethods;
@@ -26,9 +28,10 @@ namespace ServiceStack
             this.allowedMethods = allowedMethods;
             this.allowedHeaders = allowedHeaders;
             this.allowCredentials = allowCredentials;
+            this.AutoHandleOptionRequests = true;
         }
 
-        public void ResponseFilter(IHttpRequest req, IHttpResponse res, object response)
+        public void RequestFilter(IRequest req, IResponse res, object requestDto)
         {
             if (!string.IsNullOrEmpty(allowedOrigins))
                 res.AddHeader(HttpHeaders.AllowOrigin, allowedOrigins);
@@ -38,11 +41,14 @@ namespace ServiceStack
                 res.AddHeader(HttpHeaders.AllowHeaders, allowedHeaders);
             if (allowCredentials)
                 res.AddHeader(HttpHeaders.AllowCredentials, "true");
+
+            if (AutoHandleOptionRequests && req.Verb == HttpMethods.Options)
+                res.EndRequest();
         }
 
-        public IHasResponseFilter Copy()
+        public IHasRequestFilter Copy()
         {
-            return (IHasResponseFilter)MemberwiseClone();
+            return (IHasRequestFilter)MemberwiseClone();
         }
     }
 }

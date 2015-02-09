@@ -2,8 +2,8 @@ using System;
 
 namespace ServiceStack.Messaging
 {
-	public interface IMessageFactory : IMessageQueueClientFactory
-	{
-		IMessageProducer CreateMessageProducer();
-	}
+    public interface IMessageFactory : IMessageQueueClientFactory
+    {
+        IMessageProducer CreateMessageProducer();
+    }
 }

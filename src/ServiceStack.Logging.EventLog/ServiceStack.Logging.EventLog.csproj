@@ -63,10 +63,6 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ServiceStack.Text, Version=3.9.38.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -107,10 +103,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
       <Project>{42e1c8c0-a163-44cc-92b1-8f416f2c0b01}</Project>
       <Name>ServiceStack.Interfaces</Name>

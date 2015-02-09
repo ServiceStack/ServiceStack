@@ -64,18 +64,32 @@
       Properties="Configuration=$(Configuration)" />-->
   </Target>
 
-  <Target Name="NuGetPack">
-
+  <Target Name="UpdateVersion">
     <ItemGroup>
-      <!-- Exclude versioning future strong-named libs -->
-      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs"
-                      Exclude="$(SrcDir)/ServiceStack.Interfaces*/Properties/AssemblyInfo.cs">
-        <Find>\d+\.\d+\.\d+\.\d+</Find>
-        <ReplaceWith>$(Version)</ReplaceWith>
+      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
+        <Find>AssemblyFileVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+        <ReplaceWith>AssemblyFileVersion("$(Version)")</ReplaceWith>
+      </RegexTransform>
+      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
+        <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+        <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
+      </RegexTransform>
+      <RegexTransform Include="$(BuildSolutionDir)/tests/**/*.config">
+        <Find>key="servicestack:license".*</Find>
+        <ReplaceWith>key="servicestack:license" value="$([System.IO.File]::ReadAllText($(MSBuildProjectDirectory)/appsettings.license.txt))" /&gt;</ReplaceWith>
+      </RegexTransform>
+      <!--Update Min Dependency Version -->
+      <RegexTransform Include="$(NuGetPackageDir)/**/*.nuspec">
+        <Find>version="4\.0[^"]*"</Find>
+        <ReplaceWith>version="$(PackageVersion)"</ReplaceWith>
       </RegexTransform>
     </ItemGroup>
 
     <RegexTransform Items="@(RegexTransform)" />
+  </Target>
+
+  <Target Name="NuGetPack">
+    <CallTarget Targets="UpdateVersion" />
 
     <Delete Files="@(NugetPackageFilesToDelete)" />
 
@@ -85,17 +99,24 @@
       <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/ServiceStack.xml"></ServiceStackFiles>
 
       <ServerFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/ServiceStack.Server.*"></ServerFiles>
+      <ServerFilesV45 Include="$(SrcDir)/ServiceStack.ServerV45/bin/$(Configuration)/ServiceStack.Server.*"></ServerFilesV45>
+      <RabbitMqFiles Include="$(SrcDir)/ServiceStack.RabbitMq/bin/$(Configuration)/ServiceStack.RabbitMq.*"></RabbitMqFiles>
 
       <RazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/ServiceStack.Razor.*"></RazorFiles>
+      <RazorFiles Include="$(BuildSolutionDir)/lib/System.Web.Razor.dll"></RazorFiles>
+      <RazorFiles Include="$(BuildSolutionDir)/lib/System.Web.Razor.xml"></RazorFiles>
+
+      <RazorFilesV4 Include="$(SrcDir)/ServiceStack.RazorV4/bin/$(Configuration)/ServiceStack.Razor.*"></RazorFilesV4>
+      <RazorFilesV4 Include="$(BuildSolutionDir)/lib/net40/System.Web.Razor.Unofficial.dll"></RazorFilesV4>
+
+      <RazorBuildTaskFiles Include="$(SrcDir)/ServiceStack.Razor.BuildTask/bin/$(Configuration)/*.dll"></RazorBuildTaskFiles>
 
       <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ClientFiles>
-      <ClientFilesSL5 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ClientFilesSL5>
 
       <CommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Common.*"></CommonFiles>
-      <CommonFilesSL5 Include="$(SrcDir)/ServiceStack.Common.SL5/bin/$(Configuration)/ServiceStack.Common.*"></CommonFilesSL5>
 
       <InterfacesFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/ServiceStack.Interfaces.*"></InterfacesFiles>
-      <InterfacesFilesSL5 Include="$(SrcDir)/ServiceStack.Interfaces.SL5/bin/$(Configuration)/ServiceStack.Interfaces.*"></InterfacesFilesSL5>
+      <InterfacesFilesSL5 Include="$(SrcDir)/ServiceStack.Interfaces/bin/SL5/ServiceStack.Interfaces.*"></InterfacesFilesSL5>
 
       <MvcFiles Include="$(SrcDir)/ServiceStack.Mvc/bin/$(Configuration)/ServiceStack.Mvc.*"></MvcFiles>
 
@@ -119,13 +140,28 @@
       <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
 
       <MsgPackFiles Include="$(SrcDir)/ServiceStack.MsgPack/bin/$(Configuration)/ServiceStack.MsgPack.*"></MsgPackFiles>
-      <MsgPackFiles Include="$(BuildSolutionDir)/lib/MsgPack.dll"></MsgPackFiles>
 
       <SwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/ServiceStack.Api.Swagger.*"></SwaggerFiles>
-      
-      <SwaggerContentFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/swagger-ui/**/*"></SwaggerContentFiles>
     </ItemGroup>
 
+
+    <!-- ServiceStack.Interfaces -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid')" />
+    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid" />
+
+    <MakeDir Directories="$(BuildSolutionDir)/NuGet.Pcl/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid" Condition="!Exists('$(BuildSolutionDir)/NuGet.Pcl/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid')" />
+    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet.Pcl/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid" />
+
+    <!--<MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net40')" />
+    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net40" />-->
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces/servicestack.interfaces.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Api.Swagger -->
 
@@ -136,11 +172,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net40')" />
     <Copy SourceFiles="%(SwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net40" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger/content/swagger-ui" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger/content/swagger-ui')" />
-    <Copy SourceFiles="%(SwaggerContentFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/content/swagger-ui/%(SwaggerContentFiles.RecursiveDir)" />
-
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/servicestack.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+    <!-- Disabled -Symbols -->
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/servicestack.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Authentication.OpenId -->
@@ -352,31 +385,38 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Razor/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Razor/lib/net45')" />
+    <Copy SourceFiles="%(RazorFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor/lib/net45" />
+
+    <!-- ServiceStack.RazorV4 -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.RazorV4/ServiceStack.RazorV4.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Razor/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Razor/lib/net40')" />
-    <Copy SourceFiles="%(RazorFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor/lib/net40" />
+    <Copy SourceFiles="%(RazorFilesV4.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor/lib/net40" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor/servicestack.razor.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
-    <!-- ServiceStack.Interfaces -->
+    <!-- ServiceStack.Razor.BuildTask -->
 
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Razor.BuildTask/ServiceStack.Razor.BuildTask.csproj"
+            Targets="Build"
+            Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net40')" />
-    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net40" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Razor.BuildTask/tools" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Razor.BuildTask/tools')" />
+    <Copy SourceFiles="%(RazorBuildTaskFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Razor.BuildTask/tools" />
 
-    <!-- TODO re-add SL5 after re-factor -->
-    <!-- Silverlight -->
-    <!--<MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces.SL5/ServiceStack.Interfaces.SL5.csproj"
-               Targets="Build"
-               Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Razor.BuildTask/servicestack.razor.buildtask.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
 
-      <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/sl5" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces/lib/sl5')" />
-      <Copy SourceFiles="%(InterfacesFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/sl5" />-->
+    <!-- ServiceStack.Gap -->
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces/servicestack.interfaces.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Gap/tools" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Gap/tools')" />
+    <Copy SourceFiles="%(RazorBuildTaskFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Gap/tools" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Gap/servicestack.gap.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Client -->
@@ -387,15 +427,6 @@
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client/lib/net40')" />
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client/lib/net40" />
-
-    <!-- TODO re-add SL5 after re-factor -->
-    <!-- Silverlight -->
-    <!--<MSBuild Projects="$(SrcDir)/ServiceStack.Client.SL5/ServiceStack.Client.SL5.csproj"
-               Targets="Build"
-               Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
-
-      <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client/lib/sl5" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client/lib/sl5')" />
-      <Copy SourceFiles="%(ClientFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client/lib/sl5" />-->
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client/servicestack.client.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -409,15 +440,6 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common/lib/net40')" />
     <Copy SourceFiles="%(CommonFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/net40" />
 
-    <!-- TODO re-add SL5 after re-factor -->
-    <!-- Silverlight -->
-      <!--<MSBuild Projects="$(SrcDir)/ServiceStack.Common.SL5/ServiceStack.Common.SL5.csproj"
-               Targets="Build"
-               Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
-
-      <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common/lib/sl5" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common/lib/sl5')" />
-      <Copy SourceFiles="%(CommonFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/sl5" />-->
-
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Common/servicestack.common.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
@@ -430,7 +452,27 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server/lib/net40')" />
     <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server/lib/net40" />
 
+    <!-- ServiceStack.Server .NET 4.5 -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.ServerV45/ServiceStack.ServerV45.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server/lib/net45')" />
+    <Copy SourceFiles="%(ServerFilesV45.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server/lib/net45" />
+
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Server/servicestack.server.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.RabbitMq -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.RabbitMq/ServiceStack.RabbitMq.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net40')" />
+    <Copy SourceFiles="%(RabbitMqFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.RabbitMq/servicestack.rabbitmq.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack -->

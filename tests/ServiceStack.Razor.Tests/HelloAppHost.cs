@@ -43,7 +43,7 @@ namespace ServiceStack.Razor.Tests
             this.Routes.Add<DefaultViewFooRequest>("/DefaultViewFoo/{WhatToSay}");
         }
 
-        private void SimpleRequestFilter(IHttpRequest req, IHttpResponse res, object obj)
+        private void SimpleRequestFilter(IRequest req, IResponse res, object obj)
         {
             if (Path.GetFileName(req.PathInfo).StartsWith("_"))
             {
@@ -51,7 +51,7 @@ namespace ServiceStack.Razor.Tests
             }
         }
 
-        private void SimplePreRequestFilter(IHttpRequest req, IHttpResponse res)
+        private void SimplePreRequestFilter(IRequest req, IResponse res)
         {
             if (Path.GetFileName(req.PathInfo).StartsWith("_"))
             {

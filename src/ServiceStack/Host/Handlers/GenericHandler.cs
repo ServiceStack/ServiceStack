@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -13,32 +15,35 @@ namespace ServiceStack.Host.Handlers
 			this.ContentTypeAttribute = ContentFormat.GetEndpointAttributes(contentType);
 			this.HandlerAttributes = handlerAttributes;
 			this.format = format;
+		    this.appHost = HostContext.AppHost;
 		}
 
-        private Feature format;
+	    private ServiceStackHost appHost;
+        private readonly Feature format;
 		public string HandlerContentType { get; set; }
 
 		public RequestAttributes ContentTypeAttribute { get; set; }
 
-		public override object CreateRequest(IHttpRequest request, string operationName)
+		public override object CreateRequest(IRequest request, string operationName)
 		{
 			return GetRequest(request, operationName);
 		}
 
-		public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+		public override object GetResponse(IRequest httpReq, object request)
 		{
-			var response = ExecuteService(request,
-                HandlerAttributes | httpReq.GetAttributes(), httpReq, httpRes);
+		    httpReq.RequestAttributes |= HandlerAttributes;
+			var response = ExecuteService(request, httpReq);
 			
 			return response;
 		}
 
-		public object GetRequest(IHttpRequest httpReq, string operationName)
+		public object GetRequest(IRequest httpReq, string operationName)
 		{
-			var requestType = GetOperationType(operationName);
-			AssertOperationExists(operationName, requestType);
+            var requestType = GetOperationType(operationName);
 
-			using (Profiler.Current.Step("Deserialize Request"))
+            AssertOperationExists(operationName, requestType);
+
+            using (Profiler.Current.Step("Deserialize Request"))
 			{
 				var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
 				return requestDto ?? DeserializeHttpRequest(requestType, httpReq, HandlerContentType)
@@ -46,36 +51,52 @@ namespace ServiceStack.Host.Handlers
 			}
 		}
 
-		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
-		{
+        public override bool RunAsAsync()
+        {
+            return true;
+        }
+
+	    public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
+        {
 			try
-			{
-                HostContext.AssertFeatures(format);
+            {
+                appHost.AssertFeatures(format);
 
-                if (HostContext.ApplyPreRequestFilters(httpReq, httpRes)) return;
+                if (appHost.ApplyPreRequestFilters(httpReq, httpRes))
+                    return EmptyTask;
 
-				httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
-				var callback = httpReq.QueryString["callback"];
-				var doJsonp = HostContext.Config.AllowJsonpRequests
-							  && !string.IsNullOrEmpty(callback);
+                httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
+                var callback = httpReq.QueryString["callback"];
+                var doJsonp = HostContext.Config.AllowJsonpRequests
+                              && !string.IsNullOrEmpty(callback);
 
-				var request = CreateRequest(httpReq, operationName);
-				if (HostContext.ApplyRequestFilters(httpReq, httpRes, request)) return;
+                var request = httpReq.Dto = CreateRequest(httpReq, operationName);
 
-				var response = GetResponse(httpReq, httpRes, request);
-				if (HostContext.ApplyResponseFilters(httpReq, httpRes, response)) return;
+                if (appHost.ApplyRequestFilters(httpReq, httpRes, request))
+                    return EmptyTask;
 
-				if (doJsonp && !(response is CompressedResult))
-					httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
-				else
-					httpRes.WriteToResponse(httpReq, response);
-			}
-			catch (Exception ex)
-			{
-				if (!HostContext.Config.WriteErrorsToResponse) throw;
-				HandleException(httpReq, httpRes, operationName, ex);
-			}
-		}
+                var rawResponse = GetResponse(httpReq, request);
+                return HandleResponse(rawResponse, response => 
+                {
+                    if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
+                        return EmptyTask;
+
+                    if (doJsonp && !(response is CompressedResult))
+                        return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(),")".ToUtf8Bytes());
+
+                    return httpRes.WriteToResponse(httpReq, response);
+                },
+                ex => !HostContext.Config.WriteErrorsToResponse
+                    ? ex.AsTaskException()
+                    : HandleException(httpReq, httpRes, operationName, ex));
+            }
+            catch (Exception ex)
+            {
+                return !HostContext.Config.WriteErrorsToResponse
+                    ? ex.AsTaskException()
+                    : HandleException(httpReq, httpRes, operationName, ex);
+            }
+        }
 
 	}
 }

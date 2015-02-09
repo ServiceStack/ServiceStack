@@ -43,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			var simpleDto = new TestCompress(1, "name");
 
-			var simpleDtoXml = DataContractSerializer.Instance.Parse(simpleDto);
+			var simpleDtoXml = DataContractSerializer.Instance.SerializeToString(simpleDto);
 
 			var simpleDtoZip = simpleDtoXml.Deflate();
 
@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			Assert.That(deserializedSimpleDtoXml, Is.Not.Empty);
 
-			var deserializedSimpleDto = DataContractDeserializer.Instance.Parse<TestCompress>(
+			var deserializedSimpleDto = DataContractSerializer.Instance.DeserializeFromString<TestCompress>(
 				deserializedSimpleDtoXml);
 
 			Assert.That(deserializedSimpleDto, Is.Not.Null);
@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 var simpleDto = new TestCompress(1, "name");
 
-                var simpleDtoXml = DataContractSerializer.Instance.Parse(simpleDto);
+                var simpleDtoXml = DataContractSerializer.Instance.SerializeToString(simpleDto);
 
                 const string expectedXml = "<TestCompress xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.ddnglobal.com/types/\"><Id>1</Id><Name>name</Name></TestCompress>";
 
@@ -87,7 +87,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var reponseWasAutoHandled = mockResponse.WriteToResponse(
                     compressedResult, CompressionTypes.Deflate);
 
-                Assert.That(reponseWasAutoHandled, Is.True);
+                Assert.That(reponseWasAutoHandled.Result, Is.True);
 
                 //var bytesToWriteToResponseStream = new byte[simpleDtoZip.Length - 4];
                 //Array.Copy(simpleDtoZip, CompressedResult.Adler32ChecksumLength, bytesToWriteToResponseStream, 0, bytesToWriteToResponseStream.Length);
@@ -109,7 +109,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			var simpleDto = new TestCompress(1, "name");
 
-			var simpleDtoXml = DataContractSerializer.Instance.Parse(simpleDto);
+			var simpleDtoXml = DataContractSerializer.Instance.SerializeToString(simpleDto);
 
 			var simpleDtoZip = simpleDtoXml.GZip();
 
@@ -119,7 +119,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			Assert.That(deserializedSimpleDtoXml, Is.Not.Empty);
 
-			var deserializedSimpleDto = DataContractDeserializer.Instance.Parse<TestCompress>(
+			var deserializedSimpleDto = DataContractSerializer.Instance.DeserializeFromString<TestCompress>(
 				deserializedSimpleDtoXml);
 
 			Assert.That(deserializedSimpleDto, Is.Not.Null);

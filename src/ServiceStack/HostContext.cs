@@ -2,18 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Web;
 using Funq;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
-using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.IO;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -86,6 +84,11 @@ namespace ServiceStack
             get { return AssertAppHost().Config; }
         }
 
+        public static IAppSettings AppSettings
+        {
+            get { return AssertAppHost().AppSettings; }
+        }
+
         public static ServiceMetadata Metadata
         {
             get { return AssertAppHost().Metadata; }
@@ -106,27 +109,57 @@ namespace ServiceStack
             get { return AssertAppHost().CatchAllHandlers; }
         }
 
-        public static List<Action<IHttpRequest, IHttpResponse, object>> GlobalRequestFilters
+        public static List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers
+        {
+            get { return AssertAppHost().RawHttpHandlers; }
+        }
+
+        public static List<Action<IRequest, IResponse, object>> GlobalRequestFilters
         {
             get { return AssertAppHost().GlobalRequestFilters; }
         }
 
-        public static List<Action<IHttpRequest, IHttpResponse, object>> GlobalResponseFilters
+        public static List<Action<IRequest, IResponse, object>> GlobalResponseFilters
         {
             get { return AssertAppHost().GlobalResponseFilters; }
         }
 
-        public static bool ApplyPreRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes)
+        public static List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters
+        {
+            get { return AssertAppHost().GlobalMessageRequestFilters; }
+        }
+
+        public static List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters
+        {
+            get { return AssertAppHost().GlobalMessageResponseFilters; }
+        }
+
+        public static bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
+        {
+            return AssertAppHost().ApplyCustomHandlerRequestFilters(httpReq, httpRes);
+        }
+
+        public static bool ApplyPreRequestFilters(IRequest httpReq, IResponse httpRes)
         {
             return AssertAppHost().ApplyPreRequestFilters(httpReq, httpRes);
         }
 
-        public static bool ApplyRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes, object requestDto)
+        public static bool ApplyRequestFilters(IRequest httpReq, IResponse httpRes, object requestDto)
         {
             return AssertAppHost().ApplyRequestFilters(httpReq, httpRes, requestDto);
         }
 
-        public static bool ApplyResponseFilters(IHttpRequest httpReq, IHttpResponse httpRes, object response)
+        public static bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
+        {
+            return AssertAppHost().ApplyMessageResponseFilters(req, res, response);
+        }
+
+        public static bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
+        {
+            return AssertAppHost().ApplyMessageRequestFilters(req, res, requestDto);
+        }
+
+        public static bool ApplyResponseFilters(IRequest httpReq, IResponse httpRes, object response)
         {
             return AssertAppHost().ApplyResponseFilters(httpReq, httpRes, response);
         }
@@ -153,24 +186,22 @@ namespace ServiceStack
             return AssertAppHost().CreateServiceRunner<TRequest>(actionContext);
         }
 
-        internal static object ExecuteService(
-            object request, RequestAttributes requestAttrs, IHttpRequest httpReq, IHttpResponse httpRes)
+        internal static object ExecuteService(object request, IRequest httpReq)
         {
             using (Profiler.Current.Step("Execute Service"))
             {
-                return AssertAppHost().ServiceController.Execute(request,
-                    new HttpRequestContext(httpReq, httpRes, request, requestAttrs));
+                return AssertAppHost().ServiceController.Execute(request, httpReq);
             }
         }
 
         public static T GetPlugin<T>() where T : class, IPlugin
         {
-            return AssertAppHost().Plugins.FirstOrDefault(x => x is T) as T;
+            return AssertAppHost().GetPlugin<T>();
         }
 
         public static bool HasPlugin<T>() where T : class, IPlugin
         {
-            return AssertAppHost().Plugins.FirstOrDefault(x => x is T) != null;
+            return AssertAppHost().HasPlugin<T>();
         }
 
         public static string GetAppConfigPath()
@@ -202,148 +233,38 @@ namespace ServiceStack
             }
         }
 
-        public static bool HasFeature(Feature feature)
-        {
-            return (feature & Config.EnableFeatures) == feature;
-        }
-
-        public static void AssertFeatures(Feature usesFeatures)
-        {
-            if (Config.EnableFeatures == Feature.All) return;
-
-            if (!HasFeature(usesFeatures))
-            {
-                throw new UnauthorizedAccessException(
-                    String.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
-            }
-        }
-
         public static UnauthorizedAccessException UnauthorizedAccess(RequestAttributes requestAttrs)
         {
             return new UnauthorizedAccessException(
                 "Request with '{0}' is not allowed".Fmt(requestAttrs));
         }
 
-        public static void AssertContentType(string contentType)
+        public static string ResolveLocalizedString(string text, IRequest request=null)
         {
-            if (Config.EnableFeatures == Feature.All) return;
-
-            AssertFeatures(contentType.ToFeature());
+            return AssertAppHost().ResolveLocalizedString(text, request);
         }
 
-        public static bool HasAccessToMetadata(IHttpRequest httpReq, IHttpResponse httpRes)
-        {
-            if (!HasFeature(Feature.Metadata))
-            {
-                HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Available");
-                return false;
-            }
-
-            if (Config.MetadataVisibility != RequestAttributes.Any)
-            {
-                var actualAttributes = httpReq.GetAttributes();
-                if ((actualAttributes & Config.MetadataVisibility) != Config.MetadataVisibility)
-                {
-                    HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Metadata Not Visible");
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public static void HandleErrorResponse(IHttpRequest httpReq, IHttpResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription = null)
-        {
-            if (httpRes.IsClosed) return;
-
-            httpRes.StatusDescription = errorStatusDescription;
-
-            var handler = GetHandlerForErrorStatus(errorStatus);
-
-            handler.ProcessRequest(httpReq, httpRes, httpReq.OperationName);
-        }
-
-        public static IServiceStackHttpHandler GetHandlerForErrorStatus(HttpStatusCode errorStatus)
-        {
-            var httpHandler = GetCustomErrorHandler(errorStatus);
-
-            switch (errorStatus)
-            {
-                case HttpStatusCode.Forbidden:
-                    return httpHandler ?? new ForbiddenHttpHandler();
-                case HttpStatusCode.NotFound:
-                    return httpHandler ?? new NotFoundHttpHandler();
-            }
-
-            if (Config.CustomHttpHandlers != null)
-            {
-                Config.CustomHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
-            }
-
-            return httpHandler ?? new NotFoundHttpHandler();
-        }
-
-        public static IServiceStackHttpHandler GetCustomErrorHandler(int errorStatusCode)
-        {
-            try
-            {
-                return GetCustomErrorHandler((HttpStatusCode)errorStatusCode);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        public static IServiceStackHttpHandler GetCustomErrorHandler(HttpStatusCode errorStatus)
-        {
-            IServiceStackHttpHandler httpHandler = null;
-            if (Config.CustomHttpHandlers != null)
-            {
-                Config.CustomHttpHandlers.TryGetValue(errorStatus, out httpHandler);
-            }
-            return httpHandler ?? Config.GlobalHtmlErrorHttpHandler;
-        }
-
-        public static IHttpHandler GetCustomErrorHttpHandler(HttpStatusCode errorStatus)
-        {
-            var ssHandler = GetCustomErrorHandler(errorStatus);
-            if (ssHandler == null) return null;
-            var httpHandler = ssHandler as IHttpHandler;
-            return httpHandler ?? new ServiceStackHttpHandler(ssHandler);
-        }
-
-        public static bool HasValidAuthSecret(IHttpRequest req)
-        {
-            if (Config.AdminAuthSecret != null)
-            {
-                var authSecret = req.GetParam("authsecret");
-                return authSecret == Config.AdminAuthSecret;
-            }
-
-            return false;
-        }
-
-        public static string ResolveAbsoluteUrl(string virtualPath, IHttpRequest httpReq)
+        public static string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
         {
             return AssertAppHost().ResolveAbsoluteUrl(virtualPath, httpReq);
         }
 
-        public static string ResolvePhysicalPath(string virtualPath, IHttpRequest httpReq)
+        public static string ResolvePhysicalPath(string virtualPath, IRequest httpReq)
         {
             return AssertAppHost().ResolvePhysicalPath(virtualPath, httpReq);
         }
 
-        public static IVirtualFile ResolveVirtualFile(string virtualPath, IHttpRequest httpReq)
+        public static IVirtualFile ResolveVirtualFile(string virtualPath, IRequest httpReq)
         {
             return AssertAppHost().ResolveVirtualFile(virtualPath, httpReq);
         }
 
-        public static IVirtualDirectory ResolveVirtualDirectory(string virtualPath, IHttpRequest httpReq)
+        public static IVirtualDirectory ResolveVirtualDirectory(string virtualPath, IRequest httpReq)
         {
             return AssertAppHost().ResolveVirtualDirectory(virtualPath, httpReq);
         }
 
-        public static IVirtualNode ResolveVirtualNode(string virtualPath, IHttpRequest httpReq)
+        public static IVirtualNode ResolveVirtualNode(string virtualPath, IRequest httpReq)
         {
             return AssertAppHost().ResolveVirtualNode(virtualPath, httpReq);
         }
@@ -391,12 +312,12 @@ namespace ServiceStack
                 : ServiceStackHost.Instance.GetDefaultSessionExpiry();
         }
 
-        public static object RaiseServiceException(IHttpRequest httpReq, object request, Exception ex)
+        public static object RaiseServiceException(IRequest httpReq, object request, Exception ex)
         {
             return AssertAppHost().OnServiceException(httpReq, request, ex);
         }
 
-        public static void RaiseUncaughtException(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Exception ex)
+        public static void RaiseUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
         }
@@ -404,43 +325,49 @@ namespace ServiceStack
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a ASP.NET HttpContext.
         /// </summary>
-        public static T ResolveService<T>(HttpContext httpCtx=null) where T : class, IRequiresRequestContext
+        public static T ResolveService<T>(HttpContextBase httpCtx=null) where T : class, IRequiresRequest
         {
             var service = AssertAppHost().Container.Resolve<T>();
             if (service == null) return null;
-            service.RequestContext = (httpCtx ?? HttpContext.Current).ToRequestContext();
+            service.Request = httpCtx != null ? httpCtx.ToRequest() : HttpContext.Current.ToRequest();
             return service;
         }
 
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a HttpListenerContext.
         /// </summary>
-        public static T ResolveService<T>(HttpListenerContext httpCtx) where T : class, IRequiresRequestContext
+        public static T ResolveService<T>(HttpListenerContext httpCtx) where T : class, IRequiresRequest
         {
             var service = AssertAppHost().Container.Resolve<T>();
             if (service == null) return null;
-            service.RequestContext = httpCtx.ToRequestContext();
+            service.Request = httpCtx.ToRequest();
             return service;
-        }
-
-        /// <summary>
-        /// Resolves and auto-wires a ServiceStack Service from a HttpListener Request and Response.
-        /// </summary>
-        public static T ResolveService<T>(HttpListenerRequest httpReq, HttpListenerResponse httpRes)
-            where T : class, IRequiresRequestContext
-        {
-            return ResolveService<T>(httpReq.ToRequest(), httpRes.ToResponse());
         }
 
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service.
         /// </summary>
-        public static T ResolveService<T>(IHttpRequest httpReq, IHttpResponse httpRes) where T : class, IRequiresRequestContext
+        public static T ResolveService<T>(IHttpRequest httpReq) where T : class, IRequiresRequest
         {
             var service = AssertAppHost().Container.Resolve<T>();
             if (service == null) return null;
-            service.RequestContext = new HttpRequestContext(httpReq, httpRes, null);
+            service.Request = httpReq;
             return service;
+        }
+
+        public static bool HasValidAuthSecret(IRequest httpReq)
+        {
+            return AssertAppHost().HasValidAuthSecret(httpReq);
+        }
+
+        public static bool HasFeature(Feature feature)
+        {
+            return AssertAppHost().HasFeature(feature);
+        }
+
+        public static void OnExceptionTypeFilter(Exception exception, ResponseStatus responseStatus)
+        {
+            AssertAppHost().OnExceptionTypeFilter(exception, responseStatus);
         }
     }
 }

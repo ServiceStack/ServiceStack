@@ -35,7 +35,6 @@ namespace ServiceStack.Auth
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [RequiredRole(RoleNames.Admin)]
     [DefaultRequest(typeof(AssignRoles))]
     public class AssignRolesService : Service
     {
@@ -43,32 +42,19 @@ namespace ServiceStack.Auth
 
         public object Post(AssignRoles request)
         {
+            RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+
             request.UserName.ThrowIfNullOrEmpty();
 
             var userAuth = UserAuthRepo.GetUserAuthByUserName(request.UserName);
             if (userAuth == null)
                 throw HttpError.NotFound(request.UserName);
 
-            if (!request.Roles.IsEmpty())
-            {
-                foreach (var missingRole in request.Roles.Where(x => !userAuth.Roles.Contains(x)))
-                {
-                    userAuth.Roles.Add(missingRole);
-                }
-            }
-            if (!request.Permissions.IsEmpty())
-            {
-                foreach (var missingPermission in request.Permissions.Where(x => !userAuth.Permissions.Contains(x)))
-                {
-                    userAuth.Permissions.Add(missingPermission);
-                }
-            }
-
-            UserAuthRepo.SaveUserAuth(userAuth);
+            UserAuthRepo.AssignRoles(userAuth, request.Roles, request.Permissions);
 
             return new AssignRolesResponse {
-                AllRoles = userAuth.Roles,
-                AllPermissions = userAuth.Permissions,
+                AllRoles = UserAuthRepo.GetRoles(userAuth).ToList(),
+                AllPermissions = UserAuthRepo.GetPermissions(userAuth).ToList(),
             };
         }
     }

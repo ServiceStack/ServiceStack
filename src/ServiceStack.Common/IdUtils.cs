@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using ServiceStack.Model;
 using ServiceStack.Reflection;
 using ServiceStack.Text;
@@ -13,7 +14,7 @@ namespace ServiceStack
         static IdUtils()
         {
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SL5 && !IOS && !XBOX
             var hasIdInterfaces = typeof(T).FindInterfaces(
                 (t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IHasId<>), null);
 
@@ -26,13 +27,6 @@ namespace ServiceStack
 
             if (typeof(T).IsClass() || typeof(T).IsInterface)
             {
-                if (typeof(T).GetPropertyInfo(IdUtils.IdField) != null
-                    && typeof(T).GetPropertyInfo(IdUtils.IdField).GetMethodInfo() != null)
-                {
-                    CanGetId = HasPropertyId<T>.GetId;
-                    return;
-                }
-
                 foreach (var pi in typeof(T).GetPublicProperties()
                     .Where(pi => pi.AllAttributes<Attribute>()
                              .Any(attr => attr.GetType().Name == "PrimaryKeyAttribute")))
@@ -40,6 +34,26 @@ namespace ServiceStack
                     CanGetId = StaticAccessors<T>.ValueUnTypedGetPropertyTypeFn(pi);
                     return;
                 }
+
+                var piId = typeof(T).GetIdProperty();
+                if (piId != null
+                    && piId.GetMethodInfo() != null)
+                {
+                    CanGetId = HasPropertyId<T>.GetId;
+                    return;
+                }
+            }
+
+            if (typeof(T) == typeof(object))
+            {
+                CanGetId = x => {
+                    var piId = x.GetType().GetIdProperty();
+                    if (piId != null && piId.GetMethodInfo() != null)
+                        return x.GetObjectId();
+
+                    return x.GetHashCode();
+                };
+                return;
             }
 
             CanGetId = x => x.GetHashCode();
@@ -57,7 +71,7 @@ namespace ServiceStack
 
         static HasPropertyId()
         {
-            var pi = typeof(TEntity).GetPropertyInfo(IdUtils.IdField);
+            var pi = typeof(TEntity).GetIdProperty();
             GetIdFn = StaticAccessors<TEntity>.ValueUnTypedGetPropertyTypeFn(pi);
         }
 
@@ -74,7 +88,7 @@ namespace ServiceStack
         static HasId()
         {
 
-#if MONOTOUCH || SILVERLIGHT
+#if IOS || SL5
             GetIdFn = HasPropertyId<TEntity>.GetId;
 #else
             var hasIdInterfaces = typeof(TEntity).FindInterfaces(
@@ -120,7 +134,7 @@ namespace ServiceStack
 
         public static object GetObjectId(this object entity)
         {
-            return entity.GetType().GetPropertyInfo(IdField).GetMethodInfo().Invoke(entity, new object[0]);
+            return entity.GetType().GetIdProperty().GetMethodInfo().Invoke(entity, new object[0]);
         }
 
         public static object ToId<T>(this T entity)
@@ -176,10 +190,22 @@ namespace ServiceStack
             var dir1 = idValue.Substring(0, 2);
             var dir2 = idValue.Substring(2, 2);
 
-            var path = string.Format("{1}{0}{2}{0}{3}{0}{4}", StringExtensions.DirSeparatorChar,
+            var path = string.Format("{1}{0}{2}{0}{3}{0}{4}", PclExport.Instance.DirSep,
                 rootDir, dir1, dir2, idValue);
 
             return path;
+        }
+
+        public static PropertyInfo GetIdProperty(this Type type)
+        {
+            foreach (var pi in type.GetPropertyInfos())
+            {
+                if (string.Equals(IdField, pi.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return pi;
+                }
+            }
+            return null;
         }
 
     }

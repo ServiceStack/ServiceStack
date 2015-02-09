@@ -82,19 +82,54 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Signed|AnyCPU'">
+    <OutputPath>bin\Signed\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MySql.Data">
+      <HintPath>..\..\lib\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="NHibernate">
+      <HintPath>..\..\src\ServiceStack.Authentication.NHibernate\bin\Release\NHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="Npgsql">
+      <HintPath>..\..\lib\Npgsql.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\src\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="protobuf-net">
-      <HintPath>..\..\src\packages\protobuf-net.2.0.0.666\lib\net40\protobuf-net.dll</HintPath>
+      <HintPath>..\..\src\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.OrmLite.MySql">
+      <HintPath>..\..\lib\ServiceStack.OrmLite.MySql.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite.PostgreSQL">
+      <HintPath>..\..\lib\ServiceStack.OrmLite.PostgreSQL.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.OrmLite.Sqlite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.Sqlite.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite.SqlServer, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\CheckMvc\Bin\ServiceStack.OrmLite.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Redis, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.Redis.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -102,6 +137,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -130,18 +166,33 @@
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlwaysThrowsService.cs" />
     <Compile Include="AppHostListenerEchoRequestTests.cs" />
     <Compile Include="AppHostHttpListenerLongRunningBaseTests.cs" />
     <Compile Include="AppHostListenerBaseTests.cs" />
+    <Compile Include="AppSelfHostTests.cs" />
     <Compile Include="AsyncProgressTests.cs" />
     <Compile Include="AsyncRestClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
+    <Compile Include="AsyncTaskTests.cs" />
     <Compile Include="AttributeFiltersTest.cs" />
     <Compile Include="AuthTests.cs" />
+    <Compile Include="AutoQueryTests.cs" />
     <Compile Include="BufferedRequestTests.cs" />
     <Compile Include="CachedServiceTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="CustomFormatTests.cs" />
+    <Compile Include="HttpErrorSyncTests.cs" />
+    <Compile Include="ReplyAllTests.cs" />
+    <Compile Include="MultiTennantAppHostTests.cs" />
+    <Compile Include="RequestPipelineTests.cs" />
+    <Compile Include="NestedServiceTests.cs" />
+    <Compile Include="CorsFeaturePluginTests.cs" />
+    <Compile Include="CustomServiceRunnerTests.cs" />
+    <Compile Include="LicenseUsageTests.cs" />
+    <Compile Include="RequestTypedFilterTests.cs" />
+    <Compile Include="RoutePriorityTests.cs" />
     <Compile Include="RouteTests.cs" />
     <Compile Include="CustomValidationErrorTests.cs" />
     <Compile Include="EncodingTests.cs" />
@@ -149,8 +200,11 @@
     <Compile Include="IntegrationTests\MovieSoap11Tests.cs" />
     <Compile Include="RestHandlerTests.cs" />
     <Compile Include="RouteInferenceTests.cs" />
+    <Compile Include="RuntimeAttributeTests.cs" />
+    <Compile Include="ServerEventTests.cs" />
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
     <Compile Include="SessionTests.cs" />
+    <Compile Include="Support\Services\EchoService.cs" />
     <Compile Include="Support\Services\TestRestService.cs" />
     <Compile Include="Support\Types\KeyAttribute.cs" />
     <Compile Include="PartialContentResultTests.cs" />
@@ -178,8 +232,7 @@
     <Compile Include="UnitTestExample.cs" />
     <Compile Include="UserServiceValidationTests.cs" />
     <Compile Include="JsonpTests.cs" />
-    <Compile Include="Support\Host\IocAppHost.cs" />
-    <Compile Include="Support\Services\IocService.cs" />
+    <Compile Include="Shared\IocService.cs" />
     <Compile Include="CustomRequestDataTests.cs" />
     <Compile Include="HttpResultTests.cs" />
     <Compile Include="IntegrationTests\ResetMovies.cs" />
@@ -191,7 +244,7 @@
     <Compile Include="CsvContentTypeFilterTests.cs" />
     <Compile Include="EndpointRestrictionTests.cs" />
     <Compile Include="FileUploadTests.cs" />
-    <Compile Include="HttpErrorTests.cs" />
+    <Compile Include="HttpErrorAsyncTests.cs" />
     <Compile Include="RequestContextTests.cs" />
     <Compile Include="RequestFiltersTests.cs" />
     <Compile Include="Support\DirectServiceClient.cs" />
@@ -259,13 +312,13 @@
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj">
       <Project>{ef36a253-c53f-4bf3-b0ec-4d29211fa67d}</Project>
       <Name>ServiceStack.ProtoBuf</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.csproj">
+      <Project>{E940929C-9E76-41CD-BD09-08029FE9B440}</Project>
+      <Name>ServiceStack.RabbitMq</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
       <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
@@ -323,9 +376,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Issues\" />
     <Folder Include="ServiceModel\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>

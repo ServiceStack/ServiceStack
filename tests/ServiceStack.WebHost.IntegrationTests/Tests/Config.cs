@@ -4,5 +4,5 @@
 	{
         public const string AbsoluteBaseUri = "http://localhost:50000/";
         public const string ServiceStackBaseUri = AbsoluteBaseUri + "api";
-	}
+    }
 }

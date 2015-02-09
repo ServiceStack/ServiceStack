@@ -51,30 +51,21 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\Release\ServiceStack.Server.xml</DocumentationFile>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'STATIC_ONLY NO_EXPRESSIONS|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <OutputPath>bin\STATIC_ONLY NO_EXPRESSIONS\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Signed|AnyCPU'">
+    <OutputPath>bin\Signed\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>False</Optimize>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'MonoTouch|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <OutputPath>bin\MonoTouch\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>False</Optimize>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
@@ -88,6 +79,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -106,13 +98,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Auth\OrmLiteAuthRepository.cs" />
-    <Compile Include="Messaging\IMessageHandler.cs" />
-    <Compile Include="Messaging\IMessageHandlerDisposer.cs" />
-    <Compile Include="Messaging\IMessageHandlerFactory.cs" />
-    <Compile Include="Messaging\InMemoryTransientMessageFactory.cs" />
-    <Compile Include="Messaging\InMemoryTransientMessageService.cs" />
-    <Compile Include="Messaging\MessageHandler.cs" />
-    <Compile Include="Messaging\MessageHandlerFactory.cs" />
+    <Compile Include="Caching\OrmLiteCacheClient.cs" />
+    <Compile Include="Configuration\OrmLiteAppSettings.cs" />
+    <Compile Include="AutoQueryFeature.cs" />
     <Compile Include="Messaging\Redis\MessageHandlerWorker.cs" />
     <Compile Include="Messaging\Rcon\Client.cs" />
     <Compile Include="Messaging\Rcon\Packet.cs" />
@@ -122,9 +110,9 @@
     <Compile Include="Messaging\Redis\RedisTransientMessageFactory.cs" />
     <Compile Include="Messaging\Redis\RedisTransientMessageService.cs" />
     <Compile Include="Messaging\Rcon\Server.cs" />
-    <Compile Include="Messaging\TransientMessageServiceBase.cs" />
-    <Compile Include="Messaging\Redis\WorkerStatus.cs" />
+    <Compile Include="MiniProfiler.Storage\SqlServerStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RedisServerEvents.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -151,10 +139,6 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>

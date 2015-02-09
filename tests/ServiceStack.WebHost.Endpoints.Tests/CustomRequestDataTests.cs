@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	[TestFixture]
 	public class CustomRequestDataTests
 	{
-		private const string ListeningOn = "http://localhost:82/";
+		private const string ListeningOn = "http://localhost:1337/";
 
 		ExampleAppHostHttpListener appHost;
 		readonly JsonServiceClient client = new JsonServiceClient(ListeningOn);
@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_parse_custom_form_data()
 		{
-			var webReq = (HttpWebRequest)WebRequest.Create("http://localhost:82/customformdata?format=json");
+			var webReq = (HttpWebRequest)WebRequest.Create("http://localhost:1337/customformdata?format=json");
 			webReq.Method = HttpMethods.Post;
             webReq.ContentType = MimeTypes.FormUrlEncoded;
 

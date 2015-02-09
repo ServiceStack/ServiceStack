@@ -1,0 +1,37 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+<#= DownloadCSharpDtos("http://localhost:55799/types/csharp") #>
+<#+
+public class CodegenOptions 
+{
+	bool? MakePartial;
+	bool? MakeVirtual;
+	bool? MakeDataContractsExtensible;
+	bool? InitializeCollections;
+	bool? AddReturnMarker;
+	bool? AddDescriptionAsComments;
+	bool? AddDataContractAttributes;
+	bool? AddIndexesToDataMembers;
+	bool? AddResponseStatus;
+	int? AddImplicitVersion;
+	string AddDefaultXmlNamespace;
+}
+#>
+
+<#+
+public static string DownloadCSharpDtos(string baseUrl) {
+	var sb = new System.Text.StringBuilder();
+	var fields = typeof(CodegenOptions).GetFields(
+		System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+	var config = new CodegenOptions();
+	foreach (var f in fields) {
+		var value = f.GetValue(config);
+		if (value == null) continue;
+		if (sb.Length > 0) sb.Append("&");
+		sb.AppendFormat("{0}={1}", f.Name, value);
+	}
+	var qs = sb.ToString();
+	if (qs.Length > 0) baseUrl += "?" + qs;
+	return new System.Net.WebClient().DownloadString(baseUrl);
+}
+#>

@@ -60,13 +60,13 @@ namespace ServiceStack.Metadata
             return conf;
         }
 
-        public bool IsVisible(IHttpRequest httpRequest, Format format, string operation)
+        public bool IsVisible(IRequest httpRequest, Format format, string operation)
         {
             if (ignoredFormats.Contains(format.FromFormat())) return false;
             return metadata.IsVisible(httpRequest, format, operation);
         }
 
-        public bool CanAccess(IHttpRequest httpRequest, Format format, string operation)
+        public bool CanAccess(IRequest httpRequest, Format format, string operation)
         {
             if (ignoredFormats.Contains(format.FromFormat())) return false;
             return metadata.CanAccess(httpRequest, format, operation);
@@ -76,6 +76,15 @@ namespace ServiceStack.Metadata
         {
             if (ignoredFormats.Contains(format.FromFormat())) return false;
             return metadata.CanAccess(format, operation);
+        }
+
+        public bool AlwaysHideInMetadata(string operationName)
+        {
+            Operation operation;
+            metadata.OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
+            if (operation == null || operation.RestrictTo == null) return false;
+
+            return operation.RestrictTo.VisibilityTo == RequestAttributes.None;
         }
     }
 }

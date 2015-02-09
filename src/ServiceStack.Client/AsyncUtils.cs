@@ -28,7 +28,7 @@ namespace ServiceStack
     {
         public static Exception CreateTimeoutException(this Exception ex, string errorMsg)
         {
-#if SILVERLIGHT
+#if SL5 || PCL
             return new WebException("The request timed out", ex, WebExceptionStatus.RequestCanceled, null);
 #else
             return new WebException("The request timed out", ex, WebExceptionStatus.Timeout, null);
@@ -37,17 +37,13 @@ namespace ServiceStack
 
         internal static ITimer CreateTimer<TResponse>(this AsyncState<TResponse> state, TimeSpan timeOut)
         {
-#if NETFX_CORE
-            return new NetFxAsyncTimer(ThreadPoolTimer.CreateTimer(request.TimedOut, timeOut)); 
-#else
-            return new AsyncTimer(new Timer(state.TimedOut, state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
-#endif
+            return PclExportClient.Instance.CreateTimer(state.TimedOut, timeOut, state);
         }
 
         internal static void EndReadStream(this Stream stream)
         {
-#if NETFX_CORE || WINDOWS_PHONE
-                stream.Dispose();
+#if NETFX_CORE || WP
+            stream.Dispose();
 #else
             stream.Close();
 #endif
@@ -55,7 +51,7 @@ namespace ServiceStack
 
         internal static void EndWriteStream(this Stream stream)
         {
-#if NETFX_CORE || WINDOWS_PHONE
+#if NETFX_CORE || WP
                 stream.Flush();
                 stream.Dispose();
 #else
@@ -65,128 +61,34 @@ namespace ServiceStack
 
         internal static HttpWebRequest CreateHttpWebRequest(this AsyncServiceClient client, string requestUri)
         {
-#if SILVERLIGHT && !WINDOWS_PHONE && !NETFX_CORE
+            var webRequest = PclExport.Instance.CreateWebRequest(requestUri, 
+                emulateHttpViaPost:client.EmulateHttpViaPost);
 
-            var creator = client.EmulateHttpViaPost
-                ? System.Net.Browser.WebRequestCreator.BrowserHttp
-                : System.Net.Browser.WebRequestCreator.ClientHttp;
-
-            var webRequest = (HttpWebRequest) creator.Create(new Uri(requestUri));
-
-            if (client.StoreCookies && !client.EmulateHttpViaPost)
-            {
-                if (client.ShareCookiesWithBrowser)
-                {
-                    if (CookieContainer == null)
-                        CookieContainer = new CookieContainer();
-                    client.CookieContainer.SetCookies(new Uri(BaseUri), System.Windows.Browser.HtmlPage.Document.Cookies);
-                }
-                
-                webRequest.CookieContainer = client.CookieContainer;	
-            }
-
-#else
-            var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
+            PclExport.Instance.Config(webRequest);
             client.CancelAsyncFn = webRequest.Abort;
 
             if (client.StoreCookies)
             {
-                webRequest.CookieContainer = client.CookieContainer;
+                PclExportClient.Instance.SetCookieContainer(webRequest, client);
             }
-#endif
 
-#if !SILVERLIGHT
             if (!client.DisableAutoCompression)
             {
-                webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
-                webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                PclExport.Instance.AddCompression(webRequest);
             }
-#endif
-            return webRequest;
-        }
 
-        public static void SynchronizeCookies(this AsyncServiceClient client)
-        {
-#if SILVERLIGHT && !WINDOWS_PHONE && !NETFX_CORE
-            if (client.StoreCookies && client.ShareCookiesWithBrowser && !client.EmulateHttpViaPost)
-            {
-                // browser cookies must be set on the ui thread
-                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => {
-                    var cookieHeader = client.CookieContainer.GetCookieHeader(new Uri(client.BaseUri));
-                    System.Windows.Browser.HtmlPage.Document.Cookies = cookieHeader;
-                });
-            }
-#endif
+            return webRequest;
         }
 
         public static bool IsWebException(this WebException webEx)
         {
-            return webEx != null
-#if !SILVERLIGHT
+            return webEx != null && webEx.Response != null
+#if !(SL5 || PCL)
                 && webEx.Status == WebExceptionStatus.ProtocolError
 #endif
             ;
         }
-
-        public static void ResetStream(this Stream stream)
-        {
-#if !IOS
-            // MonoTouch throws NotSupportedException when setting System.Net.WebConnectionStream.Position
-            // Not sure if the stream is used later though, so may have to copy to MemoryStream and
-            // pass that around instead after this point?
-            stream.Position = 0;
-#endif
-        }
     }
-
-#if NETFX_CORE
-
-    public class NetFxAsyncTimer : ITimer
-    {
-        public ThreadPoolTimer Timer;
-
-        public NetFxAsyncTimer(ThreadPoolTimer timer)
-        {
-            Timer = timer;
-        }
-
-        public void Cancel()
-        {
-            this.Timer.Cancel();
-        }
-
-        public void Dispose()
-        {
-            this.Timer.Dispose();
-            this.Timer = null;
-        }
-    }
-
-#else
-
-    public class AsyncTimer : ITimer
-    {
-        public Timer Timer;
-
-        public AsyncTimer(Timer timer)
-        {
-            Timer = timer;
-        }
-
-        public void Cancel()
-        {
-            this.Timer.Change(Timeout.Infinite, Timeout.Infinite);
-            this.Dispose();
-        }
-
-        public void Dispose()
-        {
-            this.Timer.Dispose();
-            this.Timer = null;
-        }
-    }
-
-#endif
 
 #if !NET45
     internal class TaskConstants<T>
@@ -237,13 +139,6 @@ namespace ServiceStack
             return stream.ReadAsync(buffer, offset, count, CancellationToken.None);
         }
 
-        public static Task<int> ReadAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken token)
-        {
-            return token.IsCancellationRequested
-                ? TaskConstants<int>.Canceled
-                : Task<int>.Factory.FromAsync(stream.BeginRead, stream.EndRead, buffer, offset, count, null);
-        }
-
         public static Task WriteAsync(this Stream stream, byte[] buffer)
         {
             return stream.WriteAsync(buffer, 0, buffer.Length, CancellationToken.None);
@@ -254,10 +149,20 @@ namespace ServiceStack
             return stream.WriteAsync(buffer, offset, count, CancellationToken.None);
         }
 
+#if !PCL
+        public static Task<int> ReadAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken token)
+        {
+            return token.IsCancellationRequested
+                ? TaskConstants<int>.Canceled
+                : Task<int>.Factory.FromAsync(stream.BeginRead, stream.EndRead, buffer, offset, count, null);
+        }
+
         public static Task WriteAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken token)
         {
             return Task.Factory.FromAsync(stream.BeginWrite, stream.EndWrite, buffer, offset, count, null);
         }
+#endif
+
     }
 #endif
 

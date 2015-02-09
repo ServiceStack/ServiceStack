@@ -1,0 +1,55 @@
+<html>
+
+<head>
+<style>
+body {
+    font: 18px "Helvetica Neue"     
+}
+textarea {
+    height: 200px;
+    width: 600px;
+}
+hr {
+    margin: 40px 0;
+}
+</style>
+
+<script type="text/javascript" src="JSV.js"></script>
+</head>
+
+<body>
+
+    <h3>Serialize JSON to JSV</h3>
+
+    <textarea>{a:new Date("2010/08/17 12:09:36"),b:new Date("2010/08/17 12:09:36")}</textarea>
+
+    <h4>Output:</h4>
+
+    <div id="output"></div>
+
+    <hr />
+
+    <h4>Error:</h4>
+    <div id="error"></div>
+
+<script type="text/javascript">
+
+var $ = function (s) { return document.querySelectorAll(s)[0] };
+var txt = $("textarea");
+txt.onkeyup = function () {
+    try {
+        var js = eval("(function(){ return " + txt.value + "; })()");
+        $("#output").innerHTML = JSV.stringify(js);
+        $("#error").innerHTML = "";
+    } catch(e) {
+        $("#output").innerHTML = "";
+        $("#error").innerHTML = e;
+    }
+};
+txt.onkeyup();
+
+</script>
+
+</body>
+
+</html>

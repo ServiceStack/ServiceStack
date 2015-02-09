@@ -96,6 +96,7 @@
             font-weight: bold;
             color: #CCC;
 			padding-left: 1.5em;
+		    vertical-align: top;
 		}
         .operation caption {
             text-align: left;
@@ -107,13 +108,19 @@
             text-align: left;
         }
         .operation thead th {
-            border: 1px solid #DEE3EA;
-            border-bottom: none;
             text-align: left;
             text-transform: uppercase;
         }
         .operation th, .operation td {
             padding: 5px 15px;
+		    vertical-align: top;
+        }
+        .operation h4 {
+            margin: 10px 0;
+            padding: 0;
+        }
+        .operation li {
+            margin: 0;
         }
         .example {
 	        padding-left: 15px;
@@ -152,7 +159,7 @@
     </style>
 </head>
 <body>
-    <a id="logo" href="http://www.servicestack.net" title="ServiceStack"></a>
+    <a id="logo" href="https://servicestack.net" title="ServiceStack"></a>
     <h1>{0}</h1>
     
     <div class="operation">

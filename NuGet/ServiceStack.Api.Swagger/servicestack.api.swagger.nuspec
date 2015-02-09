@@ -4,16 +4,16 @@
     <id>ServiceStack.Api.Swagger</id>
     <title>ServiceStack additional API for integration with Swagger</title>
     <version>4.0.0</version>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>ServiceStack integration with Swagger</summary>
     <description>
       Provides a set of services to be discovered by Swagger (http://swagger.wordnik.com/)
       Swagger is a specification and complete framework implementation for describing, producing, consuming, and visualizing RESTful web services.
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>Swagger API REST Docs ServiceStack</tags>
     <language>en-US</language>
     <copyright>StackExpress.net 2012 and contributors</copyright>
@@ -22,8 +22,12 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="content\**\*.*" target="content" />
     <file src="lib\**\*.*" target="lib" />
     <file src="..\..\src\ServiceStack.Api.Swagger\**\*.cs" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\**\*.html" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\**\*.js" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\**\*.css" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\**\*.png" target="src" />
+    <file src="..\..\src\ServiceStack.Api.Swagger\**\*.gif" target="src" />
   </files>
 </package>

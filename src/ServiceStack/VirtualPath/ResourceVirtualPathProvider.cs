@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
 
 namespace ServiceStack.VirtualPath
@@ -8,41 +9,37 @@ namespace ServiceStack.VirtualPath
     {
         protected ResourceVirtualDirectory RootDir;
         protected Assembly BackingAssembly;
+        protected string RootNamespace;
 
         public override IVirtualDirectory RootDirectory { get { return RootDir; } }
         public override string VirtualPathSeparator { get { return "/"; } }
         public override string RealPathSeparator { get { return "."; } }
 
-        public ResourceVirtualPathProvider(IAppHost appHost, Type typeInBackingAssembly)
-            : base(appHost)
-        {
-            if (typeInBackingAssembly == null)
-                throw new ArgumentNullException("typeInBackingAssembly");
+        public ResourceVirtualPathProvider(IAppHost appHost, Type baseTypeInAssmebly)
+            : this(appHost, baseTypeInAssmebly.Assembly, GetNamespace(baseTypeInAssmebly)) { }
 
-            this.BackingAssembly = typeInBackingAssembly.Assembly;
-            Initialize();
-        }
-
-        public ResourceVirtualPathProvider(IAppHost appHost, Assembly backingAssembly)
+        public ResourceVirtualPathProvider(IAppHost appHost, Assembly backingAssembly, string rootNamespace=null)
             : base(appHost)
         {
             if (backingAssembly == null)
                 throw new ArgumentNullException("backingAssembly");
 
             this.BackingAssembly = backingAssembly;
+            this.RootNamespace = rootNamespace ?? backingAssembly.GetName().Name;
+
             Initialize();
         }
 
-        public ResourceVirtualPathProvider(IAppHost appHost)
-            : base(appHost)
+        private static string GetNamespace(Type type)
         {
-            Initialize();
+            var attr = type.FirstAttribute<SchemaAttribute>();
+            return attr != null ? attr.Name : type.Namespace;
         }
 
         protected override sealed void Initialize()
         {
             var asm = BackingAssembly ?? AppHost.GetType().Assembly;
-            RootDir = new ResourceVirtualDirectory(this, null, asm);
+            RootDir = new ResourceVirtualDirectory(this, null, asm, RootNamespace);
         }
 
         public override string CombineVirtualPath(string basePath, string relativePath)

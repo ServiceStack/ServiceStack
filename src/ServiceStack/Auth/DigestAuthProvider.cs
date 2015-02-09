@@ -4,22 +4,13 @@ using System.Globalization;
 using System.Net;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class DigestAuthProvider : AuthProvider
+    //DigestAuth Info: http://www.ntu.edu.sg/home/ehchua/programming/webprogramming/HTTP_Authentication.html
+    public class DigestAuthProvider : AuthProvider, IAuthWithRequest
     {
-        //private class DigestAuthValidator : AbstractValidator<Authenticate>
-        //{
-        //    public DigestAuthValidator()
-        //    {
-        //        RuleFor(x => x.UserName).NotEmpty();
-        //        RuleFor(x => x.Password).NotEmpty();
-        //    }
-        //}
-
         public static string Name = AuthenticateService.DigestProvider;
         public static string Realm = "/auth/" + AuthenticateService.DigestProvider;
         public static int NonceTimeOut = 600;
@@ -48,7 +39,7 @@ namespace ServiceStack.Auth
             }
 
             var session = authService.GetSession();
-            var digestInfo = authService.RequestContext.Get<IHttpRequest>().GetDigestAuth();
+            var digestInfo = authService.Request.GetDigestAuth();
             IUserAuth userAuth;
             if (authRepo.TryAuthenticate(digestInfo, PrivateKey, NonceTimeOut, session.Sequence, out userAuth)) {
                 session.PopulateWith(userAuth);
@@ -87,27 +78,33 @@ namespace ServiceStack.Auth
                 session = authService.GetSession();
             }
 
-            if (TryAuthenticate(authService, userName, password)) {
-                if (session.UserAuthName == null) {
-                    session.UserAuthName = userName;
-                }
+            if (TryAuthenticate(authService, userName, password))
+            {
+                session.IsAuthenticated = true;
 
-                OnAuthenticated(authService, session, null, null);
+                if (session.UserAuthName == null) 
+                    session.UserAuthName = userName;
+
+                var response = OnAuthenticated(authService, session, null, null);
+                if (response != null)
+                    return response;
 
                 return new AuthenticateResponse {
+                    UserId = session.UserAuthId,
                     UserName = userName,
                     SessionId = session.Id,
                 };
             }
 
-            throw HttpError.Unauthorized("Invalid UserName or Password");
+            throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword);
         }
 
-        public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        public override IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             var userSession = session as AuthUserSession;
             if (userSession != null) {
                 LoadUserAuthInfo(userSession, tokens, authInfo);
+                HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
             }
 
             var authRepo = authService.TryResolve<IAuthRepository>();
@@ -128,18 +125,25 @@ namespace ServiceStack.Auth
                     }
                 }
 
-                //var httpRes = authService.RequestContext.Get<IHttpResponse>();
-                //if (httpRes != null)
-                //{
-                //    httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
-                //}
+                var failed = ValidateAccount(authService, authRepo, session, tokens);
+                if (failed != null)
+                    return failed;
             }
 
-            authService.SaveSession(session, SessionExpiry);
-            session.OnAuthenticated(authService, session, tokens, authInfo);
+            try
+            {
+                session.OnAuthenticated(authService, session, tokens, authInfo);
+                AuthEvents.OnAuthenticated(authService.Request, session, authService, tokens, authInfo);
+            }
+            finally
+            {
+                authService.SaveSession(session, SessionExpiry);
+            }
+
+            return null;
         }
 
-        public override void OnFailedAuthentication(IAuthSession session, IHttpRequest httpReq, IHttpResponse httpRes)
+        public override void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             var digestHelper = new DigestAuthFunctions();
             httpRes.StatusCode = (int) HttpStatusCode.Unauthorized;
@@ -147,6 +151,30 @@ namespace ServiceStack.Auth
                 HttpHeaders.WwwAuthenticate,
                 "{0} realm=\"{1}\", nonce=\"{2}\", qop=\"auth\"".Fmt(Provider, AuthRealm, digestHelper.GetNonce(httpReq.UserHostAddress, PrivateKey)));
             httpRes.EndRequest();
+        }
+
+        public void PreAuthenticate(IRequest req, IResponse res)
+        {
+            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
+            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
+
+            var digestAuth = req.GetDigestAuth();
+            if (digestAuth != null)
+            {
+                var authService = req.TryResolve<AuthenticateService>();
+                authService.Request = req;
+                var response = authService.Post(new Authenticate
+                {
+                    provider = Name,
+                    nonce = digestAuth["nonce"],
+                    uri = digestAuth["uri"],
+                    response = digestAuth["response"],
+                    qop = digestAuth["qop"],
+                    nc = digestAuth["nc"],
+                    cnonce = digestAuth["cnonce"],
+                    UserName = digestAuth["username"]
+                });
+            }
         }
     }
 }

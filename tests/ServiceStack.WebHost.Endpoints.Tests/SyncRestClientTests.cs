@@ -64,7 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(3)));
         }
 
-        [TestCase("movies")]
+        [TestCase("all-movies")]
         [TestCase("custom-movies")]
         public void Can_GET_Movies_using_RestClient(string path)
         {
@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Movies.EquivalentTo(ResetMoviesService.Top5Movies));
         }
 
-        [TestCase("movies/1")]
+        [TestCase("all-movies/1")]
         [TestCase("custom-movies/1")]
         public void Can_GET_single_Movie_using_RestClient(string path)
         {
@@ -88,13 +88,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Movie.Id, Is.EqualTo(1));
         }
 
-        [TestCase("movies")]
+        [TestCase("all-movies")]
         [TestCase("custom-movies")]
         public void Can_POST_to_add_new_Movie_using_RestClient(string path)
         {
             var restClient = CreateRestClient();
 
-            var newMovie = new Movie {
+            var newMovie = new Support.Host.Movie {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
                 Rating = 8.0m,
@@ -119,8 +119,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var xml = "<MovieResponse xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.servicestack.net/types\"><Movie><Director>Edward Zwick</Director><Genres xmlns:d3p1=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\"><d3p1:string>Adventure</d3p1:string><d3p1:string>Drama</d3p1:string><d3p1:string>Thriller</d3p1:string></Genres><Id>6</Id><ImdbId>tt0450259</ImdbId><Rating>8</Rating><ReleaseDate>2007-01-26T00:00:00+00:00</ReleaseDate><TagLine>A fisherman, a smuggler, and a syndicate of businessmen match wits over the possession of a priceless diamond.</TagLine><Title>Blood Diamond</Title></Movie></MovieResponse>";
-                var response = DataContractDeserializer.Instance.Parse<MovieResponse>(xml);
-                var toXml = DataContractSerializer.Instance.Parse(response);
+                var response = DataContractSerializer.Instance.DeserializeFromString<MovieResponse>(xml);
+                var toXml = DataContractSerializer.Instance.SerializeToString(response);
                 Console.WriteLine("XML: " + toXml);
             }
             catch (Exception ex)
@@ -130,13 +130,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        [TestCase("movies", "movies/")]
+        [TestCase("all-movies", "all-movies/")]
         [TestCase("custom-movies", "custom-movies/")]
         public void Can_DELETE_Movie_using_RestClient(string postPath, string deletePath)
         {
             var restClient = CreateRestClient();
 
-            var newMovie = new Movie {
+            var newMovie = new Support.Host.Movie
+            {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
                 Rating = 8.0m,
@@ -236,7 +237,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             ServiceClientBase.GlobalResponseFilter = r => isActioncalledGlobal = true;
             var restClient = (JsonServiceClient)CreateRestClient();
             restClient.ResponseFilter = r => isActioncalledLocal = true;
-            restClient.Get<MoviesResponse>("movies");
+            restClient.Get<MoviesResponse>("all-movies");
             Assert.That(isActioncalledGlobal, Is.True);
             Assert.That(isActioncalledLocal, Is.True);
 

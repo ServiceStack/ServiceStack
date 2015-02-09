@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Reflection;
+using System.Threading.Tasks;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
@@ -17,6 +18,13 @@ namespace ServiceStack
     public abstract class AppHostHttpListenerBase
         : HttpListenerBase
     {
+        public static int ThreadsPerProcessor = 16;
+
+        public static int CalculatePoolSize()
+        {
+            return Environment.ProcessorCount * ThreadsPerProcessor;
+        }
+
         public string HandlerPath { get; set; }
 
         protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
@@ -28,37 +36,42 @@ namespace ServiceStack
             HandlerPath = handlerPath;
         }
 
-        protected override void ProcessRequest(HttpListenerContext context)
+        protected override Task ProcessRequestAsync(HttpListenerContext context)
         {
-            if (string.IsNullOrEmpty(context.Request.RawUrl)) return;
+            if (string.IsNullOrEmpty(context.Request.RawUrl)) 
+                return ((object)null).AsTaskResult();
 
-            var operationName = context.Request.GetOperationName();
+            var operationName = context.Request.GetOperationName().UrlDecode();
 
-            var httpReq = new ListenerRequest(operationName, context.Request);
-            var httpRes = new ListenerResponse(context.Response);
+            var httpReq = context.ToRequest(operationName);
+            var httpRes = httpReq.Response;
             var handler = HttpHandlerFactory.GetHandler(httpReq);
 
-            var serviceStackHandler = handler as IServiceStackHttpHandler;
+            var serviceStackHandler = handler as IServiceStackHandler;
             if (serviceStackHandler != null)
             {
                 var restHandler = serviceStackHandler as RestHandler;
                 if (restHandler != null)
                 {
-                    httpReq.OperationName = operationName = restHandler.RestPath.RequestType.Name;
+                    httpReq.OperationName = operationName = restHandler.RestPath.RequestType.GetOperationName();
                 }
-                serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
-                httpRes.Close();
-                return;
+
+                var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);                
+                task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+                //Matches Exceptions handled in HttpListenerBase.InitTask()
+
+                return task;
             }
 
-            throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
+            return new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo)
+                .AsTaskException();
         }
 
         public override void OnConfigLoad()
         {
             base.OnConfigLoad();
 
-            Config.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(HandlerPath)
+            Config.HandlerFactoryPath = string.IsNullOrEmpty(HandlerPath)
                 ? null
                 : HandlerPath;
 

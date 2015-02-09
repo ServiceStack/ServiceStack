@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Linq;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using System.Web;
 using Microsoft.CSharp;
-using ServiceStack.Common;
+using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Compilation;
+using ServiceStack.Razor.Compilation.CodeTransformers;
 using ServiceStack.Razor.Managers.RazorGen;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Razor.Managers
@@ -19,10 +22,12 @@ namespace ServiceStack.Razor.Managers
     /// </summary>
     public class RazorViewManager
     {
+        const string DefaultLayoutFile = RazorPageResolver.DefaultLayoutName + ".cshtml";
+
         public static ILog Log = LogManager.GetLogger(typeof(RazorViewManager));
 
-        public Dictionary<string, RazorPage> Pages = new Dictionary<string, RazorPage>(StringComparer.InvariantCultureIgnoreCase);
-        protected Dictionary<string, string> ViewNamesMap = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+        public Dictionary<string, RazorPage> Pages = new Dictionary<string, RazorPage>(StringComparer.OrdinalIgnoreCase);
+        protected Dictionary<string, string> ViewNamesMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         protected IRazorConfig Config { get; set; }
 
@@ -36,31 +41,90 @@ namespace ServiceStack.Razor.Managers
 
         public void Init()
         {
+            if (Config.WaitForPrecompilationOnStartup.GetValueOrDefault())
+                startupPrecompilationTasks = new List<Task>();
+
             ScanForRazorPages();
+
+            if (Config.WaitForPrecompilationOnStartup.GetValueOrDefault())
+            {
+                Task.WaitAll(startupPrecompilationTasks.ToArray());
+                startupPrecompilationTasks = null;
+            }
         }
 
         private void ScanForRazorPages()
         {
+            ScanAssemblies();
+            ScanPaths();
+        }
+
+        private void ScanPaths()
+        {
             var pattern = Path.ChangeExtension("*", this.Config.RazorFileExtension);
 
-            var files = this.PathProvider.GetAllMatchingFiles(pattern)
-                            .Where(IsWatchedFile);
+            var files = PathProvider.GetAllMatchingFiles(pattern);
+            files.Each(x => AddPage(x));
+        }
 
-            // you can override IsWatchedFile to filter
-            files.Each(x => TrackPage(x));
+        private void ScanAssemblies()
+        {
+            foreach (var assembly in this.Config.LoadFromAssemblies)
+            {
+                foreach (var type in assembly.GetTypes()
+                    .Where(w => w.FirstAttribute<GeneratedCodeAttribute>() != null
+                        && w.FirstAttribute<GeneratedCodeAttribute>().Tool == "RazorGenerator"
+                        && w.FirstAttribute<VirtualPathAttribute>() != null))
+                {
+                    AddPage(type);
+                }
+            }
         }
 
         public virtual RazorPage AddPage(string filePath)
         {
-            var newFile = GetVirutalFile(filePath);
+            var newFile = GetVirtualFile(filePath);
             return AddPage(newFile);
+        }
+
+        public virtual void InvalidatePage(RazorPage page, bool compile = true)
+        {
+            if (page.IsValid || page.IsCompiling)
+            {
+                lock (page.SyncRoot)
+                {
+                    page.IsValid = false;
+                }
+            }
+
+            if (compile)
+                PrecompilePage(page);
         }
 
         public virtual RazorPage AddPage(IVirtualFile file)
         {
-            return IsWatchedFile(file) 
-                ? TrackPage(file)
-                : null;
+            if (!IsWatchedFile(file))
+                return null;
+
+            var page = GetPage(file);
+            if (page != null)
+                return page;
+
+            return TrackPage(file);
+        }
+
+        public virtual RazorPage AddPage(Type pageType)
+        {
+            var virtualPathAttr = pageType.FirstAttribute<VirtualPathAttribute>();
+            if (virtualPathAttr == null || !this.IsWatchedFile(virtualPathAttr.VirtualPath))
+                return null;
+
+            var pagePath = virtualPathAttr.VirtualPath.TrimStart('~');
+            var page = GetPage(pagePath);
+            if (page != null)
+                return page;
+
+            return TrackPage(pageType);
         }
 
         public virtual RazorPage TrackPage(IVirtualFile file)
@@ -75,23 +139,50 @@ namespace ServiceStack.Razor.Managers
             {
                 PageHost = new RazorPageHost(PathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>()),
                 IsValid = false,
-                File = file
+                File = file,
+                VirtualPath = file.VirtualPath,
             };
 
             //add it to our pages dictionary.
             AddPage(page);
-            
+
+            if (Config.PrecompilePages.GetValueOrDefault())
+                PrecompilePage(page);
+
             return page;
         }
 
-        protected virtual RazorPage AddPage(RazorPage page)
+        public virtual RazorPage TrackPage(Type pageType)
         {
-            var pagePath = GetDictionaryPagePath(page.PageHost.File);
+            var pageBaseType = this.Config.PageBaseType;
+            var transformer = new RazorViewPageTransformer(pageBaseType);
 
-            this.Pages[pagePath] = page;
+            var pagePath = pageType.FirstAttribute<VirtualPathAttribute>().VirtualPath.TrimStart('~');
+            var file = GetVirtualFile(pagePath);
+            
+            var page = new RazorPage
+            {
+                PageHost = file != null ? new RazorPageHost(PathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>()) : null,
+                PageType = pageType,
+                IsValid = true,
+                File = file,
+                VirtualPath = pagePath,
+            };
+
+            AddPage(page, pagePath);
+            return page;
+        }
+
+        protected virtual RazorPage AddPage(RazorPage page, string pagePath = null)
+        {
+            pagePath = pagePath != null
+                ? GetDictionaryPagePath(pagePath)
+                : GetDictionaryPagePath(page.PageHost.File);
+
+            Pages[pagePath] = page;
 
             //Views should be uniquely named and stored in any deep folder structure
-            if (pagePath.StartsWithIgnoreCase("/views/"))
+            if (pagePath.StartsWithIgnoreCase("/views/") && !pagePath.EndsWithIgnoreCase(DefaultLayoutFile))
             {
                 var viewName = pagePath.SplitOnLast('.').First().SplitOnLast('/').Last();
                 ViewNamesMap[viewName] = pagePath;
@@ -103,34 +194,13 @@ namespace ServiceStack.Razor.Managers
         public virtual RazorPage GetPage(string absolutePath)
         {
             RazorPage page;
-            this.Pages.TryGetValue(absolutePath, out page);
+            Pages.TryGetValue(GetDictionaryPagePath(absolutePath), out page);
             return page;
         }
 
-        public virtual RazorPage GetPageByPathInfo(string pathInfo)
+        public RazorPage GetPage(IVirtualFile file)
         {
-            RazorPage page;
-            if (this.Pages.TryGetValue(pathInfo, out page))
-                return page;
-
-            if (this.Pages.TryGetValue(Path.ChangeExtension(pathInfo, Config.RazorFileExtension), out page))
-                return page;
-            
-            if (this.Pages.TryGetValue(CombinePaths(pathInfo, Config.DefaultPageName), out page))
-                return page;
-
-            return null;
-        }
-
-        public virtual RazorPage GetPage(IHttpRequest request, object dto)
-        {
-            var normalizePath = NormalizePath(request, dto);
-            return GetPage(normalizePath);
-        }
-
-        public virtual RazorPage GetPageByName(string pageName)
-        {
-            return GetPageByName(pageName, null, null);
+            return GetPage(file.VirtualPath);
         }
 
         private static string CombinePaths(params string[] paths)
@@ -141,71 +211,51 @@ namespace ServiceStack.Razor.Managers
             return combinedPath;
         }
 
-        public virtual RazorPage GetPageByName(string pageName, IHttpRequest request, object dto)
+        public virtual RazorPage GetViewPage(string pageName)
         {
-            RazorPage page = null;
-            var htmlPageName = Path.ChangeExtension(pageName, Config.RazorFileExtension);
-
-            if (request != null)
-            {
-                var contextRelativePath = NormalizePath(request, dto);
-
-                string contextParentDir = contextRelativePath;
-                do
-                {
-                    contextParentDir = (contextParentDir ?? "").SplitOnLast('/').First();
-
-                    var relativePath = CombinePaths(contextParentDir, htmlPageName);
-                    if (this.Pages.TryGetValue(relativePath, out page))
-                        return page;
-
-                } while (!string.IsNullOrEmpty(contextParentDir));
-            }
-
-            //var sharedPath = "/view/shared/{0}".Fmt(htmlPageName);
-            //if (this.Pages.TryGetValue(sharedPath, out page))
-            //    return page;
-
             string viewPath;
-            if (ViewNamesMap.TryGetValue(pageName, out viewPath))
-                this.Pages.TryGetValue(viewPath, out page);
-
-            return page;
+            if (ViewNamesMap.TryGetValue(pageName.ToLowerInvariant(), out viewPath))
+                return GetPage(viewPath);
+            return null;
         }
 
-        static char[] InvalidFileChars = new[]{'<','>','`'}; //Anonymous or Generic type names
-        private string NormalizePath(IHttpRequest request, object dto)
+        public virtual RazorPage GetContentPage(string pathInfo)
         {
-            if (dto != null && !(dto is DynamicRequestObject)) // this is for a view inside /views
+            return GetPage(Path.ChangeExtension(pathInfo, Config.RazorFileExtension))
+                   ?? GetPage(CombinePaths(pathInfo, Config.DefaultPageName));
+        }
+
+        public virtual RazorPage GetLayoutPage(string layoutName, RazorPage page, IRequest request, object dto)
+        {
+            var layoutFile = Path.ChangeExtension(layoutName, Config.RazorFileExtension);
+            // layoutName may or may not contain the .cshtml extension, the below forces it not to.
+            layoutName = Path.GetFileNameWithoutExtension(layoutFile);
+
+            var contextRelativePath = page.VirtualPath;
+            string contextParentDir = contextRelativePath;
+            do
             {
-                //if we have a view name, use it.
-                var viewName = request.GetView();
+                contextParentDir = (contextParentDir ?? "").SplitOnLast('/').First();
 
-                if (string.IsNullOrWhiteSpace(viewName))
-                {
-                    //use the response DTO name
-                    viewName = dto.GetType().Name;
-                }
-                if (string.IsNullOrWhiteSpace(viewName))
-                {
-                    //the request use the request DTO name.
-                    viewName = request.OperationName;
-                }
+                var path = CombinePaths(contextParentDir, layoutFile);
+                var layoutPage = GetPage(path);
+                if (layoutPage != null)
+                    return layoutPage;
 
-                var isInvalidName = viewName.IndexOfAny(InvalidFileChars) >= 0;
-                if (!isInvalidName)
-                {
-                    return CombinePaths("views", Path.ChangeExtension(viewName, Config.RazorFileExtension));
-                }
-            }
+            } while (!string.IsNullOrEmpty(contextParentDir));
 
-            // path/to/dir/default.cshtml
-            var path = request.PathInfo;
-            var defaultIndex = CombinePaths(path, Config.DefaultPageName);
-            if (Pages.ContainsKey(defaultIndex))
-                return defaultIndex;
+            if (layoutName != RazorPageResolver.DefaultLayoutName)
+                return GetViewPage(layoutName);
 
-            return Path.ChangeExtension(path, Config.RazorFileExtension);
+            return GetPage(CombinePaths("/views/shared/", layoutFile))
+                   ?? GetPage(CombinePaths("/views/", layoutFile)); //backwards compatibility fallback
+        }
+
+        public virtual RazorPage GetPartialPage(IHttpRequest httpReq, string partialName)
+        {
+            // Look for partial from same directory or view page
+            return GetContentPage(httpReq.GetDirectoryPath().CombineWith(partialName)) 
+                ?? GetViewPage(partialName);
         }
 
         public virtual bool IsWatchedFile(IVirtualFile file)
@@ -213,23 +263,88 @@ namespace ServiceStack.Razor.Managers
             return this.Config.RazorFileExtension.EndsWithIgnoreCase(file.Extension);
         }
 
+        public virtual bool IsWatchedFile(string fileName)
+        {
+            return this.Config.RazorFileExtension.EndsWithIgnoreCase(Path.GetExtension(fileName));
+        }
+
         public virtual string GetDictionaryPagePath(string relativePath)
         {
-            if (relativePath.ToLowerInvariant().StartsWith("/views/"))
-            {
-                //re-write the /views path
-                //so we can uniquely get views by
-                //ResponseDTO/RequestDTO type.
-                //PageResolver:NormalizePath()
-                //knows how to resolve DTO views.
-                return "/views/" + Path.GetFileName(relativePath);
-            }
-            return relativePath;
+            return relativePath.ToLowerInvariant();
         }
 
         public virtual string GetDictionaryPagePath(IVirtualFile file)
         {
             return GetDictionaryPagePath(file.VirtualPath);
+        }
+
+        private List<Task> startupPrecompilationTasks;
+
+        protected virtual Task<RazorPage> PrecompilePage(RazorPage page)
+        {
+            page.MarkedForCompilation = true;
+
+            var task = Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    EnsureCompiled(page);
+
+                    if (page.CompileException != null)
+                        Log.ErrorFormat("Precompilation of Razor page '{0}' failed: {1}", page.File.Name, page.CompileException.Message);
+                }
+                catch (Exception ex)
+                {
+                    Log.ErrorFormat("Precompilation of Razor page '{0}' failed: {1}", page.File.Name, ex.Message);
+                }
+                return page;
+            });
+
+            if (startupPrecompilationTasks != null)
+                startupPrecompilationTasks.Add(task);
+
+            return task;
+        }
+
+        public virtual void EnsureCompiled(RazorPage page)
+        {
+            if (page == null) return;
+            if (page.IsValid) return;
+            if (page.PageHost == null)
+            {
+                Log.WarnFormat("Could not find virtualPath for compiled Razor page '{0}'.", page.VirtualPath);
+                return;
+            }
+
+            lock (page.SyncRoot)
+            {
+                if (page.IsValid) return;
+
+                var compileTimer = System.Diagnostics.Stopwatch.StartNew();
+                try
+                {
+                    page.IsCompiling = true;
+                    page.CompileException = null;
+
+                    var type = page.PageHost.Compile();
+
+                    page.PageType = type;
+
+                    page.IsValid = true;
+
+                    compileTimer.Stop();
+                    Log.DebugFormat("Compiled Razor page '{0}' in {1}ms.", page.File.Name, compileTimer.ElapsedMilliseconds);
+                }
+                catch (HttpCompileException ex)
+                {
+                    page.CompileException = ex;
+                }
+                finally
+                {
+                    page.IsCompiling = false;
+                    page.MarkedForCompilation = false;
+                }
+            }
         }
 
         #region FileSystemWatcher Handlers
@@ -245,7 +360,7 @@ namespace ServiceStack.Razor.Managers
             return relative;
         }
 
-        public virtual IVirtualFile GetVirutalFile(string ospath)
+        public virtual IVirtualFile GetVirtualFile(string ospath)
         {
             var relative = GetRelativePath(ospath);
             return this.PathProvider.GetFile(relative);

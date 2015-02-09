@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 
+
 namespace ServiceStack.Messaging
 {
     internal delegate IMessage MessageFactoryDelegate(object body);
@@ -50,7 +51,8 @@ namespace ServiceStack.Messaging
         public Guid? ReplyId { get; set; }
         public string ReplyTo { get; set; }
         public int Options { get; set; }
-        public MessageError Error { get; set; }
+        public ResponseStatus Error { get; set; }
+        public string Tag { get; set; }
         public object Body { get; set; }
     }
 

@@ -1,4 +1,8 @@
-﻿using System.Runtime.Serialization;
+﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace ServiceStack
 {
@@ -23,17 +27,21 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class AuthenticateResponse
+    public class AuthenticateResponse : IMeta
     {
         public AuthenticateResponse()
         {
             this.ResponseStatus = new ResponseStatus();
         }
 
-        [DataMember(Order = 1)] public string SessionId { get; set; }
-        [DataMember(Order = 2)] public string UserName { get; set; }
-        [DataMember(Order = 3)] public string ReferrerUrl { get; set; }
-        [DataMember(Order = 4)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 1)] public string UserId { get; set; }
+        [DataMember(Order = 2)] public string SessionId { get; set; }
+        [DataMember(Order = 3)] public string UserName { get; set; }
+        [DataMember(Order = 4)] public string DisplayName { get; set; }
+        [DataMember(Order = 5)] public string ReferrerUrl { get; set; }
+
+        [DataMember(Order = 6)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 7)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -50,7 +58,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class RegisterResponse
+    public class RegisterResponse : IMeta
     {
         public RegisterResponse()
         {
@@ -61,6 +69,8 @@ namespace ServiceStack
         [DataMember(Order = 2)] public string SessionId { get; set; }
         [DataMember(Order = 3)] public string UserName { get; set; }
         [DataMember(Order = 4)] public string ReferrerUrl { get; set; }
+
         [DataMember(Order = 5)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 6)] public Dictionary<string, string> Meta { get; set; }
     }
 }

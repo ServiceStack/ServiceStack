@@ -10,7 +10,8 @@ namespace ServiceStack.Metadata
         public static ServiceEndpointsMetadataConfig Create(string serviceStackHandlerPrefix)
         {
             var config = new MetadataConfig("{0}", "{0}", "/{0}/reply", "/{0}/oneway", "/{0}/metadata");
-            return new ServiceEndpointsMetadataConfig {
+            return new ServiceEndpointsMetadataConfig
+            {
                 DefaultMetadataUri = "/metadata",
                 Soap11 = new SoapMetadataConfig("soap11", "SOAP 1.1", "/soap11", "/soap11", "/soap11/metadata", "soap11"),
                 Soap12 = new SoapMetadataConfig("soap12", "SOAP 1.2", "/soap12", "/soap12", "/soap12/metadata", "soap12"),

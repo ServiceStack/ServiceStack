@@ -1,10 +1,12 @@
+//Copyright (c) Service Stack LLC. All Rights Reserved.
+//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.Serialization;
-using System.Web;
-using ServiceStack.Host.AspNet;
-using ServiceStack.Host.HttpListener;
+using System.Text;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
@@ -12,14 +14,11 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-    public abstract class ServiceStackHandlerBase
-        : IServiceStackHttpHandler, IHttpHandler
+    public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
     {
         internal static readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHandlerBase));
         internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
         internal static readonly byte[][] NetworkInterfaceIpv6Addresses = new byte[0][];
-
-        public string RequestName { get; set; }
 
         static ServiceStackHandlerBase()
         {
@@ -37,22 +36,56 @@ namespace ServiceStack.Host.Handlers
 
         public RequestAttributes HandlerAttributes { get; set; }
 
-        public bool IsReusable
+        public override bool IsReusable
         {
             get { return false; }
         }
 
-        public abstract object CreateRequest(IHttpRequest request, string operationName);
-        public abstract object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request);
+        public abstract object CreateRequest(IRequest request, string operationName);
+        public abstract object GetResponse(IRequest request, object requestDto);
 
-        public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public Task HandleResponse(object response, Func<object, Task> callback, Func<Exception, Task> errorCallback)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var taskResponse = response as Task;
+                if (taskResponse != null)
+                {
+                    if (taskResponse.Status == TaskStatus.Created)
+                    {
+                        taskResponse.Start();
+                    }
+
+                    return taskResponse
+                        .Continue(task =>
+                        {
+                            if (task.IsFaulted)
+                                return errorCallback(task.Exception.UnwrapIfSingleException());
+
+                            if (task.IsCanceled)
+                                return errorCallback(new OperationCanceledException("The async Task operation was cancelled"));
+
+                            if (task.IsCompleted)
+                            {
+                                var taskResult = task.GetResult();
+                                return callback(taskResult);
+                            }
+
+                            return errorCallback(new InvalidOperationException("Unknown Task state"));
+                        });
+                }
+
+                return callback(response);
+            }
+            catch (Exception ex)
+            {
+                return errorCallback(ex);
+            }
         }
 
-        public static object DeserializeHttpRequest(Type operationType, IHttpRequest httpReq, string contentType)
+        public static object DeserializeHttpRequest(Type operationType, IRequest httpReq, string contentType)
         {
-            var httpMethod = httpReq.HttpMethod;
+            var httpMethod = httpReq.Verb;
             var queryString = httpReq.QueryString;
 
             if (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Options)
@@ -86,7 +119,7 @@ namespace ServiceStack.Host.Handlers
             return request;
         }
 
-        protected static object CreateContentTypeRequest(IHttpRequest httpReq, Type requestType, string contentType)
+        protected static object CreateContentTypeRequest(IRequest httpReq, Type requestType, string contentType)
         {
             try
             {
@@ -108,51 +141,13 @@ namespace ServiceStack.Host.Handlers
             return requestType.CreateInstance(); //Return an empty DTO, even for empty request bodies
         }
 
-        protected static object GetCustomRequestFromBinder(IHttpRequest httpReq, Type requestType)
+        protected static object GetCustomRequestFromBinder(IRequest httpReq, Type requestType)
         {
-            Func<IHttpRequest, object> requestFactoryFn;
+            Func<IRequest, object> requestFactoryFn;
             HostContext.ServiceController.RequestTypeFactoryMap.TryGetValue(
                 requestType, out requestFactoryFn);
 
             return requestFactoryFn != null ? requestFactoryFn(httpReq) : null;
-        }
-
-        protected static bool DefaultHandledRequest(HttpListenerContext context)
-        {
-            return false;
-        }
-
-        protected static bool DefaultHandledRequest(HttpContext context)
-        {
-            return false;
-        }
-
-        public virtual void ProcessRequest(HttpContext context)
-        {
-            var operationName = this.RequestName ?? context.Request.GetOperationName();
-
-            if (string.IsNullOrEmpty(operationName)) return;
-
-            if (DefaultHandledRequest(context)) return;
-
-            ProcessRequest(
-                new AspNetRequest(operationName, context.Request),
-                new AspNetResponse(context.Response),
-                operationName);
-        }
-
-        public virtual void ProcessRequest(HttpListenerContext context)
-        {
-            var operationName = this.RequestName ?? context.Request.GetOperationName();
-
-            if (string.IsNullOrEmpty(operationName)) return;
-
-            if (DefaultHandledRequest(context)) return;
-
-            ProcessRequest(
-                new ListenerRequest(operationName, context.Request),
-                new ListenerResponse(context.Response),
-                operationName);
         }
 
         public static Type GetOperationType(string operationName)
@@ -160,13 +155,12 @@ namespace ServiceStack.Host.Handlers
             return HostContext.Metadata.GetOperationType(operationName);
         }
 
-        protected static object ExecuteService(object request, RequestAttributes requestAttributes,
-            IHttpRequest httpReq, IHttpResponse httpRes)
+        protected static object ExecuteService(object request, IRequest httpReq)
         {
-            return HostContext.ExecuteService(request, requestAttributes, httpReq, httpRes);
+            return HostContext.ExecuteService(request, httpReq);
         }
 
-        public RequestAttributes GetEndpointAttributes(System.ServiceModel.OperationContext operationContext)
+        public RequestAttributes GetRequestAttributes(System.ServiceModel.OperationContext operationContext)
         {
             if (!HostContext.Config.EnableAccessRestrictions) return default(RequestAttributes);
 
@@ -207,28 +201,6 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        protected void HandleException(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Exception ex)
-        {
-            var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
-            Log.Error(errorMessage, ex);
-
-            try
-            {
-                HostContext.RaiseUncaughtException(httpReq, httpRes, operationName, ex);
-            }
-            catch (Exception writeErrorEx)
-            {
-                //Exception in writing to response should not hide the original exception
-                Log.Info("Failed to write error to response: {0}", writeErrorEx);
-                //rethrow the original exception
-                throw ex;
-            }
-            finally
-            {
-                httpRes.EndRequest(skipHeaders: true);
-            }
-        }
-
         protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, Feature feature, string operationName)
         {
             if (operationName == null)
@@ -238,7 +210,7 @@ namespace ServiceStack.Host.Handlers
             {
                 if (!HostContext.HasFeature(feature))
                 {
-                    HostContext.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Feature Not Available");
+                    HostContext.AppHost.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Feature Not Available");
                     return false;
                 }
             }
@@ -246,11 +218,22 @@ namespace ServiceStack.Host.Handlers
             var format = feature.ToFormat();
             if (!HostContext.Metadata.CanAccess(httpReq, format, operationName))
             {
-                HostContext.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
+                HostContext.AppHost.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
                 return false;
             }
             return true;
         }
 
+        private static void WriteDebugRequest(IRequest requestContext, object dto, IResponse httpRes)
+        {
+            var bytes = Encoding.UTF8.GetBytes(dto.SerializeAndFormat());
+            httpRes.OutputStream.Write(bytes, 0, bytes.Length);
+        }
+
+        public Task WriteDebugResponse(IResponse httpRes, object response)
+        {
+            return httpRes.WriteToResponse(response, WriteDebugRequest,
+                new BasicRequest { ContentType = MimeTypes.PlainText });
+        }
     }
 }

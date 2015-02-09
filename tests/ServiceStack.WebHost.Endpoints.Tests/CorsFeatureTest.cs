@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Threading;
 using NUnit.Framework;
-using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/corsmethod")]
-    public class CorsFeatureRequest
-    {
-    }
-
     [EnableCors("http://localhost http://localhost2", "POST, GET", "Type1, Type2", true)]
+    public class CorsFeatureRequest { }
+
     public class CorsFeatureResponse
     {
         public bool IsSuccess { get; set; }
@@ -45,29 +42,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class CorsFeatureServiceTest
     {
-        private const string ListeningOn = "http://localhost:8022/";
-        private const string ServiceClientBaseUri = "http://localhost:8022/";
-
         public class CorsFeatureAppHostHttpListener
             : AppHostHttpListenerBase
         {
-
             public CorsFeatureAppHostHttpListener()
                 : base("Cors Feature Tests", typeof(CorsFeatureService).Assembly) { }
 
-            public override void Configure(Funq.Container container)
-            {
-            }
+            public override void Configure(Funq.Container container) {}
         }
 
-        CorsFeatureAppHostHttpListener appHost;
+        ServiceStackHost appHost;
 
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            appHost = new CorsFeatureAppHostHttpListener();
-            appHost.Init();
-            appHost.Start(ListeningOn);
+            appHost = new CorsFeatureAppHostHttpListener()
+                .Init()
+                .Start(Config.AbsoluteBaseUri);
         }
 
         [TestFixtureTearDown]
@@ -78,9 +69,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         static IRestClient[] RestClients = 
         {
-            new JsonServiceClient(ServiceClientBaseUri),
-            new XmlServiceClient(ServiceClientBaseUri),
-            new JsvServiceClient(ServiceClientBaseUri)
+            new JsonServiceClient(Config.AbsoluteBaseUri),
+            new XmlServiceClient(Config.AbsoluteBaseUri),
+            new JsvServiceClient(Config.AbsoluteBaseUri)
         };
 
         [Test, Explicit]
@@ -94,7 +85,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             appHost.Config.GlobalResponseHeaders.Clear();
 
-            var response = RequestContextTests.GetResponseHeaders(ListeningOn + "/corsmethod");
+            var response = RequestContextTests.GetResponseHeaders(Config.ServiceStackBaseUri + "/corsmethod");
             Assert.That(response[HttpHeaders.AllowOrigin], Is.EqualTo("http://localhost http://localhost2"));
             Assert.That(response[HttpHeaders.AllowMethods], Is.EqualTo("POST, GET"));
             Assert.That(response[HttpHeaders.AllowHeaders], Is.EqualTo("Type1, Type2"));
@@ -104,14 +95,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test, TestCaseSource("RestClients")]
         public void GlobalCorsHasAccessControlHeaders(IRestClient client)
         {
-            appHost.LoadPlugin(new CorsFeature());
+            appHost.LoadPlugin(new CorsFeature { AutoHandleOptionsRequests = false });
 
-            var response = RequestContextTests.GetResponseHeaders(ListeningOn + "/globalcorsfeature");
+            var response = RequestContextTests.GetResponseHeaders(Config.ServiceStackBaseUri + "/globalcorsfeature");
             Assert.That(response[HttpHeaders.AllowOrigin], Is.EqualTo("*"));
             Assert.That(response[HttpHeaders.AllowMethods], Is.EqualTo("GET, POST, PUT, DELETE, OPTIONS"));
             Assert.False(response.ContainsKey(HttpHeaders.AllowCredentials));
             Assert.That(response[HttpHeaders.AllowHeaders], Is.EqualTo("Content-Type"));
         }
-
     }
 }

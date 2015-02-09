@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Messaging;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -105,14 +106,20 @@ namespace ServiceStack.Common.Tests
                 ServiceManager.Execute(requestDto);
             }
 
-            public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+            public void SendOneWay(string relativeOrAbsoluteUri, object requestDto)
             {
-                ServiceManager.Execute(request);
+                ServiceManager.Execute(requestDto);
+            }
+
+            public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+            {
+                throw new NotImplementedException();
             }
 
             public TResponse Send<TResponse>(object request)
             {
-                var response = ServiceManager.Execute(request);
+                var message = MessageFactory.Create(request);
+                var response = ServiceManager.ExecuteMessage(message);
                 var httpResult = response as IHttpResult;
                 if (httpResult != null)
                 {
@@ -125,6 +132,20 @@ namespace ServiceStack.Common.Tests
                         throw webEx;
                     }
                     return (TResponse) httpResult.Response;
+                }
+
+                var responseStatus = response.GetResponseStatus();
+                var isError = responseStatus != null && responseStatus.ErrorCode != null;
+                if (isError)
+                {
+                    var webEx = new WebServiceException(responseStatus.Message)
+                    {
+                        ResponseDto = response,
+                        StatusCode = responseStatus.Errors != null && responseStatus.Errors.Count > 0
+                            ? 400
+                            : 500,
+                    };
+                    throw webEx;
                 }
 
                 return (TResponse)response;
@@ -140,7 +161,12 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public void Get(object request)
+            public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+            {
+                throw new NotImplementedException();
+            }
+
+            public HttpWebResponse Get(object request)
             {
                 throw new NotImplementedException();
             }
@@ -165,7 +191,12 @@ namespace ServiceStack.Common.Tests
                 return parent.ExecutePath<TResponse>(HttpMethods.Get, new UrlParts(relativeOrAbsoluteUrl), null);
             }
 
-            public void Delete(object requestDto)
+            public IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
+            {
+                throw new NotImplementedException();
+            }
+
+            public HttpWebResponse Delete(object requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -190,7 +221,7 @@ namespace ServiceStack.Common.Tests
                 return parent.ExecutePath<TResponse>(HttpMethods.Delete, new UrlParts(relativeOrAbsoluteUrl), null);
             }
 
-            public void Post(object requestDto)
+            public HttpWebResponse Post(object requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -220,7 +251,7 @@ namespace ServiceStack.Common.Tests
                 return parent.ExecutePath<TResponse>(HttpMethods.Post, new UrlParts(relativeOrAbsoluteUrl), request);
             }
 
-            public void Put(object requestDto)
+            public HttpWebResponse Put(object requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -250,7 +281,7 @@ namespace ServiceStack.Common.Tests
                 return parent.ExecutePath<TResponse>(HttpMethods.Put, new UrlParts(relativeOrAbsoluteUrl), requestDto);
             }
 
-            public void Patch(object requestDto)
+            public HttpWebResponse Patch(object requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -290,7 +321,7 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public void CustomMethod(string httpVerb, object requestDto)
+            public HttpWebResponse CustomMethod(string httpVerb, object requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -325,6 +356,12 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
+            public TResponse PostFileWithRequest<TResponse>(
+                Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<TResponse> SendAsync<TResponse>(object requestDto)
             {
                 var tcs = new TaskCompletionSource<TResponse>();
@@ -338,6 +375,11 @@ namespace ServiceStack.Common.Tests
                     HandleException(ex, (TResponse r, Exception rex) => tcs.SetException(rex));
                 }
                 return tcs.Task;
+            }
+
+            public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+            {
+                throw new NotImplementedException();
             }
 
             private static void HandleException<TResponse>(Exception exception, Action<TResponse, Exception> onError)
@@ -386,6 +428,11 @@ namespace ServiceStack.Common.Tests
                 return tcs.Task;
             }
 
+            public Task GetAsync(IReturnVoid requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
             {
                 throw new NotImplementedException();
@@ -411,12 +458,22 @@ namespace ServiceStack.Common.Tests
                 return tcs.Task;
             }
 
+            public Task DeleteAsync(IReturnVoid requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto)
             {
                 throw new NotImplementedException();
             }
 
             public Task<TResponse> PostAsync<TResponse>(object requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task PostAsync(IReturnVoid requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -431,12 +488,22 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
+            public Task PutAsync(IReturnVoid requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
             {
                 throw new NotImplementedException();
             }
 
             public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
             {
                 throw new NotImplementedException();
             }
@@ -482,12 +549,12 @@ namespace ServiceStack.Common.Tests
             }
 
             public void Dispose() { }
-            public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
+            public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "upload")
             {
                 throw new NotImplementedException();
             }
 
-            public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
+            public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "upload")
             {
                 throw new NotImplementedException();
             }
@@ -577,7 +644,7 @@ namespace ServiceStack.Common.Tests
             object response;
             try
             {
-                response = httpHandler.GetResponse(httpReq, null, request);
+                response = httpHandler.GetResponse(httpReq, request);
             }
             catch (Exception ex)
             {

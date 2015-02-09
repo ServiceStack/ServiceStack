@@ -1,0 +1,18 @@
+﻿@{
+    Layout = "SimpleLayout";
+    ViewBag.Title = "Page testing request filters";
+
+    base.ApplyRequestFilters(new RedirectWithoutQueryString());
+    if (Request.QueryString.Count > 0)
+    {
+        throw new System.IO.InvalidDataException();
+    }
+}
+
+<h1>Request Filters</h1>
+
+<h3>QueryStrings:@Request.QueryString.Count</h3>
+
+@DateTime.UtcNow.ToLongTimeString()
+
+<!--view:RequestFilters.cshtml-->

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Linq;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -51,6 +52,7 @@ namespace ServiceStack.Authentication.OAuth2
                 { "birthday", el.GetString("date-of-birth") },
                 { "link", el.GetString("public-profile-url") },
                 { "picture", el.GetString("picture-url") },
+                { AuthMetadataProvider.ProfileUrlKey,  el.GetString("picture-url") },
             };
 
             return authInfo;

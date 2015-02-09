@@ -82,6 +82,7 @@ namespace ServiceStack.AuthWeb.Tests
                     new OpenIdOAuthProvider(appSettings),       //Sign-in with Custom OpenId
                     new GoogleOAuth2Provider(appSettings),      //Sign-in with Google OAuth2 Provider
                     new LinkedInOAuth2Provider(appSettings),    //Sign-in with LinkedIn OAuth2 Provider
+                    new GithubAuthProvider(appSettings),        //Sign-in with GitHub OAuth2 Provider
                 }));
 
 #if HTTP_LISTENER
@@ -103,7 +104,7 @@ namespace ServiceStack.AuthWeb.Tests
             if (appSettings.Get("RecreateAuthTables", false))
                 authRepo.DropAndReCreateTables(); //Drop and re-create all Auth and registration tables
             else
-                authRepo.CreateMissingTables();   //Create only the missing tables
+                authRepo.InitSchema();   //Create only the missing tables
 
             Plugins.Add(new RequestLogsFeature());
         }

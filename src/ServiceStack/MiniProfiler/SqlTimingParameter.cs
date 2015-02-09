@@ -55,7 +55,7 @@ namespace ServiceStack.MiniProfiler
         /// </summary>
         public override int GetHashCode()
         {
-            return ParentSqlTimingId.GetHashCode() ^ Name.GetHashCode() ^ Value.GetHashCode();
+            return ParentSqlTimingId.GetHashCode() ^ Name.GetHashCode() ^ (Value != null ? Value.GetHashCode() : 0);
         }
     }
 }

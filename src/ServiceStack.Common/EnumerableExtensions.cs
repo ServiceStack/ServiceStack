@@ -156,5 +156,12 @@ namespace ServiceStack
             return to;
         }
 
+        /// <summary>
+        /// Return T[0] when enumerable is null, safe to use in enumerations like foreach
+        /// </summary>
+        public static IEnumerable<T> Safe<T>(this IEnumerable<T> enumerable)
+        {
+            return enumerable ?? new T[0];
+        }
     }
 }

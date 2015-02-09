@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
-using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
@@ -17,15 +16,20 @@ namespace ServiceStack.Auth
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher) : base(dbFactory, passwordHasher) { }
     }
 
-    public class OrmLiteAuthRepository<TUserAuth, TUserAuthProvider> : IUserAuthRepository, IClearable
+    public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles
         where TUserAuth : class, IUserAuth
-        where TUserAuthProvider : class, IUserAuthDetails
+        where TUserAuthDetails : class, IUserAuthDetails
     {
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
 
+        public int? MaxLoginAttempts { get; set; }
+
         private readonly IDbConnectionFactory dbFactory;
         private readonly IHashProvider passwordHasher;
+        private bool hasInitSchema;
+
+        public bool UseDistinctRoleTables { get; set; }
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory)
             : this(dbFactory, new SaltedHash()) { }
@@ -36,12 +40,14 @@ namespace ServiceStack.Auth
             this.passwordHasher = passwordHasher;
         }
 
-        public void CreateMissingTables()
+        public void InitSchema()
         {
+            hasInitSchema = true;
             using (var db = dbFactory.Open())
             {
                 db.CreateTable<TUserAuth>();
-                db.CreateTable<TUserAuthProvider>();
+                db.CreateTable<TUserAuthDetails>();
+                db.CreateTable<UserAuthRole>();
             }
         }
 
@@ -50,7 +56,8 @@ namespace ServiceStack.Auth
             using (var db = dbFactory.Open())
             {
                 db.DropAndCreateTable<TUserAuth>();
-                db.DropAndCreateTable<TUserAuthProvider>();
+                db.DropAndCreateTable<TUserAuthDetails>();
+                db.DropAndCreateTable<UserAuthRole>();
             }
         }
 
@@ -59,18 +66,16 @@ namespace ServiceStack.Auth
             newUser.ThrowIfNull("newUser");
             password.ThrowIfNullOrEmpty("password");
 
-            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
-            {
-                throw new ArgumentNullException("UserName or Email is required");
-            }
+            ValidateNewUser(newUser);
+        }
 
-            if (!newUser.UserName.IsNullOrEmpty())
-            {
-                if (!ValidUserNameRegEx.IsMatch(newUser.UserName))
-                {
-                    throw new ArgumentException("UserName contains invalid characters", "UserName");
-                }
-            }
+        private void ValidateNewUser(IUserAuth newUser)
+        {
+            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
+                throw new ArgumentNullException(ErrorMessages.UsernameOrEmailRequired);
+
+            if (!newUser.UserName.IsNullOrEmpty() && !ValidUserNameRegEx.IsMatch(newUser.UserName))
+                throw new ArgumentException(ErrorMessages.IllegalUsername, "UserName");
         }
 
         public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
@@ -154,8 +159,37 @@ namespace ServiceStack.Auth
             }
         }
 
+        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
+        {
+            ValidateNewUser(newUser);
+
+            using (var db = dbFactory.Open())
+            {
+                AssertNoExistingUser(db, newUser, existingUser);
+
+                newUser.Id = existingUser.Id;
+                newUser.PasswordHash = existingUser.PasswordHash;
+                newUser.Salt = existingUser.Salt;
+                newUser.DigestHa1Hash = existingUser.DigestHa1Hash;
+                newUser.CreatedDate = existingUser.CreatedDate;
+                newUser.ModifiedDate = DateTime.UtcNow;
+
+                db.Save((TUserAuth)newUser);
+
+                return newUser;
+            }
+        }
+
         public IUserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
+            if (!hasInitSchema)
+            {
+                using (var db = dbFactory.Open())
+                {
+                    hasInitSchema = db.TableExists<TUserAuth>();
+                }
+                if (!hasInitSchema) throw new Exception("OrmLiteAuthRepository Db tables have not been initialized. Try calling 'InitSchema()' in your AppHost Configure method.");
+            }
             using (var db = dbFactory.Open())
             {
                 return GetUserAuthByUserName(db, userNameOrEmail);
@@ -172,9 +206,30 @@ namespace ServiceStack.Auth
             return userAuth;
         }
 
+        protected virtual void RecordInvalidLoginAttempt(IUserAuth userAuth)
+        {
+            if (MaxLoginAttempts == null) return;
+
+            userAuth.InvalidLoginAttempts += 1;
+            userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+            if (userAuth.InvalidLoginAttempts >= MaxLoginAttempts.Value)
+            {
+                userAuth.LockedDate = userAuth.LastLoginAttempt;
+            }
+            SaveUserAuth(userAuth);
+        }
+
+        protected virtual void RecordSuccessfulLogin(IUserAuth userAuth)
+        {
+            if (MaxLoginAttempts == null) return;
+
+            userAuth.InvalidLoginAttempts = 0;
+            userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+            SaveUserAuth(userAuth);
+        }
+
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
-            //userId = null;
             userAuth = GetUserAuthByUserName(userName);
             if (userAuth == null)
             {
@@ -183,9 +238,12 @@ namespace ServiceStack.Auth
 
             if (passwordHasher.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
-                //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+                RecordSuccessfulLogin(userAuth);
+
                 return true;
             }
+
+            RecordInvalidLoginAttempt(userAuth);
 
             userAuth = null;
             return false;
@@ -203,9 +261,13 @@ namespace ServiceStack.Auth
             var digestHelper = new DigestAuthFunctions();
             if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
             {
-                //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+                RecordSuccessfulLogin(userAuth);
+
                 return true;
             }
+
+            RecordInvalidLoginAttempt(userAuth);
+
             userAuth = null;
             return false;
         }
@@ -225,9 +287,9 @@ namespace ServiceStack.Auth
                 return;
             }
 
-            var idSesije = session.Id; //first record session Id (original session Id)
+            var originalId = session.Id; //first record session Id (original session Id)
             session.PopulateWith(userAuth); //here, original sessionId is overwritten with facebook user Id
-            session.Id = idSesije; //we return Id of original session here
+            session.Id = originalId; //we return Id of original session here
 
             session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
             session.ProviderOAuthAccess = GetUserAuthDetails(session.UserAuthId)
@@ -238,16 +300,19 @@ namespace ServiceStack.Auth
         {
             using (var db = dbFactory.Open())
             {
-                return db.SingleById<TUserAuth>(userAuthId);
+                return db.SingleById<TUserAuth>(int.Parse(userAuthId));
             }
         }
 
         public void SaveUserAuth(IAuthSession authSession)
         {
+            if (authSession == null)
+                throw new ArgumentNullException("authSession");
+
             using (var db = dbFactory.Open())
             {
                 var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                    ? db.SingleById<TUserAuth>(authSession.UserAuthId)
+                    ? db.SingleById<TUserAuth>(int.Parse(authSession.UserAuthId))
                     : authSession.ConvertTo<TUserAuth>();
 
                 if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
@@ -267,6 +332,9 @@ namespace ServiceStack.Auth
 
         public void SaveUserAuth(IUserAuth userAuth)
         {
+            if (userAuth == null)
+                throw new ArgumentNullException("userAuth");
+
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default(DateTime))
             {
@@ -284,7 +352,7 @@ namespace ServiceStack.Auth
             var id = int.Parse(userAuthId);
             using (var db = dbFactory.Open())
             {
-                return db.Select<TUserAuthProvider>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
+                return db.Select<TUserAuthDetails>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
             }
         }
 
@@ -314,7 +382,7 @@ namespace ServiceStack.Auth
 
             using (var db = dbFactory.Open())
             {
-                var oAuthProvider = db.Select<TUserAuthProvider>(
+                var oAuthProvider = db.Select<TUserAuthDetails>(
                     q =>
                         q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
@@ -334,12 +402,12 @@ namespace ServiceStack.Auth
 
             using (var db = dbFactory.Open())
             {
-                var oAuthProvider = db.Select<TUserAuthProvider>(
+                var oAuthProvider = db.Select<TUserAuthDetails>(
                     q => q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
                 if (oAuthProvider == null)
                 {
-                    oAuthProvider = typeof(TUserAuthProvider).CreateInstance<TUserAuthProvider>();
+                    oAuthProvider = typeof(TUserAuthDetails).CreateInstance<TUserAuthDetails>();
                     oAuthProvider.Provider = tokens.Provider;
                     oAuthProvider.UserId = tokens.UserId;
                 }
@@ -374,9 +442,184 @@ namespace ServiceStack.Auth
             using (var db = dbFactory.Open())
             {
                 db.DeleteAll<TUserAuth>();
-                db.DeleteAll<TUserAuthProvider>();
+                db.DeleteAll<TUserAuthDetails>();
             }
         }
 
+        public ICollection<string> GetRoles(string userAuthId)
+        {
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(userAuthId);
+                return userAuth.Roles;
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    return db.Select<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Role != null).ConvertAll(x => x.Role);
+                }
+            }
+        }
+
+        public ICollection<string> GetPermissions(string userAuthId)
+        {
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(userAuthId);
+                return userAuth.Permissions;
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    return db.Select<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Permission != null).ConvertAll(x => x.Permission);
+                }
+            }
+        }
+
+        public bool HasRole(string userAuthId, string role)
+        {
+            if (role == null)
+                throw new ArgumentNullException("role");
+
+            if (userAuthId == null)
+                return false;
+
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(userAuthId);
+                return userAuth.Roles != null && userAuth.Roles.Contains(role);
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    return db.Count<UserAuthRole>(q =>
+                        q.UserAuthId == int.Parse(userAuthId) && q.Role == role) > 0;
+                }
+            }
+        }
+
+        public bool HasPermission(string userAuthId, string permission)
+        {
+            if (permission == null)
+                throw new ArgumentNullException("permission");
+
+            if (userAuthId == null)
+                return false;
+
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(userAuthId);
+                return userAuth.Permissions != null && userAuth.Permissions.Contains(permission);
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    return db.Count<UserAuthRole>(q =>
+                        q.UserAuthId == int.Parse(userAuthId) && q.Permission == permission) > 0;
+                }
+            }
+        }
+
+        public void AssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+        {
+            var userAuth = GetUserAuth(userAuthId);
+            if (!UseDistinctRoleTables)
+            {
+                if (!roles.IsEmpty())
+                {
+                    foreach (var missingRole in roles.Where(x => !userAuth.Roles.Contains(x)))
+                    {
+                        userAuth.Roles.Add(missingRole);
+                    }
+                }
+
+                if (!permissions.IsEmpty())
+                {
+                    foreach (var missingPermission in permissions.Where(x => !userAuth.Permissions.Contains(x)))
+                    {
+                        userAuth.Permissions.Add(missingPermission);
+                    }
+                }
+
+                SaveUserAuth(userAuth);
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    var now = DateTime.UtcNow;
+                    var userRoles = db.Select<UserAuthRole>(q => q.UserAuthId == userAuth.Id);
+
+                    if (!roles.IsEmpty())
+                    {
+                        var roleSet = userRoles.Where(x => x.Role != null).Select(x => x.Role).ToHashSet();
+                        foreach (var role in roles)
+                        {
+                            if (!roleSet.Contains(role))
+                            {
+                                db.Insert(new UserAuthRole
+                                {
+                                    UserAuthId = userAuth.Id,
+                                    Role = role,
+                                    CreatedDate = now,
+                                    ModifiedDate = now,
+                                });
+                            }
+                        }
+                    }
+
+                    if (!permissions.IsEmpty())
+                    {
+                        var permissionSet = userRoles.Where(x => x.Permission != null).Select(x => x.Permission).ToHashSet();
+                        foreach (var permission in permissions)
+                        {
+                            if (!permissionSet.Contains(permission))
+                            {
+                                db.Insert(new UserAuthRole
+                                {
+                                    UserAuthId = userAuth.Id,
+                                    Permission = permission,
+                                    CreatedDate = now,
+                                    ModifiedDate = now,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void UnAssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+        {
+            var userAuth = GetUserAuth(userAuthId);
+            if (!UseDistinctRoleTables)
+            {
+                roles.Each(x => userAuth.Roles.Remove(x));
+                permissions.Each(x => userAuth.Permissions.Remove(x));
+
+                if (roles != null || permissions != null)
+                {
+                    SaveUserAuth(userAuth);
+                }
+            }
+            else
+            {
+                using (var db = dbFactory.Open())
+                {
+                    if (!roles.IsEmpty())
+                    {
+                        db.Delete<UserAuthRole>(q => q.UserAuthId == userAuth.Id && roles.Contains(q.Role));
+                    }
+                    if (!permissions.IsEmpty())
+                    {
+                        db.Delete<UserAuthRole>(q => q.UserAuthId == userAuth.Id && permissions.Contains(q.Permission));
+                    }
+                }
+            }
+        }
     }
 }

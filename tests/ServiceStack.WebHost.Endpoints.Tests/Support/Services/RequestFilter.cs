@@ -25,9 +25,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 	}
 
 	public class StatusCodeService
-		: TestServiceBase<RequestFilter>, IRequiresRequestContext
+		: TestServiceBase<RequestFilter>, IRequiresRequest
 	{
-		public IRequestContext RequestContext { get; set; }
+		public IRequest Request { get; set; }
 
 		protected override object Run(RequestFilter request)
 		{

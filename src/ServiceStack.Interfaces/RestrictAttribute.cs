@@ -44,6 +44,22 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Restrict access and hide from metadata to requests from Localhost only
+        /// </summary>
+        public bool LocalhostOnly
+        {
+            get { return HasAccessTo(RequestAttributes.Localhost) && CanShowTo(RequestAttributes.Localhost); }
+            set
+            {
+                if (value == false)
+                    throw new Exception("Only true allowed");
+
+                AccessTo = RequestAttributes.Localhost.ToAllowedFlagsSet();
+                VisibilityTo = RequestAttributes.Localhost.ToAllowedFlagsSet();
+            }
+        }
+
+        /// <summary>
         /// Restrict access and hide from metadata to requests from Localhost and Local Intranet only
         /// </summary>
         public bool InternalOnly
@@ -60,18 +76,18 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Restrict access and hide from metadata to requests from Localhost only
+        /// Restrict access and hide from metadata to requests from External only
         /// </summary>
-        public bool LocalhostOnly
+        public bool ExternalOnly
         {
-            get { return HasAccessTo(RequestAttributes.Localhost) && CanShowTo(RequestAttributes.Localhost); }
+            get { return HasAccessTo(RequestAttributes.External) && CanShowTo(RequestAttributes.External); }
             set
             {
                 if (value == false)
                     throw new Exception("Only true allowed");
 
-                AccessTo = RequestAttributes.Localhost.ToAllowedFlagsSet();
-                VisibilityTo = RequestAttributes.Localhost.ToAllowedFlagsSet(); 
+                AccessTo = RequestAttributes.External.ToAllowedFlagsSet();
+                VisibilityTo = RequestAttributes.External.ToAllowedFlagsSet();
             }
         }
 

@@ -33,7 +33,7 @@ namespace ServiceStack
             StatusDescription = statusDescription;
         }
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             if (StatusCode != null)
             {
@@ -47,9 +47,16 @@ namespace ServiceStack
 
             if (!string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Value))
             {
-                if (Name.Equals(HttpHeaders.ContentType, StringComparison.InvariantCultureIgnoreCase))
+                if (Name.EqualsIgnoreCase(HttpHeaders.ContentType))
                 {
-                    res.ContentType = Value;
+                    req.ResponseContentType = Value; //Looked at in WriteRespone
+                }
+                else if (Name == "DefaultContentType")
+                {
+                    if (!req.HasExplicitResponseContentType)
+                    {
+                        req.ResponseContentType = Value; //Looked at in WriteRespone
+                    }
                 }
                 else
                 {
@@ -64,6 +71,16 @@ namespace ServiceStack
             set
             {
                 Name = HttpHeaders.ContentType;
+                Value = value;
+            }
+        }
+
+        public string DefaultContentType
+        {
+            get { return Name == "DefaultContentType" ? Value : null; }
+            set
+            {
+                Name = "DefaultContentType";
                 Value = value;
             }
         }

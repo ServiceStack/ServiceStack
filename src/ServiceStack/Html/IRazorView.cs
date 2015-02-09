@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using ServiceStack.Web;
 
 namespace ServiceStack.Html
@@ -8,16 +9,16 @@ namespace ServiceStack.Html
         bool TryGetItem(string name, out object result);
     }
 
-    public interface IRazorView
+    public interface IRazorView : IDisposable
     {
         IViewBag TypedViewBag { get; }
         string Layout { get; set; }
         void SetChildPage(IRazorView childPage, string childBody);
         IRazorView ChildPage { get; }
         IRazorView ParentPage { get; set; }
-        void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes);
+        void Init(IViewEngine viewEngine, IRequest httpReq, IResponse httpRes);
         void WriteTo(StreamWriter writer);
         bool IsSectionDefined(string sectionName);
-        void RenderSection(string sectionName, StreamWriter writer);
+        void RenderChildSection(string sectionName, StreamWriter writer);
     }
 }

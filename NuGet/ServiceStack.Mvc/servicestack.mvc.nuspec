@@ -4,8 +4,8 @@
     <id>ServiceStack.Mvc</id>
     <title>MVC Adapters for integrating with ServiceStack webservices</title>
     <version>4.0.0</version>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>.NET 4.0 project Integration of ServiceStack with MVC3</summary>
     <description>
       Full details in Mvc PowerPack: http://servicestack.net/mvc-powerpack/
@@ -14,11 +14,11 @@
       ControllerBase (configured with access to ServiceStack's ICacheClient, ISession, typed UserSession dependencies).
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>MiniProfiler FluentValidation MVC Controller ServiceStack</tags>
     <language>en-US</language>
-    <copyright>Copyright 2013 Service Stack</copyright>
+    <copyright>Copyright 2014 Service Stack</copyright>
     <dependencies>
       <dependency id="ServiceStack" version="4.0" />
     </dependencies>

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using ServiceStack.Logging;
 
@@ -75,7 +74,7 @@ namespace ServiceStack.Razor.Managers
         {
             try
             {
-                var file = views.GetVirutalFile(e.FullPath);
+                var file = views.GetVirtualFile(e.FullPath);
                 if (file == null || !views.IsWatchedFile(file)) return;
 
                 var pathPage = views.GetDictionaryPagePath(file);
@@ -104,16 +103,12 @@ namespace ServiceStack.Razor.Managers
         {
             try
             {
-                var file = views.GetVirutalFile(e.FullPath);
+                var file = views.GetVirtualFile(e.FullPath);
                 if (file == null || !views.IsWatchedFile(file)) return;
 
-                var pagePath = views.GetDictionaryPagePath(file);
-
-                RazorPage page;
-                if (views.Pages.TryGetValue(pagePath, out page) && page.IsValid)
-                {
-                    page.IsValid = false;
-                }
+                RazorPage page = views.GetPage(file);
+                if (page != null)
+                    views.InvalidatePage(page);
             }
             catch (Exception ex)
             {

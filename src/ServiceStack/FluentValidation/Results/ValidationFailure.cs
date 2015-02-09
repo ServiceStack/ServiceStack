@@ -20,7 +20,7 @@ namespace ServiceStack.FluentValidation.Results
 {
     using System;
 
-#if !SILVERLIGHT
+#if !SL5
     [Serializable]
 #endif
     public class ValidationFailure {

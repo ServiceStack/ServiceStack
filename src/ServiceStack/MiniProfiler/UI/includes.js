@@ -262,7 +262,7 @@ var MiniProfiler = (function ($)
 		}
 		else
 		{
-			var visiblePopups = container.find('.profiler-popup').find(":visible"),  //was: container.find('.profiler-popup:visible')
+			var visiblePopups = container.find('.profiler-popup').filter(":visible"),  //was: container.find('.profiler-popup:visible')
                 theirButtons = visiblePopups.siblings('.profiler-button');
 
 			// hide any other popups

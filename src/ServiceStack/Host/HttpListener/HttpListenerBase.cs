@@ -1,10 +1,13 @@
-﻿using System;
+﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
@@ -31,10 +34,15 @@ namespace ServiceStack.Host.HttpListener
         public event DelReceiveWebRequest ReceiveWebRequest;
 
         protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices) {}
-
-        public virtual void OnAfterInit()
+            : base(serviceName, assembliesWithServices)
         {
+            RawHttpHandlers.Add(RedirectDirectory);
+        }
+
+        public override void OnAfterInit()
+        {
+            base.OnAfterInit();
+
             SetAppDomainData();
         }
 
@@ -55,9 +63,17 @@ namespace ServiceStack.Host.HttpListener
             }
         }
 
-        public virtual void Start(string urlBase)
+        public override ServiceStackHost Start(string urlBase)
         {
             Start(urlBase, Listen);
+            return this;
+        }
+
+        public virtual ListenerRequest CreateRequest(HttpListenerContext httpContext, string operationName)
+        {
+            var req = new ListenerRequest(httpContext, operationName, RequestAttributes.None);
+            req.RequestAttributes = req.GetAttributes();
+            return req;
         }
 
         /// <summary>
@@ -78,15 +94,14 @@ namespace ServiceStack.Host.HttpListener
             if (this.Listener == null)
                 Listener = new System.Net.HttpListener();
 
-            HostContext.Config.ServiceStackHandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
+            HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
 
             Listener.Prefixes.Add(urlBase);
-
-            IsStarted = true;
 
             try
             {
                 Listener.Start();
+                IsStarted = true;
             }
             catch (HttpListenerException ex)
             {
@@ -95,6 +110,7 @@ namespace ServiceStack.Host.HttpListener
                     registeredReservedUrl = AddUrlReservationToAcl(urlBase);
                     if (registeredReservedUrl != null)
                     {
+                        Listener = null;
                         Start(urlBase, listenCallback);
                         return;
                     }
@@ -112,7 +128,7 @@ namespace ServiceStack.Host.HttpListener
         }
 
         // Loop here to begin processing of new requests.
-        private void Listen(object state)
+        protected virtual void Listen(object state)
         {
             while (IsListening)
             {
@@ -158,7 +174,7 @@ namespace ServiceStack.Host.HttpListener
                 // method, and again, that is just the way most Begin/End asynchronous
                 // methods of the .NET Framework work.
                 var errMsg = ex + ": " + IsListening;
-                Log.Warn(errMsg);
+                Log.Warn(errMsg, ex);
                 return;
             }
             finally
@@ -172,7 +188,8 @@ namespace ServiceStack.Host.HttpListener
 
             if (context == null) return;
 
-            Log.InfoFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
+            if (Config.DebugMode)
+                Log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
             //System.Diagnostics.Debug.WriteLine("Start: " + requestNumber + " at " + DateTime.UtcNow);
             //var request = context.Request;
@@ -181,71 +198,92 @@ namespace ServiceStack.Host.HttpListener
 
             RaiseReceiveWebRequest(context);
 
+            InitTask(context);
+
+            //System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.UtcNow);
+        }
+
+        public virtual void InitTask(HttpListenerContext context)
+        {
             try
             {
-                this.ProcessRequest(context);
+                var task = this.ProcessRequestAsync(context);
+                task.ContinueWith(x => HandleError(x.Exception, context), TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.AttachedToParent);
+
+                if (task.Status == TaskStatus.Created)
+                {
+                    task.RunSynchronously();
+                }
             }
             catch (Exception ex)
             {
-                var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
-                Log.ErrorFormat(error);
-
                 HandleError(ex, context);
             }
-
-            //System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.UtcNow);
         }
 
         public static void HandleError(Exception ex, HttpListenerContext context)
         {
             try
             {
-                var errorResponse = new ErrorResponse
-                {
-                    ResponseStatus = new ResponseStatus
-                    {
-                        ErrorCode = ex.GetType().Name,
-                        Message = ex.Message,
-                        StackTrace = ex.StackTrace,
-                    }
-                };
+                ex = ex.UnwrapIfSingleException();
+                var httpReq = CreateHttpRequest(context);
+                Log.Error("Error this.ProcessRequest(context): [{0}]: {1}".Fmt(ex.GetType().GetOperationName(), ex.Message), ex);
 
-                var operationName = context.Request.GetOperationName();
-                var httpReq = new ListenerRequest(operationName, context.Request);
-                var httpRes = new ListenerResponse(context.Response);
-                var requestCtx = new HttpRequestContext(httpReq, httpRes, errorResponse);
-                var contentType = requestCtx.ResponseContentType;
-
-                var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
-                if (serializer == null)
-                {
-                    contentType = HostContext.Config.DefaultContentType;
-                    serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
-                }
-
-                var httpError = ex as IHttpError;
-                if (httpError != null)
-                {
-                    httpRes.StatusCode = httpError.Status;
-                    httpRes.StatusDescription = httpError.StatusDescription;
-                }
-                else
-                {
-                    httpRes.StatusCode = 500;
-                }
-
-                httpRes.ContentType = contentType;
-
-                serializer(requestCtx, errorResponse, httpRes);
-
-                httpRes.Close();
+                WriteUnhandledErrorResponse(httpReq, ex);
             }
             catch (Exception errorEx)
             {
                 var error = "Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}"
-                            .Fmt(errorEx.GetType().Name, errorEx.Message);
-                Log.ErrorFormat(error);
+                            .Fmt(errorEx.GetType().GetOperationName(), errorEx.Message);
+                Log.Error(error, errorEx);
             }
+        }
+
+        public static void WriteUnhandledErrorResponse(IRequest httpReq, Exception ex)
+        {
+            var errorResponse = new ErrorResponse
+            {
+                ResponseStatus = new ResponseStatus
+                {
+                    ErrorCode = ex.GetType().GetOperationName(),
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace,
+                }
+            };
+
+            var httpRes = httpReq.Response;
+            var contentType = httpReq.ResponseContentType;
+
+            var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
+            if (serializer == null)
+            {
+                contentType = HostContext.Config.DefaultContentType;
+                serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
+            }
+
+            var httpError = ex as IHttpError;
+            if (httpError != null)
+            {
+                httpRes.StatusCode = httpError.Status;
+                httpRes.StatusDescription = httpError.StatusDescription;
+            }
+            else
+            {
+                httpRes.StatusCode = 500;
+            }
+
+            httpRes.ContentType = contentType;
+
+            serializer(httpReq, errorResponse, httpRes);
+
+            httpRes.Close();
+        }
+
+        private static IHttpRequest CreateHttpRequest(HttpListenerContext context)
+        {
+            var operationName = context.Request.GetOperationName();
+            var httpReq = context.ToRequest(operationName);
+            return httpReq;
         }
 
         protected void RaiseReceiveWebRequest(HttpListenerContext context)
@@ -277,7 +315,7 @@ namespace ServiceStack.Host.HttpListener
             {
                 if (ex.ErrorCode != RequestThreadAbortedException) throw;
 
-                Log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
+                Log.Error("Swallowing HttpListenerException({0}) Thread exit or aborted request".Fmt(RequestThreadAbortedException), ex);
             }
             this.IsStarted = false;
             this.Listener = null;
@@ -287,7 +325,7 @@ namespace ServiceStack.Host.HttpListener
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
         /// <param name="context"></param>
-        protected abstract void ProcessRequest(HttpListenerContext context);
+        protected abstract Task ProcessRequestAsync(HttpListenerContext context);
 
         /// <summary>
         /// Reserves the specified URL for non-administrator users and accounts. 

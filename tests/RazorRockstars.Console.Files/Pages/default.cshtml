@@ -8,11 +8,17 @@
     var title = Model.Age.HasValue ? "{0} year old rockstars".Fmt(Model.Age) : "All Rockstars";
 }
 
+@section SectionHead {
+    <h3>Inside SectionHead</h3>
+    @Html.Partial("PartialChildModel", new PartialChildModel { SomeProperty = "Prop" })
+}
+
 <div id="content-page">
     
 @Html.Partial("RazorPartial")
 @Html.Partial("MarkdownPartial")
 @Html.Partial("RazorPartialModel", rockstars)
+@Html.Partial("PagesPartialModel", rockstars)
 
 <div>@title</div>
 <ul>

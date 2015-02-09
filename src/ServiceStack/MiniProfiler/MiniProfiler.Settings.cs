@@ -239,7 +239,7 @@ namespace ServiceStack.MiniProfiler
             /// <remarks>
             /// Both the HttpRequest and MiniProfiler parameters that will be passed into this function should never be null.
             /// </remarks>
-            public static Func<IHttpRequest, Profiler, bool> Results_Authorize { get; set; }
+            public static Func<IRequest, Profiler, bool> Results_Authorize { get; set; }
 
             /// <summary>
             /// Make sure we can at least store profiler results to the http runtime cache.

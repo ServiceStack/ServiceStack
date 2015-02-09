@@ -4,17 +4,12 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-	public class IndexPageHttpHandler
-		: IServiceStackHttpHandler, IHttpHandler
+    public class IndexPageHttpHandler : HttpAsyncTaskHandler
 	{
-
-		/// <summary>
+        /// <summary>
 		/// Non ASP.NET requests
 		/// </summary>
-		/// <param name="request"></param>
-		/// <param name="response"></param>
-		/// <param name="operationName"></param>
-		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		public override void ProcessRequest(IRequest request, IResponse response, string operationName)
 		{
 			var defaultUrl = HostContext.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
 
@@ -35,8 +30,7 @@ namespace ServiceStack.Host.Handlers
         /// <summary>
         /// ASP.NET requests
         /// </summary>
-        /// <param name="context"></param>
-		public void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContextBase context)
 		{
 			var defaultUrl = HostContext.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
 
@@ -56,7 +50,7 @@ namespace ServiceStack.Host.Handlers
 
 		}
 
-		public bool IsReusable
+		public override bool IsReusable
 		{
 			get { return true; }
 		}

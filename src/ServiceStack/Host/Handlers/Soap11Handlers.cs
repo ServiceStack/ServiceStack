@@ -24,7 +24,7 @@ namespace ServiceStack.Host.Handlers
     {
         public Soap11OneWayHandler() : base(RequestAttributes.Soap11) { }
 
-        public override void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContextBase context)
         {
             if (context.Request.HttpMethod == HttpMethods.Get)
             {
@@ -37,11 +37,11 @@ namespace ServiceStack.Host.Handlers
         }
     }
 
-    public class Soap11MessageReplyHttpHandler : Soap11Handler, IHttpHandler
+    public class Soap11MessageReplyHttpHandler : Soap11Handler
     {
         public Soap11MessageReplyHttpHandler() : base(RequestAttributes.Soap11) { }
 
-        public new void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(HttpContextBase context)
         {
             if (context.Request.HttpMethod == HttpMethods.Get)
             {
@@ -53,15 +53,15 @@ namespace ServiceStack.Host.Handlers
             var responseMessage = Send(null);
 
             context.Response.ContentType = GetSoapContentType(context.Request.ContentType);
-            using (var writer = XmlWriter.Create(context.Response.OutputStream))
+            using (var writer = CreateXmlWriter(context.Response.OutputStream))
             {
                 responseMessage.WriteMessage(writer);
             }
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            if (httpReq.HttpMethod == HttpMethods.Get)
+            if (httpReq.Verb == HttpMethods.Get)
             {
                 var wsdl = new Soap11WsdlMetadataHandler();
                 wsdl.Execute(httpReq, httpRes);
@@ -70,8 +70,10 @@ namespace ServiceStack.Host.Handlers
 
             var responseMessage = Send(null, httpReq, httpRes);
 
-            httpRes.ContentType = GetSoapContentType(httpReq.ContentType);
-            using (var writer = XmlWriter.Create(httpRes.OutputStream))
+            if (httpRes.IsClosed)
+                return;
+
+            using (var writer = CreateXmlWriter(httpRes.OutputStream))
             {
                 responseMessage.WriteMessage(writer);
             }

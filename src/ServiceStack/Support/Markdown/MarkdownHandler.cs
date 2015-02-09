@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using ServiceStack.Formats;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 
 namespace ServiceStack.Support.Markdown
@@ -19,8 +18,11 @@ namespace ServiceStack.Support.Markdown
             PathInfo = pathInfo;
         }
 
-        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes);
+            if (httpRes.IsClosed) return;
+
             if (MarkdownFormat == null)
                 MarkdownFormat = MarkdownFormat.Instance;
 
@@ -44,12 +46,12 @@ namespace ServiceStack.Support.Markdown
             MarkdownFormat.ProcessMarkdownPage(httpReq, contentPage, model, httpRes);
         }
 
-        public override object CreateRequest(IHttpRequest request, string operationName)
+        public override object CreateRequest(IRequest request, string operationName)
         {
             return null;
         }
 
-        public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+        public override object GetResponse(IRequest httpReq, object request)
         {
             return null;
         }

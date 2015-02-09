@@ -32,7 +32,7 @@ namespace ServiceStack
             get { return String.Format("application/{0}", Format); }
         }
 
-        public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
+        public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
         {
             if (request == null) return;
             DataContractSerializer.Instance.SerializeToStream(request, stream);
@@ -42,7 +42,7 @@ namespace ServiceStack
         {
             try
             {
-                return DataContractDeserializer.Instance.DeserializeFromStream<T>(stream);
+                return DataContractSerializer.Instance.DeserializeFromStream<T>(stream);
             }
             catch (XmlException ex)
             {

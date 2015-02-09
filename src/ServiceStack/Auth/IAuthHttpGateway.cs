@@ -1,36 +1,58 @@
+using System;
+using System.Net;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
     public interface IAuthHttpGateway
     {
-        string DownloadTwitterUserInfo(string twitterUserId);
-        string DownloadFacebookUserInfo(string facebookCode);
+        string DownloadTwitterUserInfo(OAuthAccessToken oauthToken, string twitterUserId);
+        string DownloadFacebookUserInfo(string facebookCode, params string[] fields);
         string DownloadYammerUserInfo(string yammerUserId);
     }
 
     public class AuthHttpGateway : IAuthHttpGateway
     {
-        public const string TwitterUserUrl = "http://api.twitter.com/1/users/lookup.json?user_id={0}";
+        public const string TwitterUserUrl = "https://api.twitter.com/1.1/users/lookup.json?user_id={0}";
 
         public const string FacebookUserUrl = "https://graph.facebook.com/me?access_token={0}";
 
         public const string YammerUserUrl = "https://www.yammer.com/api/v1/users/{0}.json";
 
-        public string DownloadTwitterUserInfo(string twitterUserId)
+        public string DownloadTwitterUserInfo(OAuthAccessToken oauthToken, string twitterUserId)
         {
             twitterUserId.ThrowIfNullOrEmpty("twitterUserId");
 
             var url = TwitterUserUrl.Fmt(twitterUserId);
-            var json = url.GetStringFromUrl();
+            var json = GetJsonFromOAuthUrl(oauthToken, url);
             return json;
         }
 
-        public string DownloadFacebookUserInfo(string facebookCode)
+        public static string GetJsonFromOAuthUrl(OAuthAccessToken oauthToken, string url)
+        {
+            var uri = new Uri(url);
+            var webReq = (HttpWebRequest)WebRequest.Create(uri);
+            webReq.Accept = MimeTypes.Json;
+            if (oauthToken.AccessToken != null)
+            {
+                webReq.Headers[HttpRequestHeader.Authorization] = OAuthAuthorizer.AuthorizeRequest(
+                    oauthToken.OAuthProvider, oauthToken.AccessToken, oauthToken.AccessTokenSecret, HttpMethods.Get, uri, null);
+            }
+
+            using (var webRes = webReq.GetResponse())
+                return webRes.ReadToEnd();
+        }
+
+        public string DownloadFacebookUserInfo(string facebookCode, params string[] fields)
         {
             facebookCode.ThrowIfNullOrEmpty("facebookCode");
 
             var url = FacebookUserUrl.Fmt(facebookCode);
+            if (fields.Length > 0)
+            {
+                url = url.AddQueryParam("fields", string.Join(",", fields));
+            }
+
             var json = url.GetStringFromUrl();
             return json;
         }
@@ -67,4 +89,12 @@ namespace ServiceStack.Auth
             return json;
         }
     }
+
+    public class OAuthAccessToken
+    {
+        public OAuthProvider OAuthProvider { get; set; }
+        public string AccessToken { get; set; }
+        public string AccessTokenSecret { get; set; }
+    }
+
 }

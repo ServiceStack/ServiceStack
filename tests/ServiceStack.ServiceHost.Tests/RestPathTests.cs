@@ -486,5 +486,13 @@ namespace ServiceStack.ServiceHost.Tests
 
             Assert.That(isMatch, "Expected:\n{0}\n  Actual:\n{1}".Fmt(expected.Join("\n"), matchingDefinitions.Join("\n")));
         }
+
+        [Test]
+        public void Can_match_lowercase_http_method()
+        {
+            var restPath = new RestPath(typeof (ComplexType), "/Complex/{Id}/{Name}/Unique/{UniqueId}", "PUT");
+            var withPathInfoParts = RestPath.GetPathPartsForMatching("/complex/5/Is Alive/unique/4583B364-BBDC-427F-A289-C2923DEBD547");
+            Assert.That(restPath.IsMatch("put", withPathInfoParts));
+        }
     }
 }

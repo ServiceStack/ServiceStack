@@ -1,9 +1,13 @@
+using System;
 using System.Collections.Generic;
+using ServiceStack.Host.Handlers;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
     /// <summary>
-    /// Plugin adds support for Cross-origin resource sharing (CORS, see http://www.w3.org/TR/access-control/). CORS allows to access resources from different domain which usually forbidden by origin policy. 
+    /// Plugin adds support for Cross-origin resource sharing (CORS, see http://www.w3.org/TR/access-control/). 
+    /// CORS allows to access resources from different domain which usually forbidden by origin policy. 
     /// </summary>
     public class CorsFeature : IPlugin
     {
@@ -13,39 +17,51 @@ namespace ServiceStack
         private readonly string allowedOrigins;
         private readonly string allowedMethods;
         private readonly string allowedHeaders;
+        private readonly string exposeHeaders;
+        private readonly int? maxAge;
 
         private readonly bool allowCredentials;
 
-        private static bool isInstalled = false;
         private readonly ICollection<string> allowOriginWhitelist;
 
-        public bool AutoHandleOptionRequests { get; set; }
+        public ICollection<string> AllowOriginWhitelist
+        {
+            get { return allowOriginWhitelist; }
+        }
+
+        public bool AutoHandleOptionsRequests { get; set; }
 
         /// <summary>
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
         /// </summary>
-        public CorsFeature(string allowedOrigins = "*", string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false)
+        public CorsFeature(string allowedOrigins = "*", string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false, 
+            string exposeHeaders = null, int? maxAge = null)
         {
             this.allowedOrigins = allowedOrigins;
             this.allowedMethods = allowedMethods;
             this.allowedHeaders = allowedHeaders;
             this.allowCredentials = allowCredentials;
-            this.AutoHandleOptionRequests = true;
+            this.AutoHandleOptionsRequests = true;
+            this.exposeHeaders = exposeHeaders;
+            this.maxAge = maxAge;
         }
 
-        public CorsFeature(ICollection<string> allowOriginWhitelist, string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false)
+        public CorsFeature(ICollection<string> allowOriginWhitelist, string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false,
+            string exposeHeaders = null, int? maxAge = null)
         {
             this.allowedMethods = allowedMethods;
             this.allowedHeaders = allowedHeaders;
             this.allowCredentials = allowCredentials;
             this.allowOriginWhitelist = allowOriginWhitelist;
-            this.AutoHandleOptionRequests = true;
+            this.AutoHandleOptionsRequests = true;
+            this.exposeHeaders = exposeHeaders;
+            this.maxAge = maxAge;
         }
 
         public void Register(IAppHost appHost)
         {
-            if (isInstalled) return;
-            isInstalled = true;
+            if (appHost.HasMultiplePlugins<CorsFeature>())
+                throw new NotSupportedException("CorsFeature has already been registered");
 
             if (!string.IsNullOrEmpty(allowedOrigins) && allowOriginWhitelist == null)
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowOrigin, allowedOrigins);
@@ -55,27 +71,40 @@ namespace ServiceStack
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowHeaders, allowedHeaders);
             if (allowCredentials)
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowCredentials, "true");
+            if (exposeHeaders != null)
+                appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.ExposeHeaders, exposeHeaders);
+            if (maxAge != null)
+                appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AccessControlMaxAge, maxAge.Value.ToString());
+
+            Action<IRequest, IResponse> allowOriginFilter = null;
 
             if (allowOriginWhitelist != null)
             {
-                appHost.GlobalRequestFilters.Add((httpReq, httpRes, requestDto) =>
-                {
-                    var origin = httpReq.Headers.Get("Origin");
+                allowOriginFilter = (httpReq, httpRes) => {
+                    var origin = httpReq.Headers.Get(HttpHeaders.Origin);
                     if (allowOriginWhitelist.Contains(origin))
                     {
                         httpRes.AddHeader(HttpHeaders.AllowOrigin, origin);
                     }
-                });
+                };
+
+                appHost.PreRequestFilters.Add(allowOriginFilter);
             }
 
-            if (AutoHandleOptionRequests)
+            if (AutoHandleOptionsRequests)
             {
-                appHost.PreRequestFilters.Add((httpReq, httpRes) =>
-                {
-                    //Handles Request and closes Responses after emitting global HTTP Headers
-                    if (httpReq.HttpMethod == HttpMethods.Options)
+                //Handles Request and closes Response after emitting global HTTP Headers
+                var emitGlobalHeadersHandler = new CustomActionHandler(
+                    (httpReq, httpRes) => {
+                        if (allowOriginFilter != null)
+                            allowOriginFilter(httpReq, httpRes);
                         httpRes.EndRequest();
-                });                
+                    });
+
+                appHost.RawHttpHandlers.Add(httpReq =>
+                    httpReq.HttpMethod == HttpMethods.Options
+                        ? emitGlobalHeadersHandler
+                        : null);                
             }
         }
     }

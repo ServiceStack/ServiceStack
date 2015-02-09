@@ -5,6 +5,7 @@
     <version>4.0.0</version>
     <authors>Assaf Raman, ServiceStack contributors</authors> 
     <owners>Assaf Raman, ServiceStack contributors</owners>
+    <summary>A MongoDB IUserAuthRepository to persist User registration and auth info in a NoSQL Mongo DB</summary>
     <description>
         A MongoDB IUserAuthRepository to persist User registration and auth info in a NoSQL Mongo DB.
         Implements ServiceStack's built-in AuthProvider Model:
@@ -12,14 +13,14 @@
         inc. Twitter, Facebook, Basic, Digest, Credentials Auth modes out-of-the-box.
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>ServiceStack Authentication Authorization MongoDB NoSQL POCO Code-First</tags>
     <language>en-US</language> 
-    <copyright>ServiceStack 2013 and contributors</copyright>
+    <copyright>ServiceStack 2014 and contributors</copyright>
     <dependencies>
       <dependency id="ServiceStack" version="4.0" />	
-      <dependency id="mongocsharpdriver" />
+      <dependency id="mongocsharpdriver" version="1.9.2" />
     </dependencies> 
   </metadata> 
   <files>

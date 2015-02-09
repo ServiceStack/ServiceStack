@@ -1,3 +1,6 @@
+// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.IO;
 using System.Net;
@@ -6,7 +9,7 @@ using System.Threading;
 
 namespace ServiceStack
 {
-    internal class AsyncState<TResponse> : IDisposable
+    public class AsyncState<TResponse> : IDisposable
     {
         private bool timedOut; // Pass the correct error back even on Async Calls
 
@@ -47,6 +50,8 @@ namespace ServiceStack
 
         public Action<TResponse, Exception> OnError;
 
+        public SynchronizationContext UseSynchronizationContext;
+
         public bool HandleCallbackOnUIThread;
 
         public long ResponseBytesRead;
@@ -60,14 +65,12 @@ namespace ServiceStack
             if (this.OnSuccess == null)
                 return;
 
-#if SILVERLIGHT && !NETFX_CORE
-                if (this.HandleCallbackOnUIThread)
-                    System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => this.OnSuccess(response));
-                else
-                    this.OnSuccess(response);
-#else
-            this.OnSuccess(response);
-#endif
+            if (UseSynchronizationContext != null)
+                UseSynchronizationContext.Post(asyncState => this.OnSuccess(response), this);
+            else if (this.HandleCallbackOnUIThread)
+                PclExportClient.Instance.RunOnUiThread(() => this.OnSuccess(response));
+            else
+                this.OnSuccess(response);
         }
 
         public void HandleError(TResponse response, Exception ex)
@@ -83,14 +86,12 @@ namespace ServiceStack
                 toReturn = ex.CreateTimeoutException("The request timed out");
             }
 
-#if SILVERLIGHT && !NETFX_CORE
-                if (this.HandleCallbackOnUIThread)
-                    System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => this.OnError(response, toReturn));
-                else
-                    this.OnError(response, toReturn);
-#else
-            OnError(response, toReturn);
-#endif
+            if (UseSynchronizationContext != null)
+                UseSynchronizationContext.Post(asyncState => this.OnError(response, toReturn), this);
+            else if (this.HandleCallbackOnUIThread)
+                PclExportClient.Instance.RunOnUiThread(() => this.OnError(response, toReturn));
+            else
+                this.OnError(response, toReturn);
         }
 
         public void StartTimer(TimeSpan timeOut)

@@ -10,14 +10,14 @@
         https://github.com/ServiceStack/ServiceStack/wiki/Caching
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>ServiceStack Caching Windows Azure Cache CacheClient POCO Code-First</tags>
     <language>en-US</language> 
-    <copyright>ServiceStack 2013 and contributors</copyright>
+    <copyright>ServiceStack 2014 and contributors</copyright>
     <dependencies>
       <dependency id="ServiceStack.Common" version="4.0" />
-      <dependency id="WindowsAzure.Caching" />
+      <dependency id="Microsoft.WindowsAzure.Caching" version="2.4.0.0" />
     </dependencies>
   </metadata>
   <files>

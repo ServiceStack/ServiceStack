@@ -16,10 +16,10 @@ namespace ServiceStack.Validation
         private readonly IRedisClient redis;
 
         public ExecOnceOnly(IRedisClientsManager redisManager, Type forType, string correlationId)
-            : this(redisManager, "hash:nx:" + forType.Name, correlationId) { }
+            : this(redisManager, "hash:nx:" + forType.GetOperationName(), correlationId) { }
 
         public ExecOnceOnly(IRedisClientsManager redisManager, Type forType, Guid? correlationId)
-            : this(redisManager, "hash:nx:" + forType.Name, (correlationId.HasValue ? correlationId.Value.ToString("N") : null)) { }
+            : this(redisManager, "hash:nx:" + forType.GetOperationName(), (correlationId.HasValue ? correlationId.Value.ToString("N") : null)) { }
 
         public ExecOnceOnly(IRedisClientsManager redisManager, string hashKey, string correlationId)
         {
@@ -34,7 +34,7 @@ namespace ServiceStack.Validation
                 redis = redisManager.GetClient();
                 var exists = !redis.SetEntryInHashIfNotExists(hashKey, correlationId, Flag);
                 if (exists)
-                    throw HttpError.Conflict("Request {0} has already been processed".Fmt(correlationId));
+                    throw HttpError.Conflict(ErrorMessages.RequestAlreadyProcessedFmt.Fmt(correlationId));
             }
         }
 

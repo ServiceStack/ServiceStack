@@ -1,10 +1,11 @@
 using System;
 using System.Web;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Support.WebHost
 {
-	public abstract class HttpHandlerBase : IHttpHandler
+	public abstract class HttpHandlerBase : HttpAsyncTaskHandler, IHttpHandler
 	{
 		private readonly ILog log;
 
@@ -13,17 +14,17 @@ namespace ServiceStack.Support.WebHost
 			this.log = LogManager.GetLogger(this.GetType());
 		}
 
-		public void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContextBase context)
 		{
 			var before = DateTime.UtcNow;
 			Execute(context);
             var elapsed = DateTime.UtcNow - before;
-			log.DebugFormat("'{0}' was completed in {1}ms", this.GetType().Name, elapsed.TotalMilliseconds);
+			log.DebugFormat("'{0}' was completed in {1}ms", this.GetType().GetOperationName(), elapsed.TotalMilliseconds);
 		}
 
-		public abstract void Execute(HttpContext context);
+		public abstract void Execute(HttpContextBase context);
 
-		public bool IsReusable
+		public override bool IsReusable
 		{
 			get { return false; }
 		}

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.Host;
-using ServiceStack.Text;
 
 namespace ServiceStack.Api.Swagger
 {
@@ -37,6 +36,7 @@ namespace ServiceStack.Api.Swagger
         public string Description { get; set; }
     }
 
+    [AddHeader(DefaultContentType = MimeTypes.Json)]
     [DefaultRequest(typeof(Resources))]
     public class SwaggerResourcesService : Service
     {
@@ -47,19 +47,15 @@ namespace ServiceStack.Api.Swagger
 
         public object Get(Resources request)
         {
-            var basePath = HostContext.Config.WebHostUrl;
-            if (basePath == null)
-            {
-                basePath = HostContext.Config.UseHttpsLinks
-                    ? Request.GetParentPathUrl().ToHttps()
-                    : Request.GetParentPathUrl();
-            }
+            var basePath = HostContext.Config.WebHostUrl 
+                ?? Request.GetParentPathUrl().NormalizeScheme();
 
             var result = new ResourcesResponse
             {
                 SwaggerVersion = "1.1",
                 BasePath = basePath,
-                Apis = new List<RestService>()
+                Apis = new List<RestService>(),
+                ApiVersion = HostContext.Config.ApiVersion
             };
             var operations = HostContext.Metadata;
             var allTypes = operations.GetAllTypes();
@@ -98,7 +94,7 @@ namespace ServiceStack.Api.Swagger
 
             foreach (var bp in basePaths)
             {
-                if (string.IsNullOrEmpty(bp)) return;
+                if (string.IsNullOrEmpty(bp)) continue;
                 if (apis.All(a => a.Path != string.Concat(RESOURCE_PATH, "/" + bp)))
                 {
                     apis.Add(new RestService

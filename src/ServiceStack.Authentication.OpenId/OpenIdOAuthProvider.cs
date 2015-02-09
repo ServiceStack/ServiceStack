@@ -22,7 +22,7 @@ namespace ServiceStack.Authentication.OpenId
         public OpenIdOAuthProvider(IAppSettings appSettings, string name = DefaultName, string realm = null)
             : base(appSettings, realm, name) { }
 
-        public virtual ClaimsRequest CreateClaimsRequest(IHttpRequest httpReq)
+        public virtual ClaimsRequest CreateClaimsRequest(IRequest httpReq)
         {
             return new ClaimsRequest {
                 Country = DemandLevel.Request,
@@ -45,7 +45,7 @@ namespace ServiceStack.Authentication.OpenId
         {
             var tokens = Init(authService, ref session, request);
 
-            var httpReq = authService.RequestContext.Get<IHttpRequest>();
+            var httpReq = authService.Request;
             var isOpenIdRequest = !httpReq.GetParam("openid.mode").IsNullOrEmpty();
 
             if (!isOpenIdRequest)
@@ -105,11 +105,9 @@ namespace ServiceStack.Authentication.OpenId
                                 // Use FormsAuthentication to tell ASP.NET that the user is now logged in,
                                 // with the OpenID Claimed Identifier as their username.
                                 session.IsAuthenticated = true;
-                                authService.SaveSession(session, SessionExpiry);
-                                OnAuthenticated(authService, session, tokens, authInfo);
 
-                                //Haz access!
-                                return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+                                return OnAuthenticated(authService, session, tokens, authInfo)
+                                    ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1")); //Haz access!
 
                             case AuthenticationStatus.Canceled:
                                 return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "ProviderCancelled"));

@@ -6,7 +6,6 @@ using Amazon.DynamoDB;
 using Amazon.DynamoDB.DocumentModel;
 using Amazon.DynamoDB.Model;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 
 namespace ServiceStack.Caching.AwsDynamoDb
 {

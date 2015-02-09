@@ -438,7 +438,7 @@ namespace ServiceStack.Html
 
 		public string GetDisplayName()
 		{
-			return DisplayName ?? PropertyName ?? ModelType.Name;
+			return DisplayName ?? PropertyName ?? ModelType.GetOperationName();
 		}
 
 		private static ModelMetadata GetMetadataFromProvider(Func<object> modelAccessor, Type modelType, string propertyName, Type containerType)

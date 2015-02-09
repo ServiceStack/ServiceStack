@@ -6,9 +6,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {
-    internal class IndexOperationsControl : System.Web.UI.Control
+    public class IndexOperationsControl : System.Web.UI.Control
     {
-        public IHttpRequest HttpRequest { get; set; }
+        public IRequest HttpRequest { get; set; }
         public string Title { get; set; }
         public List<string> OperationNames { get; set; }
         public IDictionary<int, string> Xsds { get; set; }
@@ -17,7 +17,8 @@ namespace ServiceStack.Metadata
 
         public string RenderRow(string operation)
         {
-            var show = HostContext.DebugMode; //Always show in DebugMode
+            var show = HostContext.DebugMode //Show in DebugMode
+                && !MetadataConfig.AlwaysHideInMetadata(operation); //Hide When [Restrict(VisibilityTo = None)]
 
             // use a fully qualified path if WebHostUrl is set
             string baseUrl = HttpRequest.GetParentAbsolutePath();
@@ -36,7 +37,9 @@ namespace ServiceStack.Metadata
                     opTemplate.AppendFormat(@"<td><a href=""{0}?op={{0}}"">{1}</a></td>", uri, config.Name);
                 }
                 else
+                {
                     opTemplate.AppendFormat("<td>{0}</td>", config.Name);
+                }
             }
 
             opTemplate.Append("</tr>");
@@ -82,14 +85,24 @@ namespace ServiceStack.Metadata
                 wsdlTemplate.AppendLine("</ul>");
             }
 
-            var debugOnlyInfo = new StringBuilder();
-            if (HostContext.DebugMode)
-            {
-                debugOnlyInfo.Append("<h3>Debug Info:</h3>");
-                debugOnlyInfo.AppendLine("<ul>");
-                debugOnlyInfo.AppendLine("<li><a href=\"operations/metadata\">Operations Metadata</a></li>");
-                debugOnlyInfo.AppendLine("</ul>");
-            }
+            var metadata = HostContext.GetPlugin<MetadataFeature>();
+            var pluginLinks = metadata != null && metadata.PluginLinks.Count > 0
+                ? new ListTemplate
+                {
+                    Title = metadata.PluginLinksTitle,
+                    ListItemsMap = metadata.PluginLinks,
+                    ListItemTemplate = @"<li><a href=""{0}"">{1}</a></li>"
+                }.ToString()
+                : "";
+
+            var debugOnlyInfo = HostContext.DebugMode && metadata != null && metadata.DebugLinks.Count > 0
+                ? new ListTemplate
+                {
+                    Title = metadata.DebugLinksTitle,
+                    ListItemsMap = metadata.DebugLinks,
+                    ListItemTemplate = @"<li><a href=""{0}"">{1}</a></li>"
+                }.ToString()
+                : "";
 
             var renderedTemplate = HtmlTemplates.Format(
                 HtmlTemplates.GetIndexOperationsTemplate(),
@@ -98,6 +111,7 @@ namespace ServiceStack.Metadata
                 operationsPart,
                 xsdsPart,
                 wsdlTemplate,
+                pluginLinks,
                 debugOnlyInfo);
 
             output.Write(renderedTemplate);

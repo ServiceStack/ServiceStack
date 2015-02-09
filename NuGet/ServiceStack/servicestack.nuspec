@@ -4,21 +4,22 @@
     <id>ServiceStack</id>
     <title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</title>
     <version>4.0.0</version>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
       Binaries for the ServiceStack web framework.
-      Visit http://www.servicestack.net/ServiceStack.Hello/
+      Visit https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project
       and https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice
       for walk throughs and docs on creating your first web service.
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
     <language>en-US</language>
-    <copyright>Copyright 2013 Service Stack</copyright>
+    <copyright>Copyright 2014 Service Stack</copyright>
     <dependencies>
       <dependency id="ServiceStack.Common" version="4.0" />
       <dependency id="ServiceStack.Client" version="4.0" />
@@ -26,6 +27,11 @@
   </metadata>
   <files>
     <file src="lib\**\*.*" target="lib" />
-    <file src="..\..\src\ServiceStack\**\*.cs" target="src\ServiceStack" />
+    <file src="..\..\src\ServiceStack\**\*.cs" target="src" />
+    <file src="..\..\src\ServiceStack\**\*.js" target="src" />
+    <file src="..\..\src\ServiceStack\**\*.ts" target="src" />
+    <file src="..\..\src\ServiceStack\**\*.css" target="src" />
+    <file src="..\..\src\ServiceStack\**\*.html" target="src" />
+    <file src="..\..\src\ServiceStack\**\*.tmpl" target="src" />
   </files>
 </package>

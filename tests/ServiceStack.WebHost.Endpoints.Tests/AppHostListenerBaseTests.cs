@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using NUnit.Framework;
-using ServiceStack.Common;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -18,8 +15,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class AppHostListenerBaseTests
     {
-        private const string ListeningOn = "http://localhost:82/";
-        ExampleAppHostHttpListener appHost;
+        private const string ListeningOn = "http://localhost:1337/";
+        ServiceStackHost appHost;
 
         static AppHostListenerBaseTests()
         {
@@ -29,12 +26,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixtureSetUp]
         public void OnTestFixtureStartUp()
         {
-            appHost = new ExampleAppHostHttpListener();
-            appHost.Init();
-            appHost.Start(ListeningOn);
+            appHost = new ExampleAppHostHttpListener()
+                .Init()
+                .Start(ListeningOn);
 
-            System.Console.WriteLine("ExampleAppHost Created at {0}, listening on {1}",
-                                     DateTime.Now, ListeningOn);
+            "ExampleAppHost Created at {0}, listening on {1}".Print(DateTime.Now, ListeningOn);
         }
 
         [TestFixtureTearDown]
@@ -60,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_requestinfo_json()
         {
-            var html = (ListeningOn + "_requestinfo").GetStringFromUrl();
+            var html = (ListeningOn + "?debug=requestinfo").GetStringFromUrl();
             Assert.That(html.Contains("\"Host\":"));
         }
 
@@ -142,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = new JsonServiceClient(ListeningOn);
             try
             {
-                var response = client.Put<MoviesZipResponse>("movies.zip", new MoviesZip());
+                var response = client.Put<MoviesZipResponse>("all-movies.zip", new MoviesZip());
                 Assert.Fail("Should throw 405 excetpion");
             }
             catch (WebServiceException ex)
@@ -161,7 +157,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webReq.Accept = "*/*";
             using (var webRes = webReq.GetResponse())
             {
-                Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.Json));
+                Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.JavaScript));
                 response = webRes.ReadToEnd();
             }
 

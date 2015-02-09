@@ -13,7 +13,7 @@ namespace ServiceStack.MiniProfiler.Helpers
         /// </summary>
         internal static bool IsNullOrWhiteSpace(this string s)
         {
-			return s == null || s.Trim() != string.Empty;
+			return s == null || s.Trim() == string.Empty;
         }
 
         /// <summary>

@@ -3,12 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Web;
 using Funq;
-using ServiceStack.Text;
+using ServiceStack.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.AspNet
@@ -16,16 +15,36 @@ namespace ServiceStack.Host.AspNet
     public class AspNetRequest
         : IHttpRequest
     {
-        private static readonly string physicalFilePath;
-        public Container Container { get; set; }
-        private readonly HttpRequest request;
+        public static ILog log = LogManager.GetLogger(typeof(AspNetRequest));
 
-        static AspNetRequest()
+        public Container Container { get; set; }
+        private readonly HttpRequestBase request;
+        private readonly IHttpResponse response;
+        
+        public AspNetRequest(HttpContextBase httpContext, string operationName = null)
+            : this(httpContext, operationName, RequestAttributes.None)
         {
-            physicalFilePath = "~".MapHostAbsolutePath();
+            this.RequestAttributes = this.GetAttributes();
         }
 
-        public HttpRequest Request
+        public AspNetRequest(HttpContextBase httpContext, string operationName, RequestAttributes requestAttributes)
+        {
+            this.OperationName = operationName;
+            this.RequestAttributes = requestAttributes;
+            this.request = httpContext.Request;
+            try
+            {
+                this.response = new AspNetResponse(httpContext.Response);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message, ex);
+            }
+
+            this.RequestPreferences = new RequestPreferences(httpContext);
+        }
+
+        public HttpRequestBase HttpRequest
         {
             get { return request; }
         }
@@ -35,26 +54,36 @@ namespace ServiceStack.Host.AspNet
             get { return request; }
         }
 
-        public AspNetRequest(HttpRequest request)
-            : this(null, request)
+        public IResponse Response
         {
+            get { return response; }
         }
 
-        public AspNetRequest(string operationName, HttpRequest request)
+        public IHttpResponse HttpResponse
         {
-            this.OperationName = operationName;
-            this.request = request;
-            this.Container = Container;
+            get { return response; }
         }
+
+        public RequestAttributes RequestAttributes { get; set; }
+
+        public IRequestPreferences RequestPreferences { get; private set; }
 
         public T TryResolve<T>()
         {
+            if (typeof(T) == typeof(IHttpRequest))
+                throw new Exception("You don't need to use IHttpRequest.TryResolve<IHttpRequest> to resolve itself");
+
+            if (typeof(T) == typeof(IHttpResponse))
+                throw new Exception("Resolve IHttpResponse with 'Response' property instead of IHttpRequest.TryResolve<IHttpResponse>");
+
             return Container != null
                 ? Container.TryResolve<T>()
                 : HostContext.TryResolve<T>();
         }
 
         public string OperationName { get; set; }
+
+        public object Dto { get; set; }
 
         public string ContentType
         {
@@ -67,9 +96,14 @@ namespace ServiceStack.Host.AspNet
             get
             {
                 return httpMethod
-                    ?? (httpMethod = Param(HttpHeaders.XHttpMethodOverride)
+                    ?? (httpMethod = this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
                     ?? request.HttpMethod);
             }
+        }
+
+        public string Verb
+        {
+            get { return HttpMethod; }
         }
 
         public string Param(string name)
@@ -116,8 +150,11 @@ namespace ServiceStack.Host.AspNet
             set
             {
                 this.responseContentType = value;
+                HasExplicitResponseContentType = true;
             }
         }
+
+        public bool HasExplicitResponseContentType { get; private set; }
 
         private Dictionary<string, Cookie> cookies;
         public IDictionary<string, Cookie> Cookies
@@ -130,33 +167,51 @@ namespace ServiceStack.Host.AspNet
                     for (var i = 0; i < this.request.Cookies.Count; i++)
                     {
                         var httpCookie = this.request.Cookies[i];
-                        var cookie = new Cookie(
-                            httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
+                        if (httpCookie == null)
+                            continue;
+
+                        Cookie cookie = null;
+
+                        // try-catch needed as malformed cookie names (e.g. '$Version') can be returned
+                        // from Cookie.Name, but the Cookie constructor will throw for these names.
+                        try
+                        {
+                            cookie = new Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
                             {
                                 HttpOnly = httpCookie.HttpOnly,
                                 Secure = httpCookie.Secure,
                                 Expires = httpCookie.Expires,
                             };
-                        cookies[httpCookie.Name] = cookie;
+                        }
+                        catch(Exception ex)
+                        {
+                            log.Warn("Error trying to create System.Net.Cookie: " + httpCookie.Name, ex);
+                        }
+
+                        if (cookie != null)
+                            cookies[httpCookie.Name] = cookie;
                     }
                 }
                 return cookies;
             }
         }
 
-        public NameValueCollection Headers
+        private NameValueCollectionWrapper headers;
+        public INameValueCollection Headers
         {
-            get { return request.Headers; }
+            get { return headers ?? (headers = new NameValueCollectionWrapper(request.Headers)); }
         }
 
-        public NameValueCollection QueryString
+        private NameValueCollectionWrapper queryString;
+        public INameValueCollection QueryString
         {
-            get { return request.QueryString; }
+            get { return queryString ?? (queryString = new NameValueCollectionWrapper(request.QueryString)); }
         }
 
-        public NameValueCollection FormData
+        private NameValueCollectionWrapper formData;
+        public INameValueCollection FormData
         {
-            get { return request.Form; }
+            get { return formData ?? (formData = new NameValueCollectionWrapper(request.Form)); }
         }
 
         public string GetRawBody()
@@ -183,7 +238,12 @@ namespace ServiceStack.Host.AspNet
             {
                 try
                 {
-                    return request.Url.AbsoluteUri.TrimEnd('/');
+                    return HostContext.Config.StripApplicationVirtualPath
+                        ? request.Url.GetLeftPart(UriPartial.Authority)
+                            .CombineWith(HostContext.Config.HandlerFactoryPath)
+                            .CombineWith(PathInfo)
+                            .TrimEnd('/')
+                        : request.Url.AbsoluteUri.TrimEnd('/');
                 }
                 catch (Exception)
                 {
@@ -206,6 +266,22 @@ namespace ServiceStack.Host.AspNet
             }
         }
 
+        public int? XForwardedPort
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedPort]) ? (int?) null : int.Parse(request.Headers[HttpHeaders.XForwardedPort]);
+            }
+        }
+
+        public string XForwardedProtocol
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedProtocol]) ? null : request.Headers[HttpHeaders.XForwardedProtocol];
+            }
+        }
+
         public string XRealIp
         {
             get
@@ -225,7 +301,7 @@ namespace ServiceStack.Host.AspNet
 
         public bool IsSecureConnection
         {
-            get { return request.IsSecureConnection; }
+            get { return request.IsSecureConnection || XForwardedProtocol == "https"; }
         }
 
         public string[] AcceptTypes
@@ -288,11 +364,6 @@ namespace ServiceStack.Host.AspNet
                 }
                 return httpFiles;
             }
-        }
-
-        public string ApplicationFilePath
-        {
-            get { return physicalFilePath; }
         }
 
         public Uri UrlReferrer

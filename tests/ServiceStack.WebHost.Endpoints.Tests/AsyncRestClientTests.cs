@@ -2,26 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public abstract class AsyncRestClientTests
     {
-        private const string ListeningOn = "http://localhost:82/";
+        private const string ListeningOn = "http://localhost:1337/";
 
-        ExampleAppHostHttpListener appHost;
+        ServiceStackHost appHost;
 
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            LogManager.LogFactory = new ConsoleLogFactory();
-
-            appHost = new ExampleAppHostHttpListener();
-            appHost.Init();
-            appHost.Start(ListeningOn);
+            appHost = new ExampleAppHostHttpListener()
+                .Init()
+                .Start(ListeningOn);
         }
 
         [TestFixtureTearDown]
@@ -48,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var asyncClient = CreateAsyncRestClient();
 
-            var response = await asyncClient.GetAsync<MoviesResponse>("movies");
+            var response = await asyncClient.GetAsync<MoviesResponse>("all-movies");
 
             Assert.That(response, Is.Not.Null, "No response received");
             Assert.That(response.Movies.EquivalentTo(ResetMoviesService.Top5Movies));
@@ -59,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var asyncClient = CreateAsyncRestClient();
 
-            var response = await asyncClient.GetAsync<MovieResponse>("movies/1");
+            var response = await asyncClient.GetAsync<MovieResponse>("all-movies/1");
 
             Assert.That(response, Is.Not.Null, "No response received");
             Assert.That(response.Movie.Id, Is.EqualTo(1));
@@ -70,7 +66,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var asyncClient = CreateAsyncRestClient();
 
-            var newMovie = new Movie
+            var newMovie = new Support.Host.Movie
             {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
@@ -81,7 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Genres = new List<string> { "Adventure", "Drama", "Thriller" },
             };
 
-            var response = await asyncClient.PostAsync<MovieResponse>("movies", newMovie);
+            var response = await asyncClient.PostAsync<MovieResponse>("all-movies", newMovie);
 
             Assert.That(response, Is.Not.Null, "No response received");
 
@@ -95,7 +91,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var asyncClient = CreateAsyncRestClient();
 
-            var newMovie = new Movie
+            var newMovie = new Support.Host.Movie
             {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
@@ -106,11 +102,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Genres = new List<string> { "Adventure", "Drama", "Thriller" },
             };
 
-            var response = await asyncClient.PostAsync<MovieResponse>("movies", newMovie);
+            var response = await asyncClient.PostAsync<MovieResponse>("all-movies", newMovie);
 
             var createdMovie = response.Movie;
 
-            response = await asyncClient.DeleteAsync<MovieResponse>("movies/" + createdMovie.Id);
+            response = await asyncClient.DeleteAsync<MovieResponse>("all-movies/" + createdMovie.Id);
 
             Assert.That(response, Is.Not.Null, "No response received");
             Assert.That(createdMovie, Is.Not.Null);

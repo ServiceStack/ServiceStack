@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using ServiceStack.Formats;
+using ServiceStack.Host;
 using ServiceStack.Html.AntiXsrf;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Text;
@@ -17,11 +19,16 @@ namespace ServiceStack.Html
 {
 	public class HtmlHelper
     {
-        public static readonly string ValidationInputCssClassName = "input-validation-error";
+        public const string DefaultTemplate = null;
+        public const string EmptyTemplate = "";
+
+        public static string ValidationMessageCssClassNames = "help-block error";
+        public static string ValidationSummaryCssClassNames = "error-summary alert alert-danger";
+        public static string ValidationSuccessCssClassNames = "alert alert-success";
+        public static readonly string ValidationInputCssClassName = "error";
+
         public static readonly string ValidationInputValidCssClassName = "input-validation-valid";
-        public static readonly string ValidationMessageCssClassName = "field-validation-error";
         public static readonly string ValidationMessageValidCssClassName = "field-validation-valid";
-        public static readonly string ValidationSummaryCssClassName = "validation-summary-errors";
         public static readonly string ValidationSummaryValidCssClassName = "validation-summary-valid";
         private DynamicViewDataDictionary viewBag;
 
@@ -61,12 +68,12 @@ namespace ServiceStack.Html
 		public Dictionary<string, object> ScopeArgs { get; protected set; }
 	    private ViewDataDictionary viewData;
 
-        public void Init(IViewEngine viewEngine, IHttpRequest httpReq, IHttpResponse httpRes, IRazorView razorPage, 
+        public void Init(IViewEngine viewEngine, IRequest httpReq, IResponse httpRes, IRazorView razorPage, 
             Dictionary<string, object> scopeArgs = null, ViewDataDictionary viewData = null)
         {
             ViewEngine = viewEngine;
-            HttpRequest = httpReq;
-            HttpResponse = httpRes;
+            HttpRequest = httpReq as IHttpRequest;
+            HttpResponse = httpRes as IHttpResponse;
             RazorPage = razorPage;
             //ScopeArgs = scopeArgs;
             this.viewData = viewData;
@@ -119,6 +126,31 @@ namespace ServiceStack.Html
             {
                 this.viewData = masterModel;
             }
+        }
+
+        public MvcHtmlString RenderAction(string route, string viewName = null)
+        {
+            var req = new BasicRequest {
+                Verb = HttpMethods.Get,
+                PathInfo = route,
+                ContentType = MimeTypes.Html,
+                ResponseContentType = MimeTypes.Html,
+            };
+    
+            req.SetTemplate(EmptyTemplate);
+
+            if (viewName != null)
+                req.SetView(viewName);
+
+            var response = HostContext.ServiceController.Execute(req);
+
+            req.Response.WriteToResponse(req, response)
+                .Wait(); //unnecessary as results are sync anyway
+
+            var resBytes = ((MemoryStream)req.Response.OutputStream).ToArray();
+            var html = resBytes.FromUtf8Bytes();
+
+            return MvcHtmlString.Create(html);
         }
 
         public string Debug(object model)
@@ -333,13 +365,17 @@ namespace ServiceStack.Html
 
         internal object GetModelStateValue(string key, Type destinationType)
         {
-            ModelState modelState;
-            if (ViewData.ModelState.TryGetValue(key, out modelState)) {
-                if (modelState.Value != null) {
-                    return modelState.Value.ConvertTo(destinationType, null /* culture */);
-                }
-            }
-            return null;
+            if (this.HttpRequest == null || this.HttpRequest.HttpMethod == HttpMethods.Get)
+                return null;
+
+            var postedValue = this.HttpRequest.FormData[key];
+            if (postedValue == null)
+                return null;
+
+            if (destinationType == typeof (string))
+                return postedValue;
+
+            return new ValueProviderResult(postedValue, postedValue, null).ConvertTo(destinationType, null);
         }
 
         public IDictionary<string, object> GetUnobtrusiveValidationAttributes(string name)
@@ -431,11 +467,38 @@ namespace ServiceStack.Html
 			var strContent = content as string;
             return MvcHtmlString.Create(strContent ?? content.ToString()); //MvcHtmlString
 		}
+
+        public bool HasFieldError(string errorName)
+        {
+            return GetFieldError(errorName) != null;
+        }
+
+        public ResponseError GetFieldError(string errorName)
+        {
+            var errorStatus = this.GetErrorStatus();
+            if (errorStatus == null || errorStatus.Errors == null) 
+                return null;
+
+            return errorStatus.Errors.FirstOrDefault(x => x.FieldName.EqualsIgnoreCase(errorName));
+        }
+
+        public ResponseStatus GetErrorStatus()
+        {
+            var errorStatus = this.HttpRequest.GetItem(HtmlFormat.ErrorStatusKey);
+            return errorStatus as ResponseStatus;
+        }
+
+        public MvcHtmlString GetErrorMessage()
+        {
+            var errorStatus = GetErrorStatus();
+            return errorStatus == null ? null : MvcHtmlString.Create(errorStatus.Message);
+        }
+
     }
 
 	public static class HtmlHelperExtensions
 	{
-	    public static IHttpRequest GetHttpRequest(this HtmlHelper html)
+	    public static IRequest GetHttpRequest(this HtmlHelper html)
 	    {
 	        return html != null ? html.HttpRequest : null;
 	    }

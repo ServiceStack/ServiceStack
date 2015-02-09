@@ -22,6 +22,8 @@ namespace NewApi.Todos
     public class Todos : IReturn<List<Todo>>
     {
         public long[] Ids { get; set; }
+
+        public Todos() {}
         public Todos(params long[] ids)
         {
             this.Ids = ids;
@@ -100,7 +102,7 @@ namespace NewApi.Todos
     [TestFixture]
     public class NewApiTodosTests
     {
-        const string BaseUri = "http://localhost:82/";
+        const string BaseUri = "http://localhost:1337/";
 
         AppHost appHost;
 

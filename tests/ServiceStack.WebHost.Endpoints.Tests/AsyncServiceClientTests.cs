@@ -6,7 +6,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public abstract class AsyncServiceClientTests
     {
-        protected const string ListeningOn = "http://localhost:82/";
+        protected const string ListeningOn = "http://localhost:1337/";
 
         ExampleAppHostHttpListener appHost;
 

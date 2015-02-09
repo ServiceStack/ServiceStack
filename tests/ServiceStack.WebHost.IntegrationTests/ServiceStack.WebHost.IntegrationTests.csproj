@@ -76,9 +76,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\src\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="protobuf-net, Version=2.0.0.666, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+    <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\src\packages\protobuf-net.2.0.0.666\lib\net40\protobuf-net.dll</HintPath>
+      <HintPath>..\..\src\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
@@ -92,6 +95,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -144,41 +148,18 @@
     <Content Include="Content\img\ui-icons_454545_256x240.png" />
     <Content Include="Content\img\ui-icons_888888_256x240.png" />
     <Content Include="Content\img\ui-icons_cd0a0a_256x240.png" />
-    <Content Include="Content\js\app.js" />
     <Content Include="Content\js\backbone.min.js" />
-    <Content Include="Content\js\base.js" />
     <Content Include="Content\js\jquery-1.7.1.min.js" />
     <Content Include="Content\js\jsonreport.js" />
-    <Content Include="Content\js\login.js" />
-    <Content Include="Content\js\register.js" />
-    <Content Include="Content\js\ss-validation.js" />
     <Content Include="Content\js\underscore.min.js" />
-    <Content Include="Content\js\userprofile.js" />
     <Content Include="Content\js\_blank.js" />
     <Content Include="Content\static-sub.txt" />
     <EmbeddedResource Include="static-root-embedded.txt" />
     <Content Include="Default.aspx" />
     <Content Include="default.html" />
     <Content Include="Subpages\Test.aspx" />
-    <Content Include="swagger-ui\css\hightlight.default.css" />
-    <Content Include="swagger-ui\css\screen.css" />
-    <Content Include="swagger-ui\images\logo_small.png" />
-    <Content Include="swagger-ui\images\pet_store_api.png" />
-    <Content Include="swagger-ui\images\throbber.gif" />
-    <Content Include="swagger-ui\images\wordnik_api.png" />
-    <Content Include="swagger-ui\index.html" />
-    <Content Include="swagger-ui\lib\backbone-min.js" />
-    <Content Include="swagger-ui\lib\handlebars-1.0.rc.1.js" />
-    <Content Include="swagger-ui\lib\highlight.7.3.pack.js" />
-    <Content Include="swagger-ui\lib\jquery-1.8.0.min.js" />
-    <Content Include="swagger-ui\lib\jquery.ba-bbq.min.js" />
-    <Content Include="swagger-ui\lib\jquery.slideto.min.js" />
-    <Content Include="swagger-ui\lib\jquery.wiggle.min.js" />
-    <Content Include="swagger-ui\lib\swagger.js" />
-    <Content Include="swagger-ui\lib\underscore-min.js" />
-    <Content Include="swagger-ui\swagger-ui.js" />
-    <Content Include="swagger-ui\swagger-ui.min.js" />
     <EmbeddedResource Include="Templates\OperationControl.html" />
+    <EmbeddedResource Include="Templates\HtmlFormat.html" />
     <Content Include="user-notfound.htm" />
     <Content Include="user-default.htm" />
     <Content Include="Global.asax" />
@@ -192,6 +173,10 @@
     <Content Include="webpage.html" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\AsyncTaskServices.cs" />
+    <Compile Include="Services\CookiesService.cs" />
+    <Compile Include="Services\CustomPathServices.cs" />
+    <Compile Include="Shared\IocService.cs" />
     <Compile Include="Tests\AsyncProgressTests.cs" />
     <Compile Include="PageBase.cs">
       <SubType>ASPXCodeBehind</SubType>
@@ -208,7 +193,6 @@
     <Compile Include="Services\CustomHeadersService.cs" />
     <Compile Include="Services\EndpointAccessService.cs" />
     <Compile Include="Services\HelloImage.cs" />
-    <Compile Include="Services\IocServiceTests.cs" />
     <Compile Include="Services\RequestItemsService.cs" />
     <Compile Include="Services\SwaggerTestService.cs" />
     <Compile Include="Services\TestProgressService.cs" />
@@ -219,8 +203,13 @@
     <Compile Include="Subpages\Test.aspx.designer.cs">
       <DependentUpon>Test.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Tests\AsyncRestClientTests.cs" />
     <Compile Include="Tests\BinarySerializedTests.cs" />
+    <Compile Include="Tests\AsyncTaskTests.cs" />
+    <Compile Include="Tests\CookieTests.cs" />
     <Compile Include="Tests\CustomHeadersTests.cs" />
+    <Compile Include="Tests\LoadTests.cs" />
+    <Compile Include="Tests\ReqtestsTests.cs" />
     <Compile Include="Tests\ExceptionHandlingTests.cs" />
     <Compile Include="Tests\ProtoBufServiceTests.cs" />
     <Compile Include="Services\ContentManagerOnly.cs" />
@@ -230,7 +219,7 @@
     <Compile Include="Services\BatchWidgetValidationService.cs" />
     <Compile Include="Services\CachedMoviesService.cs" />
     <Compile Include="Tests\RawRequestTests.cs" />
-    <Compile Include="Tests\ManageRolesTests.cs" />
+    <Compile Include="Tests\AssertValidAccessTests.cs" />
     <Compile Include="Services\TestService.cs" />
     <Compile Include="Services\CustomerService.cs" />
     <Compile Include="Services\SessionService.cs" />
@@ -280,6 +269,7 @@
     <Compile Include="Tests\RestsTestBase.cs" />
     <Compile Include="Tests\RestWebServiceTests.cs" />
     <Compile Include="Tests\SessionTests.cs" />
+    <Compile Include="Tests\SoapTests.cs" />
     <Compile Include="Tests\UniqueRequestTests.cs" />
     <Compile Include="Tests\VirtualPathTests.cs" />
     <Compile Include="Tests\WebServicesTests.cs" />
@@ -301,10 +291,6 @@
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj">
       <Project>{ef36a253-c53f-4bf3-b0ec-4d29211fa67d}</Project>
       <Name>ServiceStack.ProtoBuf</Name>
@@ -325,9 +311,10 @@
   <ItemGroup>
     <Content Include="packages.config" />
     <Content Include="static-root.txt" />
+    <Content Include="App.config" />
     <None Include="Properties\DataSources\ServiceStack.ServiceInterface.ServiceModel.ResponseStatus.datasource" />
     <None Include="README.md" />
-    <Content Include="swagger-ui\LICENSE" />
+    <Content Include="sample.pdf" />
     <None Include="webpage.forbidden" />
   </ItemGroup>
   <ItemGroup>
@@ -336,6 +323,15 @@
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Signed|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />

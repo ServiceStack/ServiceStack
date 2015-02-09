@@ -6,7 +6,6 @@ using System.Text;
 using System.Web;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Text;
 using ServiceStack.MiniProfiler.Helpers;
 using ServiceStack.Web;
 
@@ -15,7 +14,7 @@ namespace ServiceStack.MiniProfiler.UI
 	/// <summary>
 	/// Understands how to route and respond to MiniProfiler UI urls.
 	/// </summary>
-	public class MiniProfilerHandler : /*IRouteHandler, */ IHttpHandler, IServiceStackHttpHandler
+    public class MiniProfilerHandler : /*IRouteHandler, */ HttpAsyncTaskHandler
 	{
 		public static IHttpHandler MatchesRequest(IHttpRequest request)
 		{
@@ -58,7 +57,7 @@ namespace ServiceStack.MiniProfiler.UI
 				var ids = Profiler.Settings.Storage.GetUnviewedIds(profiler.User);
 				ids.Add(profiler.Id);
 
-                path = (path ?? VirtualPathUtility.ToAbsolute(Profiler.Settings.RouteBasePath).EnsureTrailingSlash()) + HostContext.Config.ServiceStackHandlerFactoryPath;
+                path = (path ?? VirtualPathUtility.ToAbsolute(Profiler.Settings.RouteBasePath).EnsureTrailingSlash()) + HostContext.Config.HandlerFactoryPath;
 
 				result = format.Format(new {
 					//path = VirtualPathUtility.ToAbsolute(MiniProfiler.Settings.RouteBasePath).EnsureTrailingSlash(),
@@ -133,16 +132,13 @@ namespace ServiceStack.MiniProfiler.UI
 		/// <summary>
 		/// Returns either includes' css/javascript or results' html.
 		/// </summary>
-		public void ProcessRequest(HttpContext context)
+		public override void ProcessRequest(HttpContextBase context)
 		{
-			string path = context.Request.AppRelativeCurrentExecutionFilePath;
-			ProcessRequest(
-				new AspNetRequest(null, context.Request),
-				new AspNetResponse(context.Response),
-				null);
+		    var request = context.ToRequest();
+			ProcessRequestAsync(request, request.Response, null);
 		}
 
-		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
 		{
 			var path = httpReq.PathInfo;
 
@@ -171,7 +167,7 @@ namespace ServiceStack.MiniProfiler.UI
 		/// <summary>
 		/// Handles rendering static content files.
 		/// </summary>
-		private static string Includes(IHttpRequest httpReq, IHttpResponse httpRes, string path)
+		private static string Includes(IRequest httpReq, IResponse httpRes, string path)
 		{
 			var response = httpRes;
 
@@ -202,11 +198,11 @@ namespace ServiceStack.MiniProfiler.UI
 		/// <summary>
 		/// Handles rendering a previous MiniProfiler session, identified by its "?id=GUID" on the query.
 		/// </summary>
-		private static string Results(IHttpRequest httpReq, IHttpResponse httpRes)
+		private static string Results(IRequest httpReq, IResponse httpRes)
 		{
 			// when we're rendering as a button/popup in the corner, we'll pass ?popup=1
 			// if it's absent, we're rendering results as a full page for sharing
-			var isPopup = httpReq.QueryString["popup"].IsNullOrWhiteSpace();
+			var isPopup = !httpReq.QueryString["popup"].IsNullOrWhiteSpace();
 
 			// this guid is the MiniProfiler.Id property
 			var id = new Guid();
@@ -240,13 +236,13 @@ namespace ServiceStack.MiniProfiler.UI
 			return isPopup ? ResultsJson(httpRes, profiler) : ResultsFullPage(httpRes, profiler);
 		}
 
-		private static string ResultsJson(IHttpResponse httpRes, Profiler profiler)
+		private static string ResultsJson(IResponse httpRes, Profiler profiler)
 		{
 			httpRes.ContentType = "application/json";
 			return Profiler.ToJson(profiler);
 		}
 
-		private static string ResultsFullPage(IHttpResponse httpRes, Profiler profiler)
+		private static string ResultsFullPage(IResponse httpRes, Profiler profiler)
 		{
 			httpRes.ContentType = "text/html";
 			return new StringBuilder()
@@ -289,7 +285,7 @@ namespace ServiceStack.MiniProfiler.UI
 		/// <summary>
 		/// Helper method that sets a proper 404 response code.
 		/// </summary>
-		private static string NotFound(IHttpResponse httpRes, string contentType = "text/plain", string message = null)
+		private static string NotFound(IResponse httpRes, string contentType = "text/plain", string message = null)
 		{
 			httpRes.StatusCode = 404;
 			httpRes.ContentType = contentType;

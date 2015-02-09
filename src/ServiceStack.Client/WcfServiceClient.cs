@@ -1,13 +1,16 @@
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
+#if !(NETFX_CORE || SL5 || __IOS__ || ANDROID || PCL)
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
+using ServiceStack.Serialization;
 
 namespace ServiceStack
 {
@@ -145,6 +148,7 @@ namespace ServiceStack
         const string XPATH_SOAP_FAULT_REASON = "/s:Fault/s:Reason";
         const string NAMESPACE_SOAP = "http://www.w3.org/2003/05/soap-envelope";
         const string NAMESPACE_SOAP_ALIAS = "s";
+        public string WsdlServiceNamespace = "http://schemas.servicestack.net/types";
 
         public string Uri { get; set; }
 
@@ -242,20 +246,36 @@ namespace ServiceStack
 
         public T Send<T>(object request)
         {
+            Message responseMsg = null;
             try
             {
-                var responseMsg = Send(request);
-                var response = responseMsg.GetBody<T>();
-                var responseStatus = GetResponseStatus(response);
+                responseMsg = Send(request);
+
+                var requestType = request.GetType();
+
+                var responseXml = GetMessageXml(responseMsg);
+                var useXmlSerializerRequest = requestType.HasAttribute<XmlSerializerFormatAttribute>();
+
+                var responseType = responseXml.StartsWith("<ErrorResponse")
+                    ? typeof(ErrorResponse)
+                    : typeof(T);
+
+                var response = useXmlSerializerRequest
+                    ? XmlSerializableSerializer.Instance.DeserializeFromString(responseXml, responseType)
+                    : Serialization.DataContractSerializer.Instance.DeserializeFromString(responseXml, responseType);
+
+                var responseStatus = response.GetResponseStatus();
                 if (responseStatus != null && !string.IsNullOrEmpty(responseStatus.ErrorCode))
                 {
-                    throw new WebServiceException(responseStatus.Message, null) {
-                        StatusCode = 500,
+                    throw new WebServiceException(responseStatus.Message, null)
+                    {
+                        StatusCode = GetErrorStatus(responseMsg),
                         ResponseDto = response,
                         StatusDescription = responseStatus.Message,
                     };
                 }
-                return response;
+
+                return (T)response;
             }
             catch (WebServiceException webEx)
             {
@@ -266,16 +286,46 @@ namespace ServiceStack
                 var webEx = ex as WebException ?? ex.InnerException as WebException;
                 if (webEx == null)
                 {
-                    throw new WebServiceException(ex.Message, ex) {
+                    throw new WebServiceException(ex.Message, ex)
+                    {
                         StatusCode = 500,
                     };
                 }
 
                 var httpEx = webEx.Response as HttpWebResponse;
-                throw new WebServiceException(webEx.Message, webEx) {
+                throw new WebServiceException(webEx.Message, webEx)
+                {
                     StatusCode = httpEx != null ? (int)httpEx.StatusCode : 500
                 };
             }
+        }
+
+        private static string GetMessageXml(Message requestMsg)
+        {
+            string requestXml;
+            using (var reader = requestMsg.GetReaderAtBodyContents())
+            {
+                requestXml = reader.ReadOuterXml();
+            }
+            return requestXml;
+        }
+
+        private int GetErrorStatus(Message responseMsg)
+        {
+            var errorStatus = 500;
+
+            try
+            {
+                var statusCode = responseMsg.Headers.GetHeader<string>(
+                    HttpHeaders.XStatus, WsdlServiceNamespace);
+                if (statusCode != null)
+                {
+                    int.TryParse(statusCode, out errorStatus);
+                }
+            }
+            catch (Exception) {}
+
+            return errorStatus;
         }
 
         public TResponse Send<TResponse>(IReturn<TResponse> request)
@@ -288,20 +338,139 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public ResponseStatus GetResponseStatus(object response)
+        public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
-            if (response == null)
-                return null;
+            throw new NotImplementedException();
+        }
 
-            var hasResponseStatus = response as IHasResponseStatus;
-            if (hasResponseStatus != null)
-                return hasResponseStatus.ResponseStatus;
+        public void Get(IReturnVoid request)
+        {
+            throw new NotImplementedException();
+        }
 
-            var propertyInfo = response.GetType().GetProperty("ResponseStatus");
-            if (propertyInfo == null)
-                return null;
+        public HttpWebResponse Get(object request)
+        {
+            throw new NotImplementedException();
+        }
 
-            return propertyInfo.GetProperty(response) as ResponseStatus;
+        public TResponse Get<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Get<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Delete(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Delete(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Delete<TResponse>(IReturn<TResponse> request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Delete<TResponse>(object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Post(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Post(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Post<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Post<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Put(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Put(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Put<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Put<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Patch(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Patch(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
+        {
+            throw new NotImplementedException();
         }
 
         public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
@@ -309,7 +478,48 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public void CustomMethod(string httpVerb, IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse CustomMethod(string httpVerb, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse CustomMethod<TResponse>(string httpVerb, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Head(IReturn requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Head(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HttpWebResponse Head(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
         public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse PostFileWithRequest<TResponse>(
+            Stream fileToUpload, string fileName, object request, string fieldName = "upload")
         {
             throw new NotImplementedException();
         }
@@ -322,6 +532,11 @@ namespace ServiceStack
         public void SendOneWay(string relativeOrAbsoluteUrl, object request)
         {
             SendOneWay(Message.CreateMessage(MessageVersion, relativeOrAbsoluteUrl, request));
+        }
+
+        public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            throw new NotImplementedException();
         }
 
         public void SendOneWay(object requestDto, string action)
@@ -362,6 +577,11 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public Task GetAsync(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
@@ -373,6 +593,11 @@ namespace ServiceStack
         }
 
         public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteAsync(IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -392,6 +617,11 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public Task PostAsync(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
@@ -407,12 +637,22 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public Task PutAsync(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
         }
 
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
         {
             throw new NotImplementedException();
         }
@@ -427,16 +667,21 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public void Dispose()
-        {
-        }
-
-        public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
             throw new NotImplementedException();
         }
 
-        public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
+        public void Dispose()
+        {
+        }
+
+        public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "upload")
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "upload")
         {
             throw new NotImplementedException();
         }

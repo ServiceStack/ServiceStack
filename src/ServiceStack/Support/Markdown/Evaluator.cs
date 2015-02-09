@@ -44,7 +44,7 @@ namespace ServiceStack.Support.Markdown
 		private Type[] GenericArgs { get; set; }
 		private IDictionary<string, Type> TypeProperties { get; set; }
 
-	    static readonly List<Assembly> Assemblies = new List<Assembly> {
+        public static readonly List<Assembly> Assemblies = new List<Assembly> {
 			typeof(string).Assembly,       //"system.dll",
 //			typeof(XmlDocument).Assembly,  //"system.xml.dll",
             typeof(System.Web.HtmlString).Assembly, //"system.web.dll",
@@ -55,7 +55,7 @@ namespace ServiceStack.Support.Markdown
 			typeof(UrnId).Assembly, //"ServiceStack.Common.dll"
 		};
 
-	    static readonly List<string> AssemblyNames = new List<string> {
+	    public static readonly List<string> AssemblyNames = new List<string> {
 	        "System",
             "System.Text",
 //            "System.Xml",
@@ -68,9 +68,14 @@ namespace ServiceStack.Support.Markdown
             "ServiceStack.Markdown"                                                                     
         };
 
-        //NOTE: This assumes that the assembly name will always be equal to the namespace
+        public static readonly Dictionary<string,string> NamespaceAssemblies = new Dictionary<string, string>();
+
+        //Use NamespaceAssemblies if assemblyName is not also its namespace
         public static void AddAssembly(string assemblyName)
         {
+            if (NamespaceAssemblies.ContainsKey(assemblyName))
+                assemblyName = NamespaceAssemblies[assemblyName];
+
             if (AssemblyNames.Contains(assemblyName)) return;
             AssemblyNames.Add(assemblyName);
 
@@ -80,7 +85,13 @@ namespace ServiceStack.Support.Markdown
                     Assemblies.Add(assembly);
             } catch (System.IO.FileNotFoundException) {
                 //Possibly the assembly name differs from the namespace name
-                FindNamespaceInLoadedAssemblies(assemblyName);
+                try
+                {
+                    FindNamespaceInLoadedAssemblies(assemblyName);
+                }
+                catch (Exception ex) {
+                    Log.Error("Can't load assembly: " + assemblyName, ex);
+                }
             } catch (Exception ex) {
                 Log.Error("Can't load assembly: " + assemblyName, ex);
             }

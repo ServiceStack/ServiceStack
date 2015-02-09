@@ -22,8 +22,11 @@ namespace ServiceStack.Validation
         /// <param name="appHost">The app host</param>
         public void Register(IAppHost appHost)
         {
-            if(!appHost.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter))
+            if (!appHost.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter))
                 appHost.GlobalRequestFilters.Add(ValidationFilters.RequestFilter);
+
+            if (!appHost.GlobalMessageRequestFilters.Contains(ValidationFilters.RequestFilter))
+                appHost.GlobalMessageRequestFilters.Add(ValidationFilters.RequestFilter);
         }
        
         /// <summary>
@@ -42,7 +45,7 @@ namespace ServiceStack.Validation
                 //Serializing request successfully is not critical and only provides added error info
             }
 
-            return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", GetType().Name, DateTime.UtcNow, requestString);
+            return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", GetType().GetOperationName(), DateTime.UtcNow, requestString);
         }
     }
 
@@ -74,6 +77,7 @@ namespace ServiceStack.Validation
         public static void RegisterValidator(this Container container, Type validator, ReuseScope scope=ReuseScope.None)
         {
             var baseType = validator.BaseType;
+            if (validator.IsInterface || baseType == null) return;
             while (!baseType.IsGenericType)
             {
                 baseType = baseType.BaseType;

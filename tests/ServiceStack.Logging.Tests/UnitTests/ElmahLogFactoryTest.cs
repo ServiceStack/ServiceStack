@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Web;
 using NUnit.Framework;
 using ServiceStack.Logging.Elmah;
 using ServiceStack.Logging.Log4Net;
@@ -11,7 +12,7 @@ namespace ServiceStack.Logging.Tests.UnitTests
 		[Test]
 		public void ElmahLogFactoryTest()
 		{
-			ElmahLogFactory factory = new ElmahLogFactory(new Log4NetFactory());
+			ElmahLogFactory factory = new ElmahLogFactory(new Log4NetFactory(), new HttpApplication());
 			ILog log = factory.GetLogger(GetType());
 			Assert.IsNotNull(log);
 			Assert.IsNotNull(log as ElmahInterceptingLogger);

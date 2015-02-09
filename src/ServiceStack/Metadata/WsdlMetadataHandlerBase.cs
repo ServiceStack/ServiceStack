@@ -14,9 +14,9 @@ namespace ServiceStack.Metadata
 
         protected abstract WsdlTemplateBase GetWsdlTemplate();
 
-        public override void Execute(HttpContext context)
+        public override void Execute(HttpContextBase context)
         {
-            HostContext.AssertFeatures(Feature.Metadata);
+            HostContext.AppHost.AssertFeatures(Feature.Metadata);
 
             context.Response.ContentType = "text/xml";
 
@@ -39,10 +39,9 @@ namespace ServiceStack.Metadata
             }
         }
 
-        public void Execute(IHttpRequest httpReq, IHttpResponse httpRes)
+        public void Execute(IRequest httpReq, IResponse httpRes)
         {
-
-            HostContext.AssertFeatures(Feature.Metadata);
+            HostContext.AppHost.AssertFeatures(Feature.Metadata);
 
             httpRes.ContentType = "text/xml";
 
@@ -53,7 +52,8 @@ namespace ServiceStack.Metadata
             try
             {
                 var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, httpReq.ResolveBaseUrl(), HostContext.Config.SoapServiceName);
-                httpRes.Write(wsdlTemplate.ToString());
+                var wsdl = HostContext.AppHost.GenerateWsdl(wsdlTemplate);
+                httpRes.Write(wsdl);
             }
             catch (Exception ex)
             {
@@ -72,7 +72,7 @@ namespace ServiceStack.Metadata
                 OptimizeForFlash = optimizeForFlash,
             }.ToString();
 
-            var soapFormat = GetType().Name.StartsWith("Soap11", StringComparison.OrdinalIgnoreCase)
+            var soapFormat = GetType().GetOperationName().StartsWith("Soap11", StringComparison.OrdinalIgnoreCase)
                 ? Format.Soap11 : Format.Soap12;
 
             var wsdlTemplate = GetWsdlTemplate();

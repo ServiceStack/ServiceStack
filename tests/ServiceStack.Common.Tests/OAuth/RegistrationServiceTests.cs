@@ -3,6 +3,7 @@ using Moq;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
+using ServiceStack.Host;
 using ServiceStack.Testing;
 
 namespace ServiceStack.Common.Tests.OAuth
@@ -51,7 +52,7 @@ namespace ServiceStack.Common.Tests.OAuth
             IUserAuthRepository authRepo = null,
             string contentType = null)
         {
-            var requestContext = new MockRequestContext();
+            var requestContext = new BasicRequest();
             if (contentType != null)
             {
                 requestContext.ResponseContentType = contentType;
@@ -61,7 +62,7 @@ namespace ServiceStack.Common.Tests.OAuth
             {
                 RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = userAuthRepository },
                 AuthRepo = userAuthRepository,
-                RequestContext = requestContext,
+                Request = requestContext,
             };
 
             HostContext.Container.Register(userAuthRepository);

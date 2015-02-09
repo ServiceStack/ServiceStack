@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	[RequiredRole(ManageRolesTests.ContentManager)]
+	[RequiredRole(AssertValidAccessTests.ContentManager)]
 	public class ContentManagerOnlyService : Service
 	{
         public object Any(ContentManagerOnly request)
@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	[RequiredPermission(ManageRolesTests.ContentPermission)]
+	[RequiredPermission(AssertValidAccessTests.ContentPermission)]
 	public class ContentPermissionOnlyService : Service
 	{
         public object Any(ContentPermissionOnly request)

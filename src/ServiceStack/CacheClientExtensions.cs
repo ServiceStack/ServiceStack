@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using ServiceStack.Caching;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -18,33 +17,34 @@ namespace ServiceStack
 
         public static object ResolveFromCache(this ICacheClient cacheClient,
             string cacheKey,
-            IRequestContext context)
+            IRequest request)
         {
             string modifiers = null;
-            if (!context.ResponseContentType.IsBinary())
+            if (!request.ResponseContentType.IsBinary())
             {
 
-                if (context.ResponseContentType == MimeTypes.Json)
+                if (request.ResponseContentType == MimeTypes.Json)
                 {
-                    string jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
+                    string jsonp = request.GetJsonpCallback();
                     if (jsonp != null)
                         modifiers = ".jsonp," + jsonp.SafeVarName();
                 }
 
-                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, request.ResponseContentType, modifiers);
 
-                bool doCompression = context.CompressionType != null;
+                var compressionType = request.GetCompressionType();
+                bool doCompression = compressionType != null;
                 if (doCompression)
                 {
-                    var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, context.CompressionType);
+                    var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, compressionType);
 
                     var compressedResult = cacheClient.Get<byte[]>(cacheKeySerializedZip);
                     if (compressedResult != null)
                     {
                         return new CompressedResult(
                             compressedResult,
-                            context.CompressionType,
-                            context.ResponseContentType);
+                            compressionType,
+                            request.ResponseContentType);
                     }
                 }
                 else
@@ -58,7 +58,7 @@ namespace ServiceStack
             }
             else
             {
-                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, request.ResponseContentType, modifiers);
                 var serializedResult = cacheClient.Get<byte[]>(cacheKeySerialized);
                 if (serializedResult != null)
                 {
@@ -69,22 +69,28 @@ namespace ServiceStack
             return null;
         }
 
+        static string SerializeToString(IRequest request, object responseDto)
+        {
+            var str = responseDto as string;
+            return str ?? HostContext.ContentTypes.SerializeToString(request, responseDto);
+        }
+
         public static object Cache(this ICacheClient cacheClient,
             string cacheKey,
             object responseDto,
-            IRequestContext context,
+            IRequest request,
             TimeSpan? expireCacheIn = null)
         {
             cacheClient.Set(cacheKey, responseDto, expireCacheIn);
 
-            if (!context.ResponseContentType.IsBinary())
+            if (!request.ResponseContentType.IsBinary())
             {
-                string serializedDto = HostContext.ContentTypes.SerializeToString(context, responseDto);
+                string serializedDto = SerializeToString(request, responseDto);
 
                 string modifiers = null;
-                if (context.ResponseContentType.MatchesContentType(MimeTypes.Json))
+                if (request.ResponseContentType.MatchesContentType(MimeTypes.Json))
                 {
-                    var jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
+                    var jsonp = request.GetJsonpCallback();
                     if (jsonp != null)
                     {
                         modifiers = ".jsonp," + jsonp.SafeVarName();
@@ -97,19 +103,22 @@ namespace ServiceStack
                     }
                 }
 
-                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, request.ResponseContentType, modifiers);
                 cacheClient.Set(cacheKeySerialized, serializedDto, expireCacheIn);
 
-                bool doCompression = context.CompressionType != null;
+                var compressionType = request.GetCompressionType();
+                bool doCompression = compressionType != null;
                 if (doCompression)
                 {
-                    var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, context.CompressionType);
+                    var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, compressionType);
 
-                    byte[] compressedSerializedDto = serializedDto.Compress(context.CompressionType);
+                    byte[] compressedSerializedDto = serializedDto.Compress(compressionType);
                     cacheClient.Set(cacheKeySerializedZip, compressedSerializedDto, expireCacheIn);
 
                     return (compressedSerializedDto != null)
-                        ? new CompressedResult(compressedSerializedDto, context.CompressionType, context.ResponseContentType)
+                        ? new CompressedResult(compressedSerializedDto, compressionType, request.ResponseContentType) {
+                                Status = request.Response.StatusCode
+                            }
                         : null;
                 }
 
@@ -118,8 +127,8 @@ namespace ServiceStack
             else
             {
                 string modifiers = null;
-                byte[] serializedDto = HostContext.ContentTypes.SerializeToBytes(context, responseDto);
-                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
+                byte[] serializedDto = HostContext.ContentTypes.SerializeToBytes(request, responseDto);
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, request.ResponseContentType, modifiers);
                 cacheClient.Set(cacheKeySerialized, serializedDto, expireCacheIn);
                 return serializedDto;
             }
@@ -170,7 +179,8 @@ namespace ServiceStack
         {
             var canRemoveByPattern = cacheClient as IRemoveByPattern;
             if (canRemoveByPattern == null)
-                throw new NotImplementedException("ICacheRemovableByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
+                throw new NotImplementedException(
+                    "IRemoveByPattern is not implemented on: " + cacheClient.GetType().FullName);
 
             canRemoveByPattern.RemoveByPattern(pattern);
         }
@@ -183,9 +193,34 @@ namespace ServiceStack
         {
             var canRemoveByPattern = cacheClient as IRemoveByPattern;
             if (canRemoveByPattern == null)
-                throw new NotImplementedException("ICacheRemovableByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
+                throw new NotImplementedException("IRemoveByPattern is not implemented by the cache client: " + cacheClient.GetType().FullName);
 
             canRemoveByPattern.RemoveByRegex(regex);
         }
+
+        public static T GetOrCreate<T>(this ICacheClient cache,
+            string key, Func<T> createFn)
+        {
+            var value = cache.Get<T>(key);
+            if (Equals(value, default(T)))
+            {
+                value = createFn();
+                cache.Set(key, value);
+            }
+            return value;
+        }
+
+        public static T GetOrCreate<T>(this ICacheClient cache,
+            string key, TimeSpan expiresIn, Func<T> createFn)
+        {
+            var value = cache.Get<T>(key);
+            if (Equals(value, default(T)))
+            {
+                value = createFn();
+                cache.Set(key, value, expiresIn);
+            }
+            return value;
+        }
+
     }
 }

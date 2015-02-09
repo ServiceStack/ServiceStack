@@ -1,4 +1,6 @@
-﻿using System.Collections.Specialized;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using Moq;
 using NUnit.Framework;
 using ServiceStack.Host;
@@ -36,7 +38,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				RestPath = new RestPath(typeof(RequestType), path)
 			};
 
-			Assert.Throws<RequestBindingException>(() => handler.ProcessRequest(request, response, string.Empty));
+		    try
+		    {
+    		    handler.ProcessRequestAsync(request, response, string.Empty).Wait();
+                Assert.Fail("Should throw RequestBindingException");
+		    }
+		    catch (AggregateException aex)
+		    {
+                Assert.That(aex.InnerExceptions.Count, Is.EqualTo(1));
+                Assert.That(aex.InnerException is RequestBindingException);
+		    }
 		}
 
 		[Test]
@@ -51,17 +62,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				RestPath = new RestPath(typeof(RequestType), path)
 			};
 
-			Assert.Throws<RequestBindingException>(() => handler.ProcessRequest(request, response, string.Empty));
+            try
+            {
+                handler.ProcessRequestAsync(request, response, string.Empty).Wait();
+                Assert.Fail("Should throw RequestBindingException");
+            }
+            catch (AggregateException aex)
+            {
+                Assert.That(aex.InnerExceptions.Count, Is.EqualTo(1));
+                Assert.That(aex.InnerException is RequestBindingException);
+            }
 		}
 
-		private IHttpRequest ConfigureRequest(string path)
-		{
-			var request = new Mock<IHttpRequest>();
-			request.Expect(x => x.QueryString).Returns(new NameValueCollection());
-			request.Expect(x => x.PathInfo).Returns(path);
+        private IHttpRequest ConfigureRequest(string path)
+        {
+            var request = new Mock<IHttpRequest>();
+            request.Expect(x => x.Items).Returns(new Dictionary<string, object>());
+            request.Expect(x => x.QueryString).Returns(PclExportClient.Instance.NewNameValueCollection());
+            request.Expect(x => x.PathInfo).Returns(path);
 
-			return request.Object;
-		}
+            return request.Object;
+        }
 
 		public class RequestType
 		{

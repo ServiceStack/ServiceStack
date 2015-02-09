@@ -10,6 +10,6 @@ namespace ServiceStack.Web
         /// <summary>
         /// Write a partial content result
         /// </summary>
-        void WritePartialTo(IHttpResponse response);
+        void WritePartialTo(IResponse response);
 	}
 }

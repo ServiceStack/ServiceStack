@@ -39,12 +39,12 @@ namespace ServiceStack
         /// </summary>
         public const string CombinedServiceLogId = "All";
 
-        public void HandleUncaughtException(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Exception ex)
+        public void HandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             LogErrorInRedis(operationName, ex);
         }
 
-        public object HandleServiceException(IHttpRequest httpReq, object request, Exception ex)
+        public object HandleServiceException(IRequest httpReq, object request, Exception ex)
         {
             LogErrorInRedis(httpReq.OperationName, ex);
 

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using ServiceStack.Auth;
-using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
@@ -29,8 +28,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	//Implementation. Can be called via any endpoint or format, see: http://servicestack.net/ServiceStack.Hello/
 	public class UserAuthsService : Service
 	{
-		public IDbConnectionFactory DbFactory { get; set; }
-
         public object Any(UserAuths request)
 		{
 			return new UserAuthsResponse {

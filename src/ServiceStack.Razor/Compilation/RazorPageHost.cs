@@ -12,7 +12,6 @@ using System.Web.Razor.Generator;
 using System.Web.Razor.Parser;
 using System.Web.Razor.Parser.SyntaxTree;
 using System.Web.Razor.Text;
-using ServiceStack.Common;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Html;
 using ServiceStack.IO;
@@ -41,7 +40,10 @@ namespace ServiceStack.Razor.Compilation
         private readonly CodeDomProvider _codeDomProvider;
         private readonly IDictionary<string, string> _directives;
         private string _defaultClassName;
-
+        private string _defaultNamespace;
+        private string _rootNamespace { get; set; }
+        private bool _defaultNamespaceIgnored { get; set; }
+        
         public IVirtualPathProvider PathProvider { get; protected set; }
         public IVirtualFile File { get; protected set; }
 
@@ -74,7 +76,6 @@ namespace ServiceStack.Razor.Compilation
             _codeTransformer = codeTransformer;
             _codeDomProvider = codeDomProvider;
             _directives = directives;
-            base.DefaultNamespace = "ASP";
             EnableLinePragmas = true;
 
             base.GeneratedClassContext = new GeneratedClassContext(
@@ -107,11 +108,43 @@ namespace ServiceStack.Razor.Compilation
             }
             set
             {
+                //  By default RazorEngineHost assigns the name __CompiledTemplate. We'll ignore this assignment
                 if (!String.Equals(value, "__CompiledTemplate", StringComparison.OrdinalIgnoreCase))
                 {
-                    //  By default RazorEngineHost assigns the name __CompiledTemplate. We'll ignore this assignment
                     _defaultClassName = value;
                 }
+            }
+        }
+
+        public override string DefaultNamespace
+        {
+            get
+            {
+                return _defaultNamespace ?? GetNamespace();
+            }
+            set
+            {
+                //  By default RazorEngineHost assigns the name "Razor". We'll ignore this assignment the first time
+                if (!_defaultNamespaceIgnored && !String.Equals(value, "Razor", StringComparison.OrdinalIgnoreCase))
+                {
+                    _defaultNamespace = value;
+                    _defaultNamespaceIgnored = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the root namespace used when the full namespace is inferred from the VirtualPath.
+        /// </summary>
+        public virtual string RootNamespace
+        {
+            get
+            {
+                return _rootNamespace ?? "ASP";
+            }
+            set
+            {
+                _rootNamespace = value;
             }
         }
 
@@ -180,11 +213,30 @@ namespace ServiceStack.Razor.Compilation
 
             var assemblies = CompilerServices
                 .GetLoadedAssemblies()
-                .Where(a => !a.IsDynamic)
-                .Select(a => a.Location)
-                .ToArray();
+                .Where(a => !a.IsDynamic);
 
-            @params.ReferencedAssemblies.AddRange(assemblies);
+            if (Env.IsMono)
+            {
+                //workaround mono not handling duplicate dll references (i.e. in GAC)
+                var uniqueNames = new HashSet<string>();
+                assemblies = assemblies.Where(x =>
+                {
+                    var id = x.GetName().Name;
+                    if (string.IsNullOrEmpty(id))
+                        return true;
+                    if (uniqueNames.Contains(id))
+                        return false;
+                    if (!id.Contains("<"))
+                        uniqueNames.Add(x.GetName().Name);
+                    return true;
+                });
+            }
+
+            var assemblyNames = assemblies
+                .Select(a => a.Location)
+                .ToArray(); 
+            
+            @params.ReferencedAssemblies.AddRange(assemblyNames);
 
             //Compile the code
             var results = _codeDomProvider.CompileAssemblyFromDom(@params, razorResults.GeneratedCode);
@@ -281,6 +333,37 @@ namespace ServiceStack.Razor.Compilation
         {
             string filename = Path.GetFileNameWithoutExtension(this.File.VirtualPath);
             return "__" + ParserHelpers.SanitizeClassName(filename);
+        }
+
+        // Use sanitized path as namespace to disambiguate razor partials
+        // that have the same name, in a deterministic way
+        protected virtual string GetNamespace()
+        {
+            var separator = this.File.VirtualPathProvider.VirtualPathSeparator;
+            string filePath = this.File.VirtualPath;
+            string @namespace = this.RootNamespace;
+
+            // Test for sub-folder(s) to use as namespace
+            var index = filePath.LastIndexOf(separator);
+            if (index > 0)
+            {
+                filePath = filePath.Replace(separator, ".");
+                @namespace += "." + SanitizeNamespace(filePath.Remove(index));
+            }
+
+            return @namespace;
+        }
+
+        public static string SanitizeNamespace(string inputName)
+        {
+            var sections = inputName.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
+
+            for (int i = 0; i < sections.Length; i++)
+            {
+                sections[i] = ParserHelpers.SanitizeClassName(sections[i]);
+            }
+
+            return String.Join(".", sections);
         }
 
         public override ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
@@ -460,5 +543,4 @@ namespace ServiceStack.Razor.Compilation
             }
         }
     }
-
 }

@@ -88,10 +88,10 @@ namespace ServiceStack
             {ApplyTo.BaseLineControl, "BASELINE-CONTROL"},
         };
 
-        public static ApplyTo HttpMethodAsApplyTo(this IHttpRequest req)
+        public static ApplyTo HttpMethodAsApplyTo(this IRequest req)
         {
             ApplyTo applyTo;
-            return VerbsApplyTo.TryGetValue(req.HttpMethod, out applyTo)
+            return VerbsApplyTo.TryGetValue(req.Verb, out applyTo)
                 ? applyTo
                 : ApplyTo.None;
         }

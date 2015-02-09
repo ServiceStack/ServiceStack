@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using ServiceStack.Web;
@@ -34,7 +35,7 @@ namespace ServiceStack.Host
             this.capacity = capacity.GetValueOrDefault(DefaultCapacity);
         }
 
-        public void Log(IRequestContext requestContext, object requestDto, object response, TimeSpan requestDuration)
+        public void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
         {
             var requestType = requestDto != null ? requestDto.GetType() : null;
 
@@ -49,20 +50,20 @@ namespace ServiceStack.Host
                 RequestDuration = requestDuration,
             };
 
-            var httpReq = requestContext != null ? requestContext.Get<IHttpRequest>() : null;
-            if (httpReq != null)
+            if (request != null)
             {
-                entry.HttpMethod = httpReq.HttpMethod;
-                entry.AbsoluteUri = httpReq.AbsoluteUri;
-                entry.PathInfo = httpReq.PathInfo;
-                entry.IpAddress = requestContext.IpAddress;
-                entry.ForwardedFor = httpReq.Headers[HttpHeaders.XForwardedFor];
-                entry.Referer = httpReq.Headers[HttpHeaders.Referer];
-                entry.Headers = httpReq.Headers.ToDictionary();
-                entry.UserAuthId = httpReq.GetItemOrCookie(HttpHeaders.XUserAuthId);
-                entry.SessionId = httpReq.GetSessionId();
-                entry.Items = httpReq.Items;
-                entry.Session = EnableSessionTracking ? httpReq.GetSession() : null;
+                entry.HttpMethod = request.Verb;
+                entry.AbsoluteUri = request.AbsoluteUri;
+                entry.PathInfo = request.PathInfo;
+                entry.IpAddress = request.UserHostAddress;
+                entry.ForwardedFor = request.Headers[HttpHeaders.XForwardedFor];
+                entry.Referer = request.Headers[HttpHeaders.Referer];
+                entry.Headers = request.Headers.ToDictionary();
+                entry.UserAuthId = request.GetItemOrCookie(HttpHeaders.XUserAuthId);
+                entry.SessionId = request.GetSessionId();
+                entry.Items = SerializableItems(request.Items);
+                entry.Session = EnableSessionTracking ? request.GetSession() : null;
+                new NameValueCollection().ToDictionary();
             }
 
             if (HideRequestBodyForRequestDtoTypes != null
@@ -70,13 +71,13 @@ namespace ServiceStack.Host
                 && !HideRequestBodyForRequestDtoTypes.Contains(requestType)) 
             {
                 entry.RequestDto = requestDto;
-                if (httpReq != null)
+                if (request != null)
                 {
-                    entry.FormData = httpReq.FormData.ToDictionary();
+                    entry.FormData = request.FormData.ToDictionary();
 
                     if (EnableRequestBodyTracking)
                     {
-                        entry.RequestBody = httpReq.GetRawBody();
+                        entry.RequestBody = request.GetRawBody();
                     }
                 }
             }
@@ -94,6 +95,21 @@ namespace ServiceStack.Host
             RequestLogEntry dummy;
             if (logEntries.Count > capacity)
                 logEntries.TryDequeue(out dummy);
+        }
+
+        public Dictionary<string, string> SerializableItems(Dictionary<string, object> items)
+        {
+            var to = new Dictionary<string, string>();
+            foreach (var item in items)
+            {
+                var value = item.Value == null
+                    ? "(null)"
+                    : item.Value.ToString();
+                
+                to[item.Key] = value;
+            }
+
+            return to;
         }
 
         public List<RequestLogEntry> GetLatestLogs(int? take)

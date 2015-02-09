@@ -53,6 +53,17 @@ namespace ServiceStack.Web
 		/// <returns>The same <see cref="IServiceRoutes"/> instance;
 		///		never <see langword="null"/>.</returns>
 		IServiceRoutes Add(System.Type requestType, string restPath, string verbs);
+        
+        /// <summary>
+        ///		Maps the specified REST path to the specified request DTO, 
+        ///		specifies the HTTP verbs supported by the path, and indicates
+        ///		the default MIME type of the returned response.
+        /// </summary>
+        /// <param name="priority">
+        ///     Used to rank the precedences of route definitions in reverse routing. 
+        ///     i.e. Priorities below 0 are auto-generated have less precedence.
+        /// </param>
+        IServiceRoutes Add(System.Type requestType, string restPath, string verbs, int priority);
 
         /// <summary>
         ///		Maps the specified REST path to the specified request DTO, 

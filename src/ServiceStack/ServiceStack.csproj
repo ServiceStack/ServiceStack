@@ -51,43 +51,29 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release\ServiceStack.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\ServiceStack.xml</DocumentationFile>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DEBUG MONO|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>False</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'MONOTOUCH|AnyCPU'">
-    <OutputPath>bin\MONOTOUCH\</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Signed|AnyCPU'">
+    <OutputPath>bin\Signed\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <DocumentationFile>bin\Release\ServiceStack.XML</DocumentationFile>
-    <Optimize>True</Optimize>
+    <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>bin\Release\ServiceStack.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -106,14 +92,87 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddHeaderAttribute.cs" />
+    <Compile Include="AppHostHttpListenerSmartPoolBase.cs" />
+    <Compile Include="AppSelfHostBase.cs" />
+    <Compile Include="AspNet\ServiceStackPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Configuration\EnvironmentVariableSettings.cs" />
+    <Compile Include="Configuration\MultiAppSettings.cs" />
+    <Compile Include="NativeTypes\TypeScript\TypeScriptGenerator.cs" />
+    <Compile Include="NativeTypes\VbNet\VbNetGenerator.cs" />
+    <Compile Include="ServiceStackProvider.cs" />
+    <Compile Include="AsyncExtensions.cs" />
+    <Compile Include="Auth\AspNetWindowsAuthProvider.cs" />
+    <Compile Include="Auth\AuthEvents.cs" />
+    <Compile Include="Auth\OdnoklassnikiAuthProvider.cs" />
+    <Compile Include="Auth\AuthMetadataProvider.cs" />
+    <Compile Include="Auth\VkAuthProvider.cs" />
+    <Compile Include="Auth\YandexAuthProvider.cs" />
+    <Compile Include="Auth\GithubAuthProvider.cs" />
+    <Compile Include="Auth\SocialExtensions.cs" />
+    <Compile Include="Auth\UserAuthRepositoryExtensions.cs" />
     <Compile Include="CompressedFileResult.cs" />
     <Compile Include="CompressedResult.cs" />
+    <Compile Include="Configuration\TextFileSettings.cs" />
+    <Compile Include="NativeTypesFeature.cs" />
+    <Compile Include="NativeTypes\FSharp\FSharpGenerator.cs" />
+    <Compile Include="NativeTypes\NativeTypesMetadata.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="NativeTypes\NativeTypesService.cs" />
+    <Compile Include="NativeTypes\CSharp\CSharpGenerator.cs" />
+    <Compile Include="NativeTypes\StringBuilderWrapper.cs" />
+    <Compile Include="EnsureHttpsAttribute.cs" />
     <Compile Include="Host\ContentTypes.cs" />
+    <Compile Include="Host\Handlers\CustomActionHandler.cs" />
+    <Compile Include="Host\Handlers\HttpAsyncTaskHandler.cs" />
+    <Compile Include="Host\RequestBaseWrapper.cs" />
+    <Compile Include="Messaging\IMessageHandler.cs" />
+    <Compile Include="Messaging\IMessageHandlerDisposer.cs" />
+    <Compile Include="Messaging\IMessageHandlerFactory.cs" />
+    <Compile Include="Messaging\InMemoryTransientMessageFactory.cs" />
+    <Compile Include="Messaging\InMemoryTransientMessageService.cs" />
+    <Compile Include="Messaging\MessageHandler.cs" />
+    <Compile Include="Messaging\MessageHandlerFactory.cs" />
+    <Compile Include="Messaging\TransientMessageServiceBase.cs" />
+    <Compile Include="Messaging\WorkerStatus.cs" />
+    <Compile Include="MqExtensions.cs" />
+    <Compile Include="ILogic.cs" />
+    <Compile Include="PostmanFeature.cs" />
+    <Compile Include="RequestContext.cs" />
+    <Compile Include="ServerEventsFeature.cs" />
+    <Compile Include="SmartThreadPool\CallerThreadContext.cs" />
+    <Compile Include="SmartThreadPool\CanceledWorkItemsGroup.cs" />
+    <Compile Include="SmartThreadPool\EventWaitHandle.cs" />
+    <Compile Include="SmartThreadPool\EventWaitHandleFactory.cs" />
+    <Compile Include="SmartThreadPool\Exceptions.cs" />
+    <Compile Include="SmartThreadPool\Interfaces.cs" />
+    <Compile Include="SmartThreadPool\InternalInterfaces.cs" />
+    <Compile Include="SmartThreadPool\PriorityQueue.cs" />
+    <Compile Include="SmartThreadPool\SLExt.cs" />
+    <Compile Include="SmartThreadPool\SmartThreadPool.cs" />
+    <Compile Include="SmartThreadPool\SmartThreadPool.ThreadEntry.cs" />
+    <Compile Include="SmartThreadPool\STPEventWaitHandle.cs" />
+    <Compile Include="SmartThreadPool\STPPerformanceCounter.cs" />
+    <Compile Include="SmartThreadPool\STPStartInfo.cs" />
+    <Compile Include="SmartThreadPool\SynchronizedDictionary.cs" />
+    <Compile Include="SmartThreadPool\WIGStartInfo.cs" />
+    <Compile Include="SmartThreadPool\WorkItem.cs" />
+    <Compile Include="SmartThreadPool\WorkItem.WorkItemResult.cs" />
+    <Compile Include="SmartThreadPool\WorkItemFactory.cs" />
+    <Compile Include="SmartThreadPool\WorkItemInfo.cs" />
+    <Compile Include="SmartThreadPool\WorkItemResultTWrapper.cs" />
+    <Compile Include="SmartThreadPool\WorkItemsGroup.cs" />
+    <Compile Include="SmartThreadPool\WorkItemsGroupBase.cs" />
+    <Compile Include="SmartThreadPool\WorkItemsQueue.cs" />
+    <Compile Include="StopExecutionException.cs" />
+    <Compile Include="TaskExt.cs" />
     <Compile Include="Host\HttpResponseStreamWrapper.cs" />
-    <Compile Include="Host\SerializationContext.cs" />
     <Compile Include="HttpError.cs" />
     <Compile Include="HttpResult.cs" />
     <Compile Include="HttpResultExtensions.cs" />
+    <Compile Include="LocalizedStrings.cs" />
     <Compile Include="RedisErrorLoggerFeature.cs" />
     <Compile Include="RequestLogsFeature.cs" />
     <Compile Include="Admin\RequestLogsService.cs" />
@@ -123,7 +182,7 @@
     <Compile Include="Auth\AssignRolesService.cs" />
     <Compile Include="Auth\AuthenticateService.cs" />
     <Compile Include="Auth\AuthProvider.cs" />
-    <Compile Include="Auth\AuthUserSession.cs" />
+    <Compile Include="AuthUserSession.cs" />
     <Compile Include="Auth\BasicAuthProvider.cs" />
     <Compile Include="Auth\CredentialsAuthProvider.cs" />
     <Compile Include="Auth\DigestAuthFunctions.cs" />
@@ -279,7 +338,6 @@
     <Compile Include="Html\ViewContext.cs" />
     <Compile Include="HttpExtensions.cs" />
     <Compile Include="IServiceBase.cs" />
-    <Compile Include="Metadata\MetadataTypesHandler.cs" />
     <Compile Include="PredefinedRoutesFeature.cs" />
     <Compile Include="Funq\Action.cs" />
     <Compile Include="Funq\Container.cs" />
@@ -340,7 +398,6 @@
     <Compile Include="MiniProfiler\Storage\DatabaseStorageBase.cs" />
     <Compile Include="MiniProfiler\Storage\HttpRuntimeCacheStorage.cs" />
     <Compile Include="MiniProfiler\Storage\IStorage.cs" />
-    <Compile Include="MiniProfiler\Storage\SqlServerStorage.cs" />
     <Compile Include="MiniProfiler\Timing.cs" />
     <Compile Include="MiniProfiler\UI\MiniProfilerHandler.cs" />
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.cs" />
@@ -361,9 +418,8 @@
     <Compile Include="DtoUtils.cs" />
     <Compile Include="IRequiresSoapMessage.cs" />
     <Compile Include="Metadata\MetadataPagesConfig.cs" />
-    <Compile Include="Host\BasicRequest.cs" />
     <Compile Include="Host\BasicResponse.cs" />
-    <Compile Include="Host\BasicRequestContext.cs" />
+    <Compile Include="Host\BasicRequest.cs" />
     <Compile Include="Host\ServiceExec.cs" />
     <Compile Include="Host\RouteNamingConvention.cs" />
     <Compile Include="Host\ServiceRunner.cs" />
@@ -379,7 +435,7 @@
     <Compile Include="Testing\BasicResolver.cs" />
     <Compile Include="Testing\MockHttpRequest.cs" />
     <Compile Include="Testing\MockHttpResponse.cs" />
-    <Compile Include="Testing\MockRequestContext.cs" />
+    <Compile Include="Testing\MockRestGateway.cs" />
     <Compile Include="ValidationResultExtensions.cs" />
     <Compile Include="Validation\ExecOnlyOnce.cs" />
     <Compile Include="Validation\MultiRuleSetValidatorSelector.cs" />
@@ -424,11 +480,10 @@
     <Compile Include="FileExtensions.cs" />
     <Compile Include="Host\HttpFile.cs" />
     <Compile Include="Host\HttpRequestAuthentication.cs" />
-    <Compile Include="Host\HttpRequestContext.cs" />
     <Compile Include="HttpRequestExtensions.cs" />
     <Compile Include="HttpResponseExtensions.cs" />
     <Compile Include="Host\RequestPreferences.cs" />
-    <Compile Include="RequestContextExtensions.cs" />
+    <Compile Include="RequestExtensions.cs" />
     <Compile Include="Host\RestPath.cs" />
     <Compile Include="Host\ServiceController.cs" />
     <Compile Include="Host\ServiceMetadata.cs" />
@@ -439,7 +494,7 @@
     <Compile Include="Formats\CsvFormat.cs" />
     <Compile Include="Host\HttpListener\ListenerRequest.cs" />
     <Compile Include="Host\AppDelegates.cs" />
-    <Compile Include="Host\ActionHandler.cs" />
+    <Compile Include="Host\Handlers\CustomResponseHandler.cs" />
     <Compile Include="Templates\HtmlTemplates.cs" />
     <Compile Include="Host\RequestBindingException.cs" />
     <Compile Include="Support\Markdown\Evaluator.cs" />
@@ -461,7 +516,7 @@
     <Compile Include="Metadata\JsvMetadataHandler.cs" />
     <Compile Include="Host\Handlers\ForbiddenHttpHandler.cs" />
     <Compile Include="Host\Handlers\RedirectHttpHandler.cs" />
-    <Compile Include="Host\Handlers\IServiceStackHttpHandler.cs" />
+    <Compile Include="Host\Handlers\IServiceStackHandler.cs" />
     <Compile Include="Host\Handlers\NotFoundHttpHandler.cs" />
     <Compile Include="Host\Handlers\JsvReplyHandler.cs" />
     <Compile Include="HttpResponseExtensionsInternal.cs" />
@@ -512,6 +567,8 @@
     <Compile Include="Metadata\IndexOperationsControl.cs" />
     <Compile Include="Metadata\XsdTypeNames.cs" />
     <Compile Include="Metadata\XsdTypes.cs" />
+    <Compile Include="WebSudoFeature.cs" />
+    <Compile Include="WebSudoRequiredAttribute.cs" />
     <Compile Include="XsdUtils.cs" />
     <Compile Include="Metadata\ListTemplate.cs" />
     <Compile Include="IAppHost.cs" />
@@ -539,15 +596,14 @@
     <EmbeddedResource Include="MiniProfiler\UI\includes.tmpl">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <None Include="MiniProfiler\UI\includes.tmpl.orig" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
+    <EmbeddedResource Include="js\ss-utils.d.ts" />
+    <EmbeddedResource Include="js\ss-utils.js" />
     <EmbeddedResource Include="Templates\OperationControl.html" />
     <EmbeddedResource Include="Templates\IndexOperations.html" />
     <EmbeddedResource Include="Templates\HtmlFormat.html" />
-    <None Include="MiniProfiler\UI\jquery.tmpl.beta1.js.orig" />
-    <None Include="MiniProfiler\UI\jquery.1.6.2.js.orig" />
     <EmbeddedResource Include="MiniProfiler\UI\includes.css" />
     <EmbeddedResource Include="MiniProfiler\UI\includes.js" />
     <EmbeddedResource Include="MiniProfiler\UI\jquip.all.js" />
@@ -589,10 +645,6 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

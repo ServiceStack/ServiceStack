@@ -2,6 +2,7 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Reflection;
 
 namespace ServiceStack
 {
@@ -29,8 +30,12 @@ namespace ServiceStack
 		public ApiAllowableValuesAttribute(string name, Type enumType)
 			: this(name)
 		{
-			if (enumType.IsEnum)
-			{
+#if NETFX_CORE
+			if (enumType.GetTypeInfo().IsEnum)
+#else
+            if (enumType.IsEnum)
+#endif
+            {
 				Type = "LIST";
 				Values = System.Enum.GetNames(enumType);
 			}

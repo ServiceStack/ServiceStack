@@ -40,8 +40,12 @@ namespace Funq
                 else 
                     instance = value;
             }
-
 	    }
+
+        public override object GetInstance()
+        {
+            return instance;
+        }
 
 		/// <summary>
 		/// The Func delegate that initializes the object after creation.

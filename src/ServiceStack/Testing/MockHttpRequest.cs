@@ -4,21 +4,25 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using Funq;
-using ServiceStack.Text;
+using ServiceStack.Auth;
+using ServiceStack.Host;
 using ServiceStack.Web;
 
 namespace ServiceStack.Testing
 {
     public class MockHttpRequest : IHttpRequest
     {
+        public Container Container { get; set; }
+
         public MockHttpRequest()
         {
-            this.FormData = new NameValueCollection();
-            this.Headers = new NameValueCollection();
-            this.QueryString = new NameValueCollection();
+            this.FormData = PclExportClient.Instance.NewNameValueCollection();
+            this.Headers = PclExportClient.Instance.NewNameValueCollection();
+            this.QueryString = PclExportClient.Instance.NewNameValueCollection();
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
             this.Container = ServiceStackHost.Instance != null ? ServiceStackHost.Instance.Container : new Container();
+            this.Response = new MockHttpResponse();
         }
 
         public MockHttpRequest(string operationName, string httpMethod,
@@ -32,8 +36,8 @@ namespace ServiceStack.Testing
             this.ResponseContentType = contentType;
             this.PathInfo = pathInfo;
             this.InputStream = inputStream;
-            this.QueryString = queryString;
-            this.FormData = formData ?? new NameValueCollection();
+            this.QueryString = queryString.InWrapper();
+            this.FormData = new NameValueCollectionWrapper(formData ?? new NameValueCollection());
         }
 
         public object OriginalRequest
@@ -41,17 +45,53 @@ namespace ServiceStack.Testing
             get { return null; }
         }
 
+        public IResponse Response { get; private set; }
+
         public T TryResolve<T>()
         {
-            return Container.TryResolve<T>();
+            return Container != null 
+                ? Container.TryResolve<T>()
+                : HostContext.TryResolve<T>();
         }
 
-        public Container Container { get; set; }
+        public AuthUserSession RemoveSession()
+        {
+            this.RemoveSession();
+            return this.GetSession() as AuthUserSession;
+        }
+
+        public AuthUserSession ReloadSession()
+        {
+            return this.GetSession() as AuthUserSession;
+        }
+
         public string OperationName { get; set; }
+        public RequestAttributes RequestAttributes { get; set; }
+
+        private IRequestPreferences requestPreferences;
+        public IRequestPreferences RequestPreferences
+        {
+            get
+            {
+                if (requestPreferences == null)
+                {
+                    requestPreferences = new RequestPreferences(this);
+                }
+                return requestPreferences;
+            }
+        }
+
+        public object Dto { get; set; }
         public string ContentType { get; set; }
-        public string HttpMethod { get; set; }
+        public IHttpResponse HttpResponse { get; private set; }
         public string UserAgent { get; set; }
         public bool IsLocal { get; set; }
+        
+        public string HttpMethod { get; set; }
+        public string Verb
+        {
+            get { return HttpMethod; }
+        }
 
         public IDictionary<string, Cookie> Cookies { get; set; }
 
@@ -62,11 +102,13 @@ namespace ServiceStack.Testing
             set { responseContentType = value; }
         }
 
-        public NameValueCollection Headers { get; set; }
+        public bool HasExplicitResponseContentType { get; private set; }
 
-        public NameValueCollection QueryString { get; set; }
+        public INameValueCollection Headers { get; set; }
 
-        public NameValueCollection FormData { get; set; }
+        public INameValueCollection QueryString { get; set; }
+
+        public INameValueCollection FormData { get; set; }
 
         public bool UseBufferedStream { get; set; }
 
@@ -95,6 +137,8 @@ namespace ServiceStack.Testing
 
         public string RemoteIp { get; set; }
         public string XForwardedFor { get; set; }
+        public int? XForwardedPort { get; set; }
+        public string XForwardedProtocol { get; set; }
         public string XRealIp { get; set; }
 
         public bool IsSecureConnection { get; set; }

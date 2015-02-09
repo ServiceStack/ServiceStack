@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Common.Tests;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
@@ -68,6 +70,55 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 
         [Test]
+        public void Can_Handle_Exception_from_AlwaysThrowsList_with_GET_route()
+        {
+            var client = CreateNewServiceClient();
+            if (client is WcfServiceClient) return;
+            try
+            {
+                var response = client.Get<List<AlwaysThrows>>("/throwslist/404/{0}".Fmt(TestString));
+
+                response.PrintDump();
+                Assert.Fail("Should throw HTTP errors");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo(404));
+
+                var response = (ErrorResponse)webEx.ResponseDto;
+                var expectedError = AlwaysThrowsService.GetErrorMessage(TestString);
+                Assert.That(response.ResponseStatus.ErrorCode,
+                    Is.EqualTo(typeof(NotImplementedException).Name));
+                Assert.That(response.ResponseStatus.Message,
+                    Is.EqualTo(expectedError));
+            }
+        }
+
+        [Test]
+        public void Can_Handle_Exception_from_AlwaysThrowsValidation()
+        {
+            var client = CreateNewServiceClient();
+            try
+            {
+                var response = client.Send<List<AlwaysThrows>>(
+                    new AlwaysThrowsValidation());
+
+                response.PrintDump();
+                Assert.Fail("Should throw HTTP errors");
+            }
+            catch (WebServiceException webEx)
+            {
+                var response = (ErrorResponse)webEx.ResponseDto;
+                var status = response.ResponseStatus;
+                Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Message, Is.EqualTo("'Value' should not be empty."));
+                Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Errors[0].FieldName, Is.EqualTo("Value"));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'Value' should not be empty."));
+            }
+        }
+
+        [Test]
         public void Request_items_are_preserved_between_filters()
         {
             var client = CreateNewServiceClient();
@@ -84,7 +135,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	/// </summary>
 	public class UnitTests : WebServicesTests
 	{
-		protected override IServiceClient CreateNewServiceClient()
+	    public UnitTests()
+	    {
+	        AppHost.Container.RegisterValidators(typeof(AlwaysThrowsValidator).Assembly);
+            AppHost.LoadPlugin(new ValidationFeature());
+	    }
+
+	    protected override IServiceClient CreateNewServiceClient()
 		{
             return new DirectServiceClient(this, AppHost.ServiceController);
         }

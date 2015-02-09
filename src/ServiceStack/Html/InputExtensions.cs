@@ -518,16 +518,15 @@ namespace ServiceStack.Html
             }
 
             // If there are any errors for a named field, we add the css attribute.
-            ModelState modelState;
-            if (htmlHelper.ViewData.ModelState.TryGetValue(fullName, out modelState)) {
-                if (modelState.Errors.Count > 0) {
-                    tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
-                }
+            if (htmlHelper.HasFieldError(fullName))
+            {
+                tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
             }
 
             tagBuilder.MergeAttributes(htmlHelper.GetUnobtrusiveValidationAttributes(name, metadata));
 
-            if (inputType == InputType.CheckBox) {
+            //causes 'true,false' to be posted which is an invalid value for booleans
+            if (false && inputType == InputType.CheckBox) {
                 // Render an additional <input type="hidden".../> for checkboxes. This
                 // addresses scenarios where unchecked checkboxes are not sent in the request.
                 // Sending a hidden input makes it possible to know that the checkbox was present

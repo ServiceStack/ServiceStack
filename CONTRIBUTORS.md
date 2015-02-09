@@ -145,7 +145,7 @@
  - [ecgan](https://github.com/ecgan) (Gan Eng Chin)
  - [its-tyson](https://github.com/its-tyson) (Tyson Stolarski)
  - [tischlda](https://github.com/tischlda) (David Tischler)
- - [connectassist](https://github.com/connectassist) (Carl Healy)
+ - [tyst](https://github.com/tyst) (Carl Healy)
  - [starteleport](https://github.com/starteleport)
  - [jfoshee](https://github.com/jfoshee) (Jacob Foshee)
  - [nardin](https://github.com/nardin) (Mamaev Michail)
@@ -289,6 +289,19 @@
  - [mhanney](https://github.com/mhanney) (Michael Hanney)
  - [bcms](https://github.com/bcms)
  - [mgravell](https://github.com/mgravell) (Marc Gravell)
+ - [lafama](https://github.com/lafama) (Denis Ndwiga)
+ - [jamesgroat](https://github.com/jamesgroat) (James Groat)
+ - [jamesearl](https://github.com/jamesearl) (James Cunningham)
+ - [remkoboschker](https://github.com/remkoboschker) (Remko Boschker)
+ - [shelakel](https://github.com/shelakel)
+ - [schmidt4brains](https://github.com/schmidt4brains) (Doug Schmidt)
+ - [joplaal](https://github.com/joplaal)
+ - [aifdsc](https://github.com/aifdsc) (Stephan Desmoulin)
+ - [nicklarsen](https://github.com/nicklarsen) (NickLarsen)
+ - [et1975](https://github.com/et1975) (Eugene Tolmachev)
+ - [barambani](https://github.com/barambani)
+ - [nhalm](https://github.com/et1975)
+ - [scottmcarthur](https://github.com/scottmcarthur) (Scott McArthur)
 
 
 

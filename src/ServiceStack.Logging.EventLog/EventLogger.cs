@@ -10,7 +10,7 @@ namespace ServiceStack.Logging.EventLog
     public class EventLogger : ILog
     {
         private const string NEW_LINE = "\r\n\r\n";
-        private const string ERROR_MSG = "An error occurred in the application: {0}\r\nException: {1}";
+        public static string ERROR_MSG = "An error occurred in the application: {0}\r\nException: {1}";
 
         private readonly string eventLogSource;
         private readonly string eventLogName;

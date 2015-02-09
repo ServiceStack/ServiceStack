@@ -165,60 +165,18 @@ namespace ServiceStack.Html
 
         private static MvcHtmlString ValidationMessageHelper(this HtmlHelper htmlHelper, ModelMetadata modelMetadata, string expression, string validationMessage, IDictionary<string, object> htmlAttributes)
         {
-            //string modelName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(expression);
             string modelName = expression;
-            //FormContext formContext = htmlHelper.ViewContext.GetFormContextForClientValidation();
-            FormContext formContext = null;
 
-            if (!htmlHelper.ViewData.ModelState.ContainsKey(modelName) && formContext == null)
-            {
+            var fieldError = htmlHelper.GetFieldError(modelName);
+            if (fieldError == null)
                 return null;
-            }
 
-            ModelState modelState = htmlHelper.ViewData.ModelState[modelName];
-            ModelErrorCollection modelErrors = (modelState == null) ? null : modelState.Errors;
-            ModelError modelError = (((modelErrors == null) || (modelErrors.Count == 0)) ? null : modelErrors.FirstOrDefault(m => !String.IsNullOrEmpty(m.ErrorMessage)) ?? modelErrors[0]);
-
-            if (modelError == null && formContext == null)
-            {
-                return null;
-            }
-
-            TagBuilder builder = new TagBuilder("span");
-            builder.MergeAttributes(htmlAttributes);
-            builder.AddCssClass((modelError != null) ? HtmlHelper.ValidationMessageCssClassName : HtmlHelper.ValidationMessageValidCssClassName);
-
-            if (!String.IsNullOrEmpty(validationMessage))
-            {
-                builder.SetInnerText(validationMessage);
-            }
-            else if (modelError != null)
-            {
-                builder.SetInnerText(GetUserErrorMessageOrDefault(htmlHelper.ViewContext.HttpContext, modelError, modelState));
-            }
-
-            if (formContext != null)
-            {
-                bool replaceValidationMessageContents = String.IsNullOrEmpty(validationMessage);
-
-                if (htmlHelper.ViewContext.UnobtrusiveJavaScriptEnabled)
-                {
-                    builder.MergeAttribute("data-valmsg-for", modelName);
-                    builder.MergeAttribute("data-valmsg-replace", replaceValidationMessageContents.ToString().ToLowerInvariant());
-                }
-                else
-                {
-                    FieldValidationMetadata fieldMetadata = ApplyFieldValidationMetadata(htmlHelper, modelMetadata, modelName);
-                    // rules will already have been written to the metadata object
-                    fieldMetadata.ReplaceValidationMessageContents = replaceValidationMessageContents; // only replace contents if no explicit message was specified
-
-                    // client validation always requires an ID
-                    builder.GenerateId(modelName + "_validationMessage");
-                    fieldMetadata.ValidationMessageId = builder.Attributes["id"];
-                }
-            }
-
-            return builder.ToMvcHtmlString(TagRenderMode.Normal);
+            var spanTag = new TagBuilder("span");
+            spanTag.MergeAttributes(htmlAttributes);
+            HtmlHelper.ValidationMessageCssClassNames.Split(' ').Each(spanTag.AddCssClass);
+            spanTag.AddCssClass(fieldError.ErrorCode);
+            spanTag.InnerHtml = fieldError.Message;
+            return spanTag.ToMvcHtmlString(TagRenderMode.Normal);
         }
 
         // ValidationSummary
@@ -261,124 +219,40 @@ namespace ServiceStack.Html
         public static MvcHtmlString ValidationSummary(this HtmlHelper htmlHelper, bool excludePropertyErrors, string message, IDictionary<string, object> htmlAttributes)
         {
             if (htmlHelper == null)
-            {
                 throw new ArgumentNullException("htmlHelper");
-            }
 
-            FormContext formContext = htmlHelper.ViewContext.GetFormContextForClientValidation();
-            if (htmlHelper.ViewData.ModelState.IsValid)
-            {
-                if (formContext == null)
-                {
-                    // No client side validation
-                    return null;
-                }
-                // TODO: This isn't really about unobtrusive; can we fix up non-unobtrusive to get rid of this, too?
-                if (htmlHelper.ViewContext.UnobtrusiveJavaScriptEnabled && excludePropertyErrors)
-                {
-                    // No client-side updates
-                    return null;
-                }
-            }
+            var errorStatus = htmlHelper.GetErrorStatus();
+            if (errorStatus == null || errorStatus.Errors != null && errorStatus.Errors.Count > 0)
+                return null; //just show individual field errors
 
-            string messageSpan;
-            if (!String.IsNullOrEmpty(message))
-            {
-                TagBuilder spanTag = new TagBuilder("span");
-                spanTag.SetInnerText(message);
-                messageSpan = spanTag.ToString(TagRenderMode.Normal) + Environment.NewLine;
-            }
-            else
-            {
-                messageSpan = null;
-            }
-
-            StringBuilder htmlSummary = new StringBuilder();
-            TagBuilder unorderedList = new TagBuilder("ul");
-
-            IEnumerable<ModelState> modelStates = GetModelStateList(htmlHelper, excludePropertyErrors);
-
-            foreach (ModelState modelState in modelStates)
-            {
-                foreach (ModelError modelError in modelState.Errors)
-                {
-                    string errorText = GetUserErrorMessageOrDefault(htmlHelper.ViewContext.HttpContext, modelError, null /* modelState */);
-                    if (!String.IsNullOrEmpty(errorText))
-                    {
-                        TagBuilder listItem = new TagBuilder("li");
-                        listItem.SetInnerText(errorText);
-                        htmlSummary.AppendLine(listItem.ToString(TagRenderMode.Normal));
-                    }
-                }
-            }
-
-            if (htmlSummary.Length == 0)
-            {
-                htmlSummary.AppendLine(HiddenListItem);
-            }
-
-            unorderedList.InnerHtml = htmlSummary.ToString();
-
-            TagBuilder divBuilder = new TagBuilder("div");
-            divBuilder.MergeAttributes(htmlAttributes);
-            divBuilder.AddCssClass((htmlHelper.ViewData.ModelState.IsValid) ? HtmlHelper.ValidationSummaryValidCssClassName : HtmlHelper.ValidationSummaryCssClassName);
-            divBuilder.InnerHtml = messageSpan + unorderedList.ToString(TagRenderMode.Normal);
-
-            if (formContext != null)
-            {
-                if (htmlHelper.ViewContext.UnobtrusiveJavaScriptEnabled)
-                {
-                    if (!excludePropertyErrors)
-                    {
-                        // Only put errors in the validation summary if they're supposed to be included there
-                        divBuilder.MergeAttribute("data-valmsg-summary", "true");
-                    }
-                }
-                else
-                {
-                    // client val summaries need an ID
-                    divBuilder.GenerateId("validationSummary");
-                    formContext.ValidationSummaryId = divBuilder.Attributes["id"];
-                    formContext.ReplaceValidationSummary = !excludePropertyErrors;
-                }
-            }
-            return divBuilder.ToMvcHtmlString(TagRenderMode.Normal);
+            var divTag = new TagBuilder("div");
+            HtmlHelper.ValidationSummaryCssClassNames.Split(' ').Each(divTag.AddCssClass);
+            divTag.MergeAttributes(htmlAttributes);
+            divTag.InnerHtml = errorStatus.Message;
+            return divTag.ToMvcHtmlString(TagRenderMode.Normal);
         }
 
-        // Returns non-null list of model states, which caller will render in order provided.
-        private static IEnumerable<ModelState> GetModelStateList(HtmlHelper htmlHelper, bool excludePropertyErrors)
+        public static MvcHtmlString ValidationSuccess(this HtmlHelper htmlHelper, string message, object htmlAttributes=null)
         {
-            if (excludePropertyErrors)
-            {
-                ModelState ms;
-                htmlHelper.ViewData.ModelState.TryGetValue(htmlHelper.ViewData.TemplateInfo.HtmlFieldPrefix, out ms);
-                if (ms != null)
-                {
-                    return new ModelState[] { ms };
-                }
+            return ValidationSuccess(htmlHelper, message, HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes));
+        }
 
-                return new ModelState[0];
-            }
-            else
-            {
-                // Sort modelStates to respect the ordering in the metadata.                 
-                // ModelState doesn't refer to ModelMetadata, but we can correlate via the property name.
-                Dictionary<string, int> ordering = new Dictionary<string, int>();
+        public static MvcHtmlString ValidationSuccess(this HtmlHelper htmlHelper, string message, IDictionary<string, object> htmlAttributes)
+        {
+            if (htmlHelper == null)
+                throw new ArgumentNullException("htmlHelper");
 
-                var metadata = htmlHelper.ViewData.ModelMetadata;
-                if (metadata != null)
-                {
-                    foreach (ModelMetadata m in metadata.Properties)
-                    {
-                        ordering[m.PropertyName] = m.Order;
-                    }
-                }
+            var errorStatus = htmlHelper.GetErrorStatus();
+            if (message == null 
+                || errorStatus != null
+                || htmlHelper.HttpRequest.HttpMethod == HttpMethods.Get)
+                return null; 
 
-                return from kv in htmlHelper.ViewData.ModelState
-                       let name = kv.Key
-                       orderby ordering.GetOrDefault(name, ModelMetadata.DefaultOrder)
-                       select kv.Value;
-            }
+            var divTag = new TagBuilder("div");
+            HtmlHelper.ValidationSuccessCssClassNames.Split(' ').Each(divTag.AddCssClass);
+            divTag.MergeAttributes(htmlAttributes);
+            divTag.InnerHtml = message;
+            return divTag.ToMvcHtmlString(TagRenderMode.Normal);
         }
     }
 }

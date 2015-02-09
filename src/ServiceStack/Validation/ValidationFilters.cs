@@ -5,16 +5,16 @@ namespace ServiceStack.Validation
 {
     public static class ValidationFilters
     {
-        public static void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
+        public static void RequestFilter(IRequest req, IResponse res, object requestDto)
         {
             var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
             if (validator == null) return;
 
-            var validatorWithHttpRequest = validator as IRequiresHttpRequest;
+            var validatorWithHttpRequest = validator as IRequiresRequest;
             if (validatorWithHttpRequest != null)
-                validatorWithHttpRequest.HttpRequest = req;
+                validatorWithHttpRequest.Request = req;
 
-            var ruleSet = req.HttpMethod;
+            var ruleSet = req.Verb;
             var validationResult = validator.Validate(
                 new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)));
 

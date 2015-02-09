@@ -22,4 +22,27 @@ namespace ServiceStack.Auth
         IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password);
         IUserAuth GetUserAuth(string userAuthId);
     }
+
+    public interface IManageRoles
+    {
+        ICollection<string> GetRoles(string userAuthId);
+        ICollection<string> GetPermissions(string userAuthId);
+
+        bool HasRole(string userAuthId, string role);
+        bool HasPermission(string userAuthId, string permission);
+
+        void AssignRoles(string userAuthId,
+            ICollection<string> roles = null, ICollection<string> permissions = null);
+
+        void UnAssignRoles(string userAuthId,
+            ICollection<string> roles = null, ICollection<string> permissions = null);
+    }
+
+    public interface IRequiresSchema
+    {
+        /// <summary>
+        /// Creates the required missing tables or DB schema 
+        /// </summary>
+        void InitSchema();
+    }
 }

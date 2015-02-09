@@ -176,7 +176,7 @@ namespace ServiceStack.Configuration
 				var ci = GetConstructorInfo(typeof(T));
 				if (ci == null)
 				{
-					throw new TypeLoadException(string.Format(ErrorCreatingType, typeof(T).Name, textValue));
+					throw new TypeLoadException(string.Format(ErrorCreatingType, typeof(T).GetOperationName(), textValue));
 				}
 				var newT = ci.Invoke(null, new object[] { textValue });
 				return (T)newT;

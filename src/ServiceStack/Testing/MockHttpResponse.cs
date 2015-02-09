@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Text;
 using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Testing
@@ -13,7 +11,7 @@ namespace ServiceStack.Testing
     {
         public MockHttpResponse()
         {
-            this.Headers = new NameValueCollection();
+            this.Headers = PclExportClient.Instance.NewNameValueCollection();
             this.OutputStream = new MemoryStream();
             this.TextWritten = new StringBuilder();
             this.Cookies = new Cookies(this);
@@ -26,7 +24,8 @@ namespace ServiceStack.Testing
 
         public StringBuilder TextWritten { get; set; }
 
-        public NameValueCollection Headers { get; set; }
+        public INameValueCollection Headers { get; set; }
+
         public ICookies Cookies { get; set; }
 
         public void AddHeader(string name, string value)
@@ -41,10 +40,14 @@ namespace ServiceStack.Testing
 
         public Stream OutputStream { get; private set; }
 
+        public object Dto { get; set; }
+
         public void Write(string text)
         {
             this.TextWritten.Append(text);
         }
+
+        public bool UseBufferedStream { get; set; }
 
         public void Close()
         {
@@ -80,6 +83,12 @@ namespace ServiceStack.Testing
         public void SetContentLength(long contentLength)
         {
             Headers[HttpHeaders.ContentLength] = contentLength.ToString(CultureInfo.InvariantCulture);
+        }
+
+        public bool KeepAlive { get; set; }
+
+        public void SetCookie(Cookie cookie)
+        {            
         }
     }
 }

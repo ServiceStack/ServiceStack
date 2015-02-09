@@ -3,18 +3,38 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
-using System.IO.Compression;
-
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
-
-#endif
+using ServiceStack.Text;
 
 namespace ServiceStack.Serialization
 {
-    public class DataContractSerializer : IStringSerializer 
+    public partial class DataContractSerializer : IStringSerializer 
     {
         private static readonly Encoding Encoding = Encoding.UTF8;// new UTF8Encoding(true);
-        public static DataContractSerializer Instance = new DataContractSerializer();
+
+        /// <summary>
+        /// Default MaxStringContentLength is 8k, and throws an exception when reached
+        /// </summary>
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
+        private readonly XmlDictionaryReaderQuotas quotas;
+#endif
+
+        public static DataContractSerializer Instance
+            = new DataContractSerializer(
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
+new XmlDictionaryReaderQuotas { MaxStringContentLength = 1024 * 1024, }
+#endif
+);
+
+        public DataContractSerializer(
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
+XmlDictionaryReaderQuotas quotas = null
+#endif
+)
+        {
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
+            this.quotas = quotas;
+#endif
+        }
 
         public string Parse<XmlDto>(XmlDto from, bool indentXml)
         {
@@ -24,7 +44,7 @@ namespace ServiceStack.Serialization
                 using (var ms = new MemoryStream())
                 {
                     var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
                     using (var xw = new XmlTextWriter(ms, Encoding)) 
                     {
                         if (indentXml)
@@ -44,7 +64,7 @@ namespace ServiceStack.Serialization
                             return reader.ReadToEnd();
                         }
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
                     }
 #endif
                 }
@@ -55,7 +75,7 @@ namespace ServiceStack.Serialization
             }
         }
 
-        public string Parse<XmlDto>(XmlDto from)
+        public string SerializeToString<XmlDto>(XmlDto from)
         {
             return Parse(from, false);
         }
@@ -63,7 +83,7 @@ namespace ServiceStack.Serialization
 
         public void SerializeToStream(object obj, Stream stream)
         {
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
             using (var xw = new XmlTextWriter(stream, Encoding))
             {
                 var serializer = new System.Runtime.Serialization.DataContractSerializer(obj.GetType());
@@ -75,10 +95,10 @@ namespace ServiceStack.Serialization
 #endif
         }
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
         public void CompressToStream<XmlDto>(XmlDto from, Stream stream)
         {
-            using (var deflateStream = new DeflateStream(stream, CompressionMode.Compress))
+            using (var deflateStream = new System.IO.Compression.DeflateStream(stream, System.IO.Compression.CompressionMode.Compress))
             using (var xw = new XmlTextWriter(deflateStream, Encoding))
             {
                 var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -26,25 +27,29 @@ namespace ServiceStack
         public RequiredRoleAttribute(params string[] roles)
             : this(ApplyTo.All, roles) {}
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
-            if (HostContext.HasValidAuthSecret(req))
+            if (HostContext.AppHost.HasValidAuthSecret(req))
                 return;
 
             base.Execute(req, res, requestDto); //first check if session is authenticated
             if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
             var session = req.GetSession();
+
+            if (session != null && session.HasRole(RoleNames.Admin))
+                return;
+
             if (HasAllRoles(req, session)) return;
 
             if (DoHtmlRedirectIfConfigured(req, res)) return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = "Invalid Role";
+            res.StatusDescription = ErrorMessages.InvalidRole.Localize(req);
             res.EndRequest();
         }
 
-        public bool HasAllRoles(IHttpRequest req, IAuthSession session, IAuthRepository userAuthRepo=null)
+        public bool HasAllRoles(IRequest req, IAuthSession session, IAuthRepository userAuthRepo=null)
         {
             if (HasAllRoles(session)) return true;
 
@@ -60,28 +65,33 @@ namespace ServiceStack
 
         public bool HasAllRoles(IAuthSession session)
         {
-            return this.RequiredRoles
-                .All(requiredRole => session != null
-                    && session.HasRole(requiredRole));
+            if (session == null)
+                return false;
+
+            return this.RequiredRoles.All(session.HasRole);
         }
 
         /// <summary>
         /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
         /// </summary>
-        /// <param name="requestContext"></param>
+        /// <param name="req"></param>
         /// <param name="requiredRoles"></param>
-        public static void AssertRequiredRoles(IRequestContext requestContext, params string[] requiredRoles)
+        public static void AssertRequiredRoles(IRequest req, params string[] requiredRoles)
         {
             if (requiredRoles.IsEmpty()) return;
 
-            var req = requestContext.Get<IHttpRequest>();
             if (HostContext.HasValidAuthSecret(req))
                 return;
 
             var session = req.GetSession();
 
-            if (session != null && requiredRoles.All(session.HasRole))
-                return;
+            if (session != null)
+            {
+                if (session.HasRole(RoleNames.Admin))
+                    return;
+                if (requiredRoles.All(session.HasRole))
+                    return;
+            }
 
             session.UpdateFromUserAuthRepo(req);
 
@@ -92,7 +102,55 @@ namespace ServiceStack
                 ? (int)HttpStatusCode.Forbidden
                 : (int)HttpStatusCode.Unauthorized;
 
-            throw new HttpError(statusCode, "Invalid Role");
+            throw new HttpError(statusCode, ErrorMessages.InvalidRole);
+        }
+
+        public static bool HasRequiredRoles(IRequest req, string[] requiredRoles)
+        {
+            if (requiredRoles.IsEmpty())
+                return true;
+
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
+
+            var session = req.GetSession();
+
+            if (session != null)
+            {
+                if (session.HasRole(RoleNames.Admin))
+                    return true;
+                if (requiredRoles.All(session.HasRole))
+                    return true;
+            }
+
+            session.UpdateFromUserAuthRepo(req);
+
+            if (session != null && requiredRoles.All(session.HasRole))
+                return true;
+
+            return false;
+        }
+
+        protected bool Equals(RequiredRoleAttribute other)
+        {
+            return base.Equals(other) 
+                && Equals(RequiredRoles, other.RequiredRoles);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((RequiredRoleAttribute) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (base.GetHashCode()*397) ^ (RequiredRoles != null ? RequiredRoles.GetHashCode() : 0);
+            }
         }
     }
 

@@ -12,6 +12,7 @@ using ServiceStack.Data;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.MsgPack;
+using ServiceStack.NetSerializer;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -178,7 +179,7 @@ namespace RazorRockstars.Console.Files
                 throw new ArgumentException("Invalid Age");
 
             var cacheKey = typeof(CachedAllReqstars).Name;
-            return base.RequestContext.ToOptimizedResultUsingCache(base.Cache, cacheKey, () => 
+            return base.Request.ToOptimizedResultUsingCache(base.Cache, cacheKey, () => 
                 new ReqstarsResponse {
                     Aged = request.Aged,
                     Total = Db.Scalar<int>("select count(*) from Reqstar"),
@@ -360,17 +361,17 @@ namespace RazorRockstars.Console.Files
     public class MyResponseFilterAttribute : ResponseFilterAttribute
     {
         public static int Called = 0;
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object responseDto)
         {
             Called++;
-            var x = requestDto;
+            var x = responseDto;
         }
     }
 
     public class MyRequestFilterAttribute : RequestFilterAttribute
     {
         public static int Called = 0;
-        public override void Execute(IHttpRequest req, IHttpResponse res, object responseDto)
+        public override void Execute(IRequest req, IResponse res, object responseDto)
         {
             Called++;
             var x = responseDto;
@@ -398,6 +399,7 @@ namespace RazorRockstars.Console.Files
                 EnableRazor = true, //Uncomment for faster tests!
             };
             appHost.Plugins.Add(new MsgPackFormat());
+            //appHost.Plugins.Add(new NetSerializerFormat());
             //Fast
             appHost.Init();
             HostContext.Config.DebugMode = true;
@@ -507,6 +509,7 @@ namespace RazorRockstars.Console.Files
 			new XmlServiceClient(BaseUri),
 			new JsvServiceClient(BaseUri),
 			new MsgPackServiceClient(BaseUri),
+            //new NetSerializerServiceClient(BaseUri), 
 		};
 
         protected static IServiceClient[] ServiceClients =
@@ -946,6 +949,17 @@ namespace RazorRockstars.Console.Files
 
             var request = (IgnoreRoute3) restPath.CreateRequest("/ignore/AnyThing/with/foo");
             Assert.That(request.Name, Is.EqualTo("foo"));
+        }
+
+        [Test]
+        public void Does_RenderPartial_and_RenderAction()
+        {
+            var html = "{0}/Pages/PartialExamples".Fmt(Host)
+                .GetStringFromUrl();
+
+            Assert.That(html, Is.StringContaining("<!--view:PartialExamples.cshtml-->"));
+            Assert.That(html, Is.StringContaining("<!--view:GetReqstar.cshtml-->"));
+            Assert.That(html, Is.StringContaining("<!--view:CustomReqstar.cshtml-->"));
         }
     }
     

@@ -18,7 +18,9 @@ namespace ServiceStack.Messaging
 
         int Options { get; set; }
 
-        MessageError Error { get; set; }
+        ResponseStatus Error { get; set; }
+
+        string Tag { get; set; }
 
         object Body { get; set; }
     }

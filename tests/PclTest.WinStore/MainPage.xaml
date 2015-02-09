@@ -1,0 +1,18 @@
+﻿<Page
+    x:Class="PclTest.WinStore.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PclTest.WinStore"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" Width="1476">
+
+    <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}" Margin="0,0,97,0">
+        <TextBlock HorizontalAlignment="Left" Margin="28,63,0,0" TextWrapping="Wrap" Text="Name:" VerticalAlignment="Top" FontSize="48"/>
+        <TextBox x:Name="txtName" HorizontalAlignment="Left" Margin="215,50,0,0" TextWrapping="Wrap" Text="Test" VerticalAlignment="Top" FontSize="48" Width="355"/>
+        <Button x:Name="btnGoSync" Content="Go Sync" HorizontalAlignment="Left" Margin="589,44,0,0" VerticalAlignment="Top" FontSize="48" Width="254" Click="btnGoSync_Click"/>
+        <Button x:Name="btnGoAsync" Content="Go Async" HorizontalAlignment="Left" Margin="848,44,0,0" VerticalAlignment="Top" FontSize="48" Width="254" Click="btnGoAsync_Click"/>
+        <TextBlock x:Name="lblResults" HorizontalAlignment="Left" Margin="28,164,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="48" Width="1283" Height="594"/>
+        <Button x:Name="btnGoShared" Content="Go Shared" HorizontalAlignment="Left" Margin="1107,44,0,0" VerticalAlignment="Top" FontSize="48" Width="254" Click="btnGoShared_Click" />
+    </Grid>
+</Page>

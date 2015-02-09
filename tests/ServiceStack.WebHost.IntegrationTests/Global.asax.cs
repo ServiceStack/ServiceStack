@@ -13,6 +13,7 @@ using ServiceStack.OrmLite;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Redis;
 using ServiceStack.Api.Swagger;
+using ServiceStack.Shared.Tests;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.WebHost.IntegrationTests.Services;
@@ -32,6 +33,8 @@ namespace ServiceStack.WebHost.IntegrationTests
 
             public override void Configure(Container container)
             {
+                IocShared.Configure(this);
+
                 JsConfig.EmitCamelCaseNames = true;
 
 				this.PreRequestFilters.Add((req, res) => {
@@ -94,25 +97,16 @@ namespace ServiceStack.WebHost.IntegrationTests
                 Plugins.Add(new ValidationFeature());
                 Plugins.Add(new SessionFeature());
                 Plugins.Add(new ProtoBufFormat());
-                Plugins.Add(new SwaggerFeature());
                 Plugins.Add(new RequestLogsFeature());
+                Plugins.Add(new SwaggerFeature { UseBootstrapTheme = true });
+                Plugins.Add(new PostmanFeature());
+                Plugins.Add(new CorsFeature());
 
                 container.RegisterValidators(typeof(CustomersValidator).Assembly);
 
 
-                container.Register(c => new FunqSingletonScope()).ReusedWithin(ReuseScope.Default);
-                container.Register(c => new FunqRequestScope()).ReusedWithin(ReuseScope.Request);
-                container.Register(c => new FunqNoneScope()).ReusedWithin(ReuseScope.None);
-                Routes.Add<IocScope>("/iocscope");
-
-
                 //var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);
                 SetConfig(new HostConfig {
-                    GlobalResponseHeaders = {
-                        { "Access-Control-Allow-Origin", "*" },
-                        { "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
-                        { "Access-Control-Allow-Headers", "Content-Type, X-Requested-With" },
-                    },
                     AdminAuthSecret = AuthTestsBase.AuthSecret,
                     //EnableFeatures = onlyEnableFeatures,
                     DebugMode = true, //Show StackTraces for easier debugging
@@ -156,7 +150,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                 if (new AppSettings().Get("RecreateTables", true))
                     authRepo.DropAndReCreateTables();
                 else
-                    authRepo.CreateMissingTables();
+                    authRepo.InitSchema();
             }
         }
 

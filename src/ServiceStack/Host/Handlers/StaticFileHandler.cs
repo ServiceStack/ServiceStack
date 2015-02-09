@@ -32,7 +32,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Web;
-using ServiceStack.Host.AspNet;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -40,43 +39,54 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-    public class StaticFileHandler : IHttpHandler, IServiceStackHttpHandler
-	{
-		private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
+    public class StaticFileHandler : HttpAsyncTaskHandler
+    {
+        private static readonly ILog log = LogManager.GetLogger(typeof(StaticFileHandler));
+        public static int DefaultBufferSize = 1024 * 1024;
 
-		public void ProcessRequest(HttpContext context)
-		{
-			ProcessRequest(
-			new AspNetRequest(null, context.Request),
-			new AspNetResponse(context.Response), 
-			null);
-		}
+        public static Action<IRequest, IResponse, IVirtualFile> ResponseFilter { get; set; } 
 
-		private DateTime DefaultFileModified { get; set; }
-		private string DefaultFilePath { get; set; }
-		private byte[] DefaultFileContents { get; set; }
+        public StaticFileHandler()
+        {
+            BufferSize = DefaultBufferSize;
+            RequestName = GetType().Name; //Always allow StaticFileHandlers
+        }
 
-		/// <summary>
-		/// Keep default file contents in-memory
-		/// </summary>
-		/// <param name="defaultFilePath"></param>
-		public void SetDefaultFile(string defaultFilePath, byte[] defaultFileContents, DateTime defaultFileModified)
-		{
-			try
-			{
-				this.DefaultFilePath = defaultFilePath;
+        public override void ProcessRequest(HttpContextBase context)
+        {
+            var httpReq = context.ToRequest(GetType().GetOperationName());
+            ProcessRequest(httpReq, httpReq.Response, httpReq.OperationName);
+        }
+
+        public int BufferSize { get; set; }
+        private DateTime DefaultFileModified { get; set; }
+        private string DefaultFilePath { get; set; }
+        private byte[] DefaultFileContents { get; set; }
+
+        /// <summary>
+        /// Keep default file contents in-memory
+        /// </summary>
+        /// <param name="defaultFilePath"></param>
+        public void SetDefaultFile(string defaultFilePath, byte[] defaultFileContents, DateTime defaultFileModified)
+        {
+            try
+            {
+                this.DefaultFilePath = defaultFilePath;
                 this.DefaultFileContents = defaultFileContents;
                 this.DefaultFileModified = defaultFileModified;
-			}
-			catch (Exception ex)
-			{
-				log.Error(ex.Message, ex);
-			}
-		}
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message, ex);
+            }
+        }
 
-        public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
-		{
-            response.EndHttpHandlerRequest(skipClose: true, afterBody: r => 
+        public override void ProcessRequest(IRequest request, IResponse response, string operationName)
+        {
+            HostContext.ApplyCustomHandlerRequestFilters(request, response);
+            if (response.IsClosed) return;
+
+            response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r =>
             {
                 var node = request.GetVirtualNode();
                 var file = node as IVirtualFile;
@@ -114,7 +124,7 @@ namespace ServiceStack.Host.Handlers
 
                         if (file == null)
                         {
-                            var msg = "Static File '" + request.PathInfo + "' not found.";
+                            var msg = ErrorMessages.FileNotExistsFmt.Fmt(request.PathInfo);
                             log.WarnFormat("{0} in path: {1}", msg, originalFileName);
                             throw HttpError.NotFound(msg);
                         }
@@ -139,7 +149,15 @@ namespace ServiceStack.Host.Handlers
                     r.AddHeaderLastModified(file.LastModified);
                     r.ContentType = MimeTypes.GetMimeType(file.Name);
 
-                    if (file.Name.EqualsIgnoreCase(this.DefaultFilePath))
+                    if (ResponseFilter != null)
+                    {
+                        ResponseFilter(request, r, file);
+
+                        if (r.IsClosed)
+                            return;
+                    }
+
+                    if (file.VirtualPath.EqualsIgnoreCase(this.DefaultFilePath))
                     {
                         if (file.LastModified > this.DefaultFileModified)
                             SetDefaultFile(this.DefaultFilePath, file.ReadAllBytes(), file.LastModified); //reload
@@ -157,6 +175,10 @@ namespace ServiceStack.Host.Handlers
                     if (HostContext.Config.AllowPartialResponses && rangeHeader != null)
                     {
                         rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
+
+                        if (rangeEnd > contentLength - 1)
+                            rangeEnd = contentLength - 1;
+
                         r.AddHttpRangeResponseHeaders(rangeStart: rangeStart, rangeEnd: rangeEnd, contentLength: contentLength);
                     }
                     else
@@ -174,7 +196,7 @@ namespace ServiceStack.Host.Handlers
                         }
                         else
                         {
-                            fs.WriteTo(outputStream);
+                            fs.CopyTo(outputStream, BufferSize);
                             outputStream.Flush();
                         }
                     }
@@ -195,21 +217,21 @@ namespace ServiceStack.Host.Handlers
                     throw new HttpException(403, "Forbidden.");
                 }
             });
-		}
+        }
 
-	    static Dictionary<string, string> CreateFileIndex(string appFilePath)
-	    {
-	        log.Debug("Building case-insensitive fileIndex for Mono at: "
-	                  + appFilePath);
+        static Dictionary<string, string> CreateFileIndex(string appFilePath)
+        {
+            log.Debug("Building case-insensitive fileIndex for Mono at: "
+                      + appFilePath);
 
-	        var caseInsensitiveLookup = new Dictionary<string, string>();
-	        foreach (var file in GetFiles(appFilePath))
-	        {
-	            caseInsensitiveLookup[file.ToLower()] = file;
-	        }
+            var caseInsensitiveLookup = new Dictionary<string, string>();
+            foreach (var file in GetFiles(appFilePath))
+            {
+                caseInsensitiveLookup[file.ToLower()] = file;
+            }
 
-	        return caseInsensitiveLookup;
-	    }
+            return caseInsensitiveLookup;
+        }
 
         static Dictionary<string, string> CreateDirIndex(string appFilePath)
         {
@@ -223,10 +245,10 @@ namespace ServiceStack.Host.Handlers
             return indexDirs;
         }
 
-	    public bool IsReusable
-		{
-			get { return true; }
-		}
+        public override bool IsReusable
+        {
+            get { return true; }
+        }
 
         public static bool DirectoryExists(string dirPath, string appFilePath)
         {
@@ -319,5 +341,5 @@ namespace ServiceStack.Host.Handlers
 
             return results;
         }
-	}
+    }
 }

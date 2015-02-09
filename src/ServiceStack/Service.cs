@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
@@ -12,11 +13,9 @@ namespace ServiceStack
     /// <summary>
     /// Generic + Useful IService base class
     /// </summary>
-    public class Service : IService, IRequiresRequestContext, IServiceBase, IDisposable
+    public class Service : IService, IServiceBase, IDisposable
     {
         public static IResolver GlobalResolver { get; set; }
-
-        public IRequestContext RequestContext { get; set; }
 
         private IResolver resolver;
         public virtual IResolver GetResolver()
@@ -40,24 +39,24 @@ namespace ServiceStack
         public virtual T ResolveService<T>()
         {
             var service = TryResolve<T>();
-            var requiresContext = service as IRequiresRequestContext;
+            var requiresContext = service as IRequiresRequest;
             if (requiresContext != null)
             {
-                requiresContext.RequestContext = this.RequestContext;
+                requiresContext.Request = this.Request;
             }
             return service;
         }
 
-        private IHttpRequest request;
-        protected virtual IHttpRequest Request
+        public object ExecuteRequest(object requestDto)
         {
-            get { return request ?? (request = RequestContext != null ? RequestContext.Get<IHttpRequest>() : TryResolve<IHttpRequest>()); }
+            return HostContext.ServiceController.Execute(requestDto, Request);
         }
 
-        private IHttpResponse response;
-        protected virtual IHttpResponse Response
+        public IRequest Request { get; set; }
+
+        protected virtual IResponse Response
         {
-            get { return response ?? (response = RequestContext != null ? RequestContext.Get<IHttpResponse>() : TryResolve<IHttpResponse>()); }
+            get { return Request != null ? Request.Response : null; }
         }
 
         private ICacheClient cache;
@@ -106,7 +105,7 @@ namespace ServiceStack
         /// Dynamic Session Bag
         /// </summary>
         private ISession session;
-        public virtual ISession Session
+        public virtual ISession SessionBag
         {
             get
             {
@@ -114,25 +113,33 @@ namespace ServiceStack
                     ?? SessionFactory.GetOrCreateSession(Request, Response));
             }
         }
+        
+        public virtual IAuthSession GetSession(bool reload = false)
+        {
+            var req = this.Request;
+            if (req.GetSessionId() == null)
+                req.Response.CreateSessionIds(req);
+            return req.GetSession(reload);
+        }
 
         /// <summary>
         /// Typed UserSession
         /// </summary>
-        private object userSession;
         protected virtual TUserSession SessionAs<TUserSession>()
         {
-            if (userSession == null)
-            {
-                userSession = TryResolve<TUserSession>(); //Easier to mock
-                if (userSession == null)
-                    userSession = Cache.SessionAs<TUserSession>(Request, Response);
-            }
-            return (TUserSession)userSession;
+            var ret = TryResolve<TUserSession>();
+            return !Equals(ret, default(TUserSession))
+                ? ret 
+                : Cache.SessionAs<TUserSession>(Request, Response);
+        }
+
+        public virtual bool IsAuthenticated
+        {
+            get { return this.GetSession().IsAuthenticated; }
         }
 
         public virtual void PublishMessage<T>(T message)
         {
-            //TODO: Register In-Memory IMessageFactory by default
             if (MessageProducer == null)
                 throw new NullReferenceException("No IMessageFactory was registered, cannot PublishMessage");
 

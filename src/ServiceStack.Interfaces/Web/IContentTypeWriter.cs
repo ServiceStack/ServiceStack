@@ -4,20 +4,20 @@ namespace ServiceStack.Web
 {
 	public interface IContentTypeWriter
 	{
-        byte[] SerializeToBytes(IRequestContext requestContext, object response);
+        byte[] SerializeToBytes(IRequest req, object response);
 
-        string SerializeToString(IRequestContext requestContext, object response);
+        string SerializeToString(IRequest req, object response);
 
-        void SerializeToStream(IRequestContext requestContext, object response, Stream toStream);
+        void SerializeToStream(IRequest requestContext, object response, Stream toStream);
 		
-		void SerializeToResponse(IRequestContext requestContext, object response, IHttpResponse httpRes);
+		void SerializeToResponse(IRequest requestContext, object response, IResponse httpRes);
 
 		ResponseSerializerDelegate GetResponseSerializer(string contentType);
 	}
 
 	public delegate string TextSerializerDelegate(object dto);
 
-	public delegate void StreamSerializerDelegate(IRequestContext requestContext, object dto, Stream outputStream);
+	public delegate void StreamSerializerDelegate(IRequest requestContext, object dto, Stream outputStream);
 
-	public delegate void ResponseSerializerDelegate(IRequestContext requestContext, object dto, IHttpResponse httpRes);
+	public delegate void ResponseSerializerDelegate(IRequest requestContext, object dto, IResponse httpRes);
 }

@@ -1,0 +1,40 @@
+﻿@inherits ViewPage<ComplexModel> 
+@{
+    Layout = "SimpleLayout";
+    ViewBag.Title = "Complex Model Test";
+}
+
+<link href="/bootstrap.css" rel="stylesheet" />
+<style type="text/css">
+    label {
+        display: inline-block;
+        width: 100px;
+    }
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    h1 {
+        margin: 0;
+        color: #fff;
+    }
+</style>
+
+<h2>Complex Model</h2>
+<pre>
+@Model.AsRawJson()
+</pre>
+<form id="auto" action="/ComplexModel" method="POST">
+    <div>
+        <label>Id</label>
+        <input type="text" id="Ids" name="Ids" value="1,2,3" />        
+    </div>
+    <div>
+        <label>Name</label>
+        <input type="text" id="Names" name="Names" value="Foo,Bar" />        
+    </div>
+    
+    <input type="submit"/>
+</form>
+
+<!--view:ComplexModel.cshtml-->

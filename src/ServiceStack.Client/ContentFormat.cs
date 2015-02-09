@@ -11,6 +11,9 @@ namespace ServiceStack
             if (contentType == null)
                 return RequestAttributes.None;
 
+            if (contentType == MimeTypes.Soap11)
+                return RequestAttributes.Soap11;
+
             var realContentType = GetRealContentType(contentType);
             switch (realContentType)
             {
@@ -35,9 +38,6 @@ namespace ServiceStack
 
                 case MimeTypes.Csv:
                     return RequestAttributes.Csv;
-
-                case MimeTypes.Soap11:
-                    return RequestAttributes.Soap11;
 
                 case MimeTypes.Soap12:
                     return RequestAttributes.Soap12;
@@ -187,7 +187,7 @@ namespace ServiceStack
             }
         }
         
-        public static RequestAttributes GetEndpointAttribute(string httpMethod)
+        public static RequestAttributes GetRequestAttribute(string httpMethod)
         {
             switch (httpMethod.ToUpper())
             {

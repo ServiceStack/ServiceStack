@@ -24,7 +24,7 @@
     <div id="authProviders"></div>
     
 @{
-    var session = base.GetSession<CustomUserSession>();
+    var session = base.SessionAs<CustomUserSession>();
     if (session.IsAuthenticated)
     {
         var userAuthId = session.UserAuthId.ToInt();

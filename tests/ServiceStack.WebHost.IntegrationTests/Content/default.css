@@ -19,7 +19,7 @@
 #login #register {
 	 display: none;
 }
-#login .error .error-summary 
+#login .has-errors .error-summary 
 {
 	display: inline;
 	color: #B94A48;

@@ -9,7 +9,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	public class JsonpTests
 	{
-		protected const string ListeningOn = "http://localhost:82/";
+		protected const string ListeningOn = "http://localhost:1337/";
 
 		ExampleAppHostHttpListener appHost;
 
@@ -38,7 +38,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_GET_single_Movie_using_RestClient_with_JSONP()
 		{
-			var url = ListeningOn + "movies/1?callback=cb";
+            var url = ListeningOn + "all-movies/1?callback=cb";
 			string response;
 
 			var webReq = (HttpWebRequest)WebRequest.Create(url);

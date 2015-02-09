@@ -1,4 +1,4 @@
-#if !SILVERLIGHT
+#if !SL5
 using System.Collections.Generic;
 using System.IO;
 

@@ -1,19 +1,28 @@
+// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Web;
 using System.Reflection;
 using ServiceStack.Logging;
+using ServiceStack.Messaging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-#if !(MONOTOUCH || SILVERLIGHT)
+#if !(__IOS__ || SL5)
 #endif
-#if !SILVERLIGHT
+
+#if SL5
+using ServiceStack.Text;
+#else
+using System.Collections.Concurrent;
 #endif
 
 namespace ServiceStack
@@ -23,12 +32,7 @@ namespace ServiceStack
      * Need to provide async request options
      * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
      */
-    public abstract class ServiceClientBase
-#if !SILVERLIGHT
- : IServiceClient, IRestClient
-#else
-        : IServiceClient
-#endif
+    public abstract class ServiceClientBase : IServiceClient, IMessageProducer
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
@@ -75,42 +79,35 @@ namespace ServiceStack
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
         /// </summary>
-#if NETFX_CORE || WINDOWS_PHONE || SILVERLIGHT
-        public Dictionary<string, string> Headers { get; private set; } 
-#else
-        public NameValueCollection Headers { get; private set; }
-#endif
+        public INameValueCollection Headers { get; private set; }
 
         public const string DefaultHttpMethod = "POST";
+        public static string DefaultUserAgent = "ServiceStack .NET Client " + Env.ServiceStackVersion;
 
         readonly AsyncServiceClient asyncClient;
 
         protected ServiceClientBase()
         {
             this.HttpMethod = DefaultHttpMethod;
+            this.Headers = PclExportClient.Instance.NewNameValueCollection();
+
             asyncClient = new AsyncServiceClient
             {
                 ContentType = ContentType,
-                StreamSerializer = SerializeToStream,
-                StreamDeserializer = StreamDeserializer,
+                StreamSerializer = AsyncSerializeToStream,
+                StreamDeserializer = AsyncDeserializeFromStream,
                 UserName = this.UserName,
                 Password = this.Password,
                 RequestFilter = this.RequestFilter,
-                ResponseFilter = this.ResponseFilter
+                ResponseFilter = this.ResponseFilter,
+                Headers = this.Headers,
             };
             this.CookieContainer = new CookieContainer();
             this.StoreCookies = true; //leave
-#if NETFX_CORE || WINDOWS_PHONE || SILVERLIGHT
-            this.Headers = new Dictionary<string, string>();
-#else
-            this.Headers = new NameValueCollection();
-#endif
+            this.UserAgent = DefaultUserAgent;
 
-#if SILVERLIGHT
-            asyncClient.HandleCallbackOnUIThread = this.HandleCallbackOnUIThread = true;
-            asyncClient.UseBrowserHttpHandling = this.UseBrowserHttpHandling = false;
+            asyncClient.HandleCallbackOnUiThread = this.HandleCallbackOnUiThread = true;
             asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
-#endif
         }
 
         protected ServiceClientBase(string syncReplyBaseUri, string asyncOneWayBaseUri)
@@ -130,6 +127,17 @@ namespace ServiceStack
             this.asyncClient.BaseUri = baseUri;
             this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + "/reply/";
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/oneway/";
+        }
+
+        private class AccessToken
+        {
+            private string token;
+            internal static readonly AccessToken __accessToken =
+                new AccessToken("lUjBZNG56eE9yd3FQdVFSTy9qeGl5dlI5RmZwamc4U05udl000");
+            private AccessToken(string token)
+            {
+                this.token = token;
+            }
         }
 
         /// <summary>
@@ -191,6 +199,20 @@ namespace ServiceStack
 
         public string AsyncOneWayBaseUri { get; set; }
 
+        private string userAgent;
+        public string UserAgent
+        {
+            get
+            {
+                return userAgent;
+            }
+            set
+            {
+                userAgent = value;
+                asyncClient.UserAgent = value;
+            }
+        }
+
         private TimeSpan? timeout;
         public TimeSpan? Timeout
         {
@@ -222,7 +244,16 @@ namespace ServiceStack
         public abstract string ContentType { get; }
 
         public string HttpMethod { get; set; }
-      
+
+        /// <summary>
+        /// Whether to execute async callbacks on the same Synchronization Context it was called from.
+        /// </summary>
+        public bool CaptureSynchronizationContext
+        {
+            get { return asyncClient.CaptureSynchronizationContext; }
+            set { asyncClient.CaptureSynchronizationContext = value; }
+        }
+
         public bool HandleCallbackOnUiThread
         {
             get { return asyncClient.HandleCallbackOnUiThread; }
@@ -241,14 +272,20 @@ namespace ServiceStack
             set { asyncClient.OnDownloadProgress = value; }
         }
 
-#if SILVERLIGHT
+        public ProgressDelegate OnUploadProgress
+        {
+            get { return asyncClient.OnUploadProgress; }
+            set { asyncClient.OnUploadProgress = value; }
+        }
+
         private bool shareCookiesWithBrowser;
         public bool ShareCookiesWithBrowser
         {
             get { return this.shareCookiesWithBrowser; }
             set { asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value; }
         }
-#else
+
+#if !SL5
         public IWebProxy Proxy { get; set; }
 #endif
 
@@ -362,13 +399,66 @@ namespace ServiceStack
             }
         }
 
-        public abstract void SerializeToStream(IRequestContext requestContext, object request, Stream stream);
+        internal void AsyncSerializeToStream(IRequest requestContext, object request, Stream stream)
+        {
+            using (__requestAccess())
+            {
+                SerializeToStream(requestContext, request, stream);
+            }
+        }
+
+        public abstract void SerializeToStream(IRequest requestContext, object request, Stream stream);
 
         public abstract T DeserializeFromStream<T>(Stream stream);
 
         public abstract StreamDeserializerDelegate StreamDeserializer { get; }
 
-#if !SILVERLIGHT
+        internal object AsyncDeserializeFromStream(Type type, Stream fromStream)
+        {
+            using (__requestAccess())
+            {
+                return StreamDeserializer(type, fromStream);
+            }
+        }
+
+        protected T Deserialize<T>(string text)
+        {
+            using (__requestAccess())
+            using (var ms = new MemoryStream(text.ToUtf8Bytes()))
+            {
+                return DeserializeFromStream<T>(ms);
+            }
+        }
+
+        public virtual List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            var elType = requests.GetType().GetCollectionType();
+            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            var client = SendRequest(requestUri, requests);
+
+            try
+            {
+                var webResponse = PclExport.Instance.GetResponse(client);
+                return HandleResponse<List<TResponse>>(webResponse);
+            }
+            catch (Exception ex)
+            {
+                List<TResponse> response;
+
+                if (!HandleResponseException(ex,
+                    requests,
+                    requestUri,
+                    () => SendRequest(HttpMethods.Post, requestUri, requests),
+                    c => PclExport.Instance.GetResponse(c),
+                    out response))
+                {
+                    throw;
+                }
+
+                return response;
+            }
+        }
+
         public virtual TResponse Send<TResponse>(IReturn<TResponse> request)
         {
             return Send<TResponse>((object)request);
@@ -386,7 +476,7 @@ namespace ServiceStack
 
             try
             {
-                var webResponse = client.GetResponse();
+                var webResponse = PclExport.Instance.GetResponse(client);
                 return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
@@ -397,7 +487,7 @@ namespace ServiceStack
                     request,
                     requestUri,
                     () => SendRequest(HttpMethods.Post, requestUri, request),
-                    c => c.GetResponse(),
+                    c => PclExport.Instance.GetResponse(c),
                     out response))
                 {
                     throw;
@@ -431,9 +521,10 @@ namespace ServiceStack
                     var webEx = ex as WebException;
                     if (webEx != null && webEx.Response != null)
                     {
-                        WebHeaderCollection headers = ((HttpWebResponse)webEx.Response).Headers;
-                        var doAuthHeader = headers[HttpHeaders.WwwAuthenticate];
-                        // check value of WWW-Authenticate header
+                        var headers = ((HttpWebResponse)webEx.Response).Headers;
+                        var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
+                            HttpHeaders.WwwAuthenticate, x => x.Contains("realm"));
+
                         if (doAuthHeader == null)
                         {
                             client.AddBasicAuth(this.UserName, this.Password);
@@ -452,8 +543,8 @@ namespace ServiceStack
                     }
 
                     var webResponse = getResponse(client);
-
                     response = HandleResponse<TResponse>(webResponse);
+
                     return true;
                 }
             }
@@ -482,32 +573,29 @@ namespace ServiceStack
 
         private void ThrowResponseTypeException<TResponse>(object request, Exception ex, string requestUri)
         {
-            if (request == null)
-            {
-                ThrowWebServiceException<TResponse>(ex, requestUri);
-                return;
-            }
-
-            var responseType = WebRequestUtils.GetErrorResponseDtoType(request);
+            var responseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(request);
             Action<Exception, string> responseHandler;
             if (!ResponseHandlers.TryGetValue(responseType, out responseHandler))
             {
-                var mi = GetType().GetMethod("ThrowWebServiceException",
-                        BindingFlags.Instance | BindingFlags.NonPublic)
+                var mi = GetType().GetInstanceMethod("ThrowWebServiceException")
                     .MakeGenericMethod(new[] { responseType });
 
-                responseHandler = (Action<Exception, string>)Delegate.CreateDelegate(
-                    typeof(Action<Exception, string>), this, mi);
+                responseHandler = (Action<Exception, string>)mi.CreateDelegate(
+                    typeof(Action<Exception, string>), this);
 
                 ResponseHandlers[responseType] = responseHandler;
             }
             responseHandler(ex, requestUri);
         }
 
-        protected internal void ThrowWebServiceException<TResponse>(Exception ex, string requestUri)
+        public void ThrowWebServiceException<TResponse>(Exception ex, string requestUri)
         {
             var webEx = ex as WebException;
-            if (webEx != null && webEx.Status == WebExceptionStatus.ProtocolError)
+            if (webEx != null && webEx.Response != null
+#if !(SL5 || PCL)
+                 && webEx.Status == WebExceptionStatus.ProtocolError
+#endif
+            )
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 log.Error(webEx);
@@ -518,6 +606,7 @@ namespace ServiceStack
                 {
                     StatusCode = (int)errorResponse.StatusCode,
                     StatusDescription = errorResponse.StatusDescription,
+                    ResponseHeaders = errorResponse.Headers
                 };
 
                 try
@@ -525,6 +614,7 @@ namespace ServiceStack
                     if (errorResponse.ContentType.MatchesContentType(ContentType))
                     {
                         var bytes = errorResponse.GetResponseStream().ReadFully();
+                        using (__requestAccess())
                         using (var stream = new MemoryStream(bytes))
                         {
                             serviceEx.ResponseBody = bytes.FromUtf8Bytes();
@@ -567,7 +657,8 @@ namespace ServiceStack
         {
             return PrepareWebRequest(httpMethod, requestUri, request, client =>
             {
-                using (var requestStream = client.GetRequestStream())
+                using (__requestAccess())
+                using (var requestStream = PclExport.Instance.GetRequestStream(client))
                 {
                     SerializeToStream(null, request, requestStream);
                 }
@@ -579,9 +670,7 @@ namespace ServiceStack
             if (httpMethod == null)
                 throw new ArgumentNullException("httpMethod");
 
-            var httpMethodGetOrHead = httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Head;
-
-            if (httpMethodGetOrHead && request != null)
+            if (!httpMethod.HasRequestBody() && request != null)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
                 if (!string.IsNullOrEmpty(queryString))
@@ -590,17 +679,24 @@ namespace ServiceStack
                 }
             }
 
-            var client = (HttpWebRequest)WebRequest.Create(requestUri);
+            var client = PclExport.Instance.CreateWebRequest(requestUri,
+                emulateHttpViaPost: EmulateHttpViaPost);
 
             try
             {
                 client.Accept = Accept;
                 client.Method = httpMethod;
-                client.Headers.Add(Headers);
+                PclExportClient.Instance.AddHeader(client, Headers);
 
+#if !SL5
                 if (Proxy != null) client.Proxy = Proxy;
-                if (this.Timeout.HasValue) client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-                if (this.ReadWriteTimeout.HasValue) client.ReadWriteTimeout = (int)this.ReadWriteTimeout.Value.TotalMilliseconds;
+#endif
+                PclExport.Instance.Config(client,
+                    allowAutoRedirect: AllowAutoRedirect,
+                    timeout: this.Timeout,
+                    readWriteTimeout: ReadWriteTimeout,
+                    userAgent: UserAgent);
+
                 if (this.credentials != null) client.Credentials = this.credentials;
 
                 if (null != this.authInfo)
@@ -609,31 +705,28 @@ namespace ServiceStack
                 }
                 else
                 {
-                    if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
+                    if (this.AlwaysSendBasicAuthHeader) 
+                        client.AddBasicAuth(this.UserName, this.Password);
                 }
 
                 if (!DisableAutoCompression)
                 {
-                    client.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
-                    client.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                    PclExport.Instance.AddCompression(client);
                 }
 
                 if (StoreCookies)
                 {
-                    client.CookieContainer = CookieContainer;
+                    PclExportClient.Instance.SetCookieContainer(client, this);
                 }
-
-                client.AllowAutoRedirect = AllowAutoRedirect;
 
                 ApplyWebRequestFilters(client);
 
-                if (httpMethod != HttpMethods.Get
-                    && httpMethod != HttpMethods.Delete
-                    && httpMethod != HttpMethods.Head)
+                if (httpMethod.HasRequestBody())
                 {
                     client.ContentType = ContentType;
 
-                    if (sendRequestAction != null) sendRequestAction(client);
+                    if (sendRequestAction != null) 
+                        sendRequestAction(client);
                 }
             }
             catch (AuthenticationException ex)
@@ -662,67 +755,11 @@ namespace ServiceStack
             if (GlobalRequestFilter != null)
                 GlobalRequestFilter(client);
         }
-#else
-        private void SendRequest(string requestUri, object request, Action<WebRequest> callback)
+
+        protected IDisposable __requestAccess()
         {
-            var isHttpGet = HttpMethod != null && HttpMethod.ToUpper() == "GET";
-            if (isHttpGet)
-            {
-                var queryString = QueryStringSerializer.SerializeToString(request);
-                if (!string.IsNullOrEmpty(queryString))
-                {
-                    requestUri += "?" + queryString;
-                }
-            }
-
-            SendRequest(HttpMethod ?? DefaultHttpMethod, requestUri, request, callback);
+            return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
         }
-
-        private void SendRequest(string httpMethod, string requestUri, object request, Action<WebRequest> callback)
-        {
-            if (httpMethod == null)
-                throw new ArgumentNullException("httpMethod");
-
-            var client = (HttpWebRequest)WebRequest.Create(requestUri);
-            try
-            {
-                client.Accept = ContentType;
-                client.Method = httpMethod;
-
-                if (this.credentials != null) client.Credentials = this.credentials;
-                if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
-
-                if (StoreCookies)
-                {
-                    client.CookieContainer = CookieContainer;
-                }
-
-                if (this.LocalHttpWebRequestFilter != null)
-                    LocalHttpWebRequestFilter(client);
-
-                if (HttpWebRequestFilter != null)
-                    HttpWebRequestFilter(client);
-
-                if (httpMethod != Web.HttpMethod.Get
-                    && httpMethod != Web.HttpMethod.Delete)
-                {
-                    client.ContentType = ContentType;
-
-                    client.BeginGetRequestStream(delegate(IAsyncResult target)
-                    {
-                        var webReq = (HttpWebRequest)target.AsyncState;
-                        var requestStream = webReq.EndGetRequestStream(target);
-                        SerializeToStream(null, request, requestStream);
-                        callback(client);
-                    }, null);
-                }
-            }
-            catch (AuthenticationException ex)
-            {
-                throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
-            }
-        }
-#endif
 
         public virtual string GetUrl(string relativeOrAbsoluteUrl)
         {
@@ -732,52 +769,84 @@ namespace ServiceStack
                      : this.BaseUri.CombineWith(relativeOrAbsoluteUrl);
         }
 
-#if !SILVERLIGHT
         private byte[] DownloadBytes(string httpMethod, string requestUri, object request)
         {
             var webRequest = SendRequest(httpMethod, requestUri, request);
-            using (var response = webRequest.GetResponse())
+            using (var response = PclExport.Instance.GetResponse(webRequest))
             {
                 ApplyWebResponseFilters(response);
                 using (var stream = response.GetResponseStream())
                     return stream.ReadFully();
             }
         }
-#else
-        private void DownloadBytes(string httpMethod, string requestUri, object request, Action<byte[]> callback = null)
+
+        public void Publish<T>(T requestDto)
         {
-            SendRequest(httpMethod, requestUri, request, webRequest => webRequest.BeginGetResponse(delegate(IAsyncResult result)
-            {
-                var webReq = (HttpWebRequest)result.AsyncState;
-                var response = (HttpWebResponse)webReq.EndGetResponse(result);
-                using (var stream = response.GetResponseStream())
-                {
-                    var bytes = stream.ReadFully();
-                    if (callback != null)
-                    {
-                        callback(bytes);
-                    }
-                }
-            }, null));
+            Post(requestDto);
         }
-#endif
+
+        public void Publish<T>(IMessage<T> message)
+        {
+            var requestDto = message.GetBody();
+
+            if (message.CreatedDate != default(DateTime))
+                Headers.Set("X-CreatedDate", message.CreatedDate.ToJsv());
+            if (message.Priority != default(int))
+                Headers.Set("X-Priority", message.Priority.ToString());
+            if (message.RetryAttempts != default(int))
+                Headers.Set("X-RetryAttempts", message.RetryAttempts.ToString());
+            if (message.ReplyId != null)
+                Headers.Set("X-ReplyId", message.ReplyId.Value.ToString());
+            if (message.ReplyTo != null)
+                Headers.Set("X-ReplyTo", message.ReplyTo);
+            if (message.Tag != null)
+                Headers.Set("X-Tag", message.Tag);
+
+            Post(requestDto);
+        }
 
         public virtual void SendOneWay(object requestDto)
         {
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
-            DownloadBytes(HttpMethods.Post, requestUri, requestDto);
+            SendOneWay(HttpMethods.Post, requestUri, requestDto);
         }
 
         public virtual void SendOneWay(string relativeOrAbsoluteUrl, object request)
         {
-            var requestUri = GetUrl(relativeOrAbsoluteUrl);
-            DownloadBytes(HttpMethods.Post, requestUri, request);
+            SendOneWay(HttpMethods.Post, relativeOrAbsoluteUrl, request);
+        }
+
+        public virtual void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            var elType = requests.GetType().GetCollectionType();
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            SendOneWay(HttpMethods.Post, requestUri, requests);
         }
 
         public virtual void SendOneWay(string httpMethod, string relativeOrAbsoluteUrl, object requestDto)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
-            DownloadBytes(httpMethod, requestUri, requestDto);
+            try
+            {
+                DownloadBytes(httpMethod, requestUri, requestDto);
+            }
+            catch (Exception ex)
+            {
+                HttpWebResponse response;
+
+                if (!HandleResponseException(
+                    ex,
+                    requestDto,
+                    requestUri,
+                    () => SendRequest(httpMethod, requestUri, requestDto),
+                    c => PclExport.Instance.GetResponse(c),
+                    out response))
+                {
+                    throw;
+                }
+
+                using(response){} //auto dispose
+            }
         }
 
         public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto)
@@ -789,6 +858,19 @@ namespace ServiceStack
         {
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
             return asyncClient.SendAsync<TResponse>(HttpMethods.Post, requestUri, requestDto);
+        }
+
+        public virtual Task<HttpWebResponse> SendAsync(IReturnVoid requestDto)
+        {
+            return SendAsync<HttpWebResponse>(requestDto);
+        }
+
+        public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            var elType = requests.GetType().GetCollectionType();
+            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
+
+            return asyncClient.SendAsync<List<TResponse>>(HttpMethods.Post, requestUri, requests);
         }
 
 
@@ -807,6 +889,12 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Get, GetUrl(relativeOrAbsoluteUrl), null);
         }
 
+        public virtual Task GetAsync(IReturnVoid requestDto)
+        {
+            return GetAsync<byte[]>(requestDto.ToUrl(HttpMethods.Get, Format));
+        }
+
+
         public virtual Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             return DeleteAsync<TResponse>(requestDto.ToUrl(HttpMethods.Delete, Format));
@@ -820,6 +908,11 @@ namespace ServiceStack
         public virtual Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl)
         {
             return asyncClient.SendAsync<TResponse>(HttpMethods.Delete, GetUrl(relativeOrAbsoluteUrl), null);
+        }
+
+        public virtual Task DeleteAsync(IReturnVoid requestDto)
+        {
+            return DeleteAsync<byte[]>(requestDto.ToUrl(HttpMethods.Delete, Format));
         }
 
 
@@ -838,6 +931,11 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Post, GetUrl(relativeOrAbsoluteUrl), request);
         }
 
+        public virtual Task PostAsync(IReturnVoid requestDto)
+        {
+            return PostAsync<byte[]>(requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
+        }
+
 
         public virtual Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
         {
@@ -852,6 +950,11 @@ namespace ServiceStack
         public virtual Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
             return asyncClient.SendAsync<TResponse>(HttpMethods.Put, GetUrl(relativeOrAbsoluteUrl), request);
+        }
+
+        public virtual Task PutAsync(IReturnVoid requestDto)
+        {
+            return PutAsync<byte[]>(requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
         }
 
 
@@ -870,13 +973,19 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(HttpMethods.Patch, GetUrl(relativeOrAbsoluteUrl), request);
         }
 
+        public virtual Task PatchAsync(IReturnVoid requestDto)
+        {
+            return PatchAsync<byte[]>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
+        }
+
 
         public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestDto);
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
         }
 
         public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
@@ -884,7 +993,17 @@ namespace ServiceStack
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestDto);
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
+        }
+
+        public virtual Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
+        {
+            if (!HttpMethods.HasVerb(httpVerb))
+                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return asyncClient.SendAsync<byte[]>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
         }
 
 
@@ -893,7 +1012,6 @@ namespace ServiceStack
             asyncClient.CancelAsync();
         }
 
-#if !SILVERLIGHT
         public virtual TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
@@ -901,7 +1019,7 @@ namespace ServiceStack
 
             try
             {
-                var webResponse = client.GetResponse();
+                var webResponse = PclExport.Instance.GetResponse(client);
                 return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
@@ -913,7 +1031,7 @@ namespace ServiceStack
                     request,
                     requestUri,
                     () => SendRequest(httpMethod, requestUri, request),
-                    c => c.GetResponse(),
+                    c => PclExport.Instance.GetResponse(c),
                     out response))
                 {
                     throw;
@@ -926,17 +1044,17 @@ namespace ServiceStack
 
         public virtual void Get(IReturnVoid requestDto)
         {
-            Get(requestDto.ToUrl(HttpMethods.Get, Format));
+            Get<byte[]>(requestDto.ToUrl(HttpMethods.Get, Format));
         }
 
-        public virtual void Get(object requestDto)
+        public virtual HttpWebResponse Get(object requestDto)
         {
-            Get(requestDto.ToUrl(HttpMethods.Get, Format));
+            return Get<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
         }
 
-        public virtual void Get(string relativeOrAbsoluteUrl)
+        public virtual HttpWebResponse Get(string relativeOrAbsoluteUrl)
         {
-            SendOneWay(HttpMethods.Get, relativeOrAbsoluteUrl, null);
+            return Get<HttpWebResponse>(relativeOrAbsoluteUrl);
         }
 
         public virtual TResponse Get<TResponse>(IReturn<TResponse> requestDto)
@@ -954,20 +1072,35 @@ namespace ServiceStack
             return Send<TResponse>(HttpMethods.Get, relativeOrAbsoluteUrl, null);
         }
 
+        public virtual IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
+        {
+            var query = (IQuery)queryDto;
+            QueryResponse<TResponse> response;
+            do
+            {
+                response = Get<QueryResponse<TResponse>>(queryDto.ToUrl(HttpMethods.Get, Format));
+                foreach (var result in response.Results)
+                {
+                    yield return result;
+                }
+                query.Skip = query.Skip.GetValueOrDefault(0) + response.Results.Count;
+            }
+            while (response.Results.Count + response.Offset < response.Total);
+        }
 
         public virtual void Delete(IReturnVoid requestDto)
         {
-            Delete(requestDto.ToUrl(HttpMethods.Delete, Format));
+            Delete<byte[]>(requestDto.ToUrl(HttpMethods.Delete, Format));
         }
 
-        public virtual void Delete(object requestDto)
+        public virtual HttpWebResponse Delete(object requestDto)
         {
-            Delete(requestDto.ToUrl(HttpMethods.Delete, Format));
+            return Delete(requestDto.ToUrl(HttpMethods.Delete, Format));
         }
 
-        public virtual void Delete(string relativeOrAbsoluteUrl)
+        public virtual HttpWebResponse Delete(string relativeOrAbsoluteUrl)
         {
-            SendOneWay(HttpMethods.Delete, relativeOrAbsoluteUrl, null);
+            return Delete<HttpWebResponse>(relativeOrAbsoluteUrl);
         }
 
         public virtual TResponse Delete<TResponse>(IReturn<TResponse> requestDto)
@@ -988,12 +1121,12 @@ namespace ServiceStack
 
         public virtual void Post(IReturnVoid requestDto)
         {
-            SendOneWay(HttpMethods.Post, requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
+            Post<byte[]>(requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
         }
 
-        public virtual void Post(object requestDto)
+        public virtual HttpWebResponse Post(object requestDto)
         {
-            SendOneWay(HttpMethods.Post, requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
+            return Post<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Post, Format), requestDto);
         }
 
         public virtual TResponse Post<TResponse>(IReturn<TResponse> requestDto)
@@ -1014,12 +1147,12 @@ namespace ServiceStack
 
         public virtual void Put(IReturnVoid requestDto)
         {
-            SendOneWay(HttpMethods.Put, requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
+            Put<byte[]>(requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
         }
 
-        public virtual void Put(object requestDto)
+        public virtual HttpWebResponse Put(object requestDto)
         {
-            SendOneWay(HttpMethods.Put, requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
+            return Put<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Put, Format), requestDto);
         }
 
         public virtual TResponse Put<TResponse>(IReturn<TResponse> requestDto)
@@ -1040,12 +1173,12 @@ namespace ServiceStack
 
         public virtual void Patch(IReturnVoid requestDto)
         {
-            SendOneWay(HttpMethods.Patch, requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
+            Patch<byte[]>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
         }
 
-        public virtual void Patch(object requestDto)
+        public virtual HttpWebResponse Patch(object requestDto)
         {
-            SendOneWay(HttpMethods.Patch, requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
+            return Patch<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
         }
 
         public virtual TResponse Patch<TResponse>(IReturn<TResponse> requestDto)
@@ -1066,30 +1199,33 @@ namespace ServiceStack
 
         public virtual void CustomMethod(string httpVerb, IReturnVoid requestDto)
         {
-            CustomMethod(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
+            CustomMethod<byte[]>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
         }
 
-        public virtual void CustomMethod(string httpVerb, object requestDto)
+        public virtual HttpWebResponse CustomMethod(string httpVerb, object requestDto)
         {
-            CustomMethod(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return CustomMethod<HttpWebResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestBody);
         }
 
-        public virtual void CustomMethod(string httpVerb, string relativeOrAbsoluteUrl, object requestDto)
+        public virtual HttpWebResponse CustomMethod(string httpVerb, string relativeOrAbsoluteUrl, object requestDto)
         {
             if (!HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            SendOneWay(httpVerb, relativeOrAbsoluteUrl, requestDto);
+            return Send<HttpWebResponse>(httpVerb, relativeOrAbsoluteUrl, requestDto);
         }
 
         public virtual TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
-            return CustomMethod<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return CustomMethod<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestBody);
         }
 
         public virtual TResponse CustomMethod<TResponse>(string httpVerb, object requestDto)
         {
-            return CustomMethod<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
+            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            return CustomMethod<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestBody);
         }
 
         public virtual TResponse CustomMethod<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object requestDto = null)
@@ -1116,16 +1252,12 @@ namespace ServiceStack
             return Send<HttpWebResponse>(HttpMethods.Head, relativeOrAbsoluteUrl, null);
         }
 
-
-        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
+        public virtual TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
         {
-            using (FileStream fileStream = fileToUpload.OpenRead())
-            {
-                return PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request);
-            }
+            return PostFileWithRequest<TResponse>(request.ToPostUrl(), fileToUpload, fileName, request, fieldName);
         }
 
-        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
+        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "upload")
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
             var currentStreamPosition = fileToUpload.Position;
@@ -1135,16 +1267,14 @@ namespace ServiceStack
                 var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
-#if !MONOTOUCH
-                var nameValueCollection = HttpUtility.ParseQueryString(queryString);
-#endif
+
+                var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
                 var boundary = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
                 var newLine = "\r\n";
-                using (var outputStream = webRequest.GetRequestStream())
+                using (var outputStream = PclExport.Instance.GetRequestStream(webRequest))
                 {
-#if !MONOTOUCH
                     foreach (var key in nameValueCollection.AllKeys)
                     {
                         outputStream.Write(boundary + newLine);
@@ -1152,14 +1282,21 @@ namespace ServiceStack
                         outputStream.Write("Content-Type: text/plain;charset=utf-8{0}{1}".FormatWith(newLine, newLine));
                         outputStream.Write(nameValueCollection[key] + newLine);
                     }
-#endif
+
                     outputStream.Write(boundary + newLine);
-                    outputStream.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}{3}".FormatWith("upload", fileName, newLine, newLine));
+                    outputStream.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}{3}".FormatWith(fieldName, fileName, newLine, newLine));
                     var buffer = new byte[4096];
                     int byteCount;
+                    int bytesWritten = 0;
                     while ((byteCount = fileToUpload.Read(buffer, 0, 4096)) > 0)
                     {
                         outputStream.Write(buffer, 0, byteCount);
+
+                        if (OnUploadProgress != null)
+                        {
+                            bytesWritten += byteCount;
+                            OnUploadProgress(bytesWritten, fileToUpload.Length);
+                        }
                     }
                     outputStream.Write(newLine);
                     outputStream.Write(boundary + "--");
@@ -1171,7 +1308,7 @@ namespace ServiceStack
             try
             {
                 var webRequest = createWebRequest();
-                var webResponse = webRequest.GetResponse();
+                var webResponse = PclExport.Instance.GetResponse(webRequest);
                 return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
@@ -1182,20 +1319,14 @@ namespace ServiceStack
                 fileToUpload.Seek(currentStreamPosition, SeekOrigin.Begin);
 
                 if (!HandleResponseException(
-                    ex, request, requestUri, createWebRequest, c => c.GetResponse(), out response))
+                    ex, request, requestUri, createWebRequest,
+                    c => PclExport.Instance.GetResponse(c),
+                    out response))
                 {
                     throw;
                 }
 
                 return response;
-            }
-        }
-
-        public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
-        {
-            using (FileStream fileStream = fileToUpload.OpenRead())
-            {
-                return PostFile<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, mimeType);
             }
         }
 
@@ -1209,7 +1340,7 @@ namespace ServiceStack
             {
                 var webRequest = createWebRequest();
                 webRequest.UploadFile(fileToUpload, fileName, mimeType);
-                var webResponse = webRequest.GetResponse();
+                var webResponse = PclExport.Instance.GetResponse(webRequest);
                 return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
@@ -1223,7 +1354,11 @@ namespace ServiceStack
                     null,
                     requestUri,
                     createWebRequest,
-                    c => { c.UploadFile(fileToUpload, fileName, mimeType); return c.GetResponse(); },
+                    c =>
+                    {
+                        c.UploadFile(fileToUpload, fileName, mimeType);
+                        return PclExport.Instance.GetResponse(c);
+                    },
                     out response))
                 {
                     throw;
@@ -1237,15 +1372,17 @@ namespace ServiceStack
         {
             ApplyWebResponseFilters(webResponse);
 
+            //Callee Needs to dispose of response manually
             if (typeof(TResponse) == typeof(HttpWebResponse) && (webResponse is HttpWebResponse))
             {
-                return (TResponse)Convert.ChangeType(webResponse, typeof(TResponse));
+                return (TResponse)Convert.ChangeType(webResponse, typeof(TResponse), null);
             }
-            if (typeof(TResponse) == typeof(Stream)) //Callee Needs to dispose manually
+            if (typeof(TResponse) == typeof(Stream)) 
             {
                 return (TResponse)(object)webResponse.GetResponseStream();
             }
 
+            using (webResponse)
             using (var responseStream = webResponse.GetResponseStream())
             {
                 if (typeof(TResponse) == typeof(string))
@@ -1260,13 +1397,44 @@ namespace ServiceStack
                     return (TResponse)(object)responseStream.ReadFully();
                 }
 
-                var response = DeserializeFromStream<TResponse>(responseStream);
-                return response;
+                using (__requestAccess())
+                {
+                    var response = DeserializeFromStream<TResponse>(responseStream);
+                    return response;
+                }
             }
         }
 
-#endif
-
         public void Dispose() { }
+    }
+
+    public static class ServiceClientExtensions
+    {
+#if !(NETFX_CORE || SL5 || PCL)
+        public static TResponse PostFile<TResponse>(this IRestClient client,
+            string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType) 
+        {
+            using (FileStream fileStream = fileToUpload.OpenRead())
+            {
+                return client.PostFile<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, mimeType);
+            }
+        }
+
+        public static TResponse PostFileWithRequest<TResponse>(this IRestClient client, 
+            FileInfo fileToUpload, object request, string fieldName = "upload")
+        {
+            return client.PostFileWithRequest<TResponse>(request.ToPostUrl(), fileToUpload, request, fieldName);
+        }
+
+        public static TResponse PostFileWithRequest<TResponse>(this IRestClient client,
+            string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "upload")
+        {
+            using (FileStream fileStream = fileToUpload.OpenRead())
+            {
+                return client.PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName);
+            }            
+        }
+#endif
+        
     }
 }

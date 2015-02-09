@@ -26,7 +26,7 @@ namespace ServiceStack
             ApplyTo = applyTo;
         }
 
-        public void ResponseFilter(IHttpRequest req, IHttpResponse res, object response)
+        public void ResponseFilter(IRequest req, IResponse res, object response)
         {
             ApplyTo httpMethod = req.HttpMethodAsApplyTo();
             if (ApplyTo.Has(httpMethod))
@@ -39,7 +39,7 @@ namespace ServiceStack
         /// <param name="req">The http request wrapper</param>
         /// <param name="res">The http response wrapper</param>
         /// <param name="requestDto">The response DTO</param>
-        public abstract void Execute(IHttpRequest req, IHttpResponse res, object responseDto);
+        public abstract void Execute(IRequest req, IResponse res, object responseDto);
         
         /// <summary>
         /// Create a ShallowCopy of this instance.

@@ -7,14 +7,21 @@ namespace ServiceStack.Logging
     /// </summary>
 	public class TestLogFactory : ILogFactory
     {
+        private readonly bool debugEnabled;
+
+        public TestLogFactory(bool debugEnabled = true)
+        {
+            this.debugEnabled = debugEnabled;
+        }
+
         public ILog GetLogger(Type type)
         {
-            return new TestLogger(type);
+            return new TestLogger(type) { IsDebugEnabled = debugEnabled };
         }
 
         public ILog GetLogger(string typeName)
         {
-            return new TestLogger(typeName);
+            return new TestLogger(typeName) { IsDebugEnabled = debugEnabled };
         }
     }
 }

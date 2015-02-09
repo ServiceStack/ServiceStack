@@ -1,6 +1,10 @@
-﻿using Funq;
+﻿using System.Net;
+using System.Text;
+using System.Threading;
+using Funq;
 using NUnit.Framework;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Host.HttpListener;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -11,9 +15,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class AppHost : AppHostHttpListenerBase
         {
             public AppHost()
-                : base("Echo AppHost", typeof(AppHost).Assembly) { }
+                : base("Echo AppHost", typeof(AppHost).Assembly)
+            {
+            }
 
-            public override void Configure(Container container) {}
+            public override void Configure(Container container) { }
+
+            public override ListenerRequest CreateRequest(HttpListenerContext httpContext, string operationName)
+            {
+                var req = new ListenerRequest(httpContext, operationName, RequestAttributes.None)
+                {
+                    ContentEncoding = Encoding.UTF8
+                };
+                req.RequestAttributes = req.GetAttributes();
+                return req;
+            }
         }
 
         [Route("/echo")]
@@ -23,6 +39,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public string Param { get; set; }
             public string PathInfoParam { get; set; }
         }
+
+        [Route("/customhtml")]
+        public class CustomHtml {}
 
         public class EchoService : Service
         {
@@ -35,6 +54,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var requestInfo = RequestInfoHandler.GetRequestInfo(base.Request);
                 return requestInfo;
+            }
+
+            public object Any(CustomHtml request)
+            {
+                return @"<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+</head>
+<body>
+    <form action='/echo' method='POST'>
+        <input name='Force' value='English' />
+        <input name='Param' id='Param'/>
+        <input type='submit' value='Send'/>
+    </form>
+</body>
+</html>";
             }
         }
 
@@ -59,7 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var testEncoding = "test://?&% encoding";
             var url = "{0}echo?Param={1}".Fmt(Config.AbsoluteBaseUri, testEncoding.UrlEncode());
-            Assert.That(url, Is.StringEnding("/echo?Param=test%3a%2f%2f%3f%26%25%20encoding"));
+            Assert.That(url, Is.StringEnding("/echo?Param=test%3a%2f%2f%3f%26%25+encoding"));
 
             var json = url.GetJsonFromUrl();
             var response = json.FromJson<Echo>();
@@ -71,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var testEncoding = "test encoding";
             var url = "{0}echo/{1}".Fmt(Config.AbsoluteBaseUri, testEncoding.UrlEncode());
-            Assert.That(url, Is.StringEnding("/echo/test%20encoding"));
+            Assert.That(url, Is.StringEnding("/echo/test+encoding"));
 
             var json = url.GetJsonFromUrl();
             var response = json.FromJson<Echo>();
@@ -91,9 +128,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_url_transparently_decode_PathInfo()
         {
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
-            var request = new Echo { PathInfoParam = "test:?&% encoding" };
+            var request = new Echo { PathInfoParam = "test%2Fpath:?&% encoding" };
             var response = client.Get(request);
-            Assert.That(response.Param, Is.EqualTo(request.Param));
+            Assert.That(response.PathInfoParam, Is.EqualTo(request.PathInfoParam));
         }
 
         [Test]
@@ -105,5 +142,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Param, Is.EqualTo(request.Param));
         }
 
+        [Test]
+        public void Can_force_default_UTF8_encoding()
+        {
+            const string param = "привіт";
+
+            var json = Config.AbsoluteBaseUri.CombineWith("/echo").PostStringToUrl(
+                requestBody: "Param=" + param.UrlEncode(),
+                contentType: MimeTypes.FormUrlEncoded, accept: MimeTypes.Json);
+
+            var value = JsonObject.Parse(json)["Param"];
+
+            Assert.That(value, Is.EqualTo(param));
+        }
     }
+
 }

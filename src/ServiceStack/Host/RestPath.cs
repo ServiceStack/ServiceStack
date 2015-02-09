@@ -48,7 +48,15 @@ namespace ServiceStack.Host
         /// </summary>
         public int TotalComponentsCount { get; set; }
 
-        public string[] Verbs = new string[0];
+        public string[] Verbs
+        {
+            get 
+            { 
+                return allowsAllVerbs 
+                    ? new[] { ActionContext.AnyAction } 
+                    : AllowedVerbs.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries); 
+            }
+        }
 
         public Type RequestType { get; private set; }
 
@@ -61,6 +69,8 @@ namespace ServiceStack.Host
         public bool AllowsAllVerbs { get { return this.allowsAllVerbs; } }
 
         public string AllowedVerbs { get { return this.allowedVerbs; } }
+
+        public int Priority { get; set; } //passed back to RouteAttribute
 
         public static string[] GetPathPartsForMatching(string pathInfo)
         {
@@ -94,6 +104,11 @@ namespace ServiceStack.Host
                     yield return hashPrefix + subPart;
                 }
             }
+        }
+
+        public RestRoute ToRestRoute()
+        {
+            return new RestRoute(RequestType, restPath, allowedVerbs, 0);
         }
 
         public RestPath(Type requestType, string path) : this(requestType, path, null) { }
@@ -216,7 +231,7 @@ namespace ServiceStack.Host
             catch (Exception)
             {
                 throw new AmbiguousMatchException("Property names are case-insensitive: "
-                    + this.RequestType.Name + "." + propertyName);
+                    + this.RequestType.GetOperationName() + "." + propertyName);
             }
         }
 
@@ -280,7 +295,7 @@ namespace ServiceStack.Host
             wildcardMatchCount = 0;
 
             if (withPathInfoParts.Length != this.PathComponentsCount && !this.IsWildCardPath) return false;
-            if (!this.allowsAllVerbs && !this.allowedVerbs.Contains(httpMethod)) return false;
+            if (!this.allowsAllVerbs && !this.allowedVerbs.Contains(httpMethod.ToUpper())) return false;
 
             if (!ExplodeComponents(ref withPathInfoParts)) return false;
             if (this.TotalComponentsCount != withPathInfoParts.Length && !this.IsWildCardPath) return false;
@@ -322,7 +337,7 @@ namespace ServiceStack.Host
                         continue;
                     }
 
-                    if (withPathInfoParts[pathIx] != literalToMatch) return false;
+                    if (withPathInfoParts.Length <= pathIx || withPathInfoParts[pathIx] != literalToMatch) return false;
                     pathIx++;
                 }
             }
@@ -399,7 +414,7 @@ namespace ServiceStack.Host
                     }
  
                     throw new ArgumentException("Could not find property "
-                        + variableName + " on " + RequestType.Name);
+                        + variableName + " on " + RequestType.GetOperationName());
                 }
 
                 var value = requestComponents.Length > pathIx ? requestComponents[pathIx] : null; //wildcard has arg mismatch
@@ -457,6 +472,11 @@ namespace ServiceStack.Host
             }
 
             return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap, HostContext.Config.IgnoreWarningsOnPropertyNames);
+        }
+
+        public bool IsVariable(string name)
+        {
+            return name != null && variablesNames.Any(name.EqualsIgnoreCase);
         }
 
         public override int GetHashCode()

@@ -1,0 +1,140 @@
+@inherits ViewPage<Rockstar> 
+
+@{
+    Layout = "Empty";
+    ViewBag.Title = "Server Sent Events Test";
+}
+<style>
+body {
+    background-color:white;
+    color:#000000;
+    font-family:Verdana;
+    margin: 0;
+    padding: 10px;        
+}
+h1 {
+    background-color: #036;
+    color: #FFF;
+    font-family: Tahoma;
+    font-size: 26px;
+    font-weight: normal;
+    margin: 0;
+    padding: 10px 0 3px 15px;
+}
+#content {
+    padding: 15px;
+}
+#content-page {
+    max-width: 1100px;
+}
+#sidebar {
+    float:right;
+}
+</style>
+
+<script src="/jquery-2.0.2.min.js"></script>
+<script src="/js/ss-utils.js"></script>
+
+<h1>Subscribing to SimpleModel</h1>
+
+<div style="float:right">
+    <div style="padding: 100px; margin: 20px; text-align: center; border: 1px solid black" id="boxid">#boxid</div>
+    <div style="padding: 100px; margin: 20px; text-align: center; border: 1px solid black" class="boxclass">.boxclass</div>
+</div>
+
+<h3>Send Message</h3>
+
+<input type="text" id="txtMsg" placeholder="message" />
+<input type="text" id="txtSel" placeholder="selector" />
+<button id="btnSend">Submit</button>
+
+<div id="examples" style="font:14px consolas; margin: 10px; cursor:pointer;">
+<div>cmd.showPopup message</div>
+<div>cmd.toggle$h1:first-child</div>
+<br/>
+<div>trigger.animateBox$#boxid {"opacity":".5","marginRight":"+=20px"}</div>
+<div>trigger.animateBox$.boxclass {"marginTop":"+=20px", "padding":"+=20"}</div>
+<br/>
+<div>css.color #0C0</div>
+<div>css.color$h1 yellow</div>
+<div>css.backgroundColor #f1f1f1</div>
+<div>css.backgroundColor$h1 blue</div>
+<div>css.backgroundColor$#boxid purple</div>
+<div>css.backgroundColor$.boxclass red</div>
+<div>css.color$#boxid,.boxclass white</div>
+<br/>
+<div>document.title Hello World</div>
+<div>window.location http://google.com</div>
+</div>
+
+<h3>Events</h3>
+
+<div id="events"></div>
+
+<script>
+    var source;
+    if (!!window.EventSource) {
+        source = new EventSource('/event-stream?channel=SimpleModel');
+    } else {
+        // Result to xhr polling :(
+        alert('Get a better browser or EventSource polyfill');
+    }
+    
+    var $events = document.getElementById("events");
+    $.ss.handleServerEvents(source, {
+        success: function (selector, msg, json) {
+            $events.insertAdjacentHTML("afterbegin", "<div><b>" + selector + "</b>: " + json + "</div>");
+        }
+    });
+
+    source.addEventListener('open', function (e) {
+        console.log('open');
+        // Connection was opened.
+        $events.insertAdjacentHTML("afterbegin", "<div><b style='color:green'>open</b></div>");
+    }, false);
+
+    source.addEventListener('error', function (e) {
+        console.log('error');
+        $events.insertAdjacentHTML("afterbegin", "<div><b style='color:red'>ERROR</b></div>");
+        if (e.readyState == EventSource.CLOSED) {
+            // Connection was closed.
+            console.log('Connection was closed.');
+            $events.insertAdjacentHTML("afterbegin", "<div><b style='color:red'>CLOSED/<b></div>");
+        }
+    }, false);
+
+    function postMsg() {
+        var url = "/channels/SimpleModel/raw";
+        $.post(url, { message: $("#txtMsg").val(), selector: $("#txtSel").val() }, function(r) {});
+    }
+    $("#btnSend").click(postMsg);
+    $("#txtMsg, #txtSel").keypress(function(e) {
+        var keycode = (e.keyCode ? e.keyCode : e.which);
+        if (keycode == '13') {
+            postMsg();
+        }
+    });
+
+    $(document).bindHandlers({
+        showPopup: function (msg) {
+            alert(msg);
+        },
+        toggle: function () {
+            $(this).toggle();
+        }
+    });
+
+    $(document).on("animateBox", function (e, props) {
+        var $el = $(e.target == document ? document.body : e.target);
+        $el.animate(JSON.parse(props));
+    });
+
+    $("#examples").click(function(e) {
+        var parts = $.ss.splitOnFirst($(e.target).html(), ' ');
+        $("#txtSel").val(parts[0]);
+        $("#txtMsg").val(parts[1]);
+        postMsg();
+    });
+
+</script>
+

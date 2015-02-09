@@ -1,4 +1,5 @@
 ﻿using System;
+using ServiceStack.MiniProfiler;
 
 namespace RazorRockstars.Web
 {
@@ -8,6 +9,17 @@ namespace RazorRockstars.Web
         {
             var appHost = new AppHost();
             appHost.Init();
+        }
+
+        protected void Application_BeginRequest(object src, EventArgs e)
+        {
+            if (Request.IsLocal)
+                Profiler.Start();
+        }
+
+        protected void Application_EndRequest(object src, EventArgs e)
+        {
+            Profiler.Stop();
         }
     }
 }

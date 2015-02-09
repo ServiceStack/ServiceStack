@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
 	public class IntegrationTestBase
 	{
-		protected const string BaseUrl = "http://localhost:82/";
+		protected const string BaseUrl = "http://localhost:1337/";
 
         private readonly IntegrationTestAppHost appHost;
 	    public IntegrationTestBase()
@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 
             public override void Configure(Container container)
             {
-                container.Register<IAppSettings>(new ConfigurationResourceManager());
+                container.Register<IAppSettings>(new AppSettings());
 
                 container.Register(c => new ExampleConfig(c.Resolve<IAppSettings>()));
                 //var appConfig = container.Resolve<ExampleConfig>();

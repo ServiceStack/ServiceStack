@@ -4,12 +4,14 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
+using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
+using ServiceStack.Text.FastMember;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -26,7 +28,7 @@ namespace ServiceStack.Host.Handlers
             SendOneWay(requestMsg, null, null);
         }
 
-        protected void SendOneWay(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        protected void SendOneWay(Message requestMsg, IRequest httpRequest, IResponse httpResponse)
         {
             var endpointAttributes = RequestAttributes.OneWay | this.HandlerAttributes;
 
@@ -42,7 +44,7 @@ namespace ServiceStack.Host.Handlers
             return ExecuteMessage(requestMsg, endpointAttributes, null, null);
         }
         
-        protected Message Send(Message requestMsg, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        protected Message Send(Message requestMsg, IRequest httpRequest, IResponse httpResponse)
         {
             var endpointAttributes = RequestAttributes.Reply | this.HandlerAttributes;
 
@@ -52,23 +54,24 @@ namespace ServiceStack.Host.Handlers
         public Message EmptyResponse(Message requestMsg, Type requestType)
         {
             var responseType = AssemblyUtils.FindType(requestType.FullName + "Response");
-            var response = (responseType ?? typeof(object)).CreateInstance();
+            var response = (responseType ?? WebRequestUtils.GetErrorResponseDtoType(requestType)).CreateInstance();
 
             return requestMsg.Headers.Action == null
                 ? Message.CreateMessage(requestMsg.Version, null, response)
-                : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
+                : Message.CreateMessage(requestMsg.Version, requestType.GetOperationName() + "Response", response);
         }
 
-        protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IHttpRequest httpRequest, IHttpResponse httpResponse)
+        protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IRequest httpRequest, IResponse httpResponse)
         {
             var soapFeature = requestAttributes.ToSoapFeature();
-            HostContext.AssertFeatures(soapFeature);
+            HostContext.AppHost.AssertFeatures(soapFeature);
 
             var httpReq = HttpContext.Current != null && httpRequest == null
-                    ? new AspNetRequest(HttpContext.Current.Request)
+                    ? HttpContext.Current.ToRequest()
                     : httpRequest;
+
             var httpRes = HttpContext.Current != null && httpResponse == null
-                ? new AspNetResponse(HttpContext.Current.Response)
+                ? httpReq.Response
                 : httpResponse;
 
             if (httpReq == null)
@@ -77,13 +80,24 @@ namespace ServiceStack.Host.Handlers
             if (httpRes == null)
                 throw new ArgumentNullException("httpResponse");
 
+            httpReq.UseBufferedStream = true;
+            var requestMsg = message ?? GetRequestMessageFromStream(httpReq.InputStream);
+
+            var soapAction = httpReq.GetHeader(HttpHeaders.SOAPAction)
+                ?? GetAction(requestMsg);
+
+            if (soapAction != null)
+            {
+                httpReq.OperationName = soapAction.Trim('"');
+            }
+
             if (HostContext.ApplyPreRequestFilters(httpReq, httpRes))
                 return PrepareEmptyResponse(message, httpReq);
 
-            var requestMsg = message ?? GetRequestMessageFromStream(httpReq.InputStream);
             string requestXml = GetRequestXml(requestMsg);
             var requestType = GetRequestType(requestMsg, requestXml);
-            if (!HostContext.Metadata.CanAccess(requestAttributes, soapFeature.ToFormat(), requestType.Name))
+            httpReq.OperationName = requestType.GetOperationName();
+            if (!HostContext.Metadata.CanAccess(requestAttributes, soapFeature.ToFormat(), requestType.GetOperationName()))
                 throw HostContext.UnauthorizedAccess(requestAttributes);
 
             try
@@ -91,17 +105,20 @@ namespace ServiceStack.Host.Handlers
                 var useXmlSerializerRequest = requestType.HasAttribute<XmlSerializerFormatAttribute>();
 
                 var request = useXmlSerializerRequest
-                                  ? XmlSerializableDeserializer.Instance.Parse(requestXml, requestType)
-                                  : DataContractDeserializer.Instance.Parse(requestXml, requestType);
-                
+                    ? XmlSerializableSerializer.Instance.DeserializeFromString(requestXml, requestType)
+                    : Serialization.DataContractSerializer.Instance.DeserializeFromString(requestXml, requestType);
+
+                httpReq.Dto = request;
+
                 var requiresSoapMessage = request as IRequiresSoapMessage;
                 if (requiresSoapMessage != null)
                 {
                     requiresSoapMessage.Message = requestMsg;
                 }
 
-                httpReq.OperationName = requestType.Name;
                 httpReq.SetItem("SoapMessage", requestMsg);
+
+                httpRes.ContentType = GetSoapContentType(httpReq.ContentType);
 
                 var hasRequestFilters = HostContext.GlobalRequestFilters.Count > 0
                     || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
@@ -109,7 +126,15 @@ namespace ServiceStack.Host.Handlers
                 if (hasRequestFilters && HostContext.ApplyRequestFilters(httpReq, httpRes, request))
                     return EmptyResponse(requestMsg, requestType);
 
-                var response = ExecuteService(request, requestAttributes, httpReq, httpRes);
+                httpReq.RequestAttributes |= requestAttributes;
+                var response = ExecuteService(request, httpReq);
+
+                var taskResponse = response as Task;
+                if (taskResponse != null)
+                {
+                    taskResponse.Wait();
+                    response = TypeAccessor.Create(taskResponse.GetType())[taskResponse, "Result"];
+                }
 
                 var hasResponseFilters = HostContext.GlobalResponseFilters.Count > 0
                    || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
@@ -121,16 +146,15 @@ namespace ServiceStack.Host.Handlers
                 if (httpResult != null)
                     response = httpResult.Response;
 
-                var useXmlSerializerResponse = response.GetType().HasAttribute<XmlSerializerFormatAttribute>();
-                
-                if (useXmlSerializerResponse)
-                    return requestMsg.Headers.Action == null
-                        ? Message.CreateMessage(requestMsg.Version, null, response, new XmlSerializerWrapper(response.GetType()))
-                        : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response, new XmlSerializerWrapper(response.GetType()));
-                
-                return requestMsg.Headers.Action == null
-                    ? Message.CreateMessage(requestMsg.Version, null, response)
-                    : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
+                var noMsgAction = requestMsg.Headers.Action == null;
+                var responseMsg = CreateResponseMessage(response, requestMsg.Version, requestType, noMsgAction);
+
+                if (httpResult != null) 
+                {
+                    SetErrorStatusIfAny(httpReq.Response, responseMsg, httpResult.Status);
+                }
+
+                return responseMsg;
             }
             catch (Exception ex)
             {
@@ -140,9 +164,45 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        private Message PrepareEmptyResponse(Message message, IHttpRequest httpRequest)
+        public static string GetAction(Message message)
         {
-            var requestMessage = message ?? GetRequestMessageFromStream(httpRequest.InputStream);
+            var headers = message.Headers;
+            for (var i = 0; i < headers.Count; i++)
+            {
+                var header = headers[i];
+                if (header.Name != "Action") continue;
+
+                var xr = headers.GetReaderAtHeader(i);
+                return xr.ReadElementContentAsString();
+            }
+            return null;
+        }
+
+        public static Message CreateResponseMessage(object response, MessageVersion msgVersion, Type requestType, bool noMsgAction)
+        {
+            var useXmlSerializerResponse = response != null && response.GetType().HasAttribute<XmlSerializerFormatAttribute>();
+
+            if (useXmlSerializerResponse)
+            {
+                return noMsgAction
+                    ? Message.CreateMessage(msgVersion, null, response,
+                        new XmlSerializerWrapper(response.GetType()))
+                    : Message.CreateMessage(msgVersion, requestType.GetOperationName() + "Response", response,
+                        new XmlSerializerWrapper(response.GetType()));
+            }
+
+            return noMsgAction
+                ? Message.CreateMessage(msgVersion, null, response)
+                : Message.CreateMessage(msgVersion, requestType.GetOperationName() + "Response", response);
+        }
+
+        private Message PrepareEmptyResponse(Message message, IRequest req)
+        {
+            //Usually happens
+            if (req.Response.IsClosed)
+                return null;
+
+            var requestMessage = message ?? GetRequestMessageFromStream(req.InputStream);
             string requestXml = GetRequestXml(requestMessage);
             var requestType = GetRequestType(requestMessage, requestXml);
             return EmptyResponse(requestMessage, requestType);
@@ -156,6 +216,67 @@ namespace ServiceStack.Host.Handlers
                 requestXml = reader.ReadOuterXml();
             }
             return requestXml;
+        }
+
+        public static byte[] SerializeSoap11ToBytes(IRequest req, object response)
+        {
+            using (var ms = new MemoryStream())
+            {
+                SerializeSoapToStream(req, response, MessageVersion.Soap11WSAddressingAugust2004, ms);
+                return ms.ToArray();
+            }
+        }
+
+        public static byte[] SerializeSoap12ToBytes(IRequest req, object response)
+        {
+            using (var ms = new MemoryStream())
+            {
+                SerializeSoapToStream(req, response, MessageVersion.Soap12WSAddressingAugust2004, ms);
+                return ms.ToArray();
+            }
+        }
+
+        public static void SerializeSoap11ToStream(IRequest req, object response, Stream stream)
+        {
+            SerializeSoapToStream(req, response, MessageVersion.Soap11WSAddressingAugust2004, stream);
+        }
+
+        public static void SerializeSoap12ToStream(IRequest req, object response, Stream stream)
+        {
+            SerializeSoapToStream(req, response, MessageVersion.Soap12WSAddressingAugust2004, stream);
+        }
+
+        private static void SerializeSoapToStream(IRequest req, object response, MessageVersion defaultMsgVersion, Stream stream)
+        {
+            var requestMsg = req.GetItem("SoapMessage") as Message;
+            var msgVersion = requestMsg != null
+                ? requestMsg.Version
+                : defaultMsgVersion;
+
+            var noMsgVersion = requestMsg == null || requestMsg.Headers.Action == null;
+
+            var responseMsg = CreateResponseMessage(response, msgVersion, req.Dto.GetType(), noMsgVersion);
+            SetErrorStatusIfAny(req.Response, responseMsg, req.Response.StatusCode);
+
+            using (var writer = CreateXmlWriter(stream))
+            {
+                responseMsg.WriteMessage(writer);
+            }
+        }
+
+        private static void SetErrorStatusIfAny(IResponse res, Message responseMsg, int statusCode)
+        {
+            if (statusCode >= 400)
+            {
+                res.AddHeader(HttpHeaders.XStatus, statusCode.ToString());
+                res.StatusCode = 200;
+                responseMsg.Headers.Add(
+                    MessageHeader.CreateHeader(
+                        HttpHeaders.XStatus,
+                        HostContext.Config.WsdlServiceNamespace,
+                        statusCode.ToString(),
+                        false));
+            }
         }
 
         protected static Message GetSoap12RequestMessage(Stream inputStream)
@@ -251,14 +372,19 @@ namespace ServiceStack.Host.Handlers
                     : (this.HandlerAttributes == RequestAttributes.Soap11 ? MimeTypes.Soap11 : MimeTypes.Soap12);
         }
 
-        public override object CreateRequest(IHttpRequest request, string operationName)
+        public override object CreateRequest(IRequest request, string operationName)
         {
             throw new NotImplementedException();
         }
 
-        public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
+        public override object GetResponse(IRequest httpReq, object request)
         {
             throw new NotImplementedException();
+        }
+
+        public static XmlWriter CreateXmlWriter(Stream stream)
+        {
+            return XmlWriter.Create(stream, HostContext.Config.XmlWriterSettings);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -9,7 +10,7 @@ using System;
 
 namespace Funq
 {
-	public partial class Container
+	public partial class Container : IResolver
 	{
         public IContainerAdapter Adapter { get; set; }
 
@@ -55,6 +56,46 @@ namespace Funq
 			AutoWire(this, instance);
 		}
 
+        public object GetLazyResolver(params Type[] types) // returns Func<type>
+        {
+            var tryResolveGeneric = typeof(Container).GetMethods()
+                .First(x => x.Name == "ReverseLazyResolve" 
+                    && x.GetGenericArguments().Length == types.Length 
+                    && x.GetParameters().Length == 0);
+
+            var tryResolveMethod = tryResolveGeneric.MakeGenericMethod(types);
+            var instance = tryResolveMethod.Invoke(this, new object[0]);
+            return instance;
+        }
+
+        public Func<TService> ReverseLazyResolve<TService>()
+        {
+            return LazyResolve<TService>(null);
+        }
+
+        public Func<TArg, TService> ReverseLazyResolve<TArg, TService>()
+        {
+            Register<Func<TArg, TService>>(c => a => c.TryResolve<TService>());
+            return TryResolve<Func<TArg, TService>>();
+        }
+
+        public Func<TArg1, TArg2, TService> ReverseLazyResolve<TArg1, TArg2, TService>()
+        {
+            Register<Func<TArg1, TArg2, TService>>(c => (a1, a2) => c.TryResolve<TService>());
+            return TryResolve<Func<TArg1, TArg2, TService>>();
+        }
+
+        public Func<TArg1, TArg2, TArg3, TService> ReverseLazyResolve<TArg1, TArg2, TArg3, TService>()
+        {
+            Register<Func<TArg1, TArg2, TArg3, TService>>(c => (a1, a2, a3) => c.TryResolve<TService>());
+            return TryResolve<Func<TArg1, TArg2, TArg3, TService>>();
+        }
+
+        public bool Exists<TService>()
+        {
+            var entry = GetEntry<TService, Func<Container, TService>>(null, throwIfMissing:false);
+            return entry != null;
+        }
 
         private Dictionary<Type, Action<object>[]> autoWireCache = new Dictionary<Type, Action<object>[]>();
 
@@ -71,6 +112,19 @@ namespace Funq
                 .FirstOrDefault(ctor => !ctor.IsStatic);
         }
 
+        public static HashSet<string> IgnorePropertyTypeFullNames = new HashSet<string>
+        {
+            "System.Web.Mvc.ViewDataDictionary", //overrides ViewBag set in Controller constructor
+        }; 
+
+        private static bool IsPublicWritableUserPropertyType(PropertyInfo pi)
+        {
+            return pi.CanWrite
+                && !pi.PropertyType.IsValueType
+                && pi.PropertyType != typeof(string)
+                && !IgnorePropertyTypeFullNames.Contains(pi.PropertyType.FullName);
+        }
+
         /// <summary>
         /// Generates a function which creates and auto-wires <see cref="TService"/>.
         /// </summary>
@@ -82,7 +136,7 @@ namespace Funq
             var lambdaParam = Expression.Parameter(typeof(Container), "container");
             var propertyResolveFn = typeof(Container).GetMethod("TryResolve", new Type[0]);
             var memberBindings = typeof(TService).GetPublicProperties()
-                .Where(x => x.CanWrite && !x.PropertyType.IsValueType && x.PropertyType != typeof(string))
+                .Where(IsPublicWritableUserPropertyType)
                 .Select(x =>
                     Expression.Bind
                     (
@@ -118,7 +172,7 @@ namespace Funq
             if (!autoWireCache.TryGetValue(instanceType, out setters))
             {
                 setters = instanceType.GetPublicProperties()
-                    .Where(x => x.CanWrite && !x.PropertyType.IsValueType && x.PropertyType != typeof(string))
+                    .Where(IsPublicWritableUserPropertyType)
                     .Select(x => GenerateAutoWireFnForProperty(container, propertyResolveFn, x, instanceType))
                     .ToArray();
 
@@ -137,7 +191,7 @@ namespace Funq
                 setter(instance);
         }
 
-        private static Action<object> GenerateAutoWireFnForProperty(
+	    private static Action<object> GenerateAutoWireFnForProperty(
             Container container, MethodInfo propertyResolveFn, PropertyInfo property, Type instanceType)
         {
             var instanceParam = Expression.Parameter(typeof(object), "instance");

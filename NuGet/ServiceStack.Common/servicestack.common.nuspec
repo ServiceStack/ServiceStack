@@ -4,18 +4,18 @@
     <id>ServiceStack.Common</id>
     <title>Common libs for ServiceStack projects</title>
     <version>4.0.0</version>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
       Common base library for ServiceStack projects.
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>ServiceStack Common Framework Clients ServiceClients Gateway</tags>
     <language>en-US</language>
-    <copyright>Copyright 2013 Service Stack</copyright>
+    <copyright>Copyright 2014 Service Stack</copyright>
     <dependencies>
       <dependency id="ServiceStack.Interfaces" version="4.0" />
       <dependency id="ServiceStack.Text" version="4.0" />
@@ -23,6 +23,6 @@
   </metadata>
   <files>
     <file src="lib\**\*.*" target="lib" />
-    <file src="..\..\src\ServiceStack.Common\**\*.cs" target="src\ServiceStack.Common" />
+    <file src="..\..\src\ServiceStack.Common\**\*.cs" target="src" />
   </files>
 </package>

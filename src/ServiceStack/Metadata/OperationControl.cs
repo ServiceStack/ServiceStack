@@ -19,7 +19,7 @@ namespace ServiceStack.Metadata
             }
         }
 
-        public IHttpRequest HttpRequest { get; set; }
+        public IRequest HttpRequest { get; set; }
         public string ContentType { get; set; }
         public string ContentFormat { get; set; }
 
@@ -42,7 +42,7 @@ namespace ServiceStack.Metadata
             }
         }
 
-        public void Render(HtmlTextWriter output)
+        public virtual void Render(HtmlTextWriter output)
         {
             var baseUrl = HttpRequest.GetParentAbsolutePath().ToParentPath();
             if (string.IsNullOrEmpty(baseUrl))

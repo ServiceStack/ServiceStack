@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -9,16 +10,12 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite;
-using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.ProtoBuf;
-using ServiceStack.Text;
-using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.IntegrationTests;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 {
-
 	[Route("/factorial/{ForNumber}")]
 	[DataContract]
 	public class GetFactorial
@@ -47,37 +44,54 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		}
 	}
 
-	[DataContract]
-	public class AlwaysThrows { }
+    public class TestProgress : IReturn<List<Movie>> { }
+    public class TestProgressString : IReturn<string> { }
+    public class TestProgressBytes : IReturn<byte[]> { }
 
-	[DataContract]
-	public class AlwaysThrowsResponse : IHasResponseStatus
-	{
-		[DataMember]
-		public ResponseStatus ResponseStatus { get; set; }
-	}
-
-	public class AlwaysThrowsService : Service
-	{
-	    public object Any(AlwaysThrows request)
-		{
-			throw new ArgumentException("This service always throws an error");
-		}
-	}
-
-    public class TestProgress : IReturn<string> {}
+    public class TestProgressBytesHttpResult : IReturn<byte[]> { }
+    public class TestProgressBinaryFile : IReturn<byte[]> { }
+    public class TestProgressTextFile : IReturn<string> { }
 
     public class DownloadProgressService : Service
     {
-        public string Any(TestProgress request)
+        public object Any(TestProgress request)
+        {
+            return ResetMoviesService.Top5Movies;
+        }
+
+        public string Any(TestProgressString request)
         {
             return ResetMoviesService.Top5Movies.ToJson();
+        }
+
+        public object Any(TestProgressBytes request)
+        {
+            return ResetMoviesService.Top5Movies.ToJson().ToUtf8Bytes();
+        }
+
+        public object Any(TestProgressBytesHttpResult request)
+        {
+            return new HttpResult(ResetMoviesService.Top5Movies.ToJson().ToUtf8Bytes(), "application/octet-stream");
+        }
+
+        public object Any(TestProgressBinaryFile request)
+        {
+            var path = Path.GetTempFileName();
+            File.WriteAllBytes(path, ResetMoviesService.Top5Movies.ToJson().ToUtf8Bytes());
+            return new HttpResult(new FileInfo(path), "application/octet-stream");
+        }
+
+        public object Any(TestProgressTextFile request)
+        {
+            var path = Path.GetTempFileName();
+            File.WriteAllText(path, ResetMoviesService.Top5Movies.ToJson());
+            return new HttpResult(new FileInfo(path), "application/json");
         }
     }
 
 
-	[Route("/movies", "POST,PUT")]
-	[Route("/movies/{Id}")]
+    [Route("/all-movies", "POST,PUT")]
+	[Route("/all-movies/{Id}")]
 	[DataContract]
 	public class Movie
 	{
@@ -183,7 +197,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
                 {
                     StatusCode = HttpStatusCode.Created,
                     Headers = {
-					    { HttpHeaders.Location, this.RequestContext.AbsoluteUri.WithTrailingSlash() + movie.Id }
+					    { HttpHeaders.Location, this.Request.AbsoluteUri.WithTrailingSlash() + movie.Id }
 				    }
                 };
             }
@@ -216,8 +230,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 
 	[DataContract]
-	[Route("/movies", "GET")]
-    [Route("/movies/genres/{Genre}")]
+    [Route("/all-movies", "GET")]
+    [Route("/all-movies/genres/{Genre}")]
 	public class Movies
 	{
 		[DataMember]
@@ -293,7 +307,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
                         : db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%")
                 };
 
-                return RequestContext.ToOptimizedResult(response);
+                return Request.ToOptimizedResult(response);
             }
 		}
 	}
@@ -461,11 +475,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				.Add<Movie>("/custom-movies", "POST,PUT")
 				.Add<Movie>("/custom-movies/{Id}")
 				.Add<GetFactorial>("/fact/{ForNumber}")
-				.Add<MoviesZip>("/movies.zip")
+                .Add<MoviesZip>("/all-movies.zip")
 				.Add<GetHttpResult>("/gethttpresult")
 			;
 
-			container.Register<IAppSettings>(new ConfigurationResourceManager());
+			container.Register<IAppSettings>(new AppSettings());
 
 			//var appSettings = container.Resolve<IResourceManager>();
 
@@ -528,11 +542,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
                 .Add<Movie>("/custom-movies", "POST,PUT")
                 .Add<Movie>("/custom-movies/{Id}")
                 .Add<GetFactorial>("/fact/{ForNumber}")
-                .Add<MoviesZip>("/movies.zip")
+                .Add<MoviesZip>("/all-movies.zip")
                 .Add<GetHttpResult>("/gethttpresult")
             ;
 
-            container.Register<IAppSettings>(new ConfigurationResourceManager());
+            container.Register<IAppSettings>(new AppSettings());
 
             container.Register(c => new ExampleConfig(c.Resolve<IAppSettings>()));
             //var appConfig = container.Resolve<ExampleConfig>();

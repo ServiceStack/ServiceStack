@@ -2,28 +2,24 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Net;
 using System.Reflection;
-using System.Web;
+using System.Text;
 using System.Web.Configuration;
+using System.Xml;
 using System.Xml.Linq;
 using MarkdownSharp;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
-using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Metadata;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack
 {
     public class HostConfig
     {
-        public static readonly string PublicKey = "<RSAKeyValue><Modulus>xRzMrP3m+3kvT6239OP1YuWIfc/S7qF5NJiPe2/kXnetXiuYtSL4bQRIX1qYh4Cz+dXqZE/sNGJJ4jl2iJQa1tjp+rK28EG6gcuTDHJdvOBBF+aSwJy1MSiT8D0KtP6pe2uvjl9m3jZP/8uRePZTSkt/GjlPOk85JXzOsyzemlaLFiJoGImGvp8dw8vQ7jzA3Ynmywpt5OQxklJfrfALHJ93ny1M5lN5Q+bGPEHLXNCXfF05EA0l9mZpa4ouicYvlbY/OAwefFXIwPQN9ER6Pu7Eq9XWLvnh1YUH8HDckuKK+ESWbAuOgnVbUDEF1BreoWutJ//a/oLDR87Q36cmwQ==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
-        public static readonly string LicensePublicKey = "<RSAKeyValue><Modulus>19kx2dJoOIrMYypMTf8ssiCALJ7RS/Iz2QG0rJtYJ2X0+GI+NrgOCapkh/9aDVBieobdClnuBgW08C5QkfBdLRqsptiSu50YIqzVaNBMwZPT0e7Ke02L/fV/M/fVPsolHwzMstKhdWGdK8eNLF4SsLEcvnb79cx3/GnZbXku/ro5eOrTseKL3s4nM4SdMRNn7rEAU0o0Ijb3/RQbhab8IIRB4pHwk1mB+j/mcAQAtMerwpHfwpEBLWlQyVpu0kyKJCEkQjbaPzvfglDRpyBOT5GMUnrcTT/sBr5kSJYpYrgHnA5n4xJnvrnyFqdzXwgGFlikRTbc60pk1cQEWcHgYw==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
-
+        public const string DefaultWsdlNamespace = "http://schemas.servicestack.net/types";
         public static string ServiceStackPath = null;
 
         private static HostConfig instance;
@@ -41,39 +37,47 @@ namespace ServiceStack
         {
             var config = new HostConfig
             {
-                MetadataTypesConfig = new MetadataTypesConfig(addDefaultXmlNamespace: "http://schemas.servicestack.net/types"),
-                WsdlServiceNamespace = "http://schemas.servicestack.net/types",
-                EmbeddedResourceSources = new[] { HostContext.AppHost.GetType().Assembly, typeof(Service).Assembly }.ToList(),
+                WsdlServiceNamespace = DefaultWsdlNamespace,
+                ApiVersion = "1.0",
+                EmbeddedResourceSources = new List<Assembly>(),
+                EmbeddedResourceBaseTypes = new[] { HostContext.AppHost.GetType(), typeof(Service) }.ToList(),
+                EmbeddedResourceTreatAsFiles = new HashSet<string>(),
                 LogFactory = new NullLogFactory(),
                 EnableAccessRestrictions = true,
                 WebHostPhysicalPath = "~".MapServerPath(),
-                ServiceStackHandlerFactoryPath = ServiceStackPath,
+                HandlerFactoryPath = ServiceStackPath,
                 MetadataRedirectPath = null,
                 DefaultContentType = null,
+                PreferredContentTypes = new List<string> {
+                    MimeTypes.Html, MimeTypes.Json, MimeTypes.Xml, MimeTypes.Jsv
+                },
                 AllowJsonpRequests = true,
                 AllowRouteContentTypeExtensions = true,
                 AllowNonHttpOnlyCookies = false,
                 UseHttpsLinks = false,
                 DebugMode = false,
                 DefaultDocuments = new List<string> {
-					"default.htm",
-					"default.html",
-					"default.cshtml",
-					"default.md",
-					"index.htm",
-					"index.html",
-					"default.aspx",
-					"default.ashx",
-				},
-                GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } },
-                IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase),
-                AllowFileExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
-				{
-					"js", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", "pdf",  
-					"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg",
-					"avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
-					"flv", "xap", "xaml", "ogg", "mp4", "webm", "eot", "ttf", "woff"
-				},
+	                "default.htm",
+	                "default.html",
+	                "default.cshtml",
+	                "default.md",
+	                "index.htm",
+	                "index.html",
+	                "default.aspx",
+	                "default.ashx",
+                },
+                GlobalResponseHeaders = new Dictionary<string, string> {
+                    { "Vary", "Accept" },
+                    { "X-Powered-By", Env.ServerUserAgent },
+                },
+                IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                AllowFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "js", "ts", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", "pdf",  
+                    "jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg",
+                    "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
+                    "flv", "swf", "xap", "xaml", "ogg", "mp4", "webm", "eot", "ttf", "woff", "map"
+                },
                 DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
                 DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
                 EnableFeatures = Feature.All,
@@ -84,19 +88,16 @@ namespace ServiceStack
                 MarkdownGlobalHelpers = new Dictionary<string, Type>(),
                 HtmlReplaceTokens = new Dictionary<string, string>(),
                 AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
-					{ "image/gif", TimeSpan.FromHours(1) },
-					{ "image/png", TimeSpan.FromHours(1) },
-					{ "image/jpeg", TimeSpan.FromHours(1) },
-				},
+		            { "image/gif", TimeSpan.FromHours(1) },
+		            { "image/png", TimeSpan.FromHours(1) },
+		            { "image/jpeg", TimeSpan.FromHours(1) },
+	            },
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Json, },
-                RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
                 RouteNamingConventions = new List<RouteNamingConventionDelegate> {
-					RouteNamingConvention.WithRequestDtoName,
-					RouteNamingConvention.WithMatchingAttributes,
-					RouteNamingConvention.WithMatchingPropertyNames
+		            RouteNamingConvention.WithRequestDtoName,
+		            RouteNamingConvention.WithMatchingAttributes,
+		            RouteNamingConvention.WithMatchingPropertyNames
                 },
-                CustomHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHttpHandler>(),
-                GlobalHtmlErrorHttpHandler = null,
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
                 OnlySendSessionCookiesSecurely = false,
                 RestrictAllCookiesToDomain = null,
@@ -106,12 +107,21 @@ namespace ServiceStack
                 AllowPartialResponses = true,
                 AllowAclUrlReservation = true,
                 RedirectToDefaultDocuments = false,
+                StripApplicationVirtualPath = false,
+                ScanSkipPaths = new List<string> {
+                    "/obj/", 
+                    "/bin/",
+                },
                 IgnoreWarningsOnPropertyNames = new List<string> {
-                    "format", "callback", "debug", "_", "authsecret"
+                    "format", "callback", "debug", "_", "authsecret", "Version", "version"
+                },
+                XmlWriterSettings = new XmlWriterSettings
+                {
+                    Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier:false),
                 }
             };
 
-            if (config.ServiceStackHandlerFactoryPath == null)
+            if (config.HandlerFactoryPath == null)
             {
                 config.InferHttpHandlerPath();
             }
@@ -124,19 +134,24 @@ namespace ServiceStack
             if (instance == null) return;
 
             //Get a copy of the singleton already partially configured
-            this.MetadataTypesConfig = instance.MetadataTypesConfig;
             this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
+            this.ApiVersion = instance.ApiVersion;
             this.EmbeddedResourceSources = instance.EmbeddedResourceSources;
+            this.EmbeddedResourceBaseTypes = instance.EmbeddedResourceBaseTypes;
+            this.EmbeddedResourceTreatAsFiles = instance.EmbeddedResourceTreatAsFiles;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
             this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
+            this.SoapServiceName = instance.SoapServiceName;
+            this.XmlWriterSettings = instance.XmlWriterSettings;
             this.LogFactory = instance.LogFactory;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
             this.WebHostUrl = instance.WebHostUrl;
             this.WebHostPhysicalPath = instance.WebHostPhysicalPath;
             this.DefaultRedirectPath = instance.DefaultRedirectPath;
             this.MetadataRedirectPath = instance.MetadataRedirectPath;
-            this.ServiceStackHandlerFactoryPath = instance.ServiceStackHandlerFactoryPath;
+            this.HandlerFactoryPath = instance.HandlerFactoryPath;
             this.DefaultContentType = instance.DefaultContentType;
+            this.PreferredContentTypes = instance.PreferredContentTypes;
             this.AllowJsonpRequests = instance.AllowJsonpRequests;
             this.AllowRouteContentTypeExtensions = instance.AllowRouteContentTypeExtensions;
             this.DebugMode = instance.DebugMode;
@@ -153,10 +168,7 @@ namespace ServiceStack
             this.HtmlReplaceTokens = instance.HtmlReplaceTokens;
             this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
-            this.RawHttpHandlers = instance.RawHttpHandlers;
             this.RouteNamingConventions = instance.RouteNamingConventions;
-            this.CustomHttpHandlers = instance.CustomHttpHandlers;
-            this.GlobalHtmlErrorHttpHandler = instance.GlobalHtmlErrorHttpHandler;
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
             this.OnlySendSessionCookiesSecurely = instance.OnlySendSessionCookiesSecurely;
             this.RestrictAllCookiesToDomain = instance.RestrictAllCookiesToDomain;
@@ -169,11 +181,13 @@ namespace ServiceStack
             this.FallbackRestPath = instance.FallbackRestPath;
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
             this.RedirectToDefaultDocuments = instance.RedirectToDefaultDocuments;
+            this.StripApplicationVirtualPath = instance.StripApplicationVirtualPath;
+            this.ScanSkipPaths = instance.ScanSkipPaths;
             this.AdminAuthSecret = instance.AdminAuthSecret;
         }
 
-        public MetadataTypesConfig MetadataTypesConfig { get; set; }
         public string WsdlServiceNamespace { get; set; }
+        public string ApiVersion { get; set; }
 
         private RequestAttributes metadataVisibility;
         public RequestAttributes MetadataVisibility
@@ -182,14 +196,16 @@ namespace ServiceStack
             set { metadataVisibility = value.ToAllowedFlagsSet(); }
         }
 
-        public List<Assembly> EmbeddedResourceSources { get; set; } 
+        public List<Type> EmbeddedResourceBaseTypes { get; set; }
+        public List<Assembly> EmbeddedResourceSources { get; set; }
+        public HashSet<string> EmbeddedResourceTreatAsFiles { get; set; }
 
-        public string SoapServiceName { get; set; }
         public string DefaultContentType { get; set; }
+        public List<string> PreferredContentTypes { get; set; }
+        internal string[] PreferredContentTypesArray = new string[0]; //use array at runtime
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
         public bool DebugMode { get; set; }
-        public bool DebugOnlyReturnRequestInfo { get; set; }
         public string DebugAspNetHostEnvironment { get; set; }
         public string DebugHttpListenerHostEnvironment { get; set; }
         public List<string> DefaultDocuments { get; private set; }
@@ -202,11 +218,13 @@ namespace ServiceStack
 
         public string WebHostUrl { get; set; }
         public string WebHostPhysicalPath { get; set; }
-        public string ServiceStackHandlerFactoryPath { get; set; }
+        public string HandlerFactoryPath { get; set; }
         public string DefaultRedirectPath { get; set; }
         public string MetadataRedirectPath { get; set; }
 
         public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
+        public string SoapServiceName { get; set; }
+        public XmlWriterSettings XmlWriterSettings { get; set; }
         public ILogFactory LogFactory { get; set; }
         public bool EnableAccessRestrictions { get; set; }
         public bool UseBclJsonSerializers { get; set; }
@@ -224,12 +242,8 @@ namespace ServiceStack
 
         public Dictionary<string, TimeSpan> AddMaxAgeForStaticMimeTypes { get; set; }
 
-        public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
-
         public List<RouteNamingConventionDelegate> RouteNamingConventions { get; set; }
 
-        public Dictionary<HttpStatusCode, IServiceStackHttpHandler> CustomHttpHandlers { get; set; }
-        public IServiceStackHttpHandler GlobalHtmlErrorHttpHandler { get; set; }
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
 
         public bool OnlySendSessionCookiesSecurely { get; set; }
@@ -241,6 +255,10 @@ namespace ServiceStack
         public bool AllowNonHttpOnlyCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
         public bool RedirectToDefaultDocuments { get; set; }
+        public bool StripApplicationVirtualPath { get; set; }
+
+        //Skip scanning common VS.NET extensions
+        public List<string> ScanSkipPaths { get; private set; }
 
         public bool UseHttpsLinks { get; set; }
 
@@ -322,7 +340,7 @@ namespace ServiceStack
                 {
                     throw new ConfigurationErrorsException(
                         "Unable to infer ServiceStack's <httpHandler.Path/> from the Web.Config\n"
-                        + "Check with http://www.servicestack.net/ServiceStack.Hello/ to ensure you have configured ServiceStack properly.\n"
+                        + "Check with https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice to ensure you have configured ServiceStack properly.\n"
                         + "Otherwise you can explicitly set your httpHandler.Path by setting: EndpointHostConfig.ServiceStackPath");
                 }
             }
@@ -385,12 +403,10 @@ namespace ServiceStack
                 handlerPath = handlerPath.Replace("*", String.Empty);
             }
 
-            ServiceStackHandlerFactoryPath = locationPath ??
+            HandlerFactoryPath = locationPath ??
                 (String.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
-            MetadataRedirectPath = PathUtils.CombinePaths(
-                null != locationPath ? ServiceStackHandlerFactoryPath : handlerPath
-                , "metadata");
+            MetadataRedirectPath = "metadata";
         }
 
         private static string ExtractHandlerPathFromWebServerConfigurationXml(string rawXml)

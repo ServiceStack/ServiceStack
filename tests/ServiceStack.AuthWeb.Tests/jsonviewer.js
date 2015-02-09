@@ -33,7 +33,8 @@
 
     $.each = function(arr, fn) { $each.call(arr, fn); };
 
-    var splitCase = function (t) { return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1'); },
+    var splitCase = function (t) { return typeof t != 'string' ? t : titleCase(t.replace(/([a-z0-9])([A-Z])/g, '$1 $2')); },
+        titleCase = function (s) { return s.replace(/\w\S*/g, function (t) { return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase(); }); },
         uniqueKeys = function (m) { var h = {}; for (var i = 0, len = m.length; i < len; i++) for (var k in m[i]) if (show(k)) h[k] = k; return h; },
         keys = function (o) { var a = []; for (var k in o) if (show(k)) a.push(k); return a; };
     var tbls = [];
@@ -91,21 +92,21 @@
         return sb;
     }
 
-    doc.onclick = function(e) {
+    doc.onclick = function (e) {
         e = e || window.event, el = e.target || e.srcElement, cls = el.className;
         if (el.tagName == 'B') el = el.parentNode;
         if (el.tagName != 'TH') return;
         el.className = cls == 'asc' ? 'desc' : (cls == 'desc' ? null : 'asc');
-        $.each($$('TH'), function(i,th){ if (th == el) return; th.className = null; });
+        $.each($$('TH'), function (i, th) { if (th == el) return; th.className = null; });
         clearSel();
-        var ids=el.id.split('-'), tId=ids[1], cId=ids[2];
+        var ids = el.id.split('-'), tId = ids[1], cId = ids[2];
         if (!tbls[tId]) return;
-        var tbl=tbls[tId].slice(0), h=uniqueKeys(tbl), col=keys(h)[cId], tbody=el.parentNode.parentNode.nextSibling;
-        if (!el.className){ setTableBody(tbody, makeRows(h,tbls[tId])); return; }
-        var d=el.className=='asc'?1:-1;
-        tbl.sort(function(a,b){ return cmp(a[col],b[col]) * d; });
-        setTableBody(tbody, makeRows(h,tbl));
-    }
+        var tbl = tbls[tId].slice(0), h = uniqueKeys(tbl), col = keys(h)[cId], tbody = el.parentNode.parentNode.nextSibling;
+        if (!el.className) { setTableBody(tbody, makeRows(h, tbls[tId])); return; }
+        var d = el.className == 'asc' ? 1 : -1;
+        tbl.sort(function (a, b) { return cmp(a[col], b[col]) * d; });
+        setTableBody(tbody, makeRows(h, tbl));
+    };
 
     function setTableBody(tbody, html) {
         if (!isIE) { tbody.innerHTML = html; return; }

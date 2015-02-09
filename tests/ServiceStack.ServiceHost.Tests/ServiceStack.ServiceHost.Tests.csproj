@@ -32,6 +32,8 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\src\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -43,6 +45,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -52,6 +55,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'STATIC_ONLY NO_EXPRESSIONS|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -63,6 +67,7 @@
     <WarningLevel>4</WarningLevel>
     <Optimize>False</Optimize>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'MonoTouch|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -74,6 +79,17 @@
     <WarningLevel>4</WarningLevel>
     <Optimize>False</Optimize>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Signed|AnyCPU'">
+    <OutputPath>bin\Signed\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -83,6 +99,9 @@
     <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\src\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
@@ -97,6 +116,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -128,7 +148,9 @@
     <Compile Include="Formats_Razor\IntroductionExampleRazorTests.cs" />
     <Compile Include="Formats_Razor\IntroductionLayoutRazorTests.cs" />
     <Compile Include="Formats\MarkdownTestBase.cs" />
+    <Compile Include="Formats_Razor\PrecompiledRazorEngineTests.cs" />
     <Compile Include="Formats_Razor\RazorEngineTests.cs" />
+    <Compile Include="Formats_Razor\RazorPageResolutionTests.cs" />
     <Compile Include="Formats_Razor\StandAloneExampleTests.cs" />
     <Compile Include="Formats_Razor\TemplateTests.cs" />
     <Compile Include="Formats\IntroductionExampleTests.cs" />
@@ -147,6 +169,7 @@
     <Compile Include="IoCTests.cs" />
     <Compile Include="RequestContextExtensionsTest.cs" />
     <Compile Include="RestPathTests.cs" />
+    <Compile Include="Routes\DynamicRouteAttributeTests.cs" />
     <Compile Include="Routes\SimpleRestServices.cs" />
     <Compile Include="Routes\ServiceRoutesTests.cs" />
     <Compile Include="ServiceControllerPerfTests.cs" />
@@ -160,7 +183,7 @@
     <Compile Include="Support\AutoWireService.cs" />
     <Compile Include="Support\GenericService.cs" />
     <Compile Include="Support\RestTestService.cs" />
-    <Compile Include="Support\RequiresContextService.cs" />
+    <Compile Include="Support\RequiresService.cs" />
     <Compile Include="TypeFactory\ReflectionTypeFunqContainer.cs" />
     <Compile Include="TypeFactory\FuncTypeFactory.cs" />
     <Compile Include="Examples\FunqEasyRegistrationHelper.cs" />
@@ -212,10 +235,6 @@
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{D73274AE-006B-4CEE-BA60-0ECF5873048D}</Project>

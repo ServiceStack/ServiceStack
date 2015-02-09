@@ -1,17 +1,18 @@
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
 using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
+using ServiceStack.Text;
 
 namespace ServiceStack.Serialization
 {
-    public class XmlSerializableSerializer : IStringSerializer 
+    public partial class XmlSerializableSerializer : IStringSerializer 
     {
         public static XmlSerializableSerializer Instance = new XmlSerializableSerializer();
 
-        public string Parse<XmlDto>(XmlDto from)
+        public string SerializeToString<XmlDto>(XmlDto from)
         {
             try
             {

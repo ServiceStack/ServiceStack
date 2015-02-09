@@ -20,7 +20,7 @@ namespace ServiceStack.MsgPack
         public MsgPackServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri)
             : base(syncReplyBaseUri, asyncOneWayBaseUri) { }
 
-        public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
+        public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
         {
             if (request == null) return;
             try

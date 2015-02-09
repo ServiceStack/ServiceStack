@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Funq;
+using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Host;
 using ServiceStack.Testing;
@@ -6,55 +7,44 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
-	[TestFixture]
-	public class CredentialsServiceTests
-	{
-		[TestFixtureSetUp]
-		public void TestFixtureSetUp()
-		{
-			AuthenticateService.Init(() => new AuthUserSession(),
-				new CredentialsAuthProvider());           
-		}
+    [TestFixture]
+    public class CredentialsServiceTests
+    {
+        public class CredentialsTestAppHost : BasicAppHost
+        {
+            public override void Configure(Container container)
+            {
+                Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                    new IAuthProvider[] {
+                        new CredentialsAuthProvider(),
+                    }));
+            }
 
-		public AuthenticateService GetAuthService()
-		{
-		    var authService = new AuthenticateService {
-                RequestContext = new MockRequestContext(),
-                //ServiceExceptionHandler = (req, ex) =>
-                //    ValidationFeature.HandleException(new BasicResolver(), req, ex)
-            };
-		    return authService;
-		}
+            public override IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
+            {
+                return new ValidateServiceRunner<TRequest>(this, actionContext);
+            }
+        }
 
         class ValidateServiceRunner<T> : ServiceRunner<T>
         {
             public ValidateServiceRunner(IAppHost appHost, ActionContext actionContext)
-                : base(appHost, actionContext) {}
+                : base(appHost, actionContext) { }
 
-            public override object HandleException(IRequestContext requestContext, T request, System.Exception ex)
+            public override object HandleException(IRequest request, T requestDto, System.Exception ex)
             {
-                return DtoUtils.CreateErrorResponse(request, ex);
+                return DtoUtils.CreateErrorResponse(requestDto, ex);
             }
         }
 
-        public object GetAuthService(AuthenticateService authService, Authenticate request)
-        {
-            var serviceRunner = new ValidateServiceRunner<Authenticate>(null, new ActionContext {
-                Id = "GET Auth",
-                ServiceAction = (service, req) => ((AuthenticateService)service).Get((Authenticate)req)
-            });
-
-            return serviceRunner.Process(authService.RequestContext, authService, request);
-        }
-
-	    [Test]
-		public void Empty_request_invalidates_all_fields()
+        [Test]
+        public void Empty_request_invalidates_all_fields()
 		{
-            using (new BasicAppHost().Init())
+            using (var appHost = new CredentialsTestAppHost().Init())
             {
-                var authService = GetAuthService();
+                var response = (HttpError)appHost.ExecuteService(
+                    new Authenticate { provider = CredentialsAuthProvider.Name });
 
-                var response = (HttpError)GetAuthService(authService, new Authenticate());
                 var errors = response.GetFieldErrors();
 
                 Assert.That(errors.Count, Is.EqualTo(2));
@@ -65,14 +55,12 @@ namespace ServiceStack.Common.Tests.OAuth
             }
 		}
 
-		[Test]
-		public void Requires_UserName_and_Password()
-		{
-            using (new BasicAppHost().Init())
+        [Test]
+        public void Requires_UserName_and_Password()
+        {
+            using (var appHost = new CredentialsTestAppHost().Init())
             {
-                var authService = GetAuthService();
-
-                var response = (HttpError)GetAuthService(authService,
+                var response = (HttpError)appHost.ExecuteService(
                     new Authenticate { provider = AuthenticateService.CredentialsProvider });
 
                 var errors = response.GetFieldErrors();
@@ -83,6 +71,6 @@ namespace ServiceStack.Common.Tests.OAuth
                 Assert.That(errors[1].FieldName, Is.EqualTo("Password"));
                 Assert.That(errors[1].ErrorCode, Is.EqualTo("NotEmpty"));
             }
-		}
-	}
+        }
+    }
 }

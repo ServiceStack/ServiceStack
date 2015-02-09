@@ -269,7 +269,8 @@ var doc = document, win = window,
 
 $.each = function(arr, fn) { $each.call(arr, fn); };
 
-var splitCase = function(t) { return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1'); },
+var splitCase = function (t) { return typeof t != 'string' ? t : titleCase(t.replace(/([a-z0-9])([A-Z])/g, '$1 $2')); },
+    titleCase = function (s) { return s.replace(/\w\S*/g, function (t) { return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase(); }); },
     uniqueKeys = function(m){ var h={}; for (var i=0,len=m.length; i<len; i++) for (var k in m[i]) if (show(k)) h[k] = k; return h; },
     keys = function(o){ var a=[]; for (var k in o) if (show(k)) a.push(k); return a; }
 var tbls = [];
@@ -282,18 +283,9 @@ function val(m) {
   return m.length ? arr(m) : obj(m);
 }
 function num(m) { return m; }
-function strFact(showFullDate){
-
-  function shortDate(m){
-    return m.substr(0,6) == '/Date(' ? dmft(date(m)) : m;
-  }
-
-  function fullDate(m){
-    return m.substr(0,6) == '/Date(' ? dmfthm(date(m)) : m;
-  }
-  return showFullDate ? fullDate : shortDate;  
-}
-str = strFact(location.hash.indexOf('show=') != -1 && location.hash.indexOf('fulldates') != -1);
+var sdfmt = location.hash.indexOf('show=') >=0 && location.hash.indexOf('fulldates') >= 0 ? dmft : dmfthm;
+function str(m){ return m.substr(0,6) == '/Date(' ? sdfmt(date(m)) : m; }
+function sfmt(s) { return humanize ? splitCase(s) : s; }
 function date(s) { return new Date(parseFloat(/Date\(([^)]+)\)/.exec(s)[1])); }
 function pad(d) { return d < 10 ? '0'+d : d; }
 function dmft(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); }
@@ -301,7 +293,7 @@ function dmfthm(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' 
 function show(k) { return typeof k != 'string' || k.substr(0,2) != '__'; }
 function obj(m) {
   var sb = '<dl>';
-  for (var k in m) if (show(k)) sb += '<dt class="ib">' + splitCase(k) + '</dt><dd>' + val(m[k]) + '</dd>';
+  for (var k in m) if (show(k)) sb += '<dt class="ib">' + sfmt(k) + '</dt><dd>' + val(m[k]) + '</dd>';
   sb += '</dl>';
   return sb;
 }
@@ -311,7 +303,7 @@ function arr(m) {
   var sb = '<table id="tbl-' + id + '"><caption></caption><thead><tr>';
   tbls.push(m);
   var i=0;
-  for (var k in h) sb += '<th id="h-' + id + '-' + (i++) + '"><b></b>' + splitCase(k) + '</th>';
+  for (var k in h) sb += '<th id="h-' + id + '-' + (i++) + '"><b></b>' + sfmt(k) + '</th>';
   sb += '</tr></thead><tbody>' + makeRows(h,m) + '</tbody></table>';
   return sb;
 }
@@ -329,6 +321,7 @@ function makeRows(h,m) {
 
 var model = ${Dto},
     txt = $$('TEXTAREA')[0],
+    humanize = ${Humanize} && location.hash.indexOf('dehumanize') == -1,
     isIE = /msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent);
 
 $("content").innerHTML = val(model);  

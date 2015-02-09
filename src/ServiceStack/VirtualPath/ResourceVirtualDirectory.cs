@@ -4,13 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
     public class ResourceVirtualDirectory : AbstractVirtualDirectoryBase
     {
+        private static ILog Log = LogManager.GetLogger(typeof(ResourceVirtualDirectory));
+
         protected Assembly backingAssembly;
+        public string rootNamespace { get; set; }
 
         protected List<ResourceVirtualDirectory> SubDirectories;
         protected List<ResourceVirtualFile> SubFiles;
@@ -35,10 +39,23 @@ namespace ServiceStack.VirtualPath
 
         internal Assembly BackingAssembly { get { return backingAssembly; } }
 
-        public ResourceVirtualDirectory(IVirtualPathProvider owningProvider, IVirtualDirectory parentDir, Assembly backingAsm)
-            : this(owningProvider, parentDir, backingAsm, backingAsm.GetName().Name, backingAsm.GetManifestResourceNames()) { }
+        public ResourceVirtualDirectory(IVirtualPathProvider owningProvider, 
+            IVirtualDirectory parentDir, 
+            Assembly backingAsm, 
+            string rootNamespace)
+        : this(owningProvider, 
+            parentDir, 
+            backingAsm, 
+            rootNamespace,
+            rootNamespace, 
+            GetResourceNames(backingAsm, rootNamespace)) { }
 
-        public ResourceVirtualDirectory(IVirtualPathProvider owningProvider, IVirtualDirectory parentDir, Assembly backingAsm, String directoryName, IEnumerable<String> manifestResourceNames)
+        public ResourceVirtualDirectory(IVirtualPathProvider owningProvider, 
+            IVirtualDirectory parentDir, 
+            Assembly backingAsm, 
+            string rootNamespace, 
+            string directoryName, 
+            List<string> manifestResourceNames)
             : base(owningProvider, parentDir)
         {
             if (backingAsm == null)
@@ -48,26 +65,32 @@ namespace ServiceStack.VirtualPath
                 throw new ArgumentException("directoryName");
 
             this.backingAssembly = backingAsm;
+            this.rootNamespace = rootNamespace;
             this.DirectoryName = directoryName;
 
             InitializeDirectoryStructure(manifestResourceNames);
         }
 
-        protected void InitializeDirectoryStructure(IEnumerable<String> manifestResourceNames)
+        public static List<string> GetResourceNames(Assembly asm, string basePath)
+        {
+            return asm.GetManifestResourceNames()
+                .Where(x => x.StartsWith(basePath))
+                .Map(x => x.Substring(basePath.Length).TrimStart('.'));
+        }
+
+        protected void InitializeDirectoryStructure(List<string> manifestResourceNames)
         {
             SubDirectories = new List<ResourceVirtualDirectory>();
             SubFiles = new List<ResourceVirtualFile>();
+            var treatAsFiles = (HostContext.Config != null ? HostContext.Config.EmbeddedResourceTreatAsFiles : null) ?? new HashSet<string>();
 
-            var rootNamespace = backingAssembly.GetName().Name;
-            var resourceNames = manifestResourceNames.ToList()
-                .ConvertAll(n => n.Replace(rootNamespace, "").TrimStart('.'));
-
-            SubFiles.AddRange(resourceNames
-                .Where(n => n.Count(c => c == '.') <= 1)
+            SubFiles.AddRange(manifestResourceNames
+                .Where(n => n.Count(c => c == '.') <= 1 || treatAsFiles.Contains(n))
                 .Select(CreateVirtualFile)
+                .Where(f => f != null)
                 .OrderBy(f => f.Name));
 
-            SubDirectories.AddRange(resourceNames
+            SubDirectories.AddRange(manifestResourceNames
                 .Where(n => n.Count(c => c == '.') > 1)
                 .GroupByFirstToken(pathSeparator: '.')
                 .Select(CreateVirtualDirectory)
@@ -84,7 +107,7 @@ namespace ServiceStack.VirtualPath
         {
             var remainingResourceNames = subResources.Select(g => g[1]);
             var subDir = new ResourceVirtualDirectory(
-                VirtualPathProvider, this, backingAssembly, subResources.Key, remainingResourceNames);
+                VirtualPathProvider, this, backingAssembly, rootNamespace, subResources.Key, remainingResourceNames.ToList());
 
             return subDir;
         }
@@ -94,16 +117,26 @@ namespace ServiceStack.VirtualPath
             try
             {
                 var fullResourceName = String.Concat(RealPath, VirtualPathProvider.RealPathSeparator, resourceName);
-                var mrInfo = backingAssembly.GetManifestResourceInfo(fullResourceName);
+
+                var resourceNames = new[]
+                {
+                    fullResourceName,
+                    fullResourceName.Replace(VirtualPathProvider.RealPathSeparator, ".").Trim('.')
+                };
+
+                var mrInfo = resourceNames.FirstOrDefault(x => backingAssembly.GetManifestResourceInfo(x) != null);
                 if (mrInfo == null)
-                    throw new FileNotFoundException("Virtual file not found", fullResourceName);
+                {
+                    Log.Warn("Virtual file not found: " + fullResourceName);
+                    return null;
+                }
 
                 return new ResourceVirtualFile(VirtualPathProvider, this, resourceName);
             }
             catch (Exception ex)
             {
-                ex.Message.Print();
-                throw;
+                Log.Warn(ex.Message, ex);
+                return null;
             }
         }
 
@@ -120,7 +153,22 @@ namespace ServiceStack.VirtualPath
 
         protected override IVirtualFile GetFileFromBackingDirectoryOrDefault(string fileName)
         {
-            return Files.FirstOrDefault(f => f.Name == fileName);
+            var file = Files.FirstOrDefault(f => f.Name.EqualsIgnoreCase(fileName));
+            if (file != null)
+                return file;
+
+            //ResourceDir reads /path/to/a.min.js as path.to.min.js and lays out as /path/to/a/min.js
+            var parts = fileName.SplitOnFirst('.');
+            if (parts.Length > 1)
+            {
+                var dir = GetDirectoryFromBackingDirectoryOrDefault(parts[0]) as ResourceVirtualDirectory;
+                if (dir != null)
+                {
+                    return dir.GetFileFromBackingDirectoryOrDefault(parts[1]);
+                }
+            }
+
+            return null;
         }
 
         protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(String globPattern)
@@ -130,7 +178,8 @@ namespace ServiceStack.VirtualPath
 
         protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName)
         {
-            return Directories.FirstOrDefault(d => d.Name == directoryName);
+            return Directories.FirstOrDefault(d => d.Name.EqualsIgnoreCase(directoryName)) ??
+                Directories.FirstOrDefault(d => d.Name.EqualsIgnoreCase((directoryName ?? "").Replace('-', '_')));
         }
 
         protected override string GetRealPathToRoot()

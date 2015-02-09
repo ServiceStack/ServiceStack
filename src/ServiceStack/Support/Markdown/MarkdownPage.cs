@@ -15,7 +15,7 @@ namespace ServiceStack.Support.Markdown
 {
 	public class MarkdownPage : IExpirable, IViewPage
 	{
-	    private static readonly ILog Log = LogManager.GetLogger(typeof (MarkdownPage));
+	    private static readonly ILog Log = LogManager.GetLogger(typeof(MarkdownPage));
 
 		public const string ModelName = "Model";
 
@@ -162,7 +162,7 @@ namespace ServiceStack.Support.Markdown
                 SetTemplateDirectivePath();
 
                 this.IsCompiled = true;
-                Log.InfoFormat("Compiled {0} in {1}ms", this.FilePath, sw.ElapsedMilliseconds);
+                Log.DebugFormat("Compiled {0} in {1}ms", this.FilePath, sw.ElapsedMilliseconds);
             }
             catch (Exception ex)
             {

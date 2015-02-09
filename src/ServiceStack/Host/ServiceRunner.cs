@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
@@ -12,45 +13,45 @@ namespace ServiceStack.Host
         protected static readonly ILog Log = LogManager.GetLogger(typeof(ServiceRunner<>));
 
         protected readonly IAppHost AppHost;
+        protected readonly ActionContext ActionContext;
         protected readonly ActionInvokerFn ServiceAction;
         protected readonly IHasRequestFilter[] RequestFilters;
         protected readonly IHasResponseFilter[] ResponseFilters;
 
-        public ServiceRunner() { }
-
         public ServiceRunner(IAppHost appHost, ActionContext actionContext)
         {
             this.AppHost = appHost;
+            this.ActionContext = actionContext;
             this.ServiceAction = actionContext.ServiceAction;
             this.RequestFilters = actionContext.RequestFilters;
             this.ResponseFilters = actionContext.ResponseFilters;
         }
 
-        public T ResolveService<T>(IRequestContext requestContext)
+        public T ResolveService<T>(IRequest requestContext)
         {
-            var service = HostContext.TryResolve<T>();
-            var requiresContext = service as IRequiresRequestContext;
+            var service = AppHost.TryResolve<T>();
+            var requiresContext = service as IRequiresRequest;
             if (requiresContext != null)
             {
-                requiresContext.RequestContext = requestContext;
+                requiresContext.Request = requestContext;
             }
             return service;
         }
 
-        public virtual void BeforeEachRequest(IRequestContext requestContext, TRequest request)
+        public virtual void BeforeEachRequest(IRequest requestContext, TRequest request)
         {
-            OnBeforeExecute(requestContext, request);
-
-            var requestLogger = HostContext.TryResolve<IRequestLogger>();
+            var requestLogger = AppHost.TryResolve<IRequestLogger>();
             if (requestLogger != null)
             {
                 requestContext.SetItem("_requestDurationStopwatch", Stopwatch.StartNew());
             }
+            
+            OnBeforeExecute(requestContext, request);
         }
 
-        public virtual object AfterEachRequest(IRequestContext requestContext, TRequest request, object response)
+        public virtual object AfterEachRequest(IRequest requestContext, TRequest request, object response)
         {
-            var requestLogger = HostContext.TryResolve<IRequestLogger>();
+            var requestLogger = AppHost.TryResolve<IRequestLogger>();
             if (requestLogger != null)
             {
                 try
@@ -68,22 +69,20 @@ namespace ServiceStack.Host
             return response.IsErrorResponse() ? response : OnAfterExecute(requestContext, response);
         }
 
-        public virtual void OnBeforeExecute(IRequestContext requestContext, TRequest request) { }
+        public virtual void OnBeforeExecute(IRequest requestContext, TRequest request) { }
 
-        public virtual object OnAfterExecute(IRequestContext requestContext, object response)
+        public virtual object OnAfterExecute(IRequest requestContext, object response)
         {
             return response;
         }
 
-        public virtual object Execute(IRequestContext requestContext, object instance, TRequest request)
+        public virtual object Execute(IRequest request, object instance, TRequest requestDto)
         {
             try
             {
-                BeforeEachRequest(requestContext, request);
+                BeforeEachRequest(request, requestDto);
 
                 var container = HostContext.Container;
-                var httpReq = requestContext != null ? requestContext.Get<IHttpRequest>() : null;
-                var httpRes = requestContext != null ? requestContext.Get<IHttpResponse>() : null;
 
                 if (RequestFilters != null)
                 {
@@ -91,23 +90,80 @@ namespace ServiceStack.Host
                     {
                         var attrInstance = requestFilter.Copy();
                         container.AutoWire(attrInstance);
-                        attrInstance.RequestFilter(httpReq, httpRes, request);
-                        HostContext.Release(attrInstance);
-                        if (httpRes != null && httpRes.IsClosed) return null;
+                        attrInstance.RequestFilter(request, request.Response, requestDto);
+                        AppHost.Release(attrInstance);
+                        if (request.Response.IsClosed) return null;
                     }
                 }
 
-                var response = AfterEachRequest(requestContext, request, ServiceAction(instance, request));
+                var response = AfterEachRequest(request, requestDto, ServiceAction(instance, requestDto));
+                var error = response as IHttpError;
+                if (error != null)
+                {
+                    var ex = (Exception) error;
+                    var result = HandleException(request, requestDto, ex);
 
+                    if (result == null)
+                        throw ex;
+
+                    return result;
+                }
+
+                var taskResponse = response as Task;
+                if (taskResponse != null)
+                {
+                    if (taskResponse.Status == TaskStatus.Created)
+                    {
+                        taskResponse.Start();
+                    }
+                    return taskResponse.ContinueWith(task =>
+                    {
+                        if (task.IsFaulted)
+                        {
+                            var ex = task.Exception.UnwrapIfSingleException();
+
+                            //Async Exception Handling
+                            var result = HandleException(request, requestDto, ex);
+
+                            if (result == null)
+                                return ex;
+
+                            return result;
+                        }
+
+                        response = task.GetResult();
+                        if (ResponseFilters != null)
+                        {
+                            //Async Exec ResponseFilters
+                            foreach (var responseFilter in ResponseFilters)
+                            {
+                                var attrInstance = responseFilter.Copy();
+                                container.AutoWire(attrInstance);
+
+                                attrInstance.ResponseFilter(request, request.Response, response);
+                                AppHost.Release(attrInstance);
+
+                                if (request.Response.IsClosed)
+                                    return null;
+                            }
+                        }
+
+                        return response;
+                    });
+                }
+
+                //Sync Exec ResponseFilters
                 if (ResponseFilters != null)
                 {
                     foreach (var responseFilter in ResponseFilters)
                     {
                         var attrInstance = responseFilter.Copy();
                         container.AutoWire(attrInstance);
-                        attrInstance.ResponseFilter(httpReq, httpRes, response);
-                        HostContext.Release(attrInstance);
-                        if (httpRes != null && httpRes.IsClosed) return null;
+
+                        attrInstance.ResponseFilter(request, request.Response, response);
+                        AppHost.Release(attrInstance);
+
+                        if (request.Response.IsClosed) return null;
                     }
                 }
 
@@ -115,7 +171,8 @@ namespace ServiceStack.Host
             }
             catch (Exception ex)
             {
-                var result = HandleException(requestContext, request, ex);
+                //Sync Exception Handling
+                var result = HandleException(request, requestDto, ex);
 
                 if (result == null) throw;
 
@@ -123,24 +180,24 @@ namespace ServiceStack.Host
             }
         }
 
-        public virtual object Execute(IRequestContext requestContext, object instance, IMessage<TRequest> request)
+        public virtual object Execute(IRequest requestContext, object instance, IMessage<TRequest> request)
         {
             return Execute(requestContext, instance, request.GetBody());
         }
 
-        public virtual object HandleException(IRequestContext requestContext, TRequest request, Exception ex)
+        public virtual object HandleException(IRequest request, TRequest requestDto, Exception ex)
         {
-            var errorResponse = HostContext.RaiseServiceException(requestContext.Get<IHttpRequest>(), request, ex) 
-                                ?? DtoUtils.CreateErrorResponse(request, ex);
+            var errorResponse = HostContext.RaiseServiceException(request, requestDto, ex) 
+                                ?? DtoUtils.CreateErrorResponse(requestDto, ex);
 
-            AfterEachRequest(requestContext, request, errorResponse ?? ex);
+            AfterEachRequest(request, requestDto, errorResponse ?? ex);
             
             return errorResponse;
         }
 
-        public object ExecuteOneWay(IRequestContext requestContext, object instance, TRequest request)
+        public object ExecuteOneWay(IRequest requestContext, object instance, TRequest request)
         {
-            var msgFactory = HostContext.TryResolve<IMessageFactory>();
+            var msgFactory = AppHost.TryResolve<IMessageFactory>();
             if (msgFactory == null)
             {
                 return Execute(requestContext, instance, request);
@@ -157,7 +214,7 @@ namespace ServiceStack.Host
         }
 
         //signature matches ServiceExecFn
-        public object Process(IRequestContext requestContext, object instance, object request)
+        public object Process(IRequest requestContext, object instance, object request)
         {
             return requestContext != null && requestContext.RequestAttributes.Has(RequestAttributes.OneWay) 
                 ? ExecuteOneWay(requestContext, instance, (TRequest)request) 

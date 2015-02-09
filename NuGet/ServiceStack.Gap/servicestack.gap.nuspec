@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>ServiceStack.Gap</id>
+    <title>ServiceStack.Gap - Tools to help create embedded versions of ServiceStack</title>
+    <version>4.0.0</version>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
+    <summary>Tools to help create embedded versions of ServiceStack</summary>
+    <description>
+      MSBuild Tasks to help creating self-contained embedded versions of ServiceStack that can be ILMerged into a single cross-platform .exe accessed by the users perferred browser or hosted inside a Native Desktop App shell containing a Web Browser widget.
+
+      Once added to a project the install.ps1 script will set the BuildAction to all Razor *.cshtml pages to 'Content' so they get pre-compiled and change all html/img/css assets to Embedded Resources so they get bundled inside the dll. 
+
+      This package also includes a copy of ILMerge.exe under \tools that can be used to merge all ServiceStack .dlls into a single exe. See the https://github.com/ServiceStack/ServiceStack.Gap project for more info.
+    </description>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack.Gap</projectUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
+    <tags>Embed Resources Razor ViewEngine View Templates Mono ASP.NET Self-Host ServiceStack</tags>
+    <language>en-US</language>
+    <copyright>Copyright 2013 Service Stack</copyright>
+    <dependencies>
+      <dependency id="ServiceStack.Razor" version="4.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="build\**\*.*" target="build" />
+    <file src="tools\**\*.*" target="tools" />
+  </files>
+</package>

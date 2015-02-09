@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using Funq;
 using ServiceStack;
+using ServiceStack.Api.Swagger;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.MsgPack;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
-using ServiceStack.Text;
-using ServiceStack.Web;
 
 //The entire C# code for the stand-alone RazorRockstars demo.
 namespace RazorRockstars.Web
@@ -22,6 +22,17 @@ namespace RazorRockstars.Web
         {
             Plugins.Add(new RazorFormat());
             Plugins.Add(new MsgPackFormat());
+            Plugins.Add(new SwaggerFeature { UseBootstrapTheme = true });
+
+            typeof(Resources)
+                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
+            typeof(ResourceRequest)
+                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
+
+            var metadata = (MetadataFeature)Plugins.First(x => x is MetadataFeature);
+            metadata.IndexPageFilter = page => {
+                page.OperationNames.Sort((x,y) => y.CompareTo(x));
+            };
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
@@ -30,10 +41,9 @@ namespace RazorRockstars.Web
 
             SetConfig(new HostConfig {
                 DebugMode = true,
-                CustomHttpHandlers = {
-                  { HttpStatusCode.ExpectationFailed, new RazorHandler("/expectationfailed") }
-                }
             });
+
+            this.CustomErrorHttpHandlers[HttpStatusCode.ExpectationFailed] = new RazorHandler("/expectationfailed");
         }
 
         public static void InitData(Container container)

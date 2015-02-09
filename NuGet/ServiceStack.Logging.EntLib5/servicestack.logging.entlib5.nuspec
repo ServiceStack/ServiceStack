@@ -4,22 +4,22 @@
     <id>ServiceStack.Logging.EntLib5</id>
     <version>4.0.0</version>
     <title>ServiceStack.Logging.EntLib5</title>
-    <authors>Demis Bellot</authors>
-    <owners>Demis Bellot</owners>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
     <summary>Enterprise Library 5.0 Logging Application Block integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
       Provides Enterprise Library 5.0 Logging Application Block logging integration for other ServiceStack projects
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>servicestack log logging nlog</tags>
     <language>en-US</language>
-    <copyright>Copyright 2013 Service Stack</copyright>
+    <copyright>Copyright 2014 Service Stack</copyright>
     <dependencies>
       <dependency id="EnterpriseLibrary.Logging" version="5.0.505.1" />
-      <dependency id="ServiceStack.Common" version="4.0" />
+      <dependency id="ServiceStack.Interfaces" version="4.0" />
     </dependencies>
   </metadata>
   <files>

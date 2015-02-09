@@ -1,39 +1,30 @@
-using System;
 using System.Linq;
-using System.Configuration;
 using System.Collections.Generic;
-using ServiceStack.Configuration;
-using ServiceStack.OrmLite;
-using ServiceStack.Common;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.WebHost.Endpoints;
+using ServiceStack;
 
 namespace $rootnamespace$
 {
-	//Request DTO
-	public class Hello
-	{
-		public string Name { get; set; }
-	}
+    //Request DTO
+    public class Hello
+    {
+        public string Name { get; set; }
+    }
 
-	//Response DTO
-	public class HelloResponse
-	{
-		public string Result { get; set; }
-		public ResponseStatus ResponseStatus { get; set; } //Where Exceptions get auto-serialized
-	}
+    //Response DTO
+    public class HelloResponse
+    {
+        public string Result { get; set; }
+        public ResponseStatus ResponseStatus { get; set; } //Where Exceptions get auto-serialized
+    }
 
-	//Can be called via any endpoint or format, see: http://servicestack.net/ServiceStack.Hello/
-	public class HelloService : Service
-	{
-		public object Any(Hello request)
-		{
-			return new HelloResponse { Result = "Hello, " + request.Name };
-		}
-	}
+    //Can be called via any endpoint or format, see: http://mono.servicestack.net/ServiceStack.Hello/
+    public class HelloService : Service
+    {
+        public object Any(Hello request)
+        {
+            return new HelloResponse { Result = "Hello, " + request.Name };
+        }
+    }
 
     //REST Resource DTO
     [Route("/todos")]
@@ -123,19 +114,20 @@ namespace $rootnamespace$
 
 /*  Example calling above Service with ServiceStack's C# clients:
 
-	var client = new JsonServiceClient(BaseUri);
-	List<Todo> all = client.Get(new Todos());           // Count = 0
+    var client = new JsonServiceClient(BaseUri);
+    List<Todo> all = client.Get(new Todos());           // Count = 0
 
-	var todo = client.Post(
-	    new Todo { Content = "New TODO", Order = 1 });      // todo.Id = 1
-	all = client.Get(new Todos());                      // Count = 1
+    var todo = client.Post(
+        new Todo { Content = "New TODO", Order = 1 });      // todo.Id = 1
+    all = client.Get(new Todos());                      // Count = 1
 
-	todo.Content = "Updated TODO";
-	todo = client.Put(todo);                            // todo.Content = Updated TODO
+    todo.Content = "Updated TODO";
+    todo = client.Put(todo);                            // todo.Content = Updated TODO
 
-	client.Delete(new Todos(todo.Id));
-	all = client.Get(new Todos());                      // Count = 0
+    client.Delete(new Todos(todo.Id));
+    all = client.Get(new Todos());                      // Count = 0
 
 */
 
 }
+

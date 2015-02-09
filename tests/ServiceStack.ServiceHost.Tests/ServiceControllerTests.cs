@@ -63,12 +63,12 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Can_inject_RequestContext_for_IRequiresRequestContext_services()
         {
-            using (var appHost = new BasicAppHost(typeof(RequiresContextService).Assembly).Init())
+            using (var appHost = new BasicAppHost(typeof(RequiresService).Assembly).Init())
             {
                 var serviceController = appHost.ServiceController;
 
                 var request = new RequiresContext();
-                var response = serviceController.Execute(request, new HttpRequestContext(request))
+                var response = serviceController.Execute(request, new BasicRequest(request))
                     as RequiresContextResponse;
 
                 Assert.That(response, Is.Not.Null);

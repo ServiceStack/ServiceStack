@@ -71,7 +71,7 @@ namespace ServiceStack.MiniProfiler.Data
     		var dbConn = connection as DbConnection;
 
 			if (dbConn == null)
-				throw new ArgumentException(connection.GetType().Name + " does not inherit DbConnection");
+				throw new ArgumentException(connection.GetType().GetOperationName() + " does not inherit DbConnection");
 			
 			Init(dbConn, profiler, autoDisposeConnection);
         }
@@ -192,7 +192,7 @@ namespace ServiceStack.MiniProfiler.Data
         public ProfiledDbConnection Clone()
         {
             ICloneable tail = _conn as ICloneable;
-            if (tail == null) throw new NotSupportedException("Underlying " + _conn.GetType().Name + " is not cloneable");
+            if (tail == null) throw new NotSupportedException("Underlying " + _conn.GetType().GetOperationName() + " is not cloneable");
             return new ProfiledDbConnection((DbConnection)tail.Clone(), _profiler, autoDisposeConnection);
         }
         object ICloneable.Clone() { return Clone(); }

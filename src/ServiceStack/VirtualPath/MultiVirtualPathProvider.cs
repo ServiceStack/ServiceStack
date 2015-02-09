@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using ServiceStack.IO;
 
 namespace ServiceStack.VirtualPath
@@ -37,19 +38,14 @@ namespace ServiceStack.VirtualPath
 
         public override IVirtualFile GetFile(string virtualPath)
         {
-            foreach (var childProvider in ChildProviders)
-            {
-                var file = childProvider.GetFile(virtualPath);
-                if (file != null)
-                    return file;
-            }
-            return null;
+            return ChildProviders.Select(childProvider => childProvider.GetFile(virtualPath))
+                .FirstOrDefault(file => file != null);
         }
 
         public override IVirtualDirectory GetDirectory(string virtualPath)
         {
             return ChildProviders.Select(p => p.GetDirectory(virtualPath))
-                .FirstOrDefault();
+                .FirstOrDefault(dir => dir != null);
         }
 
         public override IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = Int32.MaxValue)
@@ -76,6 +72,14 @@ namespace ServiceStack.VirtualPath
         public override bool IsViewFile(IVirtualFile virtualFile)
         {
             return virtualFile.VirtualPathProvider.IsViewFile(virtualFile);
+        }
+
+        public override string ToString()
+        {
+            var sb = new List<string>();
+            ChildProviders.Each(x => sb.Add(x.ToString()));
+
+            return string.Join(", ", sb.ToArray());
         }
     }
 }

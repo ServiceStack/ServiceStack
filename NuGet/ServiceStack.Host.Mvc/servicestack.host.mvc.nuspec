@@ -4,22 +4,24 @@
     <id>ServiceStack.Host.Mvc</id>
     <title>Starter ASP.NET MVC Website Template - ServiceStack at /api</title>
     <version>4.0.0</version> 
-	<authors>Demis Bellot</authors> 
-    <owners>Demis Bellot</owners>
+	<authors>Service Stack</authors> 
+    <owners>Service Stack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
 Host ServiceStack side-by-side with an existing ASP.NET MVC application at the path '/api'. 
-ServiceStack is a modern, high-performance, code-first web service framework promoting code and web services best practices. Simple, Fast, Elegant. Website: http://www.servicestack.net
+ServiceStack is a modern, high-performance, code-first web service framework promoting code and web services best practices. Simple, Fast, Elegant. Website: https://servicestack.net
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
-    <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/license.txt</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
     <language>en-US</language>
-    <copyright>Copyright 2013 Service Stack</copyright>
+    <copyright>Copyright 2014 Service Stack</copyright>
 	  <dependencies>
       <dependency id="WebActivator" version="1.5" />
       <dependency id="ServiceStack.Mvc" version="4.0" />
+      <dependency id="ServiceStack.Server" version="4.0" />
+      <dependency id="ServiceStack.OrmLite.SqlServer" version="4.0" />
     </dependencies> 
   </metadata> 
 </package>

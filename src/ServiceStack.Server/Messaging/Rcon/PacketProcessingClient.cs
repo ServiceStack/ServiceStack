@@ -1,5 +1,6 @@
-﻿#if !SILVERLIGHT 
+﻿#if !SL5 
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 
 namespace ServiceStack.Messaging.Rcon
@@ -8,7 +9,7 @@ namespace ServiceStack.Messaging.Rcon
     /// Processing client used to interface with ServiceStack and allow a message to be processed.
     /// Not an actual client.
     /// </summary>
-    internal class ProcessingClient : IMessageQueueClient
+    internal class ProcessingClient : IMessageQueueClient, IOneWayClient
     {
         Packet thePacket;
         Socket theClient;
@@ -30,71 +31,101 @@ namespace ServiceStack.Messaging.Rcon
                 Publish<T>(new Message<T>(messageBody));
         }
 
-        public void Publish(IMessage message)
-        {
-            var messageBytes = message.ToBytes();
-            Publish(new QueueNames(message.Body.GetType()).In, messageBytes);
-        }
-
         public void Publish<T>(IMessage<T> message)
         {
-            var messageBytes = message.ToBytes();
-            Publish(message.ToInQueueName(), messageBytes);
+            Publish(message.ToInQueueName(), message);
+        }
+
+        public void SendOneWay(object requestDto)
+        {
+            Publish(MessageFactory.Create(requestDto));
+        }
+
+        public void SendOneWay(string queueName, object requestDto)
+        {
+            Publish(queueName, MessageFactory.Create(requestDto));
+        }
+
+        public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            if (requests == null) return;
+            foreach (var request in requests)
+            {
+                SendOneWay(request);
+            }
         }
 
         /// <summary>
         /// Publish the specified message into the durable queue @queueName
         /// </summary>
-        /// <param name="queueName"></param>
-        /// <param name="messageBytes"></param>
-        public void Publish(string queueName, byte[] messageBytes)
+        public void Publish(string queueName, IMessage message)
         {
+            var messageBytes = message.ToBytes();
             theServer.Publish(queueName, messageBytes, theClient, thePacket.Sequence);
         }
         
         /// <summary>
         /// Publish the specified message into the transient queue @queueName
         /// </summary>
-        /// <param name="queueName"></param>
-        /// <param name="messageBytes"></param>
-        public void Notify(string queueName, byte[] messageBytes)
+        public void Notify(string queueName, IMessage message)
         {
+            var messageBytes = message.ToBytes();
             theServer.Notify(queueName, messageBytes, theClient, thePacket.Sequence);
         }
 
         /// <summary>
         /// Synchronous blocking get.
         /// </summary>
-        /// <param name="queueName"></param>
-        /// <param name="timeOut"></param>
-        /// <returns></returns>
-        public byte[] Get(string queueName, TimeSpan? timeOut)
+        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
             if (givenPacket)
                 return null;
             var ret = thePacket.Words[1];
             givenPacket = true;
-            return ret;
+            return ret.ToMessage<T>();
         }
         
         /// <summary>
         /// Non blocking get message
         /// </summary>
-        /// <param name="queueName"></param>
-        /// <returns></returns>
-        public byte[] GetAsync(string queueName)
+        public IMessage<T> GetAsync<T>(string queueName)
         {
-            return Get(queueName, TimeSpan.MinValue);
+            return Get<T>(queueName, TimeSpan.MinValue);
         }
 
-        /// <summary>
-        /// Blocking wait for notifications on any of the supplied channels
-        /// </summary>
-        /// <param name="channelNames"></param>
-        /// <returns></returns>
-        public string WaitForNotifyOnAny(params string[] channelNames)
+        public void Ack(IMessage message)
         {
-            return null;
+        }
+
+        public void Nak(IMessage message, bool requeue, Exception exception = null)
+        {
+            var msgEx = exception as MessagingException;
+            if (!requeue && msgEx != null && msgEx.ResponseDto != null)
+            {
+                var msg = MessageFactory.Create(msgEx.ResponseDto);
+                Publish(msg.ToDlqQueueName(), msg);
+                return;
+            }
+
+            var queueName = requeue
+                ? message.ToInQueueName()
+                : message.ToDlqQueueName();
+
+            Publish(queueName, message);
+        }
+
+        public IMessage<T> CreateMessage<T>(object mqResponse)
+        {
+            return (IMessage<T>)mqResponse;
+        }
+
+        public string GetTempQueueName()
+        {
+            return QueueNames.GetTempQueueName();
+        }
+
+        public void Nak(IMessage message)
+        {
         }
 
         public void Dispose()

@@ -5,7 +5,8 @@ namespace ServiceStack.DataAnnotations
     [AttributeUsage(AttributeTargets.Property)]
     public class ForeignKeyAttribute : ReferencesAttribute
     {
-        public ForeignKeyAttribute(Type type) : base(type)
+        public ForeignKeyAttribute(Type type)
+            : base(type)
         {
         }
 

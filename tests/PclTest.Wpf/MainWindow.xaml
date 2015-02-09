@@ -1,0 +1,14 @@
+﻿<Window x:Class="PclTest.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="415" Width="690">
+    <Grid>
+        <Label Content="Name:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" FontSize="36"/>
+        <TextBox x:Name="txtName" HorizontalAlignment="Left" Height="57" Margin="149,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="522" FontSize="36" Text="Test"/>
+        <Button x:Name="btnGoSync" Content="Go Sync" HorizontalAlignment="Left" Margin="20,90,0,0" VerticalAlignment="Top" Width="212" FontSize="36" Click="btnGoSync_Click"/>
+        <Button x:Name="btnGoAsync" Content="Go Async" HorizontalAlignment="Left" Margin="236,90,0,0" VerticalAlignment="Top" Width="214" FontSize="36" Click="btnGoAsync_Click"/>
+        <TextBlock x:Name="lblResults" HorizontalAlignment="Left" Margin="20,158,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="217" Width="651" FontSize="36"/>
+        <Button x:Name="btnGoShared" Content="Go Shared" HorizontalAlignment="Left" Margin="454,90,0,0" VerticalAlignment="Top" Width="214" FontSize="36" Click="btnGoShared_Click"/>
+
+    </Grid>
+</Window>

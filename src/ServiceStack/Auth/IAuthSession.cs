@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -31,6 +32,15 @@ namespace ServiceStack.Auth
         void OnRegistered(IServiceBase registrationService);
         void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo);
         void OnLogout(IServiceBase authService);
-        void OnCreated(IHttpRequest httpReq);
+        void OnCreated(IRequest httpReq);
+    }
+
+    public interface IWebSudoAuthSession : IAuthSession
+    {
+        DateTime AuthenticatedAt { get; set; }
+
+        int AuthenticatedCount { get; set; }
+
+        DateTime? AuthenticatedWebSudoUntil { get; set; }
     }
 }

@@ -102,11 +102,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri + "csv/reply/Hello?Name=World!");
 
 			var res = req.GetResponse();
-            Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
+			Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
 			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Hello.csv"));
-
-            var csv = res.ReadToEnd();
-			Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
+			
+			var csv = res.ReadToEnd();
+			var lf = Environment.NewLine;
+			Assert.That(csv, Is.EqualTo("Result{0}\"Hello, World!\"{0}".Fmt(lf)));
 
 			Console.WriteLine(csv);
 		}
@@ -115,15 +116,16 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public void Can_download_CSV_Hello_using_csv_Accept_and_RestPath()
 		{
 			var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri + "hello/World!");
-            req.Accept = MimeTypes.Csv;
+			req.Accept = MimeTypes.Csv;
 
 			var res = req.GetResponse();
-            Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
+			Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
 			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Hello.csv"));
-
-            var csv = res.ReadToEnd();
-            Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
-
+			
+			var csv = res.ReadToEnd();
+			var lf = Environment.NewLine;
+			Assert.That(csv, Is.EqualTo("Result{0}\"Hello, World!\"{0}".Fmt(lf)));
+            
 			Console.WriteLine(csv);
 		}
 

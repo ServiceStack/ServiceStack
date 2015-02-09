@@ -8,12 +8,13 @@ using System.Text;
 using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
+using ServiceStack.Formats;
 using ServiceStack.Html;
 using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Redis;
-using ServiceStack.Text;
 using ServiceStack.Web;
 using IHtmlString = System.Web.IHtmlString;
 
@@ -53,11 +54,11 @@ namespace ServiceStack.Razor
     //Should handle all razor rendering functionality
     public abstract class RenderingPage
     {
-        public IHttpRequest Request { get; set; }
+        public IRequest Request { get; set; }
 
-        public IHttpResponse Response { get; set; }
+        public IResponse Response { get; set; }
 
-        public StreamWriter Output { get; set; }
+        public virtual StreamWriter Output { get; set; }
 
         public dynamic ViewBag { get; set; }
 
@@ -93,6 +94,11 @@ namespace ServiceStack.Razor
         }
 
         //With HTML encoding
+        public virtual void WriteTo(TextWriter writer, object obj)
+        {
+            writer.Write(HtmlEncode(obj));
+        }
+
         public virtual void WriteTo(TextWriter writer, HelperResult value)
         {
             if (value != null)
@@ -128,7 +134,7 @@ namespace ServiceStack.Razor
 
             return str != null ? str.ToHtmlString() : HttpUtility.HtmlEncode(Convert.ToString(value, CultureInfo.CurrentCulture));
         }
-        
+
         public virtual void WriteAttribute(string name, Tuple<string, int> prefix, Tuple<string, int> suffix, params AttributeValue[] values)
         {
             var attributeValue = this.BuildAttribute(name, prefix, suffix, values);
@@ -175,7 +181,7 @@ namespace ServiceStack.Razor
 
             return string.Empty;
         }
-        
+
         private string GetStringValue(AttributeValue value)
         {
             if (value.IsLiteral)
@@ -231,7 +237,19 @@ namespace ServiceStack.Razor
 
         public virtual bool IsSectionDefined(string sectionName)
         {
-            return this.childSections.ContainsKey(sectionName);
+            var parentPage = ParentPage as RenderingPage;
+            return parentPage != null
+                ? parentPage.IsChildSectionDefined(sectionName)
+                : IsChildSectionDefined(sectionName);
+        }
+
+        internal virtual bool IsChildSectionDefined(string sectionName)
+        {
+            var hasChildSection = this.childSections.ContainsKey(sectionName);
+            if (hasChildSection) return true;
+
+            var childPage = ChildPage as RenderingPage;
+            return childPage != null && childPage.IsSectionDefined(sectionName);
         }
 
         public virtual void DefineSection(string sectionName, Action action)
@@ -249,19 +267,30 @@ namespace ServiceStack.Razor
 
         public object RenderSection(string sectionName)
         {
+            var parentPage = ParentPage as RenderingPage;
+            return parentPage != null
+                ? parentPage.RenderChildSection(sectionName)
+                : RenderChildSection(sectionName);
+        }
+
+        internal object RenderChildSection(string sectionName)
+        {
             Action section;
             if (childSections.TryGetValue(sectionName, out section))
             {
                 section();
+                return null;
             }
-            else if (this.ChildPage != null)
+
+            var childPage = ChildPage as RenderingPage;
+            if (childPage != null)
             {
-                this.ChildPage.RenderSection(sectionName, Output);
+                childPage.RenderChildSection(sectionName, Output);
             }
             return null;
         }
-        
-        public void RenderSection(string sectionName, StreamWriter writer)
+
+        public void RenderChildSection(string sectionName, StreamWriter writer)
         {
             Action section;
             if (childSections.TryGetValue(sectionName, out section))
@@ -302,13 +331,22 @@ namespace ServiceStack.Razor
             }
         }
 
-        public TModel Model { get; set; }
+        private TModel model;
+        public TModel Model
+        {
+            get { return model; }
+            set
+            {
+                SetModel(value);
+            }
+        }
+
         public abstract Type ModelType { get; }
-        
+
         public virtual void SetModel(object o)
         {
             var viewModel = o is TModel ? (TModel)o : default(TModel);
-            this.Model = viewModel;
+            this.model = viewModel;
 
             if (Equals(viewModel, default(TModel)))
             {
@@ -328,34 +366,47 @@ namespace ServiceStack.Razor
             set { appHost = value; }
         }
 
-        public T Get<T>()
+        public IAppSettings AppSettings
+        {
+            get { return AppHost.AppSettings; }
+        }
+
+        public virtual T Get<T>()
         {
             return this.AppHost.TryResolve<T>();
         }
 
+        public virtual T TryResolve<T>()
+        {
+            return this.AppHost.TryResolve<T>();
+        }
+
+        public virtual T ResolveService<T>()
+        {
+            var service = Get<T>();
+            var requiresContext = service as IRequiresRequest;
+            if (requiresContext != null)
+            {
+                requiresContext.Request = this.Request;
+            }
+            return service;
+        }
+
+        public virtual object ExecuteService<T>(Func<T, object> fn)
+        {
+            var service = ResolveService<T>();
+            using (service as IDisposable)
+            {
+                return fn(service);
+            }
+        }
+
+        public bool IsError
+        {
+            get { return ModelError != null; }
+        }
+
         public object ModelError { get; set; }
-
-        public ResponseStatus ResponseStatus
-        {
-            get
-            {
-                return ToResponseStatus(ModelError) ?? ToResponseStatus(Model);
-            }
-        }
-
-        private ResponseStatus ToResponseStatus<T>(T modelError)
-        {
-            var ret = modelError.GetResponseStatus();
-            if (ret != null) return ret;
-
-            if (modelError is DynamicObject)
-            {
-                var dynError = modelError as dynamic;
-                return (ResponseStatus)dynError.ResponseStatus;
-            }
-
-            return null;
-        }
 
         private ICacheClient cache;
         public ICacheClient Cache
@@ -383,7 +434,7 @@ namespace ServiceStack.Razor
 
         private ISessionFactory sessionFactory;
         private ISession session;
-        public virtual ISession Session
+        public virtual ISession SessionBag
         {
             get
             {
@@ -394,13 +445,24 @@ namespace ServiceStack.Razor
             }
         }
 
-        private IAuthSession userSession;
         private string layout;
 
-        public virtual T GetSession<T>() where T : class, IAuthSession
+        public virtual IAuthSession GetSession(bool reload = false)
         {
-            if (userSession != null) return (T)userSession;
-            return (T)(userSession = SessionFeature.GetOrCreateSession<T>(Cache, Request, Response));
+            var req = this.Request;
+            if (req.GetSessionId() == null)
+                req.Response.CreateSessionIds(req);
+            return req.GetSession(reload);
+        }
+
+        public virtual T SessionAs<T>() where T : class, IAuthSession
+        {
+            return SessionFeature.GetOrCreateSession<T>(Cache, Request, Response);
+        }
+
+        public bool IsAuthenticated
+        {
+            get { return this.GetSession().IsAuthenticated; }
         }
 
         public string SessionKey
@@ -413,12 +475,17 @@ namespace ServiceStack.Razor
 
         public void ClearSession()
         {
-            userSession = null;
             this.Cache.Remove(SessionKey);
         }
 
         public virtual void Dispose()
         {
+            try
+            {
+                if (this.ChildPage != null) this.ChildPage.Dispose();
+                this.ChildPage = null;
+            }
+            catch { }
             try
             {
                 if (cache != null) cache.Dispose();
@@ -455,6 +522,69 @@ namespace ServiceStack.Razor
         {
             if (contents == null) return;
             //Builder.Insert(0, contents);
+        }
+
+        public bool IsPostBack
+        {
+            get { return this.Request.Verb == HttpMethods.Post; }
+        }
+
+        public ResponseStatus GetErrorStatus()
+        {
+            var errorStatus = this.Request.GetItem(HtmlFormat.ErrorStatusKey);
+            return errorStatus as ResponseStatus;
+        }
+
+        public MvcHtmlString GetErrorMessage()
+        {
+            var errorStatus = GetErrorStatus();
+            return errorStatus == null ? null : MvcHtmlString.Create(errorStatus.Message);
+        }
+
+        public MvcHtmlString GetAbsoluteUrl(string virtualPath)
+        {
+            return MvcHtmlString.Create(AppHost.ResolveAbsoluteUrl(virtualPath, Request));
+        }
+
+        public void ApplyRequestFilters(object requestDto)
+        {
+            HostContext.ApplyRequestFilters(base.Request, base.Response, requestDto);
+            if (base.Response.IsClosed)
+                throw new StopExecutionException();
+        }
+
+        public void RedirectIfNotAuthenticated(string redirectUrl=null)
+        {
+            if (IsAuthenticated) return;
+
+            redirectUrl = redirectUrl
+                ?? AuthenticateService.HtmlRedirect
+                ?? HostContext.Config.DefaultRedirectPath
+                ?? HostContext.Config.WebHostUrl
+                ?? "/";
+            AuthenticateAttribute.DoHtmlRedirect(redirectUrl, Request, Response, includeRedirectParam: true);
+            throw new StopExecutionException();
+        }
+
+        public bool RenderErrorIfAny()
+        {
+            if (!IsError) return false;
+
+            var responseStatus = GetErrorStatus();
+            var stackTrace = responseStatus.StackTrace != null
+                ? "<pre>" + responseStatus.StackTrace + "</pre>"
+                : "";
+
+            WriteLiteral(@"
+            <div id=""error-response"" class=""alert alert-danger"">
+                <h4>" + 
+                    responseStatus.ErrorCode + ": " + 
+                    responseStatus.Message + @"
+                </h4>" + 
+                stackTrace + 
+            "</div>");
+
+            return true;
         }
     }
 }

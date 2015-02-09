@@ -10,11 +10,7 @@ namespace ServiceStack
     {
         public static string ToString(byte[] bytes)
         {
-#if !SILVERLIGHT 
-            return System.Text.Encoding.UTF8.GetString(bytes);
-#else
             return System.Text.Encoding.UTF8.GetString(bytes, 0, bytes.Length);
-#endif
         }
 
         private static Dictionary<Type, ToMessageDelegate> ToMessageFnCache = new Dictionary<Type, ToMessageDelegate>();
@@ -26,7 +22,7 @@ namespace ServiceStack
             if (toMessageFn != null) return toMessageFn;
 
             var genericType = typeof(MessageExtensions<>).MakeGenericType(type);
-            var mi = genericType.GetPublicStaticMethod("ConvertToMessage");
+            var mi = genericType.GetStaticMethod("ConvertToMessage");
             toMessageFn = (ToMessageDelegate)mi.MakeDelegate(typeof(ToMessageDelegate));
 
             Dictionary<Type, ToMessageDelegate> snapshot, newCache;
@@ -44,6 +40,9 @@ namespace ServiceStack
 
         public static IMessage ToMessage(this byte[] bytes, Type ofType)
         {
+            if (bytes == null)
+                return null;
+
             var msgFn = GetToMessageFn(ofType);
             var msg = msgFn(bytes);
             return msg;
@@ -51,6 +50,9 @@ namespace ServiceStack
 
         public static Message<T> ToMessage<T>(this byte[] bytes)
         {
+            if (bytes == null)
+                return null;
+
             var messageText = ToString(bytes);
             return JsonSerializer.DeserializeFromString<Message<T>>(messageText);
         }
@@ -72,8 +74,13 @@ namespace ServiceStack
             var queueName = message.Priority > 0
                 ? new QueueNames(message.Body.GetType()).Priority
                 : new QueueNames(message.Body.GetType()).In;
-            
+
             return queueName;
+        }
+
+        public static string ToDlqQueueName(this IMessage message)
+        {
+            return new QueueNames(message.Body.GetType()).Dlq;
         }
 
         public static string ToInQueueName<T>(this IMessage<T> message)
@@ -81,6 +88,16 @@ namespace ServiceStack
             return message.Priority > 0
                 ? QueueNames<T>.Priority
                 : QueueNames<T>.In;
+        }
+
+        public static IMessageQueueClient CreateMessageQueueClient(this IMessageService mqServer)
+        {
+            return mqServer.MessageFactory.CreateMessageQueueClient();
+        }
+
+        public static IMessageProducer CreateMessageProducer(this IMessageService mqServer)
+        {
+            return mqServer.MessageFactory.CreateMessageProducer();
         }
     }
 

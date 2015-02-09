@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</ProjectGuid>
+    <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceStack</RootNamespace>
+    <AssemblyName>ServiceStack.Client</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
+    <OutputPath>bin\AndroidIndieDebug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;ANDROID;ANDROIDINDIE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidLinkMode>None</AndroidLinkMode>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>True</Optimize>
+    <OutputPath>..\..\release\latest\AndroidIndie\</OutputPath>
+    <DefineConstants>TRACE;ANDROID;ANDROIDINDIE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Mono.Android" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AsyncState.cs" />
+    <Compile Include="AsyncServiceClient.cs" />
+    <Compile Include="AsyncUtils.cs" />
+    <Compile Include="AuthDtos.cs" />
+    <Compile Include="ClientFactory.cs" />
+    <Compile Include="ContentFormat.cs" />
+    <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
+    <Compile Include="PclExportClient.Xbox.cs" />
+    <Compile Include="PclExportClient.Wp.cs" />
+    <Compile Include="PclExportClient.SL5.cs" />
+    <Compile Include="PclExportClient.Android.cs" />
+    <Compile Include="PclExportClient.Ios.cs" />
+    <Compile Include="PclExportClient.WinStore.cs" />
+    <Compile Include="PclExportClient.Net40.cs" />
+    <Compile Include="Messaging\InMemoryMessageQueueClient.cs" />
+    <Compile Include="MessageExtensions.cs" />
+    <Compile Include="Messaging\MessageQueueClientFactory.cs" />
+    <Compile Include="GenericProxy.cs" />
+    <Compile Include="IDuplex.cs" />
+    <Compile Include="IDuplexCallback.cs" />
+    <Compile Include="IOneWay.cs" />
+    <Compile Include="ISyncReply.cs" />
+    <Compile Include="IWcfServiceClient.cs" />
+    <Compile Include="JsonServiceClient.cs" />
+    <Compile Include="JsvServiceClient.cs" />
+    <Compile Include="PclExportClient.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Messaging\RedisMessageFactory.cs" />
+    <Compile Include="Messaging\RedisMessageProducer.cs" />
+    <Compile Include="Messaging\RedisMessageQueueClient.cs" />
+    <Compile Include="Messaging\RedisMessageQueueClientFactory.cs" />
+    <Compile Include="RequestContext.cs" />
+    <Compile Include="ResponseStatusUtils.cs" />
+    <Compile Include="RouteMember.cs" />
+    <Compile Include="Serialization\DataContractSerializer.Deserialize.cs" />
+    <Compile Include="Serialization\DataContractSerializer.cs" />
+    <Compile Include="Serialization\IStringSerializer.cs" />
+    <Compile Include="Serialization\IStringStreamSerializer.cs" />
+    <Compile Include="Serialization\JsonDataContractSerializer.Deserialize.cs" />
+    <Compile Include="Serialization\JsonDataContractSerializer.cs" />
+    <Compile Include="Serialization\KeyValueDataContractDeserializer.cs" />
+    <Compile Include="Serialization\StringMapTypeDeserializer.cs" />
+    <Compile Include="Serialization\XmlSerializableSerializer.Deserialize.cs" />
+    <Compile Include="Serialization\XmlSerializableSerializer.cs" />
+    <Compile Include="Serialization\XmlSerializableWrapper.cs" />
+    <Compile Include="ServiceClientBase.cs" />
+    <Compile Include="Soap11ServiceClient.cs" />
+    <Compile Include="Soap12ServiceClient.cs" />
+    <Compile Include="StreamExtensions.cs" />
+    <Compile Include="Support\NetDeflateProvider.cs" />
+    <Compile Include="Support\NetGZipProvider.cs" />
+    <Compile Include="UrlExtensions.cs" />
+    <Compile Include="Validation\ValidationError.cs" />
+    <Compile Include="Validation\ValidationErrorField.cs" />
+    <Compile Include="Validation\ValidationErrorResult.cs" />
+    <Compile Include="WcfServiceClient.cs" />
+    <Compile Include="WebRequestUtils.cs" />
+    <Compile Include="WebServiceException.cs" />
+    <Compile Include="XmlServiceClient.cs" />
+  </ItemGroup>
+  <!--ItemGroup,Content-->
+  <!--ItemGroup,None-->
+  <ItemGroup>
+  <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.AndroidIndie.csproj">
+    <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
+    <Name>ServiceStack.Text.AndroidIndie</Name>
+  </ProjectReference>
+  <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.AndroidIndie.csproj">
+    <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
+    <Name>ServiceStack.Interfaces.AndroidIndie</Name>
+  </ProjectReference>
+</ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

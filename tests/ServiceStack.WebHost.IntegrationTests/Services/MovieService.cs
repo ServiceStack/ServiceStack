@@ -106,7 +106,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			return new HttpResult(newMovie) {
 				StatusCode = HttpStatusCode.Created,
 				Headers = {
-					{ HttpHeaders.Location, this.RequestContext.AbsoluteUri.WithTrailingSlash() + movie.Id }
+					{ HttpHeaders.Location, this.Request.AbsoluteUri.WithTrailingSlash() + movie.Id }
 				}
 			};
 		}

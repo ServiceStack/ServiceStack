@@ -19,7 +19,12 @@ namespace ServiceStack.ProtoBuf
             get { return model ?? (model = TypeModel.Create()); }
         }
 
-        public static void Serialize(IRequestContext requestContext, object dto, Stream outputStream)
+        public static void Serialize(IRequest requestContext, object dto, Stream outputStream)
+        {
+            Serialize(dto, outputStream);
+        }
+
+        public static void Serialize(object dto, Stream outputStream)
         {
             Model.Serialize(outputStream, dto);
         }

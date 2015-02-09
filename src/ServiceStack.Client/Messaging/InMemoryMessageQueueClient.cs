@@ -2,11 +2,12 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Generic;
 
 namespace ServiceStack.Messaging
 {
     public class InMemoryMessageQueueClient
-        : IMessageQueueClient
+        : IMessageQueueClient, IOneWayClient
     {
         private readonly MessageQueueClientFactory factory;
 
@@ -17,7 +18,15 @@ namespace ServiceStack.Messaging
 
         public void Publish<T>(T messageBody)
         {
-            factory.PublishMessage(QueueNames<T>.In, new Message<T>(messageBody));
+            var message = messageBody as IMessage;
+            if (message != null)
+            {
+                Publish(message.ToInQueueName(), message);
+            }
+            else
+            {
+                Publish(new Message<T>(messageBody));
+            }
         }
 
         public void Publish<T>(IMessage<T> message)
@@ -25,29 +34,79 @@ namespace ServiceStack.Messaging
             factory.PublishMessage(QueueNames<T>.In, message);
         }
 
-        public void Publish(string queueName, byte[] messageBytes)
+        public void Publish(string queueName, IMessage message)
         {
+            var messageBytes = message.ToBytes();
             factory.PublishMessage(queueName, messageBytes);
         }
 
-        public void Notify(string queueName, byte[] messageBytes)
+        public void SendOneWay(object requestDto)
         {
+            Publish(MessageFactory.Create(requestDto));
+        }
+
+        public void SendOneWay(string queueName, object requestDto)
+        {
+            Publish(queueName, MessageFactory.Create(requestDto));
+        }
+
+        public void SendAllOneWay<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            if (requests == null) return;
+            foreach (var request in requests)
+            {
+                SendOneWay(request);
+            }
+        }
+
+        public void Notify(string queueName, IMessage message)
+        {
+            var messageBytes = message.ToBytes();
             factory.PublishMessage(queueName, messageBytes);
         }
 
-        public byte[] GetAsync(string queueName)
+        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
-            return factory.GetMessageAsync(queueName);
+            var startedAt = DateTime.UtcNow.Ticks; //No Stopwatch in Silverlight
+            var timeOutMs = timeOut == null ? -1 : (long)timeOut.Value.TotalMilliseconds;
+            while (timeOutMs == -1 || timeOutMs >= new TimeSpan(DateTime.UtcNow.Ticks - startedAt).TotalMilliseconds)
+            {
+                var msg = GetAsync<T>(queueName);
+                if (msg != null)
+                    return msg;
+            }
+
+            throw new TimeoutException("Exceeded elapsed time of {0}ms".Fmt(timeOutMs));
         }
 
-        public string WaitForNotifyOnAny(params string[] channelNames)
+        public IMessage<T> GetAsync<T>(string queueName)
         {
-            throw new NotImplementedException();
+            return factory.GetMessageAsync(queueName)
+                .ToMessage<T>();
         }
 
-        public byte[] Get(string queueName, TimeSpan? timeOut)
+        public void Ack(IMessage message)
         {
-            throw new NotImplementedException();
+        }
+
+        public void Nak(IMessage message, bool requeue, Exception exception = null)
+        {
+            var queueName = requeue
+                ? message.ToInQueueName()
+                : message.ToDlqQueueName();
+
+            Publish(queueName, message);
+        }
+
+        public IMessage<T> CreateMessage<T>(object mqResponse)
+        {
+            return (IMessage<T>) mqResponse;
+        }
+
+
+        public string GetTempQueueName()
+        {
+            return QueueNames.GetTempQueueName();
         }
 
         public void Dispose()

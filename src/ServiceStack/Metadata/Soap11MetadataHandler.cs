@@ -1,19 +1,18 @@
 using System;
-using ServiceStack.Text;
 using ServiceStack.Serialization;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {
-	public class Soap11MetadataHandler : BaseSoapMetadataHandler
-	{
+    public class Soap11MetadataHandler : BaseSoapMetadataHandler
+    {
         public override Format Format { get { return Format.Soap11; } }
 
-		protected override string CreateMessage(Type dtoType)
-		{
-			var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
-			var xml = DataContractSerializer.Instance.Parse(requestObj, true);
-			var soapEnvelope = string.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
+        protected override string CreateMessage(Type dtoType)
+        {
+            var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
+            var xml = DataContractSerializer.Instance.Parse(requestObj, true);
+            var soapEnvelope = string.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <soap:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:soap=""http://schemas.xmlsoap.org/soap/envelope/"">
     <soap:Body>
 
@@ -21,10 +20,10 @@ namespace ServiceStack.Metadata
 
     </soap:Body>
 </soap:Envelope>", xml);
-			return soapEnvelope;
-		}
+            return soapEnvelope;
+        }
 
-        protected override void RenderOperation(System.Web.UI.HtmlTextWriter writer, IHttpRequest httpReq, string operationName, string requestMessage, string responseMessage, string metadataHtml)
+        protected override void RenderOperation(System.Web.UI.HtmlTextWriter writer, IRequest httpReq, string operationName, string requestMessage, string responseMessage, string metadataHtml)
         {
             var operationControl = new Soap11OperationControl
             {
@@ -49,5 +48,5 @@ namespace ServiceStack.Metadata
 
             operationControl.Render(writer);
         }
-	}
+    }
 }

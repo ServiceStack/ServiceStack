@@ -8,25 +8,25 @@ namespace ServiceStack.DataAnnotations
         public object Maximum { get; private set; }
         public Type OperandType { get; private set; }
 
-        public RangeAttribute(int min, int max)
+        public RangeAttribute(int minimum, int maximum)
         {
             OperandType = typeof(int);
-            Minimum = min;
-            Maximum = max;
+            Minimum = minimum;
+            Maximum = maximum;
         }
 
-        public RangeAttribute(double min, double max)
+        public RangeAttribute(double minimum, double maximum)
         {
             OperandType = typeof(double);
-            Minimum = min;
-            Maximum = max;
+            Minimum = minimum;
+            Maximum = maximum;
         }
 
-        public RangeAttribute(Type type, string min, string max)
+        public RangeAttribute(Type type, string minimum, string maximum)
         {
             OperandType = type;
-            Minimum = min;
-            Maximum = max;
+            Minimum = minimum;
+            Maximum = maximum;
         }
     }
 }

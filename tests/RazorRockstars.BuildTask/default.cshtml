@@ -1,0 +1,888 @@
+﻿@inherits ViewPage
+
+@{
+    ViewBag.Title = "Razor Rockstars";
+}
+<style type="text/css">
+    body {
+        font-size: 120%;
+        line-height: 120%;
+        background: #e6e6e6 url(/img/rip_jobs.png);
+        background-attachment: fixed;
+    }
+    #preview {
+        font-size: 13px;
+        line-height: 18px;
+    }
+    #page {
+        border-top: 2px solid #BDBEC0;
+        background: #fff url(/img/title-bg.png) no-repeat 0 5px;
+    }
+    #ss-link {
+        position: absolute;
+        display: block;
+        width: 450px;
+        height: 100px;
+        margin: 0 0 0 -30px;
+    }
+    a {
+        color: #093;
+    }
+    h1 {
+        color: seagreen;
+    }
+    h3 {
+        color: skyblue;
+        color: #666;
+    }
+    #visual-sitemap {
+        float: right;
+        width: 220px;
+        margin: 0 -90px 0 0;
+        padding: 0 0 0 48px;
+    }
+    #visual-sitemap a {
+        display: block;
+        margin: 20px 0 0 0;
+        line-height: 0;
+        box-shadow: 0 3px 8px rgba(100, 100, 100, 0.3);
+    }
+    #visual-sitemap a.dead:hover {
+        background: rgba(255,170,170,.5);
+        background: rgba(255,255,204,.5);
+    }
+    #visual-sitemap a.alive:hover {
+        background: rgba(170,255,170,.5);
+    }
+    #visual-sitemap img {
+        padding: 5px;
+        width: 150px;
+    }
+    #features li {
+        line-height: 22px;
+    }
+    .preview {
+        padding: 5px;
+        box-shadow: 0 3px 8px rgba(100, 100, 100, 0.3);
+    }
+    ul {
+        list-style-type: none;
+    }
+    li {
+        font-weight: bold;    
+    }
+    li ul li {
+        font-weight: normal;
+    }
+    #routes {
+        margin: 0 0 0 15px;
+    }
+    #routes dt {
+        width: 150px;
+    }
+    pre {
+        background-color: #F8F8F8;
+        border: 1px solid #CCC;
+        font-size: 13px;
+        line-height: 19px;
+        overflow: auto;
+        border-radius: 3px;
+    }
+    ul.urls li {
+        font-weight: normal;
+    }
+    ul.urls li a {
+        width: 400px;
+        display: inline-block;        
+    }
+    .nuget-badge code {
+        background-color: #202020;
+        border: 4px solid #c0c0c0;
+        border-radius: 5px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        box-shadow: 2px 2px 3px #6e6e6e;
+        color: #e2e2e2;
+        display:block;
+        font: 1.5em 'andale mono', 'lucida console', monospace; 
+        line-height: 1.5em;
+        overflow: auto;
+        padding: 15px; 
+    }
+</style>
+<div id="page">
+  	<a href="http://github.com/ServiceStack/RazorRockstars/">
+		<img style="position:absolute;top:0;right:0;border:0;z-index:1031" 
+			 src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" 
+             alt="Fork me on GitHub">
+	</a>  
+      
+     <div id="visual-sitemap">
+         <a class="dead" href="/stars/dead/cobain"><img src="/img/thumb-05.jpg" /></a>
+         <a class="alive" href="/stars/alive/grohl"><img src="/img/thumb-01.jpg" /></a>
+         <a class="dead" href="/stars/dead/hendrix"><img src="/img/thumb-06.jpg" /></a>
+         <a class="alive" href="/stars/alive/vedder"><img src="/img/thumb-02.jpg" /></a>
+         <a class="dead" href="/stars/dead/jackson"><img src="/img/thumb-07.jpg" /></a>
+         <a class="alive" href="/stars/alive/springsteen"><img src="/img/thumb-03.jpg" /></a>
+         <a class="dead" href="/stars/dead/presley"><img src="/img/thumb-09.jpg" /></a>
+         <a class="alive" href="/stars/alive/love"><img src="/img/thumb-04.jpg" /></a>
+         <a class="dead" href="/stars/dead/joplin"><img src="/img/thumb-08.jpg" /></a>
+     </div>
+
+    <a id="ss-link" href="http://mono.servicestack.net"></a>
+
+    <h2 style="padding-top: 220px">ServiceStack's new HTML powers - the website framework</h2>
+    <p>
+        Razor Rockstars is a <a href="http://mono.servicestack.net">ServiceStack</a> demo website 
+        showcasing ServiceStack's new MVC Razor Engine support and its enriched HTML story 
+        with multiple view engine support and No Controller / No Ceremony development options.
+        In many cases we've gone beyond what MVC provides with many new and natural features 
+        optimized for developer happiness, fast iteration times and run-time performance, 
+        putting the fun back into .NET / Mono web development!
+    </p>
+    
+    <a name="install"></a>
+    <h2>Install via NuGet</h2>  
+    <p>
+        ServiceStack's Razor ViewEngine is an <b>optional .NET 4.0 add-on</b> that's self-contained 
+        within the
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Plugins">RazorFormat plugin</a>
+        which can be easily added to any <b>empty ASP.NET or Console Application</b> project via NuGet with:
+    </p>
+    
+    <div class="nuget-badge">
+        <p>
+            <code>PM&gt; Install-Package ServiceStack.Razor</code>
+        </p>
+    </div>    
+
+    <p>    
+        Once added to your project, opt-in to enable the Razor feature in your AppHost with:
+    </p>
+    
+    <pre><code>
+    Plugins.Add(new RazorFormat());
+    </code></pre>
+     
+    <img class="preview" src="/img/markup-impl.png" width="200" height="179" align="right" alt="Source code embedded in all pages" />
+    <h3>All pages includes the code and markup used to render itself</h3>
+    <p>
+        To make it easier to explore all features on this site and to provide a better idea of how 
+        it all fits together, all pages include gists of the source code used to render itself. 
+        Source code for this entire website is in the 
+        <a href="https://github.com/ServiceStack/RazorRockstars">RazorRockstars Github project</a>.
+    </p>
+    
+    <a name="features"></a>
+    <h2>Website framework features</h2>
+    <p>
+        We've added features beyond MVC in true ServiceStack-style: by enhancing your existing 
+        services, working as you'd expect it to in a REST service framework:
+    </p>
+    
+    <ul id="features">
+        <li>
+            <a href="#runs-everywhere">Runs Everywhere</a>
+            <ul>
+                <li>In ASP.NET or Self-host, first-class cross-platform support on .NET / Mono runtimes</li>
+            </ul>
+        </li>
+        <li>
+            <a href="#easy">Nothing to learn</a>
+            <ul>
+                <li>Invisible API - just you and your IOC</li>
+                <li>All services, filters, validators are auto-wired</li>
+                <li>Services are implemented with ideal, untainted C#</li>
+            </ul>
+        </li>
+        <li>
+            <a href="#complete-stack">A Complete Web + REST Services Stack</a>            
+            <ul>
+                <li>Complete replacement for ASP.NET MVC and Web API</li>
+                <li>Same service re-useable within HTML/JSON/XML/CSV/JSV/SOAP REST, RPC and MQ services</li>
+                <li>HTML format supports multiple pluggable view engines</li>
+                <li>Include Partials from other view engines</li>
+            </ul>
+        </li>
+        <li>
+            <a href="#unified-stack">One simple and unified HTTP stack</a>            
+            <ul>
+                <li>HTML format is just another Content-Type</li>
+                <li>Add HTML views to existing services</li>
+                <li>Change Views and Layout templates at runtime</li>
+            </ul>
+        </li>
+        <li>
+            <a href="#no-ceremony">The No Ceremony option</a>            
+            <ul>
+                <li>Dynamic pages without controllers</li>
+                <li>Pretty urls by default (no custom Routes needed)</li>
+                <li>Default pages for directories</li>
+                <li>Keep all views and their assets together</li>
+                <li>Cascading Layout templates</li>
+            </ul>
+        </li>
+        <li>
+            <a href="#smart-views">Smart View Pages</a>
+            <ul>
+                <li>Pages with typed View Models</li>
+                <li>Pages with dynamic View Models</li>
+                <li>Access IOC dependencies directly in Views</li>
+                <li>Easily configure custom error pages in code</li>
+            </ul>
+        </li>
+        <li>
+            <a href="#markdown">Markdown built-in</a>
+            <ul>
+                <li>Maintain Content in Markdown (ideal for Content)</li>
+                <li>Include Partial Markdown views in Razor pages</li>
+                <li>Build entire website pages using just Markdown Razor + static _Layout.shtml templates</li>
+                <li>Provide access to 'Markdown only' content</li>
+            </ul>
+        </li>
+        <li>
+            <a href="#optimized-for-dev">Optimized for developer productivity</a>            
+            <ul>
+                <li>Great performance, Optimized for run-time and iteration times</li>        
+                <li>Automatic reload of modified views, layout templates and partials (in Debug mode)</li>
+            </ul>
+        </li>
+        <li>
+            <a href="#future">Future developer productivity enhancements</a>            
+            <ul>
+                <li>Optimizing for Single Page Apps</li>
+                <li>Hybrid Dynamic Web + Typed Services Stack - Best of both worlds</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <a name="runs-everywhere"></a>
+    <h2>Runs Everywhere</h2>
+    <p>
+        Like the rest of ServiceStack, you can create websites and REST services in any host on any platform, e.g:
+    </p>
+    <ul>
+        <li>Any ASP.NET host</li>
+        <li>A Stand-alone, self-hosted HttpListener with external views</li>
+        <li>A Stand-alone, self-hosted HttpListener with embedded Razor views in your ConsoleHost.exe</li>
+        <li>A Stand-alone Windows Service</li>
+        <li><a href="http://stackoverflow.com/a/12188358/85785">All the above on Linux with Mono</a></li>
+    </ul>
+   
+    <h3>Live ASP.NET and Self-Hosting demos</h3>
+    <ul class="urls">
+        <li>
+            <a href="http://razor.servicestack.net">razor.servicestack.net</a>
+            ASP.NET Hosted live demo powered by Linux / Nginx / MonoFastCGI
+        </li>
+        <li>
+            <a href="http://razor-console.servicestack.net">razor-console.servicestack.net</a>
+            Self-Hosted Console Application hosted behind Nginx Reverse Proxy
+        </li>
+    </ul>
+    
+    <h4>Live Demos are Developed on VS.NET and Deployed to Linux</h4>
+    <p>
+        All <a href="http://mono.servicestack.net">servicestack.net</a> demos are developed on
+        Windows with VS.NET and are git-deployed to the same
+        <a href="http://www.hetzner.de/en/hosting/produkte_vserver/vq19">Ubuntu vServer</a> with 
+        <a href="http://stackoverflow.com/a/12188358/85785">Nginx / MonoFastCGI</a>.
+    </p>
+   
+    <p>
+        Both the 
+        <a href="https://github.com/ServiceStack/RazorRockstars/tree/master/src/RazorRockstars.WebHost">ASP.NET Razor Rockstars</a> 
+        and the 
+        <a href="https://github.com/ServiceStack/RazorRockstars/tree/master/src/RazorRockstars.SelfHost">Self-Hosted replica</a>
+        are identical except the 
+        <a href="https://github.com/ServiceStack/RazorRockstars/blob/master/src/RazorRockstars.SelfHost/AppHost.cs#L14">
+            SelfHost AppHost inherits from AppHostHttpListenerBase</a> and all its assets have the build action set to <b>Copy if Newer</b>
+        so they're copied to the <b>/bin</b> directory after each build making it suitable for xcopyable deployment. 
+    </p>
+   
+    <h4>Windows Service</h4>
+    <p>
+        As we expect it to be a popular use-case we've added a version of 
+        <a href="https://github.com/ServiceStack/RazorRockstars/tree/master/src/RazorRockstars.WinService">
+            Razor Rockstars running inside a <b>Windows Service</b></a>
+        complete with install.bat / uninstall.bat Windows Service util scripts.
+    </p>
+
+    <a name="easy"></a>
+    <h2>Nothing to learn</h2>
+    <h3>Invisible API - just you and your IOC</h3>
+    <p>
+        One of ServiceStack's core objectives is to retain an invisible API that gets out of your way.
+        The ServiceStack service itself is a classic example, it's just a 
+        <a href="https://github.com/ServiceStack/RazorRockstars/blob/master/src/RazorRockstars.WebHost/RockstarsService.cs#L33">simple C# class</a> auto-wired with your registered dependencies that accepts any user-defined Request DTO and 
+        lets you return any object which is automatically serialized into the expected Response Content-Type. 
+        Composable and re-usable functionality can be applied to all your services via 
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Request-and-response-filters">Request / Response Filters</a>, 
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Filter-attributes">Filter Attributes</a>, 
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Validation">Validators</a> or by extending a common base class -
+        all of which get auto-wired with your registered dependencies. Even Razor views have access to your IOC dependencies.
+    </p>
+    <p>
+        You retain complete control over the Request DTO, Implementation and Response - added features simply enhance your existing 
+        models and services. We refer to this style as <b>starting from ideal C#, and project-out</b> and is one of the key approaches 
+        we use to promote a frictionless dev workflow, i.e. instead of having your C# code bind to a foreign API abstraction, ServiceStack builds functionality around your untainted C# classes and DTOs (unhindered by artificial APIs). 
+        This makes your logic more re-usable and is how any new feature we add to the framework is immediately able to work with your 
+        existing services without any code-changes required.
+        E.g. you can code as you would normally and throw C# Exceptions and the ideal HTTP Response gets emitted, you also have access to 
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Architecture-overview">rich fluent validation</a>         
+        that supports returning typed structured error responses back to C# clients.
+    </p>
+    
+    <h3>Include Partials from other view engines</h3>
+    <p>
+        Unlike many web frameworks, ServiceStack lets you include Partial views from other registered view engines.
+        This is ideal for Content heavy pages where you can use MVC Razor format for a precise layout whilst maintaining
+        the content of your dynamic pages in Markdown. 
+    </p>
+    <p>
+        All <a href="/stars/dead/cobain">Dead</a> and <a href="/stars/alive/grohl">Alive</a> individual Rockstar pages are maintained in this way.
+    </p>
+
+    <a name="complete-stack"></a>
+    <h2>A Complete Web + REST Services Stack</h2>
+    <p>
+        The new Razor and multiple HTML ViewEngine support now transforms ServiceStack from a Web Services framework to a complete 
+        Website + REST/SOAP/MQ services stack which provides a clean replacement for MVC, WCF or WebApi.
+    </p>
+    <p>
+        This is a clean-break from the layers of legacy frameworks that have been added to ASP.NET over the years. 
+        We've made everything simpler by removing all existing ASP.NET layers and xml-encumered providers added 
+        on top of IHttpHandler's since .NET 2.0 and replaced them with clean, testable code-first providers based 
+        on urls and clean POCOs - all working seamlessly together.
+    </p>
+
+    <h3>HTML format supports multiple pluggable view engines</h3>
+    <p>
+        HTML support works just as you would expect it to exist on a REST service framework - 
+        you get to re-use your existing web service implementation where HTML is just another Content-Type: 
+    </p>
+    <p style="text-align:center;padding:10px;">
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Architecture-overview">
+            <img class="preview" src="/img/architecture-htmlformat.png" alt="ServiceStack Architecture" /></a>
+    </p>
+    <p>
+        ServiceStack supports multiple view engines out-of-the-box: By default 
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/HTML5ReportFormat">HtmlReport</a> and 
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Markdown-Razor">Markdown Razor</a> 
+        is pre-registered, whilst Razor support can be <a href="#install">installed via NuGet</a>.
+    </p>
+
+    <p>
+        When the client requests HTML Content-Type, ServiceStack will cycle through all registered view engines 
+        to find a matching view, if no matches are found the 
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/HTML5ReportFormat">HtmlReport</a>
+        is used as a fallback which provides a readable and semantic HTML layout letting you visualize all the 
+        data returned from your web service at a glance.
+    </p>
+    
+    <a name="unified-stack"></a>
+    <h2>One simple and unified HTTP stack</h2>
+    <p>
+        ServiceStack has a single, simple unified HTTP stack. There is no duplicate or supplementary 
+        functionality that only works for HTML vs Services. Everything is kept simple: 
+        There is 1 set of Routes, 1 way to create a Service, 1 set of Request / Response filters, 1 Validation model.
+        All of ServiceStack's plugins and providers work equally well across all services 
+        and can even be shared from within MVC / WebForms hybrid solutions.
+    </p>
+    <h3>Add HTML views to existing services</h3>
+    <p>
+        The benefits of this are prominent, you only have a single implementation for all your Mobile, 
+        Desktop or Web Browser clients. By default, your clean C#-only services is accessible via 
+        HTML, JSON, XML, CSV, JSON, SOAP, ProtoBuf and MQ endpoints - all with no effort.
+    </p>
+    <img class="preview" src="/img/rockstars-view.png" align="right" style="margin-left: 20px;" alt="Solution view of Rockstars page" />
+    <p>
+        A live example of this is the 
+        <a href="https://github.com/ServiceStack/RazorRockstars/blob/master/src/RazorRockstars.WebHost/RockstarsService.cs">RockstarsService.cs</a>
+        which is available by any of the defined custom routes, e.g:
+    </p>
+    <dl id="routes">
+        <dt><a href="/rockstars">/rockstars</a></dt>
+        <dd>
+            <a href="/rockstars?format=html">html</a>
+            <a href="/rockstars?format=json">json</a>
+            <a href="/rockstars?format=xml">xml</a>
+            <a href="/rockstars?format=csv">csv</a>
+            <a href="/rockstars?format=jsv">jsv</a>
+        </dd>
+        <dt><a href="/rockstars/1">/rockstars/1</a></dt>
+        <dd>
+            <a href="/rockstars/1?format=html">html</a>
+            <a href="/rockstars/1?format=json">json</a>
+            <a href="/rockstars/1?format=xml">xml</a>
+            <a href="/rockstars/1?format=csv">csv</a>
+            <a href="/rockstars/1?format=jsv">jsv</a>
+        </dd>
+        <dt><a href="/rockstars/aged/27">/rockstars/aged/27</a></dt>
+        <dd>
+            <a href="/rockstars/aged/27?format=html">html</a>
+            <a href="/rockstars/aged/27?format=json">json</a>
+            <a href="/rockstars/aged/27?format=xml">xml</a>
+            <a href="/rockstars/aged/27?format=csv">csv</a>
+            <a href="/rockstars/aged/27?format=jsv">jsv</a>
+        </dd>
+    </dl>
+    <p>
+        When viewed in a browser it will return the HTML output generated by the 
+        <a href="https://github.com/ServiceStack/RazorRockstars/blob/master/src/RazorRockstars.WebHost/Views/Rockstars.cshtml"><b>Rockstars.cshtml</b></a> view 
+        embedded inside the specified 
+        <a href="https://github.com/ServiceStack/RazorRockstars/blob/master/src/RazorRockstars.WebHost/Views/Shared/HtmlReport.cshtml"><b>HtmlReport.cshtml</b></a> template
+        using the model populated by the 
+        <a href="https://github.com/ServiceStack/RazorRockstars/blob/master/src/RazorRockstars.WebHost/RockstarsService.cs"><b>RockstarsService.cs</b></a>
+    </p>
+
+    <p>
+        Unlike MVC (which has a convention for views based on the name of the controller), ServiceStack's view selection 
+        is based on the name of the Response or Request model (DTO) returned. E.g. If your Service returns a 
+        <b>RockstarsResponse</b> then we first look for a view of the same name as the Request DTO called 
+        <b>Rockstars.cshtml</b> followed by the Response DTO name <b>RockstarsResponse.cshtml</b> 
+        (in all registered view engine extensions).
+    </p>
+    <p>
+        As ServiceStack requires Request DTO's to be unique, you are free to layout the views in 
+        any logical file system structure you wish under the <b>/Views</b> folder and are not forced into any
+        existing MVC /Views/ControllerName/ViewName convention.
+    </p>
+    
+    <h3>Change Views and Layout templates at runtime</h3>
+    <p>
+        The above convention is overrideable where you can change both what View and Layout Template is used at runtime by
+        returning your Response inside a decorated <b>HttpResult</b>:
+    </p>
+    
+    <pre><code>
+    return new HttpResult(dto) {
+        View = {viewName},
+        Template = {layoutName},
+    };
+    </code></pre>
+    
+    <p>
+        This is useful whenever you want to display the same page in specialized Mobile and Print Preview website templates.
+        You can also let the client change what View and Template gets used by 
+        <a href="https://github.com/ServiceStack/RazorRockstars/blob/master/src/RazorRockstars.WebHost/RockstarsService.cs#L32">attrubuting your service</a> 
+        with the 
+        <a href="https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ClientCanSwapTemplatesAttribute.cs">[ClientCanSwapTemplates]</a> 
+        Filter:
+    </p>
+
+    <pre><code>
+    [ClientCanSwapTemplates]
+    public class RockstarsService : RestServiceBase<Rockstars> { ... }
+    </code></pre>
+    
+    <p>
+        This attribute allows the client to change what View gets used with the <b>View</b> and <b>Template</b> 
+        QueryString or FormData Request Params. A live example of this feature is used to change the 
+        <a href="/rockstars">/rockstars</a> page:        
+    </p>
+    
+    <ul class="urls">
+        <li><a href="/rockstars?View=AngularJS">/rockstars?View=AngularJS</a> Use an AngularJS View with client-side templating</li>
+        <li><a href="/rockstars?Template=SimpleLayout">/rockstars?Template=SimpleLayout</a> Change Layout Template used</li>
+        <li><a href="/rockstars?View=AngularJS&amp;Template=SimpleLayout">/rockstars?View=AngularJS&amp;Template=SimpleLayout</a> Change View and Template used</li>
+    </ul>
+
+    <a name="no-ceremony"></a>
+    <h2>The No Ceremony option - Dynamic pages without Controllers</h2>
+    <p>
+        Many times (especially for read-only pages) Controllers add un-necessary overhead and just calling your 
+        dynamic Razor (or Markdown) pages directly will promote more cohesive pages requiring less code. Especially
+        if you're already encapsulating your data access logic behind domain services and repositories - the overhead
+        of a controller and action methods just adds un-necessary noise, that ends up being harder to test than pure C# code.
+    </p>
+    
+    <h3>Pretty urls by default (no custom Routes needed)</h3>
+    <p>
+        ServiceStack has great support for this story where it lets you omit the 
+        <b class="rzr">.cshtml</b> or <b class="md">.md</b>
+        page extensions and it still executes the desired page but with a pretty url.
+        When calling dynamic pages with .ext (as done by VS.NET when hitting F5 inside a page)
+        it is automatically re-directed to the pretty url version (saving a YSOD you might be used to with MVC):
+    </p>
+    
+    <ul class="urls">
+        <li><a href="/stars/alive/Grohl.cshtml">/stars/alive/Grohl.cshtml</a> -> /stars/alive/Grohl</li>
+    </ul>
+    
+    <h3>Default pages for directories</h3>
+    
+    <ul class="urls">
+        <li><a href="/stars/alive/Vedder/default.cshtml">/stars/alive/Vedder/default.cshtml</a> -> /stars/alive/Vedder/</li>
+    </ul>
+    <p>
+        The Above url shows the behaviour when requesting the default document <b>default.cshtml</b> 
+        which gets redirected to the alias url of its parent directory.
+    </p>
+
+    <img class="preview" src="/img/grohl-vs-vedder.png" align="right" style="margin-left:20px;" alt="Single vs Multiple directories" />
+    <p>
+        The Dave Grohl and Eddie Vedder content pages show different ways of structuing the same page components whilst retaining the same url. 
+        The Dave Grohl example shows how you can keep all Rockstar pages in a single directory with different names for each
+        Grohl.cshtml razor page and GrohlContent.md partial markdown view.
+    </p>
+
+    <p>
+        Eddie Vedder (and all the other Rockstars) use multiple sub directories to maintain their dynamic content pages
+        and the different components that make up each page. Regardless of which layout you go with, you can still access
+        the each page with the same case-insensitive pretty url:
+    </p>
+
+    <ul class="urls">
+        <li><a href="/stars/alive/grohl">/stars/alive/grohl</a></li>
+        <li><a href="/stars/alive/vedder">/stars/alive/vedder</a></li>
+    </ul>
+    
+    <h3>Keep all views and their assets together</h3>
+    <p>
+        Despite both options yielding the same result, whenever you have many similar content pages it becomes a good idea 
+        to adopt the 'multiple sub-directory' convention which apart from giving each page more symmetry, it will allow
+        you to group all the websites dynamic and static content, images and css within the same folder that makes 
+        copying, updating and deploying as easy as dragging and dropping a folder.  
+    </p>
+    
+    <img class="preview" src="/img/cascading-layouts.png" align="right" style="margin-left:20px;" alt="Cascading Layout Templates" />
+    <h3>Cascading Layout templates</h3>
+    <p>
+        Cascading layout templates is our simpler solution for MVC Areas, basically if you don't specify a Layout in the
+        Razor page, the <b>_Layout.cshtml</b> that's nearest to the directory where the page is located gets used.
+    </p>
+    <p>
+        E.g. if there is a <b>_Layout.cshtml</b> in the current directory it will use that first, fallbacking to its 
+        parent directory all the way up until it reaches the Root web directory.
+        Finally if there are no _Layout.cshtml templates to be found the default <b>/Views/Shared/_Layout.cshtml</b> will
+        get used. Cascading layout templates is what allows 'dead' and 'alive' Rockstars to share different website templates:
+    </p>
+    
+    <div style="float:left; margin: 0 50px 0 0;">
+        <h4>Rockstars that have passed</h4>
+        <ul>
+            <li><a href="/stars/dead/cobain">/stars/dead/cobain</a></li>
+            <li><a href="/stars/dead/hendrix">/stars/dead/hendrix</a></li>
+            <li><a href="/stars/dead/jackson">/stars/dead/jackson</a></li>
+            <li><a href="/stars/dead/joplin">/stars/dead/joplin</a></li>
+            <li><a href="/stars/dead/presley">/stars/dead/presley</a></li>
+        </ul>
+    </div>
+
+    <div style="float:left;">
+        <h4>Rockstars still Rocking it</h4>
+        <ul>
+            <li><a href="/stars/alive/grohl">/stars/alive/grohl</a></li>
+            <li><a href="/stars/alive/vedder">/stars/alive/vedder</a></li>
+            <li><a href="/stars/alive/springsteen">/stars/alive/springsteen</a></li>
+            <li><a href="/stars/alive/love">/stars/alive/love</a></li>
+        </ul>
+    </div>
+    
+    <b class="clear"></b>
+    
+    <a name="smart-views"></a>
+    <h2>Smart View Pages</h2>
+        
+    <p>
+        One features Controllers have is the ability to inspect the incoming request. 
+        Inside Services, ServiceStack takes care of Request Binding and automatically populates your Request DTO based upon the HTTP Request Params.
+        When calling pages directly (i.e. without Controllers) there are still a few ways to access the incoming HTTP Request data:
+    </p>
+
+    <h3>Pages with typed View Models</h3>    
+    <p>
+        In the same way ServiceStack populates the Request DTO in Services, it will auto populate your View model by in Views when
+        inheriting from the Generic <b>ViewPage&lt;&gt;</b> as base class as seen in 
+        <a href="/TypedModelNoController">/TypedModelNoController</a>:
+    </p>
+
+    <pre><code>
+    @@inherits ViewPage&lt;Rockstars&gt;
+    </code></pre>
+    
+    <p>This will result in the typed <b>@@Model</b> being populated from the HTTP Request params</p>
+
+    <h3>Pages with dynamic View Models</h3>
+    <p>
+        The above solution requires an existing typed Request DTO / Input Model.
+        There's also the option of not requiring a View Model when inheriting from the non-Generic <b>ViewPage</b> as seen in 
+        <a href="/NoModelNoController">/NoModelNoController</a>:
+    </p>
+
+    <pre><code>
+    @@inherits ViewPage
+    </code></pre>
+    
+    <p>
+        In this case <b>@@Model</b> is a DynamicObject where each dynamic access is delegated to <b>IHttpRequest.GetParams()</b> 
+        which looks for each param in the Request's QueryString, FormData, Cookies and Items.
+    </p>
+    
+    <h4>Access Request / Response properties in Views</h4>
+    <p>
+        In addition to the @@Model property, each View also has access to <b>base.Request</b> / <b>base.Response</b> 
+        properties for more fine-grained access to ServiceStack's 
+        <a href="https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.Interfaces/ServiceHost/IHttpRequest.cs">IHttpRequest</a> and 
+        <a href="https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.Interfaces/ServiceHost/IHttpResponse.cs">IHttpResponse</a> 
+        types.
+    </p>
+    
+    <h3>Access IOC dependencies directly in Views</h3>
+    
+    <p>
+        For dynamic views to also fullfill the roles of Controllers they need to be smart, which is why we've enabled 
+        views the ability to resolve your registered IOC dependencies with:
+    </p>
+
+    <pre><code>
+    var provider = Get&lt;IYourProvider&gt;();
+    </code></pre>
+    
+    <p>
+        In addition to accessing IOC debendencies, base classes also provide quick access to the most common providers like 
+        ADO.NET's <b class="db">IDbConnection</b> as well as ServiceStack's clean 
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Sessions">Session</a> and
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Caching">Caching</a> providers.
+    </p>
+    
+    <p>
+        Many Micro ORMs like (
+        <a href="https://github.com/ServiceStack/ServiceStack.OrmLite/">OrmLite</a> and 
+        <a href="http://code.google.com/p/dapper-dot-net">Dapper</a>)
+        provide extension methods on ADO.NET's IDbConnection making it trivial to perform common db tasks. 
+        Here's an example of filtering the results of the Rockstar table with a typed Request Param:
+    </p>
+    
+    <pre><code>
+    var rockstars = Db.Select&lt;Rockstar&gt;(q => q.Age == Model.Age);
+    </code></pre>
+
+    <h3>Easily configure custom error pages in code</h3>
+    <p>
+        Since all common web tasks should be easy to configure, we've made it easy to register your own custom IHttpHandler's
+        for different HTTP Status codes which you can do in your AppHost with:
+    </p>
+
+    <pre><code>
+    SetConfig(new EndpointHostConfig {
+        CustomHttpHandlers = {
+            { HttpStatusCode.NotFound, new RazorHandler("/notfound") }
+        }
+    });
+    </code></pre>
+
+    <p>
+        Which you can test by looking for a Rockstar that doesn't exist on this site, e.g:
+    </p>
+    
+    <ul class="urls">
+        <li><a href="/stars/alive/coldplay">/stars/alive/coldplay</a></li>
+    </ul>
+    
+    <p>
+        This rule tells ServiceStack to execute the <b>/notfound</b> Razor page for all 404 requests. 
+        The page referenced by Razor handler can be any dynamic razor page (i.e. not just a static html page) - 
+        which is extremely useful for Single Page Apps taking advantage of the DOM's history.pushState().
+    </p>
+    
+    <a name="markdown"></a>
+    <h2>Markdown built-in</h2>
+    <p>
+        Another templating language we're especially fond of is <a href="http://daringfireball.net/projects/markdown/">Markdown</a>. 
+        Although as the name suggests it's more of a <b>Mark Down language</b> since it's able to express commonly used HTML elements 
+        used for structuring content down into a simple syntax you may conventionally see published in ascii-only environments 
+        like plain-text email. 
+    </p>
+
+    <h3>Maintain Content in Markdown (ideal for Content)</h3>
+    <p>
+        Markdown's overriding design goal is to be as human readable as possible where markdown text published on its own is still 
+        readable as-is and can be easily written in any text editor, without the need for any Visual HTML designer. 
+        These properties make Markdown the choice language to capture and maintain user content as done in many popular sites 
+        including <a href="http://stackoverflow.com">StackOverflow</a> and <a href="https://github.com">GitHub</a>.
+    </p>
+
+    <h3>Include Partial Markdown views in Razor pages</h3>
+    <p>
+        We loved Markdown and Razor so much that included in ServiceStack is an enhanced version of Markdown with Razor functionality 
+        and Syntax called <a href="http://mono.servicestack.net/docs/markdown/markdown-razor">Markdown Razor</a> which should be
+        instantly familiar to existing Razor users. 
+    </p>
+    
+    <p>
+        As we expect Razor + Markdown to be an increasingly popular combination we've extend <b>@@Html.Partial()</b> support to
+        also embed Partials from different View Engines. This feature lets you embed any Markdown Page as we've done in 
+        each of the <a href="/stars/alive/cobain">content-heavy</a> <a href="/stars/dead/cobain">Rockstar pages</a> using the 
+        standard Razor Partial syntax:
+    </p>
+
+    <pre><code>
+    @@Html.Partial("Content")
+    </code></pre>
+    
+    <p>
+        Which tells ServiceStack to embed a Partial named <b>Content</b> inside the page at that location. 
+        First it will look for a Partial named <b>Content.cshtml</b> followed by a Partial named <b>Content.md</b> 
+        if it reaches the Markdown Razor View Engine. 
+        Initially it searches the current directory, followed by any matching Partials in the <b>/Views/Shared</b> folder.
+    </p>
+
+    <h3>Build entire website pages using just Markdown Razor + static _Layout.shtml templates</h3>
+    <p>
+        Despite it's simple roots, <a href="http://mono.servicestack.net/docs/markdown/markdown-razor">Markdown Razor</a> is a 
+        featured View Engine capable of rendering complete websites as done with the content-heavy (ajax/pushState enhanced)
+        <a href="http://mono.servicestack.net/docs/">servicestack.net/docs/</a> website - written entirely and maintained 
+        using Markdown Razor.
+    </p>
+
+    <h3>Provide access to 'Markdown only' content</h3>
+    <p>
+        Having such deep control over the implementation of each View engine allows us to do interesting things like 
+        being able embed partials from different view engines and allowing you to fetch the text-only Markdown version 
+        of each page by changing the format returned using the 
+        <a href="/stars/dead/cobain/Content?format=text.bare">?format=text.bare</a> query string.
+    </p>
+    
+    <a name="optimized-for-dev"></a>
+    <h2>Optimized for developer productivity</h2>
+    <p>
+        One of the areas where dynamic languages are holding over .NET is with fast iteration times enabling quick dev cycles. 
+        Whilst compilation times increase with every new page and class added to an ASP .NET Web project, 
+        many popular dynamic languages are experimenting with <b>Live Reloading</b> letting them quickly see changes in their browser 
+        after hitting <b>Ctrl+S</b>.
+        Iteration times are one of the areas in most need of TLC in .NET and it's something we aim to optimize as much as possible 
+        without sacrificing run-time performance by maintaining 2 modes: 'Debug' (Development) optimized for start times and a 'Release' 
+        (Deployment) mode optimized for runtime performance. This mode is automatically inferred by ServiceStack on Start-up but is overridable with: 
+    </p>
+
+    <pre><code>
+    SetConfig(new EndpointHostConfig {
+        DebugMode = true,
+    });
+    </code></pre>
+
+    <h3>Great performance, Optimized for run-time and iteration times</h3>
+    <p>
+        MVC Razor is an extremely capable view engine with an elegant syntax, unfortunately it's quite slow to compile where
+        by comparison this basic 
+        <a href="https://raw.github.com/ServiceStack/ServiceStack/master/tests/RazorRockstars.Console.Files/Views/RockstarsRazor.cshtml">Razor Page</a> 
+        is <a href="https://github.com/ServiceStack/ServiceStack/commit/83641a6c5e078a73c7e7606b31beea28f83eae83">
+        <b>39x times slower to compile</b> whilst being <b>1.76x times faster to run</b></a> than the functionaly equivalent 
+        <a href="https://raw.github.com/ServiceStack/ServiceStack/master/tests/RazorRockstars.Console.Files/Views/RockstarsMark.md">Markdown Razor</a> page. 
+        We're huge fans of the rich functionality provided by MVC Razor Format and we also agree  
+        <a href="https://github.com/mythz/ScalingDotNET">performance is one of the most important features</a> but iteration-times also 
+        matters as it has a direct impact on developer productivity and we believe should be given more prominance over 
+        micro-optimizations with large start-up costs as any perf benefits gained can be marginalized behind a good caching strategy. 
+        We continue to develop with this balance in mind and are continually looking to improve start-up times where possible (in DebugMode).
+    </p>
+
+    <h3>Automatic reload of modified views, layout templates and partials (in Debug mode)</h3>
+    <p>
+        The best way to avoid the Start-Up penalty is to avoid having to restart the AppDomain in the first place. So in Debug Mode 
+        we'll also do this where a background file system watcher monitors all pages, partials and Layout templates for modifications 
+        and recompiles and auto-reloads them on the fly, all-ready to deliever instant response time once the page is requested. 
+    </p>
+    
+    <a name="future"></a>
+    <h2>Future developer productivity enhancements</h2>
+    <p>
+        We prefer not to have to deal with these work arounds, but as Razor the de-facto view engine in VS.NET (with its built-in intelli-sense), 
+        it has become the most familiar templating language understood by .NET developers today, so it pays to make the extra effort 
+        as we see it will likely remain the most popular view engine developers use. One area we'll be exploring is maintaining
+        binary caches of Razor templates which would survive beyond AppDomain restarts (if that's at all possible).
+    </p>
+    <p>
+        Another way to improve start times is to create a new HTML-only version (based on Markdown Razor's core) and replicate much 
+        of MVC Razor's functionality. A new implementation in this way stands to be even faster than Markdown Razor since it avoids the Markup-to-HTML penalty.
+        More importantly being in control of our own implementation allows us to be more innovative and lets us borrow pages 
+        from other languages play books. <br/>
+        i.e. it could be nicer if Razor syntax was more declarative and less mechanical where instead of 
+        <b>@@RenderBody()</b> you could just have <b>[body]</b> and still retain the same syntax to include any <b>[section]</b>, 
+        <b>[partial]</b> or <b>[var]</b> etc. This would be friendlier and easier for content editors to grok as they don't need to remember the 
+        implementation mechanics and can just declare their intent. Here are some more potential examples:
+    </p>
+    
+    <pre><code>    
+    [body]
+    [twitter-feed for:ServiceStack size:10]
+    [sidebar with:links,ads]
+
+    [foreach link in links]
+        &lt;a href="[link url]"&gt;[link name]&lt;/a&gt;
+    [/foreach]
+    </code></pre>
+
+    
+    <a href="http://angularjs.org"><img src="/img/AngularJS-large.png" align="right" style="padding:10px 20px 20px 20px; width:268px;" /></a>
+    <h3>Optimizing for Single Page Apps</h3>
+    <p>
+        One way we're currently improving the situation (that also provides a better UX for end-users) has been focusing on making 
+        <a href="http://mono.servicestack.net/100k-downloads/#spa-optimized">ServiceStack the ideal platform for Single Page Apps</a>
+        - to this end, we're already shipping many <a href="http://mono.servicestack.net/100k-downloads/#spa-optimized">best-of-class features</a> 
+        and since Single Page Apps rely on client-side views for rendering, they escape the .NET compilation tax. 
+    <p>
+            
+    </p>
+        With the latest release of WebStorm, JetBrains gives us a glimpse into the 
+        <a href="http://www.youtube.com/watch?v=wCVwdvufTds&feature=youtu.be">development experience of Live Editing</a> 
+        where they showcase the instant feedback loop possible when developing a rich client-side AngularJS App With WebStorm and Chrome.
+    </p>
+    <p>
+        Up until this point we've been recommending using a 
+        <a href="https://github.com/ServiceStack/SocialBootstrapApi">MVC + ServiceStack hybrid template for Single Page Apps</a>.
+        With this release of MVC Razor support, ServiceStack is now a complete and we're able to simplify the stack by removing 
+        the dependency on MVC and will begin shipping new Single Page App templates for the most popular client-side frameworks, with:  
+        <a href="http://angularjs.org">AngularJS</a> and <a href="http://backbonejs.org">Backbone.js</a> planned for initially. 
+        We'll continue to improve this story and ensure first-class support for advanced Web App features like history.pushState(),
+        which has always been a bit awkward to do in MVC.
+    </p>
+    
+    <a href="http://www.dartlang.org"><img src="/img/dart-logo.png" align="right" style="padding:10px 20px 10px 20px;" /></a>    
+    <h3>Hybrid Dynamic Web + Typed Services Stack - Best of both worlds</h3>
+    <p>
+        Another option we're considering is to provide a hybrid Web + Web Services approach with tight-integration between ServiceStack 
+        and one of the dynamic languages with a focus on fast iteration times and Live Reloading enabled.
+        We still believe in typed an end-to-end framework remains the 
+        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Advantages-of-message-based-web-services">best long-term solution for web services</a>.
+        But with the ASP.NET packaging model the way it is and the slow compilation times of .NET, it's becoming increasingly hard to 
+        ignore the productivity benefits being had in other dynamic languages.
+    </p>
+    
+    <p>
+        So far Google's new language for the web <a href="http://www.dartlang.org">Dart</a> is looking like a stand-out here that should appeal 
+        to C# devs thanks to its familiar syntax (we like it because it supports the same platforms ServiceStack does :). 
+        <a href="http://programmers.stackexchange.com/a/164304/14025">Dart already holds a number of advantages over JavaScript</a>        
+        and the Dart team and Chrome engineers have been working closely together to improve the integration between Dart IDE and Chrome 
+        where they're actively releasing <a href="http://www.dartlang.org/dartium/">new custom builds of Chrome</a> that allow debugging of 
+        native Dart from inside both Dartium and the Dart IDE. We're going to explore this story further and if it looks to provide
+        productivity benefits we'll produce a fast native comms pipeline between ServiceStack and the Dart VM runtime. 
+        We have already developed <a href="https://github.com/mythz/DartJsonClient">great HTTP integration with ServiceStack</a> 
+        with one of the most fluent, intuitive API's you're likely to see in a 
+        <a href="https://github.com/mythz/DartJsonClient">Json Client</a>.
+    </p>
+
+    <b class="clear"></b>
+</div>
+ 
+ 
+<div id="preview">
+    <h1>Implementation</h1>
+    
+    <h3><b>AppHost</b> <a href="https://github.com/ServiceStack/RazorRockstars/blob/master/src/RazorRockstars.WebHost/AppHost.cs">/AppHost.cs</a></h3>
+    <p>
+        In every ServiceStack web service there is a single AppHost which contains all your 
+        services configuration and registration (in code). 
+        The source for the Razor Rockstars AppHost is below, it performs the following things in this order:
+    </p>
+    <ol>
+        <li>Tells ServiceStack which Assemblies to scan for registering existing services</li>
+        <li>Register the MVC Razor Plugin (requires .NET 4.0)</li>
+        <li>Register which DB to use - Razor Rockstars uses OrmLite + Sqlite (32bit/Mono compat)</li>
+        <li>Create the <b class="src">Rockstar</b> table if it doesn't already exist and insert all Seed Data</li>
+        <li>Override ServiceStack's 404 Handler with the <b class="src">/NotFound.cshtml</b> Razor page</li>
+    </ol>
+    <script src="https://gist.github.com/3617557.js"></script>
+
+</div>

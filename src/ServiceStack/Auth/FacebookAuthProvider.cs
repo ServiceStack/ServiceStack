@@ -3,7 +3,6 @@ using System.Net;
 using System.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
@@ -32,8 +31,21 @@ namespace ServiceStack.Auth
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = Init(authService, ref session, request);
+            var httpRequest = authService.Request;
 
-            var code = authService.RequestContext.Get<IHttpRequest>().QueryString["code"];
+            var error = httpRequest.QueryString["error_reason"]
+                ?? httpRequest.QueryString["error"]
+                ?? httpRequest.QueryString["error_code"]
+                ?? httpRequest.QueryString["error_description"];
+
+            var hasError = !error.IsNullOrEmpty();
+            if (hasError)
+            {
+                Log.Error("Facebook error callback. {0}".Fmt(httpRequest.QueryString));
+                return authService.Redirect(session.ReferrerUrl);
+            }             
+        
+            var code = httpRequest.QueryString["code"];
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
@@ -52,12 +64,11 @@ namespace ServiceStack.Auth
                 var contents = accessTokenUrl.GetStringFromUrl();
                 var authInfo = HttpUtility.ParseQueryString(contents);
                 tokens.AccessTokenSecret = authInfo["access_token"];
-                session.IsAuthenticated = true;
-                authService.SaveSession(session, SessionExpiry);
-                OnAuthenticated(authService, session, tokens, authInfo.ToDictionary());
 
-                //Haz access!
-                return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+                session.IsAuthenticated = true;
+                
+                return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
+                    ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1")); //Haz access!
             }
             catch (WebException we)
             {
@@ -85,12 +96,28 @@ namespace ServiceStack.Auth
                 tokens.LastName = obj.Get("last_name");
                 tokens.Email = obj.Get("email");
 
-                LoadUserOAuthProvider(userSession, tokens);
+                if (SaveExtendedUserInfo)
+                {
+                    obj.Each(x => authInfo[x.Key] = x.Value);
+                }
+
+                json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, "picture");
+                obj = JsonObject.Parse(json);
+                var picture = obj.Object("picture");
+                var data = picture != null ? picture.Object("data") : null;
+                if (data != null)
+                {
+                    string profileUrl;
+                    if (data.TryGetValue("url", out profileUrl))
+                        tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+                }
             }
             catch (Exception ex)
             {
                 Log.Error("Could not retrieve facebook user info for '{0}'".Fmt(tokens.DisplayName), ex);
             }
+
+            LoadUserOAuthProvider(userSession, tokens);
         }
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)

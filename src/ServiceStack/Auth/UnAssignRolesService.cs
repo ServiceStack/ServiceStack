@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Web;
@@ -34,7 +35,6 @@ namespace ServiceStack.Auth
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [RequiredRole(RoleNames.Admin)]
     [DefaultRequest(typeof(UnAssignRoles))]
     public class UnAssignRolesService : Service
     {
@@ -42,26 +42,19 @@ namespace ServiceStack.Auth
 
         public object Post(UnAssignRoles request)
         {
+            RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+
             request.UserName.ThrowIfNullOrEmpty();
 
             var userAuth = UserAuthRepo.GetUserAuthByUserName(request.UserName);
             if (userAuth == null)
                 throw HttpError.NotFound(request.UserName);
 
-            if (!request.Roles.IsEmpty())
-            {
-                request.Roles.ForEach(x => userAuth.Roles.Remove(x));
-            }
-            if (!request.Permissions.IsEmpty())
-            {
-                request.Permissions.ForEach(x => userAuth.Permissions.Remove(x));
-            }
-
-            UserAuthRepo.SaveUserAuth(userAuth);
+            UserAuthRepo.UnAssignRoles(userAuth, request.Roles, request.Permissions);
 
             return new UnAssignRolesResponse {
-                AllRoles = userAuth.Roles,
-                AllPermissions = userAuth.Permissions,
+                AllRoles = UserAuthRepo.GetRoles(userAuth).ToList(),
+                AllPermissions = UserAuthRepo.GetPermissions(userAuth).ToList(),
             };
         }
     }

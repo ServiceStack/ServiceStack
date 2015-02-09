@@ -5,16 +5,15 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Serialization
 {
-    public class JsonDataContractSerializer 
+    public partial class JsonDataContractSerializer : IStringSerializer
     {
         public static JsonDataContractSerializer Instance = new JsonDataContractSerializer();
 
-        public ITextSerializer TextSerializer { get; set; }
+        public IStringSerializer TextSerializer { get; set; }
 
-        public static void UseSerializer(ITextSerializer textSerializer)
+        public static void UseSerializer(IStringSerializer textSerializer)
         {
             Instance.TextSerializer = textSerializer;
-            JsonDataContractDeserializer.Instance.TextSerializer = textSerializer;
         }
 
         public bool UseBcl { get; set; }
@@ -22,9 +21,11 @@ namespace ServiceStack.Serialization
         public string SerializeToString<T>(T obj)
         {
             if (TextSerializer != null)
+            {
                 return TextSerializer.SerializeToString(obj);
+            }
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
             if (!UseBcl)
                 return JsonSerializer.SerializeToString(obj);
 
@@ -48,7 +49,7 @@ namespace ServiceStack.Serialization
                 throw new SerializationException("JsonDataContractSerializer: Error converting type: " + ex.Message, ex);
             }
 #else
-                return JsonSerializer.SerializeToString(obj);
+            return JsonSerializer.SerializeToString(obj);
 #endif
         }
 
@@ -56,9 +57,13 @@ namespace ServiceStack.Serialization
         {
             if (TextSerializer != null)
             {
-                TextSerializer.SerializeToStream(obj, stream);
+                var streamSerializer = TextSerializer as IStringStreamSerializer;
+                if (streamSerializer != null)
+                {
+                    streamSerializer.SerializeToStream(obj, stream);
+                }
             }
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
             else if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(obj.GetType());

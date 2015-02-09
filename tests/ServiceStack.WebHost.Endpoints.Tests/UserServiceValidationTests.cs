@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Net;
 using ServiceStack.FluentValidation;
-using ServiceStack.Host;
 using NUnit.Framework;
 using System.Collections;
 using Funq;
-using ServiceStack.Host.Handlers;
-using ServiceStack.Testing;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
@@ -26,16 +23,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         bool ValidAddress(string address);
     }
 
-    public class UserValidator : AbstractValidator<UserValidation>, IRequiresHttpRequest
+    public class UserValidator : AbstractValidator<UserValidation>, IRequiresRequest
     {
         public IAddressValidator AddressValidator { get; set; }
-		public IHttpRequest HttpRequest { get; set; }
+		public IRequest Request { get; set; }
 
         public UserValidator()
         {
 			RuleFor(x => x.FirstName).Must(f =>
 			{
-				if (HttpRequest == null)
+				if (Request == null)
 					Assert.Fail();
 
 				return true;
@@ -65,7 +62,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class UserServiceValidationTests
     {
-        private const string ListeningOn = "http://localhost:82/";
+        private const string ListeningOn = "http://localhost:1337/";
 
         public class UserAppHostHttpListener
             : AppHostHttpListenerBase

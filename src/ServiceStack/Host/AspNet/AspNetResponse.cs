@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Web;
 using ServiceStack.Web;
 
@@ -13,16 +14,16 @@ namespace ServiceStack.Host.AspNet
     {
         //private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseWrapper));
 
-        private readonly HttpResponse response;
+        private readonly HttpResponseBase response;
 
-        public AspNetResponse(HttpResponse response)
+        public AspNetResponse(HttpResponseBase response)
         {
             this.response = response;
             this.response.TrySkipIisCustomErrors = true;
             this.Cookies = new Cookies(this);
         }
 
-        public HttpResponse Response
+        public HttpResponseBase Response
         {
             get { return response; }
         }
@@ -62,10 +63,41 @@ namespace ServiceStack.Host.AspNet
             response.Redirect(url);
         }
 
+        private MemoryStream bufferedStream;
         public Stream OutputStream
         {
-            get { return response.OutputStream; }
+            get { return bufferedStream ?? response.OutputStream; }
         }
+
+        public bool UseBufferedStream
+        {
+            get { return bufferedStream != null; }
+            set
+            {
+                if (value == false)
+                    response.BufferOutput = false;
+
+                bufferedStream = value
+                    ? bufferedStream ?? new MemoryStream()
+                    : null;
+            }
+        }
+
+        private void FlushBufferIfAny()
+        {
+            if (bufferedStream == null)
+                return;
+
+            var bytes = bufferedStream.ToArray();
+            try {
+                SetContentLength(bytes.LongLength); //safe to set Length in Buffered Response
+            } catch {}
+
+            response.OutputStream.Write(bytes, 0, bytes.Length);
+            bufferedStream = new MemoryStream();
+        }
+
+        public object Dto { get; set; }
 
         public void Write(string text)
         {
@@ -75,6 +107,9 @@ namespace ServiceStack.Host.AspNet
         public void Close()
         {
             this.IsClosed = true;
+
+            FlushBufferIfAny();
+
             response.CloseOutputStream();
         }
 
@@ -83,6 +118,8 @@ namespace ServiceStack.Host.AspNet
             this.IsClosed = true;
             try
             {
+                FlushBufferIfAny();
+
                 response.ClearContent();
                 response.End();
             }
@@ -91,6 +128,8 @@ namespace ServiceStack.Host.AspNet
 
         public void Flush()
         {
+            FlushBufferIfAny();
+
             response.Flush();
         }
 
@@ -107,6 +146,15 @@ namespace ServiceStack.Host.AspNet
                 response.Headers.Add("Content-Length", contentLength.ToString(CultureInfo.InvariantCulture));
             }
             catch (PlatformNotSupportedException /*ignore*/) { } //This operation requires IIS integrated pipeline mode.
+        }
+
+        //Benign, see how to enable in ASP.NET: http://technet.microsoft.com/en-us/library/cc772183(v=ws.10).aspx
+        public bool KeepAlive { get; set; }
+
+        public void SetCookie(Cookie cookie)
+        {
+            var httpCookie = cookie.ToHttpCookie();
+            response.SetCookie(httpCookie);            
         }
     }
 }

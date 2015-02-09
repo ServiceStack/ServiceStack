@@ -9,7 +9,7 @@ using ServiceStack.Text;
 namespace ServiceStack.Common.Tests
 {
 	[TestFixture]
-	public class ReflectionUtilTests
+    public class ReflectionUtilTests
 	{
 		public enum TestClassType
 		{

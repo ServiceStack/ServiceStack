@@ -84,5 +84,10 @@ namespace ServiceStack.VirtualPath
         }
 
         protected abstract void Initialize();
+
+        public override string ToString()
+        {
+            return "[{0}: {1}]".Fmt(GetType().Name, RootDirectory.RealPath);
+        }
     }
 }

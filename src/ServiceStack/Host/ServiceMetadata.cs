@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ServiceStack.DataAnnotations;
+using ServiceStack.NativeTypes;
+using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -50,14 +53,23 @@ namespace ServiceStack.Host
                 Routes = new List<RestPath>(),
             };
 
-            this.OperationsMap[requestType] = operation;
-            this.OperationNamesMap[requestType.Name.ToLower()] = operation;
+			this.OperationsMap[requestType] = operation;
+			this.OperationNamesMap[operation.Name.ToLower()] = operation;
+			//this.OperationNamesMap[requestType.Name.ToLower()] = operation;
+			if (responseType != null)
+			{
+				this.ResponseTypes.Add(responseType);
+				this.OperationsResponseMap[responseType] = operation;
+			}
 
-            if (responseType != null)
-            {
-                this.ResponseTypes.Add(responseType);
-                this.OperationsResponseMap[responseType] = operation;
-            }
+            //Only count non-core ServiceStack Services, i.e. defined outside of ServiceStack.dll or Swagger
+            var nonCoreServicesCount = OperationsMap.Values
+                .Count(x => x.ServiceType.Assembly != typeof(Service).Assembly
+                && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerApiService"
+                && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerResourcesService"
+                && x.ServiceType.Name != "__AutoQueryServices");
+
+            LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, nonCoreServicesCount);
         }
 
         public void AfterInit()
@@ -70,6 +82,24 @@ namespace ServiceStack.Host
 
                 operation.Routes.Add(restPath);
             }
+        }
+
+        readonly HashSet<Assembly> excludeAssemblies = new HashSet<Assembly>
+        {
+            typeof(string).Assembly,            //mscorelib
+            typeof(Uri).Assembly,               //System
+            typeof(ServiceStackHost).Assembly,  //ServiceStack
+            typeof(UrnId).Assembly,             //ServiceStack.Common
+            typeof(ErrorResponse).Assembly,     //ServiceStack.Interfaces
+        };
+
+        public List<Assembly> GetOperationAssemblies()
+        {
+            var assemblies = Operations
+                .SelectMany(x => x.GetAssemblies())
+                .Where(x => !excludeAssemblies.Contains(x));
+
+            return assemblies.ToList();
         }
 
         public List<OperationDto> GetOperationDtos()
@@ -89,52 +119,31 @@ namespace ServiceStack.Host
 
         public List<string> GetImplementedActions(Type serviceType, Type requestType)
         {
-            if (typeof(IService).IsAssignableFrom(serviceType))
-            {
-                return serviceType.GetActions()
-                    .Where(x => x.GetParameters()[0].ParameterType == requestType)
-                    .Select(x => x.Name.ToUpper())
-                    .ToList();
-            }
+            if (!typeof(IService).IsAssignableFrom(serviceType))
+                throw new NotSupportedException("All Services must implement IService");
 
-            var oldApiActions = serviceType
-                .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                .Select(x => ToNewApiAction(x.Name))
-                .Where(x => x != null)
+            return serviceType.GetActions()
+                .Where(x => x.GetParameters()[0].ParameterType == requestType)
+                .Select(x => x.Name.ToUpper())
                 .ToList();
-            return oldApiActions;
-        }
-
-        public static string ToNewApiAction(string oldApiAction)
-        {
-            switch (oldApiAction)
-            {
-                case "Get":
-                case "OnGet":
-                    return "GET";
-                case "Put":
-                case "OnPut":
-                    return "PUT";
-                case "Post":
-                case "OnPost":
-                    return "POST";
-                case "Delete":
-                case "OnDelete":
-                    return "DELETE";
-                case "Patch":
-                case "OnPatch":
-                    return "PATCH";
-                case "Execute":
-                case "Run":
-                    return "ANY";
-            }
-            return null;
         }
 
         public Type GetOperationType(string operationTypeName)
         {
             Operation operation;
-            OperationNamesMap.TryGetValue(operationTypeName.ToLower(), out operation);
+            var opName = operationTypeName.ToLower();
+            if (!OperationNamesMap.TryGetValue(opName, out operation))
+            {
+                var arrayPos = opName.LastIndexOf('[');
+                if (arrayPos >= 0)
+                {
+                    opName = opName.Substring(0, arrayPos);
+                    OperationNamesMap.TryGetValue(opName, out operation);
+                    return operation != null
+                        ? operation.RequestType.MakeArrayType()
+                        : null;
+                }
+            }
             return operation != null ? operation.RequestType : null;
         }
 
@@ -171,20 +180,20 @@ namespace ServiceStack.Host
 
         public List<string> GetAllOperationNames()
         {
-            return Operations.Select(x => x.RequestType.Name).OrderBy(operation => operation).ToList();
+            return Operations.Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
-        public List<string> GetOperationNamesForMetadata(IHttpRequest httpReq)
+        public List<string> GetOperationNamesForMetadata(IRequest httpReq)
         {
             return GetAllOperationNames();
         }
 
-        public List<string> GetOperationNamesForMetadata(IHttpRequest httpReq, Format format)
+        public List<string> GetOperationNamesForMetadata(IRequest httpReq, Format format)
         {
             return GetAllOperationNames();
         }
 
-        public bool IsVisible(IHttpRequest httpReq, Operation operation)
+        public bool IsVisible(IRequest httpReq, Operation operation)
         {
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
@@ -193,11 +202,20 @@ namespace ServiceStack.Host
 
             //Less fine-grained on /metadata pages. Only check Network and Format
             var reqAttrs = httpReq.GetAttributes();
-            var showToNetwork = CanShowToNetwork(operation, reqAttrs);
+            var showToNetwork = CanShowToNetwork(operation.RestrictTo, reqAttrs);
             return showToNetwork;
         }
 
-        public bool IsVisible(IHttpRequest httpReq, Format format, string operationName)
+        public bool IsVisible(IRequest httpReq, Type requestType)
+        {
+            if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
+                return true;
+
+            var operation = HostContext.Metadata.GetOperation(requestType);
+            return operation == null || IsVisible(httpReq, operation);
+        }
+
+        public bool IsVisible(IRequest httpReq, Format format, string operationName)
         {
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
@@ -217,7 +235,7 @@ namespace ServiceStack.Host
             return allowsFormat;
         }
 
-        public bool CanAccess(IHttpRequest httpReq, Format format, string operationName)
+        public bool CanAccess(IRequest httpReq, Format format, string operationName)
         {
             var reqAttrs = httpReq.GetAttributes();
             return CanAccess(reqAttrs, format, operationName);
@@ -274,23 +292,138 @@ namespace ServiceStack.Host
             return true;
         }
 
-        private static bool CanShowToNetwork(Operation operation, RequestAttributes reqAttrs)
+        private static bool CanShowToNetwork(RestrictAttribute restrictTo, RequestAttributes reqAttrs)
         {
             if (reqAttrs.IsLocalhost())
-                return operation.RestrictTo.CanShowTo(RequestAttributes.Localhost)
-                       || operation.RestrictTo.CanShowTo(RequestAttributes.LocalSubnet);
+                return restrictTo.CanShowTo(RequestAttributes.Localhost)
+                       || restrictTo.CanShowTo(RequestAttributes.LocalSubnet);
 
-            return operation.RestrictTo.CanShowTo(
+            return restrictTo.CanShowTo(
                 reqAttrs.IsLocalSubnet()
                     ? RequestAttributes.LocalSubnet
                     : RequestAttributes.External);
         }
 
+        public List<MetadataType> GetMetadataTypesForOperation(IRequest httpReq, Operation op)
+        {
+            var typeMetadata = HostContext.TryResolve<INativeTypesMetadata>();
+
+            var metadataTypes = typeMetadata != null
+                ? typeMetadata.GetMetadataTypes(httpReq)
+                : new MetadataTypesGenerator(this, new NativeTypesFeature().MetadataTypesConfig)
+                    .GetMetadataTypes(httpReq);
+
+            var types = new List<MetadataType>();
+
+            var reqType = FindMetadataType(metadataTypes, op.RequestType);
+            if (reqType != null)
+            {
+                types.Add(reqType);
+
+                AddReferencedTypes(reqType, metadataTypes, types);
+            }
+
+            var resType = FindMetadataType(metadataTypes, op.ResponseType);
+            if (resType != null)
+            {
+                types.Add(resType);
+
+                AddReferencedTypes(resType, metadataTypes, types);
+            }
+
+            var generator = new CSharpGenerator(new NativeTypesFeature().MetadataTypesConfig);
+            types.Each(x =>
+            {
+                x.DisplayType = x.DisplayType ?? generator.Type(x.Name, x.GenericArgs);
+                x.Properties.Each(p =>
+                    p.DisplayType = p.DisplayType ?? generator.Type(p.Type, p.GenericArgs));
+            });
+
+            return types;
+        }
+
+        private static void AddReferencedTypes(MetadataType metadataType, MetadataTypes metadataTypes, List<MetadataType> types)
+        {
+            if (metadataType.Inherits != null)
+            {
+                var type = FindMetadataType(metadataTypes, metadataType.Inherits.Name, metadataType.Inherits.Namespace);
+                if (type != null && !types.Contains(type))
+                    types.Add(type);
+
+                if (!metadataType.Inherits.GenericArgs.IsEmpty())
+                {
+                    foreach (var arg in metadataType.Inherits.GenericArgs)
+                    {
+                        type = FindMetadataType(metadataTypes, arg);
+                        if (type != null && !types.Contains(type))
+                            types.Add(type);
+                    }
+                }
+            }
+
+            if (metadataType.Properties != null)
+            {
+                foreach (var p in metadataType.Properties)
+                {
+                    var type = FindMetadataType(metadataTypes, p.Type, p.TypeNamespace);
+                    if (type != null && !types.Contains(type))
+                        types.Add(type);
+
+                    if (!p.GenericArgs.IsEmpty())
+                    {
+                        foreach (var arg in p.GenericArgs)
+                        {
+                            type = FindMetadataType(metadataTypes, arg);
+                            if (type != null && !types.Contains(type))
+                                types.Add(type);     
+                        }
+                    }
+                    else if (p.IsArray())
+                    {
+                        var elType = p.Type.SplitOnFirst('[')[0];
+                        type = FindMetadataType(metadataTypes, elType);
+                        if (type != null && !types.Contains(type))
+                            types.Add(type);
+                    }
+                }
+            }
+        }
+
+        static MetadataType FindMetadataType(MetadataTypes metadataTypes, Type type)
+        {
+            return type == null ? null : FindMetadataType(metadataTypes, type.Name, type.Namespace);
+        }
+
+        static MetadataType FindMetadataType(MetadataTypes metadataTypes, string name, string @namespace = null)
+        {
+            if (@namespace != null && @namespace.StartsWith("System"))
+                return null;
+
+            var reqType = metadataTypes.Operations.FirstOrDefault(x => x.Request.Name == name);
+            if (reqType != null)
+                return reqType.Request;
+
+            var resType = metadataTypes.Operations
+                .FirstOrDefault(x => x.Response != null && x.Response.Name == name);
+
+            if (resType != null)
+                return resType.Response;
+
+            return metadataTypes.Types.FirstOrDefault(x => x.Name == name
+                && (@namespace == null || x.Namespace == @namespace));
+        }
     }
 
     public class Operation
     {
-        public string Name { get { return RequestType.Name; } }
+    	public string Name
+    	{
+    		get 
+			{
+				return RequestType.GetOperationName(); 
+			}
+    	}
+
         public Type RequestType { get; set; }
         public Type ServiceType { get; set; }
         public Type ResponseType { get; set; }
@@ -308,7 +441,7 @@ namespace ServiceStack.Host
         public List<string> RestrictTo { get; set; }
         public List<string> VisibleTo { get; set; }
         public List<string> Actions { get; set; }
-        public Dictionary<string, string> Routes { get; set; }
+        public List<string> Routes { get; set; }
     }
 
     public class XsdMetadata
@@ -331,21 +464,27 @@ namespace ServiceStack.Host
 
         public List<string> GetReplyOperationNames(Format format)
         {
+            var feature = format.ToFeature();
             return Metadata.OperationsMap.Values
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => !x.IsOneWay)
-                .Select(x => x.RequestType.Name)
+                .Where(x => !x.RequestType.AllAttributes<ExcludeAttribute>()
+                    .Any(attr => attr.Feature.HasFlag(feature)))
+                .Select(x => x.RequestType.GetOperationName())
                 .ToList();
         }
 
         public List<string> GetOneWayOperationNames(Format format)
         {
+            var feature = format.ToFeature();
             return Metadata.OperationsMap.Values
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => x.IsOneWay)
-                .Select(x => x.RequestType.Name)
+                .Where(x => !x.RequestType.AllAttributes<ExcludeAttribute>()
+                    .Any(attr => attr.Feature.HasFlag(feature)))
+                .Select(x => x.RequestType.GetOperationName())
                 .ToList();
         }
 
@@ -363,7 +502,7 @@ namespace ServiceStack.Host
             var baseType = type;
             do
             {
-                if (baseType.Name == type.Name)
+                if (baseType.GetOperationName() == type.GetOperationName())
                     typesWithSameName.Push(baseType);
             }
             while ((baseType = baseType.BaseType) != null);
@@ -378,10 +517,10 @@ namespace ServiceStack.Host
         {
             var to = new OperationDto {
                 Name = operation.Name,
-                ResponseName = operation.IsOneWay ? null : operation.ResponseType.Name,
-                ServiceName = operation.ServiceType.Name,
+                ResponseName = operation.IsOneWay ? null : operation.ResponseType.GetOperationName(),
+                ServiceName = operation.ServiceType.GetOperationName(),
                 Actions = operation.Actions,
-                Routes = operation.Routes.ToDictionary(x => x.Path.PairWith(x.AllowedVerbs)),
+                Routes = operation.Routes.Map(x => x.Path),
             };
             
             if (operation.RestrictTo != null)
@@ -391,12 +530,6 @@ namespace ServiceStack.Host
             }
 
             return to;
-        }
-
-        public static string GetDescription(this Type operationType)
-        {
-            var apiAttr = operationType.FirstAttribute<ApiAttribute>();
-            return apiAttr != null ? apiAttr.Description : "";
         }
 
         public static List<ApiMemberAttribute> GetApiMembers(this Type operationType)
@@ -413,7 +546,78 @@ namespace ServiceStack.Host
 
             return attrs;
         }
+
+        public static List<Assembly> GetAssemblies(this Operation operation)
+        {
+            var ret = new List<Assembly> { operation.RequestType.Assembly };
+            if (operation.ResponseType != null
+                && operation.ResponseType.Assembly != operation.RequestType.Assembly)
+            {
+                ret.Add(operation.ResponseType.Assembly);
+            }
+            return ret;
+        }
     }
 
+    public static class MetadataTypeExtensions
+    {
+        public static string GetParamType(this MetadataPropertyType prop, MetadataType type, Operation op)
+        {
+            if (prop.ParamType != null)
+                return prop.ParamType;
 
+            var isRequest = type.Name == op.RequestType.Name;
+
+            return !isRequest ? "body" : GetRequestParamType(op, prop.Name);
+        }
+
+        public static string GetParamType(this ApiMemberAttribute attr, Type type, string verb)
+        {
+            if (attr.ParameterType != null)
+                return attr.ParameterType;
+
+            var op = HostContext.Metadata.GetOperation(type);
+            var isRequestType = op != null;
+
+            var defaultType = verb == HttpMethods.Post || verb == HttpMethods.Put
+                ? "body"
+                : "query";
+
+            return !isRequestType ? defaultType : GetRequestParamType(op, attr.Name, defaultType);
+        }
+
+        private static string GetRequestParamType(Operation op, string name, string defaultType="body")
+        {
+            if (op.Routes.Any(x => x.IsVariable(name)))
+                return "path";
+
+            return !op.Routes.Any(x => x.Verbs.Contains(HttpMethods.Post) || x.Verbs.Contains(HttpMethods.Put))
+                       ? "query"
+                       : defaultType;
+        }
+
+        public static HashSet<string> CollectionTypes = new HashSet<string> {
+            "List`1",
+            "HashSet`1",
+            "Dictionary`2",
+            "Queue`1",
+            "Stack`1",
+        };
+
+        public static bool IsCollection(this MetadataPropertyType prop)
+        {
+            return CollectionTypes.Contains(prop.Type)
+                || IsArray(prop);
+        }
+
+        public static bool IsArray(this MetadataPropertyType prop)
+        {
+            return prop.Type.SplitOnFirst('[').Length > 1;
+        }
+
+        public static bool IsInterface(this MetadataType type)
+        {
+            return type.IsInterface.GetValueOrDefault();
+        }
+    }
 }

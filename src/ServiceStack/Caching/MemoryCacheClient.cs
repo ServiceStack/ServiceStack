@@ -6,8 +6,7 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.Caching
 {
-	public class MemoryCacheClient
-		: ICacheClient, IRemoveByPattern
+	public class MemoryCacheClient : ICacheClient, IRemoveByPattern
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (MemoryCacheClient));
 

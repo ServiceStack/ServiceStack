@@ -1,4 +1,5 @@
 using System.IO;
+using Microsoft.Practices.EnterpriseLibrary.Logging;
 using NUnit.Framework;
 using ServiceStack.Logging.EntLib5;
 using Microsoft.Practices.EnterpriseLibrary.Common.Configuration;

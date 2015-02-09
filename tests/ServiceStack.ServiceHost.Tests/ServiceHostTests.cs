@@ -9,7 +9,7 @@ using ServiceStack.Testing;
 namespace ServiceStack.ServiceHost.Tests
 {
 	[TestFixture]
-	public class ServiceHostTests
+    public class ServiceHostTests
 	{
 	    private ServiceController serviceController;
 	    private ServiceStackHost appHost;
@@ -85,10 +85,10 @@ namespace ServiceStack.ServiceHost.Tests
 			Assert.That(service.Bar, Is.Not.Null);
 		}
 
-        private HttpRequestContext CreateContext(string httpMethod)
+        private MockHttpRequest CreateContext(string httpMethod)
         {
             var ctx = new MockHttpRequest { HttpMethod = httpMethod };
-            return new HttpRequestContext(ctx, new MockHttpResponse(), null, ContentFormat.GetEndpointAttribute(httpMethod));
+            return ctx;
         }
 
 		[Test]

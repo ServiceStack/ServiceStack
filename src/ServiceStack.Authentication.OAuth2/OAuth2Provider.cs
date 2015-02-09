@@ -6,8 +6,6 @@ using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Authentication.OAuth2
 {
@@ -50,6 +48,14 @@ namespace ServiceStack.Authentication.OAuth2
 
         protected string[] Scopes { get; set; }
 
+        public virtual IAuthorizationState ProcessUserAuthorization(
+            WebServerClient authClient, AuthorizationServerDescription authServer, IServiceBase authService)
+        {
+            return HostContext.Config.StripApplicationVirtualPath
+                ? authClient.ProcessUserAuthorization(authService.Request.ToHttpRequestBase())
+                : authClient.ProcessUserAuthorization();
+        }
+
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = this.Init(authService, ref session, request);
@@ -59,7 +65,7 @@ namespace ServiceStack.Authentication.OAuth2
                 ClientCredentialApplicator = ClientCredentialApplicator.PostParameter(this.ConsumerSecret),
             };
 
-            var authState = authClient.ProcessUserAuthorization();
+            var authState = ProcessUserAuthorization(authClient, authServer, authService);
             if (authState == null)
             {
                 try
@@ -100,10 +106,13 @@ namespace ServiceStack.Authentication.OAuth2
                     tokens.AccessToken = accessToken;
                     tokens.RefreshToken = authState.RefreshToken;
                     tokens.RefreshTokenExpiry = authState.AccessTokenExpirationUtc;
-                    session.IsAuthenticated = true;
+
                     var authInfo = this.CreateAuthInfo(accessToken);
-                    this.OnAuthenticated(authService, session, tokens, authInfo);
-                    return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+
+                    session.IsAuthenticated = true;
+                    
+                    return OnAuthenticated(authService, session, tokens, authInfo)
+                        ?? authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
                 }
                 catch (WebException we)
                 {
@@ -161,6 +170,10 @@ namespace ServiceStack.Authentication.OAuth2
                 tokens.Email = authInfo["email"];
                 userSession.UserAuthName = tokens.Email;
 
+                string profileUrl;
+                if (authInfo.TryGetValue("picture", out profileUrl))
+                    tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+
                 this.LoadUserOAuthProvider(userSession, tokens);
             }
             catch (Exception ex)
@@ -171,7 +184,7 @@ namespace ServiceStack.Authentication.OAuth2
 
         protected IAuthTokens Init(IServiceBase authService, ref IAuthSession session, Authenticate request)
         {
-            var requestUri = authService.RequestContext.AbsoluteUri;
+            var requestUri = authService.Request.AbsoluteUri;
             if (this.CallbackUrl.IsNullOrEmpty())
             {
                 this.CallbackUrl = requestUri;
@@ -179,7 +192,7 @@ namespace ServiceStack.Authentication.OAuth2
 
             if (session.ReferrerUrl.IsNullOrEmpty())
             {
-                session.ReferrerUrl = (request != null ? request.Continue : null) ?? authService.RequestContext.GetHeader("Referer");
+                session.ReferrerUrl = (request != null ? request.Continue : null) ?? authService.Request.GetHeader("Referer");
             }
 
             if (session.ReferrerUrl.IsNullOrEmpty() || session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)

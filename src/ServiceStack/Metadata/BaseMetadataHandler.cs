@@ -1,34 +1,35 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Host;
-using ServiceStack.Host.AspNet;
-using ServiceStack.Host.Handlers;
+using ServiceStack.NativeTypes;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 using System.Text;
 
 namespace ServiceStack.Metadata
 {
-    public abstract class BaseMetadataHandler : HttpHandlerBase, IServiceStackHttpHandler
+    public abstract class BaseMetadataHandler : HttpHandlerBase
     {
         public abstract Format Format { get; }
 
         public string ContentType { get; set; }
         public string ContentFormat { get; set; }
 
-        public override void Execute(HttpContext context)
+        public override void Execute(HttpContextBase context)
         {
             var writer = new HtmlTextWriter(context.Response.Output);
             context.Response.ContentType = "text/html";
 
-            ProcessOperations(writer, new AspNetRequest(GetType().Name, context.Request), new AspNetResponse(context.Response));
+            var request = context.ToRequest();
+            ProcessOperations(writer, request, request.Response);
         }
 
-        public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
             using (var sw = new StreamWriter(httpRes.OutputStream))
             {
@@ -48,11 +49,13 @@ namespace ServiceStack.Metadata
                 return "(Stream)";
             if (type == typeof(HttpWebResponse))
                 return "(HttpWebResponse)";
+            if (type.IsGenericType)
+                type = type.GetGenericArguments()[0]; //e.g. Task<T> => T
 
             return CreateMessage(type);
         }
 
-        protected virtual void ProcessOperations(HtmlTextWriter writer, IHttpRequest httpReq, IHttpResponse httpRes)
+        protected virtual void ProcessOperations(HtmlTextWriter writer, IRequest httpReq, IResponse httpRes)
         {
             var operationName = httpReq.QueryString["op"];
 
@@ -63,9 +66,9 @@ namespace ServiceStack.Metadata
             if (operationName != null)
             {
                 var allTypes = metadata.GetAllTypes();
-                var operationType = allTypes.Single(x => x.Name == operationName);
+                //var operationType = allTypes.Single(x => x.Name == operationName);
+                var operationType = allTypes.Single(x => x.GetOperationName() == operationName);
                 var op = metadata.GetOperation(operationType);
-
                 var requestMessage = CreateResponse(operationType);
                 string responseMessage = null;
 
@@ -85,7 +88,7 @@ namespace ServiceStack.Metadata
 
                 if (op.Routes.Count > 0)
                 {
-                    sb.Append("<table>");
+                    sb.Append("<table class='routes'>");
                     if (!isSoap)
                     {
                         sb.Append("<caption>The following routes are available for this service:</caption>");
@@ -102,7 +105,7 @@ namespace ServiceStack.Metadata
 
                         if (!isSoap)
                         {
-                            var path = "/" + PathUtils.CombinePaths(HostContext.Config.ServiceStackHandlerFactoryPath, route.Path);
+                            var path = "/" + PathUtils.CombinePaths(HostContext.Config.HandlerFactoryPath, route.Path);
 
                             sb.AppendFormat("<th>{0}</th>", verbs);
                             sb.AppendFormat("<th>{0}</th>", path);
@@ -117,32 +120,8 @@ namespace ServiceStack.Metadata
                     sb.Append("</table>");
                 }
 
-                var apiMembers = operationType.GetApiMembers();
-                if (apiMembers.Count > 0)
-                {
-                    sb.Append("<table><caption>Parameters:</caption>");
-                    sb.Append("<thead><tr>");
-                    sb.Append("<th>Name</th>");
-                    sb.Append("<th>Parameter</th>");
-                    sb.Append("<th>Data Type</th>");
-                    sb.Append("<th>Required</th>");
-                    sb.Append("<th>Description</th>");
-                    sb.Append("</tr></thead>");
-
-                    sb.Append("<tbody>");
-                    foreach (var apiMember in apiMembers)
-                    {
-                        sb.Append("<tr>");
-                        sb.AppendFormat("<td>{0}</td>", ConvertToHtml(apiMember.Name));
-                        sb.AppendFormat("<td>{0}</td>", apiMember.ParameterType);
-                        sb.AppendFormat("<td>{0}</td>", apiMember.DataType);
-                        sb.AppendFormat("<td>{0}</td>", apiMember.IsRequired ? "Yes" : "No");
-                        sb.AppendFormat("<td>{0}</td>", apiMember.Description);
-                        sb.Append("</tr>");
-                    }
-                    sb.Append("</tbody>");
-                    sb.Append("</table>");
-                }
+                var metadataTypes = metadata.GetMetadataTypesForOperation(httpReq, op);
+                metadataTypes.Each(x => AppendType(sb, op, x));
 
                 sb.Append(@"<div class=""call-info"">");
                 var overrideExtCopy = HostContext.Config.AllowRouteContentTypeExtensions
@@ -162,7 +141,50 @@ namespace ServiceStack.Metadata
             RenderOperations(writer, httpReq, metadata);
         }
 
-        protected void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, ServiceMetadata metadata)
+        private void AppendType(StringBuilder sb, Operation op, MetadataType metadataType)
+        {
+            if (metadataType.Properties.IsEmpty()) return;
+            
+            sb.Append("<table class='params'>");
+            sb.Append("<caption><b>{0}</b> Parameters:</caption>".Fmt(ConvertToHtml(metadataType.DisplayType ?? metadataType.Name)));
+            sb.Append("<thead><tr>");
+            sb.Append("<th>Name</th>");
+            sb.Append("<th>Parameter</th>");
+            sb.Append("<th>Data Type</th>");
+            sb.Append("<th>Required</th>");
+            sb.Append("<th>Description</th>");
+            sb.Append("</tr></thead>");
+
+            sb.Append("<tbody>");
+            foreach (var p in metadataType.Properties)
+            {
+                sb.Append("<tr>");
+                sb.AppendFormat("<td>{0}</td>", ConvertToHtml(p.Name));
+                sb.AppendFormat("<td>{0}</td>", p.GetParamType(metadataType, op));
+                sb.AppendFormat("<td>{0}</td>", ConvertToHtml(p.DisplayType ?? p.Type));
+                sb.AppendFormat("<td>{0}</td>", p.IsRequired.GetValueOrDefault() ? "Yes" : "No");
+
+                var desc = p.Description;
+                if (!p.AllowableValues.IsEmpty())
+                {
+                    desc += "<h4>Allowable Values</h4>";
+                    desc += "<ul>";
+                    p.AllowableValues.Each(x => desc += "<li>{0}</li>".Fmt(x));
+                    desc += "</ul>";
+                }
+                if (p.AllowableMin != null)
+                {
+                    desc += "<h4>Valid Range: {0} - {1}</h4>".Fmt(p.AllowableMin, p.AllowableMax);
+                }
+                sb.AppendFormat("<td>{0}</td>", desc);
+                
+                sb.Append("</tr>");
+            }
+            sb.Append("</tbody>");
+            sb.Append("</table>");
+        }
+
+        protected void RenderOperations(HtmlTextWriter writer, IRequest httpReq, ServiceMetadata metadata)
         {
             var defaultPage = new IndexOperationsControl
             {
@@ -174,9 +196,15 @@ namespace ServiceStack.Metadata
                 OperationNames = metadata.GetOperationNamesForMetadata(httpReq),
             };
 
+            var metadataFeature = HostContext.GetPlugin<MetadataFeature>();
+            if (metadataFeature != null && metadataFeature.IndexPageFilter != null)
+            {
+                metadataFeature.IndexPageFilter(defaultPage);
+            }
+
             defaultPage.RenderControl(writer);
         }
-        
+
         private string ConvertToHtml(string text)
         {
             return text.Replace("<", "&lt;")
@@ -184,15 +212,16 @@ namespace ServiceStack.Metadata
                 .Replace("\n", "<br />\n");
         }
 
-        protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        protected bool AssertAccess(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            if (!HostContext.HasAccessToMetadata(httpReq, httpRes)) return false;
+            var appHost = HostContext.AppHost;
+            if (!appHost.HasAccessToMetadata(httpReq, httpRes)) return false;
 
             if (operationName == null) return true; //For non-operation pages we don't need to check further permissions
-            if (!HostContext.Config.EnableAccessRestrictions) return true;
-            if (!HostContext.MetadataPagesConfig.IsVisible(httpReq, Format, operationName))
+            if (!appHost.Config.EnableAccessRestrictions) return true;
+            if (!appHost.MetadataPagesConfig.IsVisible(httpReq, Format, operationName))
             {
-                HostContext.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
+                appHost.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
                 return false;
             }
 
@@ -201,7 +230,7 @@ namespace ServiceStack.Metadata
 
         protected abstract string CreateMessage(Type dtoType);
 
-        protected virtual void RenderOperation(HtmlTextWriter writer, IHttpRequest httpReq, string operationName,
+        protected virtual void RenderOperation(HtmlTextWriter writer, IRequest httpReq, string operationName,
             string requestMessage, string responseMessage, string metadataHtml)
         {
             var operationControl = new OperationControl
@@ -223,6 +252,12 @@ namespace ServiceStack.Metadata
             if (!this.ContentFormat.IsNullOrEmpty())
             {
                 operationControl.ContentFormat = this.ContentFormat;
+            }
+
+            var metadataFeature = HostContext.GetPlugin<MetadataFeature>();
+            if (metadataFeature != null && metadataFeature.DetailPageFilter != null)
+            {
+                metadataFeature.DetailPageFilter(operationControl);
             }
 
             operationControl.Render(writer);

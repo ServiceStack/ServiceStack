@@ -6,6 +6,7 @@ using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.Redis;
+using ServiceStack.Testing;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
@@ -16,6 +17,8 @@ namespace ServiceStack.Common.Tests.OAuth
         private readonly List<IUserAuthRepository> userAuthRepositorys = new List<IUserAuthRepository>();
 
         readonly OrmLiteConnectionFactory dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
+        
+        private ServiceStackHost appHost;
 
         [SetUp]
         public void SetUp()
@@ -23,12 +26,15 @@ namespace ServiceStack.Common.Tests.OAuth
 			try
 			{
                 tests = new OAuthUserSessionTests();
-				var inMemoryRepo = new InMemoryAuthRepository();
+
+                appHost = new BasicAppHost().Init();
+                
+                var inMemoryRepo = new InMemoryAuthRepository();
 				inMemoryRepo.Clear();
 				userAuthRepositorys.Add(inMemoryRepo);
 
                 var appSettings = new AppSettings();
-				var redisRepo = new RedisAuthRepository(new BasicRedisClientManager(new string[] { appSettings.GetString("Redis.Host") ?? "localhost" }));
+				var redisRepo = new RedisAuthRepository(new BasicRedisClientManager(new[] { appSettings.GetString("Redis.Host") ?? "localhost" }));
 				redisRepo.Clear();
 				userAuthRepositorys.Add(redisRepo);
 
@@ -42,18 +48,15 @@ namespace ServiceStack.Common.Tests.OAuth
 				else
 				{
 					var sqliteInMemoryRepo = new OrmLiteAuthRepository(dbFactory);
-                    using (var db = dbFactory.Open())
-                    {
-						db.DropAndCreateTable<UserAuth>();
-						db.DropAndCreateTable<UserAuthDetails>();
-					}
-					sqliteInMemoryRepo.Clear();
+
+                    sqliteInMemoryRepo.InitSchema();
+                    sqliteInMemoryRepo.Clear();
 					userAuthRepositorys.Add(sqliteInMemoryRepo);
 
-					var sqliteDbFactory = new OrmLiteConnectionFactory(
-						"~/App_Data/auth.sqlite".MapProjectPath());
-					var sqliteDbRepo = new OrmLiteAuthRepository(sqliteDbFactory);
-					sqliteDbRepo.CreateMissingTables();
+					var sqliteDbFactory = new OrmLiteConnectionFactory( 
+						"~/App_Data/auth.sqlite".MapProjectPath()); 
+                    var sqliteDbRepo = new OrmLiteAuthRepository(sqliteDbFactory);
+                    sqliteDbRepo.InitSchema();
 					userAuthRepositorys.Add(sqliteDbRepo);
 				}
 			}
@@ -63,7 +66,13 @@ namespace ServiceStack.Common.Tests.OAuth
 				throw;
 			}
 		}
-		
+
+        [TearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         [Test]
         public void Does_persist_TwitterOAuth()
         {

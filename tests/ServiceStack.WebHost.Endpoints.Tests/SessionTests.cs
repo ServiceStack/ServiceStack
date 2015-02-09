@@ -6,6 +6,9 @@ using System;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
+using ServiceStack.Caching;
+using ServiceStack.Data;
+using ServiceStack.OrmLite;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -32,9 +35,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public SessionResponse Get(SessionIncr request)
         {
-            var counter = base.Session.Get<int>("counter");
+            var counter = base.SessionBag.Get<int>("counter");
 
-            base.Session["counter"] = ++counter;
+            base.SessionBag["counter"] = ++counter;
 
             return new SessionResponse
             {
@@ -45,10 +48,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public Cart Get(SessionCartIncr request)
         {
             var sessionKey = UrnId.Create<Cart>(request.CartId);
-            var cart = base.Session.Get<Cart>(sessionKey) ?? new Cart();
+            var cart = base.SessionBag.Get<Cart>(sessionKey) ?? new Cart();
             cart.Qty++;
 
-            base.Session[sessionKey] = cart;
+            base.SessionBag[sessionKey] = cart;
 
             return cart;
         }
@@ -90,6 +93,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Container container)
             {
                 Plugins.Add(new SessionFeature());
+
+                const bool UseOrmLiteCache = false;
+                if (UseOrmLiteCache)
+                {
+                    container.Register<IDbConnectionFactory>(c =>
+                        new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+
+                    container.RegisterAs<OrmLiteCacheClient, ICacheClient>();
+
+                    container.Resolve<ICacheClient>().InitSchema();
+                }
             }
         }
 

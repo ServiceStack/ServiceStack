@@ -6,6 +6,7 @@ using System.Threading;
 using System.Web.UI;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Common.Tests;
 using ServiceStack.Metadata;
 using ServiceStack.Testing;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
@@ -19,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
 	[TestFixture]
-	public class OperationTests
+	public class OperationTests : IService
 	{
         private OperationTestsAppHost appHost;
 	    private OperationControl operationControl;

@@ -13,13 +13,16 @@ namespace ServiceStack.ServiceHost.Tests
 			get { throw new NotImplementedException(); }
 		}
 
-		public string OperationName
-		{
-			get { throw new NotImplementedException(); }
-			set { throw new NotImplementedException(); }
-		}
+	    public IResponse Response { get; private set; }
 
-		public string ContentType
+        public string OperationName { get; set; }
+
+	    public string Verb { get; private set; }
+	    public RequestAttributes RequestAttributes { get; set; }
+	    public IRequestPreferences RequestPreferences { get; private set; }
+	    public object Dto { get; set; }
+
+	    public string ContentType
 		{
 			get { throw new NotImplementedException(); }
 		}
@@ -29,7 +32,9 @@ namespace ServiceStack.ServiceHost.Tests
             get { return true; }
         }
 
-		public string HttpMethod
+	    public IHttpResponse HttpResponse { get; private set; }
+
+	    public string HttpMethod
 		{
 			get { throw new NotImplementedException(); }
 		}
@@ -56,22 +61,24 @@ namespace ServiceStack.ServiceHost.Tests
 			}
 		}
 
-		public Dictionary<string, object> Items
+	    public bool HasExplicitResponseContentType { get; private set; }
+
+	    public Dictionary<string, object> Items
 		{
 			get { throw new NotImplementedException(); }
 		}
 
-		public System.Collections.Specialized.NameValueCollection Headers
+		public INameValueCollection Headers
 		{
 			get { throw new NotImplementedException(); }
 		}
 
-		public System.Collections.Specialized.NameValueCollection QueryString
+        public INameValueCollection QueryString
 		{
 			get { throw new NotImplementedException(); }
 		}
 
-		public System.Collections.Specialized.NameValueCollection FormData
+        public INameValueCollection FormData
 		{
 			get { throw new NotImplementedException(); }
 		}
@@ -107,8 +114,18 @@ namespace ServiceStack.ServiceHost.Tests
         {
             get { throw new NotImplementedException(); }
         }
-        
-        public string XRealIp
+
+	    public int? XForwardedPort
+	    {
+            get { throw new NotImplementedException(); }
+        }
+
+	    public string XForwardedProtocol
+	    {
+            get { throw new NotImplementedException(); }
+        }
+
+	    public string XRealIp
         {
             get { throw new NotImplementedException(); }
         }

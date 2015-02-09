@@ -63,15 +63,7 @@ X11 License                                              2001
 Zlib/libpng License                                      -
 
 
-Evaluation License Exception
-===========================================================================
-The Exception applies to the pre release version of ServiceStack v4 which is available 
-for evalution and testing purposes under the terms of the license-evalution.txt in the source. 
-The evalutaion period will expire on the 31st December 2013, after which point the 
-evaluation license terminates and the software will no longer be functional. 
-
-
 Commercial License
 ===========================================================================
 In addition to this license, ServiceStack is offered under a commerical license.
-Contact team@servicestack.net for details.
+see https://servicestack.net/pricing for details.

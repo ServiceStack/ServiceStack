@@ -1,0 +1,439 @@
+@inherits ViewPage
+@{
+    ViewBag.Title = "Server Sent Events Chat";
+    var channel = Request.QueryString["channel"] ?? "home";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link href="/img/favicon.png" rel="icon"> <style>
+    body {
+        font: 16px Arial;
+        overflow: hidden;
+        padding: 0;
+        margin: 0;
+        color: #444;
+    }
+    #top {
+        z-index: 1;
+        position: fixed;
+        top: 0;
+        background: #03a9f4;
+        width: 100%;
+        height: 40px;
+    }
+    ul {
+        padding: 0;
+        margin: 0;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        list-style: none;
+    }
+    li {
+        display: block;
+        float: left;
+        padding: 4px 30px;
+        text-align: center;
+        background: #fff;
+        font-size: 18px;
+        cursor: pointer;
+    }
+    #announce {
+        z-index: 3;
+        display: none;
+        position: absolute;
+        top: 40px;
+        line-height: 50px;
+        width: 100%;
+        background: #ffc;
+        text-align: center;
+        box-shadow: 0px 2px 3px rgba(100, 100, 100, 0.75);
+    }
+    #tv {
+        z-index: 2;
+        position: absolute;
+        display: none;
+        text-align: center;
+        width: 85%;
+        top: 40px;
+    }
+    #right {
+        z-index: 1;
+        position: absolute;
+        top: 40px;
+        right: 0;
+        width: 18%;
+        min-width: 200px;
+        height: 100%;
+        border: 2px solid #ccc;
+        color: #666;
+        background: #fff;
+    }
+    #examples {
+        position: fixed;
+        bottom: 10px;
+        right: .5%;
+        width: 17%;
+        min-width: 190px;
+        border: 1px solid #ccc;
+        font-size: 12px;
+        background: #fcfcfc;
+    }
+    #examples h4 {
+        margin: 0;
+        padding: 5px 10px;
+        background: #f1f1f1;
+    }
+    #examples div {
+        white-space: nowrap;
+        overflow: hidden;
+        cursor: pointer;
+        padding: 0 5px;
+        line-height: 28px;
+    }
+    #examples div:hover {
+        background: #ffe;
+        color: #222;
+    }
+    #log {
+        position: fixed;
+        left: -2px;
+        bottom: 50px;
+        width: 82%;
+    }
+    #bottom {
+        position: fixed;
+        bottom: 0;
+        height: 50px;
+        width: 82%;
+        background: #eaeaea;
+        border-top: 1px solid #ccc;
+    }
+    #bottom input {
+        font-size: 16px;
+        margin: 6px 0 0 6px;
+        padding: 4px 8px;
+        width: 77%; 
+    }
+    #bottom button {
+        padding: 4px 8px;
+    }
+    .open div {
+        color: green;
+    }
+    .error div {
+        color: red;
+    }
+    .event div {
+        color: blue;
+    }
+    #social {
+        float: right;
+        padding: 5px;
+    }
+    #social a {
+        display: inline-block;
+        width: 77px;
+        height: 20px;
+        margin: 5px 5px 0 0;
+    }
+    .twitter { background: url(/img/twitter_normal.png) no-repeat; }
+    .facebook { background: url(/img/facebook_normal.png) no-repeat; }
+    .github { background: url(/img/github_normal.png) no-repeat; }
+    #welcome {
+        float: left;
+        margin: 0 5px 0 0;
+        color: #f1f1f1;
+    }
+    #welcome span {
+        line-height: 24px;
+    }
+    #welcome img {
+        height: 24px; 
+        margin: 0 0 0 5px;
+        vertical-align: bottom;
+    }
+    .user img {
+        height: 24px; 
+        margin: 2px 5px 0 5px;
+        vertical-align: bottom;
+    }
+    .user span {
+        cursor: pointer;
+    }
+    .private {
+        color: red;
+    }
+    .msg {
+        border-top: 1px solid #eee;
+    }
+    .msg b, .msg div, .msg i {
+        line-height: 30px;
+        height: 30px;
+        display: inline-block;
+        padding: 0 0 0 10px;
+        font-style: normal;
+        font-weight: normal;
+    }
+    .msg b {
+        width: 200px;
+        background: #fafafa;
+    }
+    .msg div {
+    }
+    .msg i {
+        color: #999;
+        float: right;
+        padding: 0 10px 0 0;
+    }
+    .msg.highlight {
+        background: #ffc;
+    }
+</style>
+
+<script src="/jquery-2.1.1.min.js"></script>
+<script src="/js/ss-utils.js"></script>
+</head>
+<body>
+<div id="top">
+    <div id="social">
+        <div id="welcome"></div>
+        @if (!IsAuthenticated)
+        {
+            <a href="/auth/twitter" class="twitter"></a>
+            <a href="/auth/facebook" class="facebook"></a>
+            <a href="/auth/github" class="github"></a>
+        }
+    </div>
+    <ul id="channels">
+        <li>
+            @channel
+        </li>
+        <li style="background:none; padding: 0 0 0 5px;">
+            <button onclick="var chan = prompt('Open another Channel in new Window:','ChannelName'); if (chan) window.open('?channel='+chan.replace(/\s+/g,''));">+</button>
+        </li>
+        <li style="background:none; padding: 0 0 0 5px;">
+            <button data-click="paintGreen" data-focusout="paintRed">Paint</button>
+        </li>
+    </ul>
+</div>
+<div id="announce"></div>
+<div id="tv"></div>
+<div id="right">
+    <div id="users"></div>
+    <div id="examples" data-click="sendCommand">
+        <h4>Example Commands</h4>
+        <div>/cmd.announce This is your captain speaking ...</div>
+        <div>/cmd.toggle$#channels</div>
+        <h4>CSS</h4>
+        <div>/css.background #eceff1</div>
+        <div>/css.background$#top #673ab7</div>
+        <div>/css.background$#right #fffde7</div>
+        <div>/css.background$#bottom #0091ea</div>
+        <div>/css.color$#welcome #ff0</div>
+        <div>/css.visibility$img,a hidden</div>
+        <div>/css.visibility$img,a visible</div>
+        <h4>Receivers</h4>
+        <div>/document.title New Window Title</div>
+        <div>/window.location http://google.com</div>
+        <div>/cmd.removeReceiver window</div>
+        <div>/cmd.addReceiver window</div>
+        <div>/tv.watch http://youtu.be/518XP8prwZo</div>
+        <div>/tv.watch https://servicestack.net/img/logo-220.png</div>        
+        <div>@@me /tv.off</div>
+        <h4>Triggers</h4>
+        <div>/trigger.customEvent arg</div>
+    </div>
+</div>
+
+<div id="log"></div>
+<div id="bottom">
+    <input type="text" id="txtMsg" onfocus="this.value = this.value;" />
+    <button id="btnSend">Send</button>
+</div>
+
+<script>
+    var source = new EventSource('/event-stream?channel=@channel&t=' + new Date().getTime()); //disable cache
+    source.addEventListener('error', function (e) { addEntry({ msg: "ERROR!", cls: "error" }); }, false);
+
+    var $txtMsg = $("#txtMsg").focus(), usersMap = {}, refCounter = {}, activeSub = null;
+    $.getJSON("/event-subscribers?channel=@channel", function (users) {
+        $.map(users, function (user) {
+            usersMap[user.userId] = user;
+            refCounter[user.userId] = (refCounter[user.userId] || 0) + 1;
+        });
+        var html = $.map(usersMap, function (user) { return createUser(user); }).join('');
+        $("#users").html(html);
+    });
+
+    $.ss.eventReceivers = { "window": window, "document": document };
+    $(source).handleServerEvents({
+        success: function (selector, msg, json) {
+            console.log(selector, json);
+        },
+        handlers: {
+            onConnect: function (u) {
+                activeSub = u;
+                $("#welcome").html('<span>Welcome, ' + u.displayName + '</span>' + '<img src="' + u.profileUrl + '"/>');
+                addEntry({ msg: "CONNECTED!", cls: "open" });
+            },
+            onJoin: function (u) {
+                $("#users .u_" + u.userId).remove();
+                $("#users").prepend(createUser(u));
+                refCounter[u.userId] = (refCounter[u.userId] || 0) + 1;
+            },
+            onLeave: function (u) {
+                if (activeSub != null && u.userId != activeSub.userId && (refCounter[u.userId] = refCounter[u.userId] - 1) <= 0)
+                    $("#users .u_" + u.userId).remove();
+            },
+            chat: function (m, e) {
+                addEntry({ id: m.id, userId: m.fromUserId, userName: m.fromName, msg: m.message, cls: m.private ? ' private' : '' });
+            },
+            paintGreen: function () {
+                console.log("paintGreen", this, arguments);
+                $(this).css("background", "green");
+            },
+            paintRed: function () {
+                console.log("paintRed", this, arguments);
+                $(this).css("background", "red");
+            }
+        },
+        receivers: {
+            tv: {
+                watch: function (id) {
+                    if (id.indexOf('youtube.com') >= 0) {
+                        var qs = $.ss.queryString(id);
+                        $("#tv").html(templates.youtube.replace("{id}", qs["v"])).show();
+                    }
+                    else if (id.indexOf('youtu.be') >= 0) {
+                        var v = $.ss.splitOnLast(id, '/')[1];
+                        $("#tv").html(templates.youtube.replace("{id}", v)).show();
+                    } else {
+                        $("#tv").html(templates.generic.replace("{id}", id)).show();
+                    }
+                },
+                off: function () {
+                    $("#tv").hide().html("");
+                    console.log("tv.off()", this, arguments);
+                }
+            }
+        }
+    });
+    var templates = {
+        youtube: '<iframe width="640" height="360" src="//www.youtube.com/embed/{id}?autoplay=1" frameborder="0" allowfullscreen></iframe>',
+        generic: '<iframe width="640" height="360" src="{id}" frameborder="0"></iframe>'
+    };
+
+    $(document).bindHandlers({
+        announce: function (msg) {
+            $("#announce").html(msg).fadeIn('fast');
+            setTimeout(function () { $("#announce").fadeOut('slow'); }, 2000);
+        },
+        toggle: function () {
+            $(this).toggle();
+        },
+        sendCommand: function () {
+            $("#txtMsg").val($(this).html()).focus();
+        },
+        privateMsg: function () {
+            $txtMsg.val("@@" + this.innerHTML + " ").focus();
+        },
+        removeReceiver: function (name) {
+            delete $.ss.eventReceivers[name];
+        },
+        addReceiver: function (name) {
+            $.ss.eventReceivers[name] = window[name];
+        }
+    }).on('customEvent', function (e, msg, msgEvent) {
+        addEntry({ msg: "[event " + e.type + " message: " + msg + "]", cls: "event" });
+        console.log("on.customEvent()", this, arguments);
+    });
+
+    function addEntry(o) {
+        console.log("addEntry", o);
+        var id = "u_" + o.userId + "";
+        var skipUser = $("#log .msg:last-child b").hasClass(id);
+        var user = o.userId && !skipUser ? "<b class='user " + id + "'>" + $("#users ." + id).html() + "</b>" : "<b class=" + id + ">&nbsp;</b>";
+        var time = "<i>" + $.ss.tfmt12(new Date()) + "</i>";
+        var highlight = o.msg.indexOf(activeSub.displayName.replace(" ", "")) >= 0 ? "highlight " : "";
+        $("#log").append("<div id='m_" + (o.id || "0") + "' class='msg " + highlight + o.cls + "'>" +
+            user + time + "<div>" + o.msg + "</div>" + "</div>");
+    }
+    function createUser(user) {
+        return "<div class='user u_" + user.userId + "'><img src='" + user.profileUrl + "'/><span data-id='" +
+            user.userId + "' data-click='privateMsg'>" + user.displayName + "</span></div>";
+    }
+
+    var msgHistory = [], historyIndex = -1;
+    function postMsg() {
+        var msg = $txtMsg.val(), parts, to = null;
+        msgHistory.push(msg);
+
+        if (msg[0] == "@@") {
+            parts = $.ss.splitOnFirst(msg, " ");
+            var toName = parts[0].substring(1);
+            if (toName == "me") {
+                to = activeSub.userId;
+            } else {
+                var matches = $.grep($("#users .user span"),
+                    function (x) { return x.innerHTML.replace(" ", "").toLowerCase() === toName.toLowerCase(); });
+                to = matches.length > 0 ? matches[0].getAttribute("data-id") : null;
+            }
+            msg = parts[1];
+        }
+        if (!msg || !activeSub) return;
+
+        if (msg[0] == "/") {
+            parts = $.ss.splitOnFirst(msg, " ");
+            $.post("/channels/@channel/raw", { from: activeSub.id, toUserId: to, message: parts[1], selector: parts[0].substring(1) }, function (r) { });
+        } else {
+            $.post("/channels/@channel/chat", { from: activeSub.id, toUserId: to, message: msg, selector: "cmd.chat" }, function (r) { });
+        }
+        $txtMsg.val("");
+    }
+    $("#btnSend").click(postMsg);
+
+    $txtMsg.keydown(function (e) {
+        var keycode = (e.keyCode ? e.keyCode : e.which);
+        if ($.ss.getSelection()) {
+            if (keycode == '9' || keycode == '13' || keycode == '32' || keycode == '39') {
+                this.value += " ";
+                if (this.setSelectionRange) this.setSelectionRange(this.value.length, this.value.length);
+                return false;
+            }
+        }
+        if (keycode == '13') { //enter
+            postMsg();
+        } else if (keycode == '38') { //up arrow
+            historyIndex = Math.min(++historyIndex, msgHistory.length);
+            $txtMsg.val(msgHistory[msgHistory.length - 1 - historyIndex]);
+            return false;
+        }
+        else if (keycode == '40') { //down arrow
+            historyIndex = Math.max(--historyIndex, -1);
+            $txtMsg.val(msgHistory[msgHistory.length - 1 - historyIndex]);
+        } else {
+            historyIndex = -1;
+        }
+    }).keyup(function (e) {
+        if (!$.ss.getSelection() && this.value[0] == '@@' && this.value.indexOf(' ') < 0) {
+            var partialVal = this.value.substring(1);
+            var matchingNames = $.grep($("#users .user span")
+                .map(function () { return this.innerHTML.replace(" ", ""); }), function (x) {
+                    return x.substring(0, partialVal.length).toLowerCase() === partialVal.toLowerCase()
+                        && x.toLowerCase() != activeSub.displayName.toLowerCase();
+                });
+
+            if (matchingNames.length > 0) {
+                this.value += matchingNames[0].substring(partialVal.length);
+                if (this.setSelectionRange) this.setSelectionRange(partialVal.length + 1, this.value.length);
+                return false;
+            }
+        }
+    });
+
+</script>
+
+  </body>
+</html>

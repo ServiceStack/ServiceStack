@@ -2,8 +2,8 @@
 @model ModelErrorResponse
 
 <h5>ModelError:    @ModelError.AsRawJson()</h5>
-<p>ResponseStatus: @ResponseStatus.AsRawJson()</p>
-<p>ResponseStatus: @ResponseStatus.ErrorCode</p>
-<p>ResponseStatus: @ResponseStatus.Message</p>
+<p>ResponseStatus: @this.GetErrorStatus().AsRawJson()</p>
+<p>ResponseStatus: @this.GetErrorStatus().ErrorCode</p>
+<p>ResponseStatus: @this.GetErrorStatus().Message</p>
 
 <!--view:ModelError.cshtml-->

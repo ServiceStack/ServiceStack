@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using ServiceStack.Model;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class HttpError : Exception, IHttpError
+    public class HttpError : Exception, IHttpError, IResponseStatusConvertible
     {
         public HttpError() : this(null) {}
 
@@ -24,7 +25,7 @@ namespace ServiceStack
             this.Response = responseDto;
         }
 
-        public HttpError(object responseDto, int statusCode, string errorCode, string errorMessage)
+        public HttpError(object responseDto, int statusCode, string errorCode, string errorMessage = null)
             : this(statusCode, errorCode, errorMessage)
         {
             this.Response = responseDto;
@@ -34,9 +35,9 @@ namespace ServiceStack
             : this((int)statusCode, errorCode, errorMessage){}
 
         public HttpError(int statusCode, string errorCode, string errorMessage)
-            : base(errorMessage ?? errorCode)
+            : base(errorMessage ?? errorCode ?? statusCode.ToString())
         {
-            this.ErrorCode = errorCode;
+            this.ErrorCode = errorCode ?? statusCode.ToString();
             this.Status = statusCode;
             this.Headers = new Dictionary<string, string>();
             this.StatusDescription = errorCode;
@@ -77,7 +78,9 @@ namespace ServiceStack
 
         public IContentTypeWriter ResponseFilter { get; set; }
         
-        public IRequestContext RequestContext { get; set; }
+        public IRequest RequestContext { get; set; }
+
+        public int PaddingLength { get; set; }
 
         public IDictionary<string, string> Options
         {
@@ -114,6 +117,12 @@ namespace ServiceStack
         public static Exception Conflict(string message)
         {
             return new HttpError(HttpStatusCode.Conflict, message);
+        }
+
+        public ResponseStatus ToResponseStatus()
+        {
+            return Response.GetResponseStatus()
+                ?? ResponseStatusUtils.CreateResponseStatus(ErrorCode, Message, null);
         }
     }
 }

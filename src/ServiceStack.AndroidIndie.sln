@@ -1,11 +1,11 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Android", "ServiceStack.Common.AndroidIndie\ServiceStack.Common.Android.csproj", "{BEA92E9F-00B1-4923-BD81-7F3A9CA24408}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces.AndroidIndie", "ServiceStack.Interfaces\ServiceStack.Interfaces.AndroidIndie.csproj", "{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces.Android", "ServiceStack.Interfaces.AndroidIndie\ServiceStack.Interfaces.Android.csproj", "{05A5DDBF-A1A2-4B28-9FF0-C07060A8AEFC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Client.AndroidIndie", "ServiceStack.Client\ServiceStack.Client.AndroidIndie.csproj", "{923E3732-3AEE-42B3-96AB-D3235DAADD48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.Android", "..\..\ServiceStack.Text\src\ServiceStack.Text.Android\ServiceStack.Text.Android\ServiceStack.Text.Android.csproj", "{56838CD4-8EBC-4860-A3E1-1697875BBC61}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.AndroidIndie", "..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.AndroidIndie.csproj", "{579B3FDB-CDAD-44E1-8417-885C38E49A0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,18 +13,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BEA92E9F-00B1-4923-BD81-7F3A9CA24408}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BEA92E9F-00B1-4923-BD81-7F3A9CA24408}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BEA92E9F-00B1-4923-BD81-7F3A9CA24408}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BEA92E9F-00B1-4923-BD81-7F3A9CA24408}.Release|Any CPU.Build.0 = Release|Any CPU
-		{05A5DDBF-A1A2-4B28-9FF0-C07060A8AEFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{05A5DDBF-A1A2-4B28-9FF0-C07060A8AEFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{05A5DDBF-A1A2-4B28-9FF0-C07060A8AEFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{05A5DDBF-A1A2-4B28-9FF0-C07060A8AEFC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{56838CD4-8EBC-4860-A3E1-1697875BBC61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{56838CD4-8EBC-4860-A3E1-1697875BBC61}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{56838CD4-8EBC-4860-A3E1-1697875BBC61}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{56838CD4-8EBC-4860-A3E1-1697875BBC61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{923E3732-3AEE-42B3-96AB-D3235DAADD48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{923E3732-3AEE-42B3-96AB-D3235DAADD48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{923E3732-3AEE-42B3-96AB-D3235DAADD48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{923E3732-3AEE-42B3-96AB-D3235DAADD48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

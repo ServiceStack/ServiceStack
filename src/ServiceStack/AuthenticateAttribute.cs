@@ -2,8 +2,6 @@
 using System.Collections.Specialized;
 using System.Linq;
 using ServiceStack.Auth;
-using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -50,7 +48,7 @@ namespace ServiceStack
             this.Provider = provider;
         }
 
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             if (AuthenticateService.AuthProviders == null)
                 throw new InvalidOperationException(
@@ -68,11 +66,8 @@ namespace ServiceStack
                 return;
             }
 
-            if (matchingOAuthConfigs.Any(x => x.Provider == DigestAuthProvider.Name))
-                AuthenticateIfDigestAuth(req, res);
-
-            if (matchingOAuthConfigs.Any(x => x.Provider == BasicAuthProvider.Name))
-                AuthenticateIfBasicAuth(req, res);
+            matchingOAuthConfigs.OfType<IAuthWithRequest>()
+                .Each(x => x.PreAuthenticate(req, res));
 
             var session = req.GetSession();
             if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
@@ -83,66 +78,32 @@ namespace ServiceStack
             }
         }
 
-        protected bool DoHtmlRedirectIfConfigured(IHttpRequest req, IHttpResponse res, bool includeRedirectParam = false)
+        protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)
         {
             var htmlRedirect = this.HtmlRedirect ?? AuthenticateService.HtmlRedirect;
             if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
             {
-                var url = req.ResolveAbsoluteUrl(htmlRedirect);
-                if (includeRedirectParam)
-                {
-                    var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
-                    url = url.AddQueryParam("redirect", absoluteRequestPath);
-                }
-
-                res.RedirectToUrl(url);
+                DoHtmlRedirect(htmlRedirect, req, res, includeRedirectParam);
                 return true;
             }
-
             return false;
         }
 
-        public static void AuthenticateIfBasicAuth(IHttpRequest req, IHttpResponse res)
+        public static void DoHtmlRedirect(string redirectUrl, IRequest req, IResponse res, bool includeRedirectParam)
         {
-            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
-            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
-
-            var userPass = req.GetBasicAuthUserAndPassword();
-            if (userPass != null)
+            var url = req.ResolveAbsoluteUrl(redirectUrl);
+            if (includeRedirectParam)
             {
-                var authService = req.TryResolve<AuthenticateService>();
-                authService.RequestContext = new HttpRequestContext(req, res, null);
-                var response = authService.Post(new Authenticate
-                {
-                    provider = BasicAuthProvider.Name,
-                    UserName = userPass.Value.Key,
-                    Password = userPass.Value.Value
-                });
+                var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
+                url = url.AddQueryParam(HostContext.ResolveLocalizedString(LocalizedStrings.Redirect), absoluteRequestPath);
             }
+
+            res.RedirectToUrl(url);
         }
 
-        public static void AuthenticateIfDigestAuth(IHttpRequest req, IHttpResponse res)
+        private static string ToQueryString(INameValueCollection queryStringCollection)
         {
-            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
-            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
-
-            var digestAuth = req.GetDigestAuth();
-            if (digestAuth != null)
-            {
-                var authService = req.TryResolve<AuthenticateService>();
-                authService.RequestContext = new HttpRequestContext(req, res, null);
-                var response = authService.Post(new Authenticate
-                {
-                    provider = DigestAuthProvider.Name,
-                    nonce = digestAuth["nonce"],
-                    uri = digestAuth["uri"],
-                    response = digestAuth["response"],
-                    qop = digestAuth["qop"],
-                    nc = digestAuth["nc"],
-                    cnonce = digestAuth["cnonce"],
-                    UserName = digestAuth["username"]
-                });
-            }
+            return ToQueryString((NameValueCollection)queryStringCollection.Original);
         }
 
         private static string ToQueryString(NameValueCollection queryStringCollection)
@@ -153,5 +114,28 @@ namespace ServiceStack
             return "?" + queryStringCollection.ToFormUrlEncoded();
         }
 
+        protected bool Equals(AuthenticateAttribute other)
+        {
+            return base.Equals(other) && string.Equals(Provider, other.Provider) && string.Equals(HtmlRedirect, other.HtmlRedirect);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((AuthenticateAttribute) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = base.GetHashCode();
+                hashCode = (hashCode*397) ^ (Provider != null ? Provider.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (HtmlRedirect != null ? HtmlRedirect.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
     }
 }

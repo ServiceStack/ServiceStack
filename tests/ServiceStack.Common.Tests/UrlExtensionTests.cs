@@ -11,6 +11,18 @@ namespace ServiceStack.Common.Tests
         public long Id { get; set; }
     }
 
+    public class FluentJustId : IReturn
+    {
+        public long Id { get; set; }
+    }
+
+    [FallbackRoute("/route/{Id}")]
+    public class FallbackJustId : IReturn
+    {
+        public long Id { get; set; }
+        public string Name { get; set; }
+    }
+
     [Route("/route/{Id}")]
 	public class FieldId : IReturn
 	{
@@ -96,7 +108,27 @@ namespace ServiceStack.Common.Tests
             Assert.That(url, Is.EqualTo("/route/1"));
         }
 
-		[Test]
+        [Test]
+        public void Can_create_url_with_FluentJustId()
+        {
+            typeof(FluentJustId)
+                .AddAttributes(new RouteAttribute("/route/{Id}"));
+
+            var url = new FluentJustId { Id = 1 }.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/route/1"));
+        }
+
+        [Test]
+        public void Can_create_url_with_FallbackJustId()
+        {
+            var url = new FallbackJustId { Id = 1 }.ToGetUrl();
+            Assert.That(url, Is.EqualTo("/route/1"));
+
+            url = new FallbackJustId { Id = 1, Name = "foo" }.ToGetUrl();
+            Assert.That(url, Is.EqualTo("/route/1?name=foo"));
+        }
+
+        [Test]
 		public void Can_create_url_with_FieldId()
 		{
 			using (JsConfig.BeginScope())
@@ -107,7 +139,6 @@ namespace ServiceStack.Common.Tests
 
 			}
 		}
-
 
         [Test]
         public void Can_create_url_with_ArrayIds()
@@ -222,5 +253,24 @@ namespace ServiceStack.Common.Tests
             Assert.That(Uri.EscapeDataString(data), Is.EqualTo("amp%26mod%25space%20comma%2Cdot.colon%3Asemicolon%3Bslash%2F"));
         }
 
+        [Test]
+        public void Can_generate_OneWay_path()
+        {
+            var url = new JustId { Id = 1 }.ToOneWayUrl();
+            Assert.That(url, Is.EqualTo("/json/oneway/JustId?id=1"));
+
+            url = new JustId { Id = 1 }.ToOneWayUrl(format: "xml");
+            Assert.That(url, Is.EqualTo("/xml/oneway/JustId?id=1"));
+        }
+
+        [Test]
+        public void Can_generate_Reply_path()
+        {
+            var url = new JustId { Id = 1 }.ToReplyUrl();
+            Assert.That(url, Is.EqualTo("/json/reply/JustId?id=1"));
+
+            url = new JustId { Id = 1 }.ToReplyUrl(format: "xml");
+            Assert.That(url, Is.EqualTo("/xml/reply/JustId?id=1"));
+        }
     }
 }

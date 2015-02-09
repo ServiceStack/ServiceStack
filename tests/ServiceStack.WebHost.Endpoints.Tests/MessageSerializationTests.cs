@@ -43,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			using (var reader = msg.GetReaderAtBodyContents())
 			{
 				var requestXml = reader.ReadOuterXml();
-				var fromRequest = (Reverse)DataContractDeserializer.Instance.Parse(requestXml, typeof(Reverse));
+				var fromRequest = (Reverse)DataContractSerializer.Instance.DeserializeFromString(requestXml, typeof(Reverse));
 				Assert.That(fromRequest.Value, Is.EqualTo(request.Value));
 			}
 		}
@@ -79,10 +79,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				var msg = Message.CreateMessage(xnr, msgXml.Length, MessageVersion.Soap12WSAddressingAugust2004);
 
 				var xml = msg.GetReaderAtBodyContents().ReadOuterXml();
-				Console.WriteLine("BODY: " + DataContractSerializer.Instance.Parse(request));
+				Console.WriteLine("BODY: " + DataContractSerializer.Instance.SerializeToString(request));
 				Console.WriteLine("EXPECTED BODY: " + xml);
 
-				var fromRequest = (Reverse)DataContractDeserializer.Instance.Parse(xml, typeof(Reverse));
+				var fromRequest = (Reverse)DataContractSerializer.Instance.DeserializeFromString(xml, typeof(Reverse));
 				Assert.That(fromRequest.Value, Is.EqualTo(request.Value));
 			}
 
@@ -149,8 +149,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				requestXml = reader.ReadOuterXml();
 			}
 
-			var requestType = typeof (Reverse);
-			var request = (Reverse)DataContractDeserializer.Instance.Parse(requestXml, requestType);
+			var requestType = typeof(Reverse);
+			var request = (Reverse)DataContractSerializer.Instance.DeserializeFromString(requestXml, requestType);
 			Assert.That(request.Value, Is.EqualTo("Testing"));
 		}
 
@@ -165,7 +165,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			protected override void OnWriteBodyContents(XmlDictionaryWriter writer)
 			{
-				var xml = DataContractSerializer.Instance.Parse(dto);
+				var xml = DataContractSerializer.Instance.SerializeToString(dto);
 				writer.WriteString(xml);
 			}
 		}

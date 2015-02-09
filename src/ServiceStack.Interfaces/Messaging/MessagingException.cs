@@ -1,41 +1,35 @@
-using System;
-using System.Runtime.Serialization;
+﻿using System;
+using ServiceStack.Model;
 
 namespace ServiceStack.Messaging
 {
-	/// <summary>
-	/// Base Exception for all ServiceStack.Messaging exceptions
-	/// </summary>
-	public class MessagingException
-		: Exception
-	{
-		public MessagingException()
-		{
-		}
+    public class MessagingException : Exception, IHasResponseStatus, IResponseStatusConvertible
+    {
+        public MessagingException() {}
 
-		public MessagingException(string message)
-			: base(message)
-		{
-		}
+        public MessagingException(string message) : base(message) {}
 
-		public MessagingException(string message, Exception innerException)
-			: base(message, innerException)
-		{
-		}
+        public MessagingException(string message, Exception innerException) : base(message, innerException) {}
 
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
-		protected MessagingException(SerializationInfo info, StreamingContext context)
-			: base(info, context)
-		{
-		}
-#endif
-        public virtual MessageError ToMessageError()
-		{
-			return new MessageError {
-				ErrorCode = GetType().Name,
-				Message = this.Message,
-				StackTrace = this.ToString(), //Also includes inner exception
-			};
-		}
-	}
+        public MessagingException(ResponseStatus responseStatus, Exception innerException = null)
+            : base(responseStatus.Message ?? responseStatus.ErrorCode, innerException)
+        {
+            ResponseStatus = responseStatus;
+        }
+
+        public MessagingException(ResponseStatus responseStatus, object responseDto, Exception innerException = null)
+            : this(responseStatus, innerException)
+        {
+            ResponseDto = responseDto;
+        }
+
+        public object ResponseDto { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+
+        public ResponseStatus ToResponseStatus()
+        {
+            return ResponseStatus;
+        }
+    }
 }

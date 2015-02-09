@@ -26,6 +26,11 @@
             </summary>        
             <returns>RsaKeyPair</returns>
         </member>
+        <member name="M:ServiceStack.EnumerableExtensions.Safe``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Return T[0] when enumerable is null, safe to use in enumerations like foreach
+            </summary>
+        </member>
         <member name="M:ServiceStack.EnumExtensions.ToDescription(System.Enum)">
             <summary>
             Gets the textual description of the enum if it has one. e.g.
@@ -41,6 +46,45 @@
             </summary>
             <param name="enum"></param>
             <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Logging.ConsoleLogFactory">
+            <summary>
+            Creates a Console Logger, that logs all messages to: System.Console
+            
+            Made public so its testable
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.ConsoleLogger">
+            <summary>
+            Default logger is to Console.WriteLine
+            
+            Made public so its testable
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ConsoleLogger.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ConsoleLogger.#ctor(System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ConsoleLogger.Log(System.Object,System.Exception)">
+            <summary>
+            Logs the specified message.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ConsoleLogger.LogFormat(System.Object,System.Object[])">
+            <summary>
+            Logs the format.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.ConsoleLogger.Log(System.Object)">
+            <summary>
+            Logs the specified message.
+            </summary>
         </member>
         <member name="T:ServiceStack.IPAddressExtensions">
             <summary>
@@ -161,6 +205,26 @@
             Otherwise logs the exception and returns false if an exception was thrown.
             </summary>
             <param name="action">The action.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.PerfUtils.MeasureFor(System.Action,System.Int32)">
+            <summary>
+            Runs an action for a minimum of runForMs
+            </summary>
+            <param name="fn">What to run</param>
+            <param name="runForMs">Minimum ms to run for</param>
+            <returns>time elapsed in micro seconds</returns>
+        </member>
+        <member name="M:ServiceStack.PerfUtils.Measure(System.Action,System.Int32,System.Int32,System.Action,System.Action,System.Action)">
+            <summary>
+            Returns average microseconds an action takes when run for the specified runForMs
+            </summary>
+            <param name="fn">What to run</param>
+            <param name="times">How many times to run for each iteration</param>
+            <param name="runForMs">Minimum ms to run for</param>
+            <param name="setup"></param>
+            <param name="warmup"></param>
+            <param name="teardown"></param>
             <returns></returns>
         </member>
     </members>

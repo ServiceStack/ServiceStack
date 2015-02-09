@@ -19,10 +19,10 @@ namespace ServiceStack
              if (endpointUrl.IndexOf("format=jsv") >= 0)
                  return new JsvServiceClient(endpointUrl);
 
+#if !(SL5 || XBOX || ANDROID || __IOS__ || PCL)
              if (endpointUrl.IndexOf("format=soap11") >= 0)
                  return new Soap11ServiceClient(endpointUrl);
 
-#if !(SILVERLIGHT || MONOTOUCH || XBOX || __ANDROID__)
              if (endpointUrl.IndexOf("format=soap12") >= 0)
                  return new Soap12ServiceClient(endpointUrl);
 #endif

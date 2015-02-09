@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Configuration;
 using System.Globalization;
 using ServiceStack.FluentValidation;
-using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 
@@ -60,6 +58,16 @@ namespace ServiceStack.Auth
 
         public IValidator<Register> RegistrationValidator { get; set; }
 
+        public IAuthEvents AuthEvents { get; set; }
+
+        /// <summary>
+        /// Update an existing registraiton
+        /// </summary>
+        public object Put(Register request)
+        {
+            return Post(request);
+        }
+
         /// <summary>
         ///     Create new Registration
         /// </summary>
@@ -68,7 +76,10 @@ namespace ServiceStack.Auth
             if (HostContext.GlobalRequestFilters == null
                 || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
             {
-                RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
+                if (RegistrationValidator != null)
+                {
+                    RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
+                }
             }
 
             var userAuthRepo = AuthRepo.AsUserAuthRepository(GetResolver());
@@ -90,17 +101,13 @@ namespace ServiceStack.Auth
                 ? userAuthRepo.CreateUserAuth(newUserAuth, request.Password)
                 : userAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
 
-            if (registerNewUser)
-            {
-                session.OnRegistered(this);
-            }
-
             if (request.AutoLogin.GetValueOrDefault())
             {
                 using (var authService = base.ResolveService<AuthenticateService>())
                 {
                     var authResponse = authService.Post(
                         new Authenticate {
+                            provider = CredentialsAuthProvider.Name,
                             UserName = request.UserName ?? request.Email,
                             Password = request.Password,
                             Continue = request.Continue
@@ -123,6 +130,14 @@ namespace ServiceStack.Auth
                 }
             }
 
+            if (registerNewUser)
+            {
+                session = this.GetSession();
+                session.OnRegistered(this);
+                if (AuthEvents != null)
+                    AuthEvents.OnRegistered(this.Request, session, this);
+            }
+
             if (response == null)
             {
                 response = new RegisterResponse
@@ -132,7 +147,7 @@ namespace ServiceStack.Auth
                 };
             }
 
-            var isHtml = RequestContext.ResponseContentType.MatchesContentType(MimeTypes.Html);
+            var isHtml = Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
             if (isHtml)
             {
                 if (string.IsNullOrEmpty(request.Continue))
@@ -155,7 +170,7 @@ namespace ServiceStack.Auth
         }
 
         /// <summary>
-        ///     Logic to update UserAuth from Registration info, not enabled on OnPut because of security.
+        /// Logic to update UserAuth from Registration info, not enabled on PUT because of security.
         /// </summary>
         public object UpdateUserAuth(Register request)
         {
@@ -177,10 +192,10 @@ namespace ServiceStack.Auth
 
             var existingUser = userAuthRepo.GetUserAuth(session, null);
             if (existingUser == null)
-                throw HttpError.NotFound("User does not exist");
+                throw HttpError.NotFound(ErrorMessages.UserNotExists);
 
             var newUserAuth = ToUserAuth(request);
-            userAuthRepo.UpdateUserAuth(newUserAuth, existingUser, request.Password);
+            userAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
 
             return new RegisterResponse
             {

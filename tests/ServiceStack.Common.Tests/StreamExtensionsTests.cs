@@ -30,7 +30,7 @@ namespace ServiceStack.Common.Tests
 		{
 			var simpleDto = new SimpleDto(1, "name");
 
-			var simpleDtoXml = DataContractSerializer.Instance.Parse(simpleDto);
+			var simpleDtoXml = DataContractSerializer.Instance.SerializeToString(simpleDto);
 
 			var simpleDtoZip = simpleDtoXml.Deflate();
 
@@ -40,7 +40,7 @@ namespace ServiceStack.Common.Tests
 
 			Assert.That(deserializedSimpleDtoXml, Is.Not.Empty);
 
-			var deserializedSimpleDto = DataContractDeserializer.Instance.Parse<SimpleDto>(
+			var deserializedSimpleDto = DataContractSerializer.Instance.DeserializeFromString<SimpleDto>(
 				deserializedSimpleDtoXml);
 
 			Assert.That(deserializedSimpleDto, Is.Not.Null);
@@ -54,7 +54,7 @@ namespace ServiceStack.Common.Tests
 		{
 			var simpleDto = new SimpleDto(1, "name");
 
-			var simpleDtoXml = DataContractSerializer.Instance.Parse(simpleDto);
+			var simpleDtoXml = DataContractSerializer.Instance.SerializeToString(simpleDto);
 
 			var simpleDtoZip = simpleDtoXml.GZip();
 
@@ -64,7 +64,7 @@ namespace ServiceStack.Common.Tests
 
 			Assert.That(deserializedSimpleDtoXml, Is.Not.Empty);
 
-			var deserializedSimpleDto = DataContractDeserializer.Instance.Parse<SimpleDto>(
+			var deserializedSimpleDto = DataContractSerializer.Instance.DeserializeFromString<SimpleDto>(
 				deserializedSimpleDtoXml);
 
 			Assert.That(deserializedSimpleDto, Is.Not.Null);

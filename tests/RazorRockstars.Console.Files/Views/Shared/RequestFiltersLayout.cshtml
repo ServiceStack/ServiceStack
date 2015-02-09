@@ -1,0 +1,24 @@
+﻿@{
+    ViewBag.Title = "Page testing request filters";
+
+    base.ApplyRequestFilters(new RedirectWithoutQueryString());
+    if (Request.QueryString.Count > 0)
+    {
+        throw new System.IO.InvalidDataException();
+    }
+}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>RequestFilters Layout</title>
+    </head>
+    <body>        
+        <h1>@ViewBag.Title</h1>
+        
+        <div id="content">
+            @RenderBody()
+        </div>
+    </body>
+</html>
+
+<!--template:RequestFiltersLayout.cshtml-->

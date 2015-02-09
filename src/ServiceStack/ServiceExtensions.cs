@@ -6,7 +6,6 @@ using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Redis;
 using ServiceStack.Testing;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -22,7 +21,7 @@ namespace ServiceStack
         {
             return new HttpResult(HttpStatusCode.Redirect, message)
             {
-                ContentType = service.RequestContext.ResponseContentType,
+                ContentType = service.Request.ResponseContentType,
                 Headers = {
                     { HttpHeaders.Location, url }
                 },
@@ -34,7 +33,7 @@ namespace ServiceStack
             return new HttpResult
             {
                 StatusCode = HttpStatusCode.Unauthorized,
-                ContentType = service.RequestContext.ResponseContentType,
+                ContentType = service.Request.ResponseContentType,
                 Headers = {
                     { HttpHeaders.WwwAuthenticate, AuthenticateService.DefaultOAuthProvider + " realm=\"{0}\"".Fmt(AuthenticateService.DefaultOAuthRealm) }
                 },
@@ -43,7 +42,7 @@ namespace ServiceStack
 
         public static string GetSessionId(this IServiceBase service)
         {
-            var req = service.RequestContext.Get<IHttpRequest>();
+            var req = service.Request;
             var id = req.GetSessionId();
             if (id == null)
                 throw new ArgumentNullException("Session not set. Is Session being set in RequestFilters?");
@@ -67,21 +66,21 @@ namespace ServiceStack
         {
             if (service == null) return;
 
-            service.RequestContext.Get<IHttpRequest>().SaveSession(session, expiresIn);
+            service.Request.SaveSession(session, expiresIn);
         }
 
         public static void RemoveSession(this IServiceBase service)
         {
             if (service == null) return;
 
-            service.RequestContext.Get<IHttpRequest>().RemoveSession();
+            service.Request.RemoveSession();
         }
 
         public static void RemoveSession(this Service service)
         {
             if (service == null) return;
 
-            service.RequestContext.Get<IHttpRequest>().RemoveSession();
+            service.Request.RemoveSession();
         }
 
         public static void CacheSet<T>(this ICacheClient cache, string key, T value, TimeSpan? expiresIn)
@@ -92,7 +91,7 @@ namespace ServiceStack
                 cache.Set(key, value);
         }
 
-        public static void SaveSession(this IHttpRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
+        public static void SaveSession(this IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
         {
             if (httpReq == null) return;
 
@@ -105,13 +104,20 @@ namespace ServiceStack
             httpReq.Items[RequestItemsSessionKey] = session;
         }
 
-        public static void RemoveSession(this IHttpRequest httpReq)
+        public static void RemoveSession(this IRequest httpReq)
+        {
+            RemoveSession(httpReq, httpReq.GetSessionId());
+        }
+
+        public static void RemoveSession(this IRequest httpReq, string sessionId)
         {
             if (httpReq == null) return;
+            if (sessionId == null)
+                throw new ArgumentNullException("sessionId");
 
             using (var cache = httpReq.GetCacheClient())
             {
-                var sessionKey = SessionFeature.GetSessionKey(httpReq.GetSessionId());
+                var sessionKey = SessionFeature.GetSessionKey(sessionId);
                 cache.Remove(sessionKey);
             }
 
@@ -120,19 +126,11 @@ namespace ServiceStack
 
         public static IAuthSession GetSession(this IServiceBase service, bool reload = false)
         {
-            return service.RequestContext.Get<IHttpRequest>().GetSession(reload);
-        }
-
-        public static IAuthSession GetSession(this Service service, bool reload = false)
-        {
-            var req = service.RequestContext.Get<IHttpRequest>();
-            if (req.GetSessionId() == null)
-                service.RequestContext.Get<IHttpResponse>().CreateSessionIds(req);
-            return req.GetSession(reload);
+            return service.Request.GetSession(reload);
         }
 
         public const string RequestItemsSessionKey = "__session";
-        public static IAuthSession GetSession(this IHttpRequest httpReq, bool reload = false)
+        public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
             if (httpReq == null) return null;
 
@@ -153,6 +151,10 @@ namespace ServiceStack
                     session.Id = sessionId;
                     session.CreatedAt = session.LastModified = DateTime.UtcNow;
                     session.OnCreated(httpReq);
+
+                    var authEvents = HostContext.TryResolve<IAuthEvents>();
+                    if (authEvents != null) 
+                        authEvents.OnCreated(httpReq, session);
                 }
 
                 if (httpReq.Items.ContainsKey(RequestItemsSessionKey))
@@ -165,7 +167,7 @@ namespace ServiceStack
 
         public static object RunAction<TService, TRequest>(
             this TService service, TRequest request, Func<TService, TRequest, object> invokeAction,
-            IRequestContext requestContext = null)
+            IRequest requestContext = null)
             where TService : IService
         {
             var actionCtx = new ActionContext
@@ -177,7 +179,7 @@ namespace ServiceStack
                 ServiceAction = (instance, req) => invokeAction(service, request)
             };
 
-            requestContext = requestContext ?? new MockRequestContext();
+            requestContext = requestContext ?? new MockHttpRequest();
             ServiceController.InjectRequestContext(service, requestContext);
             var runner = HostContext.CreateServiceRunner<TRequest>(actionCtx);
             var response = runner.Execute(requestContext, service, request);

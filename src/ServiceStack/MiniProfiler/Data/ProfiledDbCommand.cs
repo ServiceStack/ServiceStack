@@ -54,7 +54,7 @@ namespace ServiceStack.MiniProfiler.Data
                 && (setter = prop.GetSetMethod()) != null
                 )
             {
-                var method = new DynamicMethod(commandType.Name + "_BindByName", null, new Type[] { typeof(IDbCommand), typeof(bool) });
+                var method = new DynamicMethod(commandType.GetOperationName() + "_BindByName", null, new Type[] { typeof(IDbCommand), typeof(bool) });
                 var il = method.GetILGenerator();
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Castclass, commandType);
@@ -253,7 +253,7 @@ namespace ServiceStack.MiniProfiler.Data
         public ProfiledDbCommand Clone()
         { // EF expects ICloneable
             ICloneable tail = _cmd as ICloneable;
-            if (tail == null) throw new NotSupportedException("Underlying " + _cmd.GetType().Name + " is not cloneable");
+            if (tail == null) throw new NotSupportedException("Underlying " + _cmd.GetType().GetOperationName() + " is not cloneable");
             return new ProfiledDbCommand((DbCommand)tail.Clone(), _conn, _profiler);
         }
         object ICloneable.Clone() { return Clone(); }

@@ -21,14 +21,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	{
         public object Any(Session request)
 		{
-			var untyped = Session["untyped"] as CustomSession ?? new CustomSession();			
-			var typed = Session.Get<CustomSession>("typed") ?? new CustomSession();
+			var untyped = SessionBag["untyped"] as CustomSession ?? new CustomSession();			
+			var typed = SessionBag.Get<CustomSession>("typed") ?? new CustomSession();
 
 			untyped.Counter++;
 			typed.Counter++;
 
-			Session["untyped"] = untyped;
-			Session.Set("typed", typed);
+			SessionBag["untyped"] = untyped;
+			SessionBag.Set("typed", typed);
 
 			var response = new SessionResponse {
 				Typed = typed,

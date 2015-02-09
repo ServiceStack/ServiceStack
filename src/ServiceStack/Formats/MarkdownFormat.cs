@@ -7,7 +7,6 @@ using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Support.Markdown;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Formats
@@ -73,8 +72,6 @@ namespace ServiceStack.Formats
 
         readonly TemplateProvider templateProvider = new TemplateProvider(DefaultTemplateName);
 
-        public List<string> SkipPaths { get; set; }
-
         public MarkdownFormat()
         {
             markdown = new MarkdownSharp.Markdown(); //Note: by default MarkdownDeep is used
@@ -83,11 +80,6 @@ namespace ServiceStack.Formats
             this.MarkdownGlobalHelpers = new Dictionary<string, Type>();
             this.FindMarkdownPagesFn = FindMarkdownPages;
             this.ReplaceTokens = new Dictionary<string, string>();
-            //Skip scanning common VS.NET extensions
-            this.SkipPaths = new List<string> {
-                "/obj/", 
-                "/bin/",
-            };
         }
 
         internal static readonly char[] DirSeps = new[] { '\\', '/' };
@@ -178,7 +170,7 @@ namespace ServiceStack.Formats
             return markdownPage;
         }
 
-        public bool ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, object dto)
+        public bool ProcessRequest(IRequest httpReq, IResponse httpRes, object dto)
         {
             MarkdownPage markdownPage;
             if ((markdownPage = GetViewPageByResponse(dto, httpReq)) == null)
@@ -190,7 +182,7 @@ namespace ServiceStack.Formats
             return ProcessMarkdownPage(httpReq, markdownPage, dto, httpRes);
         }
 
-        public bool HasView(string viewName, IHttpRequest httpReq = null)
+        public bool HasView(string viewName, IRequest httpReq = null)
         {
             return GetViewPage(viewName, httpReq) != null;
         }
@@ -209,7 +201,7 @@ namespace ServiceStack.Formats
             return output;
         }
 
-        public MarkdownPage GetViewPage(string viewName, IHttpRequest httpReq)
+        public MarkdownPage GetViewPage(string viewName, IRequest httpReq)
         {
             var view = GetViewPage(viewName);
             if (view != null) return view;
@@ -228,7 +220,7 @@ namespace ServiceStack.Formats
             return view;
         }
 
-        public bool ProcessMarkdownPage(IHttpRequest httpReq, MarkdownPage markdownPage, object dto, IHttpResponse httpRes)
+        public bool ProcessMarkdownPage(IRequest httpReq, MarkdownPage markdownPage, object dto, IResponse httpRes)
         {
             httpRes.AddHeaderLastModified(markdownPage.GetLastModified());
 
@@ -316,7 +308,7 @@ namespace ServiceStack.Formats
         /// <summary>
         /// Render Markdown for text/markdown and text/plain ContentTypes
         /// </summary>
-        public void SerializeToStream(IRequestContext requestContext, object response, Stream stream)
+        public void SerializeToStream(IRequest request, object response, Stream stream)
         {
             var dto = response.GetDto();
             var text = dto as string;
@@ -328,8 +320,8 @@ namespace ServiceStack.Formats
             }
 
             MarkdownPage markdownPage;
-            if ((markdownPage = GetViewPageByResponse(dto, requestContext.Get<IHttpRequest>())) == null)
-                throw new InvalidDataException(ErrorPageNotFound.FormatWith(GetPageName(dto, requestContext)));
+            if ((markdownPage = GetViewPageByResponse(dto, request)) == null)
+                throw new InvalidDataException(ErrorPageNotFound.FormatWith(GetPageName(dto, request)));
 
             ReloadModifiedPageAndTemplates(markdownPage);
 
@@ -339,19 +331,18 @@ namespace ServiceStack.Formats
             stream.Write(markupBytes, 0, markupBytes.Length);
         }
 
-        public string GetPageName(object dto, IRequestContext requestContext)
+        public string GetPageName(object dto, IRequest req)
         {
-            var httpRequest = requestContext != null ? requestContext.Get<IHttpRequest>() : null;
             var httpResult = dto as IHttpResult;
             if (httpResult != null)
             {
                 dto = httpResult.Response;
             }
-            if (dto != null) return dto.GetType().Name;
-            return httpRequest != null ? httpRequest.OperationName : null;
+            if (dto != null) return dto.GetType().GetOperationName();
+            return req != null ? req.OperationName : null;
         }
 
-        public MarkdownPage GetViewPageByResponse(object dto, IHttpRequest httpReq)
+        public MarkdownPage GetViewPageByResponse(object dto, IRequest httpReq)
         {
             var httpResult = dto as IHttpResult;
             if (httpResult != null)
@@ -366,7 +357,7 @@ namespace ServiceStack.Formats
 
             if (dto != null)
             {
-                var responseTypeName = dto.GetType().Name;
+                var responseTypeName = dto.GetType().GetOperationName();
                 var markdownPage = GetViewPage(responseTypeName);
                 if (markdownPage != null) return markdownPage;
             }
@@ -435,9 +426,9 @@ namespace ServiceStack.Formats
             var markDownFiles = VirtualPathProvider.GetAllMatchingFiles("*." + MarkdownExt);
             foreach (var markDownFile in markDownFiles)
             {
-                if (ShouldSkipPath(markDownFile)) continue;
+                if (markDownFile.ShouldSkipPath()) continue;
 
-                if (markDownFile.GetType().Name != "ResourceVirtualFile")
+                if (markDownFile.GetType().GetOperationName() != "ResourceVirtualFile")
                     hasReloadableWebPages = true;
 
                 var pageName = markDownFile.Name.WithoutExtension();
@@ -467,16 +458,6 @@ namespace ServiceStack.Formats
 		public void RegisterMarkdownPage(MarkdownPage markdownPage)
         {
             AddPage(markdownPage);
-        }
-
-        private bool ShouldSkipPath(IVirtualFile csHtmlFile)
-        {
-            foreach (var skipPath in SkipPaths)
-            {
-                if (csHtmlFile.VirtualPath.StartsWith(skipPath, StringComparison.InvariantCultureIgnoreCase))
-                    return true;
-            }
-            return false;
         }
 
         public void AddPage(MarkdownPage page)

@@ -109,7 +109,7 @@ namespace ServiceStack.Html
 			var parameterTypes = (from p in parameters select p.ParameterType).ToArray();
 
 			// based on http://msdn.microsoft.com/en-us/library/system.reflection.emit.typebuilder.definemethodoverride.aspx
-			var newMethod = newType.DefineMethod(interfaceMethod.DeclaringType.Name + "." + interfaceMethod.Name,
+			var newMethod = newType.DefineMethod(interfaceMethod.DeclaringType.GetOperationName() + "." + interfaceMethod.Name,
 				MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final,
 				interfaceMethod.ReturnType, parameterTypes);
 

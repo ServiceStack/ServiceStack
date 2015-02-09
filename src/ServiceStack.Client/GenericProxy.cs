@@ -1,4 +1,4 @@
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX && !ANDROIDINDIE
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
 using System.ServiceModel;
 using System.ServiceModel.Description;
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Formats;
+using ServiceStack.Html;
 using ServiceStack.Markdown;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;

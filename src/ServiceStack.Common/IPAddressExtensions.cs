@@ -113,7 +113,7 @@ namespace ServiceStack
 
             try
             {
-#if !SILVERLIGHT 
+#if !SL5 
                 foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
                 {
                     foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
@@ -143,7 +143,7 @@ namespace ServiceStack
 
             try
             {
-#if !SILVERLIGHT 
+#if !SL5 
                 foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
                 {
                     foreach (var uipi in ni.GetIPProperties().UnicastAddresses)

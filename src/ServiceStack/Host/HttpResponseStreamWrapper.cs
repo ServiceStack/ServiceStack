@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using ServiceStack.Web;
 
@@ -41,11 +42,15 @@ namespace ServiceStack.Host
 
         public Stream OutputStream { get; private set; }
 
+        public object Dto { get; set; }
+
         public void Write(string text)
         {
             var bytes = UTF8EncodingWithoutBom.GetBytes(text);
             OutputStream.Write(bytes, 0, bytes.Length);
         }
+
+        public bool UseBufferedStream { get; set; }
 
         public void Close()
         {
@@ -74,5 +79,11 @@ namespace ServiceStack.Host
         public bool IsClosed { get; private set; }
 
         public void SetContentLength(long contentLength) {}
+
+        public bool KeepAlive { get; set; }
+
+        public void SetCookie(Cookie cookie)
+        {
+        }
     }
 }

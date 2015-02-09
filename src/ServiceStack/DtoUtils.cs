@@ -20,15 +20,9 @@ namespace ServiceStack
 
         public static ResponseStatus ToResponseStatus(this Exception exception)
         {
-            var responseStatusConverter = exception as IResponseStatusConvertible;
-            if (responseStatusConverter != null)
-            {
-                return responseStatusConverter.ToResponseStatus();
-            }
-
-            var httpError = exception as IHttpError;
-            return httpError != null
-                ? CreateResponseStatus(httpError.ErrorCode, httpError.Message)
+            var customStatus = exception as IResponseStatusConvertible;
+            return customStatus != null 
+                ? customStatus.ToResponseStatus() 
                 : CreateResponseStatus(exception.GetType().Name, exception.Message);
         }
 
@@ -164,6 +158,8 @@ namespace ServiceStack
 
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
 
+            HostContext.OnExceptionTypeFilter(ex, responseStatus);
+
             return errorResponse;
         }
         
@@ -183,7 +179,7 @@ namespace ServiceStack
                 //Serializing request successfully is not critical and only provides added error info
             }
 
-            return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", (request?? new object()).GetType().Name, DateTime.UtcNow, requestString);
+            return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", (request?? new object()).GetType().GetOperationName(), DateTime.UtcNow, requestString);
         }
     }
 }

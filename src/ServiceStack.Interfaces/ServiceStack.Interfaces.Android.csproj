@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</ProjectGuid>
+    <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceStack</RootNamespace>
+    <AssemblyName>ServiceStack.Interfaces</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
+    <OutputPath>bin\AndroidDebug</OutputPath>
+    <DefineConstants>TRACE;DEBUG;ANDROID</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidLinkMode>None</AndroidLinkMode>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>True</Optimize>
+    <OutputPath>Bin\Android</OutputPath>
+    <DefineConstants>TRACE;ANDROID</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AttributeBase.cs" />
+    <Compile Include="Caching\ICacheClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Caching\IRemoveByPattern.cs" />
+    <Compile Include="Caching\IDeflateProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Caching\IGZipProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Caching\IMemcachedClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Caching\ISession.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Caching\ISessionFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Configuration\IContainerAdapter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Configuration\IRelease.cs" />
+    <Compile Include="Configuration\IAppSettings.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Configuration\ITypeFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DataAnnotations\BelongToAttribute.cs" />
+    <Compile Include="DataAnnotations\ComputeAttribute.cs" />
+    <Compile Include="DataAnnotations\DescriptionAttribute.cs" />
+    <Compile Include="DataAnnotations\RangeAttribute.cs" />
+    <Compile Include="DataAnnotations\ReferenceAttribute.cs" />
+    <Compile Include="DataAnnotations\DecimalLengthAttribute.cs" />
+    <Compile Include="DataAnnotations\ForeignKeyAttribute.cs" />
+    <Compile Include="DataAnnotations\IgnoreAttribute.cs" />
+    <Compile Include="DataAnnotations\PrimaryKeyAttribute.cs" />
+    <Compile Include="DataAnnotations\RequiredAttribute.cs" />
+    <Compile Include="DataAnnotations\SchemaAttribute.cs" />
+    <Compile Include="DataAnnotations\SequenceAttribute.cs" />
+    <Compile Include="DataAnnotations\StringLengthAttribute.cs" />
+    <Compile Include="Data\DataException.cs" />
+    <Compile Include="Data\IEntityStore.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Data\IEntityStore.Generic.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DataAnnotations\AliasAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DataAnnotations\AutoIncrementAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DataAnnotations\CompositeIndexAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DataAnnotations\DefaultAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DataAnnotations\IndexAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DataAnnotations\MetaAttribute.cs" />
+    <Compile Include="DataAnnotations\ReferencesAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands\ICommand.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands\ICommandExec.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands\ICommandList.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands\ICommand.Generic.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IO\IEndpoint.cs" />
+    <Compile Include="IRestGateway.cs" />
+    <Compile Include="Logging\DebugLogFactory.cs" />
+    <Compile Include="Logging\DebugLogger.cs" />
+    <Compile Include="Logging\NullDebugLogger.cs" />
+    <Compile Include="Logging\NullLogFactory.cs" />
+    <Compile Include="Logging\StringBuilderLog.cs" />
+    <Compile Include="Logging\TestLogFactory.cs" />
+    <Compile Include="Logging\TestLogger.cs" />
+    <Compile Include="Model\IHasGuidId.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\IHasId.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\IHasIntId.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\IHasLongId.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\IHasNamed.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\IHasNamedCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\IHasNamedList.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\IHasStringId.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\IHasUserId.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\IHasUserSession.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IO\IVirtualDirectory.cs" />
+    <Compile Include="IO\IVirtualFile.cs" />
+    <Compile Include="IO\IVirtualNode.cs" />
+    <Compile Include="IO\IVirtualPathProvider.cs" />
+    <Compile Include="Logging\ILog.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Logging\ILogFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Logging\LogManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\IMessage.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\IMessageFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\IMessageProducer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\IMessageQueueClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\IMessageQueueClientFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\IMessageService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\MessageFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\MessageHandlerStats.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\MessageOption.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\MessagingException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\QueueNames.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\UnRetryableMessagingException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IMeta.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Redis\Generic\IRedisHash.Generic.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\Generic\IRedisList.Generic.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\Generic\IRedisSet.Generic.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\Generic\IRedisSortedSet.Generic.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\Generic\IRedisTransaction.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\Generic\IRedisTypedClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\Generic\IRedisTypedPipeline.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\Generic\IRedisTypedQueueableOperation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\IRedisClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\IRedisClientCacheManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\IRedisClientsManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\IRedisHash.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\IRedisList.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\IRedisNativeClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\IRedisSet.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\IRedisSortedSet.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\IRedisSubscription.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\IRedisTransaction.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\IRedisTransactionBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\ItemRef.cs" />
+    <Compile Include="Redis\Pipeline\IRedisPipeline.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\Pipeline\IRedisPipelineShared.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\Pipeline\IRedisQueueableOperation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\Pipeline\IRedisQueueCompletableOperation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\RedisKeyType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Redis\SortOptions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ApiAllowableValuesAttribute.cs" />
+    <Compile Include="ApiAttribute.cs" />
+    <Compile Include="ApiMemberAttribute.cs" />
+    <Compile Include="ApiResponse.cs" />
+    <Compile Include="IService.cs" />
+    <Compile Include="SwaggerType.cs" />
+    <Compile Include="Web\INameValueCollection.cs" />
+    <Compile Include="Web\IRequiresRequestStream.cs" />
+    <Compile Include="RequestAttributes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Feature.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Configuration\IResolver.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IContentTypes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IContentTypeReader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IContentTypeWriter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\ICookies.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IExpirable.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IHttpFile.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IHasOptions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IHasRequestFilter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IHasResponseFilter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IHttpError.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IHttpRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IHttpResponse.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IHttpResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IRequestPreferences.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IRequestLogger.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IRequiresRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IResponse.cs" />
+    <Compile Include="Web\IRestPath.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IServiceRunner.cs" />
+    <Compile Include="Web\IServiceController.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IServiceRoutes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RouteAttribute.cs" />
+    <Compile Include="ErrorResponse.cs" />
+    <Compile Include="Model\IResponseStatusConvertible.cs" />
+    <Compile Include="RequestLogEntry.cs" />
+    <Compile Include="RestrictAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CollectionTypes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ICacheByDateModified.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ICacheByEtag.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\IHasAction.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IHasResponseStatus.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Property.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ResponseError.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ResponseStatus.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IPartialWriter.cs" />
+    <Compile Include="IOneWayClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IReplyClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IResponseStatus.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IRestClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IRestClientAsync.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IServiceClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IServiceClientAsync.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\IStreamWriter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Redis\Redis-annotated.png" />
+    <Content Include="Redis\Redis.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Redis\Redis.cd" />
+    <None Include="servicestack-sn.pfx" />
+  </ItemGroup>
+  <!--ItemGroup,ProjectReference-->
+  <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

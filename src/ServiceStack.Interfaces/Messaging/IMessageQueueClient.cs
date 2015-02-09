@@ -2,43 +2,48 @@ using System;
 
 namespace ServiceStack.Messaging
 {
-	public interface IMessageQueueClient
-		: IMessageProducer
-	{
-		/// <summary>
-		/// Publish the specified message into the durable queue @queueName
-		/// </summary>
-		/// <param name="queueName"></param>
-		/// <param name="messageBytes"></param>
-		void Publish(string queueName, byte[] messageBytes);
-		
-		/// <summary>
-		/// Publish the specified message into the transient queue @queueName
-		/// </summary>
-		/// <param name="queueName"></param>
-		/// <param name="messageBytes"></param>
-		void Notify(string queueName, byte[] messageBytes);
+    public interface IMessageQueueClient
+        : IMessageProducer
+    {
+        /// <summary>
+        /// Publish the specified message into the durable queue @queueName
+        /// </summary>
+        void Publish(string queueName, IMessage message);
 
-		/// <summary>
-		/// Synchronous blocking get.
-		/// </summary>
-		/// <param name="queueName"></param>
-		/// <param name="timeOut"></param>
-		/// <returns></returns>
-		byte[] Get(string queueName, TimeSpan? timeOut);
-		
-		/// <summary>
-		/// Non blocking get message
-		/// </summary>
-		/// <param name="queueName"></param>
-		/// <returns></returns>
-		byte[] GetAsync(string queueName);
+        /// <summary>
+        /// Publish the specified message into the transient queue @queueName
+        /// </summary>
+        void Notify(string queueName, IMessage message);
 
-		/// <summary>
-		/// Blocking wait for notifications on any of the supplied channels
-		/// </summary>
-		/// <param name="channelNames"></param>
-		/// <returns></returns>
-		string WaitForNotifyOnAny(params string[] channelNames);
-	}
+        /// <summary>
+        /// Synchronous blocking get.
+        /// </summary>
+        IMessage<T> Get<T>(string queueName, TimeSpan? timeOut=null);
+
+        /// <summary>
+        /// Non blocking get message
+        /// </summary>
+        IMessage<T> GetAsync<T>(string queueName);
+
+        /// <summary>
+        /// Acknowledge the message has been successfully received or processed
+        /// </summary>
+        void Ack(IMessage message);
+
+        /// <summary>
+        /// Negative acknowledgement the message was not processed correctly
+        /// </summary>
+        void Nak(IMessage message, bool requeue, Exception exception = null);
+
+        /// <summary>
+        /// Create a typed message from a raw MQ Response artefact
+        /// </summary>
+        IMessage<T> CreateMessage<T>(object mqResponse);
+
+        /// <summary>
+        /// Create a temporary Queue for Request / Reply
+        /// </summary>
+        /// <returns></returns>
+        string GetTempQueueName();
+    }
 }

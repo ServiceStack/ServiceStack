@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Api.Swagger;
@@ -53,8 +54,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public SwaggerNestedModel3[] ArrayProperty { get; set; }
 
+        [System.ComponentModel.Description("Byte description")]
         public byte ByteProperty { get; set; }
 
+        [ServiceStack.DataAnnotations.Description("Long description")]
         public long LongProperty { get; set; }
 
         public float FloatProperty { get; set; }
@@ -215,7 +218,65 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [DataContract]
+    public class DataContractBaseType
+    {
+        [DataMember]
+        public string Zebra { get; set; }
+    }
 
+    [Api]
+    [DataContract]
+    [Route("/swgdatamemberorder", "GET")]
+    public class DataContractDerivedTypeRequest : DataContractBaseType, IReturn<DataContractDerivedTypeResponse>
+    {
+        [DataMember(Order = 0)]
+        public string Bird { get; set; }
+        [DataMember(Order = 1)]
+        public string Parrot { get; set; }
+        [DataMember]
+        public string Dog { get; set; }
+        [DataMember(Order = 3)]
+        public string Antelope { get; set; }
+        [DataMember]
+        public string Cat { get; set; }
+        [DataMember(Order = 1)]
+        public string Albatross { get; set; }
+    }
+
+    [DataContract]
+    public class DataContractHierarchyType : DataContractBaseType
+    {
+        [DataMember]
+        public string Falcon { get; set; }
+    }
+
+    [DataContract]
+    public class DataContractDerivedTypeResponse : DataContractHierarchyType
+    {
+        [DataMember(Order = 0)]
+        public string Bird { get; set; }
+        [DataMember(Order = 1)]
+        public string Parrot { get; set; }
+        [DataMember]
+        public string Cat { get; set; }
+        [DataMember]
+        public string Dog { get; set; }
+        [DataMember(Order = 3)]
+        public string Antelope { get; set; }
+        [DataMember(Order = 1)]
+        public string Albatross { get; set; }
+        [DataMember(Order = 0, Name = "Baldeagle")]
+        public string Eagle { get; set; }
+    }
+
+    public class DataMemberAttributeOrderService : Service
+    {
+        public object Get(DataContractDerivedTypeRequest request)
+        {
+            return new DataContractDerivedTypeResponse();
+        }
+    }
     
     [TestFixture]
     public class SwaggerFeatureServiceTests
@@ -479,24 +540,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(resource.Models, Is.Not.Empty);
             resource.Models.PrintDump();
 
-            Assert.That(resource.Models.ContainsKey(typeof(SwaggerModelsRequest).Name), Is.True);
-            var requestClassModel = resource.Models[typeof(SwaggerModelsRequest).Name];
+            var key = "POST_" + typeof(SwaggerModelsRequest).Name + "/swaggerModels/{UrlParam}";
+            Assert.That(resource.Models.ContainsKey(key), Is.True);
+            var requestClassModel = resource.Models[key];
 
-            Assert.That(requestClassModel.Id, Is.EqualTo(typeof(SwaggerModelsRequest).Name));
+            Assert.That(requestClassModel.Id, Is.EqualTo(key));
             Assert.That(requestClassModel.Properties, Is.Not.Empty);
-
-            Assert.That(requestClassModel.Properties.ContainsKey("UrlParam"), Is.False);
 
             Assert.That(requestClassModel.Properties.ContainsKey("Name"), Is.True);
             Assert.That(requestClassModel.Properties["Name"].Type, Is.EqualTo(SwaggerType.String));
-            Assert.That(requestClassModel.Properties["Name"].Description, Is.EqualTo("Name description"));
+            Assert.That(requestClassModel.Properties["Name"].Description, Is.EqualTo("The request body"));
 
             Assert.That(requestClassModel.Properties.ContainsKey("ByteProperty"));
             Assert.That(requestClassModel.Properties["ByteProperty"].Type, Is.EqualTo(SwaggerType.Byte));
+            Assert.That(requestClassModel.Properties["ByteProperty"].Description, Is.EqualTo("Byte description"));
             Assert.That(resource.Models.ContainsKey(typeof(byte).Name), Is.False);
 
             Assert.That(requestClassModel.Properties.ContainsKey("LongProperty"));
             Assert.That(requestClassModel.Properties["LongProperty"].Type, Is.EqualTo(SwaggerType.Long));
+            Assert.That(requestClassModel.Properties["LongProperty"].Description, Is.EqualTo("Long description"));
             Assert.That(resource.Models.ContainsKey(typeof(long).Name), Is.False);
 
             Assert.That(requestClassModel.Properties.ContainsKey("FloatProperty"));
@@ -516,12 +578,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(requestClassModel.Properties["DateProperty"].Type, Is.EqualTo(SwaggerType.Date));
             Assert.That(resource.Models.ContainsKey(typeof(DateTime).Name), Is.False);
 
+            key = "POST_" + typeof(SwaggerNestedModel).Name + "/swaggerModels/{UrlParam}";
             Assert.That(requestClassModel.Properties.ContainsKey("NestedModel"), Is.True);
-            Assert.That(requestClassModel.Properties["NestedModel"].Type, Is.EqualTo("SwaggerNestedModel"));
+            Assert.That(requestClassModel.Properties["NestedModel"].Type, Is.EqualTo(key));
             Assert.That(requestClassModel.Properties["NestedModel"].Description, Is.EqualTo("NestedModel description"));
 
-            Assert.That(resource.Models.ContainsKey(typeof(SwaggerNestedModel).Name), Is.True);
-            var nestedClassModel = resource.Models[typeof(SwaggerNestedModel).Name];
+            Assert.That(resource.Models.ContainsKey(key), Is.True);
+            var nestedClassModel = resource.Models[key];
 
             Assert.That(nestedClassModel.Properties.ContainsKey("NestedProperty"), Is.True);
             Assert.That(nestedClassModel.Properties["NestedProperty"].Type, Is.EqualTo(SwaggerType.Boolean));
@@ -532,34 +595,45 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Should_retrieve_list_property_model(IRestClient client)
         {
             var resource = client.Get<ResourceResponse>("/resource/swaggerModels");
-            Assert.That(resource.Models.ContainsKey(typeof(SwaggerModelsRequest).Name), Is.True);
-            var requestClassModel = resource.Models[typeof(SwaggerModelsRequest).Name];
+            resource.PrintDump();
+
+            var key = "POST_" + typeof(SwaggerModelsRequest).Name + "/swaggerModels/{UrlParam}";
+            Assert.That(resource.Models.ContainsKey(key), Is.True);
+            var requestClassModel = resource.Models[key];
 
             Assert.That(requestClassModel.Properties.ContainsKey("ListProperty"), Is.True);
             Assert.That(requestClassModel.Properties["ListProperty"].Type, Is.EqualTo(SwaggerType.Array));
-            Assert.That(requestClassModel.Properties["ListProperty"].Items["$ref"], Is.EqualTo(typeof(SwaggerNestedModel2).Name));
-            Assert.That(resource.Models.ContainsKey(typeof(SwaggerNestedModel2).Name), Is.True);
+
+            key = "POST_" + typeof(SwaggerNestedModel2).Name + "/swaggerModels/{UrlParam}";
+            Assert.That(requestClassModel.Properties["ListProperty"].Items["$ref"], Is.EqualTo(key));
+            Assert.That(resource.Models.ContainsKey(key), Is.True);
         }
 
         [Test, TestCaseSource("RestClients")]
         public void Should_retrieve_array_property_model(IRestClient client)
         {
             var resource = client.Get<ResourceResponse>("/resource/swaggerModels");
-            Assert.That(resource.Models.ContainsKey(typeof(SwaggerModelsRequest).Name), Is.True);
-            var requestClassModel = resource.Models[typeof(SwaggerModelsRequest).Name];
+
+            var key = "POST_" + typeof(SwaggerModelsRequest).Name + "/swaggerModels/{UrlParam}";
+            Assert.That(resource.Models.ContainsKey(key), Is.True);
+            var requestClassModel = resource.Models[key];
 
             Assert.That(requestClassModel.Properties.ContainsKey("ArrayProperty"), Is.True);
             Assert.That(requestClassModel.Properties["ArrayProperty"].Type, Is.EqualTo(SwaggerType.Array));
-            Assert.That(requestClassModel.Properties["ArrayProperty"].Items["$ref"], Is.EqualTo(typeof(SwaggerNestedModel3).Name));
-            Assert.That(resource.Models.ContainsKey(typeof(SwaggerNestedModel3).Name), Is.True);
+
+            key = "POST_" + typeof(SwaggerNestedModel3).Name + "/swaggerModels/{UrlParam}";
+            Assert.That(requestClassModel.Properties["ArrayProperty"].Items["$ref"], Is.EqualTo(key));
+            Assert.That(resource.Models.ContainsKey(key), Is.True);
         }
 
 		[Test, TestCaseSource("RestClients")]
 		public void Should_retrieve_valid_nullable_fields(IRestClient client)
 		{
 			var resource = client.Get<ResourceResponse>("/resource/swgnull");
-			Assert.That(resource.Models.ContainsKey(typeof(NullableInRequest).Name), Is.True);
-			var requestClassModel = resource.Models[typeof(NullableInRequest).Name];
+
+            var key = "GET_" + typeof(NullableInRequest).Name + "/swgnull/";
+            Assert.That(resource.Models.ContainsKey(key), Is.True);
+            var requestClassModel = resource.Models[key];
 
 			Assert.That(requestClassModel.Properties.ContainsKey("Position"), Is.True);
 			Assert.That(requestClassModel.Properties["Position"].Type, Is.EqualTo(SwaggerType.Int));
@@ -571,5 +645,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(responseModel.Properties["Optional"].Type, Is.EqualTo(SwaggerType.Int));
 			Assert.That(responseModel.Properties["NestedProperty2"].Required, Is.True);
 		}
+
+        // Ordering defined by: http://msdn.microsoft.com/en-us/library/ms729813.aspx
+        [Test, TestCaseSource("RestClients")]
+        public void Should_order_fields_with_DataMemberAttribute(IRestClient client)
+        {
+            var resource = client.Get<ResourceResponse>("/resource/swgdatamemberorder");
+
+            var key = "GET_" + typeof(DataContractDerivedTypeRequest).Name + "/swgdatamemberorder";
+            Assert.That(resource.Models.ContainsKey(key), Is.True);
+            var requestClassModel = resource.Models[key];
+
+            Assert.That(requestClassModel.Properties.ElementAt(0).Key, Is.EqualTo("Zebra"));
+            Assert.That(requestClassModel.Properties.ElementAt(1).Key, Is.EqualTo("Cat"));
+            Assert.That(requestClassModel.Properties.ElementAt(2).Key, Is.EqualTo("Dog"));
+            Assert.That(requestClassModel.Properties.ElementAt(3).Key, Is.EqualTo("Bird"));
+            Assert.That(requestClassModel.Properties.ElementAt(4).Key, Is.EqualTo("Albatross"));
+            Assert.That(requestClassModel.Properties.ElementAt(5).Key, Is.EqualTo("Parrot"));
+            Assert.That(requestClassModel.Properties.ElementAt(6).Key, Is.EqualTo("Antelope"));
+
+            Assert.That(resource.Models.ContainsKey(typeof(DataContractDerivedTypeResponse).Name), Is.True);
+            var responseClassModel = resource.Models[typeof(DataContractDerivedTypeResponse).Name];
+
+            Assert.That(responseClassModel.Properties.ElementAt(0).Key, Is.EqualTo("Zebra"));
+            Assert.That(responseClassModel.Properties.ElementAt(1).Key, Is.EqualTo("Falcon"));
+            Assert.That(responseClassModel.Properties.ElementAt(2).Key, Is.EqualTo("Cat"));
+            Assert.That(responseClassModel.Properties.ElementAt(3).Key, Is.EqualTo("Dog"));
+            Assert.That(responseClassModel.Properties.ElementAt(4).Key, Is.EqualTo("Baldeagle"));
+            Assert.That(responseClassModel.Properties.ElementAt(5).Key, Is.EqualTo("Bird"));
+            Assert.That(responseClassModel.Properties.ElementAt(6).Key, Is.EqualTo("Albatross"));
+            Assert.That(responseClassModel.Properties.ElementAt(7).Key, Is.EqualTo("Parrot"));
+            Assert.That(responseClassModel.Properties.ElementAt(8).Key, Is.EqualTo("Antelope"));
+        }
     }
 }

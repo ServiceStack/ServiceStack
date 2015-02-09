@@ -15,6 +15,14 @@ namespace ServiceStack
     /* Supported signatures: */
     //Not used or needed, here in-case someone wants to know what the correct signatures should be
 
+    //Empty marker interfaces to enforce correct mappings
+    public interface IGet { }
+    public interface IPost { }
+    public interface IPut { }
+    public interface IDelete { }
+    public interface IPatch { }
+    public interface IOptions { }
+
     public interface IAny<T>
     {
         object Any(T request);

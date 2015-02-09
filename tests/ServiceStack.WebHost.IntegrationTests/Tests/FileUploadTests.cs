@@ -104,8 +104,17 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             var actualContents = webResponse.ReadToEnd();
 
             Assert.That(webResponse.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadForm.Name)));
-            Assert.That(actualContents, Is.EqualTo(expectedContents));
+            Assert.That(actualContents.NormalizeNewLines(), Is.EqualTo(expectedContents.NormalizeNewLines()));
         }
 
+    }
+
+
+    public static class TestExtensions
+    {
+        public static string NormalizeNewLines(this string text)
+        {
+            return text.Replace("\r\n", "\n");
+        }
     }
 }

@@ -1,3 +1,5 @@
+using ServiceStack.Web;
+
 namespace ServiceStack.Auth
 {
     public interface IAuthProvider
@@ -35,4 +37,10 @@ namespace ServiceStack.Auth
         string AuthorizeUrl { get; set; }
         string AccessTokenUrl { get; set; }
     }
+
+    public interface IAuthWithRequest
+    {
+        void PreAuthenticate(IRequest req, IResponse res);
+    }
+
 }

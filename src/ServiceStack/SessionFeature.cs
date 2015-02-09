@@ -33,7 +33,7 @@ namespace ServiceStack
             appHost.GlobalRequestFilters.Add(AddSessionIdToRequestFilter);
         }
 
-        public static void AddSessionIdToRequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
+        public static void AddSessionIdToRequestFilter(IRequest req, IResponse res, object requestDto)
         {
             if (req.GetItemOrCookie(SessionId) == null)
             {
@@ -45,17 +45,17 @@ namespace ServiceStack
             }
         }
 
-        public static string GetSessionId(IHttpRequest httpReq = null)
+        public static string GetSessionId(IRequest httpReq = null)
         {
             if (httpReq == null && HttpContext.Current == null)
                 throw new NotImplementedException(OnlyAspNet);
 
-            httpReq = httpReq ?? HttpContext.Current.Request.ToRequest();
+            httpReq = httpReq ?? HttpContext.Current.ToRequest();
 
             return httpReq.GetSessionId();
         }
 
-        public static void CreateSessionIds(IHttpRequest httpReq = null, IHttpResponse httpRes = null)
+        public static void CreateSessionIds(IRequest httpReq = null, IResponse httpRes = null)
         {
             if (httpReq == null || httpRes == null)
             {
@@ -63,13 +63,13 @@ namespace ServiceStack
                     throw new NotImplementedException(OnlyAspNet);
             }
 
-            httpReq = httpReq ?? HttpContext.Current.Request.ToRequest();
-            httpRes = httpRes ?? HttpContext.Current.Response.ToResponse();
+            httpReq = httpReq ?? HttpContext.Current.ToRequest();
+            httpRes = httpRes ?? httpReq.Response;
 
             httpRes.CreateSessionIds(httpReq);
         }
 
-        public static string GetSessionKey(IHttpRequest httpReq = null)
+        public static string GetSessionKey(IRequest httpReq = null)
         {
             var sessionId = GetSessionId(httpReq);
             return sessionId == null ? null : GetSessionKey(sessionId);
@@ -80,7 +80,7 @@ namespace ServiceStack
             return IdUtils.CreateUrn<IAuthSession>(sessionId);
         }
 
-        public static T GetOrCreateSession<T>(ICacheClient cacheClient, IHttpRequest httpReq = null, IHttpResponse httpRes = null) 
+        public static T GetOrCreateSession<T>(ICacheClient cacheClient, IRequest httpReq = null, IResponse httpRes = null) 
             where T : class
         {
             T session = null;

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:minWidth="25px"
+        android:minHeight="25px"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/linearLayout1">
+        <TextView
+            android:text="Name:"
+            android:layout_width="70.9dp"
+            android:layout_height="match_parent"
+            android:id="@+id/lblName"
+            android:paddingTop="10px"
+            android:paddingLeft="10px" />
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/txtName"
+            android:text="Test" />
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:minWidth="25px"
+        android:minHeight="25px"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/linearLayout2">
+        <Button
+            android:text="Go Sync"
+            android:id="@+id/btnGoSync"
+            android:layout_width="185dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="3.2dp" />
+        <Button
+            android:text="Go Async"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/btnGoAsync"
+            android:layout_marginLeft="0.0dp" />
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:minWidth="25px"
+        android:minHeight="25px"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/linearLayout3">
+        <Button
+            android:text="Test"
+            android:id="@+id/btnTest"
+            android:layout_width="185dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="3.2dp" />
+        <Button
+            android:text="Go Shared"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/btnGoShared"
+            android:layout_marginLeft="0.0dp" />
+    </LinearLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="327.8dp"
+        android:id="@+id/lblResults"
+        android:padding="10px"
+        android:layout_marginBottom="175.6dp" />
+</LinearLayout>

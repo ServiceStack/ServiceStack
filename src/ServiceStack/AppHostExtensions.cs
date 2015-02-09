@@ -17,7 +17,7 @@ namespace ServiceStack
 			appHost.RegisterService(typeof(TService), atRestPaths);
 		}
 
-		public static void RegisterRequestBinder<TRequest>(this IAppHost appHost, Func<IHttpRequest, object> binder)
+		public static void RegisterRequestBinder<TRequest>(this IAppHost appHost, Func<IRequest, object> binder)
 		{
 			appHost.RequestBinders[typeof(TRequest)] = binder;
 		}
@@ -44,11 +44,26 @@ namespace ServiceStack
 					}
 					catch (Exception ex)
 					{
-						log.Error("Error adding new Plugin " + pluginType.Name, ex);
+						log.Error("Error adding new Plugin " + pluginType.GetOperationName(), ex);
 					}
 				}
 			}
 		}
+
+        public static T GetPlugin<T>(this IAppHost appHost) where T : class, IPlugin
+        {
+            return appHost.Plugins.FirstOrDefault(x => x is T) as T;
+        }
+
+        public static bool HasPlugin<T>(this IAppHost appHost) where T : class, IPlugin
+        {
+            return appHost.Plugins.FirstOrDefault(x => x is T) != null;
+        }
+
+        public static bool HasMultiplePlugins<T>(this IAppHost appHost) where T : class, IPlugin
+        {
+            return appHost.Plugins.Count(x => x is T) > 1;
+        }
 
         /// <summary>
         /// Get an IAppHost container. 
@@ -63,6 +78,23 @@ namespace ServiceStack
 
             var hasContainer = appHost as IHasContainer;
             return hasContainer != null ? hasContainer.Container : null;
+        }
+
+        public static bool NotifyStartupException(this IAppHost appHost, Exception ex)
+        {
+            var ssHost = HostContext.AppHost;
+            if (ssHost == null) return false;
+
+            if (!ssHost.HasStarted)
+            {
+                ssHost.OnStartupException(ex);
+            }
+            return !ssHost.HasStarted;
+        }
+
+        public static string Localize(this string text, IRequest request)
+        {
+            return HostContext.AppHost.ResolveLocalizedString(text, request);
         }
 	}
 

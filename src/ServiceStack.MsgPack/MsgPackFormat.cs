@@ -6,7 +6,6 @@ using System.Runtime.Serialization;
 using System.Threading;
 using MsgPack;
 using MsgPack.Serialization;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.MsgPack
@@ -19,7 +18,7 @@ namespace ServiceStack.MsgPack
 
         static MsgPackType()
         {
-            var genericType = typeof(T).GetGenericType();
+            var genericType = typeof(T).FirstGenericType();
 
             isGenericCollection = genericType != null
                 && typeof(T).IsOrHasGenericInterfaceTypeOf(typeof(ICollection<>));
@@ -95,7 +94,12 @@ namespace ServiceStack.MsgPack
             return msgPackType;
         }
 
-        public static void Serialize(IRequestContext requestContext, object dto, Stream outputStream)
+        public static void Serialize(IRequest requestContext, object dto, Stream outputStream)
+        {
+            Serialize(dto, outputStream);
+        }
+
+        public static void Serialize(object dto, Stream outputStream)
         {
             if (dto == null) return;
             var dtoType = dto.GetType();

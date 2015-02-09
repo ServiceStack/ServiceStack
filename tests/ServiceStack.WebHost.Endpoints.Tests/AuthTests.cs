@@ -9,6 +9,8 @@ using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Common.Tests.ServiceClient.Web;
+using ServiceStack.Data;
+using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
@@ -52,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Post(SecuredFileUpload request)
         {
-            var file = this.RequestContext.Files[0];
+            var file = this.Request.Files[0];
             return new FileUploadResponse
             {
                 FileName = file.FileName,
@@ -169,7 +171,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class CustomUserSession : AuthUserSession
+    public class CustomUserSession : WebSudoAuthUserSession
     {
         public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
         {
@@ -219,7 +221,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class CustomAuthenticateAttribute : AuthenticateAttribute
     {
-        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        public override void Execute(IRequest req, IResponse res, object requestDto)
         {
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)
             SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
@@ -254,10 +256,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class RequiresWebSudo : IReturn<RequiresWebSudoResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class RequiresWebSudoResponse
+    {
+        public string Result { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [WebSudoRequired]
+    public class RequiresWebSudoService : Service
+    {
+        public object Any(RequiresWebSudo request)
+        {
+            return new RequiresWebSudoResponse { Result = request.Name };
+        }
+    }
+
     public class AuthTests
     {
         protected virtual string VirtualDirectory { get { return ""; } }
-        protected virtual string ListeningOn { get { return "http://localhost:82/"; } }
+        protected virtual string ListeningOn { get { return "http://localhost:1337/"; } }
         protected virtual string WebHostUrl { get { return "http://mydomain.com"; } }
 
 
@@ -274,29 +297,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             : AppHostHttpListenerBase
         {
             private readonly string webHostUrl;
+            private Action<Container> configureFn;
 
-            public AuthAppHostHttpListener(string webHostUrl)
+            public AuthAppHostHttpListener(string webHostUrl, Action<Container> configureFn=null)
                 : base("Validation Tests", typeof(CustomerService).Assembly)
             {
                 this.webHostUrl = webHostUrl;
+                this.configureFn = configureFn;
             }
 
             private InMemoryAuthRepository userRep;
 
             public override void Configure(Container container)
             {
-                SetConfig(new HostConfig { WebHostUrl = webHostUrl });
+                SetConfig(new HostConfig { WebHostUrl = webHostUrl, DebugMode = true });
 
                 Plugins.Add(new AuthFeature(() => new CustomUserSession(),
                     new IAuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first
                         new BasicAuthProvider(), //Sign-in with Basic Auth
 						new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
                         new CustomAuthProvider()
-					}, "~/" + LoginUrl));
+					}, "~/" + LoginUrl) { RegisterPlugins = { new WebSudoFeature() } });
 
-                container.Register<ICacheClient>(new MemoryCacheClient());
+                container.Register(new MemoryCacheClient());
                 userRep = new InMemoryAuthRepository();
                 container.Register<IAuthRepository>(userRep);
+
+                if (configureFn != null)
+                {
+                    configureFn(container);
+                }
 
                 CreateUser(1, UserName, null, Password, new List<string> { "TheRole" }, new List<string> { "ThePermission" });
                 CreateUser(2, UserNameWithSessionRedirect, null, PasswordForSessionRedirect);
@@ -337,7 +367,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            appHost = new AuthAppHostHttpListener(WebHostUrl);
+            appHost = new AuthAppHostHttpListener(WebHostUrl, Configure);
             appHost.Init();
             appHost.Start(ListeningOn);
         }
@@ -346,6 +376,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
+        }
+
+        public virtual void Configure(Container container)
+        {
         }
 
         private static void FailOnAsyncError<T>(T response, Exception ex)
@@ -360,7 +394,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         IServiceClient GetHtmlClient()
         {
-            return new HtmlServiceClient(ListeningOn) {BaseUri = ListeningOn};
+            return new HtmlServiceClient(ListeningOn) { BaseUri = ListeningOn };
         }
 
         IServiceClient GetClientWithUserPassword()
@@ -541,7 +575,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var request = new Secured { Name = "test" };
             var authResponse = await client.SendAsync<AuthenticateResponse>(
-                new Authenticate {
+                new Authenticate
+                {
                     provider = CredentialsAuthProvider.Name,
                     UserName = "user",
                     Password = "p@55word",
@@ -568,6 +603,56 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.Fail(webEx.Message);
+            }
+        }
+
+        [Test]
+        public void Can_call_RequiredRole_service_with_CredentialsAuth_with_Role()
+        {
+            try
+            {
+                var client = GetClient();
+                var authResponse = client.Send(
+                    new Authenticate
+                    {
+                        provider = CredentialsAuthProvider.Name,
+                        UserName = UserName, // Has Role
+                        Password = Password,
+                        RememberMe = true,
+                    });
+
+                var request = new RequiresRole { Name = "test" };
+                var response = client.Send<RequiresRoleResponse>(request);
+                Assert.That(response.Result, Is.EqualTo(request.Name));
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.Fail(webEx.Message);
+            }
+        }
+
+        [Test]
+        public void Does_not_allow_RequiredRole_service_with_CredentialsAuth_without_Role()
+        {
+            try
+            {
+                var client = GetClient();
+                var authResponse = client.Send(
+                    new Authenticate
+                    {
+                        provider = CredentialsAuthProvider.Name,
+                        UserName = "user2", // Does not have Role
+                        Password = "p@55word2",
+                        RememberMe = true,
+                    });
+
+                var request = new RequiresRole { Name = "test" };
+                var response = client.Send<RequiresRoleResponse>(request);
+                Assert.Fail("Should Throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
             }
         }
 
@@ -668,7 +753,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var client = GetClient();
 
-                var authResponse = client.Send<AuthenticateResponse>(new Authenticate
+                var authResponse = client.Send(new Authenticate
                 {
                     provider = CredentialsAuthProvider.Name,
                     UserName = "user",
@@ -742,7 +827,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var loginPath = "/".CombineWith(VirtualDirectory).CombineWith(LoginUrl);
-            Assert.That(locationUri.AbsolutePath, Is.EqualTo(loginPath).IgnoreCase);        
+            Assert.That(locationUri.AbsolutePath, Is.EqualTo(loginPath).IgnoreCase);
         }
 
         [Test]
@@ -1017,12 +1102,175 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Is.EqualTo(1)
             );
         }
+
+
+        [TestCase(ExpectedException = typeof(AuthenticationException))]
+        public void Meaningful_Exception_for_Unknown_Auth_Header()
+        {
+            var authInfo = new AuthenticationInfo("Negotiate,NTLM");
+        }
+
+        [Test]
+        public void Can_logout_using_CredentailsAuth()
+        {
+            Assert.That(AuthenticateService.LogoutAction, Is.EqualTo("logout"));
+
+            try
+            {
+                var client = GetClient();
+
+                var authResponse = client.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "p@55word",
+                    RememberMe = true,
+                });
+
+                Assert.That(authResponse.SessionId, Is.Not.Null);
+
+                var logoutResponse = client.Get<AuthenticateResponse>("/auth/logout");
+
+                Assert.That(logoutResponse.ResponseStatus.ErrorCode, Is.Null);
+
+                logoutResponse = client.Send(new Authenticate
+                {
+                    provider = AuthenticateService.LogoutAction,
+                });
+
+                Assert.That(logoutResponse.ResponseStatus.ErrorCode, Is.Null);
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.Fail(webEx.Message);
+            }
+        }
+
+        [Test]
+        public void WebSudoRequired_service_returns_PaymentRequired_if_not_re_authenticated()
+        {
+            try
+            {
+                var client = GetClient();
+                var authRequest = new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = UserName,
+                    Password = Password,
+                    RememberMe = true,
+                };
+                client.Send(authRequest);
+                var request = new RequiresWebSudo { Name = "test" };
+                var response = client.Send(request);
+
+                Assert.Fail("Shouldn't be allowed");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.PaymentRequired));
+                Console.WriteLine(webEx.Dump());
+            }
+        }
+
+        [Test]
+        public void WebSudoRequired_service_succeeds_if_re_authenticated()
+        {
+            var client = GetClient();
+            var authRequest = new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = UserName,
+                Password = Password,
+                RememberMe = true,
+            };
+            client.Send(authRequest);
+
+            var request = new RequiresWebSudo { Name = "test" };
+            try
+            {
+                client.Send<RequiresWebSudoResponse>(request);
+                Assert.Fail("Shouldn't be allowed");
+            }
+            catch (WebServiceException)
+            {
+                client.Send(authRequest);
+                var response = client.Send<RequiresWebSudoResponse>(request);
+                Assert.That(response.Result, Is.EqualTo(request.Name));
+            }
+        }
+
+        [Test]
+        public void Failed_re_authentication_does_not_logout_user()
+        {
+            var client = GetClient();
+            var authRequest = new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = UserName,
+                Password = Password,
+                RememberMe = true,
+            };
+            client.Send(authRequest);
+            var request = new RequiresWebSudo { Name = "test" };
+            try
+            {
+                client.Send(request);
+                Assert.Fail("Shouldn't be allowed");
+            }
+            catch
+            {
+                // ignore the first 402
+            }
+            try
+            {
+                client.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = UserName,
+                    Password = "some other password",
+                    RememberMe = true,
+                });
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+                Console.WriteLine(webEx.ResponseDto.Dump());
+            }
+            
+            // Should still be authenticated, but not elevated
+            try 
+            { 
+                client.Send<RequiresWebSudoResponse>(request);
+                Assert.Fail("Shouldn't be allowed");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.PaymentRequired));
+                Console.WriteLine(webEx.Dump());
+            }
+        }
     }
 
     public class AuthTestsWithinVirtualDirectory : AuthTests
     {
         protected override string VirtualDirectory { get { return "somevirtualdirectory"; } }
-        protected override string ListeningOn { get { return "http://localhost:82/" + VirtualDirectory + "/"; } }
+        protected override string ListeningOn { get { return "http://localhost:1337/" + VirtualDirectory + "/"; } }
         protected override string WebHostUrl { get { return "http://mydomain.com/" + VirtualDirectory; } }
+    }
+
+    public class AuthTestsWithinOrmLiteCache : AuthTests
+    {
+        protected override string VirtualDirectory { get { return "somevirtualdirectory"; } }
+        protected override string ListeningOn { get { return "http://localhost:1337/" + VirtualDirectory + "/"; } }
+        protected override string WebHostUrl { get { return "http://mydomain.com/" + VirtualDirectory; } }
+
+        public override void Configure(Container container)
+        {
+            container.Register<IDbConnectionFactory>(c =>
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+
+            container.RegisterAs<OrmLiteCacheClient, ICacheClient>();
+            container.Resolve<ICacheClient>().InitSchema();
+        }
     }
 }

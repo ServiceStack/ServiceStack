@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
     public static class HttpRequestAuthentication
     {
-        public static string GetBasicAuth(this IHttpRequest httpReq)
+        public static string GetBasicAuth(this IRequest httpReq)
         {
             var auth = httpReq.Headers[HttpHeaders.Authorization];
             if (auth == null) return null;
@@ -19,7 +18,7 @@ namespace ServiceStack.Host
             return parts[0].ToLower() == "basic" ? parts[1] : null;
         }
 
-        public static KeyValuePair<string, string>? GetBasicAuthUserAndPassword(this IHttpRequest httpReq)
+        public static KeyValuePair<string, string>? GetBasicAuthUserAndPassword(this IRequest httpReq)
         {
             var userPassBase64 = httpReq.GetBasicAuth();
             if (userPassBase64 == null) return null;
@@ -28,7 +27,7 @@ namespace ServiceStack.Host
             return new KeyValuePair<string, string>(parts[0], parts[1]);
         }
 
-        public static Dictionary<string,string> GetDigestAuth(this IHttpRequest httpReq)
+        public static Dictionary<string,string> GetDigestAuth(this IRequest httpReq)
         {
             var auth = httpReq.Headers[HttpHeaders.Authorization];
             if (auth == null) return null;
@@ -77,7 +76,7 @@ namespace ServiceStack.Host
                     var param = item.Trim().Split(new char[] {'='},2);
                     result.Add(param[0],param[1].Trim(new char[] {'"'}));
                 }
-                result.Add("method", httpReq.HttpMethod);
+                result.Add("method", httpReq.Verb);
                 result.Add("userhostaddress", httpReq.UserHostAddress);
                 return result;
             }
@@ -87,14 +86,14 @@ namespace ServiceStack.Host
             return null;
         }
 
-        public static string GetCookieValue(this IHttpRequest httpReq, string cookieName)
+        public static string GetCookieValue(this IRequest httpReq, string cookieName)
         {
             Cookie cookie;
             httpReq.Cookies.TryGetValue(cookieName, out cookie);
             return cookie != null ? cookie.Value : null;
         }
 
-        public static string GetItemStringValue(this IHttpRequest httpReq, string itemName)
+        public static string GetItemStringValue(this IRequest httpReq, string itemName)
         {
             object val;
             if (!httpReq.Items.TryGetValue(itemName, out val)) return null;

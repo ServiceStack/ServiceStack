@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using ServiceStack.IO;
-using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
@@ -99,4 +98,25 @@ namespace ServiceStack.VirtualPath
             return string.Format("{0} -> {1}", RealPath, VirtualPath);
         }
     }
+}
+
+namespace ServiceStack
+{
+    public static class VirtualFileExtensions
+    {
+        public static bool ShouldSkipPath(this IVirtualNode node)
+        {
+            var appHost = HostContext.AppHost;
+            if (appHost != null)
+            {
+                foreach (var skipPath in appHost.Config.ScanSkipPaths)
+                {
+                    if (node.VirtualPath.StartsWith(skipPath, StringComparison.InvariantCultureIgnoreCase))
+                        return true;
+                }
+            }
+            return false;
+        }
+    }
+    
 }

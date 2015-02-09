@@ -13,10 +13,11 @@ namespace ServiceStack
         /// </summary>
         public string Description { get; set; }
 
-        public ApiAttribute() {}
         public ApiAttribute(string description)
         {
             Description = description;
         }
+
+        public ApiAttribute() { }
     }
 }

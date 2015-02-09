@@ -102,8 +102,8 @@ namespace ServiceStack.ServiceHost.Tests.Routes
         {
             var routes = new ServiceRoutes(appHost);
             routes.Add<Customer>("/Users/{0}/Orders/{1}", ApplyTo.Get, x => x.Name, x => x.OrderId);
-            var route = appHost.RestPaths[0];
-            Assert.That(route.Path == "/Users/{Name}/Orders/{OrderId}");
+            var route = appHost.RestPaths.Last();
+            Assert.That(route.Path, Is.EqualTo("/Users/{Name}/Orders/{OrderId}"));
         }
     }
 

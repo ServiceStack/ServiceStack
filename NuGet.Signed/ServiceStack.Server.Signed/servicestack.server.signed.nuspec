@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>ServiceStack.Server.Signed</id>
+    <title>ServiceStack.Server.Signed</title>
+    <version>4.0.0</version>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
+    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <description>
+      Integration libraries and adapters with other major ServiceStack server components.
+    </description>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
+    <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
+    <language>en-US</language>
+    <copyright>Copyright 2014 Service Stack</copyright>
+    <dependencies>
+      <dependency id="ServiceStack.Common.Signed" version="4.0" />
+      <dependency id="ServiceStack.Redis.Signed" version="4.0" />
+      <dependency id="ServiceStack.OrmLite.SqlServer.Signed" version="4.0" />
+      <dependency id="ServiceStack.Signed" version="4.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Server\**\*.cs" target="src\ServiceStack.Server" />
+  </files>
+</package>
