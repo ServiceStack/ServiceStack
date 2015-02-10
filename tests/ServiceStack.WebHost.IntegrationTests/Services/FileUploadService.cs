@@ -61,7 +61,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             if (request.RelativePath.IsNullOrEmpty())
                 throw new ArgumentNullException("RelativePath");
 
-            var filePath = ("~/" + request.RelativePath).MapProjectPath();
+            var filePath = ("~/" + request.RelativePath).MapHostAbsolutePath();
             if (!File.Exists(filePath))
                 throw new FileNotFoundException(request.RelativePath);
 
