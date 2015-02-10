@@ -64,7 +64,7 @@ namespace ServiceStack
 
         public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn = null)
         {
-            if (service == null) return;
+            if (service == null || session == null) return;
 
             service.Request.SaveSession(session, expiresIn);
         }

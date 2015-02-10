@@ -158,80 +158,78 @@ namespace ServiceStack.Auth
                 authInfo.ForEach((x, y) => tokens.Items[x] = y);
             }
 
+            var authRepo = authService.TryResolve<IAuthRepository>();
+
+            if (CustomValidationFilter != null)
+            {
+                var ctx = new AuthContext
+                {
+                    Service = authService,
+                    AuthProvider = this,
+                    Session = session,
+                    AuthTokens = tokens,
+                    AuthInfo = authInfo,
+                    AuthRepository = authRepo,
+                };
+                var response = CustomValidationFilter(ctx);
+                if (response != null)
+                {
+                    authService.RemoveSession();
+                    return response;
+                }
+            }
+
+            if (authRepo != null)
+            {
+                var failed = ValidateAccount(authService, authRepo, session, tokens);
+                if (failed != null)
+                {
+                    authService.RemoveSession();
+                    return failed;
+                }
+
+                if (hasTokens)
+                {
+                    var authDetails = authRepo.CreateOrMergeAuthSession(session, tokens);
+                    session.UserAuthId = authDetails.UserAuthId.ToString();
+
+                    var firstTimeAuthenticated = authDetails.CreatedDate == authDetails.ModifiedDate;
+                    if (firstTimeAuthenticated)
+                    {
+                        session.OnRegistered(authService.Request, session, authService);
+                        AuthEvents.OnRegistered(authService.Request, session, authService);
+                    }
+                }
+
+                authRepo.LoadUserAuth(session, tokens);
+
+                foreach (var oAuthToken in session.ProviderOAuthAccess)
+                {
+                    var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
+                    if (authProvider == null) continue;
+                    var userAuthProvider = authProvider as OAuthProvider;
+                    if (userAuthProvider != null)
+                    {
+                        userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
+                    }
+                }
+
+                var httpRes = authService.Request.Response as IHttpResponse;
+                if (session.UserAuthId != null && httpRes != null)
+                {
+                    httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
+                }
+            }
+            else
+            {
+                if (hasTokens)
+                {
+                    session.UserAuthId = CreateOrMergeAuthSession(session, tokens);
+                }
+            }
+
             try
             {
-                var authRepo = authService.TryResolve<IAuthRepository>();
-
-                if (CustomValidationFilter != null)
-                {
-                    var ctx = new AuthContext
-                    {
-                        Service = authService,
-                        AuthProvider = this,
-                        Session = session,
-                        AuthTokens = tokens,
-                        AuthInfo = authInfo,
-                        AuthRepository = authRepo,
-                    };
-                    var response = CustomValidationFilter(ctx);
-                    if (response != null)
-                    {
-                        session.IsAuthenticated = false;
-                        authService.SaveSession(session, SessionExpiry);
-                        return response;
-                    }
-                }
-
-                if (authRepo != null)
-                {
-                    var failed = ValidateAccount(authService, authRepo, session, tokens);
-                    if (failed != null)
-                    {
-                        session.IsAuthenticated = false;
-                        authService.SaveSession(session, SessionExpiry);
-                        return failed;
-                    }
-
-                    if (hasTokens)
-                    {
-                        var authDetails = authRepo.CreateOrMergeAuthSession(session, tokens);
-                        session.UserAuthId = authDetails.UserAuthId.ToString();
-
-                        var firstTimeAuthenticated = authDetails.CreatedDate == authDetails.ModifiedDate;
-                        if (firstTimeAuthenticated)
-                        {
-                            session.OnRegistered(authService.Request, session, authService);
-                            AuthEvents.OnRegistered(authService.Request, session, authService);
-                        }
-                    }
-
-                    authRepo.LoadUserAuth(session, tokens);
-
-                    foreach (var oAuthToken in session.ProviderOAuthAccess)
-                    {
-                        var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
-                        if (authProvider == null) continue;
-                        var userAuthProvider = authProvider as OAuthProvider;
-                        if (userAuthProvider != null)
-                        {
-                            userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
-                        }
-                    }
-
-                    var httpRes = authService.Request.Response as IHttpResponse;
-                    if (session.UserAuthId != null && httpRes != null)
-                    {
-                        httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
-                    }
-                }
-                else
-                {
-                    if (hasTokens)
-                    {
-                        session.UserAuthId = CreateOrMergeAuthSession(session, tokens);
-                    }
-                }
-
                 session.IsAuthenticated = true;
                 session.OnAuthenticated(authService, session, tokens, authInfo);
                 AuthEvents.OnAuthenticated(authService.Request, session, authService, tokens, authInfo);
