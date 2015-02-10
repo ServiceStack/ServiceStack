@@ -62,6 +62,8 @@ namespace ServiceStack.Razor
 
         public dynamic ViewBag { get; set; }
 
+        public static Func<RenderingPage, string, string> LiteralFilter = DefaultLiteralFilter;
+
         public IViewBag TypedViewBag
         {
             get { return (IViewBag)ViewBag; }
@@ -81,22 +83,27 @@ namespace ServiceStack.Razor
         //overridden by the RazorEngine when razor generates code.
         public abstract void Execute();
 
+        public static string DefaultLiteralFilter(RenderingPage page, string str)
+        {
+            return str;
+        }
+
         //No HTML encoding
         public virtual void WriteLiteral(string str)
         {
-            this.Output.Write(str);
+            this.Output.Write(LiteralFilter(this, str));
         }
 
         //With HTML encoding
         public virtual void Write(object obj)
         {
-            this.Output.Write(HtmlEncode(obj));
+            this.Output.Write(LiteralFilter(this, HtmlEncode(obj)));
         }
 
         //With HTML encoding
         public virtual void WriteTo(TextWriter writer, object obj)
         {
-            writer.Write(HtmlEncode(obj));
+            writer.Write(LiteralFilter(this, HtmlEncode(obj)));
         }
 
         public virtual void WriteTo(TextWriter writer, HelperResult value)
@@ -120,7 +127,7 @@ namespace ServiceStack.Razor
             if (literal == null)
                 return;
 
-            writer.Write(literal);
+            writer.Write(DefaultLiteralFilter(this, literal));
         }
 
         private static string HtmlEncode(object value)
