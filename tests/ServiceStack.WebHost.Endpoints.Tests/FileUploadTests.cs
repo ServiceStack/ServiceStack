@@ -144,6 +144,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_POST_upload_file_using_ServiceClient_with_request_and_QueryString()
+        {
+            IServiceClient client = new JsonServiceClient(ListeningOn);
+
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+
+            var request = new FileUpload();
+            var response = client.PostFileWithRequest<FileUploadResponse>(
+                ListeningOn + "/fileuploads?CustomerId=123&CustomerName=Foo,Bar",
+                uploadFile, request);
+
+            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
+            Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
+            Assert.That(response.Contents, Is.EqualTo(expectedContents));
+            Assert.That(response.CustomerName, Is.EqualTo("Foo,Bar"));
+            Assert.That(response.CustomerId, Is.EqualTo(123));
+        }
+
+        [Test]
         public void Can_POST_upload_file_using_ServiceClient_with_request_containing_utf8_chars()
         {
             var client = new JsonServiceClient(ListeningOn);

@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string CustomerName { get; set; }
 
         [DataMember]
-        public int CustomerId { get; set; }
+        public int? CustomerId { get; set; }
 
         [DataMember]
         public DateTime CreatedDate { get; set; }
@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string CustomerName { get; set; }
 
         [DataMember]
-        public int CustomerId { get; set; }
+        public int? CustomerId { get; set; }
 
         [DataMember]
         public DateTime CreatedDate { get; set; }

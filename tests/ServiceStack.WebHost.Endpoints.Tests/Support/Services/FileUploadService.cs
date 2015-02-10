@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public string CustomerName { get; set; }
 
         [DataMember]
-        public int CustomerId { get; set; }
+        public int? CustomerId { get; set; }
 
         [DataMember]
         public DateTime CreatedDate { get; set; }
@@ -44,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public string CustomerName { get; set; }
 
         [DataMember]
-        public int CustomerId { get; set; }
+        public int? CustomerId { get; set; }
 
         [DataMember]
         public DateTime CreatedDate { get; set; }
