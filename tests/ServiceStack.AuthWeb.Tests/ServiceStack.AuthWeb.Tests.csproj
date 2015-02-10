@@ -58,6 +58,9 @@
       <HintPath>..\..\src\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Npgsql">
+      <HintPath>..\..\..\Test\lib\Npgsql.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\..\src\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -73,6 +76,9 @@
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite.PostgreSQL">
+      <HintPath>..\..\..\Test\lib\ServiceStack.OrmLite.PostgreSQL.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite.Sqlite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.Sqlite.dll</HintPath>

@@ -37,6 +37,7 @@
         }
     }
 
+    [Route("/requiresauth")]
     public class RequiresAuth : IReturn<RequiresAuth>
     {
         public string Name { get; set; }        

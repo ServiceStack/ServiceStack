@@ -16,6 +16,7 @@ using ServiceStack.Authentication.RavenDb;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
@@ -49,21 +50,31 @@ namespace ServiceStack.AuthWeb.Tests
 
             container.Register(new DataSource());
 
-            container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider) {
-                    ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
-                });
+            var UsePostgreSql = false;
+            if (UsePostgreSql)
+            {
+                container.Register<IDbConnectionFactory>(
+                    new OrmLiteConnectionFactory(
+                        "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200", 
+                        PostgreSqlDialect.Provider) {
+                            ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+                        });
+            }
+            else
+            {
+                container.Register<IDbConnectionFactory>(
+                    new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider) {
+                        ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+                    });
+            }
 
             using (var db = container.Resolve<IDbConnectionFactory>().Open())
             {
-                db.CreateTableIfNotExists<Rockstar>();
+                db.DropAndCreateTable<Rockstar>();
                 db.Insert(Rockstar.SeedData);
             }
 
             JsConfig.EmitCamelCaseNames = true;
-
-            //Register Typed Config some services might need to access
-            var appSettings = new AppSettings();
 
             //Register a external dependency-free 
             container.Register<ICacheClient>(new MemoryCacheClient());
@@ -93,10 +104,10 @@ namespace ServiceStack.AuthWeb.Tests
             Plugins.Add(new AuthFeature(
                 () => new CustomUserSession(), //Use your own typed Custom UserSession type
                 new IAuthProvider[] {
-                    new AspNetWindowsAuthProvider(this) {
-                        LoadUserAuthFilter = LoadUserAuthInfo,
-                        AllowAllWindowsAuthUsers = true
-                    }, 
+                    //new AspNetWindowsAuthProvider(this) {
+                    //    LoadUserAuthFilter = LoadUserAuthInfo,
+                    //    AllowAllWindowsAuthUsers = true
+                    //}, 
                     new CredentialsAuthProvider(),        //HTML Form post of UserName/Password credentials
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
