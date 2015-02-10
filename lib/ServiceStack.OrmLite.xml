@@ -294,25 +294,25 @@
             Return the number of rows returned by the supplied sql
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.String[])">
             <summary>
             Returns results with references from using a LINQ Expression. E.g:
             <para>db.LoadSelect&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}},System.String[])">
             <summary>
             Returns results with references from using an SqlExpression lambda. E.g:
             <para>db.LoadSelect&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &gt; 40))</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0},System.String[])">
             <summary>
             Returns results with references from using an SqlExpression lambda. E.g:
             <para>db.LoadSelect(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``2(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``1})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``2(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``1},System.String[])">
             <summary>
             Project results with references from a number of joined tables into a different model
             </summary>
