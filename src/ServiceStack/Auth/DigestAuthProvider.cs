@@ -65,7 +65,7 @@ namespace ServiceStack.Auth
                 }
             }
 
-            return !session.UserAuthName.IsNullOrEmpty();
+            return session != null && session.IsAuthenticated && !session.UserAuthName.IsNullOrEmpty();
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)

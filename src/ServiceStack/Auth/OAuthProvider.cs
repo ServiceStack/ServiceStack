@@ -50,7 +50,7 @@ namespace ServiceStack.Auth
                 if (!LoginMatchesSession(session, request.UserName)) return false;
             }
 
-            return tokens != null && !string.IsNullOrEmpty(tokens.AccessTokenSecret);
+            return session != null && session.IsAuthenticated && tokens != null && !string.IsNullOrEmpty(tokens.AccessTokenSecret);
         }
 
         /// <summary>

@@ -278,7 +278,7 @@ namespace ServiceStack.Authentication.OpenId
             }
 
             // For OpenId, AccessTokenSecret is null/empty, but UserId is populated w/ authenticated url from openId providers            
-            return tokens != null && !string.IsNullOrEmpty(tokens.UserId);
+            return session != null && session.IsAuthenticated && tokens != null && !string.IsNullOrEmpty(tokens.UserId);
         }
     }
 

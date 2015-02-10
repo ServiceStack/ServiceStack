@@ -137,7 +137,7 @@ namespace ServiceStack.Authentication.OAuth2
                 }
             }
 
-            return tokens != null && !string.IsNullOrEmpty(tokens.UserId);
+            return session != null && session.IsAuthenticated && tokens != null && !string.IsNullOrEmpty(tokens.UserId);
         }
 
         public void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
