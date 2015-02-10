@@ -107,6 +107,23 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             Assert.That(actualContents.NormalizeNewLines(), Is.EqualTo(expectedContents.NormalizeNewLines()));
         }
 
+        [Test]
+        public void Can_POST_upload_file_using_ServiceClient_with_request()
+        {
+            IServiceClient client = new JsonServiceClient(Config.ServiceStackBaseUri);
+
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapHostAbsolutePath());
+
+            var request = new FileUpload { CustomerId = 123, CustomerName = "Foo,Bar" };
+            var response = client.PostFileWithRequest<FileUploadResponse>(Config.ServiceStackBaseUri + "/fileuploads", uploadFile, request);
+
+            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
+            Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
+            Assert.That(response.Contents, Is.EqualTo(expectedContents));
+            Assert.That(response.CustomerName, Is.EqualTo("Foo,Bar"));
+            Assert.That(response.CustomerId, Is.EqualTo(123));
+        }
     }
 
 
