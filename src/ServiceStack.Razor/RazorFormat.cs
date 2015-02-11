@@ -260,6 +260,25 @@ namespace ServiceStack.Razor
             var ms = (MemoryStream)httpReq.Response.OutputStream;
             return ms.ToArray().FromUtf8Bytes();
         }
+
+        public static void CollapseWhitespace(RenderingPage page, string str)
+        {
+            if (str == null) return;
+            
+            var lastChar = (char)0;
+            for (var i = 0; i < str.Length; i++)
+            {
+                var c = str[i];
+                if (c < 32) continue; // Skip all these
+                if (c == 32)
+                {
+                    if (lastChar == 32)
+                        continue; // Only write one space character
+                }
+                page.Output.Write(c);
+                lastChar = c;
+            }
+        }
     }
 
     public interface IRazorConfig
