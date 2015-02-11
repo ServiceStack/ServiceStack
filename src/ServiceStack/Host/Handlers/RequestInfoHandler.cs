@@ -160,16 +160,16 @@ namespace ServiceStack.Host.Handlers
 
     public class RequestInfoHandler : HttpAsyncTaskHandler
     {
+        public RequestInfoHandler()
+        {
+            this.RequestName = GetType().Name;
+        }
+
         public const string RestPath = "requestinfo";
 
         public RequestInfoResponse RequestInfo { get; set; }
 
         public static RequestHandlerInfo LastRequestInfo;
-
-        public RequestInfoHandler()
-        {
-            this.RequestName = GetType().Name;
-        }
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {

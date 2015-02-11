@@ -12,6 +12,11 @@ namespace ServiceStack.Host.Handlers
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(NotFoundHttpHandler));
 
+        public NotFoundHttpHandler()
+        {
+            this.RequestName = GetType().Name;
+        }
+
         public bool? IsIntegratedPipeline { get; set; }
         public string WebHostPhysicalPath { get; set; }
         public List<string> WebHostRootFileNames { get; set; }

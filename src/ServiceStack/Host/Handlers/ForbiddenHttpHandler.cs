@@ -7,6 +7,11 @@ namespace ServiceStack.Host.Handlers
 {
     public class ForbiddenHttpHandler : HttpAsyncTaskHandler
     {
+        public ForbiddenHttpHandler()
+        {
+            this.RequestName = GetType().Name;
+        }
+
         public bool? IsIntegratedPipeline { get; set; }
         public string WebHostPhysicalPath { get; set; }
         public List<string> WebHostRootFileNames { get; set; }

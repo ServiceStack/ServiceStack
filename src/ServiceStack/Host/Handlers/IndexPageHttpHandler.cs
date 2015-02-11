@@ -6,6 +6,11 @@ namespace ServiceStack.Host.Handlers
 {
     public class IndexPageHttpHandler : HttpAsyncTaskHandler
     {
+        public IndexPageHttpHandler()
+        {
+            this.RequestName = GetType().Name;
+        }
+
         /// <summary>
         /// Non ASP.NET requests
         /// </summary>

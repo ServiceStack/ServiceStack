@@ -14,6 +14,7 @@ namespace ServiceStack.Host.Handlers
                 throw new NullReferenceException("action");
 
             Action = action;
+            this.RequestName = GetType().Name;
         }
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
