@@ -34,11 +34,11 @@ namespace ServiceStack
 
         public static void AddSessionIdToRequestFilter(IRequest req, IResponse res, object requestDto)
         {
-            if (req.GetItemOrCookie(SessionId) == null)
+            if (req.GetTemporarySessionId() == null)
             {
                 res.CreateTemporarySessionId(req);
             }
-            if (req.GetItemOrCookie(PermanentSessionId) == null)
+            if (req.GetPermanentSessionId() == null)
             {
                 res.CreatePermanentSessionId(req);
             }

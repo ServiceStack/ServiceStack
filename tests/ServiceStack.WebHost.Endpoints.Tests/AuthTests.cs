@@ -569,6 +569,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_sent_Session_using_Headers()
+        {
+            try
+            {
+                var client = GetClient();
+
+                var authResponse = client.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "p@55word",
+                    RememberMe = true,
+                });
+
+                authResponse.PrintDump();
+
+                var clientWithHeaders = (JsonServiceClient)GetClient();
+                clientWithHeaders.Headers["X-ss-pid"] = authResponse.SessionId;
+                clientWithHeaders.Headers["X-ss-opt"] = "perm";
+
+                var request = new Secured { Name = "test" };
+                var response = clientWithHeaders.Send<SecureResponse>(request);
+                Assert.That(response.Result, Is.EqualTo(request.Name));
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.Fail(webEx.Message);
+            }
+        }
+
+        [Test]
         public async Task Does_work_with_CredentailsAuth_Async()
         {
             var client = GetClient();
