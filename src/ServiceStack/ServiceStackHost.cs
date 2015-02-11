@@ -144,15 +144,7 @@ namespace ServiceStack
 
             if (VirtualPathProvider == null)
             {
-                var pathProviders = new List<IVirtualPathProvider> {
-                    new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath)
-                };
-
-                pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct().Map(x =>
-                    new ResourceVirtualPathProvider(this, x)));
-
-                pathProviders.AddRange(Config.EmbeddedResourceSources.Distinct().Map(x =>
-                    new ResourceVirtualPathProvider(this, x)));
+                var pathProviders = GetVirtualPathProviders();
 
                 VirtualPathProvider = pathProviders.Count > 1
                     ? new MultiVirtualPathProvider(this, pathProviders.ToArray())
@@ -165,6 +157,21 @@ namespace ServiceStack
             Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 
             return this;
+        }
+
+        public virtual List<IVirtualPathProvider> GetVirtualPathProviders()
+        {
+            var pathProviders = new List<IVirtualPathProvider> {
+                new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath)
+            };
+
+            pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct()
+                .Map(x => new ResourceVirtualPathProvider(this, x)));
+
+            pathProviders.AddRange(Config.EmbeddedResourceSources.Distinct()
+                .Map(x => new ResourceVirtualPathProvider(this, x)));
+
+            return pathProviders;
         }
 
         public virtual ServiceStackHost Start(string urlBase)
