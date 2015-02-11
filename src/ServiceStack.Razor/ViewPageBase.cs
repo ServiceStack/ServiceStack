@@ -62,7 +62,8 @@ namespace ServiceStack.Razor
 
         public dynamic ViewBag { get; set; }
 
-        public static Func<RenderingPage, string, string> LiteralFilter = DefaultLiteralFilter;
+        public static Action<RenderingPage, string> WriteLiteralFn = DefaultWriteLiteral;
+        public static Action<RenderingPage, TextWriter, string> WriteLiteralToFn = DefaultWriteLiteralTo;
 
         public IViewBag TypedViewBag
         {
@@ -83,27 +84,32 @@ namespace ServiceStack.Razor
         //overridden by the RazorEngine when razor generates code.
         public abstract void Execute();
 
-        public static string DefaultLiteralFilter(RenderingPage page, string str)
+        public static void DefaultWriteLiteral(RenderingPage page, string str)
         {
-            return str;
+            page.Output.Write(str);
+        }
+
+        public static void DefaultWriteLiteralTo(RenderingPage page, TextWriter writer, string str)
+        {
+            writer.Write(str);
         }
 
         //No HTML encoding
         public virtual void WriteLiteral(string str)
         {
-            this.Output.Write(LiteralFilter(this, str));
+            WriteLiteralFn(this, str);
         }
 
         //With HTML encoding
         public virtual void Write(object obj)
         {
-            this.Output.Write(LiteralFilter(this, HtmlEncode(obj)));
+            WriteLiteralFn(this, HtmlEncode(obj));
         }
 
         //With HTML encoding
         public virtual void WriteTo(TextWriter writer, object obj)
         {
-            writer.Write(LiteralFilter(this, HtmlEncode(obj)));
+            WriteLiteralToFn(this, writer, HtmlEncode(obj));
         }
 
         public virtual void WriteTo(TextWriter writer, HelperResult value)
@@ -127,7 +133,7 @@ namespace ServiceStack.Razor
             if (literal == null)
                 return;
 
-            writer.Write(DefaultLiteralFilter(this, literal));
+            WriteLiteralToFn(this, writer, literal);
         }
 
         private static string HtmlEncode(object value)

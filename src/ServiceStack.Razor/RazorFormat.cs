@@ -52,12 +52,21 @@ namespace ServiceStack.Razor
         public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
         public RenderPartialDelegate RenderPartialFn { get; set; }
 
-        public Func<RenderingPage, string, string> OnWriteLiteral
+        public Action<RenderingPage, string> OnWriteLiteral
         {
             set
             {
                 if (value != null)
-                    RenderingPage.LiteralFilter = value;
+                    RenderingPage.WriteLiteralFn = value;
+            }
+        }
+
+        public Action<RenderingPage, TextWriter, string> OnWriteLiteralTo
+        {
+            set
+            {
+                if (value != null)
+                    RenderingPage.WriteLiteralToFn = value;
             }
         }
 
