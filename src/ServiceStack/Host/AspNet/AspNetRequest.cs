@@ -272,7 +272,7 @@ namespace ServiceStack.Host.AspNet
                 {
                     return request.UserHostAddress;
                 }
-                catch (Exception ignore)
+                catch (Exception)
                 {
                     return null; //Can throw in Mono FastCGI Host
                 }

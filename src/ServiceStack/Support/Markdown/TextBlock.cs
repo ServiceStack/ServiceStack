@@ -962,7 +962,7 @@ namespace ServiceStack.Support.Markdown
 
                 base.ReturnType = mi.ReturnType;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }

@@ -178,7 +178,7 @@ namespace ServiceStack
             {
                 AssertAppHost().OnEndRequest();
             }
-            catch (Exception ex) { }
+            catch (Exception) { }
         }
 
         public static IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
