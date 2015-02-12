@@ -278,9 +278,11 @@ namespace ServiceStack.Razor.Managers
             var razorPage = viewManager.GetPartialPage(httpReq, pageName);
             if (razorPage != null)
             {
-                var page = CreateRazorPageInstance(httpReq, htmlHelper.HttpResponse, model, razorPage);
-                page.ParentPage = htmlHelper.RazorPage;
-                page.WriteTo(writer);
+                using (var page = CreateRazorPageInstance(httpReq, htmlHelper.HttpResponse, model, razorPage))
+                {
+                    page.ParentPage = htmlHelper.RazorPage;
+                    page.WriteTo(writer);
+                }
             }
             else
             {
