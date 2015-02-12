@@ -3,6 +3,8 @@
 
 
 using NUnit.Framework;
+using ServiceStack.Text;
+using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
@@ -78,7 +80,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         public void Can_get_service_matching_api_prefix()
         {
             var contents = "{0}/gettestapi".Fmt(ServiceStackBaseUri).GetStringFromUrl();
-            Assert.That(contents, Is.StringContaining("GetTestapi"));            
+            Assert.That(contents, Is.StringContaining("GetTestapi"));
         }
 
         [Test]
@@ -94,6 +96,21 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             Assert.That(contents, Is.StringContaining("/resource/swagger"));
             contents = "{0}/resource/swagger".Fmt(ServiceStackBaseUri).GetStringFromUrl();
             Assert.That(contents, Is.StringContaining("SwaggerNestedModel"));
+        }
+
+        [Test]
+        public void Can_call_template_Service()
+        {
+            var client = new JsonServiceClient(ServiceStackBaseUri);
+
+            var postResponse = client.Post(new PostTemplateRequest { Template = "foo" });
+            Assert.That(postResponse.PostResult, Is.EqualTo("foo"));
+
+            var getResponse = client.Get(new GetTemplatesRequest { Name = "bar" });
+            Assert.That(getResponse.GetResult, Is.EqualTo("bar"));
+
+            var getSingleResponse = client.Get(new GetTemplateRequest { Name = "baz" });
+            Assert.That(getSingleResponse.GetSingleResult, Is.EqualTo("baz"));
         }
     }
 }
