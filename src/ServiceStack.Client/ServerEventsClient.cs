@@ -503,7 +503,7 @@ namespace ServiceStack
 
         private void ProcessOnConnectMessage(ServerEventMessage e)
         {
-            var msg = JsonObject.Parse(e.Json);
+            var msg = JsonServiceClient.ParseObject(e.Json);
             ConnectionInfo = new ServerEventConnect {
                 HeartbeatIntervalMs = DefaultHeartbeatMs,
                 IdleTimeoutMs = DefaultIdleTimeoutMs,
@@ -523,7 +523,7 @@ namespace ServiceStack
 
         private void ProcessOnJoinMessage(ServerEventMessage e)
         {
-            var msg = JsonObject.Parse(e.Json);
+            var msg = JsonServiceClient.ParseObject(e.Json);
             var joinMsg = new ServerEventJoin().Populate(e, msg);
             joinMsg.UserId = msg.Get("userId");
             joinMsg.DisplayName = msg.Get("displayName");
@@ -534,7 +534,7 @@ namespace ServiceStack
 
         private void ProcessOnLeaveMessage(ServerEventMessage e)
         {
-            var msg = JsonObject.Parse(e.Json);
+            var msg = JsonServiceClient.ParseObject(e.Json);
             var leaveMsg = new ServerEventLeave().Populate(e, msg);
             leaveMsg.Channel = msg.Get("channel");
 
@@ -544,7 +544,7 @@ namespace ServiceStack
         private void ProcessOnHeartbeatMessage(ServerEventMessage e)
         {
             LastPulseAt = DateTime.UtcNow;
-            var msg = JsonObject.Parse(e.Json);
+            var msg = JsonServiceClient.ParseObject(e.Json);
             var heartbeatMsg = new ServerEventHeartbeat().Populate(e, msg);
 
             OnHeartbeatReceived(heartbeatMsg);

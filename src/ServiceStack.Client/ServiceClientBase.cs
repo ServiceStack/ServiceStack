@@ -759,7 +759,7 @@ namespace ServiceStack
                 GlobalRequestFilter(client);
         }
 
-        protected IDisposable __requestAccess()
+        protected static IDisposable __requestAccess()
         {
             return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
         }

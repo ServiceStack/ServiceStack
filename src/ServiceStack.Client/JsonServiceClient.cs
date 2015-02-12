@@ -47,5 +47,13 @@ namespace ServiceStack
         {
             get { return JsonSerializer.DeserializeFromStream; }
         }
+
+        internal static JsonObject ParseObject(string json)
+        {
+            using (__requestAccess())
+            {
+                return JsonObject.Parse(json);
+            }
+        }
     }
 }
