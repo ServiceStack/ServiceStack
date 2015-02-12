@@ -33,7 +33,7 @@ namespace ServiceStack
             //Avoid reading request body for non x-www-form-urlencoded requests
             return request.Headers[name]
                 ?? request.QueryString[name]
-                ?? (request.ContentType.MatchesContentType(MimeTypes.FormUrlEncoded)
+                ?? (!HostContext.Config.SkipFormDataInCreatingRequest && request.ContentType.MatchesContentType(MimeTypes.FormUrlEncoded)
                         ? request.FormData[name]
                         : null);
         }

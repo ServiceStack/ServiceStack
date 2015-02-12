@@ -4,6 +4,7 @@ using System.Net;
 using Check.ServiceInterface;
 using Funq;
 using ServiceStack;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 
 namespace CheckHttpListener
@@ -16,13 +17,21 @@ namespace CheckHttpListener
 
         public override void Configure(Container container)
         {
+            RawHttpHandlers.Add(_ => new CustomActionHandler((req, res) =>
+            {
+                var bytes = req.InputStream.ReadFully();
+                res.OutputStream.Write(bytes, 0, bytes.Length);
+            }));
+
             this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = null;
 
-            SetConfig(new HostConfig {
-                DebugMode = true
+            SetConfig(new HostConfig
+            {
+                DebugMode = true,
+                SkipFormDataInCreatingRequest = true,
             });
 
-            Plugins.Add(new NativeTypesFeature());
+            //Plugins.Add(new NativeTypesFeature());
         }
     }
 
@@ -39,6 +48,11 @@ namespace CheckHttpListener
             //TestService();
 
             Process.Start("http://localhost:2020/types/csharp");
+
+            var response = "http://localhost:2020".PostToUrl(new { a = "foo", b = "bar" });
+            "Response: {0}".Print(response);
+
+            
             Console.ReadLine();
         }
 

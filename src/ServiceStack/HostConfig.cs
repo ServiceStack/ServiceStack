@@ -186,6 +186,7 @@ namespace ServiceStack
             this.AddRedirectParamsToQueryString = instance.AddRedirectParamsToQueryString;
             this.RedirectToDefaultDocuments = instance.RedirectToDefaultDocuments;
             this.StripApplicationVirtualPath = instance.StripApplicationVirtualPath;
+            this.SkipFormDataInCreatingRequest = instance.SkipFormDataInCreatingRequest;
             this.ScanSkipPaths = instance.ScanSkipPaths;
             this.AdminAuthSecret = instance.AdminAuthSecret;
         }
@@ -261,6 +262,7 @@ namespace ServiceStack
         public bool AddRedirectParamsToQueryString { get; set; }
         public bool RedirectToDefaultDocuments { get; set; }
         public bool StripApplicationVirtualPath { get; set; }
+        public bool SkipFormDataInCreatingRequest { get; set; }
 
         //Skip scanning common VS.NET extensions
         public List<string> ScanSkipPaths { get; private set; }
