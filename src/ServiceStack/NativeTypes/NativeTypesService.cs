@@ -165,7 +165,7 @@ namespace ServiceStack.NativeTypes
                 var swift = new SwiftGenerator(typesConfig).GetCode(metadataTypes, base.Request);
                 return swift;
             }
-            catch (System.Exception ex)
+            catch (System.Exception)
             {
                 throw;
             }

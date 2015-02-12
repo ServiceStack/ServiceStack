@@ -390,7 +390,6 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public string Type(string type, string[] genericArgs)
         {
-            IDictionary<string, string> d;
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
