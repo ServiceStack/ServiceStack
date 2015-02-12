@@ -1,0 +1,7 @@
+﻿<h3>Db.Select&lt;Person&gt;() Partial</h3>
+<ul>
+    @foreach (var person in Db.Select<Rockstar>(q => q.Age == 27))
+    {
+        <li>@person.FirstName - @person.LastName (@person.Age)</li>
+    }
+</ul>
