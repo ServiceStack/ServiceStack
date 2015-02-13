@@ -643,6 +643,8 @@ namespace ServiceStack.NativeTypes
 
             if (type.Inherits != null)
             {
+                to.Add(type.Inherits.Name);
+
                 foreach (var genericArg in type.Inherits.GenericArgs.Safe())
                 {
                     to.Add(genericArg);
