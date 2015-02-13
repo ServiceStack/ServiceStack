@@ -27,6 +27,7 @@ namespace Check.ServiceInterface
         public int? RockstarIdOnOrAfter { get; set; }
     }
 
+    [AutoForm(Title = "Search for Rockstars", Description = "Use this option to search for Rockstars!")]
     public class QueryCustomRockstars : QueryBase<Rockstar, CustomRockstar>
     {
         public int? Age { get; set; }
@@ -136,10 +137,18 @@ namespace Check.ServiceInterface
 
     public class CustomRockstar
     {
+        [AutoFormField(Title = "Name")]
         public string FirstName { get; set; }
+
+        [AutoFormField(HideInSummary = true)]
         public string LastName { get; set; }
         public int? Age { get; set; }
+
+        [AutoFormField(Title = "Album")]
         public string RockstarAlbumName { get; set; }
+
+        [AutoFormField(Title = "Genre")]
+        public string RockstarGenreName { get; set; }
     }
 
     [Route("/movies/search")]

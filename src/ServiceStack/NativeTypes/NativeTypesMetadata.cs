@@ -376,9 +376,10 @@ namespace ServiceStack.NativeTypes
 
         public List<MetadataAttribute> ToAttributes(Type type)
         {
-            return !(type.IsUserType() || type.IsUserEnum() || type.IsInterface) || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
+            return !(type.IsUserType() || type.IsUserEnum() || type.IsInterface) 
+                    || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
                 ? null
-                : ToAttributes(type.GetCustomAttributes(false));
+                : ToAttributes(type.AllAttributes());
         }
 
         public List<MetadataPropertyType> ToProperties(Type type)
@@ -624,6 +625,43 @@ namespace ServiceStack.NativeTypes
 
     public static class MetadataExtensions
     {
+        public static MetadataTypeName ToMetadataTypeName(this MetadataType type)
+        {
+            if (type == null) return null;
+
+            return new MetadataTypeName
+            {
+                Name = type.Name,
+                Namespace = type.Namespace,
+                GenericArgs = type.GenericArgs
+            };
+        }
+
+        public static HashSet<string> GetReferencedTypeNames(this MetadataType type)
+        {
+            var to = new HashSet<string>();
+
+            if (type.Inherits != null)
+            {
+                foreach (var genericArg in type.Inherits.GenericArgs.Safe())
+                {
+                    to.Add(genericArg);
+                }
+            }
+
+            foreach (var pi in type.Properties.Safe())
+            {
+                to.Add(pi.Type);
+
+                foreach (var genericArg in pi.GenericArgs.Safe())
+                {
+                    to.Add(genericArg);
+                }
+            }
+
+            return to;
+        }
+
         public static bool IgnoreSystemType(this MetadataType type)
         {
             return type == null

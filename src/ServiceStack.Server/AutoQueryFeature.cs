@@ -8,8 +8,10 @@ using System.Reflection.Emit;
 using System.Threading;
 
 using Funq;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.MiniProfiler;
+using ServiceStack.NativeTypes;
 using ServiceStack.Reflection;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -29,6 +31,7 @@ namespace ServiceStack
         public string UseNamedConnection { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableRawSqlFilters { get; set; }
+        public bool EnableAutoForms { get; set; }
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
@@ -89,6 +92,20 @@ namespace ServiceStack
             { "EndsWith", new QueryFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}" }},
         };
 
+        public List<Property> AutoQueryFormConventions = new List<Property>
+        {
+            new Property { Name = "=", Value = "%"},
+            new Property { Name = ">=", Value = ">%"},
+            new Property { Name = ">", Value = "%>"},
+            new Property { Name = "<=", Value = "%<"},
+            new Property { Name = "<", Value = "<%"},
+            new Property { Name = "In", Value = "%In"},
+            new Property { Name = "Between", Value = "%Between"},
+            new Property { Name = "Starts With", Value = "%StartsWith"},
+            new Property { Name = "Contains", Value = "%Contains"},
+            new Property { Name = "Ends With", Value = "%EndsWith"},
+        }; 
+
         public AutoQueryFeature()
         {
             IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "OrderBy", "OrderByDesc", "_select", "_from", "_join", "_where" }, 
@@ -97,6 +114,7 @@ namespace ServiceStack
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
             EnableUntypedQueries = true;
+            EnableAutoForms = true;
             OrderByPrimaryKeyOnPagedQuery = true;
             LoadFromAssemblies = new HashSet<Assembly>();
         }
@@ -134,6 +152,9 @@ namespace ServiceStack
 
             appHost.Metadata.GetOperationAssemblies()
                 .Each(x => LoadFromAssemblies.Add(x));
+
+            if (EnableAutoForms)
+                appHost.RegisterService<AutoQueryMetadataService>();
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)
@@ -215,6 +236,80 @@ namespace ServiceStack
             return this;
         }
     }
+
+    [Exclude(Feature.Soap)]
+    [Route("/autoquery/metadata")]
+    public class AutoQueryMetadata : IReturn<AutoQueryMetadataResponse> { }
+
+    public class AutoQueryOperation
+    {
+        public string Request { get; set; }
+        public string From { get; set; }
+        public string To { get; set; }
+    }
+
+    public class AutoQueryMetadataResponse
+    {
+        public List<Property> Conventions { get; set; }
+
+        public List<AutoQueryOperation> Operations { get; set; }
+
+        public List<MetadataType> Types { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class AutoQueryMetadataService : Service
+    {
+        public INativeTypesMetadata NativeTypesMetadata { get; set; }
+
+        public object Any(AutoQueryMetadata request)
+        {
+            if (NativeTypesMetadata == null)
+                throw new NotSupportedException("AutoQueryForm requries NativeTypesFeature");
+
+            var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata { BaseUrl = Request.GetBaseUrl() });
+            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+
+            var response = new AutoQueryMetadataResponse {
+                Conventions = HostContext.GetPlugin<AutoQueryFeature>().AutoQueryFormConventions,
+                Operations = new List<AutoQueryOperation>(),
+                Types = new List<MetadataType>(),
+            };
+
+            var includeTypeNames = new HashSet<string>();
+
+            foreach (var op in metadataTypes.Operations)
+            {
+                if (op.Request.Inherits != null && op.Request.Inherits.Name.StartsWith("QueryBase`"))
+                {
+                    var inheritArgs = op.Request.Inherits.GenericArgs.Safe().ToArray();
+                    response.Operations.Add(new AutoQueryOperation {
+                        Request = op.Request.Name,
+                        From = inheritArgs.First(),
+                        To = inheritArgs.Last(),
+                    });
+
+                    response.Types.Add(op.Request);
+                    op.Request.GetReferencedTypeNames().Each(x => includeTypeNames.Add(x));
+                }
+            }
+
+            var types = metadataTypes.Types.Where(x => includeTypeNames.Contains(x.Name));
+
+            //Add referenced types to type name search
+            types.SelectMany(x => x.GetReferencedTypeNames()).Each(x => includeTypeNames.Add(x));
+
+            //Only need to seek 1-level deep in AutoQuery's (db.LoadSelect)
+            types = metadataTypes.Types.Where(x => includeTypeNames.Contains(x.Name));
+
+            response.Types.AddRange(types);
+
+            return response;
+        }
+    }
+
 
     public interface IAutoQuery
     {
