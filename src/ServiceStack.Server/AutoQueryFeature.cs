@@ -9,7 +9,6 @@ using System.Threading;
 
 using Funq;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Host;
 using ServiceStack.MiniProfiler;
 using ServiceStack.NativeTypes;
 using ServiceStack.Reflection;
