@@ -374,6 +374,15 @@ namespace ServiceStack
 
         public static IRequest GetCurrentRequest()
         {
+            var req = AssertAppHost().GetCurrentRequest();
+            if (req == null)
+                throw new NotImplementedException(ErrorMessages.HostDoesNotSupportSingletonRequest);
+
+            return req;
+        }
+
+        public static IRequest TryGetCurrentRequest()
+        {
             return AssertAppHost().GetCurrentRequest();
         }
     }

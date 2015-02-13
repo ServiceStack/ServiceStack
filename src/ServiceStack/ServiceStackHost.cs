@@ -611,6 +611,9 @@ namespace ServiceStack
 
         public virtual string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
         {
+            if (httpReq == null)
+                return (Config.WebHostUrl ?? "/").CombineWith(virtualPath.TrimStart('~'));
+
             return httpReq.GetAbsoluteUrl(virtualPath); //Http Listener, TODO: ASP.NET overrides
         }
 

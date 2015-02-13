@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Security.Authentication;
 using Check.ServiceModel;
 using ServiceStack;
 using ServiceStack.Data;

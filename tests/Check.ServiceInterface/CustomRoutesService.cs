@@ -9,11 +9,23 @@ namespace Check.ServiceInterface
         public int MyId { get; set; }
     }
 
+    [Route("/info/{Id}")]
+    public class Info
+    {
+        public string Id { get; set; }
+    }
+
     public class CustomRoutesService : Service
     {
         public object Any(LegacyLeadPost request)
         {
             return request;
+        }
+
+        public object Any(Info request)
+        {
+            return request.ToAbsoluteUri()
+                + " | " + request.ToAbsoluteUri(base.Request);
         }
     }
 }

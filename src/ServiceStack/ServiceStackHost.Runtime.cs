@@ -405,7 +405,7 @@ namespace ServiceStack
 
         public virtual IRequest GetCurrentRequest()
         {
-            throw new NotImplementedException(ErrorMessages.HostDoesNotSupportSingletonRequest);
+            return null;
         }
     }
 
