@@ -403,7 +403,7 @@ namespace ServiceStack
             httpReq.Items[SessionFeature.RequestItemsSessionKey] = session;
         }
 
-        public virtual IRequest GetCurrentRequest()
+        public virtual IRequest TryGetCurrentRequest()
         {
             return null;
         }

@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using System.Web;
 using ServiceStack.Host.AspNet;
@@ -29,9 +30,16 @@ namespace ServiceStack
             return path;
         }
 
-        public override IRequest GetCurrentRequest()
+        public override IRequest TryGetCurrentRequest()
         {
-            return HttpContext.Current.ToRequest();
+            try
+            {
+                return HasStarted ? HttpContext.Current.ToRequest() : null;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
