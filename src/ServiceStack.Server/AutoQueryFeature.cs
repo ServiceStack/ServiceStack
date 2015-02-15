@@ -30,7 +30,7 @@ namespace ServiceStack
         public string UseNamedConnection { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableRawSqlFilters { get; set; }
-        public bool EnableAutoForms { get; set; }
+        public bool EnableAutoQueryViewer { get; set; }
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
@@ -91,7 +91,7 @@ namespace ServiceStack
             { "EndsWith", new QueryFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}" }},
         };
 
-        public List<Property> AutoQueryFormConventions = new List<Property>
+        public List<Property> AutoQueryViewerConventions = new List<Property>
         {
             new Property { Name = "=", Value = "%"},
             new Property { Name = ">=", Value = ">%"},
@@ -113,7 +113,7 @@ namespace ServiceStack
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
             EnableUntypedQueries = true;
-            EnableAutoForms = true;
+            EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
             LoadFromAssemblies = new HashSet<Assembly>();
         }
@@ -152,7 +152,7 @@ namespace ServiceStack
             appHost.Metadata.GetOperationAssemblies()
                 .Each(x => LoadFromAssemblies.Add(x));
 
-            if (EnableAutoForms)
+            if (EnableAutoQueryViewer)
                 appHost.RegisterService<AutoQueryMetadataService>();
         }
 
@@ -266,13 +266,13 @@ namespace ServiceStack
         public object Any(AutoQueryMetadata request)
         {
             if (NativeTypesMetadata == null)
-                throw new NotSupportedException("AutoQueryForm requries NativeTypesFeature");
+                throw new NotSupportedException("AutoQueryViewer requries NativeTypesFeature");
 
             var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata { BaseUrl = Request.GetBaseUrl() });
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
             var response = new AutoQueryMetadataResponse {
-                Conventions = HostContext.GetPlugin<AutoQueryFeature>().AutoQueryFormConventions,
+                Conventions = HostContext.GetPlugin<AutoQueryFeature>().AutoQueryViewerConventions,
                 Operations = new List<AutoQueryOperation>(),
                 Types = new List<MetadataType>(),
             };

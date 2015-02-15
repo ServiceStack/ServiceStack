@@ -44,7 +44,7 @@
   <ItemGroup>
     <Compile Include="AttributeBase.cs" />
     <Compile Include="Auth\IUserAuth.cs" />
-    <Compile Include="AutoFormAttributes.cs" />
+    <Compile Include="AutoQueryViewerAttributes.cs" />
     <Compile Include="Caching\ICacheClient.cs">
       <SubType>Code</SubType>
     </Compile>

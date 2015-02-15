@@ -29,8 +29,8 @@ namespace ServiceStack
                     typeof(RequiredAttribute),
                     typeof(ReferencesAttribute),
                     typeof(StringLengthAttribute),
-                    typeof(AutoFormAttribute),
-                    typeof(AutoFormFieldAttribute),
+                    typeof(AutoQueryViewerAttribute),
+                    typeof(AutoQueryViewerFieldAttribute),
                 },
                 IgnoreTypes = new HashSet<Type>
                 {
