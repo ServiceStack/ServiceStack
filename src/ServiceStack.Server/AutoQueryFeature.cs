@@ -31,6 +31,7 @@ namespace ServiceStack
         public bool EnableUntypedQueries { get; set; }
         public bool EnableRawSqlFilters { get; set; }
         public bool EnableAutoQueryViewer { get; set; }
+        public AutoQueryViewerConfig AutoQueryViewerConfig { get; set; }
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
@@ -91,20 +92,6 @@ namespace ServiceStack
             { "EndsWith", new QueryFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}" }},
         };
 
-        public List<Property> AutoQueryViewerConventions = new List<Property>
-        {
-            new Property { Name = "=", Value = "%"},
-            new Property { Name = ">=", Value = ">%"},
-            new Property { Name = ">", Value = "%>"},
-            new Property { Name = "<=", Value = "%<"},
-            new Property { Name = "<", Value = "<%"},
-            new Property { Name = "In", Value = "%In"},
-            new Property { Name = "Between", Value = "%Between"},
-            new Property { Name = "Starts With", Value = "%StartsWith"},
-            new Property { Name = "Contains", Value = "%Contains"},
-            new Property { Name = "Ends With", Value = "%EndsWith"},
-        }; 
-
         public AutoQueryFeature()
         {
             IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "OrderBy", "OrderByDesc", "_select", "_from", "_join", "_where" }, 
@@ -116,6 +103,23 @@ namespace ServiceStack
             EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
             LoadFromAssemblies = new HashSet<Assembly>();
+
+            this.AutoQueryViewerConfig = new AutoQueryViewerConfig
+            {
+                ImplicitConventions = new List<Property>
+                {
+                    new Property { Name = "=", Value = "%"},
+                    new Property { Name = ">=", Value = ">%"},
+                    new Property { Name = ">", Value = "%>"},
+                    new Property { Name = "<=", Value = "%<"},
+                    new Property { Name = "<", Value = "<%"},
+                    new Property { Name = "In", Value = "%In"},
+                    new Property { Name = "Between", Value = "%Between"},
+                    new Property { Name = "Starts With", Value = "%StartsWith"},
+                    new Property { Name = "Contains", Value = "%Contains"},
+                    new Property { Name = "Ends With", Value = "%EndsWith"},
+                }
+            };
         }
 
         public void Register(IAppHost appHost)
@@ -236,6 +240,18 @@ namespace ServiceStack
         }
     }
 
+    public class AutoQueryViewerConfig
+    {
+        public string ServiceName { get; set; }
+        public string ServiceDescription { get; set; }
+        public string ServiceImageUrl { get; set; }
+
+        public List<Property> ImplicitConventions { get; set; } 
+        public bool OnlyShowAnnotatedServices { get; set; }
+        public int? MinWidth { get; set; }
+        public bool LimitWidthToFitGrid { get; set; }
+    }
+
     [Exclude(Feature.Soap)]
     [Route("/autoquery/metadata")]
     public class AutoQueryMetadata : IReturn<AutoQueryMetadataResponse> { }
@@ -249,7 +265,7 @@ namespace ServiceStack
 
     public class AutoQueryMetadataResponse
     {
-        public List<Property> Conventions { get; set; }
+        public AutoQueryViewerConfig Config { get; set; }
 
         public List<AutoQueryOperation> Operations { get; set; }
 
@@ -268,11 +284,20 @@ namespace ServiceStack
             if (NativeTypesMetadata == null)
                 throw new NotSupportedException("AutoQueryViewer requries NativeTypesFeature");
 
+            var feature = HostContext.GetPlugin<AutoQueryFeature>();
+            var config = feature.AutoQueryViewerConfig;
+
+            if (config == null)
+                throw new NotSupportedException("AutoQueryViewerConfig is missing");
+
+            if (config.ServiceName == null)
+                config.ServiceName = HostContext.ServiceName;
+
             var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata { BaseUrl = Request.GetBaseUrl() });
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
             var response = new AutoQueryMetadataResponse {
-                Conventions = HostContext.GetPlugin<AutoQueryFeature>().AutoQueryViewerConventions,
+                Config = feature.AutoQueryViewerConfig,
                 Operations = new List<AutoQueryOperation>(),
                 Types = new List<MetadataType>(),
             };
@@ -283,6 +308,14 @@ namespace ServiceStack
             {
                 if (op.Request.Inherits != null && op.Request.Inherits.Name.StartsWith("QueryBase`"))
                 {
+                    if (config.OnlyShowAnnotatedServices)
+                    {
+                        var serviceAttrs = op.Request.Attributes.Safe();
+                        var attr = serviceAttrs.FirstOrDefault(x => x.Name + "Attribute" == typeof(AutoQueryViewerAttribute).Name);
+                        if (attr == null)
+                            continue;
+                    }
+
                     var inheritArgs = op.Request.Inherits.GenericArgs.Safe().ToArray();
                     response.Operations.Add(new AutoQueryOperation {
                         Request = op.Request.Name,
