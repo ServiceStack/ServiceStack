@@ -255,6 +255,8 @@ namespace ServiceStack
         public string DefaultSearchText { get; set; }
 
         public string BrandImageUrl { get; set; }
+        public string TextColor { get; set; }
+        public string LinkColor { get; set; }
         public string BackgroundColor { get; set; }
         public string BackgroundImageUrl { get; set; }
     }
