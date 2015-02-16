@@ -224,6 +224,8 @@ namespace Funq
             MethodInfo resolveMethodInfo, Type type, Expression lambdaParam)
         {
             var ctorWithMostParameters = GetConstructorWithMostParams(type);
+            if (ctorWithMostParameters == null)
+                throw new Exception(ErrorMessages.ConstructorNotFoundForType.Fmt(type.Name));
 
             var constructorParameterInfos = ctorWithMostParameters.GetParameters();
             var regParams = constructorParameterInfos

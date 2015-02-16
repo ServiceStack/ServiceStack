@@ -41,5 +41,8 @@
         //Hosts
         public static string OnlyAllowedInAspNetHosts = "Only ASP.NET Requests accessible via Singletons are supported";
         public static string HostDoesNotSupportSingletonRequest = "This AppHost does not support accessing the current Request via a Singleton";
+
+        //Invalid State
+        public static string ConstructorNotFoundForType = "Constructor not found for Type '{0}'";
     }
 }
