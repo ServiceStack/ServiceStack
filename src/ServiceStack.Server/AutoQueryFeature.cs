@@ -247,7 +247,8 @@ namespace ServiceStack
         public string ServiceDescription { get; set; }
         public string ServiceImageUrl { get; set; }
 
-        public List<Property> ImplicitConventions { get; set; } 
+        public List<Property> ImplicitConventions { get; set; }
+        public List<string> DefaultSearchFields { get; set; }
         public bool OnlyShowAnnotatedServices { get; set; }
         public int? MinWidth { get; set; }
         public bool LimitWidthToFitGrid { get; set; }
