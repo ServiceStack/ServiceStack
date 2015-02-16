@@ -247,12 +247,14 @@ namespace ServiceStack
         public string ServiceDescription { get; set; }
         public string ServiceImageUrl { get; set; }
 
-        public List<Property> ImplicitConventions { get; set; }
-        public List<string> DefaultSearchFields { get; set; }
         public bool OnlyShowAnnotatedServices { get; set; }
-        public int? MinWidth { get; set; }
-        public bool LimitWidthToFitGrid { get; set; }
+        public List<Property> ImplicitConventions { get; set; }
 
+        public string DefaultSearchField { get; set; }
+        public string DefaultSearchType { get; set; }
+        public string DefaultSearchText { get; set; }
+
+        public string BrandImageUrl { get; set; }
         public string BackgroundColor { get; set; }
         public string BackgroundImageUrl { get; set; }
     }
