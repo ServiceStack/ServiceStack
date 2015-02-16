@@ -8,6 +8,7 @@ namespace ServiceStack
         public string Title { get; set; }
         public string Description { get; set; }
         public string IconUrl { get; set; }
+        public string BrandUrl { get; set; }
         public string BrandImageUrl { get; set; }
         public string TextColor { get; set; }
         public string LinkColor { get; set; }
@@ -16,7 +17,6 @@ namespace ServiceStack
         public string DefaultSearchField { get; set; }
         public string DefaultSearchType { get; set; }
         public string DefaultSearchText { get; set; }
-        public int? ResultsMaxWidth { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
@@ -26,8 +26,6 @@ namespace ServiceStack
         public string Description { get; set; }
         public bool HideInSummary { get; set; }
         public string ValueFormat { get; set; }
-        public int? Flex { get; set; }
-        public int? FieldWidth { get; set; }
         public string LayoutHint { get; set; }
     }
 }
