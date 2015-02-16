@@ -242,6 +242,7 @@ namespace ServiceStack
 
     public class AutoQueryViewerConfig
     {
+        public string ServiceBaseUrl { get; set; }
         public string ServiceName { get; set; }
         public string ServiceDescription { get; set; }
         public string ServiceImageUrl { get; set; }
@@ -250,6 +251,9 @@ namespace ServiceStack
         public bool OnlyShowAnnotatedServices { get; set; }
         public int? MinWidth { get; set; }
         public bool LimitWidthToFitGrid { get; set; }
+
+        public string BackgroundColor { get; set; }
+        public string BackgroundImageUrl { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -289,6 +293,9 @@ namespace ServiceStack
 
             if (config == null)
                 throw new NotSupportedException("AutoQueryViewerConfig is missing");
+
+            if (config.ServiceBaseUrl == null)
+                config.ServiceBaseUrl = base.Request.ResolveBaseUrl();
 
             if (config.ServiceName == null)
                 config.ServiceName = HostContext.ServiceName;
