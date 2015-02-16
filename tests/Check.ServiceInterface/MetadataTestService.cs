@@ -36,7 +36,7 @@ namespace Check.ServiceInterface
             };
         }
 
-        public object Any(AutoQueryMetadata request)
+        public object Any(MetadataRequest request)
         {
             return request;
         }
