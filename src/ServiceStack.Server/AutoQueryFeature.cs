@@ -247,6 +247,7 @@ namespace ServiceStack
         public string ServiceDescription { get; set; }
         public string ServiceImageUrl { get; set; }
 
+        public bool IsPublic { get; set; } // Allow listing on AutoQueryViewer's public registry
         public bool OnlyShowAnnotatedServices { get; set; }
         public List<Property> ImplicitConventions { get; set; }
 
