@@ -261,6 +261,7 @@ namespace ServiceStack
         public string LinkColor { get; set; }
         public string BackgroundColor { get; set; }
         public string BackgroundImageUrl { get; set; }
+        public string IconUrl { get; set; }
     }
 
     [Exclude(Feature.Soap)]
