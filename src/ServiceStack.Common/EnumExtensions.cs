@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -29,10 +27,10 @@ namespace ServiceStack
             var memInfo = type.GetMember(@enum.ToString());
             if (memInfo.Length > 0)
             {
-                var attr = memInfo[0].FirstAttribute<DescriptionAttribute>();
+                var description = memInfo[0].GetDescription();
 
-                if (attr != null)
-                    return attr.Description;
+                if (description != null)
+                    return description;
             }
 
             return @enum.ToString();
