@@ -18,7 +18,7 @@
     <language>en-US</language>
     <copyright>Copyright 2014 Service Stack</copyright>
     <dependencies>
-      <dependency id="NLog" version="2.1.0" />
+      <dependency id="NLog" version="3.2.0.0" />
       <dependency id="ServiceStack.Interfaces" version="4.0" />
     </dependencies>
   </metadata>
