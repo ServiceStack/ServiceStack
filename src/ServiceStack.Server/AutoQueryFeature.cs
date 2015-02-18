@@ -245,7 +245,7 @@ namespace ServiceStack
         public string ServiceBaseUrl { get; set; }
         public string ServiceName { get; set; }
         public string ServiceDescription { get; set; }
-        public string ServiceImageUrl { get; set; }
+        public string ServiceIconUrl { get; set; }
 
         public bool IsPublic { get; set; } // Allow listing on AutoQueryViewer's public registry
         public bool OnlyShowAnnotatedServices { get; set; }
