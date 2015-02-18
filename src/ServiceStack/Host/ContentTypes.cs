@@ -310,6 +310,7 @@ namespace ServiceStack.Host
             switch (contentTypeAttr)
             {
                 case RequestAttributes.Xml:
+                case RequestAttributes.Soap11: //"text/xml; charset=utf-8" also matches xml
                     return XmlSerializer.DeserializeFromStream;
 
                 case RequestAttributes.Json:

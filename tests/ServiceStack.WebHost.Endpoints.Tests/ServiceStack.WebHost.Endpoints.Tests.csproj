@@ -184,6 +184,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="CustomFormatTests.cs" />
     <Compile Include="HttpErrorSyncTests.cs" />
+    <Compile Include="Issues\XmlContentTypeIssue.cs" />
     <Compile Include="ReplyAllTests.cs" />
     <Compile Include="MultiTennantAppHostTests.cs" />
     <Compile Include="RequestPipelineTests.cs" />
@@ -376,7 +377,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Issues\" />
     <Folder Include="ServiceModel\" />
   </ItemGroup>
   <ItemGroup>
