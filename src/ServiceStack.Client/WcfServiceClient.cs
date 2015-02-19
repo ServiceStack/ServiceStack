@@ -277,7 +277,7 @@ namespace ServiceStack
 
                 return (T)response;
             }
-            catch (WebServiceException webEx)
+            catch (WebServiceException)
             {
                 throw;
             }
