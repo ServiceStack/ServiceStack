@@ -177,7 +177,7 @@ namespace ServiceStack
             this.RestrictAllCookiesToDomain = instance.RestrictAllCookiesToDomain;
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
-            this.Return204NoContentForEmptyResponse = Return204NoContentForEmptyResponse;
+            this.Return204NoContentForEmptyResponse = instance.Return204NoContentForEmptyResponse;
             this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
             this.AllowPartialResponses = instance.AllowPartialResponses;
             this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
