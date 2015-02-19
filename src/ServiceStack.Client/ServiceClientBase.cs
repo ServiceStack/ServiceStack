@@ -21,8 +21,6 @@ using ServiceStack.Web;
 
 #if SL5
 using ServiceStack.Text;
-#else
-using System.Collections.Concurrent;
 #endif
 
 namespace ServiceStack
