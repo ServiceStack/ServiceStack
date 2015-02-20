@@ -56,7 +56,7 @@ namespace ServiceStack.NativeTypes.Swift
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
-            var defaultNamespaces = Config.DefaultSwiftNamespaces.Safe();
+            var defaultImports = Config.DefaultSwiftImports.Safe();
 
             var typeNamespaces = new HashSet<string>();
             metadata.RemoveIgnoredTypes(Config);
@@ -82,7 +82,7 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), defaultNamespaces.ToArray().Join(",")));
+            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.ToArray().Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -113,7 +113,7 @@ namespace ServiceStack.NativeTypes.Swift
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
-            defaultNamespaces.Each(x => sb.AppendLine("import {0}".Fmt(x)));
+            defaultImports.Each(x => sb.AppendLine("import {0}".Fmt(x)));
 
             //ServiceStack core interfaces
             foreach (var type in AllTypes)

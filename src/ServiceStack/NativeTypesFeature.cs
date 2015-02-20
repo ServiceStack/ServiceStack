@@ -61,10 +61,10 @@ namespace ServiceStack
                     "ServiceStack",
                     "ServiceStack.DataAnnotations",
                 },
-                DefaultTypeScriptNamespaces = new List<string>
+                DefaultTypeScriptImports = new List<string>
                 {
                 },
-                DefaultSwiftNamespaces = new List<string>
+                DefaultSwiftImports = new List<string>
                 {
                     "Foundation",    
                 },
