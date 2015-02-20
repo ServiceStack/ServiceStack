@@ -18,6 +18,10 @@ namespace ServiceStack.NativeTypes.TypeScript
             Config = config;
         }
 
+        public static List<string> DefaultImports = new List<string>
+        {
+        };
+
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"String", "string"},
@@ -48,8 +52,6 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
-            var defaultImports = Config.DefaultSwiftImports.Safe();
-
             var typeNamespaces = new HashSet<string>();
             metadata.RemoveIgnoredTypes(Config);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
@@ -77,7 +79,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.ToArray().Join(",")));
+            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), Config.DefaultImports.Safe().Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -110,7 +112,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
+            var defaultImports = !Config.DefaultImports.IsEmpty()
+                ? Config.DefaultImports
+                : DefaultImports;
             defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
+            sb.AppendLine();
 
             sb.AppendLine("declare module {0}".Fmt(globalNamespace.SafeToken()));
             sb.AppendLine("{");

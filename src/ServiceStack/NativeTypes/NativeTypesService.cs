@@ -53,6 +53,7 @@ namespace ServiceStack.NativeTypes
         public string GlobalNamespace { get; set; }
         public string BaseClass { get; set; }
         public List<string> DefaultNamespaces { get; set; }
+        public List<string> DefaultImports { get; set; }
         public List<string> IncludeTypes { get; set; }
         public List<string> ExcludeTypes { get; set; }
     }

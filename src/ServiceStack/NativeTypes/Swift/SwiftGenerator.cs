@@ -21,6 +21,11 @@ namespace ServiceStack.NativeTypes.Swift
             AllTypes = new List<MetadataType>();
         }
 
+        public static List<string> DefaultImports = new List<string>
+        {
+            "Foundation",    
+        };
+
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"Boolean", "Bool"},
@@ -56,8 +61,6 @@ namespace ServiceStack.NativeTypes.Swift
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
-            var defaultImports = Config.DefaultSwiftImports.Safe();
-
             var typeNamespaces = new HashSet<string>();
             metadata.RemoveIgnoredTypes(Config);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
@@ -82,7 +85,7 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.ToArray().Join(",")));
+            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), Config.DefaultImports.Safe().Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -113,7 +116,10 @@ namespace ServiceStack.NativeTypes.Swift
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
-            defaultImports.Each(x => sb.AppendLine("import {0}".Fmt(x)));
+            var defaultImports = !Config.DefaultImports.IsEmpty()
+                ? Config.DefaultImports
+                : DefaultImports;
+            defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
 
             //ServiceStack core interfaces
             foreach (var type in AllTypes)

@@ -61,13 +61,6 @@ namespace ServiceStack
                     "ServiceStack",
                     "ServiceStack.DataAnnotations",
                 },
-                DefaultTypeScriptImports = new List<string>
-                {
-                },
-                DefaultSwiftImports = new List<string>
-                {
-                    "Foundation",    
-                },
             };
         }
 
