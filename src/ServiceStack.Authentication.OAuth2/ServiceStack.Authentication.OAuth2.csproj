@@ -70,7 +70,7 @@
     <Compile Include="GoogleOAuth2Provider.cs" />
     <Compile Include="InstagramOAuth2Provider.cs" />
     <Compile Include="LinkedInOAuth2Provider.cs" />
-    <Compile Include="MicrosoftOAuth2Provider.cs" />
+    <Compile Include="MicrosoftLiveOAuth2Provider.cs" />
     <Compile Include="OAuth2Provider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
