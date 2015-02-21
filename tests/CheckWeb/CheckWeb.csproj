@@ -81,6 +81,16 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Global.asax" />
+    <Content Include="css\bootstrap.css" />
+    <Content Include="css\default.css" />
+    <Content Include="js\default.html" />
+    <Content Include="js\backbone.min.js" />
+    <Content Include="js\jquery-1.7.1.min.js" />
+    <Content Include="js\jsonreport.js" />
+    <Content Include="js\underscore.min.js" />
+    <Content Include="js\_blank.js" />
+    <EmbeddedResource Include="js\static-sub-embedded.txt" />
+    <Content Include="js\static-sub.txt" />
     <Content Include="Test.dtos.d.ts" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -108,6 +118,15 @@
     <Content Include="Views\TestView.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Views\Shared\TestMinifierLayout.cshtml" />
+    <Content Include="Views\TestMinifierView.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestMinifierView.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestMinifier.cshtml" />
+    <Content Include="TestMinifier.html" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -152,6 +171,7 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

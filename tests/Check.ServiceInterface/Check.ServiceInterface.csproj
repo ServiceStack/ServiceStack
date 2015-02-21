@@ -72,6 +72,7 @@
     <Compile Include="ErrorsService.cs" />
     <Compile Include="MetadataDtoIssue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestMinifierServices.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">

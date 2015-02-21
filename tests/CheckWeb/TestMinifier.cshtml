@@ -1,0 +1,65 @@
+﻿<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Test Minifier Razor Content Page</title>
+
+        <link href="/css/bootstrap.css" rel="stylesheet" />
+        <link href="/css/default.css" rel="stylesheet" />
+
+        <script type="text/javascript" src="/js/underscore.min.js"></script>
+        <script type="text/javascript" src="/js/backbone.min.js"></script>
+        <script type="text/javascript" src="/js/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="/js/jsonreport.js"></script>
+
+        <style>
+            BODY {
+                background-color:white;
+                color:#000000;
+                font-family:Verdana;
+                margin: 0;            
+            }
+            H1 {
+                background-color: #036;
+                color: #FFF;
+                font-family: Tahoma;
+                font-size: 26px;
+                font-weight: normal;
+                margin: 0;
+                padding: 10px 0 3px 15px;
+            }
+            #content {
+                padding: 15px;
+            }
+            #content-page {
+                max-width: 1100px;
+            }
+            #sidebar {
+                float:right;
+            }
+        </style>
+        <script type="text/javascript">
+            var a = 1 + 1;
+            console.log(a + 1);
+
+            var fn = function() {
+                return a + 1;
+            };
+            console.log(fn());
+        </script>
+
+        @ServiceStack.MiniProfiler.Profiler.RenderIncludes().AsRaw()
+    </head>
+    <body>        
+        <h1>Test Minifier Razor Content Page</h1>
+        
+        <div id="content">
+            <h3>HTML5 Report View</h3>
+            <script type="text/javascript">
+                var json = "[{\"id\":1,\"name\":\"foo\"},{\"id\":2,\"name\":\"bar\"},{\"id\":3,\"name\":\"baz\"}]"
+                document.write(_.jsonreport(json));
+            </script>
+        </div>
+    </body>
+</html>
+
+<!--template:TestMinifier.cshtml-->

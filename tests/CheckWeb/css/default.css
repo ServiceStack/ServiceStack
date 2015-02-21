@@ -1,0 +1,30 @@
+.fade-when-loading {
+  opacity: 1;
+  -webkit-transition: opacity 1s cubic-bezier(0.19, 1, 0.22, 1);
+  -moz-transition: opacity 1s cubic-bezier(0.19, 1, 0.22, 1);
+  -ms-transition: opacity 1s cubic-bezier(0.19, 1, 0.22, 1);
+  -o-transition: opacity 1s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: opacity 1s cubic-bezier(0.19, 1, 0.22, 1);
+  /* easeOutExpo */
+
+}
+.loading.fade-when-loading {
+  filter: alpha(opacity=20);
+  -khtml-opacity: 0.2;
+  -moz-opacity: 0.2;
+  opacity: 0.2;
+}
+
+#title { margin: 20px 0 40px 0; }
+#login #register {
+	 display: none;
+}
+#login .has-errors .error-summary 
+{
+	display: inline;
+	color: #B94A48;
+}
+
+#facebook-signin {
+	margin: 50px 0 10px 0;
+}
