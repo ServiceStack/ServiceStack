@@ -134,6 +134,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\OptimisticConcurrencyException.cs" />
+    <Compile Include="ICompressor.cs" />
     <Compile Include="IO\IEndpoint.cs" />
     <Compile Include="IQuery.cs" />
     <Compile Include="IReceiver.cs" />
