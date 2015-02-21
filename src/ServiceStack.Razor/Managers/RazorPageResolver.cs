@@ -26,6 +26,8 @@ namespace ServiceStack.Razor.Managers
         public const string QueryStringFormatKey = "format";
         public const string NoTemplateFormatValue = "bare";
         public const string DefaultLayoutName = "_Layout";
+        public bool MinifyHtml { get; set; }
+        public bool UseAdvancedCompression { get; set; }
 
         private static readonly UTF8Encoding UTF8EncodingWithoutBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
@@ -141,6 +143,16 @@ namespace ServiceStack.Razor.Managers
                    ?? viewManager.GetViewPage(model.GetType().Name); // Response DTO
         }
 
+        public string HtmlFilter(string html)
+        {
+            if (!MinifyHtml)
+                return html;
+
+            return UseAdvancedCompression
+                ? Minifiers.HtmlAdvanced.Compress(html)
+                : Minifiers.Html.Compress(html);
+        }
+
         public IRazorView ExecuteRazorPage(IRequest httpReq, IResponse httpRes, object model, RazorPage razorPage)
         {
             if (razorPage == null)
@@ -163,7 +175,9 @@ namespace ServiceStack.Razor.Managers
                     return result != null ? result.Item1 : null;
 
                 var layoutWriter = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom);
-                layoutWriter.Write(result.Item2);
+                var html = HtmlFilter(result.Item2);
+
+                layoutWriter.Write(html);
                 layoutWriter.Flush();
                 return result.Item1;
             }

@@ -47,6 +47,8 @@ namespace ServiceStack.Razor
         public bool? EnableLiveReload { get; set; }
         public bool? PrecompilePages { get; set; }
         public bool? WaitForPrecompilationOnStartup { get; set; }
+        public bool MinifyHtml { get; set; }
+        public bool UseAdvancedCompression { get; set; }
         public IVirtualPathProvider VirtualPathProvider { get; set; }
         public ILiveReload LiveReload { get; set; }
         public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
@@ -162,7 +164,11 @@ namespace ServiceStack.Razor
 
         public virtual RazorPageResolver CreatePageResolver()
         {
-            return new RazorPageResolver(this, this.ViewManager);
+            return new RazorPageResolver(this, this.ViewManager)
+            {
+                MinifyHtml = MinifyHtml,
+                UseAdvancedCompression = UseAdvancedCompression,
+            };
         }
 
         public virtual RazorViewManager CreateViewManager()
@@ -259,25 +265,6 @@ namespace ServiceStack.Razor
 
             var ms = (MemoryStream)httpReq.Response.OutputStream;
             return ms.ToArray().FromUtf8Bytes();
-        }
-
-        public static void CollapseWhitespace(RenderingPage page, string str)
-        {
-            if (str == null) return;
-            
-            var lastChar = (char)0;
-            for (var i = 0; i < str.Length; i++)
-            {
-                var c = str[i];
-                if (c < 32) continue; // Skip all these
-                if (c == 32)
-                {
-                    if (lastChar == 32)
-                        continue; // Only write one space character
-                }
-                page.Output.Write(c);
-                lastChar = c;
-            }
         }
     }
 
