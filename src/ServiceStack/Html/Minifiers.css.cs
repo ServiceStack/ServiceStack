@@ -3,9 +3,9 @@ using System.Text.RegularExpressions;
 
 namespace ServiceStack.Html
 {
+    //http://madskristensen.net/post/efficient-stylesheet-minification-in-c
     public class CssMinifier : ICompressor
     {
-        //http://madskristensen.net/post/efficient-stylesheet-minification-in-c
         public static string MinifyCss(string css)
         {
             css = Regex.Replace(css, @"[a-zA-Z]+#", "#");

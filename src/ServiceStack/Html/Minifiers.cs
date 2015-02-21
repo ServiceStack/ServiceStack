@@ -7,6 +7,8 @@ namespace ServiceStack.Html
         public static ICompressor JavaScript = new JSMinifier();
         public static ICompressor Css = new CssMinifier();
 
+        public static ICompressor Html = new HtmlCompressor();
+
         public static ICompressor HtmlAdvanced = new HtmlCompressor
         {
             JavaScriptCompressor = JavaScript,
@@ -14,18 +16,14 @@ namespace ServiceStack.Html
             CssCompressor = Css,
             CompressCss = true,
         };
-
-        public static ICompressor Html = new HtmlCompressor();
     }
 
-    public class BasicHtmlMinifier
+    public class BasicHtmlMinifier : ICompressor
     {
         static Regex BetweenScriptTagsRegEx = new Regex(@"<script[^>]*>[\w|\t|\r|\W]*?</script>", RegexOptions.Compiled);
         static Regex BetweenTagsRegex = new Regex(@"(?<=[^])\t{2,}|(?<=[>])\s{2,}(?=[<])|(?<=[>])\s{2,11}(?=[<])|(?=[\n])\s{2,}|(?=[\r])\s{2,}", RegexOptions.Compiled);
         static Regex MatchBodyRegEx = new Regex(@"</body>", RegexOptions.Compiled);
 
-        // https://github.com/kangax/html-minifier
-        // C# port: http://stackoverflow.com/questions/16875114/regex-minify-pre-tag-content
         public static string MinifyHtml(string html)
         {
             if (html == null)
@@ -43,6 +41,11 @@ namespace ServiceStack.Html
 
             html = MatchBodyRegEx.Replace(html, str + "</body>");
             return html;
-        }        
+        }
+
+        public string Compress(string html)
+        {
+            return MinifyHtml(html);
+        }
     }
 }

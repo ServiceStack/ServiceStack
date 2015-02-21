@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace ServiceStack.Html
 {
+    //C# Port from: http://blog.magerquark.de/c-port-of-googles-htmlcompressor-library/
     public static class HtmlCompressorExtensions
     {
         public static void AddPreservePattern(this HtmlCompressor compressor, params Regex[] regexes)

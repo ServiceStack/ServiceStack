@@ -40,19 +40,19 @@ namespace ServiceStack.Html
         int theB;
         int theLookahead = EOF;
 
-        public string Compress(string source)
+        public string Compress(string js)
         {
-            return Minify(source);
-        }
-
-        public string Minify(string src) //removed the out file path  
-        {
-            using (sr = new StringReader(src))
+            using (sr = new StringReader(js))
             {
                 sb = new StringBuilder();
                 jsmin();
                 return sb.ToString(); // return the minified string  
             }
+        }
+
+        public static string MinifyJs(string js) //removed the out file path  
+        {
+            return new JSMinifier().Compress(js);
         }
 
         /* jsmin -- Copy the input to the output, deleting the characters which are 
