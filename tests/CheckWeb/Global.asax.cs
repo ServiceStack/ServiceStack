@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Linq;
 using System.Net;
 using System.Web;
 using Check.ServiceInterface;
@@ -10,12 +11,15 @@ using Funq;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Data;
+using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
 using ServiceStack.Text;
 using ServiceStack.Validation;
+using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
 namespace CheckWeb
@@ -162,7 +166,11 @@ namespace CheckWeb
         private void ConfigureView(Container container)
         {
             // Enable ServiceStack Razor
-            Plugins.Add(new RazorFormat());
+            Plugins.Add(new RazorFormat
+            {
+                //MinifyHtml = true,
+                //UseAdvancedCompression = true,
+            });
 
             // Enable support for Swagger API browser
             Plugins.Add(new SwaggerFeature
@@ -171,6 +179,51 @@ namespace CheckWeb
                 LogoUrl = "//lh6.googleusercontent.com/-lh7Gk4ZoVAM/AAAAAAAAAAI/AAAAAAAAAAA/_0CgCb4s1e0/s32-c/photo.jpg"
             });
             //Plugins.Add(new CorsFeature()); // Uncomment if the services to be available from external sites
+        }
+
+        public override List<IVirtualPathProvider> GetVirtualPathProviders()
+        {
+            var existingProviders = base.GetVirtualPathProviders();
+            var memFs = new InMemoryVirtualPathProvider(this);
+
+            //Get FileSystem Provider
+            var fs = existingProviders.First(x => x is FileSystemVirtualPathProvider);
+
+            //Process all .html files:
+            foreach (var file in fs.GetAllMatchingFiles("*.html"))
+            {
+                var contents = Minifiers.HtmlAdvanced.Compress(file.ReadAllText());
+                memFs.AddFile(file.VirtualPath, contents);
+            }
+
+            //Process all .css files:
+            foreach (var file in fs.GetAllMatchingFiles("*.css")
+                .Where(file => !file.VirtualPath.EndsWith(".min.css")))
+            {
+                var contents = Minifiers.Css.Compress(file.ReadAllText());
+                memFs.AddFile(file.VirtualPath, contents);
+            }
+
+            //Process all .js files
+            foreach (var file in fs.GetAllMatchingFiles("*.js")
+                .Where(file => !file.VirtualPath.EndsWith(".min.js")))
+            {
+                try
+                {
+                    var js = file.ReadAllText();
+                    var contents = Minifiers.JavaScript.Compress(js);
+                    memFs.AddFile(file.VirtualPath, contents);
+                }
+                catch (Exception ex)
+                {
+                    //Report any errors in StartUpErrors collection on ?debug=requestinfo
+                    base.OnStartupException(new Exception("JSMin Error in {0}: {1}".Fmt(file.VirtualPath, ex.Message)));
+                }
+            }
+
+            //Give new Memory FS highest priority
+            existingProviders.Insert(0, memFs);
+            return existingProviders;
         }
     }
 
