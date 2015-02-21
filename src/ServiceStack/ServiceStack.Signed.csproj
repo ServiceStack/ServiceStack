@@ -105,7 +105,18 @@
     </Compile>
     <Compile Include="Configuration\EnvironmentVariableSettings.cs" />
     <Compile Include="Configuration\MultiAppSettings.cs" />
-    <Compile Include="Html\Minifiers.cs" />
+    <Compile Include="Html\Minifiers.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Html\Minifiers.css.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Html\Minifiers.html.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Html\Minifiers.js.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="NativeTypes\Swift\SwiftGenerator.cs" />
     <Compile Include="NativeTypes\TypeScript\TypeScriptGenerator.cs" />
     <Compile Include="NativeTypes\VbNet\VbNetGenerator.cs" />
