@@ -83,14 +83,10 @@
     <Content Include="Global.asax" />
     <Content Include="css\bootstrap.css" />
     <Content Include="css\default.css" />
-    <Content Include="js\default.html" />
     <Content Include="js\backbone.min.js" />
     <Content Include="js\jquery-1.7.1.min.js" />
     <Content Include="js\jsonreport.js" />
     <Content Include="js\underscore.min.js" />
-    <Content Include="js\_blank.js" />
-    <EmbeddedResource Include="js\static-sub-embedded.txt" />
-    <Content Include="js\static-sub.txt" />
     <Content Include="Test.dtos.d.ts" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
