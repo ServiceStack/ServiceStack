@@ -23,6 +23,7 @@ using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
+using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -78,8 +79,6 @@ namespace ServiceStack.AuthWeb.Tests
 
             //Register a external dependency-free 
             container.Register<ICacheClient>(new MemoryCacheClient());
-            //Configure an alt. distributed persistent cache that survives AppDomain restarts. e.g Redis
-            //container.Register<IRedisClientsManager>(c => new PooledRedisClientManager("localhost:6379"));
 
             //Enable Authentication an Registration
             ConfigureAuth(container);
@@ -133,10 +132,11 @@ namespace ServiceStack.AuthWeb.Tests
             Plugins.Add(new RegistrationFeature());
 
             //override the default registration validation with your own custom implementation
-            Plugins.Add(new CustomRegisterPlugin());
+            //Plugins.Add(new CustomRegisterPlugin());
 
-            var authRepo = CreateOrmLiteAuthRepo(container, appSettings);
-            //var authRepo = CreateRavenDbAuthRepo(container, appSettings);
+            var authRepo = CreateOrmLiteAuthRepo(container, appSettings);    //works with / or /basic
+            //var authRepo = CreateRavenDbAuthRepo(container, appSettings);  //works with /basic
+            //var authRepo = CreateRedisAuthRepo(container, appSettings);    //works with /basic
             //AuthProvider.ValidateUniqueUserNames = false;
 
             try
@@ -175,9 +175,26 @@ namespace ServiceStack.AuthWeb.Tests
             documentStore.Initialize();
 
             container.Register<IAuthRepository>(c =>
-                new RavenDbUserAuthRepository<CustomUserAuth,CustomUserAuthDetails>(c.Resolve<IDocumentStore>()));
+                new RavenDbUserAuthRepository<CustomUserAuth, CustomUserAuthDetails>(c.Resolve<IDocumentStore>()));
 
             return (IUserAuthRepository)container.Resolve<IAuthRepository>();
+        }
+
+        private static IUserAuthRepository CreateRedisAuthRepo(Container container, AppSettings appSettings)
+        {
+            container.Register<IRedisClientsManager>(c =>
+                new RedisManagerPool());
+
+            //Configure an alt. distributed persistent cache that survives AppDomain restarts. e.g Redis
+            container.Register(c => c.Resolve<IRedisClientsManager>().GetCacheClient());
+
+            container.Register<IAuthRepository>(c =>
+                new RedisAuthRepository(c.Resolve<IRedisClientsManager>()));
+
+            var authRepo = (IUserAuthRepository)container.Resolve<IAuthRepository>();
+            authRepo.InitSchema(); //unnecessary, but staying consistent
+            
+            return authRepo;
         }
 
         private static IUserAuthRepository CreateOrmLiteAuthRepo(Container container, AppSettings appSettings)
