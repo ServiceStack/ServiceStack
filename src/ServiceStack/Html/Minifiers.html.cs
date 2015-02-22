@@ -125,7 +125,7 @@ namespace ServiceStack.Html
          * @param removeMultiSpaces set <code>true</code> to replace all multiple whitespace characters 
          * will single spaces.
          */
-        private bool RemoveMultiSpaces = true;
+        public bool RemoveMultiSpaces = true;
 
         //optional settings
 
@@ -139,7 +139,7 @@ namespace ServiceStack.Html
          * 
          * @param removeIntertagSpaces set <code>true</code> to remove all inter-tag whitespace characters
          */
-        private bool RemoveIntertagSpaces = false;
+        public bool RemoveIntertagSpaces = false;
 
         /**
          * If set to <code>true</code> all unnecessary quotes will be removed  
