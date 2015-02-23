@@ -66,6 +66,10 @@ namespace ServiceStack.NativeTypes.Swift
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
+            var defaultImports = !Config.DefaultImports.IsEmpty()
+                ? Config.DefaultImports
+                : DefaultImports;
+
             Func<string, string> defaultValue = k =>
                 request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
@@ -78,14 +82,14 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine();
 
             sb.AppendLine("{0}BaseClass: {1}".Fmt(defaultValue("BaseClass"), Config.BaseClass));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddModelExtensions: {1}".Fmt(defaultValue("AddModelExtensions"), Config.AddModelExtensions));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), Config.DefaultImports.Safe().Join(",")));
+            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
+            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
+            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -116,9 +120,6 @@ namespace ServiceStack.NativeTypes.Swift
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
-            var defaultImports = !Config.DefaultImports.IsEmpty()
-                ? Config.DefaultImports
-                : DefaultImports;
             defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
 
             //ServiceStack core interfaces
@@ -312,14 +313,16 @@ namespace ServiceStack.NativeTypes.Swift
                     }
                 }
 
-                var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;
+                var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
                     sb.AppendLine("public var {0}:Int = {1}".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
                 }
 
                 AddProperties(sb, type,
-                    initCollections: !type.IsInterface() && Config.InitializeCollections);
+                    initCollections: !type.IsInterface() && Config.InitializeCollections,
+                    includeResponseStatus: Config.AddResponseStatus && options.IsResponse
+                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
 
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
@@ -548,7 +551,8 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("}");
         }
 
-        public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool initCollections)
+        public void AddProperties(StringBuilderWrapper sb, MetadataType type, 
+            bool initCollections, bool includeResponseStatus)
         {
             var wasAdded = false;
 
@@ -623,14 +627,12 @@ namespace ServiceStack.NativeTypes.Swift
                 }
             }
 
-            if (Config.AddResponseStatus
-                && (type.Properties == null
-                    || type.Properties.All(x => x.Name != "ResponseStatus")))
+            if (includeResponseStatus)
             {
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("public var {0}:ResponseStatus".Fmt("ResponseStatus".PropertyStyle()));
+                sb.AppendLine("public var {0}:ResponseStatus?".Fmt(typeof(ResponseStatus).Name.PropertyStyle()));
             }
         }
 
