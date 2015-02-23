@@ -315,7 +315,7 @@ override func observeValueForKeyPath(keyPath:String, ofObject object:AnyObject, 
 }
 ```
 
-Now that everythings configured, the observables provide an alternative to manually updating UI elements within async callbacks, instead you can now fire-and-forget your async API's and rely on the pre-configured bindings to automatically update the appropriate UI Controls when their bounded properties are updated, e.g:
+Now that everything's configured, the observables provide an alternative to manually updating UI elements within async callbacks, instead you can now fire-and-forget your async API's and rely on the pre-configured bindings to automatically update the appropriate UI Controls when their bounded properties are updated, e.g:
 
 ```swift
 self.appData.loadOverview() //Ignore response and use configured KVO Bindings
@@ -540,7 +540,7 @@ As Swift doesn't support extension inheritance, when using inheritance in DTO's 
 Required as there are no namespaces in Swift (Also required for F# and TypeScript). ServiceStack only requires Request DTO's to be unique, but our recommendation is for all DTO names to be unique.
 
 #### IReturn not added for Array Responses
-As Swift doesn't allow extending generic Arrays with public protocols, the `IReturn` marker that enables the typed ServiceClient API isn't available for Requests returning Array responses. You can workaround this limitation by wraping the array in a Response DTO whilst we look at other solutions to support this in future.
+As Swift doesn't allow extending generic Arrays with public protocols, the `IReturn` marker that enables the typed ServiceClient API isn't available for Requests returning Array responses. You can workaround this limitation by wrapping the array in a Response DTO whilst we look at other solutions to support this in future.
 
 ## Swift Configuration
 
@@ -654,7 +654,7 @@ Whether enumerables should be initialized with an empty collection (default) or 
 /* Options:
 InitializeCollections: False
 ```
-Changes Collection Defintions to be declared as Optional Types instead of being initialized with an empty collection:
+Changes Collection Definitions to be declared as Optional Types instead of being initialized with an empty collection:
 ```swift
 public class ResponseStatus
 {
