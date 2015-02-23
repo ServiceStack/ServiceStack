@@ -239,14 +239,16 @@ namespace ServiceStack.NativeTypes.FSharp
                         sb.AppendLine("end");
                     }
 
-                    var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;
+                    var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                     if (addVersionInfo)
                     {
                         sb.AppendLine("member val Version:int = {0} with get, set".Fmt(Config.AddImplicitVersion));
                     }
                 }
 
-                AddProperties(sb, type);
+                AddProperties(sb, type,
+                    includeResponseStatus: Config.AddResponseStatus && options.IsResponse
+                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
 
                 if (sb.Length == startLen)
                     sb.AppendLine(type.IsInterface() ? "interface end" : "class end");
@@ -258,7 +260,7 @@ namespace ServiceStack.NativeTypes.FSharp
             return lastNS;
         }
 
-        public void AddProperties(StringBuilderWrapper sb, MetadataType type)
+        public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)
         {
             var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
 
@@ -291,9 +293,7 @@ namespace ServiceStack.NativeTypes.FSharp
             if (type.IsInterface())
                 return;
 
-            if (Config.AddResponseStatus
-                && (type.Properties == null
-                    || type.Properties.All(x => x.Name != "ResponseStatus")))
+            if (includeResponseStatus)
             {
                 if (wasAdded) sb.AppendLine();
                 wasAdded = true;

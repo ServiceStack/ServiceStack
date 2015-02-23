@@ -31,6 +31,7 @@ namespace ServiceStack.NativeTypes.VbNet
             "Dim",
             "Catch",
             "Byte",
+            "Char",
             "Short",
             "Integer",
             "Long",
@@ -309,7 +310,9 @@ namespace ServiceStack.NativeTypes.VbNet
                 sb = sb.Indent();
 
                 AddConstuctor(sb, type, options);
-                AddProperties(sb, type);
+                AddProperties(sb, type,
+                    includeResponseStatus: Config.AddResponseStatus && options.IsResponse
+                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
 
                 foreach (var innerTypeRef in type.InnerTypes.Safe())
                 {
@@ -342,7 +345,7 @@ namespace ServiceStack.NativeTypes.VbNet
             if (type.Properties != null && Config.InitializeCollections)
                 collectionProps = type.Properties.Where(x => x.IsCollection()).ToList();
 
-            var addVersionInfo = Config.AddImplicitVersion != null && options.IsOperation;
+            var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
             if (!addVersionInfo && collectionProps.Count <= 0) return;
 
             if (addVersionInfo)
@@ -373,7 +376,7 @@ namespace ServiceStack.NativeTypes.VbNet
             sb.AppendLine();
         }
 
-        public void AddProperties(StringBuilderWrapper sb, MetadataType type)
+        public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)
         {
             var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
 
@@ -402,9 +405,7 @@ namespace ServiceStack.NativeTypes.VbNet
             if (type.IsInterface())
                 return;
 
-            if (Config.AddResponseStatus
-                && (type.Properties == null
-                    || type.Properties.All(x => x.Name != "ResponseStatus")))
+            if (includeResponseStatus)
             {
                 if (wasAdded) sb.AppendLine();
                 wasAdded = true;
