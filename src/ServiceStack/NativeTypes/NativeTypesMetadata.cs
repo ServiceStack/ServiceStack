@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-using ServiceStack.Auth;
 using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes
@@ -608,6 +606,15 @@ namespace ServiceStack.NativeTypes
                 .Where(t => t.GetIndexParameters().Length == 0) // ignore indexed properties
                 .ToArray();
         }
+    }
+
+    public class CreateTypeOptions
+    {
+        public Func<string> ImplementsFn { get; set; }
+        public bool IsRequest { get; set; }
+        public bool IsResponse { get; set; }
+        public bool IsType { get; set; }
+        public bool IsNestedType { get; set; }
     }
 
     public class TextNode

@@ -41,15 +41,6 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"List", "Array"},
         };
 
-        class CreateTypeOptions
-        {
-            public Func<string> ImplementsFn { get; set; }
-            public bool IsRequest { get; set; }
-            public bool IsResponse { get; set; }
-            public bool IsOperation { get { return IsRequest || IsResponse; } }
-            public bool IsType { get; set; }
-        }
-
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
