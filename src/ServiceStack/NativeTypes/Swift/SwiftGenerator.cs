@@ -50,15 +50,6 @@ namespace ServiceStack.NativeTypes.Swift
             "NSObject"
         };
 
-        class CreateTypeOptions
-        {
-            public Func<string> ImplementsFn { get; set; }
-            public bool IsRequest { get; set; }
-            public bool IsResponse { get; set; }
-            public bool IsOperation { get { return IsRequest || IsResponse; } }
-            public bool IsType { get; set; }
-        }
-
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
             var typeNamespaces = new HashSet<string>();
@@ -150,9 +141,9 @@ namespace ServiceStack.NativeTypes.Swift
                                     if (type.ReturnVoidMarker)
                                         return "IReturnVoid";
                                     if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                        return ReturnType("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
                                     return response != null
-                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
+                                        ? ReturnType("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
                                 },
                                 IsRequest = true,
@@ -412,7 +403,9 @@ namespace ServiceStack.NativeTypes.Swift
             foreach (var prop in GetPropertes(type))
             {
                 var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
-                if (propType.IsInterface() || IgnorePropertyTypeNames.Contains(prop.Type))
+                if (propType.IsInterface() 
+                    || IgnorePropertyTypeNames.Contains(prop.Type)
+                    || IgnorePropertyNames.Contains(prop.Name))
                     continue;
 
                 var fnName = "property";
@@ -774,6 +767,16 @@ namespace ServiceStack.NativeTypes.Swift
         {
             "ProviderOAuthAccess",
         };
+
+        public static bool IgnoreArrayReturnTypes = true;
+
+        public string ReturnType(string type, string[] genericArgs)
+        {
+            if (IgnoreArrayReturnTypes && genericArgs.Any(arg => arg.StartsWith("[")))
+                return null; // does not recognize [Array] as conforming to IReturn : JsonSerializable
+
+            return Type(type, genericArgs);
+        }
 
         public string Type(string type, string[] genericArgs)
         {
