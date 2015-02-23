@@ -189,8 +189,8 @@ namespace ServiceStack
             if (dir != null)
             {
                 //Only redirect GET requests for directories which don't have services registered at the same path
-                if (!request.PathInfo.EndsWith("/") 
-                    //&& request.Verb == HttpMethods.Get
+                if (!request.PathInfo.EndsWith("/")
+                    && request.Verb == HttpMethods.Get
                     && ServiceController.GetRestPathForRequest(request.Verb, request.PathInfo) == null)
                 {
                     return new RedirectHttpHandler
