@@ -183,12 +183,15 @@ namespace ServiceStack
         /// Retain the same behavior as ASP.NET and redirect requests to directores 
         /// without a trailing '/'
         /// </summary>
-        public IHttpHandler RedirectDirectory(IHttpRequest request)
+        public virtual IHttpHandler RedirectDirectory(IHttpRequest request)
         {
             var dir = request.GetVirtualNode() as IVirtualDirectory;
             if (dir != null)
             {
-                if (!request.PathInfo.EndsWith("/"))
+                //Only redirect GET requests for directories which don't have services registered at the same path
+                if (!request.PathInfo.EndsWith("/") 
+                    //&& request.Verb == HttpMethods.Get
+                    && ServiceController.GetRestPathForRequest(request.Verb, request.PathInfo) == null)
                 {
                     return new RedirectHttpHandler
                     {
