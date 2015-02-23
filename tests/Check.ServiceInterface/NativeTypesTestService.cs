@@ -1,4 +1,5 @@
-﻿using Check.ServiceModel.Operations;
+﻿using System.Runtime.Serialization;
+using Check.ServiceModel.Operations;
 using Check.ServiceModel.Types;
 using ServiceStack;
 
@@ -169,5 +170,24 @@ namespace Check.ServiceInterface
         {
             return new HelloInnerTypesResponse();
         }
+
+        public object Any(GetUserSession request)
+        {
+            return new CustomUserSession();
+        }
+    }
+
+    public class GetUserSession : IReturn<CustomUserSession>
+    {
+    }
+
+    public partial class CustomUserSession
+        : AuthUserSession
+    {
+        [DataMember]
+        public virtual string CustomName { get; set; }
+
+        [DataMember]
+        public virtual string CustomInfo { get; set; }
     }
 }
