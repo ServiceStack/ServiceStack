@@ -32,9 +32,9 @@ or when preferred, clients can
 [Add a remote ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) to generate typed DTO's for 
 [C#](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference), 
 [F#](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference), 
-[VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference)
-and 
+[VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference),
 [TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference) 
+and [Swift iOS and OSX Clients](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference)
 clients.
 
 
