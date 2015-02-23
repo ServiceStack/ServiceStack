@@ -144,6 +144,8 @@ status.message //= not here
 status.stackTrace //= Server Stack Trace
 ```
 
+> Note the explicit type definition on the return type is required here as Swift uses it as part of the generic method invocation.
+
 #### Async Error Handling
 
 To handle errors in Async API's we just add a callback on `.catch()` API on the returned Promise, e.g:
@@ -181,8 +183,6 @@ But when preferred `JsonServiceClient` can also be used to call Services using C
 ```swift
 var response:GetTechnologyResponse? = client.get("/technology/servicestack")
 ```
-
-> Note the explicit type definition on the return type is required here as Swift uses it as part of the generic method invocation.
 
 ### JsonServiceClient Options
 
