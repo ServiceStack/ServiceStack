@@ -54,6 +54,9 @@ namespace ServiceStack
                 throw new InvalidOperationException(
                     "The AuthService must be initialized by calling AuthService.Init to use an authenticate attribute");
 
+            if (HostContext.HasValidAuthSecret(req))
+                return;
+
             var matchingOAuthConfigs = AuthenticateService.AuthProviders.Where(x =>
                 this.Provider.IsNullOrEmpty()
                 || x.Provider == this.Provider).ToList();

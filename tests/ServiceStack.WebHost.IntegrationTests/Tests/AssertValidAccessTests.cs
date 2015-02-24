@@ -257,7 +257,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [Test]
         public void Can_access_Admin_service_with_AuthSecret()
         {
-            BaseUri.AppendPath("requiresadmin").AddQueryParam("authsecret", AuthSecret).GetStringFromUrl();
+            BaseUri.AppendPath("requiresadmin")
+                .AddQueryParam("authsecret", AuthSecret).GetStringFromUrl();
         }
 
 	}

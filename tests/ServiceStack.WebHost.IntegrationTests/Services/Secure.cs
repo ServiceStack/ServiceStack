@@ -26,6 +26,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string Value { get; set; }
     }
 
+    [Authenticate]
     [Route("/requiresadmin")]
     public class RequiresRole
     {
