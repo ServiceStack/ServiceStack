@@ -365,6 +365,14 @@
                             window.clearInterval(opt.heartbeat);
                         }
                         opt.heartbeat = window.setInterval(function () {
+                            if ($.ss.eventSource.readyState == 2) //CLOSED
+                            {
+                                window.clearInterval(opt.heartbeat);
+                                var stopFn = $.ss.handlers["onStop"];
+                                if (stopFn != null)
+                                    stopFn.apply($.ss.eventSource);
+                                return;
+                            }
                             $.ajax({
                                 type: "POST",
                                 url: opt.heartbeatUrl,
