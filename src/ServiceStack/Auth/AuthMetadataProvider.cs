@@ -82,7 +82,7 @@ namespace ServiceStack.Auth
                 {
                     string profileUrl;
                     if (authTokens.Items.TryGetValue(ProfileUrlKey, out profileUrl))
-                        return profileUrl;
+                        return profileUrl.SanitizeOAuthUrl();
                 }
             }
 

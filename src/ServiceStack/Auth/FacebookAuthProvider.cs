@@ -109,7 +109,7 @@ namespace ServiceStack.Auth
                 {
                     string profileUrl;
                     if (data.TryGetValue("url", out profileUrl))
-                        tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+                        tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl.SanitizeOAuthUrl();
                 }
             }
             catch (Exception ex)

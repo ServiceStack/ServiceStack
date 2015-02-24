@@ -302,10 +302,16 @@ namespace ServiceStack.AuthWeb.Tests
 
     public class CustomUserSession : AuthUserSession
     {
+        public string ProfileUrl64 { get; set; }
+
         public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
+            base.OnAuthenticated(authService, session, tokens, authInfo);
+
             var jsv = authService.Request.Dto.Dump();
             "OnAuthenticated(): {0}".Print(jsv);
+
+            this.ProfileUrl64 = session.GetProfileUrl();
         }
 
         public override void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service)

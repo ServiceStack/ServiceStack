@@ -439,6 +439,11 @@ namespace ServiceStack.Auth
 
             return userAuthRepo;
         }
+
+        public static string SanitizeOAuthUrl(this string url)
+        {
+            return (url ?? "").Replace("\\/", "/");
+        }
     }
 
 }
