@@ -610,6 +610,9 @@ namespace ServiceStack
 
                 foreach (var sub in subs)
                 {
+                    if (sub == null)
+                        continue;
+
                     if (!alreadyAdded.Contains(sub.SubscriptionId))
                     {
                         ret.Add(sub.Meta);
