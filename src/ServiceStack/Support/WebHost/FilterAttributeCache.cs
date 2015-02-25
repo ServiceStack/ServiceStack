@@ -43,6 +43,10 @@ namespace ServiceStack.Support.WebHost
             var attributes = requestDtoType.AllAttributes<IHasRequestFilter>().ToList();
 
             var serviceType = HostContext.Metadata.GetServiceTypeByRequest(requestDtoType);
+            if (serviceType == null)
+            {
+                throw new Exception("No service using type '" + requestDtoType.FullName + "'.");
+            }
 			attributes.AddRange(serviceType.AllAttributes<IHasRequestFilter>());
 
 			attributes.Sort((x,y) => x.Priority - y.Priority);
