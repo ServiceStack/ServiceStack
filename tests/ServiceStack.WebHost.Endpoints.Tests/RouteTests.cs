@@ -252,7 +252,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Throws_error_when_registering_route_for_unknown_Service()
         {
-            Assert.Throws<Exception>(() => new InvalidRoutesAppHost().Init());
+            using (var appHost = new InvalidRoutesAppHost()
+                .Init()
+                .Start(Config.AbsoluteBaseUri))
+            {
+                try
+                {
+                    var json = Config.AbsoluteBaseUri.CombineWith("/unknownroute").GetJsonFromUrl();
+                    json.PrintDump();
+                    Assert.Fail("Should throw");
+                }
+                catch (WebException ex)
+                {
+                    Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.MethodNotAllowed));
+                }
+            }
         }
     }
 }

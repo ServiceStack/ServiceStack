@@ -61,10 +61,6 @@ namespace ServiceStack.Host
 
         private bool HasExistingRoute(Type requestType, string restPath)
         {
-            var serviceType = appHost.Metadata.GetServiceTypeByRequest(requestType);
-            if (serviceType == null)
-                throw new Exception(ErrorMessages.ServiceNotFoundForType.Fmt(requestType.Name));
-
             var existingRoute = appHost.RestPaths.FirstOrDefault(
                 x => x.RequestType == requestType && x.Path == restPath);
 
