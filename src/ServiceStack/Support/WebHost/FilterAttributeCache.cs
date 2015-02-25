@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Support.WebHost
@@ -43,7 +42,10 @@ namespace ServiceStack.Support.WebHost
             var attributes = requestDtoType.AllAttributes<IHasRequestFilter>().ToList();
 
             var serviceType = HostContext.Metadata.GetServiceTypeByRequest(requestDtoType);
-			attributes.AddRange(serviceType.AllAttributes<IHasRequestFilter>());
+            if (serviceType != null)
+            {
+                attributes.AddRange(serviceType.AllAttributes<IHasRequestFilter>());
+            }
 
 			attributes.Sort((x,y) => x.Priority - y.Priority);
 			attrs = attributes.ToArray();

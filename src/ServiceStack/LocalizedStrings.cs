@@ -44,5 +44,6 @@
 
         //Invalid State
         public static string ConstructorNotFoundForType = "Constructor not found for Type '{0}'";
+        public static string ServiceNotFoundForType = "Service not found for Type '{0}'";
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Formats;
@@ -230,6 +231,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(ModifiedRoute request)
         {
             return request;
+        }
+    }
+
+    [TestFixture]
+    public class InvalidRouteTests
+    {
+        public class UnknownRoute {}
+
+        class InvalidRoutesAppHost : AppSelfHostBase
+        {
+            public InvalidRoutesAppHost() : base(typeof(InvalidRoutesAppHost).Name, typeof(InvalidRoutesAppHost).Assembly) { }
+
+            public override void Configure(Container container)
+            {
+                Routes.Add<UnknownRoute>("/unknownroute");
+            }
+        }
+
+        [Test]
+        public void Throws_error_when_registering_route_for_unknown_Service()
+        {
+            Assert.Throws<Exception>(() => new InvalidRoutesAppHost().Init());
         }
     }
 }
