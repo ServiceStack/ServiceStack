@@ -28,6 +28,8 @@ namespace ServiceStack
 
         public bool ValidateUniqueUserNames { get; set; }
 
+        public bool DeleteSessionCookiesOnLogout { get; set; }
+
         public bool IncludeAssignRoleServices
         {
             set
@@ -85,6 +87,7 @@ namespace ServiceStack
             this.HtmlRedirect = htmlRedirect ?? "~/" + localize(LocalizedStrings.Login);
             this.IncludeAuthMetadataProvider = true;
             this.ValidateUniqueEmails = true;
+            this.DeleteSessionCookiesOnLogout = true;
         }
 
         public void Register(IAppHost appHost)

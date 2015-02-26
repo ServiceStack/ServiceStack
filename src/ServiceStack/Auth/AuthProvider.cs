@@ -94,7 +94,12 @@ namespace ServiceStack.Auth
             AuthEvents.OnLogout(service.Request, session, service);
 
             service.RemoveSession();
-            service.Request.Response.DeleteSessionCookies();
+
+            var feature = HostContext.GetPlugin<AuthFeature>();
+            if (feature != null && feature.DeleteSessionCookiesOnLogout)
+            {
+                service.Request.Response.DeleteSessionCookies();
+            }
 
             if (service.Request.ResponseContentType == MimeTypes.Html && !String.IsNullOrEmpty(referrerUrl))
                 return service.Redirect(LogoutUrlFilter(this, referrerUrl.AddParam("s", "-1")));
