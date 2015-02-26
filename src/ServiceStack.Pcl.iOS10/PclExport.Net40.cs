@@ -522,6 +522,11 @@ namespace ServiceStack
             if (preAuthenticate.HasValue) req.PreAuthenticate = preAuthenticate.Value;
         }
 
+        public override string GetStackTrace()
+        {
+            return Environment.StackTrace;
+        }
+
 #if !__IOS__
         public override SetPropertyDelegate GetSetPropertyMethod(PropertyInfo propertyInfo)
         {
@@ -1192,7 +1197,7 @@ namespace ServiceStack
 
         public static byte[] Compress<TXmlDto>(TXmlDto from)
         {
-            using (var ms = new MemoryStream())
+            using (var ms = MemoryStreamFactory.GetStream())
             {
                 CompressToStream(from, ms);
 
