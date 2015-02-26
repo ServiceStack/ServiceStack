@@ -162,6 +162,7 @@
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoTouch" />
 
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.iOS10" />
+    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.Mac20" />
 
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoAndroid" />
     
