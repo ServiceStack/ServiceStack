@@ -242,5 +242,13 @@ namespace ServiceStack
         {
             session.Set(typeof(T).Name, value);
         }
+
+        public static void DeleteSessionCookies(this IResponse response)
+        {
+            var httpRes = response as IHttpResponse;
+            if (httpRes == null) return;
+            httpRes.Cookies.DeleteCookie(SessionFeature.SessionOptionsKey);
+            httpRes.Cookies.DeleteCookie(SessionFeature.PermanentSessionId);
+        }
     }
 }
