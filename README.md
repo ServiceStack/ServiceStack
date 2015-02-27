@@ -34,8 +34,7 @@ or when preferred, clients can
 [F#](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference), 
 [VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference),
 [TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference) 
-and [Swift iOS and OSX Clients](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference)
-clients.
+and [Swift iOS and OSX Clients](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference).
 
 
 ## Simple REST service example
