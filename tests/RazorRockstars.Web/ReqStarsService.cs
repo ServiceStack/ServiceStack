@@ -270,7 +270,7 @@ namespace RazorRockstars.Web
         public const string Host = "http://localhost:1338";
         private const string BaseUri = Host + "/";
 
-        private AppHost appHost;
+        //private AppHost appHost;
 
         private Stopwatch startedAt;
 
