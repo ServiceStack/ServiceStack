@@ -128,7 +128,7 @@ namespace RazorRockstars.Console.Files
         {
             using (var ms = new MemoryStream())
             {
-                var serializer = MessagePackSerializer.Create(request.GetType());
+                var serializer = MessagePackSerializer.Get(request.GetType());
                 serializer.PackTo(Packer.Create(ms), request);
 
                 ms.Position = 0;
@@ -146,7 +146,7 @@ namespace RazorRockstars.Console.Files
         {
             using (var ms = new MemoryStream())
             {
-                var serializer = MessagePackSerializer.Create<MsgPackEmail>();
+                var serializer = MessagePackSerializer.Get<MsgPackEmail>();
                 serializer.Pack(ms, request);
 
                 ms.Position = 0;

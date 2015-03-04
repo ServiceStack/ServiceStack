@@ -115,7 +115,7 @@ namespace ServiceStack.Server.Tests.Messaging
                     using (var client = (RedisClient)clientManager.GetClient())
                     {
                         client.SetConfig("timeout", "1");
-                        var clientAddrs = client.GetClientList().ConvertAll(x => x["addr"]);
+                        var clientAddrs = client.GetClientsInfo().ConvertAll(x => x["addr"]);
                         "Killing clients: {0}...".Print(clientAddrs.Dump());
                         try
                         {
