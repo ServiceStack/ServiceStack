@@ -163,6 +163,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServerV45", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Authentication.RavenDbV45", "ServiceStack.Authentication.RavenDbV45\ServiceStack.Authentication.RavenDbV45.csproj", "{2E728F63-E19A-4FC7-9C30-46D1396852C1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Caching.AwsDynamoDbV2", "ServiceStack.Caching.AwsDynamoDbV2\ServiceStack.Caching.AwsDynamoDbV2.csproj", "{AA7027C6-2C94-4E44-83A2-275EEE473045}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1672,6 +1674,41 @@ Global
 		{2E728F63-E19A-4FC7-9C30-46D1396852C1}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Signed|Any CPU
 		{2E728F63-E19A-4FC7-9C30-46D1396852C1}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Signed|Any CPU
 		{2E728F63-E19A-4FC7-9C30-46D1396852C1}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoRelease|Any CPU.Build.0 = Release|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoRelease|Mixed Platforms.Build.0 = Release|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoRelease|x86.ActiveCfg = Release|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoTouch|Any CPU.ActiveCfg = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoTouch|Any CPU.Build.0 = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoTouch|Mixed Platforms.ActiveCfg = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoTouch|Mixed Platforms.Build.0 = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.MonoTouch|x86.ActiveCfg = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Release|x86.ActiveCfg = Release|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Signed|Any CPU.Build.0 = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Signed|Mixed Platforms.ActiveCfg = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Signed|Mixed Platforms.Build.0 = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.Signed|x86.ActiveCfg = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Signed|Any CPU
+		{AA7027C6-2C94-4E44-83A2-275EEE473045}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Signed|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1709,6 +1746,7 @@ Global
 		{9982317F-831C-478B-9CC3-57F888BCD97A} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{213EF4BA-786A-432F-B147-5702B18DE3CC} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{2E728F63-E19A-4FC7-9C30-46D1396852C1} = {2E143186-E565-48B8-A8AE-6FE03B70FE68}
+		{AA7027C6-2C94-4E44-83A2-275EEE473045} = {515043B6-1FFD-4CBF-8916-23B82C67CF8C}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ..\tests\RazorRockstars.Console\RazorRockstars.Console.csproj
