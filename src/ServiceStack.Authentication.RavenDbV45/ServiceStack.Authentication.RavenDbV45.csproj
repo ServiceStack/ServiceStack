@@ -70,7 +70,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RavenDbUserAuthRepository.cs" />
+    <Compile Include="..\ServiceStack.Authentication.RavenDb\RavenDbUserAuthRepository.cs">
+      <Link>RavenDbUserAuthRepository.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
