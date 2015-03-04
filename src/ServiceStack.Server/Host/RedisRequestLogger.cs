@@ -11,12 +11,12 @@ namespace ServiceStack.Host
         private const string SortedSetKey = "log:requests";
 
         private readonly IRedisClientsManager redisManager;
-        private int? capacity;
+        private int? loggerCapacity;
 
         public RedisRequestLogger(IRedisClientsManager redisManager, int? capacity = null)
         {
             this.redisManager = redisManager;
-            this.capacity = capacity;
+            this.loggerCapacity = capacity;
         }
 
         public override void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
@@ -41,9 +41,9 @@ namespace ServiceStack.Host
                     trans.QueueCommand(r => r.AddItemToSortedSet(SortedSetKey, key, nowScore));
                     trans.QueueCommand(r => r.Store(entry));
 
-                    if (capacity != null)
+                    if (loggerCapacity != null)
                     {
-                        trans.QueueCommand(r => r.RemoveRangeFromSortedSet(SortedSetKey, 0, -capacity.Value - 1));
+                        trans.QueueCommand(r => r.RemoveRangeFromSortedSet(SortedSetKey, 0, -loggerCapacity.Value - 1));
                     }
 
                     trans.Commit();

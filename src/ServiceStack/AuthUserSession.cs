@@ -89,7 +89,9 @@ namespace ServiceStack
 
         public virtual void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service)
         {
-            OnRegistered(service); 
+#pragma warning disable 612, 618
+            OnRegistered(service);
+#pragma warning restore 612, 618
         }
 
         public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo) { }

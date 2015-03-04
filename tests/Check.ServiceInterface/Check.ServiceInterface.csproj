@@ -30,9 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ServiceStack.Client, Version=4.0.36.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\src\packages\ServiceStack.Client.4.0.36\lib\net40\ServiceStack.Client.dll</HintPath>
+    <Reference Include="ServiceStack.Client">
+      <HintPath>..\..\lib\ServiceStack.Client.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>

@@ -108,7 +108,7 @@ namespace ServiceStack.MsgPack
                 var msgPackType = GetMsgPackType(dtoType);
                 dtoType = msgPackType.Type;
 
-                var serializer = MessagePackSerializer.Create(dtoType);
+                var serializer = MessagePackSerializer.Get(dtoType);
                 serializer.PackTo(Packer.Create(outputStream), dto);
             }
             catch (Exception ex)
@@ -124,7 +124,7 @@ namespace ServiceStack.MsgPack
                 var msgPackType = GetMsgPackType(type);
                 type = msgPackType.Type;
 
-                var serializer = MessagePackSerializer.Create(type);
+                var serializer = MessagePackSerializer.Get(type);
                 var unpacker = Unpacker.Create(fromStream);
                 unpacker.Read();
                 var obj = serializer.UnpackFrom(unpacker);

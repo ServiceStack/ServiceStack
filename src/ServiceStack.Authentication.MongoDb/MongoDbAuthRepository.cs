@@ -162,9 +162,8 @@ namespace ServiceStack.Authentication.MongoDb
         private Counters IncCounter(string counterName)
         {
             var CountersCollection = mongoDatabase.GetCollection<Counters>(Counters_Col);
-            var incId = Update.Inc(counterName, 1);
-            var query = Query.Null;
-            FindAndModifyResult counterIncResult = CountersCollection.FindAndModify(query, SortBy.Null, incId, true);
+            var args = new FindAndModifyArgs() { Query = Query.Null, SortBy = SortBy.Null, Update = Update.Inc(counterName, 1), Upsert = true };
+            FindAndModifyResult counterIncResult = CountersCollection.FindAndModify(args);
             Counters updatedCounters = counterIncResult.GetModifiedDocumentAs<Counters>();
             return updatedCounters;
         }

@@ -37,7 +37,7 @@ namespace ServiceStack.MsgPack
         {
             try
             {
-                var serializer = MessagePackSerializer.Create<T>();
+                var serializer = MessagePackSerializer.Get<T>();
                 var obj = serializer.Unpack(stream);
                 return obj;
 

@@ -36,8 +36,7 @@
     <Reference Include="Mono.Data.Sqlite">
       <HintPath>..\..\lib\tests\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Ultimate, Version=1.0.4620.6821, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="ServiceStack.Ultimate">
       <HintPath>..\..\lib\ServiceStack.Ultimate.dll</HintPath>
     </Reference>
     <Reference Include="System" />

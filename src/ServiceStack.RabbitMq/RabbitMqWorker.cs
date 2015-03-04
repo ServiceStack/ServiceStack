@@ -44,10 +44,12 @@ namespace ServiceStack.RabbitMq
             get { return totalMessagesProcessed; }
         }
 
-        private int msgNotificationsReceived;
+        // TODO: RabbitMqWorker.MsgNotificationsReceived is never referenced and will always return zero.
+        //private int msgNotificationsReceived;
         public int MsgNotificationsReceived
         {
-            get { return msgNotificationsReceived; }
+            //get { return msgNotificationsReceived; }
+            get { return 0; }
         }
 
         public RabbitMqWorker(RabbitMqMessageFactory mqFactory,
@@ -218,7 +220,7 @@ namespace ServiceStack.RabbitMq
                 catch (Exception ex)
                 {
                     var waitMs = Math.Min(retries++ * 100, 10000);
-                    Log.Debug("Retrying to Reconnect after {0}ms...".Fmt(waitMs));
+                    Log.Debug("Retrying to Reconnect after {0}ms...".Fmt(waitMs), ex);
                     Thread.Sleep(waitMs);
                 }
             }
@@ -273,7 +275,7 @@ namespace ServiceStack.RabbitMq
                 catch (Exception ex)
                 {
                     var waitMs = Math.Min(retries++ * 100, 10000);
-                    Log.Debug("Retrying to Reconnect Subscription after {0}ms...".Fmt(waitMs));
+                    Log.Debug("Retrying to Reconnect Subscription after {0}ms...".Fmt(waitMs), ex);
                     Thread.Sleep(waitMs);
                 }
             }

@@ -73,7 +73,7 @@ namespace ServiceStack.Auth
         private void AssertAuthProviders()
         {
             if (AuthProviders == null || AuthProviders.Length == 0)
-                throw new ConfigurationException("No OAuth providers have been registered in your AppHost.");
+                throw new ConfigurationErrorsException("No OAuth providers have been registered in your AppHost.");
         }
 
         public void Options(Authenticate request) { }
