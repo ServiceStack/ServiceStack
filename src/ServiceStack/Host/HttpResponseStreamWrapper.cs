@@ -10,9 +10,10 @@ namespace ServiceStack.Host
     {
         private static readonly UTF8Encoding UTF8EncodingWithoutBom = new UTF8Encoding(false);
 
-        public HttpResponseStreamWrapper(Stream stream)
+        public HttpResponseStreamWrapper(Stream stream, IRequest request)
         {
             this.OutputStream = stream;
+            this.Request = request;
             this.Headers = new Dictionary<string, string>();
             this.Items = new Dictionary<string, object>();
         }
@@ -23,6 +24,8 @@ namespace ServiceStack.Host
         {
             get { return null; }
         }
+
+        public IRequest Request { get; private set; }
 
         public int StatusCode { set; get; }
         public string StatusDescription { set; get; }

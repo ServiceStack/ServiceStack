@@ -17,9 +17,10 @@ namespace ServiceStack.Host.HttpListener
 
         private readonly System.Net.HttpListenerResponse response;
 
-        public ListenerResponse(System.Net.HttpListenerResponse response)
+        public ListenerResponse(HttpListenerResponse response, IRequest request = null)
         {
             this.response = response;
+            this.Request = request;
             this.Cookies = new Cookies(this);
             this.Items = new Dictionary<string, object>();
         }
@@ -28,6 +29,8 @@ namespace ServiceStack.Host.HttpListener
         {
             get { return response; }
         }
+
+        public IRequest Request { get; private set; }
 
         public int StatusCode
         {

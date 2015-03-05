@@ -172,11 +172,11 @@ namespace ServiceStack
         /// <summary>
         /// Call to signal the completion of a ServiceStack-handled Request
         /// </summary>
-        internal static void CompleteRequest()
+        internal static void CompleteRequest(IRequest request)
         {
             try
             {
-                AssertAppHost().OnEndRequest();
+                AssertAppHost().OnEndRequest(request);
             }
             catch (Exception) { }
         }

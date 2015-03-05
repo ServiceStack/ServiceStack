@@ -6,6 +6,7 @@ using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Shared.Tests;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -24,9 +25,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             ((IRelease)Container.Adapter).Release(instance);
         }
 
-        public override void OnEndRequest()
+        public override void OnEndRequest(IRequest request = null)
         {
-            base.OnEndRequest();
+            base.OnEndRequest(request);
         }
     }
 

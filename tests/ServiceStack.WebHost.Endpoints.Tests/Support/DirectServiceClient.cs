@@ -14,12 +14,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
     {
         ServiceController ServiceController { get; set; }
 
-        readonly MockHttpRequest httpReq = new MockHttpRequest();
-        readonly MockHttpResponse httpRes = new MockHttpResponse();
+        private readonly MockHttpRequest httpReq;
+        private readonly MockHttpResponse httpRes;
 
         public DirectServiceClient(ServiceController serviceController)
         {
             this.ServiceController = serviceController;
+            httpReq = new MockHttpRequest();
+            httpRes = new MockHttpResponse(httpReq);
         }
 
         public void SendOneWay(object requestDto)

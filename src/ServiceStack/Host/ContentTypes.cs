@@ -113,7 +113,7 @@ namespace ServiceStack.Host
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
-                    var httpRes = new HttpResponseStreamWrapper(ms);
+                    var httpRes = new HttpResponseStreamWrapper(ms, req);
                     responseWriter(req, response, httpRes);
                     ms.Position = 0;
                     return ms.ToArray();
@@ -166,7 +166,7 @@ namespace ServiceStack.Host
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
-                    var httpRes = new HttpResponseStreamWrapper(ms) {
+                    var httpRes = new HttpResponseStreamWrapper(ms, req) {
                         KeepOpen = true, //Don't let view engines close the OutputStream
                     };
                     responseWriter(req, response, httpRes);
@@ -200,17 +200,17 @@ namespace ServiceStack.Host
             throw new NotSupportedException("ContentType not supported: " + contentType);
         }
 
-        public void SerializeToStream(IRequest requestContext, object response, Stream responseStream)
+        public void SerializeToStream(IRequest req, object response, Stream responseStream)
         {
-            var contentType = requestContext.ResponseContentType;
+            var contentType = req.ResponseContentType;
             var serializer = GetResponseSerializer(contentType);
             if (serializer == null)
                 throw new NotSupportedException("ContentType not supported: " + contentType);
 
-            var httpRes = new HttpResponseStreamWrapper(responseStream) {
-                Dto = requestContext.Response.Dto
+            var httpRes = new HttpResponseStreamWrapper(responseStream, req) {
+                Dto = req.Response.Dto
             };
-            serializer(requestContext, response, httpRes);
+            serializer(req, response, httpRes);
         }
 
         public void SerializeToResponse(IRequest requestContext, object response, IResponse httpResponse)

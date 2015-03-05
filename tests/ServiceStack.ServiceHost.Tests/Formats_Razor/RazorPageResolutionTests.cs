@@ -307,7 +307,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             var responseDtoType = typeof(TRequest).Assembly.GetType(typeof(TRequest).FullName + "Response");
             var responseDto = Activator.CreateInstance(responseDtoType);
             var mockReq = new MockHttpRequest { OperationName = typeof(TRequest).Name, Dto = new TRequest()};
-            var mockRes = new MockHttpResponse { Dto = responseDto };
+            var mockRes = new MockHttpResponse(mockReq) { Dto = responseDto };
             RazorFormat.ProcessRequest(mockReq, mockRes, responseDto);
             return mockRes.ReadAsString();
         }
@@ -319,7 +319,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
                 OperationName = "Razor_PageResolver",
                 PathInfo = path,
             };
-            var mockRes = new MockHttpResponse();
+            var mockRes = new MockHttpResponse(mockReq);
             RazorFormat.ProcessContentPageRequest(mockReq, mockRes);
             return mockRes.ReadAsString();
         }

@@ -11,8 +11,9 @@ namespace ServiceStack.Testing
 {
     public class MockHttpResponse : IHttpResponse
     {
-        public MockHttpResponse()
+        public MockHttpResponse(IRequest request = null)
         {
+            this.Request = request;
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
             this.OutputStream = new MemoryStream();
             this.TextWritten = new StringBuilder();
@@ -20,6 +21,7 @@ namespace ServiceStack.Testing
             this.Items = new Dictionary<string, object>();
         }
 
+        public IRequest Request { get; private set; }
         public object OriginalResponse { get; private set; }
         public int StatusCode { set; get; }
         public string StatusDescription { set; get; }

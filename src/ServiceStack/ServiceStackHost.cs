@@ -573,7 +573,7 @@ namespace ServiceStack
             }
         }
 
-        public virtual void OnEndRequest()
+        public virtual void OnEndRequest(IRequest request = null)
         {
             var disposables = RequestContext.Instance.Items.Values;
             foreach (var item in disposables)

@@ -19,6 +19,11 @@ namespace ServiceStack.Host
 
         public object OriginalResponse { get; set; }
 
+        public IRequest Request
+        {
+            get { return requestContext; }
+        }
+
         public int StatusCode { get; set; }
 
         public string StatusDescription { get; set; }

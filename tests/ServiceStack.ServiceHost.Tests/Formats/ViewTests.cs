@@ -55,7 +55,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             httpReq.QueryString.Add("format", format);
             using (var ms = new MemoryStream())
             {
-                var httpRes = new HttpResponseStreamWrapper(ms);
+                var httpRes = new HttpResponseStreamWrapper(ms, httpReq);
                 appHost.ViewEngines[0].ProcessRequest(httpReq, httpRes, dto);
 
                 var utf8Bytes = ms.ToArray();
@@ -134,8 +134,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         {
             public MemoryStream MemoryStream { get; set; }
 
-            public MockHttpResponse()
+            public MockHttpResponse(IRequest httpReq)
             {
+                this.Request = httpReq;
                 this.Headers = new Dictionary<string, string>();
                 this.MemoryStream = new MemoryStream();
                 this.Cookies = new Cookies(this);
@@ -146,6 +147,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             {
                 get { throw new NotImplementedException(); }
             }
+
+            public IRequest Request { get; private set; }
 
             public int StatusCode { set; get; }
 
@@ -222,7 +225,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 MarkdownFormat = markdownFormat,
             };
             var httpReq = new MockHttpRequest { QueryString = PclExportClient.Instance.NewNameValueCollection() };
-            var httpRes = new MockHttpResponse();
+            var httpRes = new MockHttpResponse(httpReq);
             markdownHandler.ProcessRequestAsync(httpReq, httpRes, "Static").Wait();
 
             var expectedHtml = markdownFormat.Transform(

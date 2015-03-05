@@ -67,7 +67,7 @@ namespace RazorRockstars.Console.Files
         {
             var razorFormat = RazorFormat.Instance;
             var mockReq = new MockHttpRequest { OperationName = "RazorInstance" };
-            var mockRes = new MockHttpResponse();
+            var mockRes = new MockHttpResponse(mockReq);
             var dto = new RockstarsResponse { Results = Rockstar.SeedData.ToList() };
             razorFormat.ProcessRequest(mockReq, mockRes, dto);
             var html = mockRes.ReadAsString();

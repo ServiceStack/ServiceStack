@@ -35,7 +35,7 @@ namespace ServiceStack.Host.AspNet
             this.request = httpContext.Request;
             try
             {
-                this.response = new AspNetResponse(httpContext.Response);
+                this.response = new AspNetResponse(httpContext.Response, this);
             }
             catch (Exception ex)
             {

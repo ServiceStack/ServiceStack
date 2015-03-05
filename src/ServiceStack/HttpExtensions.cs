@@ -50,7 +50,7 @@ namespace ServiceStack
         {
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
             httpRes.Close();
-            HostContext.CompleteRequest();
+            HostContext.CompleteRequest(null);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace ServiceStack
         public static void EndRequest(this IResponse httpRes, bool skipHeaders = false)
         {
             httpRes.EndHttpHandlerRequest(skipHeaders: skipHeaders);
-            HostContext.CompleteRequest();
+            HostContext.CompleteRequest(httpRes.Request);
         }
 
         /// <summary>

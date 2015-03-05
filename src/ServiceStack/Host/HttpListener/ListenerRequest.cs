@@ -25,7 +25,7 @@ namespace ServiceStack.Host.HttpListener
             this.OperationName = operationName;
             this.RequestAttributes = requestAttributes;
             this.request = httpContext.Request;
-            this.response = new ListenerResponse(httpContext.Response);
+            this.response = new ListenerResponse(httpContext.Response, this);
 
             this.RequestPreferences = new RequestPreferences(this);
         }

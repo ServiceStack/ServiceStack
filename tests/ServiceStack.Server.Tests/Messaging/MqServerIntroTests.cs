@@ -332,7 +332,7 @@ namespace ServiceStack.Server.Tests.Messaging
             return new RabbitMqServer
             {
                 RetryCount = retryCount,
-                ResponseFilter = r => { host.OnEndRequest(); return r; }
+                ResponseFilter = r => { host.OnEndRequest(null); return r; }
             };
         }
     }
@@ -344,7 +344,7 @@ namespace ServiceStack.Server.Tests.Messaging
             return new RedisMqServer(new BasicRedisClientManager())
             {
                 RetryCount = retryCount,
-                ResponseFilter = r => { host.OnEndRequest(); return r; }
+                ResponseFilter = r => { host.OnEndRequest(null); return r; }
             };
         }
     }

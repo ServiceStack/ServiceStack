@@ -16,6 +16,8 @@ namespace ServiceStack.Web
         /// </summary>
         object OriginalResponse { get; }
 
+        IRequest Request { get; }
+
         int StatusCode { get; set; }
 
         string StatusDescription { get; set; }

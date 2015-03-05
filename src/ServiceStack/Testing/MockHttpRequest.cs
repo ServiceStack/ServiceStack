@@ -22,7 +22,7 @@ namespace ServiceStack.Testing
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
             this.Container = ServiceStackHost.Instance != null ? ServiceStackHost.Instance.Container : new Container();
-            this.Response = new MockHttpResponse();
+            this.Response = new MockHttpResponse(this);
         }
 
         public MockHttpRequest(string operationName, string httpMethod,

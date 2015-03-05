@@ -178,7 +178,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Can_respond_to_non_range_requests_with_200_OK_response()
         {
             var mockRequest = new MockHttpRequest();
-            var mockResponse = new MockHttpResponse();
+            var mockResponse = new MockHttpResponse(mockRequest);
 
             string customText = "1234567890";
             byte[] customTextBytes = customText.ToUtf8Bytes();
@@ -202,7 +202,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Can_seek_from_beginning_to_end()
         {
             var mockRequest = new MockHttpRequest();
-            var mockResponse = new MockHttpResponse();
+            var mockResponse = new MockHttpResponse(mockRequest);
 
             mockRequest.Headers[HttpHeaders.Range] = "bytes=0";
 
@@ -233,7 +233,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             // e.g. Facebook crawler always sends range header of 'bytes=0-524287'.
 
             var mockRequest = new MockHttpRequest();
-            var mockResponse = new MockHttpResponse();
+            var mockResponse = new MockHttpResponse(mockRequest);
 
             mockRequest.Headers[HttpHeaders.Range] = "bytes=0-524287";
 
@@ -260,7 +260,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Can_seek_from_beginning_to_middle()
         {
             var mockRequest = new MockHttpRequest();
-            var mockResponse = new MockHttpResponse();
+            var mockResponse = new MockHttpResponse(mockRequest);
 
             mockRequest.Headers[HttpHeaders.Range] = "bytes=0-2";
 
@@ -289,7 +289,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var mockRequest = new MockHttpRequest();
             mockRequest.Headers.Add("Range", "bytes=4-");
-            var mockResponse = new MockHttpResponse();
+            var mockResponse = new MockHttpResponse(mockRequest);
 
             string customText = "1234567890";
             byte[] customTextBytes = customText.ToUtf8Bytes();
@@ -316,7 +316,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var mockRequest = new MockHttpRequest();
             mockRequest.Headers.Add("Range", "bytes=3-5");
-            var mockResponse = new MockHttpResponse();
+            var mockResponse = new MockHttpResponse(mockRequest);
 
             string customText = "1234567890";
             byte[] customTextBytes = customText.ToUtf8Bytes();
@@ -348,7 +348,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             "File content is {0}".Print(fileText);
 
             var mockRequest = new MockHttpRequest();
-            var mockResponse = new MockHttpResponse();
+            var mockResponse = new MockHttpResponse(mockRequest);
             mockRequest.Headers.Add("Range", "bytes=6-8");
 
             var httpResult = new HttpResult(uploadedTextFile, "audio/mpeg");

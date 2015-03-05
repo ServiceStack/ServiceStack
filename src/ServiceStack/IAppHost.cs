@@ -35,7 +35,7 @@ namespace ServiceStack
         /// <summary>
         /// Called at the end of each request. Enables Request Scope.
         /// </summary>
-        void OnEndRequest();
+        void OnEndRequest(IRequest request = null);
 
         /// <summary>
         /// Register user-defined custom routes.

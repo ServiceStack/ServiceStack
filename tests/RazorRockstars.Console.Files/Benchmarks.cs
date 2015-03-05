@@ -42,13 +42,13 @@ namespace RazorRockstars.Console.Files
 
             "Warm up MVC Razor...".Print();
             var mockReq = new MockHttpRequest { OperationName = "RockstarsRazor" };
-            var mockRes = new MockHttpResponse();
+            var mockRes = new MockHttpResponse(mockReq);
             razorFormat.ProcessRequest(mockReq, mockRes, dto);
             mockRes.ReadAsString().Print();
 
             "Warm up Markdown Razor...".Print();
             mockReq = new MockHttpRequest { OperationName = "RockstarsMark" };
-            mockRes = new MockHttpResponse();
+            mockRes = new MockHttpResponse(mockReq);
             markdownFmt.ProcessRequest(mockReq, mockRes, dto);
             mockRes.ReadAsString().Print();
 
@@ -56,12 +56,12 @@ namespace RazorRockstars.Console.Files
             CompareRuns(iterations,
                 "MVC Razor", () => {
                     mockReq = new MockHttpRequest { OperationName = "RockstarsRazor" };
-                    mockRes = new MockHttpResponse();
+                    mockRes = new MockHttpResponse(mockReq);
                     razorFormat.ProcessRequest(mockReq, mockRes, dto);
                 },
                 "Markdown Razor", () => {
                     mockReq = new MockHttpRequest { OperationName = "RockstarsMark" };
-                    mockRes = new MockHttpResponse();
+                    mockRes = new MockHttpResponse(mockReq);
                     markdownFmt.ProcessRequest(mockReq, mockRes, dto);
                 });
         }

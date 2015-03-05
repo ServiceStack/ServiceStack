@@ -18,9 +18,10 @@ namespace ServiceStack.Host.AspNet
 
         private readonly HttpResponseBase response;
 
-        public AspNetResponse(HttpResponseBase response)
+        public AspNetResponse(HttpResponseBase response, IRequest request = null)
         {
             this.response = response;
+            this.Request = request;
             this.response.TrySkipIisCustomErrors = true;
             this.Cookies = new Cookies(this);
             this.Items = new Dictionary<string, object>();
@@ -35,6 +36,8 @@ namespace ServiceStack.Host.AspNet
         {
             get { return response; }
         }
+
+        public IRequest Request { get; private set; }
 
         public int StatusCode
         {
