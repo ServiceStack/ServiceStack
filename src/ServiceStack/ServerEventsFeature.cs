@@ -156,6 +156,9 @@ namespace ServiceStack
             if (feature.OnCreated != null)
                 feature.OnCreated(subscription, req);
 
+            if (req.Response.IsClosed)
+                return EmptyTask; //Allow short-circuiting in OnCreated callback
+
             var heartbeatUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath))
                 .AddQueryParam("id", subscriptionId);
             var unRegisterUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath))
