@@ -407,6 +407,11 @@ namespace ServiceStack
         {
             return null;
         }
+
+        public virtual object OnAfterExecute(IRequest req, object requestDto, object response)
+        {
+            return response;
+        }
     }
 
 }

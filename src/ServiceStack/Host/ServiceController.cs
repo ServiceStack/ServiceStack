@@ -504,7 +504,7 @@ namespace ServiceStack.Host
                 AssertServiceRestrictions(requestType, req.RequestAttributes);
 
             var handlerFn = GetService(requestType);
-            return handlerFn(req, requestDto);
+            return appHost.OnAfterExecute(req, requestDto, handlerFn(req, requestDto));
         }
 
         public object Execute(IRequest req)
