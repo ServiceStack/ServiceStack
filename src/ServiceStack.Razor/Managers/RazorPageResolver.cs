@@ -161,31 +161,39 @@ namespace ServiceStack.Razor.Managers
                 return null;
             }
 
-            var page = CreateRazorPageInstance(httpReq, httpRes, model, razorPage);
-
-            var includeLayout = !(httpReq.GetParam(QueryStringFormatKey) ?? "").Contains(NoTemplateFormatValue);
-            if (includeLayout)
+            try
             {
-                var result = ExecuteRazorPageWithLayout(razorPage, httpReq, httpRes, model, page, () =>
-                    httpReq.GetItem(LayoutKey) as string
-                    ?? page.Layout
-                    ?? DefaultLayoutName);
+                var page = CreateRazorPageInstance(httpReq, httpRes, model, razorPage);
 
-                if (httpRes.IsClosed)
-                    return result != null ? result.Item1 : null;
+                var includeLayout = !(httpReq.GetParam(QueryStringFormatKey) ?? "").Contains(NoTemplateFormatValue);
+                if (includeLayout)
+                {
+                    var result = ExecuteRazorPageWithLayout(razorPage, httpReq, httpRes, model, page, () =>
+                        httpReq.GetItem(LayoutKey) as string
+                        ?? page.Layout
+                        ?? DefaultLayoutName);
 
-                var layoutWriter = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom);
-                var html = HtmlFilter(result.Item2);
+                    if (httpRes.IsClosed)
+                        return result != null ? result.Item1 : null;
 
-                layoutWriter.Write(html);
-                layoutWriter.Flush();
-                return result.Item1;
+                    var layoutWriter = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom);
+                    var html = HtmlFilter(result.Item2);
+
+                    layoutWriter.Write(html);
+                    layoutWriter.Flush();
+                    return result.Item1;
+                }
+
+                var writer = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom);
+                page.WriteTo(writer);
+                writer.Flush();
+
+                return page;
             }
-
-            var writer = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom);
-            page.WriteTo(writer);
-            writer.Flush();
-            return page;
+            finally
+            {
+                RequestContext.Instance.ReleaseDisposables();
+            }
         }
 
         private Tuple<IRazorView, string> ExecuteRazorPageWithLayout(RazorPage razorPage, IRequest httpReq, IResponse httpRes, object model, IRazorView pageInstance, Func<string> layout)

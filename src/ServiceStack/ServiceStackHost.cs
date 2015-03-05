@@ -567,7 +567,10 @@ namespace ServiceStack
                         disposable.Dispose();
                 }
             }
-            catch { /*ignore*/ }
+            catch (Exception ex)
+            {
+                Log.Error("ServiceStackHost.Release", ex);
+            }
         }
 
         public virtual void OnEndRequest()

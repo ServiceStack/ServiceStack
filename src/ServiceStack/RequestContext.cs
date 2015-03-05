@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.Remoting.Messaging;
+using ServiceStack.Logging;
 
 namespace ServiceStack
 {
@@ -111,11 +112,35 @@ namespace ServiceStack
                 dispsableTracker = (DispsableTracker)Items[DispsableTracker.HashId];
             dispsableTracker.Add(instance);
         }
+
+        /// <summary>
+        /// Release currently registered dependencies for this request
+        /// </summary>
+        /// <returns>true if any dependencies were released</returns>
+        public bool ReleaseDisposables()
+        {
+            if (ServiceStackHost.Instance == null || ServiceStackHost.Instance.ReadyAt == null) return false;
+            if (!ServiceStackHost.Instance.Config.DisposeDependenciesAfterUse) return false;
+
+            var ctxItems = Instance.Items;
+            var disposables = ctxItems[DispsableTracker.HashId] as DispsableTracker;
+
+            if (disposables != null)
+            {
+                disposables.Dispose();
+                ctxItems.Remove(DispsableTracker.HashId);
+                return true;
+            }
+
+            return false;
+        }
     }
 
     [Serializable]
     public class DispsableTracker : IDisposable
     {
+        public static ILog Log = LogManager.GetLogger(typeof(RequestContext));
+
         public const string HashId = "__disposables";
 
         List<WeakReference> disposables = new List<WeakReference>();
@@ -130,8 +155,9 @@ namespace ServiceStack
             foreach (var wr in disposables)
             {
                 var disposable = (IDisposable)wr.Target;
-                if (wr.IsAlive)
-                    disposable.Dispose();
+                if (!wr.IsAlive) continue;
+
+                HostContext.Release(disposable);
             }
         }
     }

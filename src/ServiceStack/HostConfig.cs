@@ -83,6 +83,7 @@ namespace ServiceStack
                 EnableFeatures = Feature.All,
                 WriteErrorsToResponse = true,
                 ReturnsInnerException = true,
+                DisposeDependenciesAfterUse = true,
                 MarkdownOptions = new MarkdownOptions(),
                 MarkdownBaseType = typeof(MarkdownViewBase),
                 MarkdownGlobalHelpers = new Dictionary<string, Type>(),
@@ -164,6 +165,7 @@ namespace ServiceStack
             this.AllowFileExtensions = instance.AllowFileExtensions;
             this.EnableFeatures = instance.EnableFeatures;
             this.WriteErrorsToResponse = instance.WriteErrorsToResponse;
+            this.DisposeDependenciesAfterUse = instance.DisposeDependenciesAfterUse;
             this.ReturnsInnerException = instance.ReturnsInnerException;
             this.MarkdownOptions = instance.MarkdownOptions;
             this.MarkdownBaseType = instance.MarkdownBaseType;
@@ -237,6 +239,7 @@ namespace ServiceStack
         public Feature EnableFeatures { get; set; }
         public bool ReturnsInnerException { get; set; }
         public bool WriteErrorsToResponse { get; set; }
+        public bool DisposeDependenciesAfterUse { get; set; }
 
         public MarkdownOptions MarkdownOptions { get; set; }
         public Type MarkdownBaseType { get; set; }

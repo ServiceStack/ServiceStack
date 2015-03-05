@@ -164,6 +164,8 @@ namespace ServiceStack
                 redis.Dispose();
             if (messageProducer != null)
                 messageProducer.Dispose();
+
+            RequestContext.Instance.ReleaseDisposables();
         }
     }
 
