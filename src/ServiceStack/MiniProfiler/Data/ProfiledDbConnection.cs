@@ -9,7 +9,7 @@ namespace ServiceStack.MiniProfiler.Data
     /// <summary>
     /// Wraps a database connection, allowing sql execution timings to be collected when a <see cref="MiniProfiler.Profiler"/> session is started.
     /// </summary>
-    public class ProfiledDbConnection : DbConnection, ICloneable
+    public class ProfiledDbConnection : DbConnection, ICloneable, IHasDbConnection
     {
         /// <summary>
         /// This will be made private; use <see cref="InnerConnection"/>
@@ -22,6 +22,11 @@ namespace ServiceStack.MiniProfiler.Data
         /// The underlying, real database connection to your db provider.
         /// </summary>
         public DbConnection InnerConnection
+        {
+            get { return _conn; }
+        }
+
+        public IDbConnection DbConnection
         {
             get { return _conn; }
         }
@@ -196,7 +201,6 @@ namespace ServiceStack.MiniProfiler.Data
             return new ProfiledDbConnection((DbConnection)tail.Clone(), _profiler, autoDisposeConnection);
         }
         object ICloneable.Clone() { return Clone(); }
-
     }
 }
 

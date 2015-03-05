@@ -3,12 +3,13 @@ using System.Data.Common;
 using System.Data;
 using System.Reflection;
 using System.Reflection.Emit;
+using ServiceStack.Data;
 
 #pragma warning disable 1591 // xml doc comments warnings
 
 namespace ServiceStack.MiniProfiler.Data
 {
-    public class ProfiledDbCommand : DbCommand, ICloneable
+    public class ProfiledDbCommand : DbCommand, ICloneable, IHasDbCommand
     {
         protected DbCommand _cmd;
         protected DbConnection _conn;
@@ -98,6 +99,11 @@ namespace ServiceStack.MiniProfiler.Data
         {
             get { return _cmd.CommandType; }
             set { _cmd.CommandType = value; }
+        }
+
+        public IDbCommand DbCommand
+        {
+            get { return _cmd; }
         }
 
         protected override DbConnection DbConnection
@@ -257,7 +263,6 @@ namespace ServiceStack.MiniProfiler.Data
             return new ProfiledDbCommand((DbCommand)tail.Clone(), _conn, _profiler);
         }
         object ICloneable.Clone() { return Clone(); }
-
     }
 }
 
