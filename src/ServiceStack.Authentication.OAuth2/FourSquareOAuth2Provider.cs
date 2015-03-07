@@ -132,7 +132,7 @@ namespace ServiceStack.Authentication.OAuth2
             var userPhoto = user.Object("photo");
 
             var fullName = "{0} {1}".Fmt(user["firstName"], user["lastName"]);
-            var photoUrl = userPhoto["prefix"].CombineWith(userPhoto["suffix"]);
+            var photoUrl = userPhoto["prefix"].CombineWith(userPhoto["suffix"]).SanitizeOAuthUrl();
 
             var authInfo = new Dictionary<string, string>
             {
@@ -142,7 +142,7 @@ namespace ServiceStack.Authentication.OAuth2
                 { "first_name", user["firstName"] }, 
                 { "last_name", user["lastName"] }, 
                 { "gender", user["gender"] }, // male, female, or none
-                { "picture", photoUrl.SanitizeOAuthUrl() },
+                { "picture", photoUrl },
                 { AuthMetadataProvider.ProfileUrlKey, photoUrl },
             };
 
