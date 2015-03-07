@@ -11,6 +11,7 @@ namespace ServiceStack.Authentication.OAuth2
 {
     /// <summary>
     /// More info at: https://developer.foursquare.com/overview/auth.html
+    /// Create Foursquare App at: https://foursquare.com/developers/register
     /// </summary>
     public class FourSquareOAuth2Provider : OAuth2Provider
     {
@@ -30,20 +31,17 @@ namespace ServiceStack.Authentication.OAuth2
             this.UserProfileUrl = this.UserProfileUrl ?? "https://api.foursquare.com/v2/users/self";
 
             // https://developer.foursquare.com/overview/versioning
-            DateTime verDt;
-            if (!DateTime.TryParse(appSettings.GetString("oauth.{0}.Version".Fmt(Name)), out verDt)) verDt = DateTime.Now;
+            DateTime versionDate;
+            if (!DateTime.TryParse(appSettings.GetString("oauth.{0}.Version".Fmt(Name)), out versionDate)) 
+                versionDate = DateTime.UtcNow;
 
             // version dates before June 9, 2012 will automatically be rejected
-            if (verDt < new DateTime(2012, 6, 9)) verDt = DateTime.Now;
-            this.Version = verDt;
+            if (versionDate < new DateTime(2012, 6, 9))
+                versionDate = DateTime.UtcNow;
+            
+            this.Version = versionDate;
 
-
-            if (this.Scopes.Length == 0)
-            {
-                this.Scopes = new[] {
-                    "basic"
-                };
-            }
+            Scopes = appSettings.Get("oauth.{0}.Scopes".Fmt(Name), new[] { "basic" });
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
@@ -130,11 +128,11 @@ namespace ServiceStack.Authentication.OAuth2
             var obj = JsonObject.Parse(json);
             var response = obj.Object("response");
             var user = response.Object("user");
-            var user_contact = user.Object("contact");
-            var user_photo = user.Object("photo");
+            var userContact = user.Object("contact");
+            var userPhoto = user.Object("photo");
 
             var fullName = "{0} {1}".Fmt(user["firstName"], user["lastName"]);
-            var photoUrl = user_photo["prefix"].TrimEnd('/') + user_photo["suffix"];
+            var photoUrl = userPhoto["prefix"].CombineWith(userPhoto["suffix"]);
 
             var authInfo = new Dictionary<string, string>
             {
@@ -149,14 +147,14 @@ namespace ServiceStack.Authentication.OAuth2
             };
 
             if (user.ContainsKey("birthday"))
-                authInfo.Add("birthday", user["birthday"]);
+                authInfo["birthday"] = user["birthday"];
 
-            var contact_items = new[] { "facebook", "twitter", "email", "phone" };
+            var contactItems = new[] { "facebook", "twitter", "email", "phone" };
 
-            foreach (var item in contact_items)
+            foreach (var item in contactItems)
             {
-                if (user_contact.ContainsKey(item))
-                    authInfo.Add(item, user_contact[item]);
+                if (userContact.ContainsKey(item))
+                    authInfo[item] = userContact[item];
             }
 
             return authInfo;
@@ -184,7 +182,6 @@ namespace ServiceStack.Authentication.OAuth2
             }
             userSession.BirthDateRaw = tokens.BirthDateRaw ?? userSession.BirthDateRaw;
             userSession.BirthDate = tokens.BirthDate ?? userSession.BirthDate;
-
 
             if (authInfo.ContainsKey("facebook"))
                 userSession.FacebookUserId = authInfo["facebook"];
