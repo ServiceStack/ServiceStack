@@ -162,7 +162,7 @@ namespace ServiceStack.AuthWeb.Tests
                     UserName = "mythz",
                 }, "test");
             }
-            catch (Exception ignoreExistingUser) {}
+            catch (Exception) {}
 
             Plugins.Add(new RequestLogsFeature());
         }

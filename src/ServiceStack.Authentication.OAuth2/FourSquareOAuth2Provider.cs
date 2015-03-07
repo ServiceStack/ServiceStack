@@ -23,6 +23,10 @@ namespace ServiceStack.Authentication.OAuth2
         //   the v (i.e. Version) parameter is required for all API requests. 
         public DateTime Version { get; set; }
 
+        public int ProfileImageWidth { get; set; }
+
+        public int ProfileImageHeight { get; set; }
+
         public FourSquareOAuth2Provider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
@@ -40,6 +44,19 @@ namespace ServiceStack.Authentication.OAuth2
                 versionDate = DateTime.UtcNow;
             
             this.Version = versionDate;
+
+            // Profile Image URL requires dimensions (Width x height) in the URL (default = 64x64 and minimum = 16x16)
+            int profileImageWidth;
+            if (!int.TryParse(appSettings.GetString("oauth.{0}.ProfileImageWidth".Fmt(Name)), out profileImageWidth))
+                profileImageWidth = 64;
+
+            this.ProfileImageWidth = Math.Max(profileImageWidth, 16);
+
+            int profileImageHeight;
+            if (!int.TryParse(appSettings.GetString("oauth.{0}.ProfileImageHeight".Fmt(Name)), out profileImageHeight))
+                profileImageHeight = 64;
+
+            this.ProfileImageHeight = Math.Max(profileImageHeight, 16);
 
             Scopes = appSettings.Get("oauth.{0}.Scopes".Fmt(Name), new[] { "basic" });
         }
@@ -132,7 +149,9 @@ namespace ServiceStack.Authentication.OAuth2
             var userPhoto = user.Object("photo");
 
             var fullName = "{0} {1}".Fmt(user["firstName"], user["lastName"]);
-            var photoUrl = userPhoto["prefix"].CombineWith(userPhoto["suffix"]).SanitizeOAuthUrl();
+
+            var photoDimensions = "{0}x{1}".Fmt(ProfileImageWidth, ProfileImageHeight);
+            var photoUrl = userPhoto["prefix"].CombineWith(photoDimensions, userPhoto["suffix"]).SanitizeOAuthUrl();
 
             var authInfo = new Dictionary<string, string>
             {
