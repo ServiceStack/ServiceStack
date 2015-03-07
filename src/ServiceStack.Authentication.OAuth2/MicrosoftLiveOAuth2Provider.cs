@@ -40,7 +40,7 @@ namespace ServiceStack.Authentication.OAuth2
                 var url = this.UserProfileUrl.AddQueryParam("access_token", accessToken);
                 string json = url.GetJsonFromUrl();
                 var obj = JsonObject.Parse(json);
-                var emails = JsonObject.Parse(obj.GetUnescaped("emails"));
+                var emails = obj.Object("emails");
                 var authInfo = new Dictionary<string, string>
             {
                 { "user_id", obj["id"] }, 
