@@ -572,50 +572,6 @@ namespace ServiceStack.NativeTypes.CSharp
 
     public static class CSharpGeneratorExtensions
     {
-        public static string SafeComment(this string comment)
-        {
-            return comment.Replace("\r", "").Replace("\n", "");
-        }
 
-        public static string SafeToken(this string token)
-        {
-            if (token.ContainsAny("\"", " ", "-", "+", "\\", "*", "=", "!"))
-                throw new InvalidDataException("MetaData is potentially malicious. Expected token, Received: {0}".Fmt(token));
-
-            return token;
-        }
-
-        public static string SafeValue(this string value)
-        {
-            if (value.Contains('"'))
-                throw new InvalidDataException("MetaData is potentially malicious. Expected scalar value, Received: {0}".Fmt(value));
-
-            return value;
-        }
-
-        public static string QuotedSafeValue(this string value)
-        {
-            return "\"{0}\"".Fmt(value.SafeValue());
-        }
-
-        public static MetadataAttribute ToMetadataAttribute(this MetadataRoute route)
-        {
-            var attr = new MetadataAttribute
-            {
-                Name = "Route",
-                ConstructorArgs = new List<MetadataPropertyType>
-                {
-                    new MetadataPropertyType { Type = "string", Value = route.Path },
-                },
-            };
-
-            if (route.Verbs != null)
-            {
-                attr.ConstructorArgs.Add(
-                    new MetadataPropertyType { Type = "string", Value = route.Verbs });
-            }
-
-            return attr;
-        }
     }
 }

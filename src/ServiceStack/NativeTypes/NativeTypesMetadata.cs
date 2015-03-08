@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -34,9 +35,11 @@ namespace ServiceStack.NativeTypes
                 InitializeCollections = req.InitializeCollections ?? defaults.InitializeCollections,
                 AddImplicitVersion = req.AddImplicitVersion ?? defaults.AddImplicitVersion,
                 BaseClass = req.BaseClass ?? defaults.BaseClass,
+                Package = req.Package ?? defaults.Package,
                 AddResponseStatus = req.AddResponseStatus ?? defaults.AddResponseStatus,
                 AddServiceStackTypes = req.AddServiceStackTypes ?? defaults.AddServiceStackTypes,
                 AddModelExtensions = req.AddModelExtensions ?? defaults.AddModelExtensions,
+                AddPropertyAccessors = req.AddPropertyAccessors ?? defaults.AddPropertyAccessors,
                 MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
@@ -836,6 +839,52 @@ namespace ServiceStack.NativeTypes
         public static string SanitizeType(this string typeName)
         {
             return typeName != null ? typeName.TrimStart('\'') : null;
+        }
+
+        public static string SafeComment(this string comment)
+        {
+            return comment.Replace("\r", "").Replace("\n", "");
+        }
+
+        public static string SafeToken(this string token)
+        {
+            if (token.ContainsAny("\"", " ", "-", "+", "\\", "*", "=", "!"))
+                throw new InvalidDataException("MetaData is potentially malicious. Expected token, Received: {0}".Fmt(token));
+
+            return token;
+        }
+
+        public static string SafeValue(this string value)
+        {
+            if (value.Contains('"'))
+                throw new InvalidDataException("MetaData is potentially malicious. Expected scalar value, Received: {0}".Fmt(value));
+
+            return value;
+        }
+
+        public static string QuotedSafeValue(this string value)
+        {
+            return "\"{0}\"".Fmt(value.SafeValue());
+        }
+
+        public static MetadataAttribute ToMetadataAttribute(this MetadataRoute route)
+        {
+            var attr = new MetadataAttribute
+            {
+                Name = "Route",
+                ConstructorArgs = new List<MetadataPropertyType>
+                {
+                    new MetadataPropertyType { Type = "string", Value = route.Path },
+                },
+            };
+
+            if (route.Verbs != null)
+            {
+                attr.ConstructorArgs.Add(
+                    new MetadataPropertyType { Type = "string", Value = route.Verbs });
+            }
+
+            return attr;
         }
     }
 }

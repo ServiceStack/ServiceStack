@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ServiceStack.Host;
-using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes.FSharp

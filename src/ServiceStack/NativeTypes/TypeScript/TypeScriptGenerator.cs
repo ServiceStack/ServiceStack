@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
