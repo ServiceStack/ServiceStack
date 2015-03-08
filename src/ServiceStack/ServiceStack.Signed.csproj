@@ -117,6 +117,7 @@
     <Compile Include="Html\Minifiers.js.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="NativeTypes\Java\JavaGenerator.cs" />
     <Compile Include="NativeTypes\Swift\SwiftGenerator.cs" />
     <Compile Include="NativeTypes\TypeScript\TypeScriptGenerator.cs" />
     <Compile Include="NativeTypes\VbNet\VbNetGenerator.cs" />
