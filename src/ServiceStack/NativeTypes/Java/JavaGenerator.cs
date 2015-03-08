@@ -237,8 +237,8 @@ namespace ServiceStack.NativeTypes.Java
                         var delim = i == type.EnumNames.Count - 1 ? ";" : ",";
 
                         sb.AppendLine(value == null
-                            ? "{0}{1}".Fmt(name.PropertyStyle(), delim)
-                            : "{0}({1}){2}".Fmt(name.PropertyStyle(), value, delim));
+                            ? "{0}{1}".Fmt(name.ToPascalCase(), delim)
+                            : "{0}({1}){2}".Fmt(name.ToPascalCase(), value, delim));
 
                         hasIntValue = hasIntValue || value != null;
                     }
