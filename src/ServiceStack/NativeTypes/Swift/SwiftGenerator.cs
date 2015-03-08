@@ -783,13 +783,13 @@ namespace ServiceStack.NativeTypes.Swift
             if (!genericArgs.IsEmpty())
             {
                 if (type == "Nullable`1")
-                    return "{0}?".Fmt(TypeAlias(genericArgs[0].GenericArg()));
+                    return "{0}?".Fmt(TypeAlias(GenericArg(genericArgs[0])));
                 if (ArrayTypes.Contains(type))
-                    return "[{0}]".Fmt(TypeAlias(genericArgs[0].GenericArg()));
+                    return "[{0}]".Fmt(TypeAlias(GenericArg(genericArgs[0])));
                 if (DictionaryTypes.Contains(type))
                     return "[{0}:{1}]".Fmt(
-                        TypeAlias(genericArgs[0].GenericArg()),
-                        TypeAlias(genericArgs[1].GenericArg()));
+                        TypeAlias(GenericArg(genericArgs[0])),
+                        TypeAlias(GenericArg(genericArgs[1])));
 
                 var parts = type.Split('`');
                 if (parts.Length > 1)
@@ -800,7 +800,7 @@ namespace ServiceStack.NativeTypes.Swift
                         if (args.Length > 0)
                             args.Append(", ");
 
-                        args.Append(arg.GenericArg());
+                        args.Append(GenericArg(arg));
                     }
 
                     var typeName = TypeAlias(type);
@@ -924,16 +924,13 @@ namespace ServiceStack.NativeTypes.Swift
 
             return true;
         }
-    }
 
-    public static class SwiftGeneratorExtensions
-    {
-        public static string GenericArg(this string arg)
+        public string GenericArg(string arg)
         {
             return ConvertFromCSharp(arg.TrimStart('\'').ParseTypeIntoNodes());
         }
 
-        public static string ConvertFromCSharp(TextNode node)
+        public string ConvertFromCSharp(TextNode node)
         {
             var sb = new StringBuilder();
 
@@ -953,7 +950,7 @@ namespace ServiceStack.NativeTypes.Swift
             }
             else
             {
-                sb.Append(node.Text);
+                sb.Append(TypeAlias(node.Text));
                 if (node.Children.Count > 0)
                 {
                     sb.Append("<");
@@ -973,7 +970,10 @@ namespace ServiceStack.NativeTypes.Swift
             var typeName = sb.ToString();
             return typeName.SplitOnLast('.').Last(); //remove nested class
         }
+    }
 
+    public static class SwiftGeneratorExtensions
+    {
         public static string InheritedType(this string type)
         {
             var isArray = type.StartsWith("[");
