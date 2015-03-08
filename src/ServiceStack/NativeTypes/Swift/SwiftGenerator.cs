@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Host;
@@ -991,8 +990,8 @@ namespace ServiceStack.NativeTypes.Swift
         public static string PropertyStyle(this string name)
         {
             var propName = name.ToCamelCase(); //Always use Swift conventions for now
-            return SwiftKeyWords.Contains(propName) 
-                ? propName.ToTitleCase() 
+            return SwiftKeyWords.Contains(propName)
+                ? propName.ToPascalCase() 
                 : propName;
 
             //return JsConfig.EmitCamelCaseNames
