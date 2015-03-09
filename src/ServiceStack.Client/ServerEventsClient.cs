@@ -146,6 +146,8 @@ namespace ServiceStack
                 messageTcs = new TaskCompletionSource<ServerEventMessage>();
 
             LastPulseAt = DateTime.UtcNow;
+            if (log.IsDebugEnabled)
+                log.Debug("[SSE-CLIENT] LastPulseAt: " + DateTime.UtcNow.TimeOfDay);
 
             ProcessResponse(stream);
 
@@ -186,7 +188,7 @@ namespace ServiceStack
         protected void OnConnectReceived()
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("OnConnectReceived: {0} on #{1} / {2} on ({3})",
+                log.DebugFormat("[SSE-CLIENT] OnConnectReceived: {0} on #{1} / {2} on ({3})",
                     ConnectionInfo.EventId, ConnectionDisplayName, ConnectionInfo.Id, string.Join(", ", Channels));
 
             StartNewHeartbeat();
@@ -214,6 +216,9 @@ namespace ServiceStack
 
         protected void Heartbeat(object state)
         {
+            if (log.IsDebugEnabled)
+                log.DebugFormat("[SSE-CLIENT] Prep for Heartbeat...");
+
             if (cancel.IsCancellationRequested)
                 return;
 
@@ -320,7 +325,6 @@ namespace ServiceStack
         {
             try
             {
-                Stop();
                 InternalStop();
 
                 if (stopped)
@@ -553,6 +557,9 @@ namespace ServiceStack
         private void ProcessOnHeartbeatMessage(ServerEventMessage e)
         {
             LastPulseAt = DateTime.UtcNow;
+            if (log.IsDebugEnabled)
+                log.Debug("[SSE-CLIENT] LastPulseAt: " + DateTime.UtcNow.TimeOfDay);
+
             var msg = JsonServiceClient.ParseObject(e.Json);
             var heartbeatMsg = new ServerEventHeartbeat().Populate(e, msg);
 
