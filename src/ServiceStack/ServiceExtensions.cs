@@ -4,6 +4,7 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Logging;
 using ServiceStack.Redis;
 using ServiceStack.Testing;
 using ServiceStack.Web;
@@ -12,6 +13,8 @@ namespace ServiceStack
 {
     public static class ServiceExtensions
     {
+        public static ILog Log = LogManager.GetLogger(typeof(ServiceExtensions));
+
         public static IHttpResult Redirect(this IServiceBase service, string url)
         {
             return service.Redirect(url, "Moved Temporarily");
@@ -123,6 +126,7 @@ namespace ServiceStack
 
         [Obsolete("Use SessionFeature.RequestItemsSessionKey")]
         public const string RequestItemsSessionKey = SessionFeature.RequestItemsSessionKey;
+
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
             if (httpReq == null) return null;
@@ -135,12 +139,22 @@ namespace ServiceStack
             if (!reload)
                 httpReq.Items.TryGetValue(SessionFeature.RequestItemsSessionKey, out oSession);
 
-            if (oSession != null)
-                return (IAuthSession)oSession;
+            var sessionId = httpReq.GetSessionId();
+            var cachedSession = oSession as IAuthSession;
+            if (cachedSession != null)
+            {
+                if (sessionId == cachedSession.Id)
+                    return cachedSession;
+
+                if (Log.IsDebugEnabled)
+                {
+                    Log.Debug("ignoring cached sessionId '{0}' which is different to request '{1}'"
+                        .Fmt(cachedSession.Id, sessionId));
+                }
+            }
 
             using (var cache = httpReq.GetCacheClient())
             {
-                var sessionId = httpReq.GetSessionId();
                 var sessionKey = SessionFeature.GetSessionKey(sessionId);
                 var session = (sessionKey != null ? cache.Get<IAuthSession>(sessionKey) : null)
                     ?? SessionFeature.CreateNewSession(httpReq, sessionId);
