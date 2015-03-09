@@ -398,12 +398,17 @@ namespace ServiceStack
                     int pos;
                     while ((pos = text.IndexOf('\n')) >= 0)
                     {
-                        if (text == "\n")
+                        if (pos == 0)
                         {
                             if (currentMsg != null) 
                                 ProcessEventMessage(currentMsg);
                             currentMsg = null;
-                            text = "";
+
+                            text = text.Substring(pos + 1);
+
+                            if (text.Length > 0)
+                                continue;
+                            
                             break;
                         }
 
