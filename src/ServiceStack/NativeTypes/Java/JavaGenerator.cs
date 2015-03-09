@@ -247,7 +247,7 @@ namespace ServiceStack.NativeTypes.Java
                     {
                         sb.AppendLine();
                         sb.AppendLine("private final int value;");
-                        sb.AppendLine("private {0}(final int intValue) {{ value = intValue; }}".Fmt(typeName));
+                        sb.AppendLine("{0}(final int intValue) {{ value = intValue; }}".Fmt(typeName));
                         sb.AppendLine("public int getValue() { return value; }");
                     }
                 }
