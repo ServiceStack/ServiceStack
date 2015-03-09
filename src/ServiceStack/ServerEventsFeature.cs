@@ -163,7 +163,7 @@ namespace ServiceStack
                 .AddQueryParam("id", subscriptionId);
             var unRegisterUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath))
                 .AddQueryParam("id", subscriptionId);
-            var privateArgs = new Dictionary<string, string>(subscription.Meta) {
+            subscription.ConnectArgs = new Dictionary<string, string>(subscription.Meta) {
                 {"id", subscriptionId },
                 {"unRegisterUrl", unRegisterUrl},
                 {"heartbeatUrl", heartbeatUrl},
@@ -172,9 +172,9 @@ namespace ServiceStack
             };
 
             if (feature.OnConnect != null)
-                feature.OnConnect(subscription, privateArgs);
+                feature.OnConnect(subscription, subscription.ConnectArgs);
 
-            serverEvents.Register(subscription, privateArgs);
+            serverEvents.Register(subscription, subscription.ConnectArgs);
 
             var tcs = new TaskCompletionSource<bool>();
 
@@ -406,6 +406,7 @@ namespace ServiceStack
         public bool IsAuthenticated { get; set; }
 
         public Dictionary<string, string> Meta { get; set; }
+        public Dictionary<string, string> ConnectArgs { get; set; }
     }
 
     public class MemoryServerEvents : IServerEvents
