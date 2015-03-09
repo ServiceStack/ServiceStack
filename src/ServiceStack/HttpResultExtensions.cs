@@ -92,7 +92,10 @@ namespace ServiceStack
             response.StatusCode = (int)HttpStatusCode.PartialContent;
             response.SetContentLength(rangeEnd - rangeStart + 1);
         }
-        
+
+        public static int PartialBufferSize = 32 * 1024;
+        [ThreadStatic] private static byte[] PartialBuffer;
+
         /// <summary>
         /// Writes partial range as specified by start-end, from fromStream to toStream.
         /// </summary>
@@ -103,21 +106,23 @@ namespace ServiceStack
                     "Sending Range Responses requires a seekable stream eg. FileStream or MemoryStream");
 
             long totalBytesToSend = end - start + 1;
-            const int bufferSize = 0x1000;
-            var buffer = new byte[bufferSize];
+
+            if (PartialBuffer == null || PartialBufferSize != PartialBuffer.Length)
+                PartialBuffer = new byte[PartialBufferSize];
+
             long bytesRemaining = totalBytesToSend;
 
             fromStream.Seek(start, SeekOrigin.Begin);
             while (bytesRemaining > 0)
             {
-                var count = bytesRemaining <= buffer.Length
-                    ? fromStream.Read(buffer, 0, (int)Math.Min(bytesRemaining, int.MaxValue))
-                    : fromStream.Read(buffer, 0, buffer.Length);
+                var count = bytesRemaining <= PartialBuffer.Length
+                    ? fromStream.Read(PartialBuffer, 0, (int)Math.Min(bytesRemaining, int.MaxValue))
+                    : fromStream.Read(PartialBuffer, 0, PartialBuffer.Length);
 
                 try
                 {
                     //Log.DebugFormat("Writing {0} to response",System.Text.Encoding.UTF8.GetString(buffer));
-                    toStream.Write(buffer, 0, count);
+                    toStream.Write(PartialBuffer, 0, count);
                     toStream.Flush();
                     bytesRemaining -= count;
                 }
