@@ -6,7 +6,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public static class HttpResultExtensions
+    public static class HttpResultUtils
     {
         /// <summary>
         /// Shortcut to get the ResponseDTO whether it's bare or inside a IHttpResult

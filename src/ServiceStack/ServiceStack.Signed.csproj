@@ -191,7 +191,7 @@
     <Compile Include="Host\HttpResponseStreamWrapper.cs" />
     <Compile Include="HttpError.cs" />
     <Compile Include="HttpResult.cs" />
-    <Compile Include="HttpResultExtensions.cs" />
+    <Compile Include="HttpResultUtils.cs" />
     <Compile Include="LocalizedStrings.cs" />
     <Compile Include="RedisErrorLoggerFeature.cs" />
     <Compile Include="RequestLogsFeature.cs" />
