@@ -54,6 +54,7 @@ namespace ServiceStack
         public static int BufferSize = 1024 * 64;
         static int DefaultHeartbeatMs = 10 * 1000;
         static int DefaultIdleTimeoutMs = 30 * 1000;
+        private bool stopped = true;
 
         byte[] buffer;
         Encoding encoding = new UTF8Encoding();
@@ -120,6 +121,7 @@ namespace ServiceStack
             if (log.IsDebugEnabled)
                 log.DebugFormat("Start()");
 
+            stopped = false;
             httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
             httpReq.CookieContainer = ((ServiceClientBase)ServiceClient).CookieContainer; //share auth cookies
             //httpReq.AllowReadStreamBuffering = false; //.NET v4.5
@@ -319,6 +321,11 @@ namespace ServiceStack
             try
             {
                 Stop();
+                InternalStop();
+
+                if (stopped)
+                    return;
+
                 SleepBackOffMultiplier(errorsCount)
                     .ContinueWith(t =>
                     {
@@ -411,6 +418,8 @@ namespace ServiceStack
                 {
                     if (log.IsDebugEnabled)
                         log.DebugFormat("Connection ended on {0}", ConnectionDisplayName);
+
+                    Restart();
                 }
             });
         }
@@ -551,6 +560,12 @@ namespace ServiceStack
         }
 
         public virtual Task Stop()
+        {
+            stopped = true;
+            return InternalStop();
+        }
+
+        public virtual Task InternalStop()
         {
             if (log.IsDebugEnabled)
                 log.DebugFormat("Stop()");
