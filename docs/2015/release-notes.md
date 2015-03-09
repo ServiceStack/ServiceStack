@@ -719,7 +719,7 @@ namespace ServiceModels
 }
 ```
 
-## Integrated HTML, CSS and JavaScript Minfication
+## Integrated HTML, CSS and JavaScript Minification
 
 As part of our quest to provide a complete and productive solution for developing highly responsive Web, Desktop and Mobile Apps, ServiceStack now includes minifiers for compressing HTML, CSS and JavaScript available from the new `Minifiers` class: 
 
