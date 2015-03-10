@@ -104,6 +104,12 @@ namespace ServiceStack
             get { return Config.DebugMode; }
         }
 
+        public static bool TestMode
+        {
+            get { return ServiceStackHost.Instance != null && ServiceStackHost.Instance.TestMode; }
+            set { ServiceStackHost.Instance.TestMode = value; }
+        }
+
         public static List<HttpHandlerResolverDelegate> CatchAllHandlers
         {
             get { return AssertAppHost().CatchAllHandlers; }

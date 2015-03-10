@@ -13,6 +13,7 @@ namespace ServiceStack.Testing
                    serviceAssemblies.Length > 0 ? serviceAssemblies : new[] {Assembly.GetExecutingAssembly()})
         {
             this.ExcludeAutoRegisteringServiceTypes = new HashSet<Type>();
+            this.TestMode = true;
         }
 
         public override void Configure(Container container)
