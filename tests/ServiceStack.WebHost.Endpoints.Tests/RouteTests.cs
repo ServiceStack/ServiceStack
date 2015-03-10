@@ -115,6 +115,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Id, Is.EqualTo("id"));
             Assert.That(response.Data, Is.EqualTo("data"));
         }
+
+        [Test]
+        public void Can_download_route_with_dot_seperator_and_extension()
+        {
+            var response = Config.AbsoluteBaseUri.CombineWith("/pics/100x100/1.png")
+                .GetJsonFromUrl()
+                .FromJson<GetPngPic>();
+
+            Assert.That(response.Size, Is.EqualTo("100x100"));
+            Assert.That(response.Id, Is.EqualTo("1"));
+        }
     }
 
     public class RouteAppHost : AppHostHttpListenerBase
@@ -146,6 +157,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Data { get; set; }
     }
 
+    [Route("/pics/{Size}/{Id}.png", "GET")]
+    public class GetPngPic
+    {
+        public string Id { get; set; }
+
+        public string Size { get; set; }
+    }
+
     public class CustomRouteService : IService
     {
         public object Any(CustomRoute request)
@@ -154,6 +173,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         public object Any(CustomRouteDot request)
+        {
+            return request;
+        }
+
+        public object Any(GetPngPic request)
         {
             return request;
         }
