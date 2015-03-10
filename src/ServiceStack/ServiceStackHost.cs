@@ -41,6 +41,8 @@ namespace ServiceStack
         public DateTime StartedAt { get; set; }
         public DateTime? AfterInitAt { get; set; }
         public DateTime? ReadyAt { get; set; }
+        public bool TestMode { get; set; }
+
         public bool HasStarted
         {
             get { return ReadyAt != null; }
@@ -445,6 +447,9 @@ namespace ServiceStack
             pluginsLoaded = true;
 
             AfterPluginsLoaded(specifiedContentType);
+
+            if (!TestMode && Container.Exists<IAuthSession>())
+                throw new Exception(ErrorMessages.ShouldNotRegisterAuthSession);
 
             if (!Container.Exists<IAppSettings>())
                 Container.Register(AppSettings);

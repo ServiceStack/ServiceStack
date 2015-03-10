@@ -21,6 +21,7 @@
         public static string InvalidUsernameOrPassword = "Invalid UserName or Password";
         public static string UsernameOrEmailRequired = "UserName or Email is required";
         public static string IllegalUsername = "UserName contains invalid characters";
+        public static string ShouldNotRegisterAuthSession = "AuthSession's are rehydrated from ICacheClient and should not be registered in IOC's when not in HostContext.TestMode";
 
         public static string InvalidRole = "Invalid Role";
         public static string InvalidPermission = "Invalid Permission";
