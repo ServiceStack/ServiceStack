@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace ServiceStack.Auth
@@ -93,5 +94,16 @@ namespace ServiceStack.Auth
             }
         }
 
+        public static void PopulateSession(this IAuthSession session, IUserAuth userAuth, List<IAuthTokens> authTokens)
+        {
+            if (userAuth == null)
+                return;
+
+            var originalId = session.Id;
+            session.PopulateWith(userAuth);
+            session.Id = originalId;
+            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+            session.ProviderOAuthAccess = authTokens;
+        }
     }
 }

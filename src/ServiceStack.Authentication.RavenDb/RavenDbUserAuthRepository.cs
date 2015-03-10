@@ -249,16 +249,8 @@ namespace ServiceStack.Authentication.RavenDb
 
         private void LoadUserAuth(IAuthSession session, TUserAuth userAuth)
         {
-            if (userAuth == null) return;
-
-            var idSesije = session.Id;  //first record session Id (original session Id)
-            session.PopulateWith(userAuth); //here, original sessionId is overwritten with facebook user Id
-            session.Id = idSesije;  //we return Id of original session here
-
-            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-            session.ProviderOAuthAccess = GetUserAuthDetails(session.UserAuthId)
-                .ConvertAll(x => (IAuthTokens)x);
-
+            session.PopulateSession(userAuth,
+                GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
         }
 
         public IUserAuth GetUserAuth(string userAuthId)

@@ -281,12 +281,8 @@ namespace ServiceStack.Authentication.MongoDb
 
         private void LoadUserAuth(IAuthSession session, IUserAuth userAuth)
         {
-            if (userAuth == null) return;
-
-            session.PopulateWith(userAuth);
-            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-            session.ProviderOAuthAccess = GetUserAuthDetails(session.UserAuthId)
-                .ConvertAll(x => (IAuthTokens)x);
+            session.PopulateSession(userAuth,
+                GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
         }
 
         public IUserAuth GetUserAuth(string userAuthId)

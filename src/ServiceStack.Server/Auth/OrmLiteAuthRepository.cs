@@ -285,18 +285,8 @@ namespace ServiceStack.Auth
 
         private void LoadUserAuth(IAuthSession session, IUserAuth userAuth)
         {
-            if (userAuth == null)
-            {
-                return;
-            }
-
-            var originalId = session.Id; //first record session Id (original session Id)
-            session.PopulateWith(userAuth); //here, original sessionId is overwritten with facebook user Id
-            session.Id = originalId; //we return Id of original session here
-
-            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-            session.ProviderOAuthAccess = GetUserAuthDetails(session.UserAuthId)
-                .ConvertAll(x => (IAuthTokens)x);
+            session.PopulateSession(userAuth,
+                GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
         }
 
         public IUserAuth GetUserAuth(string userAuthId)

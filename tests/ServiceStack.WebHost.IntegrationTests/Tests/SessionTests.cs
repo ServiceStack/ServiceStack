@@ -27,6 +27,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         {
             using (new BasicAppHost().Init())
             {
+                SessionFeature.VerifyCachedSessionId = false;
+
                 HttpContext.Current = new HttpContext(
                     new HttpRequest(null, "http://example.com", null),
                     new HttpResponse(new StringWriter()));
@@ -39,6 +41,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
                 var httpReq = HttpContext.Current.ToRequest();
                 var session = httpReq.GetSession();
+
+                SessionFeature.VerifyCachedSessionId = true;
 
                 Assert.That(session, Is.Not.Null);
                 Assert.That(session.Id, Is.EqualTo("mock-session-id"));
