@@ -324,7 +324,7 @@ namespace ServiceStack
             return Uri.EscapeDataString(valueString);
         };
 
-        private const char PathSeparatorChar = '/';
+        private static char[] PathSeparatorChars = new[] { '/', '.' };
         private const string VariablePrefix = "{";
         private const char VariablePrefixChar = '{';
         private const string VariablePostfix = "}";
@@ -500,7 +500,7 @@ namespace ServiceStack
 
         private IEnumerable<string> GetUrlVariables(string path)
         {
-            var components = path.Split(PathSeparatorChar);
+            var components = path.Split(PathSeparatorChars);
             foreach (var component in components)
             {
                 if (string.IsNullOrEmpty(component))

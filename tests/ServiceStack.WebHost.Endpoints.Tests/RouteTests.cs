@@ -126,6 +126,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Size, Is.EqualTo("100x100"));
             Assert.That(response.Id, Is.EqualTo("1"));
         }
+
+        [Test]
+        public void Can_download_route_with_dot_seperator_and_extension_with_jsonserviceclient()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var request = new GetPngPic {
+                Id = "1",
+                Size = "100x100",
+            };
+
+            Assert.That(request.ToGetUrl(), Is.EqualTo("/pics/100x100/1.png"));
+
+            var response = client.Get<GetPngPic>(request);
+
+            Assert.That(response.Size, Is.EqualTo("100x100"));
+            Assert.That(response.Id, Is.EqualTo("1"));
+        }
     }
 
     public class RouteAppHost : AppHostHttpListenerBase
@@ -261,7 +278,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class InvalidRouteTests
     {
-        public class UnknownRoute {}
+        public class UnknownRoute { }
 
         class InvalidRoutesAppHost : AppSelfHostBase
         {
