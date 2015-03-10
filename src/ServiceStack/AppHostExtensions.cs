@@ -39,7 +39,7 @@ namespace ServiceStack
                         var plugin = pluginType.CreateInstance() as IPlugin;
 						if (plugin != null)
 						{
-                            ssHost.AddPlugin(plugin);
+                            ssHost.LoadPlugin(plugin);
 						}
 					}
 					catch (Exception ex)

@@ -443,7 +443,7 @@ namespace ServiceStack
 
             var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 
-            LoadPlugin(Plugins.ToArray());
+            LoadPluginsInternal(Plugins.ToArray());
             pluginsLoaded = true;
 
             AfterPluginsLoaded(specifiedContentType);
@@ -538,22 +538,6 @@ namespace ServiceStack
             }
 
             ServiceController.AfterInit();
-        }
-
-        private bool pluginsLoaded;
-        public void AddPlugin(params IPlugin[] plugins)
-        {
-            if (pluginsLoaded)
-            {
-                LoadPlugin(plugins);
-            }
-            else
-            {
-                foreach (var plugin in plugins)
-                {
-                    Plugins.Add(plugin);
-                }
-            }
         }
 
         public virtual void Release(object instance)
@@ -651,7 +635,24 @@ namespace ServiceStack
                 ?? ResolveVirtualDirectory(virtualPath, httpReq);
         }
 
-        public virtual void LoadPlugin(params IPlugin[] plugins)
+        private bool pluginsLoaded;
+        public void LoadPlugin(params IPlugin[] plugins)
+        {
+            if (pluginsLoaded)
+            {
+                LoadPluginsInternal(plugins);
+                Plugins.AddRange(plugins);
+            }
+            else
+            {
+                foreach (var plugin in plugins)
+                {
+                    Plugins.Add(plugin);
+                }
+            }
+        }
+
+        internal virtual void LoadPluginsInternal(params IPlugin[] plugins)
         {
             foreach (var plugin in plugins)
             {
