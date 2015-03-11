@@ -445,8 +445,13 @@ namespace Funq
                         if (Adapter != null
                             && (typeof(TService) != typeof(IRequest)))
                         {
+                            //Container.Exists<> needs to return null if no dependency exists
+                            var instance = Adapter.TryResolve<TService>();
+                            if (instance == null)
+                                return null;
+
                             return new ServiceEntry<TService, TFunc>(
-                                (TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>()))
+                                (TFunc)(object)(Func<Container, TService>)(c => instance))
                             {
                                 Owner = DefaultOwner,
                                 Container = this,
