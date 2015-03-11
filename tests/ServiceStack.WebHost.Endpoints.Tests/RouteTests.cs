@@ -53,6 +53,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_process_plaintext_as_JSON()
+        {
+            var response = Config.AbsoluteBaseUri.CombineWith("/custom")
+                .PostStringToUrl("{\"data\":\"foo\"}", 
+                    contentType:MimeTypes.PlainText,
+                    responseFilter: httpRes => 
+                    {
+                        httpRes.ContentType.Print();
+                        Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
+                    });
+
+            Assert.That(response.ToLower(), Is.EqualTo("{\"data\":\"foo\"}"));
+        }
+
+        [Test]
         public void Can_download_original_route_with_xml_extension()
         {
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.xml")
@@ -157,6 +172,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
 
             Plugins.Add(new CsvFormat()); //required to allow .csv
+
+            Plugins.RemoveAll(x => x is MarkdownFormat);
+
+            ContentTypes.Register(MimeTypes.PlainText,
+                (req, o, stream) => JsonSerializer.SerializeToStream(o.GetType(), stream),
+                JsonSerializer.DeserializeFromStream);
+
+            PreRequestFilters.Add((req, res) => {
+                if (req.ContentType.MatchesContentType(MimeTypes.PlainText))
+                    req.ResponseContentType = MimeTypes.Json;
+            });
         }
     }
 
