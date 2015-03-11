@@ -443,8 +443,9 @@ namespace ServiceStack
 
             var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 
-            LoadPluginsInternal(Plugins.ToArray());
-            pluginsLoaded = true;
+            var plugins = Plugins.ToArray();
+            delayLoadPlugin = true;
+            LoadPluginsInternal(plugins);
 
             AfterPluginsLoaded(specifiedContentType);
 
@@ -635,10 +636,10 @@ namespace ServiceStack
                 ?? ResolveVirtualDirectory(virtualPath, httpReq);
         }
 
-        private bool pluginsLoaded;
+        private bool delayLoadPlugin;
         public void LoadPlugin(params IPlugin[] plugins)
         {
-            if (pluginsLoaded)
+            if (delayLoadPlugin)
             {
                 LoadPluginsInternal(plugins);
                 Plugins.AddRange(plugins);

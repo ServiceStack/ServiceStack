@@ -103,7 +103,7 @@ namespace ServiceStack
                 appHost.RegisterService(registerService.Key, registerService.Value);
             }
 
-            RegisterPlugins.ForEach(x => appHost.LoadPlugin(x));
+            appHost.LoadPlugin(RegisterPlugins.ToArray());
 
             if (IncludeAuthMetadataProvider && appHost.TryResolve<IAuthMetadataProvider>() == null)
                 appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
