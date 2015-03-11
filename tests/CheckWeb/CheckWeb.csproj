@@ -102,7 +102,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="default.cshtml" />
+    <Content Include="default-rename.cshtml" />
     <Content Include="HttpBenchmarks.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>HttpBenchmarks.cs</LastGenOutput>
@@ -121,6 +121,7 @@
     </Content>
     <Content Include="TestMinifier.cshtml" />
     <Content Include="TestMinifier.html" />
+    <Content Include="default.html" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

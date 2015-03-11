@@ -7,6 +7,15 @@ namespace ServiceStack.VirtualPath
     public class FileSystemVirtualFile : AbstractVirtualFileBase
     {
         protected FileInfo BackingFile;
+
+        public FileInfo Refresh()
+        {
+            try {
+                BackingFile.Refresh();
+            }
+            catch {}
+            return BackingFile;
+        }
         
         public override string Name
         {
@@ -20,12 +29,12 @@ namespace ServiceStack.VirtualPath
 
         public override DateTime LastModified
         {
-            get { return BackingFile.LastWriteTime; }
+            get { return Refresh().LastWriteTime; }
         }
 
         public override long Length
         {
-            get { return BackingFile.Length; }
+            get { return Refresh().Length; }
         }
 
         public FileSystemVirtualFile(IVirtualPathProvider owningProvider, IVirtualDirectory directory, FileInfo fInfo) 
