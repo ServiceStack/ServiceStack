@@ -134,6 +134,8 @@ namespace ServiceStack.Host.Handlers
                     }
                 }
 
+                file.Refresh(); //refresh FileInfo, DateModified, Length
+
                 TimeSpan maxAge;
                 if (r.ContentType != null && HostContext.Config.AddMaxAgeForStaticMimeTypes.TryGetValue(r.ContentType, out maxAge))
                 {

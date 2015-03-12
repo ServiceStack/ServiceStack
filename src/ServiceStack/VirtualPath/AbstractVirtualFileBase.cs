@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using ServiceStack.IO;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.VirtualPath
 {
@@ -97,6 +98,10 @@ namespace ServiceStack.VirtualPath
         {
             return string.Format("{0} -> {1}", RealPath, VirtualPath);
         }
+
+        public virtual void Refresh()
+        {            
+        }
     }
 }
 
@@ -116,6 +121,19 @@ namespace ServiceStack
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// Refresh file stats for this node if supported
+        /// </summary>
+        public static IVirtualFile Refresh(this IVirtualFile node)
+        {
+            var file = node as AbstractVirtualFileBase;
+            if (file != null)
+            {
+                file.Refresh();
+            }
+            return node;
         }
     }
     

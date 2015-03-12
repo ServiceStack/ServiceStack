@@ -37,7 +37,7 @@ namespace ServiceStack.VirtualPath
 
         public virtual IVirtualFile GetFile(string virtualPath)
         {
-            return RootDirectory.GetFile(virtualPath);
+            return RootDirectory.GetFile(virtualPath).Refresh();
         }
 
         public virtual string GetFileHash(string virtualPath)

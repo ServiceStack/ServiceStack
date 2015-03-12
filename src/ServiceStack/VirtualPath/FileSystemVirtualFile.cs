@@ -7,15 +7,6 @@ namespace ServiceStack.VirtualPath
     public class FileSystemVirtualFile : AbstractVirtualFileBase
     {
         protected FileInfo BackingFile;
-
-        public FileInfo Refresh()
-        {
-            try {
-                BackingFile.Refresh();
-            }
-            catch {}
-            return BackingFile;
-        }
         
         public override string Name
         {
@@ -29,12 +20,12 @@ namespace ServiceStack.VirtualPath
 
         public override DateTime LastModified
         {
-            get { return Refresh().LastWriteTime; }
+            get { return BackingFile.LastWriteTime; }
         }
 
         public override long Length
         {
-            get { return Refresh().Length; }
+            get { return BackingFile.Length; }
         }
 
         public FileSystemVirtualFile(IVirtualPathProvider owningProvider, IVirtualDirectory directory, FileInfo fInfo) 
@@ -49,6 +40,11 @@ namespace ServiceStack.VirtualPath
         public override Stream OpenRead()
         {
             return BackingFile.OpenRead();
+        }
+
+        public override void Refresh()
+        {
+            BackingFile.Refresh();
         }
     }
 }
