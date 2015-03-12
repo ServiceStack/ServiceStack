@@ -242,25 +242,76 @@ namespace ServiceStack
 
     public class AutoQueryViewerConfig
     {
+        /// <summary>
+        /// The BaseUrl of the ServiceStack instance (inferred)
+        /// </summary>
         public string ServiceBaseUrl { get; set; }
+        /// <summary>
+        /// Name of the ServiceStack Instance (inferred)
+        /// </summary>
         public string ServiceName { get; set; }
+        /// <summary>
+        /// Textual description of the AutoQuery Services (shown in Home Services list)
+        /// </summary>
         public string ServiceDescription { get; set; }
+        /// <summary>
+        /// Icon for this ServiceStack Instance (shown in Home Services list)
+        /// </summary>
         public string ServiceIconUrl { get; set; }
 
-        public bool IsPublic { get; set; } // Allow listing on AutoQueryViewer's public registry
+        /// <summary>
+        /// Whether to publish this Service to the public Services registry
+        /// </summary>
+        public bool IsPublic { get; set; }
+        /// <summary>
+        /// Only show AutoQuery Services attributed with [AutoQueryViewer]
+        /// </summary>
         public bool OnlyShowAnnotatedServices { get; set; }
+        /// <summary>
+        /// List of different Search Filters available
+        /// </summary>
         public List<Property> ImplicitConventions { get; set; }
 
+        /// <summary>
+        /// The Column which should be selected by default
+        /// </summary>
         public string DefaultSearchField { get; set; }
+        /// <summary>
+        /// The Query Type filter which should be selected by default
+        /// </summary>
         public string DefaultSearchType { get; set; }
+        /// <summary>
+        /// The search text which should be populated by default
+        /// </summary>
         public string DefaultSearchText { get; set; }
 
+        /// <summary>
+        /// Link to your website users can click to find out more about you
+        /// </summary>
         public string BrandUrl { get; set; }
+        /// <summary>
+        /// A custom logo or image that users can click on to visit your site
+        /// </summary>
         public string BrandImageUrl { get; set; }
+        /// <summary>
+        /// The default color of text
+        /// </summary>
         public string TextColor { get; set; }
+        /// <summary>
+        /// The default color of links
+        /// </summary>
         public string LinkColor { get; set; }
+        /// <summary>
+        /// The default background color of each screen
+        /// </summary>
         public string BackgroundColor { get; set; }
+        /// <summary>
+        /// The default background image of each screen anchored to the bottom left
+        /// </summary>
         public string BackgroundImageUrl { get; set; }
+        /// <summary>
+        /// The default icon for each of your AutoQuery Services
+        /// </summary>
         public string IconUrl { get; set; }
     }
 
