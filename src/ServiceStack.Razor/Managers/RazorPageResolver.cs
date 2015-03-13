@@ -206,7 +206,7 @@ namespace ServiceStack.Razor.Managers
                 {
                     pageInstance.WriteTo(childWriter);
                 }
-                catch (StopExecutionException ignore) { }
+                catch (StopExecutionException) { }
 
                 if (httpRes.IsClosed)
                     return null;
