@@ -256,9 +256,9 @@ namespace ServiceStack.Redis
         long GetSortedSetCount(string setId, double fromScore, double toScore);
         double GetItemScoreInSortedSet(string setId, string value);
         long StoreIntersectFromSortedSets(string intoSetId, params string[] setIds);
-	long StoreIntersectFromSortedSets(string intoSetId, string[] setIds, string[] args);
+        long StoreIntersectFromSortedSets(string intoSetId, string[] setIds, string[] args);
         long StoreUnionFromSortedSets(string intoSetId, params string[] setIds);
-	long StoreUnionFromSortedSets(string intoSetId, string[] setIds, string[] args);
+        long StoreUnionFromSortedSets(string intoSetId, string[] setIds, string[] args);
         List<string> SearchSortedSet(string setId, string start = null, string end = null, int? skip = null, int? take = null);
         long SearchSortedSetCount(string setId, string start = null, string end = null);
         long RemoveRangeFromSortedSetBySearch(string setId, string start = null, string end = null);

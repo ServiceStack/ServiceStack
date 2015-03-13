@@ -162,9 +162,9 @@ namespace ServiceStack.Redis.Generic
         long GetSortedSetCount(IRedisSortedSet<T> set);
         double GetItemScoreInSortedSet(IRedisSortedSet<T> set, T value);
         long StoreIntersectFromSortedSets(IRedisSortedSet<T> intoSetId, params IRedisSortedSet<T>[] setIds);
-	long StoreIntersectFromSortedSets(IRedisSortedSet<T> intoSetId, IRedisSortedSet<T>[] setIds, string[] args);
+        long StoreIntersectFromSortedSets(IRedisSortedSet<T> intoSetId, IRedisSortedSet<T>[] setIds, string[] args);
         long StoreUnionFromSortedSets(IRedisSortedSet<T> intoSetId, params IRedisSortedSet<T>[] setIds);
-	long StoreUnionFromSortedSets(IRedisSortedSet<T> intoSetId, IRedisSortedSet<T>[] setIds, string[] args);
+        long StoreUnionFromSortedSets(IRedisSortedSet<T> intoSetId, IRedisSortedSet<T>[] setIds, string[] args);
 
         //Hash operations
         bool HashContainsEntry<TKey>(IRedisHash<TKey, T> hash, TKey key);
