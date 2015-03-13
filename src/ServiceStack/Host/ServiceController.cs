@@ -409,7 +409,10 @@ namespace ServiceStack.Host
                 object response = null;
                 try
                 {
-                    requestDto = request.Dto = appHost.OnPreExecuteServiceFilter(service, requestDto, request, request.Response);
+                    requestDto = appHost.OnPreExecuteServiceFilter(service, requestDto, request, request.Response);
+
+                    if (request.Dto == null) // Don't override existing batched DTO[]
+                        request.Dto = requestDto; 
 
                     //Executes the service and returns the result
                     response = serviceExec(request, requestDto);
@@ -560,9 +563,21 @@ namespace ServiceStack.Host
                     var elType = requestType.GetElementType();
                     if (requestExecMap.TryGetValue(elType, out handlerFn))
                     {
-                        return (req, dtos) => 
-                            from object dto in (IEnumerable)dtos 
-                            select handlerFn(req, dto);
+                        return (req, dtos) =>
+                        {
+                            var ret = new List<object>();
+                            foreach (var dto in (IEnumerable)dtos)
+                            {
+                                var response = handlerFn(req, dto);
+                                ret.Add(response);
+                            }
+
+                            var isAsyncResponse = ret.Count > 0 && ret[0] is Task;
+
+                            return !isAsyncResponse
+                                ? (object) ret
+                                : Task.Factory.ContinueWhenAll(ret.Cast<Task>().ToArray(), r => r);
+                        };
                     }
                 }
 

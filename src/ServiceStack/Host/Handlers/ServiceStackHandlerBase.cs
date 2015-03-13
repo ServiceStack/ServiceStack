@@ -68,7 +68,18 @@ namespace ServiceStack.Host.Handlers
                             if (task.IsCompleted)
                             {
                                 var taskResult = task.GetResult();
-                                return callback(taskResult);
+
+                                var taskResults = taskResult as Task[];
+                                
+                                if (taskResults == null)
+                                    return callback(taskResult);
+
+                                var batchedResponses = new object[taskResults.Length];
+                                for (var i = 0; i < taskResults.Length; i++)
+                                {
+                                    batchedResponses[i] = taskResults[i].GetResult();
+                                }
+                                return callback(batchedResponses);
                             }
 
                             return errorCallback(new InvalidOperationException("Unknown Task state"));

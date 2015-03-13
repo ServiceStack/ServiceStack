@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static void AssertSingleDto(object dto)
         {
-            if (!(dto is HelloAll || dto is HelloGet || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
+            if (!(dto is HelloAll || dto is HelloAllAsync || dto is HelloGet || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
                 throw new Exception("Invalid " + dto.GetType().Name);
         }
     }
@@ -81,6 +81,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     public class HelloAll : IReturn<HelloAllResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class HelloAllAsync : IReturn<HelloAllResponse>
     {
         public string Name { get; set; }
     }
@@ -128,6 +133,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(HelloAll request)
         {
             return new HelloAllResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+
+        [ReplyAllRequest]
+        [ReplyAllResponse]
+        public object Any(HelloAllAsync request)
+        {
+            return Task.FromResult(new HelloAllResponse { Result = "Hello, {0}!".Fmt(request.Name) });
         }
 
         public object Get(HelloGet request)
@@ -215,6 +227,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async Task Can_send_single_HelloAllAsync_request()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var request = new HelloAllAsync { Name = "Foo" };
+            var response = await client.SendAsync(request);
+            Assert.That(response.Result, Is.EqualTo("Hello, Foo!"));
+        }
+
+        [Test]
         public void Can_send_multi_reply_HelloAll_requests()
         {
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
@@ -227,6 +249,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var responses = client.SendAll(requests);
+            responses.PrintDump();
+
+            var results = responses.Map(x => x.Result);
+
+            Assert.That(results, Is.EquivalentTo(new[] {
+                "Hello, Foo!", "Hello, Bar!", "Hello, Baz!"
+            }));
+        }
+
+        [Test]
+        public async Task Can_send_multi_reply_HelloAllAsync_requests()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var requests = new[]
+            {
+                new HelloAllAsync { Name = "Foo" },
+                new HelloAllAsync { Name = "Bar" },
+                new HelloAllAsync { Name = "Baz" },
+            };
+
+            var responses = await client.SendAllAsync(requests);
             responses.PrintDump();
 
             var results = responses.Map(x => x.Result);
