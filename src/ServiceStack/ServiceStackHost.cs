@@ -684,6 +684,16 @@ namespace ServiceStack
             return ServiceController.Execute(requestDto, new BasicRequest(requestDto, requestAttributes));
         }
 
+        public virtual object ExecuteMessage(IMessage mqMessage)
+        {
+            return ServiceController.ExecuteMessage(mqMessage, new BasicRequest(mqMessage));
+        }
+
+        public virtual object ExecuteMessage(IMessage dto, IRequest req)
+        {
+            return ServiceController.ExecuteMessage(dto, req);
+        }
+
         public virtual void RegisterService(Type serviceType, params string[] atRestPaths)
         {
             ServiceController.RegisterService(serviceType);
