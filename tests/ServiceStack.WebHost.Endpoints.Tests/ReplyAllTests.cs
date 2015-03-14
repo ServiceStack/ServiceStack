@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -41,7 +42,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static void AssertSingleDto(object dto)
         {
-            if (!(dto is HelloAll || dto is HelloAllAsync || dto is HelloGet || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
+            if (!(dto is NoRepeat || dto is HelloAll || dto is HelloAllAsync || dto is HelloGet || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
                 throw new Exception("Invalid " + dto.GetType().Name);
         }
     }
@@ -55,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static void AssertSingleDto(object dto)
         {
-            if (!(dto == null || dto is HelloAllResponse || dto is HelloAllCustomResponse
+            if (!(dto == null || dto is NoRepeatResponse || dto is HelloAllResponse || dto is HelloAllCustomResponse
                || dto is HelloAllTransactionResponse || dto is IHttpResult))
                 throw new Exception("Invalid " + dto.GetType().Name);
         }
@@ -128,10 +129,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class ReplyAllService : Service
     {
+        public static int TimesExecuted = 0;
+
         [ReplyAllRequest]
         [ReplyAllResponse]
         public object Any(HelloAll request)
         {
+            TimesExecuted++;
             return new HelloAllResponse { Result = "Hello, {0}!".Fmt(request.Name) };
         }
 
@@ -197,6 +201,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class NoRepeat : IReturn<NoRepeatResponse>
+    {
+        public Guid Id { get; set; }
+    }
+
+    public class NoRepeatResponse
+    {
+        public Guid Id { get; set; }
+    }
+
+    public class BatchService : IService
+    {
+        private static readonly HashSet<Guid> ReceivedGuids = new HashSet<Guid>();
+
+        public NoRepeatResponse Any(NoRepeat request)
+        {
+            if (ReceivedGuids.Contains(request.Id))
+                throw new ArgumentException("Id {0} already received".Fmt(request.Id));
+
+            ReceivedGuids.Add(request.Id);
+
+            return new NoRepeatResponse
+            {
+                Id = request.Id
+            };
+        }
+    }
+
     [TestFixture]
     public class ReplyAllTests
     {
@@ -239,6 +271,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_send_multi_reply_HelloAll_requests()
         {
+            ReplyAllService.TimesExecuted = 0;
+
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
 
             var requests = new[]
@@ -256,6 +290,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(results, Is.EquivalentTo(new[] {
                 "Hello, Foo!", "Hello, Bar!", "Hello, Baz!"
             }));
+
+            Assert.That(ReplyAllService.TimesExecuted, Is.EqualTo(requests.Length));
         }
 
         [Test]
@@ -469,5 +505,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 }));
             }
         }
+
+        [Test]
+        public void Does_not_repeat()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var batch = new[] { new NoRepeat { Id = Guid.NewGuid() }, new NoRepeat { Id = Guid.NewGuid() } };
+
+            var results = client.SendAll(batch);
+            var guids = results.Select(r => r.Id);
+            Assert.IsTrue(guids.SequenceEqual(batch.Select(b => b.Id)));
+        }
     }
+
 }
