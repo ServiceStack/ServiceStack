@@ -574,9 +574,11 @@ namespace ServiceStack.Host
 
                             var isAsyncResponse = ret.Count > 0 && ret[0] is Task;
 
-                            return !isAsyncResponse
-                                ? (object) ret
-                                : Task.Factory.ContinueWhenAll(ret.Cast<Task>().ToArray(), r => r);
+                            if (!isAsyncResponse)
+                                return ret;
+
+                            var tasks = ret.Cast<Task>().ToArray();
+                            return tasks.EachAsync((task, i) => task).ContinueWith(x => tasks);
                         };
                     }
                 }
