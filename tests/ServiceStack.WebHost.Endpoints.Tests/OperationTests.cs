@@ -81,7 +81,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             operationControl.Render(new HtmlTextWriter(stringWriter));
 
             string html = stringWriter.ToString();
-            Assert.That(html, Is.StringContaining("<a href=\"metadata\">&lt;back to all web services</a>"));
+            Assert.That(html, Is.StringContaining("<a href=\"http://localhost/metadata\">&lt;back to all web services</a>"));
         }
 
         [Test]

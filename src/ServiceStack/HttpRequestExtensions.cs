@@ -708,7 +708,7 @@ namespace ServiceStack
 
         public static string InferBaseUrl(this string absoluteUri, string fromPathInfo = null)
         {
-            if (fromPathInfo == null)
+            if (string.IsNullOrEmpty(fromPathInfo))
                 fromPathInfo = "/" + (HostContext.Config.HandlerFactoryPath ?? "");
 
             if (string.IsNullOrEmpty(absoluteUri))
