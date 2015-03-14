@@ -565,20 +565,33 @@ namespace ServiceStack.Host
                     {
                         return (req, dtos) =>
                         {
-                            var ret = new List<object>();
-                            foreach (var dto in (IEnumerable)dtos)
-                            {
-                                var response = handlerFn(req, dto);
-                                ret.Add(response);
-                            }
-
-                            var isAsyncResponse = ret.Count > 0 && ret[0] is Task;
-
-                            if (!isAsyncResponse)
+                            var dtosList = ((IEnumerable)dtos).Map(x => x);
+                            var ret = new object[dtosList.Count];
+                            if (ret.Length == 0)
                                 return ret;
 
-                            var tasks = ret.Cast<Task>().ToArray();
-                            return tasks.EachAsync((task, i) => task).ContinueWith(x => tasks);
+                            var firstDto = dtosList[0];
+
+                            var firstResponse = handlerFn(req, firstDto);
+                            var asyncResponse = firstResponse as Task;
+
+                            if (asyncResponse == null)
+                            {
+                                ret[0] = firstResponse;
+                                for (var i = 1; i < dtosList.Count; i++)
+                                {
+                                    var dto = dtosList[i];
+                                    var response = handlerFn(req, dto);
+                                    ret[i] = response;
+                                }
+                                return ret;
+                            }
+
+                            var asyncResponses = new Task[dtosList.Count];
+
+                            return dtosList.EachAsync((dto, i) =>  
+                                asyncResponses[i] = i == 0 ? asyncResponse : (Task)handlerFn(req, dto))
+                                .ContinueWith(x => asyncResponses);
                         };
                     }
                 }
