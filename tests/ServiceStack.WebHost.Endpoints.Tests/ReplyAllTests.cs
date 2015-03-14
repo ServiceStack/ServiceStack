@@ -509,6 +509,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_not_repeat()
         {
+            //var client = new JsonServiceClient("http://localhost:55799/");
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
             var batch = new[] { new NoRepeat { Id = Guid.NewGuid() }, new NoRepeat { Id = Guid.NewGuid() } };
 
