@@ -103,7 +103,10 @@ namespace ServiceStack.WebHost.IntegrationTests
                 Plugins.Add(new RequestLogsFeature {
                     RequestLogger = new RedisRequestLogger(container.Resolve<IRedisClientsManager>())
                 });
-                Plugins.Add(new SwaggerFeature { UseBootstrapTheme = true });
+                Plugins.Add(new SwaggerFeature
+                    {
+                        //UseBootstrapTheme = true
+                    });
                 Plugins.Add(new PostmanFeature());
                 Plugins.Add(new CorsFeature());
 
