@@ -407,8 +407,8 @@ namespace ServiceStack.Auth
             if (referrerUrl.IsNullOrEmpty()
                 || referrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
                 referrerUrl = this.RedirectUrl
-                    ?? HttpHandlerFactory.GetBaseUrl()
-                    ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1, StringComparison.Ordinal));
+                    ?? authService.Request.GetBaseUrl()
+                    ?? requestUri.InferBaseUrl();
 
             return referrerUrl;
         }

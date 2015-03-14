@@ -706,22 +706,27 @@ namespace ServiceStack
             return url;
         }
 
+        public static string InferBaseUrl(this string absoluteUri, string fromPathInfo = null)
+        {
+            if (fromPathInfo == null)
+                fromPathInfo = "/" + (HostContext.Config.HandlerFactoryPath ?? "");
+
+            if (string.IsNullOrEmpty(absoluteUri))
+                return null;
+
+            var pos = absoluteUri.IndexOf(fromPathInfo, "https://".Length + 1, StringComparison.Ordinal);
+            return pos >= 0 ? absoluteUri.Substring(0, pos) : absoluteUri;
+        }
+
         public static string GetBaseUrl(this IRequest httpReq)
         {
             var baseUrl = HttpHandlerFactory.GetBaseUrl();
-            if (baseUrl != null) return baseUrl;
+            if (baseUrl != null) 
+                return baseUrl.NormalizeScheme();
 
-            var pathInfo = httpReq.PathInfo;
-            if (pathInfo != null)
-            {
-                var absoluteUri = httpReq.AbsoluteUri;
-                var pos = absoluteUri.IndexOf(pathInfo, StringComparison.OrdinalIgnoreCase);
-                if (pos >= 0)
-                {
-                    baseUrl = absoluteUri.Substring(0, pos);
-                    return baseUrl.NormalizeScheme();
-                }
-            }
+            baseUrl = httpReq.AbsoluteUri.InferBaseUrl(fromPathInfo: httpReq.PathInfo);
+            if (baseUrl != null)
+                return baseUrl.NormalizeScheme();
 
             var handlerPath = HostContext.Config.HandlerFactoryPath;
 
