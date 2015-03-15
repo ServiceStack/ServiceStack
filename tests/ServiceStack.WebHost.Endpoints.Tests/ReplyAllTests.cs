@@ -42,7 +42,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static void AssertSingleDto(object dto)
         {
-            if (!(dto is NoRepeat || dto is HelloAll || dto is HelloAllAsync || dto is HelloGet || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
+            if (!(dto is BatchThrows || dto is BatchThrowsAsync || dto is NoRepeat || dto is HelloAll || dto is HelloAllAsync || dto is HelloGet || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
                 throw new Exception("Invalid " + dto.GetType().Name);
         }
     }
@@ -56,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static void AssertSingleDto(object dto)
         {
-            if (!(dto == null || dto is NoRepeatResponse || dto is HelloAllResponse || dto is HelloAllCustomResponse
+            if (!(dto == null || dto is Task || dto is BatchThrowsResponse || dto is NoRepeatResponse || dto is HelloAllResponse || dto is HelloAllCustomResponse
                || dto is HelloAllTransactionResponse || dto is IHttpResult))
                 throw new Exception("Invalid " + dto.GetType().Name);
         }
@@ -211,7 +211,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public Guid Id { get; set; }
     }
 
-    public class BatchService : IService
+    public class BatchThrows : IReturn<BatchThrowsResponse>
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class BatchThrowsAsync : IReturn<BatchThrowsResponse>
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class BatchThrowsResponse
+    {
+        public string Result { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public class AutoBatchServices : IService
     {
         private static readonly HashSet<Guid> ReceivedGuids = new HashSet<Guid>();
 
@@ -226,6 +245,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Id = request.Id
             };
+        }
+
+        public object Any(BatchThrows request)
+        {
+            throw new Exception("Batch Throws");
+        }
+
+        public async Task Any(BatchThrowsAsync request)
+        {
+            await Task.Delay(0);
+
+            throw new Exception("Batch Throws");
         }
     }
 
@@ -516,6 +547,64 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var results = client.SendAll(batch);
             var guids = results.Select(r => r.Id);
             Assert.IsTrue(guids.SequenceEqual(batch.Select(b => b.Id)));
+        }
+
+        [Test]
+        public void Does_throw_WebServiceException_on_Error()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            //var client = new JsonServiceClient("http://localhost:55799/");
+
+            var requests = new[]
+            {
+                new BatchThrows { Id = 1, Name = "Foo" },
+                new BatchThrows { Id = 2, Name = "Bar" },
+                new BatchThrows { Id = 3, Name = "Baz" },
+            };
+
+            try
+            {
+                var responses = client.SendAll(requests);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.ResponseStatus.PrintDump();
+                
+                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(Exception).Name));
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Exception).Name));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("Batch Throws"));
+                Assert.That(ex.ResponseHeaders[HttpHeaders.XAutoBatchCompleted], Is.EqualTo("0"));
+            }
+        }
+
+        [Test]
+        public async Task Does_throw_WebServiceException_on_Error_Async()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            //var client = new JsonServiceClient("http://localhost:55799/");
+
+            var requests = new[]
+            {
+                new BatchThrowsAsync { Id = 1, Name = "Foo" },
+                new BatchThrowsAsync { Id = 2, Name = "Bar" }, 
+                new BatchThrowsAsync { Id = 3, Name = "Baz" },
+            };
+
+            try
+            {
+                var responses = await client.SendAllAsync(requests);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.ResponseStatus.PrintDump();
+
+                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(Exception).Name));
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Exception).Name));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("Batch Throws"));
+                Assert.That(ex.ResponseHeaders[HttpHeaders.XAutoBatchCompleted], Is.EqualTo("0"));
+            }
         }
     }
 

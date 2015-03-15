@@ -563,36 +563,7 @@ namespace ServiceStack.Host
                     var elType = requestType.GetElementType();
                     if (requestExecMap.TryGetValue(elType, out handlerFn))
                     {
-                        return (req, dtos) =>
-                        {
-                            var dtosList = ((IEnumerable)dtos).Map(x => x);
-                            var ret = new object[dtosList.Count];
-                            if (ret.Length == 0)
-                                return ret;
-
-                            var firstDto = dtosList[0];
-
-                            var firstResponse = handlerFn(req, firstDto);
-                            var asyncResponse = firstResponse as Task;
-
-                            if (asyncResponse == null)
-                            {
-                                ret[0] = firstResponse;
-                                for (var i = 1; i < dtosList.Count; i++)
-                                {
-                                    var dto = dtosList[i];
-                                    var response = handlerFn(req, dto);
-                                    ret[i] = response;
-                                }
-                                return ret;
-                            }
-
-                            var asyncResponses = new Task[dtosList.Count];
-
-                            return dtosList.EachAsync((dto, i) =>  
-                                asyncResponses[i] = i == 0 ? asyncResponse : (Task)handlerFn(req, dto))
-                                .ContinueWith(x => asyncResponses);
-                        };
+                        return CreateAutoBatchServiceExec(handlerFn);
                     }
                 }
 
@@ -600,6 +571,74 @@ namespace ServiceStack.Host
             }
 
             return handlerFn;
+        }
+
+        private static ServiceExecFn CreateAutoBatchServiceExec(ServiceExecFn handlerFn)
+        {
+            return (req, dtos) => 
+            {
+                var dtosList = ((IEnumerable) dtos).Map(x => x);
+                var ret = new object[dtosList.Count];
+                if (ret.Length == 0)
+                    return ret;
+
+                var firstDto = dtosList[0];
+
+                var firstResponse = handlerFn(req, firstDto);
+                if (firstResponse is Exception)
+                {
+                    req.SetAutoBatchCompletedHeader(0);
+                    return firstResponse;
+                }
+
+                var asyncResponse = firstResponse as Task;
+
+                //sync
+                if (asyncResponse == null) 
+                {
+                    ret[0] = firstResponse;
+                    for (var i = 1; i < dtosList.Count; i++)
+                    {
+                        var dto = dtosList[i];
+                        var response = handlerFn(req, dto);
+                        //short-circuit on first error
+                        if (response is Exception)
+                        {
+                            req.SetAutoBatchCompletedHeader(i);
+                            return response;
+                        }
+
+                        ret[i] = response;
+                    }
+                    return ret;
+                }
+
+                //async
+                var asyncResponses = new Task[dtosList.Count];
+                Task firstAsyncError = null;
+
+                //execute each async service sequentially
+                return dtosList.EachAsync((dto, i) =>
+                {
+                    //short-circuit on first error and don't exec any more handlers
+                    if (firstAsyncError != null)
+                        return firstAsyncError;
+
+                    asyncResponses[i] = i == 0
+                        ? asyncResponse
+                        : (Task) handlerFn(req, dto);
+
+                    if (asyncResponses[i].GetResult() is IHttpError)
+                    {
+                        req.SetAutoBatchCompletedHeader(i);
+                        firstAsyncError = asyncResponses[i];
+                        return firstAsyncError;
+                    }
+                    return asyncResponses[i];
+                })
+                .ContinueWith(x => 
+                    firstAsyncError ?? (object) asyncResponses); //return error or completed responses
+            };
         }
 
         public void AssertServiceRestrictions(Type requestType, RequestAttributes actualAttributes)

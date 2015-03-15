@@ -941,6 +941,14 @@ namespace ServiceStack
             return req.Dto != null && req.Dto.GetType().IsArray;
         }
 
+        public static void SetAutoBatchCompletedHeader(this IRequest req, int completed)
+        {
+            if (req == null || req.Response == null)
+                return;
+
+            req.Response.AddHeader(HttpHeaders.XAutoBatchCompleted, completed.ToString());
+        }
+
         public static System.ServiceModel.Channels.Message GetSoapMessage(this IRequest httpReq)
         {
             return httpReq.Items["SoapMessage"] as System.ServiceModel.Channels.Message;
