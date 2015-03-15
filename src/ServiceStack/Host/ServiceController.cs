@@ -610,6 +610,7 @@ namespace ServiceStack.Host
 
                         ret[i] = response;
                     }
+                    req.SetAutoBatchCompletedHeader(dtosList.Count);
                     return ret;
                 }
 
@@ -635,8 +636,13 @@ namespace ServiceStack.Host
                     }
                     return asyncResponses[i];
                 })
-                .ContinueWith(x => 
-                    firstAsyncError ?? (object) asyncResponses); //return error or completed responses
+                .ContinueWith(x => {
+                    if (firstAsyncError != null)
+                        return (object)firstAsyncError;
+
+                    req.SetAutoBatchCompletedHeader(dtosList.Count);
+                    return (object) asyncResponses;
+                }); //return error or completed responses
             };
         }
 
