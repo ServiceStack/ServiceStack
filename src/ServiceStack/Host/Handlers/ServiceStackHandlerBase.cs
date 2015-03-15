@@ -72,7 +72,13 @@ namespace ServiceStack.Host.Handlers
                                 var taskResults = taskResult as Task[];
                                 
                                 if (taskResults == null)
+                                {
+                                    var subTask = taskResult as Task;
+                                    if (subTask != null)
+                                        taskResult = subTask.GetResult();
+
                                     return callback(taskResult);
+                                }
 
                                 var batchedResponses = new object[taskResults.Length];
                                 for (var i = 0; i < taskResults.Length; i++)
