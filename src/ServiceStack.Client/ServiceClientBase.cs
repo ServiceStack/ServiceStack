@@ -597,8 +597,11 @@ namespace ServiceStack
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 log.Error(webEx);
-                log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
-                log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
+                if (log.IsDebugEnabled)
+                {
+                    log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
+                    log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
+                }
 
                 var serviceEx = new WebServiceException(errorResponse.StatusDescription)
                 {

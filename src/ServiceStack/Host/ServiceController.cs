@@ -596,7 +596,7 @@ namespace ServiceStack.Host
                 //sync
                 if (asyncResponse == null) 
                 {
-                    ret[0] = firstResponse;
+                    ret[0] = firstResponse; //don't re-execute first request
                     for (var i = 1; i < dtosList.Count; i++)
                     {
                         var dto = dtosList[i];
@@ -625,14 +625,13 @@ namespace ServiceStack.Host
                         return firstAsyncError;
 
                     asyncResponses[i] = i == 0
-                        ? asyncResponse
+                        ? asyncResponse //don't re-execute first request
                         : (Task) handlerFn(req, dto);
 
-                    if (asyncResponses[i].GetResult() is IHttpError)
+                    if (asyncResponses[i].GetResult() is Exception)
                     {
                         req.SetAutoBatchCompletedHeader(i);
-                        firstAsyncError = asyncResponses[i];
-                        return firstAsyncError;
+                        return firstAsyncError = asyncResponses[i];
                     }
                     return asyncResponses[i];
                 })
