@@ -132,13 +132,13 @@ namespace ServiceStack
         }
 
         public void SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
-            Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            Action<TResponse> onSuccess, Action<object, Exception> onError)
         {
             SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError);
         }
 
         private void SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request, 
-            Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            Action<TResponse> onSuccess, Action<object, Exception> onError)
         {
             if (httpMethod == null) throw new ArgumentNullException("httpMethod");
 
@@ -399,13 +399,17 @@ namespace ServiceStack
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Log.Error(webEx);
-                Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
-                Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
+                if (Log.IsDebugEnabled)
+                {
+                    Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
+                    Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
+                }
 
                 var serviceEx = new WebServiceException(errorResponse.StatusDescription)
                 {
                     StatusCode = (int)errorResponse.StatusCode,
                     StatusDescription = errorResponse.StatusDescription,
+                    ResponseHeaders = errorResponse.Headers
                 };
 
                 try
@@ -414,20 +418,21 @@ namespace ServiceStack
                     {
                         var bytes = stream.ReadFully();
                         serviceEx.ResponseBody = bytes.FromUtf8Bytes();
+                        var errorResponseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(state.Request);
 
                         if (stream.CanSeek)
                         {
                             PclExport.Instance.ResetStream(stream);
-                            serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
+                            serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, stream);
                         }
                         else //Android
                         {
                             using (var ms = MemoryStreamFactory.GetStream(bytes))
                             {
-                                serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), ms);
+                                serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, ms);
                             }
                         }
-                        state.HandleError((TResponse)serviceEx.ResponseDto, serviceEx);
+                        state.HandleError(serviceEx.ResponseDto, serviceEx);
                     }
                 }
                 catch (Exception innerEx)
@@ -437,6 +442,7 @@ namespace ServiceStack
                     state.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx) {
                         StatusCode = (int)errorResponse.StatusCode,
                         StatusDescription = errorResponse.StatusDescription,
+                        ResponseHeaders = errorResponse.Headers
                     });
                 }
                 return;

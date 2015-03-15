@@ -49,7 +49,7 @@ namespace ServiceStack
 
         public Action<TResponse> OnSuccess;
 
-        public Action<TResponse, Exception> OnError;
+        public Action<object, Exception> OnError;
 
         public SynchronizationContext UseSynchronizationContext;
 
@@ -74,7 +74,7 @@ namespace ServiceStack
                 this.OnSuccess(response);
         }
 
-        public void HandleError(TResponse response, Exception ex)
+        public void HandleError(object response, Exception ex)
         {
             StopTimer();
 
