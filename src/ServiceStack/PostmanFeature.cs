@@ -93,6 +93,7 @@ namespace ServiceStack
     }
 
     [DefaultRequest(typeof(Postman))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class PostmanService : Service
     {
         [AddHeader(ContentType = MimeTypes.Json)]

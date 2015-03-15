@@ -38,6 +38,7 @@ namespace ServiceStack.Api.Swagger
 
     [AddHeader(DefaultContentType = MimeTypes.Json)]
     [DefaultRequest(typeof(Resources))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class SwaggerResourcesService : Service
     {
         private readonly Regex resourcePathCleanerRegex = new Regex(@"/[^\/\{]*", RegexOptions.Compiled);

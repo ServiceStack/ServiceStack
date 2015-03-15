@@ -137,6 +137,7 @@ namespace ServiceStack.Api.Swagger
 
     [AddHeader(DefaultContentType = MimeTypes.Json)]
     [DefaultRequest(typeof(ResourceRequest))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class SwaggerApiService : Service
     {
         internal static bool UseCamelCaseModelPropertyNames { get; set; }
