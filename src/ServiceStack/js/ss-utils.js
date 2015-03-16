@@ -348,6 +348,9 @@
             var msg = json ? JSON.parse(json) : null;
 
             parts = $.ss.splitOnFirst(selector, '.');
+            if (parts.length <= 1)
+                throw "invalid selector format: " + selector;
+
             var op = parts[0],
                 target = parts[1].replace(new RegExp("%20",'g')," ");
 
