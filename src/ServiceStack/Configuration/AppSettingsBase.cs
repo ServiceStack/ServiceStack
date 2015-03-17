@@ -107,6 +107,14 @@ namespace ServiceStack.Configuration
             }
         }
 
+        public virtual T Get<T>(string name)
+        {
+            var stringValue = GetNullableString(name);
+            return stringValue != null 
+                ? TypeSerializer.DeserializeFromString<T>(stringValue) 
+                : default(T);
+        }
+
         public virtual T Get<T>(string name, T defaultValue)
         {
             var stringValue = GetNullableString(name);

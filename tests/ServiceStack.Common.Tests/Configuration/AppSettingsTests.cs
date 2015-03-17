@@ -349,6 +349,12 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
             Assert.That(value.FinalSetting, Is.EqualTo("Final"));
             Assert.That(value.SomeOtherSetting, Is.EqualTo(12));
             Assert.That(value.SomeSetting, Is.EqualTo("Test"));
+
+            value = appSettings.Get<SimpleAppSettings>("ObjectNoLineFeed");
+            Assert.That(value, Is.Not.Null);
+            Assert.That(value.FinalSetting, Is.EqualTo("Final"));
+            Assert.That(value.SomeOtherSetting, Is.EqualTo(12));
+            Assert.That(value.SomeSetting, Is.EqualTo("Test"));
         }
 
         [Test]
@@ -357,6 +363,12 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
             var appSettings = GetAppSettings();
             appSettings.ParsingStrategy = AppSettingsStrategy.CollapseNewLines;
             var value = appSettings.Get("ObjectWithLineFeed", new SimpleAppSettings());
+            Assert.That(value, Is.Not.Null);
+            Assert.That(value.FinalSetting, Is.EqualTo("Final"));
+            Assert.That(value.SomeOtherSetting, Is.EqualTo(12));
+            Assert.That(value.SomeSetting, Is.EqualTo("Test"));
+
+            value = appSettings.Get<SimpleAppSettings>("ObjectWithLineFeed");
             Assert.That(value, Is.Not.Null);
             Assert.That(value.FinalSetting, Is.EqualTo("Final"));
             Assert.That(value.SomeOtherSetting, Is.EqualTo(12));
