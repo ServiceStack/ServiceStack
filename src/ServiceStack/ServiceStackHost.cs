@@ -637,7 +637,7 @@ namespace ServiceStack
         }
 
         private bool delayLoadPlugin;
-        public void LoadPlugin(params IPlugin[] plugins)
+        public virtual void LoadPlugin(params IPlugin[] plugins)
         {
             if (delayLoadPlugin)
             {
