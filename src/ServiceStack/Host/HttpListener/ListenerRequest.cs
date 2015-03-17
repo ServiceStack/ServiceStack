@@ -273,7 +273,7 @@ namespace ServiceStack.Host.HttpListener
 
         public string ContentType
         {
-            get { return request.ContentType; }
+            get { return request.ContentType.ToLowerSafe(); }
         }
 
         public Encoding contentEncoding;
