@@ -198,6 +198,9 @@ Each library is released under its respective licence:
   - [TweetStation's OAuth library](https://github.com/migueldeicaza/TweetStation) [(License)](https://github.com/migueldeicaza/TweetStation/blob/master/LICENSE)
   - [MarkdownSharp](http://code.google.com/p/markdownsharp/) [(License)](http://opensource.org/licenses/mit-license.php)
   - [MarkdownDeep](https://github.com/toptensoftware/markdowndeep) [(License)](http://www.toptensoftware.com/markdowndeep/license)
+  - [HtmlCompressor](https://code.google.com/p/htmlcompressor/) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [JSMin](https://github.com/douglascrockford/JSMin/blob/master/jsmin.c) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [RecyclableMemoryStream](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream) [(License)](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream/blob/master/LICENSE)
 
 ## Similar open source projects
 
