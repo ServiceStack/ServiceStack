@@ -268,6 +268,8 @@ namespace ServiceStack.NativeTypes.Java
 
                 var extendsModifier = " extends ";
 
+                string responseTypeExpression = null;
+
                 if (options.ImplementsFn != null)
                 {
                     var implStr = options.ImplementsFn();
@@ -275,6 +277,17 @@ namespace ServiceStack.NativeTypes.Java
                     {
                         extends.Add(implStr);
                         extendsModifier = " implements ";
+
+                        if (implStr.StartsWith("IReturn<"))
+                        {
+                            var parts = implStr.SplitOnFirst('<');
+                            var returnType = parts[1].Substring(0, parts[1].Length - 1);
+
+                            //Can't get .class from Generic Type definition
+                            responseTypeExpression = returnType.Contains("<")
+                                ? "new {0}().getClass()".Fmt(returnType)
+                                : "{0}.class".Fmt(returnType);
+                        }
                     }
                 }
 
@@ -304,6 +317,12 @@ namespace ServiceStack.NativeTypes.Java
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name),
                     addPropertyAccessors: addPropertyAccessors);
+
+                if (responseTypeExpression != null)
+                {
+                    sb.AppendLine("private static Class responseType = {0};".Fmt(responseTypeExpression));
+                    sb.AppendLine("public Class getResponseType() { return responseType; }");
+                }
 
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
