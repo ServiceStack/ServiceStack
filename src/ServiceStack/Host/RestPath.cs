@@ -248,8 +248,13 @@ namespace ServiceStack.Host
 
         private readonly Dictionary<string, string> propertyNamesMap = new Dictionary<string, string>();
 
+        public static Func<RestPath, string, string[], int> CalculateMatchScore { get; set; }
+
         public int MatchScore(string httpMethod, string[] withPathInfoParts)
         {
+            if (CalculateMatchScore != null)
+                return CalculateMatchScore(this, httpMethod, withPathInfoParts);
+
             int wildcardMatchCount;
             var isMatch = IsMatch(httpMethod, withPathInfoParts, out wildcardMatchCount);
             if (!isMatch) return -1;
