@@ -195,14 +195,6 @@ namespace ServiceStack.NativeTypes
 
             metadataTypes.Types.RemoveAll(x => x.Name == "Service");
 
-            if (typesConfig.AddServiceStackTypes)
-            {
-                //IReturn markers are metadata properties that are not included as normal interfaces
-                var generator = ((NativeTypesMetadata)NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
-                metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturn<>)));
-                metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturnVoid)));
-            }
-
             try
             {
                 var java = new JavaGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
