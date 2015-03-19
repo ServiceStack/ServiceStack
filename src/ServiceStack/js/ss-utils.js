@@ -380,7 +380,11 @@
                                 type: "POST",
                                 url: opt.heartbeatUrl,
                                 data: null,
-                                success: function (r) { },
+                                success: function(r) {
+                                    var heartbeatFn = $.ss.handlers["onHeartbeat"];
+                                    if (heartbeatFn != null)
+                                        heartbeatFn.apply($.ss.eventSource, r);
+                                },
                                 error: function () {
                                     $.ss.reconnectServerEvents({errorArgs:arguments});
                                 }
