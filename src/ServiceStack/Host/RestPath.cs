@@ -34,7 +34,7 @@ namespace ServiceStack.Host
         private readonly bool[] isWildcard = new bool[0];
         private readonly int wildcardCount = 0;
 
-        private int variableArgsCount;
+        public int VariableArgsCount { get; set; }
 
         /// <summary>
         /// The number of segments separated by '/' determinable by path.Split('/').Length
@@ -171,7 +171,7 @@ namespace ServiceStack.Host
                         variableName = variableName.Substring(0, variableName.Length - 1);
                     }
                     this.variablesNames[i] = variableName;
-                    this.variableArgsCount++;
+                    this.VariableArgsCount++;
                 }
                 else
                 {
@@ -265,7 +265,7 @@ namespace ServiceStack.Host
             score += Math.Max((10 - wildcardMatchCount), 1) * 1000;
 
             //Routes with less variable (and more literal) matches
-            score += Math.Max((10 - variableArgsCount), 1) * 100;
+            score += Math.Max((10 - VariableArgsCount), 1) * 100;
 
             //Exact verb match is better than ANY
             var exactVerb = httpMethod == AllowedVerbs;
