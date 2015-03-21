@@ -30,6 +30,7 @@ var SIGN_PROJS = [
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.Oracle/ServiceStack.OrmLite.Oracle.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.Sqlite.Windows/ServiceStack.OrmLite.Sqlite.Windows.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.MySql/ServiceStack.OrmLite.MySql.csproj',
+    '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.MySqlV45/ServiceStack.OrmLite.MySqlV45.csproj',
     '../src/ServiceStack.Common/ServiceStack.Common.csproj',
     '../src/ServiceStack.Client/ServiceStack.Client.csproj',
     '../src/ServiceStack.Server/ServiceStack.Server.csproj',
