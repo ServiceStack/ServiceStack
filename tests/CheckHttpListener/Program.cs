@@ -43,7 +43,7 @@ namespace CheckHttpListener
 
             new AppHost()
                 .Init()
-                .Start("http://localhost:2020/");
+                .Start("http://*:2020/");
 
             //TestService();
 

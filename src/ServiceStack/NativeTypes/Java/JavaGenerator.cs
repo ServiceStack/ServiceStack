@@ -86,6 +86,7 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), defaultNamespace));
             sb.AppendLine("{0}AddPropertyAccessors: {1}".Fmt(defaultValue("AddPropertyAccessors"), Config.AddPropertyAccessors));
+            sb.AppendLine("{0}SettersReturnThis: {1}".Fmt(defaultValue("SettersReturnThis"), Config.SettersReturnThis));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
@@ -298,6 +299,7 @@ namespace ServiceStack.NativeTypes.Java
                       "";
 
                 var addPropertyAccessors = Config.AddPropertyAccessors && !type.IsInterface();
+                var settersReturnType = addPropertyAccessors && Config.SettersReturnThis ? typeName : null;
 
                 sb.AppendLine("public static {0} {1}{2}".Fmt(defType, typeName, extend));
                 sb.AppendLine("{");
@@ -310,13 +312,14 @@ namespace ServiceStack.NativeTypes.Java
                     sb.AppendLine("public Integer {0} = {1};".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
 
                     if (addPropertyAccessors)
-                        sb.AppendPropertyAccessor("Integer", "Version".PropertyStyle());
+                        sb.AppendPropertyAccessor("Integer", "Version", settersReturnType);
                 }
 
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name),
-                    addPropertyAccessors: addPropertyAccessors);
+                    addPropertyAccessors: addPropertyAccessors,
+                    settersReturnType: settersReturnType);
 
                 if (responseTypeExpression != null)
                 {
@@ -335,7 +338,8 @@ namespace ServiceStack.NativeTypes.Java
 
         public void AddProperties(StringBuilderWrapper sb, MetadataType type,
             bool includeResponseStatus,
-            bool addPropertyAccessors)
+            bool addPropertyAccessors,
+            string settersReturnType)
         {
             var wasAdded = false;
 
@@ -354,14 +358,26 @@ namespace ServiceStack.NativeTypes.Java
                     if (wasAdded) sb.AppendLine();
 
                     var propType = Type(prop.Type, prop.GenericArgs);
-                    var propName = prop.Name.SafeToken().PropertyStyle();
+
+                    var fieldName = prop.Name.SafeToken().PropertyStyle();
+                    var accessorName = fieldName.ToPascalCase();
 
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine("public {0} {1} = null;".Fmt(propType, propName));
+
+                    if (!fieldName.IsKeyWord())
+                    {
+                        sb.AppendLine("public {0} {1} = null;".Fmt(propType, fieldName));
+                    }
+                    else
+                    {
+                        var originalName = fieldName;
+                        fieldName = Char.ToUpper(fieldName[0]) + fieldName.SafeSubstring(1);
+                        sb.AppendLine("@SerializedName(\"{0}\") public {1} {2} = null;".Fmt(originalName, propType, fieldName));
+                    }
 
                     if (addPropertyAccessors)
-                        sbAccessors.AppendPropertyAccessor(propType, propName);
+                        sbAccessors.AppendPropertyAccessor(propType, fieldName, accessorName, settersReturnType);
                 }
             }
 
@@ -373,7 +389,7 @@ namespace ServiceStack.NativeTypes.Java
                 sb.AppendLine("public ResponseStatus {0} = null;".Fmt(typeof(ResponseStatus).Name.PropertyStyle()));
 
                 if (addPropertyAccessors)
-                    sbAccessors.AppendPropertyAccessor("ResponseStatus", "ResponseStatus".PropertyStyle());
+                    sbAccessors.AppendPropertyAccessor("ResponseStatus", "ResponseStatus", settersReturnType);
             }
 
             if (sbAccessors.Length > 0)
@@ -728,12 +744,26 @@ namespace ServiceStack.NativeTypes.Java
             "while",
         };
 
+        public static bool IsKeyWord(this string name)
+        {
+            return JavaKeyWords.Contains(name);
+        }
+
         public static string PropertyStyle(this string name)
         {
-            var propName = name.ToCamelCase(); //Always use Java conventions for now
-            return JavaKeyWords.Contains(propName)
-                ? propName.ToPascalCase()
-                : propName;
+            //Gson is case-sensitive, fieldName needs to match json
+            var fieldName = JsConfig.EmitCamelCaseNames
+                ? name.ToCamelCase()
+                : JsConfig.EmitLowercaseUnderscoreNames
+                    ? name.ToLowercaseUnderscore()
+                    : name;
+
+            return fieldName;
+
+            //var propName = name.ToCamelCase(); //Always use Java conventions for now
+            //return JavaKeyWords.Contains(propName)
+            //    ? propName.ToPascalCase()
+            //    : propName;
         }
 
         public static MetadataAttribute ToMetadataAttribute(this MetadataRoute route)
@@ -760,13 +790,25 @@ namespace ServiceStack.NativeTypes.Java
             };
         }
 
-        public static StringBuilderWrapper AppendPropertyAccessor(this StringBuilderWrapper sb, string type, string name)
+        public static StringBuilderWrapper AppendPropertyAccessor(this StringBuilderWrapper sb, string type, string fieldName, string settersReturnThis)
         {
-            var getter = type.StartsWithIgnoreCase("bool") && !name.StartsWithIgnoreCase("is") 
+            return sb.AppendPropertyAccessor(type, fieldName.PropertyStyle(), fieldName.ToPascalCase(), settersReturnThis);
+        }
+
+        public static StringBuilderWrapper AppendPropertyAccessor(this StringBuilderWrapper sb, string type, string fieldName, string accessorName, string settersReturnThis)
+        {
+            var getter = type.StartsWithIgnoreCase("bool") && !accessorName.StartsWithIgnoreCase("is") 
                 ? "is" 
                 : "get";
-            sb.AppendLine("public {0} {3}{1}() {{ return {2}; }}".Fmt(type, name.ToPascalCase(), name.PropertyStyle(), getter));
-            sb.AppendLine("public void set{1}({0} value) {{ this.{2} = value; }}".Fmt(type, name.ToPascalCase(), name.PropertyStyle()));
+            sb.AppendLine("public {0} {3}{1}() {{ return {2}; }}".Fmt(type, accessorName, fieldName, getter));
+            if (settersReturnThis != null)
+            {
+                sb.AppendLine("public {3} set{1}({0} value) {{ this.{2} = value; return this; }}".Fmt(type, accessorName, fieldName, settersReturnThis));
+            }
+            else
+            {
+                sb.AppendLine("public void set{1}({0} value) {{ this.{2} = value; }}".Fmt(type, accessorName, fieldName));
+            }
             return sb;
         }
     }
