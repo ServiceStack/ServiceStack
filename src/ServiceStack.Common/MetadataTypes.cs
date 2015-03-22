@@ -21,6 +21,7 @@ namespace ServiceStack
             bool addServiceStackTypes = true,
             bool addModelExtensions = true,
             bool addPropertyAccessors = true,
+            bool settersReturnThis = true,
             bool makePropertiesOptional = true,
             bool makeDataContractsExtensible = false,
             bool initializeCollections = true,
@@ -42,6 +43,7 @@ namespace ServiceStack
             AddServiceStackTypes = addServiceStackTypes;
             AddModelExtensions = addModelExtensions;
             AddPropertyAccessors = addPropertyAccessors;
+            SettersReturnThis = settersReturnThis;
             MakePropertiesOptional = makePropertiesOptional;
             AddImplicitVersion = addImplicitVersion;
         }
@@ -60,6 +62,7 @@ namespace ServiceStack
         public bool AddServiceStackTypes { get; set; }
         public bool AddModelExtensions { get; set; }
         public bool AddPropertyAccessors { get; set; }
+        public bool SettersReturnThis { get; set; }
         public bool MakePropertiesOptional { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public bool MakeDataContractsExtensible { get; set; }

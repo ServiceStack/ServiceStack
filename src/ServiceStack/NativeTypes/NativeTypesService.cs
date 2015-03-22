@@ -54,6 +54,7 @@ namespace ServiceStack.NativeTypes
         public bool? AddServiceStackTypes { get; set; }
         public bool? AddModelExtensions { get; set; }
         public bool? AddPropertyAccessors { get; set; }
+        public bool? SettersReturnThis { get; set; }
         public bool? MakePropertiesOptional { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public string GlobalNamespace { get; set; }

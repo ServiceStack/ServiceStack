@@ -40,6 +40,7 @@ namespace ServiceStack.NativeTypes
                 AddServiceStackTypes = req.AddServiceStackTypes ?? defaults.AddServiceStackTypes,
                 AddModelExtensions = req.AddModelExtensions ?? defaults.AddModelExtensions,
                 AddPropertyAccessors = req.AddPropertyAccessors ?? defaults.AddPropertyAccessors,
+                SettersReturnThis = req.SettersReturnThis ?? defaults.SettersReturnThis,
                 MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
