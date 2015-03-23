@@ -15,6 +15,7 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
+using ServiceStack.NativeTypes.Java;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
 using ServiceStack.Text;
@@ -99,6 +100,8 @@ namespace CheckWeb
                     SqlServerDialect.Provider) {
                         ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
                     });
+
+            JavaGenerator.AddGsonImport = true;
         }
 
         public static Rockstar[] SeedRockstars = new[] {

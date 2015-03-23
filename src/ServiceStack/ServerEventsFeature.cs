@@ -144,6 +144,7 @@ namespace ServiceStack
                 DisplayName = displayName,
                 SessionId = req.GetPermanentSessionId(),
                 IsAuthenticated = session != null && session.IsAuthenticated,
+                UserAddress = req.UserHostAddress,
                 OnPublish = feature.OnPublish,
                 Meta = {
                     { "userId", userId },
@@ -403,6 +404,7 @@ namespace ServiceStack
         public string DisplayName { get; set; }
         public string SessionId { get; set; }
         public string SubscriptionId { get; set; }
+        public string UserAddress { get; set; }
         public bool IsAuthenticated { get; set; }
 
         public Dictionary<string, string> Meta { get; set; }
