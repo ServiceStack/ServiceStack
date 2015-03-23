@@ -32,15 +32,24 @@ namespace ServiceStack.NativeTypes.Java
 
             "java.math.*",
             "java.util.*",
-            "net.servicestack.*",
+            "net.servicestack.client.*",
         };
+
+        public static bool AddGsonImport
+        {
+            set
+            {
+                //Used by @SerializedName() annotation, but requires Android dep
+                DefaultImports.Add("com.google.gson.annotations.*");
+            }
+        }
 
         //http://java.interoperabilitybridges.com/articles/data-types-interoperability-between-net-and-java#h4Section2
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"String", "String"},
             {"Boolean", "Boolean"},
-            {"Char", "Integer"},
+            {"Char", "String"},
             {"SByte", "Byte"},
             {"Byte", "Short"},
             {"Int16", "Short"},
@@ -52,10 +61,10 @@ namespace ServiceStack.NativeTypes.Java
             {"Single", "Float"},
             {"Double", "Double"},
             {"Decimal", "BigDecimal"},
-            {"Guid", "String"},
+            {"Guid", "UUID"},
             {"DateTime", "Date"},
-            {"DateTimeOffset", "String"},
-            {"TimeSpan", "String"},
+            {"DateTimeOffset", "Date"},
+            {"TimeSpan", "TimeSpan"},
             {"Type", "Class"},
             {"List", "ArrayList"},
             {"Dictionary", "HashMap"},
