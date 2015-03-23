@@ -95,6 +95,26 @@ namespace ServiceStack
             Directory.CreateDirectory(dirPath);
         }
 
+        public override string[] GetFileNames(string dirPath, string searchPattern = null)
+        {
+            if (!Directory.Exists(dirPath))
+                return new string[0];
+
+            return searchPattern != null
+                ? Directory.GetFiles(dirPath, searchPattern)
+                : Directory.GetFiles(dirPath);
+        }
+
+        public override string[] GetDirectoryNames(string dirPath, string searchPattern = null)
+        {
+            if (!Directory.Exists(dirPath))
+                return new string[0];
+
+            return searchPattern != null
+                ? Directory.GetDirectories(dirPath, searchPattern)
+                : Directory.GetDirectories(dirPath);
+        }
+
         public const string AppSettingsKey = "servicestack:license";
         public override void RegisterLicenseFromConfig()
         {
@@ -1058,6 +1078,9 @@ namespace ServiceStack
 
         public static Hashtable ParseHashtable(string value)
         {
+            if (value == null) 
+                return null;
+
             var index = VerifyAndGetStartIndex(value, typeof(Hashtable));
 
             var result = new Hashtable();
