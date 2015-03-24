@@ -91,7 +91,10 @@ namespace ServiceStack
 
         public bool CanAccessSubscription(IRequest req, SubscriptionInfo sub)
         {
-            return !ValidateUserAddress || sub.UserAddress == req.UserHostAddress;
+            if (!ValidateUserAddress)
+                return true;
+
+            return sub.UserAddress == null || sub.UserAddress == req.UserHostAddress;
         }
     }
 
