@@ -419,6 +419,7 @@ namespace ServiceStack
         string DisplayName { get; }
         string SessionId { get; }
         string SubscriptionId { get; }
+        string UserAddress { get; set; }
         bool IsAuthenticated { get; set; }
 
         Action<IEventSubscription> OnUnsubscribe { get; set; }
@@ -876,6 +877,7 @@ namespace ServiceStack
                 DisplayName = sub.DisplayName,
                 SessionId = sub.SessionId,
                 SubscriptionId = sub.SubscriptionId,
+                UserAddress = sub.UserAddress,
                 IsAuthenticated = sub.IsAuthenticated,
                 Meta = sub.Meta,
             };
