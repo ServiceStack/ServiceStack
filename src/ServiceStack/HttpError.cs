@@ -119,6 +119,11 @@ namespace ServiceStack
             return new HttpError(HttpStatusCode.Conflict, message);
         }
 
+        public static Exception Forbidden(string message)
+        {
+            return new HttpError(HttpStatusCode.Forbidden, message);
+        }
+
         public ResponseStatus ToResponseStatus()
         {
             return Response.GetResponseStatus()

@@ -32,6 +32,7 @@ namespace ServiceStack
         public Action<IResponse, string> OnPublish { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
         public bool LimitToAuthenticatedUsers { get; set; }
+        public bool ValidateUserAddress { get; set; }
 
         public ServerEventsFeature()
         {
@@ -44,6 +45,7 @@ namespace ServiceStack
             HeartbeatInterval = TimeSpan.FromSeconds(10);
 
             NotifyChannelOfSubscriptions = true;
+            ValidateUserAddress = true;
         }
 
         public void Register(IAppHost appHost)
@@ -76,6 +78,20 @@ namespace ServiceStack
             {
                 appHost.RegisterService(typeof(ServerEventsSubscribersService), SubscribersPath);
             }
+        }
+
+        public bool CanAccessSubscription(IRequest req, string subscriptionId)
+        {
+            if (!ValidateUserAddress)
+                return true;
+
+            var sub = req.TryResolve<IServerEvents>().GetSubscriptionInfo(subscriptionId);
+            return sub.UserAddress == req.UserHostAddress;
+        }
+
+        public bool CanAccessSubscription(IRequest req, SubscriptionInfo sub)
+        {
+            return !ValidateUserAddress || sub.UserAddress == req.UserHostAddress;
         }
     }
 
@@ -204,12 +220,25 @@ namespace ServiceStack
 
             res.ApplyGlobalResponseHeaders();
 
+            var serverEvents = req.TryResolve<IServerEvents>();
+
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
             if (feature.OnHeartbeatInit != null)
                 feature.OnHeartbeatInit(req);
 
+            if (req.Response.IsClosed)
+                return EmptyTask;
+
             var subscriptionId = req.QueryString["id"];
-            if (!req.TryResolve<IServerEvents>().Pulse(subscriptionId))
+            if (!feature.CanAccessSubscription(req, subscriptionId))
+            {
+                res.StatusCode = 403;
+                res.StatusDescription = "Invalid User Address";
+                res.EndHttpHandlerRequest(skipHeaders: true);
+                return EmptyTask;
+            }
+
+            if (!serverEvents.Pulse(subscriptionId))
             {
                 res.StatusCode = 404;
                 res.StatusDescription = "Subscription {0} does not exist".Fmt(subscriptionId);
@@ -258,8 +287,13 @@ namespace ServiceStack
         public object Any(UnRegisterEventSubscriber request)
         {
             var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
+
             if (subscription == null)
                 throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.Fmt(request.Id));
+
+            var feature = HostContext.GetPlugin<ServerEventsFeature>();
+            if (!feature.CanAccessSubscription(base.Request, subscription))
+                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id));
 
             ServerEvents.UnRegister(subscription.SubscriptionId);
 

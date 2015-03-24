@@ -35,6 +35,7 @@
 
         //Server Events
         public static string SubscriptionNotExistsFmt = "Subscription '{0}' does not exist";
+        public static string SubscriptionForbiddenFmt = "Access to Subscription '{0}' is forbidden";
 
         //Validation
         public static string RequestAlreadyProcessedFmt = "Request '{0}' has already been processed";
