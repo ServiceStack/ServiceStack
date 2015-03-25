@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
+using ServiceStack.Razor.Compilation;
 using ServiceStack.Razor.Managers;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
@@ -34,6 +36,7 @@ namespace ServiceStack.Razor
             };
 
             LoadFromAssemblies = new List<Assembly>();
+            LoadUnloadedAssemblies = true;
         }
 
         //configs
@@ -49,6 +52,7 @@ namespace ServiceStack.Razor
         public bool? WaitForPrecompilationOnStartup { get; set; }
         public bool MinifyHtml { get; set; }
         public bool UseAdvancedCompression { get; set; }
+        public bool LoadUnloadedAssemblies { get; set; }
         public IVirtualPathProvider VirtualPathProvider { get; set; }
         public ILiveReload LiveReload { get; set; }
         public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
@@ -100,6 +104,30 @@ namespace ServiceStack.Razor
             this.EnableLiveReload = this.EnableLiveReload ?? appHost.Config.DebugMode;
             this.PrecompilePages = this.PrecompilePages ?? !this.EnableLiveReload;
             this.WaitForPrecompilationOnStartup = this.WaitForPrecompilationOnStartup ?? !this.EnableLiveReload;
+
+            if (LoadUnloadedAssemblies)
+            {
+                var loadedAssemblyNames = CompilerServices
+                    .GetLoadedAssemblies()
+                    .Where(x => !x.IsDynamic)
+                    .Map(x => x.FullName.SplitOnFirst(',')[0]);
+
+                foreach (var razorNamespace in appHost.Config.RazorNamespaces)
+                {
+                    try
+                    {
+                        if (razorNamespace.StartsWith("System") || 
+                            razorNamespace.StartsWith("ServiceStack"))
+                            continue;
+
+                        if (!loadedAssemblyNames.Contains(razorNamespace))
+                        {
+                            Assembly.Load(razorNamespace);
+                        }
+                    }
+                    catch { /*Ignore namespaces that don't map to assemblies*/ }
+                }
+            }
 
             try
             {
