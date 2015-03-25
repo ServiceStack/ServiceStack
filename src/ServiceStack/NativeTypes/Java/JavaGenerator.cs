@@ -219,6 +219,7 @@ namespace ServiceStack.NativeTypes.Java
         {
             typeof(ResponseStatus).Name,
             typeof(ResponseError).Name,
+            typeof(ErrorResponse).Name,
         }; 
 
         private void RemoveIgnoredTypes(MetadataTypes metadata)
