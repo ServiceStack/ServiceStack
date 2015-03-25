@@ -73,7 +73,7 @@ namespace ServiceStack.NativeTypes.Java
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
-            metadata.RemoveIgnoredTypes(Config);
+            RemoveIgnoredTypes(metadata);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
@@ -212,6 +212,19 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("}");
 
             return sb.ToString();
+        }
+
+        //Use built-in types already in net.servicestack.client package
+        public static HashSet<string> IgnoreTypeNames = new HashSet<string>
+        {
+            typeof(ResponseStatus).Name,
+            typeof(ResponseError).Name,
+        }; 
+
+        private void RemoveIgnoredTypes(MetadataTypes metadata)
+        {
+            metadata.RemoveIgnoredTypes(Config);
+            metadata.Types.RemoveAll(x => IgnoreTypeNames.Contains(x.Name));
         }
 
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,

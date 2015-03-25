@@ -8,6 +8,7 @@ using ServiceStack.DataAnnotations;
 
 namespace Check.ServiceModel.Operations
 {
+    [Route("/hello")]
     [Route("/hello/{Name}")]
     public class Hello
     {
