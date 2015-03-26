@@ -23,8 +23,6 @@ namespace ServiceStack.Razor.Managers
 
         public const string ViewKey = "View";
         public const string LayoutKey = "Template";
-        public const string QueryStringFormatKey = "format";
-        public const string NoTemplateFormatValue = "bare";
         public const string DefaultLayoutName = "_Layout";
         public bool MinifyHtml { get; set; }
         public bool UseAdvancedCompression { get; set; }
@@ -165,7 +163,7 @@ namespace ServiceStack.Razor.Managers
             {
                 var page = CreateRazorPageInstance(httpReq, httpRes, model, razorPage);
 
-                var includeLayout = !(httpReq.GetParam(QueryStringFormatKey) ?? "").Contains(NoTemplateFormatValue);
+                var includeLayout = !(httpReq.GetParam(Keywords.Format) ?? "").Contains(Keywords.Bare);
                 if (includeLayout)
                 {
                     var result = ExecuteRazorPageWithLayout(razorPage, httpReq, httpRes, model, page, () =>

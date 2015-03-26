@@ -362,7 +362,7 @@ namespace ServiceStack
         {
             if (Config.AdminAuthSecret != null)
             {
-                var authSecret = httpReq.GetParam("authsecret");
+                var authSecret = httpReq.GetParam(Keywords.AuthSecret);
                 return authSecret == Config.AdminAuthSecret;
             }
 

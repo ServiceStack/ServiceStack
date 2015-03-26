@@ -12,7 +12,6 @@ namespace ServiceStack.Host
     public class RestPath
         : IRestPath
     {
-        private const string IgnoreParam = "ignore";
         private const string WildCard = "*";
         private const char WildCardChar = '*';
         private const string PathSeperator = "/";
@@ -412,7 +411,7 @@ namespace ServiceStack.Host
                 string propertyNameOnRequest;
                 if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out propertyNameOnRequest))
                 {
-                    if (IgnoreParam.EqualsIgnoreCase(variableName))
+                    if (Keywords.Ignore.EqualsIgnoreCase(variableName))
                     {
                         pathIx++;
                         continue;                       

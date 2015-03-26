@@ -16,7 +16,7 @@ namespace ServiceStack.Host.Handlers
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            var isDebugRequest = httpReq.RawUrl.ToLower().Contains("debug");
+            var isDebugRequest = httpReq.RawUrl.ToLower().Contains(Keywords.Debug);
             if (!isDebugRequest)
             {
                 base.ProcessRequest(httpReq, httpRes, operationName);

@@ -104,7 +104,7 @@ namespace ServiceStack.Host
                     if (appHost.ApplyResponseFilters(httpReq, httpRes, response)) 
                         return EmptyTask;
 
-                    if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
+                    if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString[Keywords.Debug]))
                         return WriteDebugResponse(httpRes, response);
 
                     if (doJsonp && !(response is CompressedResult))

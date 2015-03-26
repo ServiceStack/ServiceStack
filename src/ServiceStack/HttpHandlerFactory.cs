@@ -280,7 +280,7 @@ namespace ServiceStack
         {
             if ((HostContext.DebugMode
                 || HostContext.Config.AdminAuthSecret != null)
-                && httpReq.QueryString["debug"] == RequestInfoHandler.RestPath)
+                && httpReq.QueryString[Keywords.Debug] == Keywords.RequestInfo)
             {
                 if (HostContext.DebugMode || HostContext.HasValidAuthSecret(httpReq))
                 {

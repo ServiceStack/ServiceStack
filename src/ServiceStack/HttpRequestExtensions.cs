@@ -211,7 +211,7 @@ namespace ServiceStack
 
         public static string GetFormatModifier(this IRequest httpReq)
 		{
-			var format = httpReq.QueryString["format"];
+			var format = httpReq.QueryString[Keywords.Format];
 			if (format == null) return null;
 			var parts = format.SplitOnFirst('.');
 			return parts.Length > 1 ? parts[1] : null;
@@ -255,7 +255,7 @@ namespace ServiceStack
 
         public static string GetJsonpCallback(this IRequest httpReq)
 		{
-			return httpReq == null ? null : httpReq.QueryString["callback"];
+			return httpReq == null ? null : httpReq.QueryString[Keywords.Callback];
 		}
 
 
@@ -552,10 +552,10 @@ namespace ServiceStack
 
         public static string GetQueryStringContentType(this IRequest httpReq)
         {
-            var callback = httpReq.QueryString["callback"];
+            var callback = httpReq.QueryString[Keywords.Callback];
             if (!String.IsNullOrEmpty(callback)) return MimeTypes.Json;
 
-            var format = httpReq.QueryString["format"];
+            var format = httpReq.QueryString[Keywords.Format];
             if (format == null)
             {
                 const int formatMaxLength = 4;

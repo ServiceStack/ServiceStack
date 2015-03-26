@@ -227,12 +227,12 @@ namespace ServiceStack.Formats
             var renderInTemplate = true;
             var renderHtml = true;
             string format;
-            if (httpReq != null && (format = httpReq.QueryString["format"]) != null)
+            if (httpReq != null && (format = httpReq.QueryString[Keywords.Format]) != null)
             {
                 renderHtml = !(format.StartsWithIgnoreCase("markdown")
                     || format.StartsWithIgnoreCase("text")
                     || format.StartsWithIgnoreCase("plain"));
-                renderInTemplate = !httpReq.GetFormatModifier().StartsWithIgnoreCase("bare");
+                renderInTemplate = !httpReq.GetFormatModifier().StartsWithIgnoreCase(Keywords.Bare);
             }
 
             if (!renderHtml)

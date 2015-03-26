@@ -1,5 +1,18 @@
 ﻿namespace ServiceStack
 {
+    public static class Keywords
+    {
+        public static string Callback = "callback";
+        public static string Format = "format";
+        public static string AuthSecret = "authsecret";
+        public static string RequestInfo = "requestinfo";
+        public static string Debug = "debug";
+        public static string Version = "version";
+        public static string Ignore = "ignore";
+        public static string IgnorePlaceHolder = "_";
+        public static string Bare = "bare";
+    }
+
     public static class LocalizedStrings
     {
         public const string Login = "login";

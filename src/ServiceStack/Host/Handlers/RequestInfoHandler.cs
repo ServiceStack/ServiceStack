@@ -165,8 +165,6 @@ namespace ServiceStack.Host.Handlers
             this.RequestName = GetType().Name;
         }
 
-        public const string RestPath = "requestinfo";
-
         public RequestInfoResponse RequestInfo { get; set; }
 
         public static RequestHandlerInfo LastRequestInfo;

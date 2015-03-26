@@ -64,7 +64,7 @@ namespace ServiceStack.Host.Handlers
                     return EmptyTask;
 
                 httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
-                var callback = httpReq.QueryString["callback"];
+                var callback = httpReq.QueryString[Keywords.Callback];
                 var doJsonp = HostContext.Config.AllowJsonpRequests
                               && !string.IsNullOrEmpty(callback);
 

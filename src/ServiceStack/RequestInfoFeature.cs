@@ -10,7 +10,7 @@ namespace ServiceStack
             appHost.CatchAllHandlers.Add(ProcessRequest);
 
             appHost.GetPlugin<MetadataFeature>()
-                .AddDebugLink("?debug=requestinfo", "Request Info");
+                .AddDebugLink("?{0}={1}".Fmt(Keywords.Debug, Keywords.RequestInfo), "Request Info");
         }
 
         public IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)
@@ -21,8 +21,8 @@ namespace ServiceStack
 
         private static IHttpHandler GetHandlerForPathParts(string[] pathParts)
         {
-            var pathController = string.Intern(pathParts[0].ToLower());
-            return pathController == RequestInfoHandler.RestPath
+            var pathController = pathParts[0].ToLower();
+            return pathController == Keywords.RequestInfo
                 ? new RequestInfoHandler()
                 : null;
         }

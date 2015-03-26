@@ -117,7 +117,8 @@ namespace ServiceStack
                     "/bower_components/",
                 },
                 IgnoreWarningsOnPropertyNames = new List<string> {
-                    "format", "callback", "debug", "_", "authsecret", "Version", "version"
+                    Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, 
+                    Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.Version.ToPascalCase(),
                 },
                 XmlWriterSettings = new XmlWriterSettings
                 {
