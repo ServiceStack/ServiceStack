@@ -48,6 +48,16 @@ namespace ServiceStack
             {
                 return cacheClient.Get<T>(this.prefixNs + key);
             }
+
+            public bool Remove(string key)
+            {
+                return cacheClient.Remove(this.prefixNs + key);
+            }
+
+            public void RemoveAll()
+            {
+                cacheClient.RemoveByPattern(this.prefixNs + "*");
+            }
         }
 
         public ISession GetOrCreateSession(IRequest httpReq, IResponse httpRes)
@@ -62,6 +72,11 @@ namespace ServiceStack
         {
             var request = HostContext.GetCurrentRequest();
             return GetOrCreateSession(request, request.Response);
+        }
+
+        public ISession CreateSession(string sessionId)
+        {
+            return new SessionCacheClient(cacheClient, sessionId);
         }
     }
 }

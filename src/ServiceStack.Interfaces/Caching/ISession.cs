@@ -27,5 +27,17 @@
         /// <param name="key"></param>
         /// <returns></returns>
         T Get<T>(string key);
+
+        /// <summary>
+        /// Remove the value at key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        bool Remove(string key);
+
+        /// <summary>
+        /// Delete all Cache Entries (requires ICacheClient that implements IRemoveByPattern)
+        /// </summary>
+        void RemoveAll();
     }
 }

@@ -335,5 +335,27 @@ namespace ServiceStack.Server.Tests.Properties
             var entry = cache.Get<string>("concurrent-test");
             Assert.That(entry, Is.StringStarting("Data: "));
         }
+
+        [Test]
+        public void Can_set_get_and_remove_ISession()
+        {
+            var sessionA = new SessionFactory(CreateClient()).CreateSession("a");
+            var sessionB = new SessionFactory(CreateClient()).CreateSession("b");
+
+            3.Times(i => {
+                sessionA.Set("key" + i, "value" + i);
+                sessionB.Set("key" + i, "value" + i);
+            });
+
+            var value1 = sessionA.Get<String>("key1");
+            Assert.That(value1, Is.EqualTo("value1"));
+
+            sessionA.RemoveAll();
+            value1 = sessionA.Get<String>("key1");
+            Assert.That(value1, Is.Null);
+
+            value1 = sessionB.Get<String>("key1");
+            Assert.That(value1, Is.EqualTo("value1"));
+        }
     }
 }

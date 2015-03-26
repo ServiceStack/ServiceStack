@@ -10,7 +10,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Caching
 {
-    public class OrmLiteCacheClient : ICacheClient, IRequiresSchema, ICacheClientExtended
+    public class OrmLiteCacheClient : ICacheClient, IRequiresSchema, ICacheClientExtended, IRemoveByPattern
     {
         CacheEntry CreateEntry(string id, string data = null,
             DateTime? created = null, DateTime? expires = null)
@@ -419,6 +419,19 @@ namespace ServiceStack.Caching
 
                 return cache.ExpiryDate - DateTime.UtcNow;
             });
+        }
+
+        public void RemoveByPattern(string pattern)
+        {
+            Exec(db => {
+                var dbPattern = pattern.Replace('*', '%');
+                db.DeleteFmt<CacheEntry>(db.GetDialectProvider().GetQuotedColumnName("Id") + " LIKE {0}", dbPattern);
+            });
+        }
+
+        public void RemoveByRegex(string regex)
+        {
+            throw new NotImplementedException();
         }
 
         public void Dispose() { }
