@@ -21,6 +21,7 @@ namespace ServiceStack.Auth
     {
         HashSet<string> GetAllItemsFromSet(string setId);
         void Store<T>(T item);
+        void DeleteById<T>(string id);
         string GetValueFromHash(string hashId, string key);
         void SetEntryInHash(string hashId, string key, string value);
         void RemoveEntryFromHash(string hashId, string key);
@@ -33,6 +34,8 @@ namespace ServiceStack.Auth
         int GetNextSequence();
         T GetById(object id);
         List<T> GetByIds(IEnumerable ids);
+        void DeleteById(string id);
+        void DeleteByIds(IEnumerable ids);
     }
 
     public class RedisClientManagerFacade : IRedisClientManagerFacade
@@ -82,6 +85,16 @@ namespace ServiceStack.Auth
                 {
                     return redisTypedClient.GetByIds(ids).ToList();
                 }
+
+                public void DeleteById(string id)
+                {
+                    redisTypedClient.DeleteById(id);
+                }
+
+                public void DeleteByIds(IEnumerable ids)
+                {
+                    redisTypedClient.DeleteByIds(ids);
+                }
             }
 
             public RedisClientFacade(IRedisClient redisClient)
@@ -97,6 +110,11 @@ namespace ServiceStack.Auth
             public void Store<T>(T item)
             {
                 redisClient.Store(item);
+            }
+
+            public void DeleteById<T>(string id)
+            {
+                redisClient.DeleteById<T>(id);
             }
 
             public string GetValueFromHash(string hashId, string key)

@@ -318,10 +318,18 @@ namespace ServiceStack.Authentication.MongoDb
             SaveUser(userAuth);
         }
 
+        public void DeleteUserAuth(string userAuthId)
+        {
+            var userAuthCollection = mongoDatabase.GetCollection<UserAuth>(UserAuth_Col);
+            userAuthCollection.Remove(Query.EQ("_id", int.Parse(userAuthId)));
+            
+            var query = Query.EQ("UserAuthId", int.Parse(userAuthId));
+            var userAuthDetails = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProvider_Col);
+            userAuthDetails.Remove(query);
+        }
+
         public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
-            var id = int.Parse(userAuthId);
-
             IMongoQuery query = Query.EQ("UserAuthId", int.Parse(userAuthId));
 
             var collection = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProvider_Col);

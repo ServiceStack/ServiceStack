@@ -109,6 +109,25 @@ namespace ServiceStack.Auth
                         return TypedData<T>.Instance.Items.Where(x => idsSet.Contains(x.ToId().ToString())).ToList();
                     }
                 }
+
+                public void DeleteById(string id)
+                {
+                    lock (TypedData<T>.Instance.Items)
+                    {
+                        TypedData<T>.Instance.Items.RemoveAll(x => x.GetId().ToString() == id);
+                    }
+                }
+
+                public void DeleteByIds(IEnumerable ids)
+                {
+                    var idsSet = new HashSet<object>();
+                    foreach (var id in ids) idsSet.Add(id.ToString());
+
+                    lock (TypedData<T>.Instance.Items)
+                    {
+                        TypedData<T>.Instance.Items.RemoveAll(x => idsSet.Contains(x.ToId().ToString()));
+                    }
+                }
             }
 
             public HashSet<string> GetAllItemsFromSet(string setId)
@@ -134,6 +153,14 @@ namespace ServiceStack.Auth
                         return;
                     }
                     TypedData<T>.Instance.Items.Add(item);
+                }
+            }
+
+            public void DeleteById<T>(string id)
+            {
+                lock (TypedData<T>.Instance.Items)
+                {
+                    TypedData<T>.Instance.Items.RemoveAll(x => x.GetId().ToString() == id);
                 }
             }
 

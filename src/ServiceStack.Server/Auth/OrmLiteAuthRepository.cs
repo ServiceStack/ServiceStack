@@ -275,6 +275,21 @@ namespace ServiceStack.Auth
             return false;
         }
 
+        public void DeleteUserAuth(string userAuthId)
+        {
+            using (var db = dbFactory.Open())
+            using (var trans = db.OpenTransaction())
+            {
+                var userId = int.Parse(userAuthId);
+
+                db.Delete<TUserAuth>(x => x.Id == userId);
+                db.Delete<TUserAuthDetails>(x => x.UserAuthId == userId);
+                db.Delete<UserAuthRole>(x => x.UserAuthId == userId);
+
+                trans.Commit();                
+            }
+        }
+
         public void LoadUserAuth(IAuthSession session, IAuthTokens tokens)
         {
             session.ThrowIfNull("session");

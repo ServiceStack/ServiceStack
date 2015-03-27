@@ -328,5 +328,21 @@ namespace ServiceStack.Common.Tests.OAuth
             Assert.That(oAuthUserSession.IsAuthenticated, Is.True);
 		}
 
+        [Test, TestCaseSource("UserAuthRepositorys")]
+        public void Can_DeleteUserAuth(IUserAuthRepository userAuthRepository)
+        {
+            InitTest(userAuthRepository);
+
+            var oAuthUserSession = requestContext.ReloadSession();
+            oAuthUserSession = RegisterAndLogin(userAuthRepository, oAuthUserSession);
+
+            var userAuth = userAuthRepository.GetUserAuthByUserName(RegisterDto.UserName);
+            Assert.That(userAuth, Is.Not.Null);
+
+            userAuthRepository.DeleteUserAuth(userAuth.Id.ToString());
+            userAuth = userAuthRepository.GetUserAuthByUserName(RegisterDto.UserName);
+            Assert.That(userAuth, Is.Null);
+        }
+
     }
 }

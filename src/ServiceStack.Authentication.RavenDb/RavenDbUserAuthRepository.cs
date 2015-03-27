@@ -253,6 +253,30 @@ namespace ServiceStack.Authentication.RavenDb
                 GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
         }
 
+        public void DeleteUserAuth(string userAuthId)
+        {
+            using (var session = documentStore.OpenSession())
+            {
+                int userId;
+                if (int.TryParse(userAuthId, out userId))
+                {
+                    var userAuth = session.Load<TUserAuth>(userId);
+                    session.Delete(userAuth);
+
+                    var userAuthDetails = session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
+                        .Customize(x => x.WaitForNonStaleResultsAsOfNow())
+                        .Where(q => q.UserAuthId == userId);
+
+                    userAuthDetails.Each(session.Delete);
+                }
+                else
+                {
+                    var userAuth = session.Load<TUserAuth>(userAuthId);
+                    session.Delete(userAuth);
+                }
+            }
+        }
+
         public IUserAuth GetUserAuth(string userAuthId)
         {
             using (var session = documentStore.OpenSession())

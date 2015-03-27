@@ -21,6 +21,7 @@ namespace ServiceStack.Auth
         IUserAuth CreateUserAuth(IUserAuth newUser, string password);
         IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password);
         IUserAuth GetUserAuth(string userAuthId);
+        void DeleteUserAuth(string userAuthId);
     }
 
     public interface IManageRoles
