@@ -254,6 +254,11 @@
 </div>
 
 <script>
+    $.ajaxSetup({
+        async: true,
+        dataType: 'json',
+    });
+
     var source = new EventSource('/event-stream?channel=@channel&t=' + new Date().getTime()); //disable cache
     source.addEventListener('error', function (e) { addEntry({ msg: "ERROR!", cls: "error" }); }, false);
 
