@@ -35,12 +35,14 @@ namespace ServiceStack.NativeTypes.Java
             "net.servicestack.client.*",
         };
 
+        public static string GSonAnnotationsNamespace = "com.google.gson.annotations.*";
+
         public static bool AddGsonImport
         {
             set
             {
                 //Used by @SerializedName() annotation, but requires Android dep
-                DefaultImports.Add("com.google.gson.annotations.*");
+                DefaultImports.Add(GSonAnnotationsNamespace);
             }
         }
 
@@ -77,9 +79,15 @@ namespace ServiceStack.NativeTypes.Java
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
-            var defaultImports = !Config.DefaultImports.IsEmpty()
-                ? Config.DefaultImports
-                : DefaultImports;
+            var defaultImports = new List<string>(DefaultImports);
+            if (!Config.DefaultImports.IsEmpty())
+            {
+                defaultImports = Config.DefaultImports;
+            }
+            else if (ReferencesGson(metadata) && !defaultImports.Contains(GSonAnnotationsNamespace))
+            {
+                defaultImports.Add(GSonAnnotationsNamespace);
+            }
 
             var defaultNamespace = Config.GlobalNamespace ?? DefaultGlobalNamespace;
 
@@ -212,6 +220,22 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("}");
 
             return sb.ToString();
+        }
+
+        private bool ReferencesGson(MetadataTypes metadata)
+        {
+            var allTypes = GetAllMetadataTypes(metadata);
+            return allTypes.Any(x => JavaGeneratorExtensions.JavaKeyWords.Contains(x.Name)
+                || x.Properties.Safe().Any(p => p.DataMember != null && p.DataMember.Name != null));
+        }
+
+        private static List<MetadataType> GetAllMetadataTypes(MetadataTypes metadata)
+        {
+            var allTypes = new List<MetadataType>();
+            allTypes.AddRange(metadata.Types);
+            allTypes.AddRange(metadata.Operations.Where(x => x.Request != null).Select(x => x.Request));
+            allTypes.AddRange(metadata.Operations.Where(x => x.Response != null).Select(x => x.Request));
+            return allTypes;
         }
 
         //Use built-in types already in net.servicestack.client package
@@ -657,6 +681,11 @@ namespace ServiceStack.NativeTypes.Java
                 dmArgs = "({0})".Fmt(dmArgs);
             }
             sb.AppendLine("@DataMember{0}".Fmt(dmArgs));
+
+            if (dmMeta.Name != null)
+            {
+                sb.AppendLine("@SerializedName(\"{0}\")".Fmt(dmMeta.Name));
+            }
 
             return true;
         }

@@ -101,7 +101,7 @@ namespace CheckWeb
                         ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
                     });
 
-            JavaGenerator.AddGsonImport = true;
+            //JavaGenerator.AddGsonImport = true;
         }
 
         public static Rockstar[] SeedRockstars = new[] {
