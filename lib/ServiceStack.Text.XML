@@ -187,6 +187,13 @@
             Gets or sets a value indicating if unicode symbols should be serialized as "\uXXXX".
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig.sOnDeserializationError">
+            <summary>
+            Gets or sets a value indicating if the framework should call an error handler when
+            an exception happens during the deserialization.
+            </summary>
+            <remarks>Parameters have following meaning in order: deserialized entity, property name, parsed value, property type, caught exception.</remarks>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig.sIncludePublicFields">
             <summary>
             If set to true, Interface types will be prefered over concrete types when serializing.
