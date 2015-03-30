@@ -10,8 +10,9 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Binaries for the ZocDoc fork of the ServiceStack web framework. </description>
 	<dependencies>
-		<dependency id="ServiceStack-ZocDoc.Interfaces" version="$version$" />
 		<dependency id="ServiceStack-ZocDoc.Common" version="$version$" />
+		<dependency id="ServiceStack-ZocDoc.Interfaces" version="$version$" />
+		<dependency id="ServiceStack-ZocDoc.Text" version="$version$" />
 	</dependencies>
   </metadata>
   <files>

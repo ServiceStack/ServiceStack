@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>ServiceStack-ZocDoc.Text</id>
+    <version>$version$</version>
+    <title>ServiceStack-ZocDoc.Text</title>
+    <authors>ZocDoc, Inc.</authors>
+    <owners>ZocDoc, Inc.</owners>
+    <projectUrl>https://github.com/ZocDoc/ServiceStack</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Serializers for the ZocDoc fork of ServiceStack projects.</description>
+  </metadata>
+  <files>
+    <file src="..\lib\ServiceStack.Text.dll" target="lib\net35" />
+    <file src="..\lib\ServiceStack.Text.xml" target="lib\net35" />
+  </files>
+</package>
