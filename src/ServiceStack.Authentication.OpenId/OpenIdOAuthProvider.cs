@@ -85,7 +85,7 @@ namespace ServiceStack.Authentication.OpenId
                 catch (ProtocolException ex)
                 {
                     Log.Error("Failed to login to {0}".Fmt(openIdUrl), ex);
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "Unknown")));
+                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
                 }
             }
 
@@ -107,20 +107,20 @@ namespace ServiceStack.Authentication.OpenId
                                 session.IsAuthenticated = true;
 
                                 return OnAuthenticated(authService, session, tokens, authInfo)
-                                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.AddParam("s", "1"))); //Haz access!
+                                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz access!
 
                             case AuthenticationStatus.Canceled:
-                                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "ProviderCancelled")));
+                                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "ProviderCancelled")));
 
                             case AuthenticationStatus.Failed:
-                                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "Unknown")));
+                                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
                         }
                     }
                 }
             }
 
             //Shouldn't get here
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
         protected virtual Dictionary<string, string> CreateAuthInfo(IAuthenticationResponse response)

@@ -42,7 +42,7 @@ namespace ServiceStack.Auth
             if (hasError)
             {
                 Log.Error("Facebook error callback. {0}".Fmt(httpRequest.QueryString));
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", error)));
+                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
             }             
         
             var code = httpRequest.QueryString["code"];
@@ -68,19 +68,19 @@ namespace ServiceStack.Auth
                 session.IsAuthenticated = true;
                 
                 return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
-                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.AddParam("s", "1"))); //Haz access!
+                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz access!
             }
             catch (WebException we)
             {
                 var statusCode = ((HttpWebResponse)we.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
 
             //Shouldn't get here
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)

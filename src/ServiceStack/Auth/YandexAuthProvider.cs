@@ -48,7 +48,7 @@ namespace ServiceStack.Auth
             if (hasError)
             {
                 Log.Error("Yandex error callback. {0}".Fmt(httpRequest.QueryString));
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", error)));
+                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
             }
 
             string code = httpRequest.QueryString["code"];
@@ -75,14 +75,14 @@ namespace ServiceStack.Auth
                 if (!accessTokenError.IsNullOrEmpty())
                 {
                     Log.Error("Yandex access_token error callback. {0}".Fmt(authInfo.ToString()));
-                    return authService.Redirect(session.ReferrerUrl.AddParam("f", "AccessTokenFailed"));
+                    return authService.Redirect(session.ReferrerUrl.SetParam("f", "AccessTokenFailed"));
                 }
                 tokens.AccessTokenSecret = authInfo.Get("access_token");
 
                 session.IsAuthenticated = true;
 
                 return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
-                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.AddParam("s", "1")));
+                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")));
             }
             catch (WebException webException)
             {
@@ -90,10 +90,10 @@ namespace ServiceStack.Auth
                 HttpStatusCode statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.AddParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)

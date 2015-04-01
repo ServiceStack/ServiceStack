@@ -146,7 +146,7 @@ namespace ServiceStack.Auth
                 if (isHtml && request.provider != null)
                 {
                     if (alreadyAuthenticated)
-                        return this.Redirect(referrerUrl.AddParam("s", "0"));
+                        return this.Redirect(referrerUrl.SetParam("s", "0"));
 
                     if (!(response is IHttpResult) && !string.IsNullOrEmpty(referrerUrl))
                     {
@@ -163,7 +163,7 @@ namespace ServiceStack.Auth
                 var errorReferrerUrl = this.Request.GetHeader("Referer");
                 if (isHtml && errorReferrerUrl != null)
                 {
-                    errorReferrerUrl = errorReferrerUrl.AddParam("f", ex.Message.Localize(Request));
+                    errorReferrerUrl = errorReferrerUrl.SetParam("f", ex.Message.Localize(Request));
                     return HttpResult.Redirect(errorReferrerUrl);
                 }
 

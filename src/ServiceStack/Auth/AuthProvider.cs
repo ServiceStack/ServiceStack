@@ -102,7 +102,7 @@ namespace ServiceStack.Auth
             }
 
             if (service.Request.ResponseContentType == MimeTypes.Html && !String.IsNullOrEmpty(referrerUrl))
-                return service.Redirect(LogoutUrlFilter(this, referrerUrl.AddParam("s", "-1")));
+                return service.Redirect(LogoutUrlFilter(this, referrerUrl.SetParam("s", "-1")));
 
             return new AuthenticateResponse();
         }
@@ -377,17 +377,17 @@ namespace ServiceStack.Auth
 
             if (authFeature != null && authFeature.ValidateUniqueUserNames && UserNameAlreadyExists(authRepo, userAuth, tokens))
             {
-                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).AddParam("f", "UserNameAlreadyExists")));
+                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).SetParam("f", "UserNameAlreadyExists")));
             }
 
             if (authFeature != null && authFeature.ValidateUniqueEmails && EmailAlreadyExists(authRepo, userAuth, tokens))
             {
-                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).AddParam("f", "EmailAlreadyExists")));
+                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).SetParam("f", "EmailAlreadyExists")));
             }
 
             if (IsAccountLocked(authRepo, userAuth, tokens))
             {
-                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).AddParam("f", "AccountLocked")));
+                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).SetParam("f", "AccountLocked")));
             }
 
             return null;

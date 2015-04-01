@@ -240,6 +240,19 @@ namespace ServiceStack
 			httpRes.AddHeader(HttpHeaders.LastModified, lastWt.ToString("r"));
 		}
 
+        public static string SetParam(this string url, string key, object val)
+        {
+            return url.SetParam(key, val.ToString());
+        }
+
+        public static string SetParam(this string url, string key, string val)
+        {
+            var addToQueryString = HostContext.Config.AddRedirectParamsToQueryString;
+            return addToQueryString
+                ? url.SetQueryParam(key, val)
+                : url.SetHashParam(key, val);
+        }
+
         public static string AddParam(this string url, string key, object val)
         {
             return url.AddParam(key, val.ToString());
