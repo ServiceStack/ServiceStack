@@ -381,11 +381,7 @@
                                 url: opt.heartbeatUrl,
                                 data: null,
                                 dataType: "text",
-                                success: function(r) {
-                                    var heartbeatFn = $.ss.handlers["onHeartbeat"];
-                                    if (heartbeatFn != null)
-                                        heartbeatFn.apply($.ss.eventSource, r);
-                                },
+                                success: function(r) {},
                                 error: function () {
                                     $.ss.reconnectServerEvents({errorArgs:arguments});
                                 }
