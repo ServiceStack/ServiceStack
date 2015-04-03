@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Host;
-using ServiceStack.NativeTypes;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 using System.Text;
@@ -31,6 +29,9 @@ namespace ServiceStack.Metadata
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+                return;
+
             using (var sw = new StreamWriter(httpRes.OutputStream))
             {
                 var writer = new HtmlTextWriter(sw);

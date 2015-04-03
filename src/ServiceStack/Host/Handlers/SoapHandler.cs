@@ -89,7 +89,7 @@ namespace ServiceStack.Host.Handlers
                 httpReq.OperationName = soapAction.Trim('"');
             }
 
-            if (HostContext.ApplyPreRequestFilters(httpReq, httpRes))
+            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
                 return PrepareEmptyResponse(message, httpReq);
 
             string requestXml = GetRequestXml(requestMsg);

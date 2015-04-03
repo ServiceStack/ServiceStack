@@ -39,7 +39,13 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         public override void Configure(Container container)
         {
-            //this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = null;
+            this.PreRequestFilters.Add((req, res) => {
+                if (req.PathInfo.StartsWith("/metadata"))
+                {
+                    res.StatusCode = (int)HttpStatusCode.Forbidden;
+                    res.EndRequest();
+                }
+            });
 
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig

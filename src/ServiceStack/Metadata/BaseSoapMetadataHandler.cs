@@ -24,6 +24,9 @@ namespace ServiceStack.Metadata
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+                return;
+
             if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) return;
 
             var operationTypes = HostContext.Metadata.GetAllTypes();
