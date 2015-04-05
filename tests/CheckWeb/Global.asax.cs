@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Configuration;
 using System.Linq;
-using System.Net;
-using System.Web;
 using Check.ServiceInterface;
 using Check.ServiceModel;
 using Funq;
@@ -15,13 +11,11 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
-using ServiceStack.NativeTypes.Java;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.VirtualPath;
-using ServiceStack.Web;
 
 namespace CheckWeb
 {
@@ -39,14 +33,6 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         public override void Configure(Container container)
         {
-            this.PreRequestFilters.Add((req, res) => {
-                if (req.PathInfo.StartsWith("/metadata"))
-                {
-                    res.StatusCode = (int)HttpStatusCode.Forbidden;
-                    res.EndRequest();
-                }
-            });
-
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
             {
