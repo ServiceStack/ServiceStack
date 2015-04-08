@@ -32,6 +32,7 @@ namespace ServiceStack.Metadata
 
         public MetadataConfig GetEndpointConfig(string contentType)
         {
+            contentType = contentType.ToLowerSafe();
             switch (contentType)
             {
                 case MimeTypes.Soap11:

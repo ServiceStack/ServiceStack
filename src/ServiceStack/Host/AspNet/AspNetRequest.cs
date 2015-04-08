@@ -98,7 +98,7 @@ namespace ServiceStack.Host.AspNet
 
         public string ContentType
         {
-            get { return request.ContentType.ToLowerSafe(); }
+            get { return request.ContentType; }
         }
         
         private string httpMethod;

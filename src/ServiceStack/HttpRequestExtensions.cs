@@ -616,7 +616,7 @@ namespace ServiceStack
                 var hasPreferredContentTypes = new bool[preferredContentTypes.Length];
                 foreach (var acceptsType in acceptContentTypes)
                 {
-                    var contentType = acceptsType.SplitOnFirst(";")[0];
+                    var contentType = ContentFormat.GetRealContentType(acceptsType);
                     acceptsAnything = acceptsAnything || contentType == "*/*";
 
                     for (var i = 0; i < preferredContentTypes.Length; i++)
@@ -648,7 +648,8 @@ namespace ServiceStack
                 {
                     foreach (var customContentType in customContentTypes)
                     {
-                        if (contentType.StartsWith(customContentType)) return customContentType;
+                        if (contentType.StartsWith(customContentType, StringComparison.OrdinalIgnoreCase)) 
+                            return customContentType;
                     }
                 }
             }

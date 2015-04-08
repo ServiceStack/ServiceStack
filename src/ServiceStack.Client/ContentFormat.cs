@@ -56,7 +56,7 @@ namespace ServiceStack
         {
             return contentType == null
                        ? null
-                       : contentType.Split(';')[0].Trim();
+                       : contentType.Split(';')[0].ToLower().Trim();
         }
 
         public static bool MatchesContentType(this string contentType, string matchesContentType)

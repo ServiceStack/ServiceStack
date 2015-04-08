@@ -300,7 +300,7 @@ namespace ServiceStack.Host
         public StreamDeserializerDelegate GetStreamDeserializer(string contentType)
         {
             StreamDeserializerDelegate streamReader;
-            var realContentType = contentType.Split(';')[0].Trim();
+            var realContentType = ContentFormat.GetRealContentType(contentType);
             if (this.ContentTypeDeserializers.TryGetValue(realContentType, out streamReader))
             {
                 return streamReader;
