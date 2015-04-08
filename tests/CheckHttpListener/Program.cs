@@ -47,7 +47,7 @@ namespace CheckHttpListener
 
             //TestService();
 
-            Process.Start("http://localhost:2020/types/csharp");
+            Process.Start("http://localhost:2020/upload.html");
 
             //var response = "http://localhost:2020".PostToUrl(new { a = "foo", b = "bar" });
             //"Response: {0}".Print(response);
@@ -119,6 +119,17 @@ namespace CheckHttpListener
             throw HttpError.Unauthorized(request.Address ?? "Unauthorized UserId");
             //return HttpError.Unauthorized(request.Address ?? "Unauthorized UserId");
         }
+    }
 
+    [Route("/upload", "POST")]
+    public class UploadFileRequest { }
+
+    public class TestController : Service
+    {
+        public void Any(UploadFileRequest request)
+        {
+            int filesCount = Request.Files.Length;
+            Console.WriteLine(filesCount); // Always 0
+        }
     }
 }

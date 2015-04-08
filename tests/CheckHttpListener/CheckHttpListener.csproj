@@ -49,6 +49,10 @@
     <Reference Include="ServiceStack.OrmLite.SqlServer">
       <HintPath>..\..\lib\ServiceStack.OrmLite.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Redis, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.Redis.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -101,6 +105,9 @@
   <ItemGroup>
     <Content Include="..\..\lib\sqlite3.dll">
       <Link>sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="upload.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="ResourceFile.txt" />
