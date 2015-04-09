@@ -452,6 +452,26 @@ namespace Check.ServiceModel.Types
         public TypesGroup.InnerEnum InnerEnum { get; set; }
     }
 
+    public class QueryTemplate : IReturn<QueryResponseTemplate<Poco>> {}
+
+    [DataContract]
+    public class QueryResponseTemplate<T> : IHasResponseStatus, IMeta
+    {
+        [DataMember(Order = 1)]
+        public virtual int Offset { get; set; }
+
+        [DataMember(Order = 2)]
+        public virtual int Total { get; set; }
+
+        [DataMember(Order = 3)]
+        public virtual List<T> Results { get; set; }
+
+        [DataMember(Order = 4)]
+        public virtual Dictionary<string, string> Meta { get; set; }
+
+        [DataMember(Order = 5)]
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
 }
 
 

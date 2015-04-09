@@ -271,7 +271,11 @@ namespace ServiceStack.NativeTypes
 
         public MetadataType ToType(Type type)
         {
-            if (type == null) return null;
+            if (type == null) 
+                return null;
+
+            if (type.IsGenericType)
+                type = type.GetGenericTypeDefinition();
 
             var metaType = new MetadataType
             {

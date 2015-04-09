@@ -36,7 +36,7 @@ namespace ServiceStack.NativeTypes
 
     [Exclude(Feature.Soap)]
     [Route("/types/java")]
-    public class TyepsJava : NativeTypesBase { }
+    public class TypesJava : NativeTypesBase { }
 
     public class NativeTypesBase
     {
@@ -181,7 +181,7 @@ namespace ServiceStack.NativeTypes
         }
 
         [AddHeader(ContentType = MimeTypes.PlainText)]
-        public object Any(TyepsJava request)
+        public object Any(TypesJava request)
         {
             if (request.BaseUrl == null)
                 request.BaseUrl = Request.GetBaseUrl();
