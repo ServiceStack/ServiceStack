@@ -36,6 +36,7 @@ namespace ServiceStack.NativeTypes.Java
         };
 
         public static string GSonAnnotationsNamespace = "com.google.gson.annotations.*";
+        public static string GSonReflectNamespace = "com.google.gson.reflect.*";
 
         public static bool AddGsonImport
         {
@@ -43,6 +44,8 @@ namespace ServiceStack.NativeTypes.Java
             {
                 //Used by @SerializedName() annotation, but requires Android dep
                 DefaultImports.Add(GSonAnnotationsNamespace);
+                //Used by TypeToken<T>
+                DefaultImports.Add(GSonReflectNamespace);
             }
         }
 
@@ -84,9 +87,12 @@ namespace ServiceStack.NativeTypes.Java
             {
                 defaultImports = Config.DefaultImports;
             }
-            else if (ReferencesGson(metadata) && !defaultImports.Contains(GSonAnnotationsNamespace))
+            else if (ReferencesGson(metadata))
             {
-                defaultImports.Add(GSonAnnotationsNamespace);
+                if (!defaultImports.Contains(GSonAnnotationsNamespace))
+                    defaultImports.Add(GSonAnnotationsNamespace);
+                if (!defaultImports.Contains(GSonReflectNamespace))
+                    defaultImports.Add(GSonReflectNamespace);
             }
 
             var defaultNamespace = Config.GlobalNamespace ?? DefaultGlobalNamespace;
