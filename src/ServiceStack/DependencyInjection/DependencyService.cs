@@ -157,7 +157,7 @@ namespace ServiceStack.DependencyInjection
         {
             if (_container == null)
             {
-                throw new NotSupportedException("Cannot create nested lifetime scope when the root one isn't ready.");
+                UpdateRegistrations();
             }
             return new DependencyResolver(_container.BeginLifetimeScope(builder));
         }
