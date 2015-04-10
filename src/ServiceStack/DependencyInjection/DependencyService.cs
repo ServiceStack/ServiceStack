@@ -143,7 +143,7 @@ namespace ServiceStack.DependencyInjection
                 _containerBuilder = new ContainerBuilder();
             }
         }
-        
+
         public DependencyResolver CreateResolver()
         {
             if (_container == null)
@@ -151,6 +151,15 @@ namespace ServiceStack.DependencyInjection
                 UpdateRegistrations();
             }
             return new DependencyResolver(_container.BeginLifetimeScope());
+        }
+
+        public DependencyResolver CreateResolver(Action<ContainerBuilder> builder)
+        {
+            if (_container == null)
+            {
+                throw new NotSupportedException("Cannot create nested lifetime scope when the root one isn't ready.");
+            }
+            return new DependencyResolver(_container.BeginLifetimeScope(builder));
         }
 
         public T TryResolve<T>()
