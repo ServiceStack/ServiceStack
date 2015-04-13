@@ -387,10 +387,10 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("{");
             sbExt = sbExt.Indent();
 
-            sbExt.AppendLine("public class var typeName:String {{ return \"{0}\" }}".Fmt(typeName));
+            sbExt.AppendLine("public static var typeName:String {{ return \"{0}\" }}".Fmt(typeName));
 
             //func typeConfig()
-            sbExt.AppendLine("public class func reflect() -> Type<{0}> {{".Fmt(typeName));
+            sbExt.AppendLine("public static func reflect() -> Type<{0}> {{".Fmt(typeName));
             sbExt = sbExt.Indent();
             sbExt.AppendLine(
                 "return TypeConfig.config() ?? TypeConfig.configure(Type<{0}>(".Fmt(typeName));
@@ -451,14 +451,14 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("}");
 
             //fromJson()
-            sbExt.AppendLine("public class func fromJson(json:String) -> {0}? {{".Fmt(typeName));
+            sbExt.AppendLine("public static func fromJson(json:String) -> {0}? {{".Fmt(typeName));
             sbExt = sbExt.Indent();
             sbExt.AppendLine("return {0}.reflect().fromJson({0}(), json: json)".Fmt(typeName));
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("}");
 
             //fromObject()
-            sbExt.AppendLine("public class func fromObject(any:AnyObject) -> {0}? {{".Fmt(typeName));
+            sbExt.AppendLine("public static func fromObject(any:AnyObject) -> {0}? {{".Fmt(typeName));
             sbExt = sbExt.Indent();
             sbExt.AppendLine("return {0}.reflect().fromObject({0}(), any:any)".Fmt(typeName));
             sbExt = sbExt.UnIndent();
@@ -472,7 +472,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("}");
 
             //fromString()
-            sbExt.AppendLine("public class func fromString(string:String) -> {0}? {{".Fmt(typeName));
+            sbExt.AppendLine("public static func fromString(string:String) -> {0}? {{".Fmt(typeName));
             sbExt = sbExt.Indent();
             sbExt.AppendLine("return {0}.reflect().fromString({0}(), string: string)".Fmt(typeName));
             sbExt = sbExt.UnIndent();
