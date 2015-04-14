@@ -650,16 +650,20 @@ namespace ServiceStack.ServiceClient.Web
                         // pass that around instead after this point?
                         stream.Position = 0;
 #endif
-                        var responseType = typeof (TResponse);
-                        if ((responseType is IHasResponseStatus ||
-                             responseType.GetPropertyInfo("ResponseStatus") != null))
+
+                        if (errorResponse.ContentType.MatchesContentType(ContentType))
                         {
-                            typedResponseDto = (TResponse)this.StreamDeserializer(responseType, stream);
-                            responseDto = typedResponseDto;
-                        }
-                        else
-                        {
-                            responseDto = this.StreamDeserializer(typeof(ErrorResponse), stream);
+                            var responseType = typeof (TResponse);
+                            if ((responseType is IHasResponseStatus ||
+                                 responseType.GetPropertyInfo("ResponseStatus") != null))
+                            {
+                                typedResponseDto = (TResponse) this.StreamDeserializer(responseType, stream);
+                                responseDto = typedResponseDto;
+                            }
+                            else
+                            {
+                                responseDto = this.StreamDeserializer(typeof (ErrorResponse), stream);
+                            }
                         }
                     }
 
