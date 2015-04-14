@@ -629,11 +629,12 @@ namespace ServiceStack.ServiceClient.Web
                 Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
                 Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
 
-                var serviceEx = new WebServiceException(errorResponse.StatusDescription)
-                {
-                    StatusCode = (int)errorResponse.StatusCode,
-                };
+                int statusCode = (int) errorResponse.StatusCode;
+                string responseBody = null;
+                TResponse typedResponseDto = default(TResponse);
+                object responseDto = null;
 
+                WebServiceException serviceEx;
                 try
                 {
                     using (var stream = errorResponse.GetResponseStream())
@@ -642,7 +643,7 @@ namespace ServiceStack.ServiceClient.Web
                         //var strResponse = new StreamReader(stream).ReadToEnd();
                         //Console.WriteLine("Response: " + strResponse);
                         //stream.Position = 0;
-                        serviceEx.ResponseBody = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                        responseBody = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
 #if !MONOTOUCH
                         // MonoTouch throws NotSupportedException when setting System.Net.WebConnectionStream.Position
                         // Not sure if the stream is used later though, so may have to copy to MemoryStream and
@@ -650,30 +651,38 @@ namespace ServiceStack.ServiceClient.Web
                         stream.Position = 0;
 #endif
                         var responseType = typeof (TResponse);
-                        var responseDto = default(TResponse);
                         if ((responseType is IHasResponseStatus ||
                              responseType.GetPropertyInfo("ResponseStatus") != null))
                         {
-                            responseDto = (TResponse) this.StreamDeserializer(responseType, stream);
-                            serviceEx.ResponseDto = responseDto;
+                            typedResponseDto = (TResponse)this.StreamDeserializer(responseType, stream);
+                            responseDto = typedResponseDto;
                         }
                         else
                         {
-                            serviceEx.ResponseDto = this.StreamDeserializer(typeof (ErrorResponse), stream);
+                            responseDto = this.StreamDeserializer(typeof(ErrorResponse), stream);
                         }
-
-                        requestState.HandleError(responseDto, serviceEx);
                     }
+
+                    serviceEx = new WebServiceException(errorResponse.StatusDescription)
+                    {
+                        StatusCode = statusCode,
+                        ResponseBody = responseBody,
+                        ResponseDto = responseDto
+                    };
                 }
                 catch (Exception innerEx)
                 {
                     // Oh, well, we tried
                     Log.Debug(string.Format("WebException Reading Response Error: {0}", innerEx.Message), innerEx);
-                    requestState.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx)
+                    serviceEx = new WebServiceException(errorResponse.StatusDescription, innerEx)
                     {
-                        StatusCode = (int)errorResponse.StatusCode,
-                    });
+                        StatusCode = statusCode,
+                        ResponseBody = responseBody,
+                        ResponseDto = responseDto
+                    };
                 }
+
+                requestState.HandleError(typedResponseDto, serviceEx);
                 return;
             }
 
