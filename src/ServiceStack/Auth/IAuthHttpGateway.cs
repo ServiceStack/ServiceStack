@@ -13,11 +13,11 @@ namespace ServiceStack.Auth
 
     public class AuthHttpGateway : IAuthHttpGateway
     {
-        public const string TwitterUserUrl = "https://api.twitter.com/1.1/users/lookup.json?user_id={0}";
+        public static string TwitterUserUrl = "https://api.twitter.com/1.1/users/lookup.json?user_id={0}";
 
-        public const string FacebookUserUrl = "https://graph.facebook.com/v2.0/me?access_token={0}";
+        public static string FacebookUserUrl = "https://graph.facebook.com/v2.0/me?access_token={0}";
 
-        public const string YammerUserUrl = "https://www.yammer.com/api/v1/users/{0}.json";
+        public static string YammerUserUrl = "https://www.yammer.com/api/v1/users/{0}.json";
 
         public string DownloadTwitterUserInfo(OAuthAccessToken oauthToken, string twitterUserId)
         {
