@@ -141,6 +141,7 @@
     <Compile Include="IRestGateway.cs" />
     <Compile Include="Logging\DebugLogFactory.cs" />
     <Compile Include="Logging\DebugLogger.cs" />
+    <Compile Include="Logging\GenericLogFactory.cs" />
     <Compile Include="Logging\GenericLogger.cs" />
     <Compile Include="Logging\NullDebugLogger.cs" />
     <Compile Include="Logging\NullLogFactory.cs" />
