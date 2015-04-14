@@ -1023,7 +1023,7 @@ namespace ServiceStack.Html
                     {
                         sb.Append(html.Substring(lastValue, match.Index - lastValue));
                         //matcher.appendReplacement(sb, Regex.Escape(scriptBlocks[i]));
-                        sb.Append(match.Result(/*Regex.Escape*/(scriptBlocks[i])));
+                        sb.Append(match.Result(scriptBlocks[i].Replace("\\", "\\\\").Replace("$", "$$")));
 
                         lastValue = match.Index + match.Length;
                     }
