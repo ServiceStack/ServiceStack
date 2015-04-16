@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Autofac;
 using ServiceStack.DependencyInjection;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -20,17 +21,20 @@ namespace ServiceStack.ServiceHost
         //public ServiceOperations ServiceOperations { get; set; }
         //public ServiceOperations AllServiceOperations { get; set; }
 
-		public ServiceManager(params Assembly[] assembliesWithServices)
+        public ServiceManager(IContainer dependencyContainer, params Assembly[] assembliesWithServices)
+            : this(new DependencyService(dependencyContainer), assembliesWithServices)
 		{
-		    this.DependencyService = new DependencyService();
-            this.Metadata = new ServiceMetadata();
-            this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices), this.Metadata);
 		}
 
         public ServiceManager(DependencyService dependencyService, params Assembly[] assembliesWithServices)
-            : this(assembliesWithServices)
         {
-            this.DependencyService = dependencyService ?? new DependencyService();
+            if (dependencyService == null)
+            {
+                throw new ArgumentNullException("dependencyService");
+            }
+            this.DependencyService = dependencyService;
+            this.Metadata = new ServiceMetadata();
+            this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices), this.Metadata);
         }
 
         /// <summary>
@@ -39,9 +43,15 @@ namespace ServiceStack.ServiceHost
         public ServiceManager(DependencyService dependencyService, ServiceController serviceController)
         {
             if (serviceController == null)
+            {
                 throw new ArgumentNullException("serviceController");
+            }
+            if (dependencyService == null)
+            {
+                throw new ArgumentNullException("dependencyService");
+            }
 
-            this.DependencyService = dependencyService ?? new DependencyService();
+            this.DependencyService = dependencyService;
             this.Metadata = serviceController.Metadata; //always share the same metadata
             this.ServiceController = serviceController;
         }
@@ -73,7 +83,7 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		public ServiceManager Init()
+        public ServiceManager Init()
 		{
             this.ServiceController.Register(DependencyService);
 

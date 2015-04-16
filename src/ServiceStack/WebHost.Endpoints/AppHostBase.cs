@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using Autofac;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.DependencyInjection;
@@ -26,14 +27,14 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static AppHostBase Instance { get; protected set; }
 
-		protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
+		protected AppHostBase(string serviceName, IContainer dependencyContainer, params Assembly[] assembliesWithServices)
 		{
-			EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
+            EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(dependencyContainer, assembliesWithServices));
 		}
 
-		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
+		protected virtual ServiceManager CreateServiceManager(IContainer dependencyContainer, params Assembly[] assembliesWithServices)
 		{
-			return new ServiceManager(assembliesWithServices);
+            return new ServiceManager(dependencyContainer, assembliesWithServices);
 		}
 
 		protected IServiceController ServiceController
@@ -71,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints
 			if (serviceManager != null)
 			{
 				serviceManager.Init();
-				Configure(EndpointHost.Config.ServiceManager.DependencyService);
+                Configure(serviceManager.DependencyService);
 			}
 			else
 			{

@@ -3,6 +3,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Autofac;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -70,17 +71,17 @@ namespace ServiceStack.WebHost.Endpoints
 
         protected AppHostHttpListenerLongRunningBase(int poolSize = 500) { threadPoolManager = new ThreadPoolManager(poolSize); }
 
-        protected AppHostHttpListenerLongRunningBase(string serviceName, params Assembly[] assembliesWithServices)
-            : this(serviceName, 500, assembliesWithServices) { }
+        protected AppHostHttpListenerLongRunningBase(string serviceName, IContainer dependencyContainer, params Assembly[] assembliesWithServices)
+            : this(serviceName, 500, dependencyContainer, assembliesWithServices) { }
 
-        protected AppHostHttpListenerLongRunningBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
+        protected AppHostHttpListenerLongRunningBase(string serviceName, int poolSize, IContainer dependencyContainer, params Assembly[] assembliesWithServices)
+            : base(serviceName, dependencyContainer, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
 
-        protected AppHostHttpListenerLongRunningBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-            : this(serviceName, handlerPath, 500, assembliesWithServices) { }
+        protected AppHostHttpListenerLongRunningBase(string serviceName, string handlerPath, IContainer dependencyContainer, params Assembly[] assembliesWithServices)
+            : this(serviceName, handlerPath, 500, dependencyContainer, assembliesWithServices) { }
 
-        protected AppHostHttpListenerLongRunningBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
-            : base(serviceName, handlerPath, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
+        protected AppHostHttpListenerLongRunningBase(string serviceName, string handlerPath, int poolSize, IContainer dependencyContainer, params Assembly[] assembliesWithServices)
+            : base(serviceName, handlerPath, dependencyContainer, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
 
 
         private bool disposed = false;
