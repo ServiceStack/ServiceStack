@@ -255,7 +255,7 @@ namespace ServiceStack.NativeTypes.Swift
                 {
                     //Swift doesn't support Generic Interfaces like IReturn<T> 
                     //Converting them into protocols with typealiases instead 
-                    ExtractTypeAliases(options, typeAliases, extends);
+                    ExtractTypeAliases(options, typeAliases, extends, ref sbExt);
                 }
 
                 if (type.IsInterface())
@@ -329,7 +329,9 @@ namespace ServiceStack.NativeTypes.Swift
             return lastNS;
         }
 
-        private static void ExtractTypeAliases(CreateTypeOptions options, List<string> typeAliases, List<string> extends)
+        private bool emittedNSStringExtension = false;
+
+        private void ExtractTypeAliases(CreateTypeOptions options, List<string> typeAliases, List<string> extends, ref StringBuilderWrapper sbExt)
         {
             var implStr = options.ImplementsFn();
             if (!string.IsNullOrEmpty(implStr))
@@ -346,7 +348,54 @@ namespace ServiceStack.NativeTypes.Swift
 
                     var genericType = interfaceParts[1].Substring(0, interfaceParts[1].Length - 1);
 
-                    typeAliases.Add("typealias {0} = {1}".Fmt(alias, genericType));
+
+                    //Workaround segfault for adding JsonSerializable extension to String and
+                    //segfault when NSString extension is not declared in same file as DTO's  
+                    if (alias == "Return" && genericType == "String")
+                    {
+                        typeAliases.Add("typealias {0} = {1}".Fmt(alias, "NSString"));
+                        if (!emittedNSStringExtension)
+                        {
+                            emittedNSStringExtension = true;
+                            sbExt.AppendLine(@"
+extension NSString : JsonSerializable
+{
+    public static var typeName:String { return ""NSString"" }
+    
+    public static func reflect() -> Type<NSString> {
+        return Type<NSString>(properties:[])
+    }
+    
+    public func toString() -> String {
+        return self as String
+    }
+    
+    public func toJson() -> String {
+        return jsonString(self as String)
+    }
+    
+    public static func fromJson(json:String) -> NSString? {
+        return parseJson(json) as? NSString
+    }
+    
+    public static func fromString(string: String) -> NSString? {
+        return string
+    }
+    
+    public static func fromObject(any:AnyObject) -> NSString?
+    {
+        switch any {
+        case let s as NSString: return s
+        default:return nil
+        }
+    }
+}");
+                        }
+                    }
+                    else
+                    {
+                        typeAliases.Add("typealias {0} = {1}".Fmt(alias, genericType));
+                    }
                 }
 
                 extends.Add(implStr);

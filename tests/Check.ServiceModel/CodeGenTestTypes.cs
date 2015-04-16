@@ -167,7 +167,7 @@ namespace Check.ServiceModel.Operations
         public AllCollectionTypes AllCollectionTypes { get; set; }
     }
 
-    public class HelloString
+    public class HelloString : IReturn<string>
     {
         public string Name { get; set; }
     }
