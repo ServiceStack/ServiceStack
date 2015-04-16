@@ -22,11 +22,6 @@ namespace ServiceStack.ServiceHost
 
 		public ServiceManager(params Assembly[] assembliesWithServices)
 		{
-			if (assembliesWithServices == null || assembliesWithServices.Length == 0)
-				throw new ArgumentException(
-					"No Assemblies provided in your AppHost's base constructor.\n"
-					+ "To register your services, please provide the assemblies where your web services are defined.");
-
 		    this.DependencyService = new DependencyService();
             this.Metadata = new ServiceMetadata();
             this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices), this.Metadata);
