@@ -32,11 +32,14 @@ namespace ServiceStack.DependencyInjection
         private readonly object _lockObject;
         private ContainerBuilder _containerBuilder;
         private IContainer _container;
+        private bool _builderUpdated;
 
-        public DependencyService()
+        public DependencyService(IContainer dependencyContainer)
         {
             _lockObject = new object();
+            _container = dependencyContainer;
             _containerBuilder = new ContainerBuilder();
+            _builderUpdated = false;
         }
 
         public void Register(Type implementingType, Sharing sharing, bool registerAsImplementedInterfaces, bool includeNonPublicConstructors)
@@ -73,6 +76,7 @@ namespace ServiceStack.DependencyInjection
 
                 registration = SetRegistrationLifetime(registration, sharing);
             }
+            _builderUpdated = true;
         }
 
         public void RegisterAsType(Type implementingType, Type registrationType, Sharing sharing, bool includeNonPublicConstructors)
@@ -88,6 +92,7 @@ namespace ServiceStack.DependencyInjection
                 registration = registration.FindConstructorsWith(type => type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
             }
             registration = SetRegistrationLifetime(registration, sharing);
+            _builderUpdated = true;
         }
 
         public void RegisterSingletonInstance(object classInstance, bool registerAsImplementedInterfaces)
@@ -102,6 +107,7 @@ namespace ServiceStack.DependencyInjection
             var registration = _containerBuilder.Register(c => classInstance);
             registration = registration.As(registrationTypes);
             registration = SetRegistrationLifetime(registration, Sharing.Singleton);
+            _builderUpdated = true;
         }
 
         private IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> SetRegistrationLifetime<TLimit, TActivatorData, TRegistrationStyle>(
@@ -123,11 +129,6 @@ namespace ServiceStack.DependencyInjection
             return registration;
         }
 
-        public ContainerBuilder GetContainerBuilder()
-        {
-            return _containerBuilder;
-        }
-
         public void UpdateRegistrations()
         {
             lock (_lockObject)
@@ -141,12 +142,13 @@ namespace ServiceStack.DependencyInjection
                     _container = _containerBuilder.Build();
                 }
                 _containerBuilder = new ContainerBuilder();
+                _builderUpdated = false;
             }
         }
 
         public DependencyResolver CreateResolver()
         {
-            if (_container == null)
+            if (_builderUpdated)
             {
                 UpdateRegistrations();
             }
@@ -155,7 +157,7 @@ namespace ServiceStack.DependencyInjection
 
         public DependencyResolver CreateResolver(Action<ContainerBuilder> builder)
         {
-            if (_container == null)
+            if (_builderUpdated)
             {
                 UpdateRegistrations();
             }

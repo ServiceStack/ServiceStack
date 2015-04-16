@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints
             //Default Config for projects that want to use components but not WebFramework (e.g. MVC)
             Config = new EndpointHostConfig(
                 "Empty Config",
-                new ServiceManager(new DependencyService(), new ServiceController(null)));
+                new ServiceManager(new DependencyService(null), new ServiceController(null)));
         }
 
         // Pre user config
@@ -301,7 +301,7 @@ namespace ServiceStack.WebHost.Endpoints
 
             var config = EndpointHostConfig.Instance;
             config.ServiceName = "Test Services";
-            config.ServiceManager = new ServiceManager(assemblies.Length == 0 ? new[] { Assembly.GetCallingAssembly() } : assemblies);
+            config.ServiceManager = new ServiceManager(config.ServiceManager.DependencyService, assemblies.Length == 0 ? new[] { Assembly.GetCallingAssembly() } : assemblies);
             Config = config;
         }
 

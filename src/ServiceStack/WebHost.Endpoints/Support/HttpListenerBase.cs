@@ -7,6 +7,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Autofac;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
@@ -55,15 +56,15 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			EndpointHostConfig.SkipPathValidation = true;
 		}
 
-		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
+        protected HttpListenerBase(string serviceName, IContainer dependencyContainer, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
+            EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(dependencyContainer, assembliesWithServices));
 		}
 
-		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
+		protected virtual ServiceManager CreateServiceManager(IContainer dependencyContainer, params Assembly[] assembliesWithServices)
 		{
-			return new ServiceManager(assembliesWithServices);
+            return new ServiceManager(dependencyContainer, assembliesWithServices);
 		}
 
 		public void Init()

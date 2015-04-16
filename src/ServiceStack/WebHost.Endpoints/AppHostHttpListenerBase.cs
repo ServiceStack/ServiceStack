@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Reflection;
+using Autofac;
 using ServiceStack.Common.Utils;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -19,15 +20,15 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		protected AppHostHttpListenerBase() {}
 
-		protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-			: base(serviceName, assembliesWithServices)
+		protected AppHostHttpListenerBase(string serviceName, IContainer dependencyContainer, params Assembly[] assembliesWithServices)
+            : base(serviceName, dependencyContainer, assembliesWithServices)
 		{
 			EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = null;
 			EndpointHostConfig.Instance.MetadataRedirectPath = "metadata";
 		}
 
-		protected AppHostHttpListenerBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-			: base(serviceName, assembliesWithServices)
+        protected AppHostHttpListenerBase(string serviceName, string handlerPath, IContainer dependencyContainer, params Assembly[] assembliesWithServices)
+            : base(serviceName, dependencyContainer, assembliesWithServices)
 		{
 			EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath)
 				? null : handlerPath;			
