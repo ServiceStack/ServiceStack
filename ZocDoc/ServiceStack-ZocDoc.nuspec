@@ -16,11 +16,11 @@
 	</dependencies>
   </metadata>
   <files>
-    <file src="..\src\ServiceStack.ServiceInterface\bin\$configuration$\ServiceStack.ServiceInterface.dll" target="lib\net35" />
-    <file src="..\src\ServiceStack.ServiceInterface\bin\$configuration$\ServiceStack.ServiceInterface.pdb" target="lib\net35" />
-    <file src="..\src\ServiceStack\bin\$configuration$\ServiceStack.dll" target="lib\net35" />
-    <file src="..\src\ServiceStack\bin\$configuration$\ServiceStack.pdb" target="lib\net35" />
-    <file src="..\src\ServiceStack\bin\$configuration$\ServiceStack.xml" target="lib\net35" />
+    <file src="..\src\ServiceStack.ServiceInterface\bin\$configuration$\ServiceStack.ServiceInterface.dll" target="lib\net40" />
+    <file src="..\src\ServiceStack.ServiceInterface\bin\$configuration$\ServiceStack.ServiceInterface.pdb" target="lib\net40" />
+    <file src="..\src\ServiceStack\bin\$configuration$\ServiceStack.dll" target="lib\net40" />
+    <file src="..\src\ServiceStack\bin\$configuration$\ServiceStack.pdb" target="lib\net40" />
+    <file src="..\src\ServiceStack\bin\$configuration$\ServiceStack.xml" target="lib\net40" />
     <file src="..\src\ServiceStack\**\*.cs" exclude="**\obj\**" target="src\ServiceStack" />
     <file src="..\src\ServiceStack.ServiceInterface\**\*.cs" exclude="**\obj\**" target="src\ServiceStack.ServiceInterface" />
   </files>
