@@ -458,6 +458,8 @@ namespace ServiceStack.MiniProfiler
     /// </summary>
     public static class MiniProfilerExtensions
     {
+        public static Func<Profiler, string, IDisposable> CustomStepFn { get; set; }
+
         /// <summary>
         /// Wraps <paramref name="selector"/> in a <see cref="Step"/> call and executes it, returning its result.
         /// </summary>
@@ -483,6 +485,9 @@ namespace ServiceStack.MiniProfiler
         /// <param name="level">This step's visibility level; allows filtering when <see cref="Profiler.Start"/> is called.</param>
         public static IDisposable Step(this Profiler profiler, string name, ProfileLevel level = ProfileLevel.Info)
         {
+            if (CustomStepFn != null)
+                return CustomStepFn(profiler, name);
+
             return profiler == null ? null : profiler.StepImpl(name, level);
         }
 
