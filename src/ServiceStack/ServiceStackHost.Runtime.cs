@@ -36,13 +36,19 @@ namespace ServiceStack
         /// <returns></returns>
         public virtual bool ApplyPreRequestFilters(IRequest httpReq, IResponse httpRes)
         {
-            foreach (var requestFilter in PreRequestFilters)
-            {
-                requestFilter(httpReq, httpRes);
-                if (httpRes.IsClosed) break;
-            }
+            if (PreRequestFilters.Count == 0)
+                return false;
 
-            return httpRes.IsClosed;
+            using (Profiler.Current.Step("Executing Pre RequestFilters"))
+            {
+                foreach (var requestFilter in PreRequestFilters)
+                {
+                    requestFilter(httpReq, httpRes);
+                    if (httpRes.IsClosed) break;
+                }
+
+                return httpRes.IsClosed;
+            }
         }
 
         /// <summary>
