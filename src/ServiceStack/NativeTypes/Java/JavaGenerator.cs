@@ -293,7 +293,7 @@ namespace ServiceStack.NativeTypes.Java
 
                         sb.AppendLine(value == null
                             ? "{0}{1}".Fmt(name.ToPascalCase(), delim)
-                            : "{0}({1}){2}".Fmt(name.ToPascalCase(), value, delim));
+                            : "@SerializedName(\"{1}\") {0}({1}){2}".Fmt(name.ToPascalCase(), value, delim));
 
                         hasIntValue = hasIntValue || value != null;
                     }
