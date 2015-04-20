@@ -26,13 +26,20 @@ namespace ServiceStack.DependencyInjection
 
         public T TryResolve<T>()
         {
-            try
+            if (_lifetimeScope.IsRegistered<T>())
             {
-                return _lifetimeScope.Resolve<T>();
+                try
+                {
+                    return _lifetimeScope.Resolve<T>();
+                }
+                catch (DependencyResolutionException unusedException)
+                {
+                    return default(T);
+                }
             }
-            catch (DependencyResolutionException unusedException)
+            else
             {
-                return default(T);
+                return default (T);
             }
         }
 
