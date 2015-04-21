@@ -1,3 +1,981 @@
+# 4.0.40 Release Notes
+
+## Native support for Java and Android Studio!
+
+In our goal to provide a highly productive and versatile Web Services Framework that's ideal for services-heavy Mobile platforms, Service Oriented Architectures and Single Page Apps we're excited to announce new Native Types support for Java providing a terse and productive strong-typed Java API for the worlds most popular mobile platform - [Android](https://www.android.com/)!
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/android-studio-splash.png)
+
+The new native Java types support for Android significantly enhances [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) support for mobile platforms to provide a productive dev workflow for mobile developers on the primary .NET, iOS and Java IDE's:
+
+<img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/add-ss-reference-ides.png" align="right" />
+
+#### [VS.NET integration with ServiceStackVS](https://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7)
+
+Providing [C#](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference), [F#](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference), [VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference) and [TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference) Native Types support in Visual Studio for the [most popular platforms](https://github.com/ServiceStackApps/HelloMobile) including iOS and Android using [Xamarin.iOS](https://github.com/ServiceStackApps/HelloMobile#xamarinios-client) and [Xamarin.Android](https://github.com/ServiceStackApps/HelloMobile#xamarinandroid-client) on Windows.
+
+#### [Xamarin Studio integration with ServiceStackXS](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference#xamarin-studio)
+
+Providing [C# Native Types](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference) support for developing iOS and Android mobile Apps using [Xamarin.iOS](https://github.com/ServiceStackApps/HelloMobile#xamarinios-client) and [Xamarin.Android](https://github.com/ServiceStackApps/HelloMobile#xamarinandroid-client) with [Xamarin Studio](http://xamarin.com/studio) on OSX. The **ServiceStackXS** plugin also provides a rich web service development experience developing Client applications with [Mono Develop on Linux](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference#xamarin-studio-for-linux)
+
+#### [Xcode integration with ServiceStackXC Plugin](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference)
+
+Providing [Swift Native Types](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference) support for developing native iOS and OSX Applications with Xcode on OSX.
+
+#### [Android Studio integration with ServiceStackIDEA](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference)
+
+Providing Java Native Types support for developing pure cross-platform Java Clients or mobile Apps on the Android platform using Android Studio on both Windows and OSX.
+
+## [ServiceStack IDEA Android Studio Plugin](https://plugins.jetbrains.com/plugin/7749?pr=androidstudio)
+
+Like the existing IDE integrations before it, the ServiceStack IDEA plugin provides Add ServiceStack Reference functionality to [Android Studio - the official Android IDE](https://developer.android.com/sdk/index.html). 
+
+### Download and Install Plugin
+
+The [ServiceStack AndroidStudio Plugin](https://plugins.jetbrains.com/plugin/7749?pr=androidstudio) can be downloaded from the JetBrains plugins website at:
+
+### [ServiceStackIDEA.zip](https://plugins.jetbrains.com/plugin/download?pr=androidstudio&updateId=19465)
+
+After downloading the plugin above, install it in Android Studio by:
+
+1. Click on `File -> Settings` in the Main Menu to open the **Settings Dialog**
+2. Select **Plugins** settings screen
+3. Click on **Install plugin from disk...** to open the **File Picker Dialog**
+4. Browse and select the downloaded **ServiceStackIDEA.zip**
+5. Click **OK** then Restart Android Studio
+
+[![](https://github.com/ServiceStack/Assets/raw/34925d1b1b1b1856c451b0373139c939801d96ec/img/servicestackidea/android-plugin-install.gif)](https://plugins.jetbrains.com/plugin/7749?pr=androidstudio)
+
+### Java Add ServiceStack Reference
+
+If you've previously used [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) in any of the supported IDE's before, you'll be instantly familiar with Add ServiceStack Reference in Android Studio. The only additional field is **Package**, required in order to comply with Java's class definition rules. 
+
+To add a ServiceStack Reference, right-click (or press `Ctrl+Alt+Shift+R`) on the **Package folder** in your Java sources where you want to add the POJO DTO's. This will bring up the **New >** Items Context Menu where you can click on the **ServiceStack Reference...** Menu Item to open the **Add ServiceStack Reference** Dialog: 
+
+![Add ServiceStack Reference Java Context Menu](https://github.com/ServiceStack/Assets/raw/master/img/servicestackidea/android-context-menu.png)
+
+The **Add ServiceStack Reference** Dialog will be partially populated with the selected **Package** with the package where the Dialog was launched from and the **File Name** defaulting to `dto.java` where the Plain Old Java Object (POJO) DTO's will be added to. All that's missing is the url of the remote ServiceStack instance you wish to generate the DTO's for, e.g: `http://techstacks.io`:
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackidea/android-dialog.png)
+
+Clicking **OK** will add the `dto.java` file to your project and modifies the current Project's **build.gradle** file dependencies list with the new **net.servicestack:android** dependency containing the Java JSON ServiceClients which is used together with the remote Servers DTO's to enable its typed Web Services API:
+
+![](https://github.com/ServiceStack/Assets/raw/master/img/servicestackidea/android-dialog-example.gif)
+
+> As the Module's **build.gradle** file was modified you'll need to click on the **Sync Now** link in the top yellow banner to sync the **build.gradle** changes which will install or remove any modified dependencies.
+
+### Java Update ServiceStack Reference
+
+Like other Native Type languages, the generated DTO's can be further customized by modifying any of the options available in the header comments:
+
+```
+/* Options:
+Date: 2015-04-17 15:16:08
+Version: 1
+BaseUrl: http://techstacks.io
+
+Package: org.layoric.myapplication
+GlobalNamespace: techstackdtos
+//AddPropertyAccessors: True
+//SettersReturnThis: True
+//AddServiceStackTypes: True
+//AddResponseStatus: False
+//AddImplicitVersion: 
+//IncludeTypes: 
+//ExcludeTypes: 
+//DefaultImports: java.math.*,java.util.*,net.servicestack.client.*,com.google.gson.annotations.*
+*/
+...
+```
+
+For example the package name can be changed by uncommenting the **Package:** option with the new package name, then either right-click on the file to bring up the file context menu or use Android Studio's **Alt+Enter** keyboard shortcut then click on **Update ServiceStack Reference** to update the DTO's with any modified options:
+
+![](https://github.com/ServiceStack/Assets/raw/master/img/servicestackidea/android-update-example.gif)
+
+### Java JsonServiceClient API
+The goal of Native Types is to provide a productive end-to-end typed API to fascilitate consuming remote services with minimal effort, friction and cognitive overhead. One way we achieve this is by promoting a consistent, forwards and backwards-compatible message-based API that's works conceptually similar on every platform where each language consumes remote services by sending  **Typed DTO's** using a reusable **Generic Service Client** and a consistent client library API.
+
+To maximize knowledge sharing between different platforms, the Java ServiceClient API is modelled after the [.NET Service Clients API](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) closely, as allowed within Java's language and idiomatic-style constraints. 
+
+Thanks to C#/.NET being heavily inspired by Java, the resulting Java `JsonServiceClient` ends up bearing a close resemblance with .NET's Service Clients. The primary differences being due to language limitations like Java's generic type erasure and lack of language features like property initializers making Java slightly more verbose to work with, however as **Add ServiceStack Reference** is able to take advantage of code-gen we're able to mitigate most of these limitations to retain a familiar developer UX.
+
+The [ServiceClient.java](https://github.com/ServiceStack/ServiceStack.Java/blob/master/src/AndroidClient/client/src/main/java/net/servicestack/client/ServiceClient.java) interface provides a good overview on the API available on the concrete [JsonServiceClient](https://github.com/ServiceStack/ServiceStack.Java/blob/master/src/AndroidClient/client/src/main/java/net/servicestack/client/JsonServiceClient.java) class:
+
+```java
+public interface ServiceClient {
+    public <TResponse> TResponse get(IReturn<TResponse> request);
+    public <TResponse> TResponse get(IReturn<TResponse> request, Map<String,String> queryParams);
+    public <TResponse> TResponse get(String path, Class responseType);
+    public <TResponse> TResponse get(String path, Type responseType);
+    public HttpURLConnection get(String path);
+
+    public <TResponse> TResponse post(IReturn<TResponse> request);
+    public <TResponse> TResponse post(String path, Object request, Class responseCls);
+    public <TResponse> TResponse post(String path, Object request, Type responseType);
+    public <TResponse> TResponse post(String path, byte[] requestBody, String contentType, Class responseCls);
+    public <TResponse> TResponse post(String path, byte[] requestBody, String contentType, Type responseType);
+    public HttpURLConnection post(String path, byte[] requestBody, String contentType);
+
+    public <TResponse> TResponse put(IReturn<TResponse> request);
+    public <TResponse> TResponse put(String path, Object request, Class responseType);
+    public <TResponse> TResponse put(String path, Object request, Type responseType);
+    public <TResponse> TResponse put(String path, byte[] requestBody, String contentType, Class responseType);
+    public <TResponse> TResponse put(String path, byte[] requestBody, String contentType, Type responseType);
+    public HttpURLConnection put(String path, byte[] requestBody, String contentType);
+
+    public <TResponse> TResponse delete(IReturn<TResponse> request);
+    public <TResponse> TResponse delete(IReturn<TResponse> request, Map<String,String> queryParams);
+    public <TResponse> TResponse delete(String path, Class responseType);
+    public <TResponse> TResponse delete(String path, Type responseType);
+    public HttpURLConnection delete(String path);
+}
+```
+
+The primary concession is due to Java's generic type erasure which forces the addition overloads that include a `Class` parameter for specifying the response type to deserialize into as well as a `Type` parameter overload which does the same for generic types. These overloads aren't required for API's that accept a Request DTO annotated with `IReturn<T>` interface marker as we're able to encode the Response Type in code-generated Request DTO classes.
+
+### Java JsonServiceClient Usage
+To get started you'll just need an instance of `JsonServiceClient` initialized with the **BaseUrl** of the remote ServiceStack instance you want to access, e.g:
+
+```java
+JsonServiceClient client = new JsonServiceClient("http://techstacks.io");
+```
+
+> The JsonServiceClient is made available after the [net.servicestack:android](https://bintray.com/servicestack/maven/ServiceStack.Android/view) package is automatically added to your **build.gradle** when adding a ServiceStack reference.
+
+Typical usage of the Service Client is the same in .NET where you just need to send a populated Request DTO and the Service Client will return a populated Response DTO, e.g:
+
+```java
+AppOverviewResponse r = client.get(new AppOverview());
+
+ArrayList<Option> allTiers = r.getAllTiers();
+ArrayList<TechnologyInfo> topTech = r.getTopTechnologies();
+```
+
+As Java doesn't have type inference you'll need to specify the Type when declaring a variable. Whilst the public instance fields of the Request and Response DTO's are accessible directly, the convention in Java is to use the **property getters and setters** that are automatically generated for each DTO property as seen above.
+
+### Custom Example Usage
+
+We'll now go through some of the other API's to give you a flavour of what's available. When preferred you can also consume Services using a custom route by supplying a string containing the route and/or Query String. As no type info is available you'll need to specify the Response DTO class to deserialize the response into, e.g:
+
+```java
+OverviewResponse response = client.get("/overview", OverviewResponse.class);
+```
+
+The path can either be a relative or absolute url in which case the **BaseUrl** is ignored and the full absolute url is used instead, e.g:
+
+```java
+OverviewResponse response = client.get("http://techstacks.io/overview", OverviewResponse.class);
+```
+
+When initializing the Request DTO you can take advantage of the generated setters which by default return `this` allowing them to be created and chained in a single expression, e.g:
+
+```java
+GetTechnology request = new GetTechnology()
+	.setSlug("servicestack");
+
+GetTechnologyResponse response = client.get(request);
+```
+
+### AutoQuery Example Usage
+
+You can also send requests composed of both a Typed DTO and untyped String Dictionary by providing a Java Map of additional args. This is typically used when querying [implicit conventions in AutoQuery services](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query#implicit-conventions), e.g:
+
+```java
+QueryResponse<Technology> response = client.get(new FindTechnologies(),
+	Utils.createMap("DescriptionContains","framework"));
+```
+
+The `Utils.createMap()` API is included in the [Utils.java](https://github.com/ServiceStack/ServiceStack.Java/blob/master/src/AndroidClient/client/src/main/java/net/servicestack/client/Utils.java) static class which contains a number of helpers to simplify common usage patterns and reduce the amount of boiler plate required for common tasks, e.g they can also simplify reading raw bytes or raw String from a HTTP Response. Here's how you can download an image bytes using a custom `JsonServiceClient` HTTP Request and load it into an Android Image `Bitmap`:
+
+```java
+HttpURLConnection httpRes = client.get("https://servicestack.net/img/logo.png");
+byte[] imgBytes = Utils.readBytesToEnd(httpRes);
+Bitmap img = BitmapFactory.decodeByteArray(imgBytes, 0, imgBytes.length);
+```
+
+### AndroidServiceClient
+Unlike .NET, Java doesn't have an established Async story or any language support that simplifies execution and composition of Async tasks, as a result the Async story on Android is fairly fragmented with multiple options built-in for executing non-blocking tasks on different threads including:
+
+ - Thread
+ - Executor
+ - HandlerThread
+ - AsyncTask
+ - Service
+ - IntentService
+ - AsyncQueryHandler
+ - Loader
+
+JayWay's Oredev presentation on [Efficient Android Threading](http://www.slideshare.net/andersgoransson/efficient-android-threading) provides a good overview of the different threading strategies above with their use-cases, features and pitfalls. Unfortunately none of the above options enable a Promise/Future-like API which would've been ideal in maintaining a consistent Task-based Async API across all ServiceStack Clients. Of all the above options the new Android [AsyncTask](http://developer.android.com/reference/android/os/AsyncTask.html) ended up the most suitable option, requiring the least effort for the typical Service Client use-case of executing non-blocking WebService Requests and having their results called back on the Main UI thread.
+
+### AsyncResult
+To enable an even simpler Async API decoupled from Android, we've introduced a higher-level [AsyncResult](https://github.com/ServiceStack/ServiceStack.Java/blob/master/src/AndroidClient/client/src/main/java/net/servicestack/client/AsyncResult.java) class which allows capturing of Async callbacks using an idiomatic anonymous Java class. `AsyncResult` is modelled after [jQuery.ajax](http://api.jquery.com/jquery.ajax/) and allows specifying **success()**, **error()** and **complete()** callbacks as needed.
+
+### AsyncServiceClient API
+
+Using AsyncResult lets us define a pure Java [AsyncServiceClient](https://github.com/ServiceStack/ServiceStack.Java/blob/master/src/AndroidClient/client/src/main/java/net/servicestack/client/AsyncServiceClient.java) interface that's decoupled from any specific threading implementation, i.e:
+
+```java
+public interface AsyncServiceClient {
+    public <T> void getAsync(IReturn<T> request, final AsyncResult<T> asyncResult);
+    public <T> void getAsync(IReturn<T> request, final Map<String, String> queryParams, final AsyncResult<T> asyncResult);
+    public <T> void getAsync(String path, final Class responseType, final AsyncResult<T> asyncResult);
+    public <T> void getAsync(String path, final Type responseType, final AsyncResult<T> asyncResult);
+    public void getAsync(String path, final AsyncResult<byte[]> asyncResult);
+
+    public <T> void postAsync(IReturn<T> request, final AsyncResult<T> asyncResult);
+    public <T> void postAsync(String path, final Object request, final Class responseType, final AsyncResult<T> asyncResult);
+    public <T> void postAsync(String path, final Object request, final Type responseType, final AsyncResult<T> asyncResult);
+    public <T> void postAsync(String path, final byte[] requestBody, final String contentType, final Class responseType, final AsyncResult<T> asyncResult);
+    public <T> void postAsync(String path, final byte[] requestBody, final String contentType, final Type responseType, final AsyncResult<T> asyncResult);
+    public void postAsync(String path, final byte[] requestBody, final String contentType, final AsyncResult<byte[]> asyncResult);
+
+    public <T> void putAsync(IReturn<T> request, final AsyncResult<T> asyncResult);
+    public <T> void putAsync(String path, final Object request, final Class responseType, final AsyncResult<T> asyncResult);
+    public <T> void putAsync(String path, final Object request, final Type responseType, final AsyncResult<T> asyncResult);
+    public <T> void putAsync(String path, final byte[] requestBody, final String contentType, final Class responseType, final AsyncResult<T> asyncResult);
+    public <T> void putAsync(String path, final byte[] requestBody, final String contentType, final Type responseType, final AsyncResult<T> asyncResult);
+    public void putAsync(String path, final byte[] requestBody, final String contentType, final AsyncResult<byte[]> asyncResult);
+
+    public <T> void deleteAsync(IReturn<T> request, final AsyncResult<T> asyncResult);
+    public <T> void deleteAsync(IReturn<T> request, final Map<String, String> queryParams, final AsyncResult<T> asyncResult);
+    public <T> void deleteAsync(String path, final Class responseType, final AsyncResult<T> asyncResult);
+    public <T> void deleteAsync(String path, final Type responseType, final AsyncResult<T> asyncResult);
+    public void deleteAsync(String path, final AsyncResult<byte[]> asyncResult);
+}
+```
+
+The `AsyncServiceClient` interface is implemented by the `AndroidServiceClient` concrete class which behind-the-scenes uses an Android [AsyncTask](http://developer.android.com/reference/android/os/AsyncTask.html) to implement its Async API's. 
+
+Whilst the `AndroidServiceClient` is contained in the **net.servicestack:android** dependency and only works in Android, the `JsonServiceClient` instead is contained in a seperate pure Java **net.servicestack:client** dependency which can be used independently to provide a typed Java API for consuming ServiceStack Services from any Java application.
+
+### Async API Usage
+To make use of Async API's in an Android App (which you'll want to do to keep web service requests off the Main UI thread), you'll instead need to use an instance of `AndroidServiceClient` which as it inherits `JsonServiceClient` can be used to perform both Sync and Async requests:
+```java
+AndroidServiceClient client = new AndroidServiceClient("http://techstacks.io");
+```
+
+Like other Service Clients, there's an equivalent Async API matching their Sync counterparts which differs by ending with an **Async** suffix which instead of returning a typed response, fires a **success(TResponse)** or **error(Exception)** callback with the typed response, e.g: 
+```java
+client.getAsync(new AppOverview(), new AsyncResult<AppOverviewResponse>(){
+    @Override
+    public void success(AppOverviewResponse r) {
+        ArrayList<Option> allTiers = r.getAllTiers();
+        ArrayList<TechnologyInfo> topTech = r.getTopTechnologies();
+    }
+});
+```
+
+Which just like the `JsonServiceClient` examples above also provide a number of flexible options to execute Custom Async Web Service Requests, e.g: 
+```java
+client.getAsync("/overview", OverviewResponse.class, new AsyncResult<OverviewResponse>(){
+    @Override
+    public void success(OverviewResponse response) {
+    }
+});
+```
+
+Example calling a Web Service with an absolute url:
+```java
+client.getAsync("http://techstacks.io/overview", OverviewResponse.class, new AsyncResult<OverviewResponse>() {
+    @Override
+    public void success(OverviewResponse response) {
+    }
+});
+```
+
+#### Async AutoQuery Example
+Example calling an untyped AutoQuery Service with additional Dictionary String arguments:
+```java
+client.getAsync(request, Utils.createMap("DescriptionContains", "framework"),
+    new AsyncResult<QueryResponse<Technology>>() {
+        @Override
+        public void success(QueryResponse<Technology> response) {
+        }
+    });
+```
+
+#### Download Raw Image Async Example
+Example downloading raw Image bytes and loading it into an Android Image `Bitmap`:
+```java
+client.getAsync("https://servicestack.net/img/logo.png", new AsyncResult<byte[]>() {
+    @Override
+    public void success(byte[] imgBytes) {
+        Bitmap img = BitmapFactory.decodeByteArray(imgBytes, 0, imgBytes.length);
+    }
+});
+```
+
+### Typed Error Handling
+Thanks to Java also using typed Exceptions for error control flow, error handling in Java will be intantly familiar to C# devs which also throws a typed `WebServiceException` containing the remote servers structured error data:
+
+```java
+ThrowType request = new ThrowType()
+    .setType("NotFound")
+    .setMessage("not here");
+
+try {
+	ThrowTypeResponse response = testClient.post(request);
+}
+catch (WebServiceException webEx) {
+    ResponseStatus status = thrownError.getResponseStatus();
+	status.getMessage();    //= not here
+    status.getStackTrace(); //= (Server StackTrace)
+}
+```
+
+Likewise structured Validation Field Errors are also accessible from the familar `ResponseStatus` DTO, e.g:
+```java
+ThrowValidation request = new ThrowValidation()
+    .setEmail("invalidemail");
+
+try {
+    client.post(request);
+} catch (WebServiceException webEx){
+    ResponseStatus status = webEx.getResponseStatus();
+
+    ResponseError firstError = status.getErrors().get(0);
+    firstError.getErrorCode(); //= InclusiveBetween
+    firstError.getMessage();   //= 'Age' must be between 1 and 120. You entered 0.
+    firstError.getFieldName(); //= Age
+}
+```
+
+#### Async Error Handling
+Async Error handling differs where in order to access the `WebServiceException` you'll need to implement the **error(Exception)** callback, e.g:
+```java
+client.postAsync(request, new AsyncResult<ThrowTypeResponse>() {
+    @Override
+    public void error(Exception ex) {
+        WebServiceException webEx = (WebServiceException)ex;
+        
+        ResponseStatus status = thrownError.getResponseStatus();
+        status.getMessage();    //= not here
+        status.getStackTrace(); //= (Server StackTrace)
+    }
+});
+```
+
+Async Validation Errors are also handled in the same way: 
+```java
+client.postAsync(request, new AsyncResult<ThrowValidationResponse>() {
+    @Override
+    public void error(Exception ex) {
+        WebServiceException webEx = (WebServiceException)ex;
+        ResponseStatus status = webEx.getResponseStatus();
+
+        ResponseError firstError = status.getErrors().get(0);
+        firstError.getErrorCode(); //= InclusiveBetween
+        firstError.getMessage();   //= 'Age' must be between 1 and 120. You entered 0.
+        firstError.getFieldName(); //= Age
+    }
+}
+```
+
+### JsonServiceClient Error Handlers
+To make it easier to generically handle Web Service Exceptions, the Java Service Clients also support static Global Exception handlers by assigning `AndroidServiceClient.GlobalExceptionFilter`, e.g:
+```java
+AndroidServiceClient.GlobalExceptionFilter = new ExceptionFilter() {
+    @Override
+    public void exec(HttpURLConnection res, Exception ex) {
+    	//...
+    }
+};
+```
+
+As well as local Exception Filters by specifying a handler for `client.ExceptionFilter`, e.g:
+```java
+client.ExceptionFilter = new ExceptionFilter() {
+    @Override
+    public void exec(HttpURLConnection res, Exception ex) {
+    	//...
+    }
+};
+```
+
+## Introducing [TechStacks Android App](https://github.com/ServiceStackApps/TechStacksAndroidApp)
+To demonstrate Java Native Types in action we've ported the Swift [TechStacks iOS App](https://github.com/ServiceStackApps/TechStacksApp) to a native Java Android App to showcase the responsiveness and easy-of-use of leveraging Java Add ServiceStack Reference in Android Projects. 
+
+The Android TechStacks App can be [downloaded for free from the Google Play Store](https://play.google.com/store/apps/details?id=servicestack.net.techstacks):
+
+[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/techstacks-android-app.jpg)](https://play.google.com/store/apps/details?id=servicestack.net.techstacks)
+
+### Data Binding
+As there's no formal data-binding solution in Android we've adopted a lightweight iOS-inspired [Key-Value-Observable-like data-binding solution](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference#observing-data-changes) in Android TechStacks in order to maximize knowledge-sharing and ease porting between native Swift iOS and Java Android Apps. 
+
+Similar to the Swift TechStacks iOS App, all web service requests are encapsulated in a single [App.java](https://github.com/ServiceStack/ServiceStack.Java/blob/master/src/AndroidClient/techstacks/src/main/java/servicestack/net/techstacks/App.java) class and utilizes Async Service Client API's in order to maintain a non-blocking and responsive UI. 
+
+### Registering for Data Updates
+In iOS, UI Controllers register for UI and data updates by implementing `*DataSource` and `*ViewDelegate` protocols, following a similar approach, Android Activities and Fragments register for Async Data callbacks by implementing the Custom interface `AppDataListener` below:
+
+```java
+public static interface AppDataListener
+{
+    public void onUpdate(AppData data, DataType dataType);
+}
+```
+
+Where Activities or Fragments can then register itself as a listener when they're first created:
+```java
+@Override
+public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    App.getData().addListener(this);
+}
+```
+
+### Data Binding Async Service Responses
+Then in `onCreateView` MainActivity calls the `AppData` singleton to fire off all async requests required to populate it's UI:
+```java
+public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle state) {
+    App.getData().loadAppOverview();
+    ...
+}
+```
+
+Where `loadAppOverview()` makes an async call to the `AppOverview` Service, storing the result in an AppData instance variable before notifying all registered listeners that `DataType.AppOverview` has been updated:
+```java
+public AppData loadAppOverview(){
+    client.getAsync(new AppOverview(), new AsyncResult<AppOverviewResponse>() {
+        @Override
+        public void success(AppOverviewResponse response){
+            appOverviewResponse = response;
+            onUpdate(DataType.AppOverview);
+        }
+    });
+    return this;
+}
+```
+> Returning `this` allows expression chaining, reducing the boilerplate required to fire off multiple requests
+
+Calling `onUpdate()` simply invokes the list of registered listeners with itself and the  enum DataType of what was changed, i.e:
+```java
+public void onUpdate(DataType dataType){
+    for (AppDataListener listener : listeners){
+        listener.onUpdate(this, dataType);
+    }
+}
+```
+
+The Activity can then update its UI within the `onUpdate()` callback by re-binding its UI Controls when relevant data has changed, in this case when `AppOverview` response has returned:
+```java
+@Override
+public void onUpdate(App.AppData data, App.DataType dataType) {
+    switch (dataType) {
+        case AppOverview:
+            Spinner spinner = (Spinner)getActivity().findViewById(R.id.spinnerCategory);
+            ArrayList<String> categories = map(data.getAppOverviewResponse().getAllTiers(), 
+                new Function<Option, String>() {
+                    @Override public String apply(Option option) {
+                        return option.getTitle();
+                    }
+                });
+            spinner.setAdapter(new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_spinner_item, categories));
+
+            ListView list = (ListView)getActivity().findViewById(R.id.listTopRated);
+            ArrayList<String> topTechnologyNames = map(getTopTechnologies(data),
+                new Function<TechnologyInfo, String>() {
+                    @Override public String apply(TechnologyInfo technologyInfo) {
+                        return technologyInfo.getName() + " (" + technologyInfo.getStacksCount() + ")";
+                    }
+                });
+            list.setAdapter(new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_list_item_1, topTechnologyNames));
+            break;
+    }
+}
+```
+
+In this case the `MainActivity` home screen re-populates the Technology Category **Spinner** (aka Picker) and the Top Technologies **ListView** controls by assigning a new Android `ArrayAdapter`. 
+
+### Functional Java Utils
+The above example also introduces the `map()` functional util we've also included in the **net.servicestack:client** dependency to allow usage of Functional Programming techniques to transform, query and filter data given Android's Java 7 lack of any language or library support for Functional Programming itself. Unfortunately lack of closures in Java forces more boilerplate than otherwise would be necessary as it needs to fallback to use anonymous Type classes to capture delegates. Android Studio also recognizes this pattern as unnecessary noise and will automatically collapse the code into a readable closure syntax, with what the code would've looked like had Java supported closures, e.g:
+
+![Android Studio Collapsed Closure](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/androidstudio-collapse-closure.png)
+
+### [Func.java](https://github.com/ServiceStack/ServiceStack.Java/blob/master/src/AndroidClient/client/src/main/java/net/servicestack/client/Func.java) API
+
+The [Func.java](https://github.com/ServiceStack/ServiceStack.Java/blob/master/src/AndroidClient/client/src/main/java/net/servicestack/client/Func.java) static class contains a number of common functional API's providing a cleaner and more robust alternative to working with Data than equivalent imperative code. We can take advantage of **static imports** in Java to import the namespace of all utils with the single import statement below:
+```java
+import static net.servicestack.client.Func.*;
+```
+
+Which will let you reference all the Functional utils below without a Class prefix:
+```java
+ArrayList<R> map(Iterable<T> xs, Function<T,R> f)
+ArrayList<T> filter(Iterable<T> xs, Predicate<T> predicate)
+void each(Iterable<T> xs, Each<T> f)
+T first(Iterable<T> xs)
+T first(Iterable<T> xs, Predicate<T> predicate)
+T last(Iterable<T> xs)
+T last(Iterable<T> xs, Predicate<T> predicate)
+boolean contains(Iterable<T> xs, Predicate<T> predicate)
+ArrayList<T> skip(Iterable<T> xs, int skip)
+ArrayList<T> skip(Iterable<T> xs, Predicate<T> predicate)
+ArrayList<T> take(Iterable<T> xs, int take)
+ArrayList<T> take(Iterable<T> xs, Predicate<T> predicate)
+boolean any(Iterable<T> xs, Predicate<T> predicate)
+boolean all(Iterable<T> xs, Predicate<T> predicate)
+ArrayList<T> expand(Iterable<T>... xss)
+T elementAt(Iterable<T> xs, int index)
+ArrayList<T> reverse(Iterable<T> xs)
+reduce(Iterable<T> xs, E initialValue, Reducer<T,E> reducer)
+E reduceRight(Iterable<T> xs, E initialValue, Reducer<T,E> reducer)
+String join(Iterable<T> xs, String separator)
+ArrayList<T> toList(Iterable<T> xs)
+```
+
+### Images and Custom Binary Requests
+The TechStacks Android App also takes advantage of the Custom Service Client API's to download images asynchronously. As images can be fairly resource and bandwidth intensive they're stored in a simple Dictionary Cache to minimize any unnecessary CPU and network resources, i.e:
+```java
+HashMap<String,Bitmap> imgCache = new HashMap<>();
+public void loadImage(final String imgUrl, final ImageResult callback) {
+    Bitmap img = imgCache.get(imgUrl);
+    if (img != null){
+        callback.success(img);
+        return;
+    }
+
+    client.getAsync(imgUrl, new AsyncResult<byte[]>() {
+        @Override
+        public void success(byte[] imgBytes) {
+            Bitmap img = AndroidUtils.readBitmap(imgBytes);
+            imgCache.put(imgUrl, img);
+            callback.success(img);
+        }
+    });
+}
+```
+
+The TechStacks App uses the above API to download screenshots and load their Bitmaps in `ImageView` UI Controls, e.g:
+
+```java
+String imgUrl = result.getScreenshotUrl();
+final ImageView img = (ImageView)findViewById(R.id.imgTechStackScreenshotUrl);
+data.loadImage(imgUrl, new App.ImageResult() {
+    @Override public void success(Bitmap response) {
+        img.setImageBitmap(response);
+    }
+});
+```
+
+## Java generated DTO Types
+
+Our goal with **Java Add ServiceStack Reference** is to ensure a high-fidelity, idiomatic translation within the constraints of Java language and its built-in libraries, where .NET Server DTO's are translated into clean, conventional Java POJO's where .NET built-in Value Types mapped to their equivalent Java data Type.
+
+To see what this ends up looking up we'll go through some of the [Generated Test Services](http://test.servicestack.net/types/java) to see how they're translated in Java.
+
+### .NET Attributes translated into Java Annotations
+By inspecting the `HelloAllTypes` Request DTO we can see that C# Metadata Attributes e.g. `[Route("/all-types")]` are also translated into the typed Java Annotations defined in the **net.servicestack:client** dependency. But as Java only supports defining a single Annotation of the same type, any subsequent .NET Attributes of the same type are emitted in comments.
+
+### Terse, typed API's with IReturn interfaces
+Java Request DTO's are also able to take advantage of the `IReturn<TResponse>` interface marker to provide its terse, typed generic API but due to Java's Type erasure the Response Type also needs to be encoded in the Request DTO as seen by the `responseType` field and `getResponseType()` getter:
+
+```java
+@Route("/all-types")
+public static class HelloAllTypes implements IReturn<HelloAllTypesResponse>
+{
+    public String name = null;
+    public AllTypes allTypes = null;
+    
+    public String getName() { return name; }
+    public HelloAllTypes setName(String value) { this.name = value; return this; }
+    public AllTypes getAllTypes() { return allTypes; }
+    public HelloAllTypes setAllTypes(AllTypes value) { this.allTypes = value; return this; }
+
+    private static Object responseType = HelloAllTypesResponse.class;
+    public Object getResponseType() { return responseType; }
+}
+```
+
+### Getters and Setters generated for each property
+Another noticable feature is the Java getters and setters property convention are generated for each public field with setters returning itself allowing for multiple setters to be chained within a single expression. 
+
+To comply with Gson JSON Serialization rules, the public DTO fields are emitted in the same JSON naming convention as the remote ServiceStack server which for the [test.servicestack.net](http://test.servicestack.net) Web Services, follows its **camelCase** naming convention that is configured in its AppHost with: 
+```csharp
+JsConfig.EmitCamelCaseNames = true;
+```
+
+Whilst the public fields match the remote server JSON naming convention, the getters and setters are always emitted in Java's **camelCase** convention to maintain a consistent API irrespective of the remote server configuration. To minimize API breakage they should be the preferred method to access DTO fields.
+
+### Java Type Converions
+By inspecting the `AllTypes` DTO fields we can see what Java Type each built-in .NET Type gets translated into. In each case it selects the most suitable concrete Java datatype available, inc. generic collections. We also see only reference types are used (i.e. instead of their primitive types equivalents) since DTO properties are optional and need to be nullable. 
+```java
+public static class AllTypes
+{
+    public Integer id = null;
+    public Integer nullableId = null;
+    @SerializedName("byte") public Short Byte = null;
+    @SerializedName("short") public Short Short = null;
+    @SerializedName("int") public Integer Int = null;
+    @SerializedName("long") public Long Long = null;
+    public Integer uShort = null;
+    public Long uInt = null;
+    public BigInteger uLong = null;
+    @SerializedName("float") public Float Float = null;
+    @SerializedName("double") public Double Double = null;
+    public BigDecimal decimal = null;
+    public String string = null;
+    public Date dateTime = null;
+    public TimeSpan timeSpan = null;
+    public Date dateTimeOffset = null;
+    public UUID guid = null;
+    @SerializedName("char") public String Char = null;
+    public Date nullableDateTime = null;
+    public TimeSpan nullableTimeSpan = null;
+    public ArrayList<String> stringList = null;
+    public ArrayList<String> stringArray = null;
+    public HashMap<String,String> stringMap = null;
+    public HashMap<Integer,String> intStringMap = null;
+    public SubType subType = null;
+    ...
+}
+```
+
+The only built-in Value Type that didn't have a suitable built-in Java equivalent was `TimeSpan`. In this case it uses our new [TimeSpan.java](https://github.com/ServiceStack/ServiceStack.Java/blob/master/src/AndroidClient/client/src/main/java/net/servicestack/client/TimeSpan.java) class which implements the same familiar API available in .NET's `TimeSpan`. 
+
+Something else you'll notice is that some fields are annotated with the `@SerializedName()` Gson annotation. This is automatically added for Java keywords - required since Java doesn't provide anyway to escape keyword identifiers. The first time a Gson annotation is referenced it also automatically includes the required Gson namespace imports. If needed, this can also be explicitly added by with:
+```java
+JavaGenerator.AddGsonImport = true;
+```
+
+### Java Enums
+.NET enums are also translated into typed Java enums where basic enums end up as a straight forward transaltion, e.g:
+```java
+public static enum BasicEnum
+{
+    Foo,
+    Bar,
+    Baz;
+}
+```
+
+Whilst as Java doesn't support integer Enum flags directly the resulting translation ends up being a bit more convoluted:
+```java
+@Flags()
+public static enum EnumFlags
+{
+    @SerializedName("1") Value1(1),
+    @SerializedName("2") Value2(2),
+    @SerializedName("4") Value3(4);
+
+    private final int value;
+    EnumFlags(final int intValue) { value = intValue; }
+    public int getValue() { return value; }
+}
+```
+
+## Java Native Types Customization
+The header comments in the generated DTO's allows for further customization of how the DTO's are generated which can then be updated with any custom Options provided using the **Update ServiceStack Reference** Menu Item in Android Studio. Options that are preceded by a single line Java comment `//` are defaults from the server which can be overridden.
+
+To override a value, remove the `//` and specify the value to the right of the `:`. Any value uncommented will be sent to the server to override any server defaults.
+```java
+/* Options:
+Date: 2015-04-10 12:41:14
+Version: 1
+BaseUrl: http://techstacks.io
+
+Package: net.servicestack.techstacks
+//GlobalNamespace: dto
+//AddPropertyAccessors: True
+//SettersReturnThis: True
+//AddServiceStackTypes: True
+//AddResponseStatus: False
+//AddImplicitVersion: 
+//IncludeTypes: 
+//ExcludeTypes: 
+//DefaultImports: java.math.*,java.util.*,net.servicestack.client.*,com.google.gson.annotations.*
+*/
+```
+We'll go through and cover each of the above options to see how they affect the generated DTO's:
+
+### Package
+Specify the package name that the generated DTO's are in:
+```
+Package: net.servicestack.techstacks
+```
+Will generate the package name for the generated DTO's as:
+```java
+package net.servicestack.techstacks;
+```
+
+### GlobalNamespace
+Change the name of the top-level Java class containar that all static POJO classes are generated in, e.g changing the `GlobalNamespace` to:
+```
+GlobalNamespace: techstacksdto
+```
+Will change the name of the top-level class to `techstacksdto`, e.g:
+```java
+public class techstacksdto
+{
+    ...
+}
+```
+Where all static DTO classes can be imported using the wildcard import below:
+```java
+import net.servicestack.techstacksdto.*;
+```
+
+### AddPropertyAccessors
+By default **getters** and **setters** are generated for each DTO property, you can prevent this default with:
+```
+AddPropertyAccessors: false
+```
+Which will no longer generate any property accessors, leaving just public fields, e.g:
+```java
+public static class AppOverviewResponse
+{
+    public Date Created = null;
+    public ArrayList<Option> AllTiers = null;
+    public ArrayList<TechnologyInfo> TopTechnologies = null;
+    public ResponseStatus ResponseStatus = null;
+}
+```
+
+### SettersReturnThis
+To allow for chaining DTO field **setters** returns itself by default, this can be changed to return `void` with:
+```
+SettersReturnThis: false
+```
+Which will change the return type of each setter to `void`:
+```java
+public static class GetTechnology implements IReturn<GetTechnologyResponse>
+{
+    public String Slug = null;
+    
+    public String getSlug() { return Slug; }
+    public void setSlug(String value) { this.Slug = value; }
+}
+```
+
+### AddServiceStackTypes
+Lets you exclude built-in ServiceStack Types and DTO's from being generated with:
+```
+AddServiceStackTypes: false
+```
+This will prevent Request DTO's for built-in ServiceStack Services like `Authenticate` from being emitted.
+
+### AddImplicitVersion
+Lets you specify the Version number to be automatically populated in all Request DTO's sent from the client:
+```
+AddImplicitVersion: 1
+```
+Which will embed the specified Version number in each Request DTO, e.g:
+```java
+public static class GetTechnology implements IReturn<GetTechnologyResponse>
+{
+    public Integer Version = 1;
+    public Integer getVersion() { return Version; }
+    public GetTechnology setVersion(Integer value) { this.Version = value; return this; }
+}
+```
+This lets you know what Version of the Service Contract that existing clients are using making it easy to implement [ServiceStack's recommended versioning strategy](http://stackoverflow.com/a/12413091/85785).
+
+### IncludeTypes
+Is used as a Whitelist that can be used to specify only the types you would like to have code-generated:
+```
+/* Options:
+IncludeTypes: GetTechnology,GetTechnologyResponse
+```
+Will only generate `GetTechnology` and `GetTechnologyResponse` DTO's, e.g:
+```java
+public class dto
+{
+    public static class GetTechnologyResponse { ... }
+    public static class GetTechnology implements IReturn<GetTechnologyResponse> { ... }
+}
+```
+
+### ExcludeTypes
+Is used as a Blacklist where you can specify which types you would like to exclude from being generated:
+```
+/* Options:
+ExcludeTypes: GetTechnology,GetTechnologyResponse
+```
+Will exclude `GetTechnology` and `GetTechnologyResponse` DTO's from being generated.
+
+### DefaultImports
+Lets you override the default import packages included in the generated DTO's:
+```
+java.math.*,java.util.*,net.servicestack.client.*,com.acme.custom.*
+```
+Will override the default imports with the ones specified, i.e: 
+```java
+import java.math.*;
+import java.util.*;
+import net.servicestack.client.*;
+import com.acme.custom.*;
+```
+
+By default the generated DTO's do not require any Google's Gson-specific serialization hints, but when they're needed e.g. if your DTO's use Java keywords or are attributed with `[DataMember(Name=...)]` the required Gson imports are automatically added which can also be added explicitly with:
+```csharp
+JavaGenerator.AddGsonImport = true;
+```
+Which will add the following Gson imports:
+```java
+import com.google.gson.annotations.*;
+import com.google.gson.reflect.*;
+```
+
+## ServiceStack Customer Forums moved to Discourse
+The ServiceStack Customer Forums have been moved from **Google+** over to [Discourse](http://discourse.org/) which provides better readability, richer markup, support for code samples, better searching and discoverability, etc - basically an overall better option for providing support than Google+ was. The new Customer Forums is available at: 
+### https://forums.servicestack.net
+
+ServiceStack Customers will be able to register as a new user by using the same email that's registered in your ServiceStack account or added as a support contact at: http://servicestack.net/account/support
+
+[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/servicestack-forums.jpg)](https://forums.servicestack.net/)
+
+## Swift Native Types upgraded to Swift 1.2
+The latest stable release of **Xcode 6.3** includes the new Swift 1.2 release that had a number of breaking language changes from the previous version. In this release both the Swift generated types in ServiceStack and the [JsonServiceClient.swift](https://github.com/ServiceStack/ServiceStack.Swift/blob/master/dist/JsonServiceClient.swift) client library have been upgraded to support Swift 1.2 language changes.
+
+Whilst the latest version of Swift fixed a number of stability issues, it also introduced some regressions. Unfortunately one of these regressions affected extensions on generic types that also have `typealias` like what's used when generating generic type responses like the `QueryResponse<T>` that's used in AutoQuery Services. We've submitted a failing test case for this issue with Apple and hopefully it will get resolved in a future release of Swift.
+
+## OrmLite
+
+### Merge Disconnected POCO Data Sets
+The new `Merge` extension method can stitch disconnected POCO collections together as per their relationships defined in [OrmLite's POCO References](https://github.com/ServiceStack/ServiceStack.OrmLite#reference-support-poco-style).
+
+For example you can select a collection of Customers who've made an order with quantities of 10 or more and in a separate query select their filtered Orders and then merge the results of these 2 distinct queries together with:
+```csharp
+//Select Customers who've had orders with Quantities of 10 or more
+List<Customer> customers = db.Select<Customer>(q =>
+    q.Join<Order>()
+     .Where<Order>(o => o.Qty >= 10)
+     .SelectDistinct());
+
+//Select Orders with Quantities of 10 or more
+List<Order> orders = db.Select<Order>(o => o.Qty >= 10);
+
+customers.Merge(orders); // Merge disconnected Orders with their related Customers
+
+customers.PrintDump();   // Print merged customers and orders datasets
+```
+
+### New Multiple Select API's
+Add new multi `Select<T1,T2>` and `Select<T1,T2,T3>` select overloads to allow selecting fields from multiple tables, e.g:
+```csharp
+var q = db.From<FooBar>()
+    .Join<BarJoin>()
+    .Select<FooBar, BarJoin>((f, b) => new { f.Id, b.Name });
+
+Dictionary<int,string> results = db.Dictionary<int, string>(q);
+```
+
+### New OrmLite Naming Strategy
+The new `LowercaseUnderscoreNamingStrategy` can be enabled with:
+```csharp
+OrmLiteConfig.DialectProvider.NamingStrategy = new LowercaseUnderscoreNamingStrategy();
+```
+### New Signed MySql NuGet Package
+Add new **OrmLite.MySql.Signed** NuGet package containing signed MySql versions of .NET 4.0 and .NET 4.5 builds of MySql
+
+## ServiceStack Changes
+This release also saw a number of minor changes and enhancements added throughout the ServiceStack Framework libraries which are listed below, grouped under their related sections:
+
+### [ServerEvents](https://github.com/ServiceStack/ServiceStack/wiki/Server-Events)
+- ServerEvents Heartbeat is now disabled when underlying `$.ss.eventSource` EventSource is closed 
+- `ServerEventFeature.OnCreated` callback can now be used to short-circuit ServerEvent connections with `httpReq.EndResponse()`
+- Dropped connections are automatically restarted in C#/.NET `ServerEventsClient`
+- Added new `IEventSubscription.UserAddress` field containing IP Address of ServerEvents Client
+- ServerEvent requests are now verified that they're made from the original IP Address and returns `403 Forbidden` when invalid. IP Address Validation can be disabled with: `ServerEventsFeature.ValidateUserAddress = false`
+
+#### New Session and Auth API's
+- New `FourSquareOAuth2Provider` added by [@kevinhoward](https://github.com/kevinhoward)
+- New `IResponse.DeleteSessionCookies()` extension method can be used delete existing Session Cookies
+- New `ISession.Remove(key)` and `ISession.RemoveAll()` API's added on `ISession` Bag
+- Implemented `IRemoveByPattern.RemoveByPattern(pattern)` on `OrmLiteCacheClient`
+- Added new `IUserAuthRepository.DeleteUserAuth()` API and corresponding implementations in all **AuthRepository** providers
+- A new .NET 4.5 release of `RavenDbUserAuthRepository` using the latest Raven DB Client libraries is available in the **ServiceStack.Authentication.RavenDb** NuGet package - added by [@kevinhoward](https://github.com/kevinhoward)
+
+#### Session and Auth Changes
+- Session Cookie Identifiers are now automatically deleted on Logout (i.e. `/auth/logout`). Can be disabled with `AuthFeature.DeleteSessionCookiesOnLogout = false`
+- Auth now uses `SetParam` instead of `AddParam` to override existing QueryString variables in Redirect Urls (i.e. instead of appending to them to the end of the urls)
+- Added new `AppHost.TestMode` to allow functionality during testing that's disabled in release mode. For example registering a `AuthUserSession` in the IOC is now disabled by default (as it's only hydrated from Cache not IOC). Can be enabled to simplify testing with `AppHost.TestMode = true`.
+
+### New Generic Logger implementation 
+- A new `GenericLogFactory` and `GenericLogger` implementations were added to simplify creation of new `ILog` providers. For example you can create and register a new custom logging implementation to redirect logging to an Xamarin.Android UI Label control with:
+
+#### Android UI Logger Example
+```csharp
+LogManager.LogFactory = new GenericLogFactory(message => {
+    RunOnUiThread(() => {
+        lblResults.Text = "{0}  {1}\n".Fmt(DateTime.Now.ToLongTimeString(), message) + lblResults.Text;
+    });
+});
+```
+
+### New WebService Framework API's
+- All magic keyword constants used within ServiceStack can now be overridden by reassinging them in the new static `Keywords` class
+- Added new `IResponse.Request` property allowing access to `IRequest` from all `IResponse` instances
+- Added new `HttpError.Forbidden(message)` convenience method
+- Added new virtual `AppHost.ExecuteMessage(IMessage)` API's to be able to override default MQ ExecuteMessage impl
+- Added explicit `IVirtual.Referesh()` API to force refresh of underlying `FileInfo` stats
+- Added new `Xamarin.Mac20` NuGet profile to support **Xamarin.Mac Unified API** Projects 
+
+### WebService Framework Changes
+- Improve performance of processing HTTP Partial responses by using a larger and reusable `byte[]` buffer. The size of buffer used can be customized with: `HttpResultUtils.PartialBufferSize = 32 * 1024`
+- Service `IDisposable` dependencies are now immediately released after execution
+- Added support for case-insensitive Content-Type's 
+
+### [Auto Batched Requests](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Batched-Requests)
+- Added support for Async API's in Auto-Batched Requests
+- A new `X-AutoBatch-Completed` HTTP Response Header is added to all Auto-Batched HTTP Responses containing number of individual requests completed
+
+### [Metadata](https://github.com/ServiceStack/ServiceStack/wiki/Metadata-page)
+- Added `[Restrict(VisibilityTo = RequestAttributes.None)]` to Postman and Swagger Request DTO's to hide their routes from appearing on metadata pages
+- `PreRequestFilters` are now executed in Metadata Page Handlers 
+
+### [Mini Profiler](https://github.com/ServiceStack/ServiceStack/wiki/Built-in-profiling)
+- Added support of **Async OrmLite requests** in MiniProfiler
+- The Values of Parameterized queries are now shown in MiniProfiler
+
+### [AppSettings](https://github.com/ServiceStack/ServiceStack/wiki/AppSettings)
+- Added new `AppSettingsBase.Get<T>(name)` API to all [AppSettings providers](https://github.com/ServiceStack/ServiceStack/wiki/AppSettings)
+
+### [Routing](https://github.com/ServiceStack/ServiceStack/wiki/Routing)
+- Weighting of Routes can now be customized with the new `RestPath.CalculateMatchScore` delegate
+
+### [Swagger API](https://github.com/ServiceStack/ServiceStack/wiki/Swagger-API)
+- Updated to the latest [Swagger API](https://github.com/ServiceStack/ServiceStack/wiki/Swagger-API)
+
+## ServiceStack.Redis
+New Redis Client API's added by [@andyberryman](https://github.com/andyberryman):
+```csharp
+public interface IRedisClient
+{
+    ...
+    long StoreIntersectFromSortedSets(string intoSetId, string[] setIds, string[] args);
+    long StoreUnionFromSortedSets(string intoSetId, string[] setIds, string[] args);
+}
+
+public interface IRedisTypedClient<T> 
+{
+    ...
+    long StoreIntersectFromSortedSets(IRedisSortedSet<T> setId, IRedisSortedSet<T>[] setIds, string[] args);
+    long StoreUnionFromSortedSets(IRedisSortedSet<T> intoSetId, IRedisSortedSet<T>[] setIds, string[] args);
+}
+```
+
+Added support for `Dictionary<string,string>` API's in `IRedisQueueableOperation` which now allows execution of Dictionary API's in Redis Transactions, e.g"
+```csharp
+using (var trans = Redis.CreateTransaction()) 
+{
+    trans.QueueCommand(r => r.GetAllEntriesFromHash(HashKey), x => results = x);
+    trans.Commit();
+}
+```
+
+## ServiceStack.Text
+ - JSON Support for `IEnumerable` with mixed types added by [@bcuff](https://github.com/bcuff)
+ - Added new `string.SetQueryParam()` and `string.SetHashParam()` HTTP Utils API's 
+ - Add range check for inferring valid JavaScript numbers with `JsonObject`
+
+## [Stripe](https://github.com/ServiceStack/Stripe)
+The Stripe Gateway also received updates thanks to [@jpasichnyk](https://github.com/jpasichnyk):
+
+ - Added new `Send()` and `Post()` overloads that accepts Stripe's optional `Idempotency-Key` HTTP Header to prevent duplicate processing of resent requests
+ - Added new `Type` property in `StripeError` error responses
+
 # v4.0.38 Release Notes
 
 ## Native Support for Swift!
