@@ -223,5 +223,15 @@ namespace ServiceStack.ServiceHost.Tests
             var barCmd = container.Resolve<BarCommand>();
             Assert.That(barCmd.Execute(), Is.EqualTo(container.Resolve<Bar>()));
         }
+
+        [Test]
+        public void Can_resolve_using_untyped_Container_Api()
+        {
+            var container = new Container();
+            container.Register(c => new Foo());
+
+            var instance = container.TryResolve(typeof (Foo));
+            Assert.That(instance, Is.Not.Null);
+        }
     }
 }
