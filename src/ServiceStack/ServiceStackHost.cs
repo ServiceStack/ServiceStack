@@ -318,20 +318,18 @@ namespace ServiceStack
                     errorHandler(httpReq, httpRes, operationName, ex);
                 }
             }
-            else
-            {
-                //Only add custom error messages to StatusDescription
-                var httpError = ex as IHttpError;
-                var errorMessage = httpError != null ? httpError.Message : null;
-                var statusCode = ex.ToStatusCode();
 
-                //httpRes.WriteToResponse always calls .Close in it's finally statement so 
-                //if there is a problem writing to response, by now it will be closed
-                if (!httpRes.IsClosed)
-                {
-                    httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode);
-                }
-            }
+            if (httpRes.IsClosed)
+                return;
+
+            //Only add custom error messages to StatusDescription
+            var httpError = ex as IHttpError;
+            var errorMessage = httpError != null ? httpError.Message : null;
+            var statusCode = ex.ToStatusCode();
+
+            //httpRes.WriteToResponse always calls .Close in it's finally statement so 
+            //if there is a problem writing to response, by now it will be closed
+            httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode);
         }
 
         public virtual void OnStartupException(Exception ex)
