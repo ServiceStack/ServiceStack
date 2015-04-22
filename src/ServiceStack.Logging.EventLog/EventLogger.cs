@@ -34,7 +34,7 @@ namespace ServiceStack.Logging.EventLog
             this.eventLogSource = eventLogSource;
         }
 
-		public bool IsDebugEnabled { get { return true; } }
+        public bool IsDebugEnabled { get; set; }
 
         /// <summary>
         /// Writes the specified message.
@@ -84,7 +84,8 @@ namespace ServiceStack.Logging.EventLog
         /// <param name="message">The message.</param>
         public void Debug(object message)
         {
-            Write("DEBUG: " + message, EventLogEntryType.Information);
+            if (IsDebugEnabled)
+                Write("DEBUG: " + message, EventLogEntryType.Information);
         }
 
         /// <summary>
@@ -94,7 +95,8 @@ namespace ServiceStack.Logging.EventLog
         /// <param name="exception">The exception.</param>
         public void Debug(object message, Exception exception)
         {
-            Write("DEBUG: " + message, exception, EventLogEntryType.Information);
+            if (IsDebugEnabled)
+                Write("DEBUG: " + message, exception, EventLogEntryType.Information);
         }
 
         /// <summary>
@@ -104,7 +106,8 @@ namespace ServiceStack.Logging.EventLog
         /// <param name="args">The args.</param>
         public void DebugFormat(string format, params object[] args)
         {
-            Write("DEBUG: " + string.Format(format, args), EventLogEntryType.Information);
+            if (IsDebugEnabled)
+                Write("DEBUG: " + string.Format(format, args), EventLogEntryType.Information);
         }
 
         /// <summary>

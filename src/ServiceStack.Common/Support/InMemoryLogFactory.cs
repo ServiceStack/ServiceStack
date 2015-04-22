@@ -14,14 +14,20 @@ namespace ServiceStack.Support
     public class InMemoryLogFactory
         : ILogFactory
     {
+        private readonly bool debugEnabled;
+        public InMemoryLogFactory(bool debugEnabled = false)
+        {
+            this.debugEnabled = debugEnabled;
+        }
+
         public ILog GetLogger(Type type)
         {
-            return new InMemoryLog(type.Name);
+            return new InMemoryLog(type.Name) { IsDebugEnabled = debugEnabled };
         }
 
         public ILog GetLogger(string typeName)
         {
-            return new InMemoryLog(typeName);
+            return new InMemoryLog(typeName) { IsDebugEnabled = debugEnabled };
         }
     }
 
@@ -110,17 +116,20 @@ namespace ServiceStack.Support
 
         public void Debug(object message)
         {
-            AppendToLog(DebugEntries, message);
+            if (IsDebugEnabled)
+                AppendToLog(DebugEntries, message);
         }
 
         public void Debug(object message, Exception exception)
         {
-            AppendToLog(DebugEntries, DebugExceptions, message, exception);
+            if (IsDebugEnabled)
+                AppendToLog(DebugEntries, DebugExceptions, message, exception);
         }
 
         public void DebugFormat(string format, params object[] args)
         {
-            AppendToLog(DebugEntries, format, args);
+            if (IsDebugEnabled)
+                AppendToLog(DebugEntries, format, args);
         }
 
         public void Error(object message)
@@ -183,9 +192,6 @@ namespace ServiceStack.Support
             AppendToLog(WarnEntries, format, args);
         }
 
-        public bool IsDebugEnabled
-        {
-            get { return true; }
-        }
+        public bool IsDebugEnabled { get; set; }
     }
 }

@@ -9,22 +9,19 @@ namespace ServiceStack.Logging.EventLog
     {
         private readonly string eventLogName;
         private readonly string eventLogSource;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EventLogFactory"/> class.
-        /// </summary>
-        /// <param name="eventLogName">Name of the event log.</param>
-        public EventLogFactory(string eventLogName) : this(eventLogName, null) { }
+        private readonly bool debugEnabled;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EventLogFactory"/> class.
         /// </summary>
         /// <param name="eventLogName">Name of the event log. Default is 'ServiceStack.Logging.EventLog'</param>
         /// <param name="eventLogSource">The event log source. Default is 'Application'</param>
-        public EventLogFactory(string eventLogName, string eventLogSource)
+        /// <param name="debugEnabled">Whether to write EventLog entries for DEBUG logs</param>
+        public EventLogFactory(string eventLogName = null, string eventLogSource = null, bool debugEnabled = false)
         {
             this.eventLogName = eventLogName ?? "ServiceStack.Logging.EventLog";
             this.eventLogSource = eventLogSource ?? "Application";
+            this.debugEnabled = debugEnabled;
         }
 
         /// <summary>
@@ -44,7 +41,10 @@ namespace ServiceStack.Logging.EventLog
         /// <returns></returns>
         public ILog GetLogger(string typeName)
         {
-            return new EventLogger(eventLogName, eventLogSource);
+            return new EventLogger(eventLogName, eventLogSource)
+            {
+                IsDebugEnabled = debugEnabled
+            };
         }
     }
 }
