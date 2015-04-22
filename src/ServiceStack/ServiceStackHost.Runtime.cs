@@ -418,6 +418,15 @@ namespace ServiceStack
         {
             return response;
         }
+
+        public virtual MetadataTypesConfig GetTypesConfigForMetadata(IRequest req)
+        {
+            var typesConfig = new NativeTypesFeature().MetadataTypesConfig;
+            typesConfig.IgnoreTypesInNamespaces.Clear();
+            typesConfig.IgnoreTypes.Add(typeof(ResponseStatus));
+            typesConfig.IgnoreTypes.Add(typeof(ResponseError));
+            return typesConfig;
+        }
     }
 
 }

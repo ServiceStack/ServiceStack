@@ -308,9 +308,11 @@ namespace ServiceStack.Host
         {
             var typeMetadata = HostContext.TryResolve<INativeTypesMetadata>();
 
+            var typesConfig = HostContext.AppHost.GetTypesConfigForMetadata(httpReq);
+
             var metadataTypes = typeMetadata != null
-                ? typeMetadata.GetMetadataTypes(httpReq)
-                : new MetadataTypesGenerator(this, new NativeTypesFeature().MetadataTypesConfig)
+                ? typeMetadata.GetMetadataTypes(httpReq, typesConfig)
+                : new MetadataTypesGenerator(this, typesConfig)
                     .GetMetadataTypes(httpReq);
 
             var types = new List<MetadataType>();
@@ -331,7 +333,7 @@ namespace ServiceStack.Host
                 AddReferencedTypes(resType, metadataTypes, types);
             }
 
-            var generator = new CSharpGenerator(new NativeTypesFeature().MetadataTypesConfig);
+            var generator = new CSharpGenerator(typesConfig);
             types.Each(x =>
             {
                 x.DisplayType = x.DisplayType ?? generator.Type(x.Name, x.GenericArgs);
@@ -348,7 +350,10 @@ namespace ServiceStack.Host
             {
                 var type = FindMetadataType(metadataTypes, metadataType.Inherits.Name, metadataType.Inherits.Namespace);
                 if (type != null && !types.Contains(type))
+                {
                     types.Add(type);
+                    AddReferencedTypes(type, metadataTypes, types);
+                }
 
                 if (!metadataType.Inherits.GenericArgs.IsEmpty())
                 {
@@ -356,7 +361,10 @@ namespace ServiceStack.Host
                     {
                         type = FindMetadataType(metadataTypes, arg);
                         if (type != null && !types.Contains(type))
+                        {
                             types.Add(type);
+                            AddReferencedTypes(type, metadataTypes, types);
+                        }
                     }
                 }
             }
@@ -418,8 +426,10 @@ namespace ServiceStack.Host
             if (resType != null)
                 return resType.Response;
 
-            return metadataTypes.Types.FirstOrDefault(x => x.Name == name
+            var type = metadataTypes.Types.FirstOrDefault(x => x.Name == name
                 && (@namespace == null || x.Namespace == @namespace));
+
+            return type;
         }
     }
 
