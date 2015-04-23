@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -5,6 +6,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Types;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -46,6 +48,54 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Get(new EchoRequestInfo());
 
             Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
+        }
+
+        [Test]
+        public void Does_allow_sending_Cached_Response()
+        {
+            var cache = new Dictionary<string, object>();
+
+            client.ResultsFilter = (type, method, uri, request) =>
+            {
+                var cacheKey = "{0} {1}".Fmt(method, uri);
+                object entry;
+                cache.TryGetValue(cacheKey, out entry);
+                return entry;
+            };
+            client.ResultsFilterResponse = (webRes, res, method, uri, request) =>
+            {
+                Assert.That(webRes, Is.Not.Null);
+                var cacheKey = "{0} {1}".Fmt(method, uri);
+                cache[cacheKey] = res;
+            };
+
+            var response1 = client.Send(new GetCustomer { CustomerId = 5 });
+            var response2 = client.Send(new GetCustomer { CustomerId = 5 });
+            Assert.That(response1.Created, Is.EqualTo(response2.Created));
+        }
+
+        [Test]
+        public async Task Does_allow_sending_Cached_Response_Async()
+        {
+            var cache = new Dictionary<string, object>();
+
+            client.ResultsFilter = (type, method, uri, request) =>
+            {
+                var cacheKey = "{0} {1}".Fmt(method, uri);
+                object entry;
+                cache.TryGetValue(cacheKey, out entry);
+                return entry;
+            };
+            client.ResultsFilterResponse = (webRes, res, method, uri, request) =>
+            {
+                Assert.That(webRes, Is.Not.Null);
+                var cacheKey = "{0} {1}".Fmt(method, uri);
+                cache[cacheKey] = res;
+            };
+
+            var response1 = await client.SendAsync(new GetCustomer { CustomerId = 5 });
+            var response2 = await client.SendAsync(new GetCustomer { CustomerId = 5 });
+            Assert.That(response1.Created, Is.EqualTo(response2.Created));
         }
 
         [Test]

@@ -1,3 +1,4 @@
+using System;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Types;
 
@@ -13,7 +14,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 				Customer = new Customer
 				{
 					Id = request.CustomerId
-				}
+				},
+                Created = DateTime.UtcNow,
 			};
 		}
 	}

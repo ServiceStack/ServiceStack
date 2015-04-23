@@ -98,6 +98,7 @@ namespace ServiceStack
                 Password = this.Password,
                 RequestFilter = this.RequestFilter,
                 ResponseFilter = this.ResponseFilter,
+                ResultsFilter = this.ResultsFilter,
                 Headers = this.Headers,
             };
             this.CookieContainer = new CookieContainer();
@@ -379,6 +380,40 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// The ResultsFilter is called before the Request is sent allowing you to return a cached response.
+        /// </summary>
+        private ResultsFilterDelegate resultsFilter;
+        public ResultsFilterDelegate ResultsFilter
+        {
+            get
+            {
+                return resultsFilter;
+            }
+            set
+            {
+                resultsFilter = value;
+                asyncClient.ResultsFilter = value;
+            }
+        }
+
+        /// <summary>
+        /// The ResultsFilterResponse is called before returning the response allowing responses to be cached.
+        /// </summary>
+        private ResultsFilterResponseDelegate resultsFilterResponse;
+        public ResultsFilterResponseDelegate ResultsFilterResponse
+        {
+            get
+            {
+                return resultsFilterResponse;
+            }
+            set
+            {
+                resultsFilterResponse = value;
+                asyncClient.ResultsFilterResponse = value;
+            }
+        }
+
+        /// <summary>
         /// The response action is called once the server response is available.
         /// It will allow you to access raw response information. 
         /// Note that you should NOT consume the response stream as this is handled by ServiceStack
@@ -470,12 +505,27 @@ namespace ServiceStack
         public virtual TResponse Send<TResponse>(object request)
         {
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
+
+            if (ResultsFilter != null)
+            {
+                var response = ResultsFilter(typeof(TResponse), HttpMethod ?? DefaultHttpMethod, requestUri, request);
+                if (response is TResponse)
+                    return (TResponse)response;
+            }
+
             var client = SendRequest(requestUri, request);
 
             try
             {
                 var webResponse = PclExport.Instance.GetResponse(client);
-                return HandleResponse<TResponse>(webResponse);
+                var response = HandleResponse<TResponse>(webResponse);
+
+                if (ResultsFilterResponse != null)
+                {
+                    ResultsFilterResponse(webResponse, response, HttpMethod ?? DefaultHttpMethod, requestUri, request);
+                }
+                
+                return response;
             }
             catch (Exception ex)
             {
@@ -1019,12 +1069,27 @@ namespace ServiceStack
         public virtual TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
+
+            if (ResultsFilter != null)
+            {
+                var response = ResultsFilter(typeof(TResponse), httpMethod, requestUri, request);
+                if (response is TResponse)
+                    return (TResponse)response;
+            }
+
             var client = SendRequest(httpMethod, requestUri, request);
 
             try
             {
                 var webResponse = PclExport.Instance.GetResponse(client);
-                return HandleResponse<TResponse>(webResponse);
+                var response = HandleResponse<TResponse>(webResponse);
+
+                if (ResultsFilterResponse != null)
+                {
+                    ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
+                }
+
+                return response;
             }
             catch (Exception ex)
             {
@@ -1441,4 +1506,8 @@ namespace ServiceStack
 #endif
         
     }
+
+    public delegate object ResultsFilterDelegate(Type responseType, string httpMethod, string requestUri, object request);
+
+    public delegate void ResultsFilterResponseDelegate(WebResponse webResponse, object response, string httpMethod, string requestUri, object request);
 }

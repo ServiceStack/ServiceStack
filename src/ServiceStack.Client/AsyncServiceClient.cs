@@ -71,6 +71,16 @@ namespace ServiceStack
         /// </summary>
         public Action<HttpWebResponse> ResponseFilter { get; set; }
 
+        /// <summary>
+        /// The ResultsFilter is called before the Request is sent allowing you to return a cached response.
+        /// </summary>
+        public ResultsFilterDelegate ResultsFilter { get; set; }
+
+        /// <summary>
+        /// The ResultsFilterResponse is called before returning the response allowing responses to be cached.
+        /// </summary>
+        public ResultsFilterResponseDelegate ResultsFilterResponse { get; set; }
+
         public string BaseUri { get; set; }
         public bool DisableAutoCompression { get; set; }
 
@@ -123,10 +133,36 @@ namespace ServiceStack
         {
             var tcs = new TaskCompletionSource<TResponse>();
 
-            SendWebRequest<TResponse>(httpMethod, absoluteUrl, request,
-                tcs.SetResult,
-                (response, exc) => tcs.SetException(exc)
-            );
+            if (ResultsFilter != null)
+            {
+                var response = ResultsFilter(typeof(TResponse), httpMethod, absoluteUrl, request);
+                if (response is TResponse)
+                {
+                    tcs.SetResult((TResponse)response);
+                    return tcs.Task;
+                }
+            }
+
+            if (ResultsFilterResponse != null)
+            {
+                WebResponse webRes = null;
+
+                SendWebRequest<TResponse>(httpMethod, absoluteUrl, request,
+                    r => {
+                        ResultsFilterResponse(webRes, r, httpMethod, absoluteUrl, request);
+                        tcs.SetResult(r);
+                    },
+                    (response, exc) => tcs.SetException(exc),
+                    wr => webRes = wr
+                );
+            }
+            else
+            {
+                SendWebRequest<TResponse>(httpMethod, absoluteUrl, request,
+                    tcs.SetResult,
+                    (response, exc) => tcs.SetException(exc)
+                );
+            }
 
             return tcs.Task;
         }
@@ -138,7 +174,7 @@ namespace ServiceStack
         }
 
         private void SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request, 
-            Action<TResponse> onSuccess, Action<object, Exception> onError)
+            Action<TResponse> onSuccess, Action<object, Exception> onError, Action<WebResponse> onResponseInit = null)
         {
             if (httpMethod == null) throw new ArgumentNullException("httpMethod");
 
@@ -161,6 +197,7 @@ namespace ServiceStack
                 Url = requestUri,
                 WebRequest = webRequest,
                 Request = request,
+                OnResponseInit = onResponseInit,
                 OnSuccess = onSuccess,
                 OnError = onError,
                 UseSynchronizationContext = CaptureSynchronizationContext ? SynchronizationContext.Current : null,
@@ -249,6 +286,11 @@ namespace ServiceStack
                 var webRequest = requestState.WebRequest;
 
                 requestState.WebResponse = (HttpWebResponse)webRequest.EndGetResponse(asyncResult);
+
+                if (requestState.OnResponseInit != null)
+                {
+                    requestState.OnResponseInit(requestState.WebResponse);
+                }
 
                 if (requestState.ResponseContentLength == default(long))
                 {
