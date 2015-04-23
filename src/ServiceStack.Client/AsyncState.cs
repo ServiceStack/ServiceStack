@@ -47,6 +47,8 @@ namespace ServiceStack
 
         public ITimer Timer;
 
+        public Action<WebResponse> OnResponseInit;
+
         public Action<TResponse> OnSuccess;
 
         public Action<object, Exception> OnError;
