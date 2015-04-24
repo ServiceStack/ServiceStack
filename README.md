@@ -32,16 +32,16 @@ the most productive development experience for developing .NET to .NET Web Servi
 
 ### [Generate Instant Typed API's from a Remote Url!](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
 
-ServiceStack now integrates with all Major IDE's used for developing the best experiences on the most popular platforms 
-enabling a highly productive workflow for consuming Web Services, making it the ideal choice for developing rich, native 
-iPhone, iPad with Swift on iOS, Java Android Mobile Apps, OSX Desktop Appications as well as targetting the most popular 
-.NET PCL platforms including Xamarin.iOS, Xamarin.Android, Windows Store, WPF, WinForms and Silverlight: 
+ServiceStack now integrates with all Major IDE's used for creating the best native experiences on the most popular platforms 
+to enable a highly productive dev workflow for consuming Web Services, making ServiceStack the ideal back-end choice for powering 
+rich, native iPhone and iPad Apps on iOS with Swift, Mobile and Tablet Apps on the Android platform with Java, OSX Desktop Appications 
+as well as targetting the most popular .NET PCL platforms including Xamarin.iOS, Xamarin.Android, Windows Store, WPF, WinForms and Silverlight: 
 
 <img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/add-ss-reference-ides.png" align="right" />
 
 #### [VS.NET integration with ServiceStackVS](https://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7)
 
-Providing instant Native Types support for 
+Providing instant Native Typed API's for 
 [C#](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference), 
 [F#](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference), 
 [VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference) 
@@ -65,13 +65,13 @@ development experience developing Client applications with
 
 Providing [an instant Native Typed API in Swift](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference) 
 including generic Service Clients enabling a highly-productive workflow and effortless consumption of Web Services from 
-native iOS and OSX Applications from directly within Xcode!
+native iOS and OSX Applications - directly from within Xcode!
 
 #### [Android Studio integration with ServiceStackIDEA](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference)
 
 Providing [an instant Native Typed API in Java](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference) 
-including idiomatic Java Generic Service Clients supporting Sync and Async Requests levaraging Android AsyncTasks to enable the
-creation of services-rich and responsive native Java Mobile Apps on the Android platform directly from within Android Studio!
+including idiomatic Java Generic Service Clients supporting Sync and Async Requests by levaraging Android's AsyncTasks to enable the
+creation of services-rich and responsive native Java Mobile Apps on the Android platform - directly from within Android Studio!
 
 ## Simple REST service example
 
