@@ -54,7 +54,7 @@ To add a ServiceStack Reference, right-click (or press `Ctrl+Alt+Shift+R`) on th
 
 ![Add ServiceStack Reference Java Context Menu](https://github.com/ServiceStack/Assets/raw/master/img/servicestackidea/android-context-menu.png)
 
-The **Add ServiceStack Reference** Dialog will be partially populated with the selected **Package** with the package where the Dialog was launched from and the **File Name** defaulting to `dto.java` where the Plain Old Java Object (POJO) DTO's will be added to. All that's missing is the url of the remote ServiceStack instance you wish to generate the DTO's for, e.g: `http://techstacks.io`:
+The **Add ServiceStack Reference** Dialog will be partially populated with the selected **Package** from where the Dialog was launched from and the **File Name** defaulting to `dto.java` where the Plain Old Java Object (POJO) DTO's will be added to. All that's missing is the url of the remote ServiceStack instance you wish to generate the DTO's for, e.g: `http://techstacks.io`:
 
 ![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackidea/android-dialog.png)
 
@@ -95,7 +95,7 @@ For example the package name can be changed by uncommenting the **Package:** opt
 ### Java JsonServiceClient API
 The goal of Native Types is to provide a productive end-to-end typed API to fascilitate consuming remote services with minimal effort, friction and cognitive overhead. One way we achieve this is by promoting a consistent, forwards and backwards-compatible message-based API that's works conceptually similar on every platform where each language consumes remote services by sending  **Typed DTO's** using a reusable **Generic Service Client** and a consistent client library API.
 
-To maximize knowledge sharing between different platforms, the Java ServiceClient API is modelled after the [.NET Service Clients API](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) closely, as allowed within Java's language and idiomatic-style constraints. 
+To maximize knowledge sharing between different platforms, the Java ServiceClient API is modelled after the [.NET Service Clients API](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) as closely as allowed within Java's language and idiomatic-style constraints. 
 
 Thanks to C#/.NET being heavily inspired by Java, the resulting Java `JsonServiceClient` ends up bearing a close resemblance with .NET's Service Clients. The primary differences being due to language limitations like Java's generic type erasure and lack of language features like property initializers making Java slightly more verbose to work with, however as **Add ServiceStack Reference** is able to take advantage of code-gen we're able to mitigate most of these limitations to retain a familiar developer UX.
 
@@ -185,7 +185,7 @@ QueryResponse<Technology> response = client.get(new FindTechnologies(),
 	Utils.createMap("DescriptionContains","framework"));
 ```
 
-The `Utils.createMap()` API is included in the [Utils.java](https://github.com/ServiceStack/ServiceStack.Java/blob/master/src/AndroidClient/client/src/main/java/net/servicestack/client/Utils.java) static class which contains a number of helpers to simplify common usage patterns and reduce the amount of boiler plate required for common tasks, e.g they can also simplify reading raw bytes or raw String from a HTTP Response. Here's how you can download an image bytes using a custom `JsonServiceClient` HTTP Request and load it into an Android Image `Bitmap`:
+The `Utils.createMap()` API is included in the [Utils.java](https://github.com/ServiceStack/ServiceStack.Java/blob/master/src/AndroidClient/client/src/main/java/net/servicestack/client/Utils.java) static class which contains a number of helpers to simplify common usage patterns and reduce the amount of boiler plate required for common tasks, e.g they can be used to simplify reading raw bytes or raw String from a HTTP Response. Here's how you can download an image bytes using a custom `JsonServiceClient` HTTP Request and load it into an Android Image `Bitmap`:
 
 ```java
 HttpURLConnection httpRes = client.get("https://servicestack.net/img/logo.png");
@@ -254,7 +254,7 @@ To make use of Async API's in an Android App (which you'll want to do to keep we
 AndroidServiceClient client = new AndroidServiceClient("http://techstacks.io");
 ```
 
-Like other Service Clients, there's an equivalent Async API matching their Sync counterparts which differs by ending with an **Async** suffix which instead of returning a typed response, fires a **success(TResponse)** or **error(Exception)** callback with the typed response, e.g: 
+Like other Service Clients, there's an equivalent Async API matching their Sync counterparts which differs by ending with an **Async** suffix that instead of returning a typed response, fires a **success(TResponse)** or **error(Exception)** callback with the typed response, e.g: 
 ```java
 client.getAsync(new AppOverview(), new AsyncResult<AppOverviewResponse>(){
     @Override
