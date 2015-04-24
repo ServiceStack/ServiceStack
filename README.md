@@ -3,7 +3,7 @@ See [servicestack.net/features](http://servicestack.net/features) for an overvie
 Join the [ServiceStack Google+ Community](https://plus.google.com/u/0/communities/112445368900682590445) or
 follow [@ServiceStack](http://twitter.com/servicestack) for project updates. 
 
-## Simple, Fast, Versatile and full-featured Services Framework
+### Simple, Fast, Versatile and full-featured Services Framework
 
 ServiceStack is a simple, fast, versatile and highly-productive full-featured [Web](http://razor.servicestack.net) and 
 [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services) Framework that's 
@@ -35,7 +35,7 @@ the most productive development experience for developing .NET to .NET Web Servi
 ServiceStack also integrates with all major IDE's used to enable a highly productive workflow for developing the 
 best experiences on the most popular platforms making it the ideal choice for developing rich, native 
 iPhone, iPad with Swift on iOS, Java Android Mobile Apps, OSX Desktop Appications as well as targetting the most popular 
-.NET PCL platforms including Xamarin.iOS, Xamarin.Android, Windows Store, WPF, WinForms and , Silverlight: 
+.NET PCL platforms including Xamarin.iOS, Xamarin.Android, Windows Store, WPF, WinForms and Silverlight: 
 
 <img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/add-ss-reference-ides.png" align="right" />
 
