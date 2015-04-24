@@ -30,9 +30,9 @@ ServiceStack Services also maximize productivity for consumers providing an
 [instant end-to-end typed API without code-gen](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) enabling
 the most productive development experience for developing .NET to .NET Web Services.
 
-### [Generate Instant Typed API's from a Remote Url](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
+### [Generate Instant Typed API's from a Remote Url!](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
 
-ServiceStack also integrates with all Major IDE's used for developing the best experiences on the most popular platforms 
+ServiceStack now integrates with all Major IDE's used for developing the best experiences on the most popular platforms 
 enabling a highly productive workflow for consuming Web Services, making it the ideal choice for developing rich, native 
 iPhone, iPad with Swift on iOS, Java Android Mobile Apps, OSX Desktop Appications as well as targetting the most popular 
 .NET PCL platforms including Xamarin.iOS, Xamarin.Android, Windows Store, WPF, WinForms and Silverlight: 
@@ -70,8 +70,8 @@ native iOS and OSX Applications from directly within Xcode!
 #### [Android Studio integration with ServiceStackIDEA](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference)
 
 Providing [an instant Native Typed API in Java](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference) 
-including Sync and Async Generic Java Service Clients levaraging Android AsyncTasks to enable a highly-productive workflow
-for creating services-rich and responsive native Java Mobile Apps on the Android platform directly from within Android Studio!
+including idiomatic Java Generic Service Clients supporting Sync and Async Requests levaraging Android AsyncTasks to enable the
+creation of services-rich and responsive native Java Mobile Apps on the Android platform directly from within Android Studio!
 
 ## Simple REST service example
 
