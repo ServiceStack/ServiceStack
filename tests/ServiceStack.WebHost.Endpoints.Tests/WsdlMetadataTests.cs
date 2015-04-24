@@ -34,12 +34,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Xsd_output_does_not_contain_xml_declaration()
 		{
-			var xsd = new XsdGenerator {
-				OperationTypes = new[] { typeof(GetCustomer), typeof(GetCustomerResponse), typeof(GetCustomers), typeof(GetCustomersResponse), typeof(StoreCustomer) },
-				OptimizeForFlash = false,
-			}.ToString();
+		    using (var appHost = new BasicAppHost().Init())
+		    {
+		        var xsd = new XsdGenerator
+		        {
+		            OperationTypes = new[]
+		            {
+		                typeof (GetCustomer), typeof (GetCustomerResponse), typeof (GetCustomers),
+		                typeof (GetCustomersResponse), typeof (StoreCustomer)
+		            },
+		            OptimizeForFlash = false,
+		        }.ToString();
 
-			Assert.That(!xsd.StartsWith("<?"));
+		        Assert.That(!xsd.StartsWith("<?"));
+		    }
 		}
 
 	}
