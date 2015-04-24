@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Schema;
-using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
 {
@@ -14,16 +12,14 @@ namespace ServiceStack
 		public static XmlSchemaSet GetXmlSchemaSet(ICollection<Type> operationTypes)
 		{
 			var exporter = new XsdDataContractExporter();
-		    var types = operationTypes
-                .Where(x => !x.AllAttributes<ExcludeAttribute>()
-                    .Any(attr => attr.Feature.HasFlag(Feature.Soap))).ToList();
+		    var types = HostContext.AppHost.ExportSoapTypes(operationTypes);
 
             exporter.Export(types);
 			exporter.Schemas.Compile();
 			return exporter.Schemas;
 		}
 
-		public static string GetXsd(XmlSchemaSet schemaSet)
+	    public static string GetXsd(XmlSchemaSet schemaSet)
 		{
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb))

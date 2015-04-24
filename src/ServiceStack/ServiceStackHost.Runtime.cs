@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using ServiceStack.Auth;
+using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
@@ -426,6 +427,14 @@ namespace ServiceStack
             typesConfig.IgnoreTypes.Add(typeof(ResponseStatus));
             typesConfig.IgnoreTypes.Add(typeof(ResponseError));
             return typesConfig;
+        }
+
+        public virtual List<Type> ExportSoapTypes(ICollection<Type> operationTypes)
+        {
+            var types = operationTypes
+                .Where(x => !x.AllAttributes<ExcludeAttribute>()
+                            .Any(attr => attr.Feature.HasFlag(Feature.Soap))).ToList();
+            return types;
         }
     }
 
