@@ -351,7 +351,7 @@ namespace ServiceStack.Host.HttpListener
                 else
                 {
                     cmd = "netsh";
-                    args = string.Format(@"http add urlacl url={0} user={1}\{2} listen=yes", urlBase, Environment.UserDomainName, Environment.UserName);
+                    args = string.Format(@"http add urlacl url={0} user=""{1}\{2}"" listen=yes", urlBase, Environment.UserDomainName, Environment.UserName);
                 }
 
                 var psi = new ProcessStartInfo(cmd, args)
