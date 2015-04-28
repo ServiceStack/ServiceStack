@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -272,9 +273,9 @@ namespace ServiceStack.ServiceClient.Web
 #endif
 
         public void SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
-            Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            Action<TResponse> onSuccess, Action<TResponse, Exception> onError, NameValueCollection headers)
         {
-            SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError);
+            SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError, headers);
         }
 
         public void CancelAsync()
@@ -296,7 +297,7 @@ namespace ServiceStack.ServiceClient.Web
 #endif
 
         private RequestState<TResponse> SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request,
-            Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            Action<TResponse> onSuccess, Action<TResponse, Exception> onError, NameValueCollection headers)
         {
             if (httpMethod == null) throw new ArgumentNullException("httpMethod");
 
@@ -334,6 +335,7 @@ namespace ServiceStack.ServiceClient.Web
 
 #else
             _webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
+            _webRequest.Headers.Add(headers);
 
             if (StoreCookies)
             {
