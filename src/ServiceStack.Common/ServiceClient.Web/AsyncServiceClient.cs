@@ -273,7 +273,7 @@ namespace ServiceStack.ServiceClient.Web
 #endif
 
         public void SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
-            Action<TResponse> onSuccess, Action<TResponse, Exception> onError, NameValueCollection headers)
+            Action<TResponse> onSuccess, Action<TResponse, Exception> onError, NameValueCollection headers = null)
         {
             SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError, headers);
         }
@@ -335,7 +335,11 @@ namespace ServiceStack.ServiceClient.Web
 
 #else
             _webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
-            _webRequest.Headers.Add(headers);
+
+            if (headers != null)
+            {
+                _webRequest.Headers.Add(headers);
+            }
 
             if (StoreCookies)
             {
