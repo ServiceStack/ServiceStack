@@ -10,6 +10,7 @@ using Funq;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using System.Threading;
 
 namespace ServiceStack.Host.AspNet
 {
@@ -21,6 +22,7 @@ namespace ServiceStack.Host.AspNet
         public Container Container { get; set; }
         private readonly HttpRequestBase request;
         private readonly IHttpResponse response;
+        private readonly CancellationToken cancelToken;
         
         public AspNetRequest(HttpContextBase httpContext, string operationName = null)
             : this(httpContext, operationName, RequestAttributes.None)
@@ -52,6 +54,15 @@ namespace ServiceStack.Host.AspNet
                     if (strKey == null) continue;
                     Items[strKey] = httpContext.Items[key];
                 }
+            }
+            cancelToken = RequestCancelService.TryRegisterCancelableRequest(this);
+        }
+
+        public CancellationToken CancelToken
+        {
+            get
+            {
+                return cancelToken;
             }
         }
 

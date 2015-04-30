@@ -129,7 +129,8 @@ namespace ServiceStack
             }
         }
 
-        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request)
+        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, 
+            CancellationToken cancelToken = default(CancellationToken))
         {
             var tcs = new TaskCompletionSource<TResponse>();
 
@@ -153,14 +154,16 @@ namespace ServiceStack
                         tcs.SetResult(r);
                     },
                     (response, exc) => tcs.SetException(exc),
-                    wr => webRes = wr
+                    wr => webRes = wr,
+                    cancelToken
                 );
             }
             else
             {
                 SendWebRequest<TResponse>(httpMethod, absoluteUrl, request,
                     tcs.SetResult,
-                    (response, exc) => tcs.SetException(exc)
+                    (response, exc) => tcs.SetException(exc), 
+                    cancelToken: cancelToken
                 );
             }
 
@@ -173,8 +176,9 @@ namespace ServiceStack
             SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError);
         }
 
-        private void SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request, 
-            Action<TResponse> onSuccess, Action<object, Exception> onError, Action<WebResponse> onResponseInit = null)
+        private void SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request,
+            Action<TResponse> onSuccess, Action<object, Exception> onError, Action<WebResponse> onResponseInit = null,
+            CancellationToken cancelToken = default(CancellationToken))
         {
             if (httpMethod == null) throw new ArgumentNullException("httpMethod");
 
@@ -189,7 +193,7 @@ namespace ServiceStack
                 }
             }
 
-            var webRequest = this.CreateHttpWebRequest(requestUri);
+            var webRequest = this.CreateHttpWebRequest(requestUri);           
 
             var requestState = new AsyncState<TResponse>(BufferSize)
             {
@@ -205,9 +209,16 @@ namespace ServiceStack
             };
             requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
 
+            if (cancelToken.CanBeCanceled)
+            {
+                var requestId = Guid.NewGuid();
+                webRequest.Headers.Add(CancelRequest.CancelRequestIdHeader, requestId.ToString());
+                requestState.SetCancelToken(cancelToken, () => SendCancelRequest(requestId));
+            }
+
             SendWebRequestAsync(httpMethod, request, requestState, webRequest);
         }
-
+       
         private void SendWebRequestAsync<TResponse>(string httpMethod, object request,
             AsyncState<TResponse> state, HttpWebRequest webRequest)
         {
@@ -252,6 +263,17 @@ namespace ServiceStack
                 // BeginGetRequestStream can throw if request was aborted
                 HandleResponseError(ex, state);
             }
+        }
+
+        private void SendCancelRequest(Guid requestId)
+        {
+            Console.WriteLine("Canceling...");
+            var req = new CancelRequest() { RequestId = requestId };
+            try
+            {
+                SendWebRequest<CancelRequestResponse>(HttpMethods.Put, BaseUri.CombineWith(req.ToPutUrl()), req, null, null);
+            }
+            catch (Exception ex) { Console.WriteLine("Canceling failed Error: " + ex.Message); }
         }
 
         private void RequestCallback<T>(IAsyncResult asyncResult)

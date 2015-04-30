@@ -115,6 +115,7 @@
     <Compile Include="NativeTypes\Swift\SwiftGenerator.cs" />
     <Compile Include="NativeTypes\TypeScript\TypeScriptGenerator.cs" />
     <Compile Include="NativeTypes\VbNet\VbNetGenerator.cs" />
+    <Compile Include="RequestCancelService.cs" />
     <Compile Include="ServiceStackProvider.cs" />
     <Compile Include="AsyncExtensions.cs" />
     <Compile Include="Auth\AspNetWindowsAuthProvider.cs" />
