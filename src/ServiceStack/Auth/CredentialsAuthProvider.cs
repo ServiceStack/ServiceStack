@@ -122,9 +122,34 @@ namespace ServiceStack.Auth
             {
                 LoadUserAuthInfo(userSession, tokens, authInfo);
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
+
+                if (LoadUserAuthFilter != null)
+                {
+                    LoadUserAuthFilter(userSession, tokens, authInfo);
+                }
             }
 
             var authRepo = authService.TryResolve<IAuthRepository>();
+
+            if (CustomValidationFilter != null)
+            {
+                var ctx = new AuthContext
+                {
+                    Service = authService,
+                    AuthProvider = this,
+                    Session = session,
+                    AuthTokens = tokens,
+                    AuthInfo = authInfo,
+                    AuthRepository = authRepo,
+                };
+                var response = CustomValidationFilter(ctx);
+                if (response != null)
+                {
+                    authService.RemoveSession();
+                    return response;
+                }
+            }
+
             if (authRepo != null)
             {
                 if (tokens != null)
