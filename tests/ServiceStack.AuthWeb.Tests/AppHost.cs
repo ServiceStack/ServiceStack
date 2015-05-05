@@ -135,9 +135,9 @@ namespace ServiceStack.AuthWeb.Tests
             //override the default registration validation with your own custom implementation
             //Plugins.Add(new CustomRegisterPlugin());
 
-            //var authRepo = CreateOrmLiteAuthRepo(container, appSettings);    //works with / or /basic
+            var authRepo = CreateOrmLiteAuthRepo(container, appSettings);    //works with / or /basic
             //var authRepo = CreateRavenDbAuthRepo(container, appSettings);  //works with /basic
-            var authRepo = CreateRedisAuthRepo(container, appSettings);    //works with /basic
+            //var authRepo = CreateRedisAuthRepo(container, appSettings);    //works with /basic
             //AuthProvider.ValidateUniqueUserNames = false;
 
             try

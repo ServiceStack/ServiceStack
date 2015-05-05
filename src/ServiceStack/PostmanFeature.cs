@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -51,6 +52,7 @@ namespace ServiceStack
         }
     }
 
+    [Exclude(Feature.Soap)]
     public class Postman
     {
         public List<string> Label { get; set; }

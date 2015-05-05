@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
@@ -12,6 +13,7 @@ namespace ServiceStack.Api.Swagger
     using ServiceStack.Api.Swagger.Support;
 
     [DataContract]
+    [Exclude(Feature.Soap)]
     public class ResourceRequest
     {
         [DataMember(Name = "apiKey")]
