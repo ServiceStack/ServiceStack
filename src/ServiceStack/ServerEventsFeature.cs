@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Auth;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
 using ServiceStack.Web;
@@ -251,6 +252,7 @@ namespace ServiceStack
         }
     }
 
+    [Exclude(Feature.Soap)]
     public class GetEventSubscribers : IReturn<List<Dictionary<string, string>>>
     {
         public string[] Channel { get; set; } //deprecated
@@ -276,6 +278,7 @@ namespace ServiceStack
         }
     }
 
+    [Exclude(Feature.Soap)]
     public class UnRegisterEventSubscriber : IReturn<Dictionary<string, string>>
     {
         public string Id { get; set; }
