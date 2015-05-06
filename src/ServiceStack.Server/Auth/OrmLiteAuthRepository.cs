@@ -32,7 +32,7 @@ namespace ServiceStack.Auth
         public bool UseDistinctRoleTables { get; set; }
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory)
-            : this(dbFactory, new SaltedHash()) { }
+            : this(dbFactory, HostContext.AppHost.GetHashProvider()) { }
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher)
         {

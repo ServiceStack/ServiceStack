@@ -106,7 +106,7 @@ namespace ServiceStack.Authentication.NHibernate
             userAuth = GetUserAuthByUserName(userName);
             if (userAuth == null) return false;
 
-            var saltedHash = new SaltedHash();
+            var saltedHash = HostContext.AppHost.GetHashProvider();
             return saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt);
         }
 
@@ -219,7 +219,7 @@ namespace ServiceStack.Authentication.NHibernate
 
             AssertNoExistingUser(newUser);
 
-            var saltedHash = new SaltedHash();
+            var saltedHash = HostContext.AppHost.GetHashProvider();
             string salt;
             string hash;
             saltedHash.GetHashAndSaltString(password, out hash, out salt);
@@ -312,7 +312,7 @@ namespace ServiceStack.Authentication.NHibernate
             var salt = existingUser.Salt;
             if (password != null)
             {
-                var saltedHash = new SaltedHash();
+                var saltedHash = HostContext.AppHost.GetHashProvider();
                 saltedHash.GetHashAndSaltString(password, out hash, out salt);
             }
 
