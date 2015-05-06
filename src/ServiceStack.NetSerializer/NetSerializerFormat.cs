@@ -15,7 +15,7 @@ namespace ServiceStack.NetSerializer
                 Serialize,
                 Deserialize);
 
-            var allTypes = ((ServiceStackHost) appHost).Metadata.GetAllTypes();
+            var allTypes = ((ServiceStackHost) appHost).Metadata.GetAllOperationTypes();
             var serializableTypes = allTypes.Where(x => x.HasAttribute<SerializableAttribute>()).ToArray();
             global::NetSerializer.Serializer.Initialize(serializableTypes);
         }

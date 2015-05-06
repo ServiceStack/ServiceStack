@@ -59,7 +59,7 @@ namespace ServiceStack.Api.Swagger
                 ApiVersion = HostContext.Config.ApiVersion
             };
             var operations = HostContext.Metadata;
-            var allTypes = operations.GetAllTypes();
+            var allTypes = operations.GetAllOperationTypes();
             var allOperationNames = operations.GetAllOperationNames();
             foreach (var operationName in allOperationNames)
             {

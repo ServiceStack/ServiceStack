@@ -66,7 +66,7 @@ namespace ServiceStack.Metadata
             var metadata = HostContext.Metadata;
             if (operationName != null)
             {
-                var allTypes = metadata.GetAllTypes();
+                var allTypes = metadata.GetAllOperationTypes();
                 //var operationType = allTypes.Single(x => x.Name == operationName);
                 var operationType = allTypes.Single(x => x.GetOperationName() == operationName);
                 var op = metadata.GetOperation(operationType);
