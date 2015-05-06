@@ -5,7 +5,9 @@
 using System;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Api.Swagger;
 using ServiceStack.Auth;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
@@ -64,6 +66,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 typeof(Register)
                     .AddAttributes(new RouteAttribute("/custom-register"))
                     .AddAttributes(new RestrictAttribute(RequestAttributes.Json));
+
+                typeof (ResourceRequest)
+                    .AddAttributes(new ExcludeAttribute(Feature.Soap));
 
                 this.RegisterService<RegisterService>("/register");
 
