@@ -263,7 +263,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class XmlSyncRestClientTests : SyncRestClientTests
     {
         public XmlSyncRestClientTests()
-            : base(8092)
+            : base(8094)
         {
         }
 
