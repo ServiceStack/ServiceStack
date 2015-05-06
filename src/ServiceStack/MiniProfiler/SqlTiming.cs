@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.MiniProfiler.Helpers;
 //using System.Web.Script.Serialization;
@@ -12,6 +13,7 @@ namespace ServiceStack.MiniProfiler
     /// <summary>
     /// Profiles a single sql execution.
     /// </summary>
+    [Exclude(Feature.Soap)]
     [DataContract]
     public class SqlTiming
     {

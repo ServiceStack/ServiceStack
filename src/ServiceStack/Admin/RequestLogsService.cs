@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Admin
 {
+    [Exclude(Feature.Soap)]
     [DataContract]
     public class RequestLogs
     {
@@ -33,6 +35,7 @@ namespace ServiceStack.Admin
         [DataMember(Order=20)] public TimeSpan? DurationLessThan { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     [DataContract]
     public class RequestLogsResponse
     {

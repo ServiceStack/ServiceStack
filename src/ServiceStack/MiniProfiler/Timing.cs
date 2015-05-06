@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.MiniProfiler.Storage;
 //using System.Web.Script.Serialization;
@@ -11,6 +12,7 @@ namespace ServiceStack.MiniProfiler
     /// <summary>
     /// An individual profiling step that can contain child steps.
     /// </summary>
+    [Exclude(Feature.Soap)]
     [DataContract]
     public class Timing : IDisposable
     {

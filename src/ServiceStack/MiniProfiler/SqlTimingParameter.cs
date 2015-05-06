@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 
 //using System.Web.Script.Serialization;
 
@@ -8,7 +9,8 @@ namespace ServiceStack.MiniProfiler
     /// <summary>
     /// Information about a DbParameter used in the sql statement profiled by SqlTiming.
     /// </summary>
-    [DataContract]
+    [Exclude(Feature.Soap)]
+    [DataContract] 
     public class SqlTimingParameter
     {
         /// <summary>

@@ -4,14 +4,17 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
 using System.Web.Hosting;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
+    [Exclude(Feature.Soap)]
     [DataContract]
     public class RequestInfo { }
 
+    [Exclude(Feature.Soap)]
     [DataContract]
     public class RequestInfoResponse
     {
@@ -151,6 +154,7 @@ namespace ServiceStack.Host.Handlers
         public List<string> VirtualPathProviderFiles { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class RequestHandlerInfo
     {
         public string HandlerType { get; set; }

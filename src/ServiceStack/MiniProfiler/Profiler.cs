@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
+using ServiceStack.DataAnnotations;
 using ServiceStack.MiniProfiler.Helpers;
 using ServiceStack.MiniProfiler.UI;
 using ServiceStack.Text;
@@ -16,6 +17,7 @@ namespace ServiceStack.MiniProfiler
     /// A single MiniProfiler can be used to represent any number of steps/levels in a call-graph, via Step()
     /// </summary>
     /// <remarks>Totally baller.</remarks>
+    [Exclude(Feature.Soap)]
     [DataContract]
     public partial class Profiler
     {
