@@ -66,9 +66,10 @@ namespace ServiceStack.Metadata
 
         public WsdlTemplateBase GetWsdlTemplate(XsdMetadata operations, string baseUri, bool optimizeForFlash, string rawUrl, string serviceName)
         {
+            var soapTypes = operations.Metadata.GetAllSoapOperationTypes();
             var xsd = new XsdGenerator
             {
-                OperationTypes = operations.GetAllTypes(),
+                OperationTypes = soapTypes,
                 OptimizeForFlash = optimizeForFlash,
             }.ToString();
 
@@ -78,8 +79,10 @@ namespace ServiceStack.Metadata
             var wsdlTemplate = GetWsdlTemplate();
             wsdlTemplate.Xsd = xsd;
             wsdlTemplate.ServiceName = serviceName;
-            wsdlTemplate.ReplyOperationNames = operations.GetReplyOperationNames(soapFormat);
-            wsdlTemplate.OneWayOperationNames = operations.GetOneWayOperationNames(soapFormat);
+
+            var soapTypesSet = soapTypes.ToHashSet();
+            wsdlTemplate.ReplyOperationNames = operations.GetReplyOperationNames(soapFormat, soapTypesSet);
+            wsdlTemplate.OneWayOperationNames = operations.GetOneWayOperationNames(soapFormat, soapTypesSet);
 
             if (rawUrl.ToLower().StartsWith(baseUri))
             {

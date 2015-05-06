@@ -245,6 +245,12 @@ namespace ServiceStack.AuthWeb.Tests
                 Log.Error("Could not retrieve windows user info for '{0}'".Fmt(tokens.DisplayName), ex);
             }
         }
+
+        public override List<Type> ExportSoapOperationTypes(List<Type> operationTypes)
+        {
+            //return base.ExportSoapOperationTypes(operationTypes);
+            return new List<Type> { typeof(Authenticate) };
+        }
     }
 
     public class CustomUserAuth : UserAuth

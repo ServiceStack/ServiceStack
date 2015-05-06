@@ -429,12 +429,21 @@ namespace ServiceStack
             return typesConfig;
         }
 
-        public virtual List<Type> ExportSoapTypes(ICollection<Type> operationTypes)
+        public virtual List<Type> ExportSoapOperationTypes(List<Type> operationTypes)
         {
             var types = operationTypes
                 .Where(x => !x.AllAttributes<ExcludeAttribute>()
-                            .Any(attr => attr.Feature.HasFlag(Feature.Soap))).ToList();
+                            .Any(attr => attr.Feature.HasFlag(Feature.Soap)))
+                .Where(x => !x.IsGenericTypeDefinition())
+                .ToList();
             return types;
+        }
+
+        public virtual bool ExportSoapType(Type type)
+        {
+            return !type.IsGenericTypeDefinition() && 
+                   !type.AllAttributes<ExcludeAttribute>()
+                        .Any(attr => attr.Feature.HasFlag(Feature.Soap));
         }
     }
 

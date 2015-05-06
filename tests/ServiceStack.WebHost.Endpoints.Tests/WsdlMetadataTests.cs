@@ -26,8 +26,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var xsdMetadata = new XsdMetadata(appHost.Metadata);
                 var wsdlTemplate = wsdlGenerator.GetWsdlTemplate(xsdMetadata, "http://w3c.org/types", false, "http://w3c.org/types", "Service Name");
 
-                Assert.That(wsdlTemplate.ReplyOperationNames, Is.EquivalentTo(xsdMetadata.GetReplyOperationNames(Format.Soap12)));
-                Assert.That(wsdlTemplate.OneWayOperationNames, Is.EquivalentTo(xsdMetadata.GetOneWayOperationNames(Format.Soap12)));
+                var soapTypes = appHost.Metadata.GetAllSoapOperationTypes().ToHashSet();
+                Assert.That(wsdlTemplate.ReplyOperationNames, Is.EquivalentTo(xsdMetadata.GetReplyOperationNames(Format.Soap12, soapTypes)));
+                Assert.That(wsdlTemplate.OneWayOperationNames, Is.EquivalentTo(xsdMetadata.GetOneWayOperationNames(Format.Soap12, soapTypes)));
             }
 		}
 

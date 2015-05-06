@@ -12,9 +12,8 @@ namespace ServiceStack
 		public static XmlSchemaSet GetXmlSchemaSet(ICollection<Type> operationTypes)
 		{
 			var exporter = new XsdDataContractExporter();
-		    var types = HostContext.AppHost.ExportSoapTypes(operationTypes);
 
-            exporter.Export(types);
+            exporter.Export(operationTypes);
 			exporter.Schemas.Compile();
 			return exporter.Schemas;
 		}

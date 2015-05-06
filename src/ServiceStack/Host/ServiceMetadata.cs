@@ -168,7 +168,7 @@ namespace ServiceStack.Host
             return operation != null ? operation.ResponseType : null;
         }
 
-        public List<Type> GetAllTypes()
+        public List<Type> GetAllOperationTypes()
         {
             var allTypes = new List<Type>(RequestTypes);
             foreach (var responseType in ResponseTypes)
@@ -176,6 +176,13 @@ namespace ServiceStack.Host
                 allTypes.AddIfNotExists(responseType);
             }
             return allTypes;
+        }
+
+        public List<Type> GetAllSoapOperationTypes()
+        {
+            var operationTypes = GetAllOperationTypes();
+            var soapTypes = HostContext.AppHost.ExportSoapOperationTypes(operationTypes);
+            return soapTypes;
         }
 
         public List<string> GetAllOperationNames()
@@ -474,35 +481,24 @@ namespace ServiceStack.Host
             Flash = flash;
         }
 
-        public List<Type> GetAllTypes()
+        public List<string> GetReplyOperationNames(Format format, HashSet<Type> soapTypes)
         {
-            var allTypes = new List<Type>(Metadata.RequestTypes);
-            allTypes.AddRange(Metadata.ResponseTypes);
-            return allTypes;
-        }
-
-        public List<string> GetReplyOperationNames(Format format)
-        {
-            var feature = format.ToFeature();
             return Metadata.OperationsMap.Values
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => !x.IsOneWay)
-                .Where(x => !x.RequestType.AllAttributes<ExcludeAttribute>()
-                    .Any(attr => attr.Feature.HasFlag(feature)))
+                .Where(x => soapTypes.Contains(x.RequestType))
                 .Select(x => x.RequestType.GetOperationName())
                 .ToList();
         }
 
-        public List<string> GetOneWayOperationNames(Format format)
+        public List<string> GetOneWayOperationNames(Format format, HashSet<Type> soapTypes)
         {
-            var feature = format.ToFeature();
             return Metadata.OperationsMap.Values
                 .Where(x => HostContext.Config != null
                     && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
                 .Where(x => x.IsOneWay)
-                .Where(x => !x.RequestType.AllAttributes<ExcludeAttribute>()
-                    .Any(attr => attr.Feature.HasFlag(feature)))
+                .Where(x => soapTypes.Contains(x.RequestType))
                 .Select(x => x.RequestType.GetOperationName())
                 .ToList();
         }

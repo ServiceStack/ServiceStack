@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 
@@ -11,7 +13,7 @@ namespace ServiceStack.Metadata
         private readonly ILog log = LogManager.GetLogger(typeof(XsdGenerator));
         public bool OptimizeForFlash { get; set; }
         public ICollection<Type> OperationTypes { get; set; }
-
+        
         private string Filter(string xsd)
         {
             return !this.OptimizeForFlash ? xsd : xsd.Replace("ser:guid", "xs:string");
@@ -27,19 +29,21 @@ namespace ServiceStack.Metadata
             {
                 foreach (var assemblyType in type.Assembly.GetTypes())
                 {
-                    if (assemblyType.GetCustomAttributes(typeof(DataContractAttribute), false).Length > 0)
+                    if (assemblyType.IsDto())
                     {
                         var baseTypeWithSameName = XsdMetadata.GetBaseTypeWithTheSameName(assemblyType);
                         if (uniqueTypeNames.Contains(baseTypeWithSameName.GetOperationName()))
                         {
                             log.WarnFormat("Skipping duplicate type with existing name '{0}'", baseTypeWithSameName.GetOperationName());
                         }
-                        uniqueTypes.Add(baseTypeWithSameName);
+
+                        if (HostContext.AppHost.ExportSoapType(baseTypeWithSameName))
+                        {
+                            uniqueTypes.Add(baseTypeWithSameName);
+                        }
                     }
                 }
             }
-
-            uniqueTypes.RemoveWhere(x => x.IsGenericTypeDefinition());
 
             this.OperationTypes = uniqueTypes;
 
