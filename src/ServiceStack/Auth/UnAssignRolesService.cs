@@ -6,35 +6,6 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class UnAssignRoles : IReturn<UnAssignRolesResponse>
-    {
-        public UnAssignRoles()
-        {
-            this.Roles = new List<string>();
-            this.Permissions = new List<string>();
-        }
-
-        public string UserName { get; set; }
-
-        public List<string> Permissions { get; set; }
-
-        public List<string> Roles { get; set; }
-    }
-
-    public class UnAssignRolesResponse : IHasResponseStatus
-    {
-        public UnAssignRolesResponse()
-        {
-            this.AllRoles = new List<string>();
-        }
-
-        public List<string> AllRoles { get; set; }
-
-        public List<string> AllPermissions { get; set; }
-
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
     [DefaultRequest(typeof(UnAssignRoles))]
     public class UnAssignRolesService : Service
     {

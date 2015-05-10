@@ -74,4 +74,80 @@ namespace ServiceStack
         [DataMember(Order = 5)] public ResponseStatus ResponseStatus { get; set; }
         [DataMember(Order = 6)] public Dictionary<string, string> Meta { get; set; }
     }
+
+    [DataContract]
+    public class AssignRoles : IReturn<AssignRolesResponse>
+    {
+        public AssignRoles()
+        {
+            this.Roles = new List<string>();
+            this.Permissions = new List<string>();
+        }
+
+        [DataMember]
+        public string UserName { get; set; }
+
+        [DataMember]
+        public List<string> Permissions { get; set; }
+
+        [DataMember]
+        public List<string> Roles { get; set; }
+    }
+
+    [DataContract]
+    public class AssignRolesResponse : IHasResponseStatus
+    {
+        public AssignRolesResponse()
+        {
+            this.AllRoles = new List<string>();
+            this.AllPermissions = new List<string>();
+        }
+
+        [DataMember]
+        public List<string> AllRoles { get; set; }
+
+        [DataMember]
+        public List<string> AllPermissions { get; set; }
+
+        [DataMember]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [DataContract]
+    public class UnAssignRoles : IReturn<UnAssignRolesResponse>
+    {
+        public UnAssignRoles()
+        {
+            this.Roles = new List<string>();
+            this.Permissions = new List<string>();
+        }
+
+        [DataMember]
+        public string UserName { get; set; }
+
+        [DataMember]
+        public List<string> Permissions { get; set; }
+
+        [DataMember]
+        public List<string> Roles { get; set; }
+    }
+
+    [DataContract]
+    public class UnAssignRolesResponse : IHasResponseStatus
+    {
+        public UnAssignRolesResponse()
+        {
+            this.AllRoles = new List<string>();
+        }
+
+        [DataMember]
+        public List<string> AllRoles { get; set; }
+
+        [DataMember]
+        public List<string> AllPermissions { get; set; }
+
+        [DataMember]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
 }

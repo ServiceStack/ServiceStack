@@ -1,40 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using ServiceStack.Configuration;
-using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class AssignRoles : IReturn<AssignRolesResponse>
-    {
-        public AssignRoles()
-        {
-            this.Roles = new List<string>();
-            this.Permissions = new List<string>();
-        }
-
-        public string UserName { get; set; }
-
-        public List<string> Permissions { get; set; }
-
-        public List<string> Roles { get; set; }
-    }
-
-    public class AssignRolesResponse : IHasResponseStatus
-    {
-        public AssignRolesResponse()
-        {
-            this.AllRoles = new List<string>();
-            this.AllPermissions = new List<string>();
-        }
-
-        public List<string> AllRoles { get; set; }
-
-        public List<string> AllPermissions { get; set; }
-
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
     [DefaultRequest(typeof(AssignRoles))]
     public class AssignRolesService : Service
     {
