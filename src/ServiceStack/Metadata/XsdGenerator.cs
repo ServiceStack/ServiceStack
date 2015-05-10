@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 
@@ -11,6 +8,7 @@ namespace ServiceStack.Metadata
     public class XsdGenerator
     {
         private readonly ILog log = LogManager.GetLogger(typeof(XsdGenerator));
+
         public bool OptimizeForFlash { get; set; }
         public ICollection<Type> OperationTypes { get; set; }
         
@@ -25,13 +23,14 @@ namespace ServiceStack.Metadata
 
             var uniqueTypes = new HashSet<Type>();
             var uniqueTypeNames = new List<string>();
-            foreach (var type in OperationTypes)
+            foreach (var opType in OperationTypes)
             {
-                foreach (var assemblyType in type.Assembly.GetTypes())
+                var refTypes = opType.GetReferencedTypes();
+                foreach (var type in refTypes)
                 {
-                    if (assemblyType.IsDto())
+                    if (type.IsDto())
                     {
-                        var baseTypeWithSameName = XsdMetadata.GetBaseTypeWithTheSameName(assemblyType);
+                        var baseTypeWithSameName = XsdMetadata.GetBaseTypeWithTheSameName(type);
                         if (uniqueTypeNames.Contains(baseTypeWithSameName.GetOperationName()))
                         {
                             log.WarnFormat("Skipping duplicate type with existing name '{0}'", baseTypeWithSameName.GetOperationName());
