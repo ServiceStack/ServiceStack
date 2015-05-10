@@ -13,12 +13,12 @@ namespace ServiceStack.Metadata
             {
                 return
     @"<wsdl:operation name=""{1}"">
-      <soap:operation soapAction=""{0}{1}"" style=""document"" />
+      <soap12:operation soapAction=""{0}{1}"" style=""document"" />
       <wsdl:input>
-        <soap:body use=""literal"" />
+        <soap12:body use=""literal"" />
       </wsdl:input>
       <wsdl:output>
-        <soap:body use=""literal"" />
+        <soap12:body use=""literal"" />
       </wsdl:output>
     </wsdl:operation>";
             }
@@ -30,9 +30,9 @@ namespace ServiceStack.Metadata
             {
                 return
     @"<wsdl:operation name=""{1}"">
-      <soap:operation soapAction=""{0}{1}"" style=""document"" />
+      <soap12:operation soapAction=""{0}{1}"" style=""document"" />
       <wsdl:input>
-        <soap:body use=""literal"" />
+        <soap12:body use=""literal"" />
       </wsdl:input>
     </wsdl:operation>";
             }
@@ -69,7 +69,7 @@ namespace ServiceStack.Metadata
                 return
     @"<wsdl:service name=""{0}SyncReply"">
 		<wsdl:port name=""WSHttpBinding_I{2}"" binding=""svc:WSHttpBinding_I{2}"">
-			<soap:address location=""{1}"" />
+			<soap12:address location=""{1}"" />
 		</wsdl:port>
 	</wsdl:service>";
             }
@@ -82,7 +82,7 @@ namespace ServiceStack.Metadata
                 return
     @"<wsdl:service name=""{0}AsyncOneWay"">
 		<wsdl:port name=""WSHttpBinding_I{2}OneWay"" binding=""svc:WSHttpBinding_I{2}OneWay"">
-			<soap:address location=""{1}"" />
+			<soap12:address location=""{1}"" />
 		</wsdl:port>
 	</wsdl:service>";
             }
