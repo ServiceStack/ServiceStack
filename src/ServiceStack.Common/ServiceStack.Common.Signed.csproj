@@ -142,6 +142,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="StringUtils.cs" />
+    <Compile Include="TypeExtensions.cs" />
     <Compile Include="XLinqExtensions.cs">
       <SubType>Code</SubType>
     </Compile>

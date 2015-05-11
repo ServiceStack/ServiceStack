@@ -40,6 +40,16 @@
             Note that you should NOT consume the response stream as this is handled by ServiceStack
             </summary>
         </member>
+        <member name="P:ServiceStack.AsyncServiceClient.ResultsFilter">
+            <summary>
+            The ResultsFilter is called before the Request is sent allowing you to return a cached response.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.ResultsFilterResponse">
+            <summary>
+            The ResultsFilterResponse is called before returning the response allowing responses to be cached.
+            </summary>
+        </member>
         <member name="M:ServiceStack.Messaging.MessageQueueClientFactory.GetMessageAsync(System.String)">
             <summary>
             Returns the next message from queueName or null if no message
@@ -111,6 +121,16 @@
         <member name="F:ServiceStack.ServiceClientBase.storeCookies">
             <summary>
             Specifies if cookies should be stored
+            </summary>
+        </member>
+        <member name="F:ServiceStack.ServiceClientBase.resultsFilter">
+            <summary>
+            The ResultsFilter is called before the Request is sent allowing you to return a cached response.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.ServiceClientBase.resultsFilterResponse">
+            <summary>
+            The ResultsFilterResponse is called before returning the response allowing responses to be cached.
             </summary>
         </member>
         <member name="M:ServiceStack.ServiceClientBase.HandleResponseException``1(System.Exception,System.Object,System.String,System.Func{System.Net.WebRequest},System.Func{System.Net.WebRequest,System.Net.WebResponse},``0@)">
