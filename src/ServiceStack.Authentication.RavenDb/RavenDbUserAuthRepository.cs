@@ -52,7 +52,7 @@ namespace ServiceStack.Authentication.RavenDb
                         Search = new[] { user.UserName, user.Email }
                     };
 
-                Index(x => x.Search, FieldIndexing.Analyzed);
+                Index(x => x.Search, FieldIndexing.NotAnalyzed);
             }
         }
 
@@ -200,7 +200,7 @@ namespace ServiceStack.Authentication.RavenDb
             {
                 var userAuth = session.Query<UserAuth_By_UserNameOrEmail.Result, UserAuth_By_UserNameOrEmail>()
                        .Customize(x => x.WaitForNonStaleResultsAsOfNow())
-                       .Search(x => x.Search, userNameOrEmail)
+                       .Where(x => x.Search.Contains(userNameOrEmail))
                        .OfType<TUserAuth>()
                        .FirstOrDefault();
 
