@@ -1,4 +1,4 @@
-#if !(SL5 || XBOX || ANDROID || __IOS__)
+#if !(SL5 || XBOX || ANDROID || __IOS__ || PCL)
 using System.IO;
 using System.IO.Compression;
 using System.Text;
