@@ -1,0 +1,15 @@
+﻿<h2>With @@Html.AntiForgeryToken()</h2>
+<form action="/antiforgery/test" method="POST">
+    @Html.AntiForgeryToken()
+    
+    <input name="Field" value="Test"/>
+    
+    <input type="submit"/>
+</form>
+
+<h2>Without @@Html.AntiForgeryToken()</h2>
+<form action="/antiforgery/test" method="POST">
+    <input name="Field" value="Test"/>
+    
+    <input type="submit"/>
+</form>

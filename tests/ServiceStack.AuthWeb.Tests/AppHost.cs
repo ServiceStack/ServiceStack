@@ -18,6 +18,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
+using ServiceStack.Html.AntiXsrf;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
@@ -422,6 +423,22 @@ namespace ServiceStack.AuthWeb.Tests
             {
                 ServerEvents.NotifyChannel(request.Channel, request.Selector, request.Message);
             }
+        }
+    }
+
+    [Route("/antiforgery/test")]
+    public class AntiForgeryTest
+    {
+        public string Field { get; set; }
+    }
+
+    public class AntiForgeryService : Service
+    {
+        public object Any(AntiForgeryTest request)
+        {
+            AntiForgery.Validate();
+
+            return request;
         }
     }
 
