@@ -64,6 +64,7 @@
     <Compile Include="AsyncServiceClient.cs" />
     <Compile Include="AsyncUtils.cs" />
     <Compile Include="AuthDtos.cs" />
+    <Compile Include="CancelRequestDtos.cs" />
     <Compile Include="ClientFactory.cs" />
     <Compile Include="ContentFormat.cs" />
     <Compile Include="Pcl.NameValueCollectionWrapper.cs" />

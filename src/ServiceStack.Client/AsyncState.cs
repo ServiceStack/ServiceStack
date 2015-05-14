@@ -110,6 +110,16 @@ namespace ServiceStack
                 this.Timer = null;
             }
         }
+        CancellationTokenRegistration? cancelRegistration;
+        public void SetCancelToken(CancellationToken cancelToken, Action onCancel)
+        {
+            cancelRegistration = cancelToken.Register(onCancel);
+        }
+
+
+       
+
+
 
 #if NETFX_CORE
             public void TimedOut(ThreadPoolTimer timer)
@@ -156,6 +166,11 @@ namespace ServiceStack
             {
                 this.Timer.Dispose();
                 this.Timer = null;
+            }
+            if(cancelRegistration.HasValue)
+            {
+                cancelRegistration.Value.Dispose();
+                cancelRegistration = null;
             }
         }
     }

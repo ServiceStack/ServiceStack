@@ -3,6 +3,7 @@
 
 #if !SL5 && !XBOX
 using System;
+using System.Threading;
 
 namespace ServiceStack.Web
 {
@@ -40,6 +41,11 @@ namespace ServiceStack.Web
         /// The value of the X-Real-IP header, null if null or empty
         /// </summary>
         string XRealIp { get; }
+
+        /// <summary>
+        /// Used to cancel long-running requests
+        /// </summary>
+        CancellationToken CancelToken { get; }
     }
 }
 #endif

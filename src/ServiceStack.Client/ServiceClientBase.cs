@@ -15,6 +15,7 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using System.Threading;
 
 #if !(__IOS__ || SL5)
 #endif
@@ -969,6 +970,10 @@ namespace ServiceStack
             return DeleteAsync<byte[]>(requestDto.ToUrl(HttpMethods.Delete, Format));
         }
 
+        public virtual Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token)
+        {
+            return asyncClient.SendAsync<TResponse>(HttpMethods.Post, GetUrl(requestDto.ToUrl(HttpMethods.Post, Format)), requestDto, token);
+        }
 
         public virtual Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto)
         {

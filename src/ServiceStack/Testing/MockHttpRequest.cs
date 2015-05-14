@@ -168,5 +168,7 @@ namespace ServiceStack.Testing
         }
 
         public Uri UrlReferrer { get { return null; } }
+
+        public System.Threading.CancellationToken CancelToken { get { return System.Threading.CancellationToken.None; } }
     }
 }

@@ -11,6 +11,7 @@ using System.Web;
 using Funq;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using System.Threading;
 
 namespace ServiceStack.Host.HttpListener
 {
@@ -19,6 +20,7 @@ namespace ServiceStack.Host.HttpListener
         public Container Container { get; set; }
         private readonly HttpListenerRequest request;
         private readonly IHttpResponse response;
+        private readonly CancellationToken cancelToken;
 
         public ListenerRequest(HttpListenerContext httpContext, string operationName, RequestAttributes requestAttributes)
         {
@@ -28,6 +30,12 @@ namespace ServiceStack.Host.HttpListener
             this.response = new ListenerResponse(httpContext.Response, this);
 
             this.RequestPreferences = new RequestPreferences(this);
+            cancelToken = RequestCancelService.TryRegisterCancelableRequest(this);
+        }
+
+        public CancellationToken CancelToken
+        {
+            get { return cancelToken; }
         }
 
         public HttpListenerRequest HttpRequest
