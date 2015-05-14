@@ -150,4 +150,24 @@ namespace ServiceStack
         [DataMember(Order = 3)]
         public ResponseStatus ResponseStatus { get; set; }
     }
+
+    [DataContract]
+    public class CancelRequest : IReturn<CancelRequestResponse>
+    {
+        [DataMember(Order = 1)]
+        public string Tag { get; set; }
+    }
+
+    [DataContract]
+    public class CancelRequestResponse
+    {
+        [DataMember(Order = 1)]
+        public string Tag { get; set; }
+
+        [DataMember(Order = 2)]
+        public TimeSpan Elapsed { get; set; }
+
+        [DataMember(Order = 3)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 }

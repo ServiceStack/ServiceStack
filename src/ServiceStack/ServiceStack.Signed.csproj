@@ -103,6 +103,7 @@
     <Compile Include="AspNet\ServiceStackPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="CancellableRequestsFeature.cs" />
     <Compile Include="Configuration\EnvironmentVariableSettings.cs" />
     <Compile Include="Configuration\MultiAppSettings.cs" />
     <Compile Include="Html\Minifiers.cs">
