@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Configuration;
 using System.Diagnostics;
 using System.Threading;
 using ServiceStack.Web;
@@ -124,12 +125,12 @@ namespace ServiceStack
         public static ICancellableRequest CreateCancellableRequest(this IRequest req)
         {
             var feature = HostContext.GetPlugin<CancellableRequestsFeature>();
-            if (feature != null)
-            {
-                var xTag = req.GetHeader(HttpHeaders.XTag);
-                if (xTag != null)
-                    return new CancellableRequest(feature, req, xTag);
-            }
+            if (feature == null)
+                throw new Exception("Requires CancellableRequestsFeature plugin");
+
+            var xTag = req.GetHeader(HttpHeaders.XTag);
+            if (xTag != null)
+                return new CancellableRequest(feature, req, xTag);
 
             return new EmptyCancellableRequest();
         }
@@ -137,14 +138,13 @@ namespace ServiceStack
         public static ICancellableRequest GetCancellableRequest(this IRequest req, string tag)
         {
             var feature = HostContext.GetPlugin<CancellableRequestsFeature>();
-            if (feature != null)
-            {
-                ICancellableRequest cancellableReq;
-                if (feature.RequestsMap.TryGetValue(tag, out cancellableReq))
-                {
-                    return cancellableReq;
-                }
-            }
+            if (feature == null)
+                throw new Exception("Requires CancellableRequestsFeature plugin");
+
+            ICancellableRequest cancellableReq;
+            if (feature.RequestsMap.TryGetValue(tag, out cancellableReq))
+                return cancellableReq;
+
             return null;
         }
     }
