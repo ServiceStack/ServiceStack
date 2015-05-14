@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -84,13 +85,13 @@ namespace ServiceStack
             this.Permissions = new List<string>();
         }
 
-        [DataMember]
+        [DataMember(Order = 1)]
         public string UserName { get; set; }
 
-        [DataMember]
+        [DataMember(Order = 2)]
         public List<string> Permissions { get; set; }
 
-        [DataMember]
+        [DataMember(Order = 3)]
         public List<string> Roles { get; set; }
     }
 
@@ -103,13 +104,13 @@ namespace ServiceStack
             this.AllPermissions = new List<string>();
         }
 
-        [DataMember]
+        [DataMember(Order = 1)]
         public List<string> AllRoles { get; set; }
 
-        [DataMember]
+        [DataMember(Order = 2)]
         public List<string> AllPermissions { get; set; }
 
-        [DataMember]
+        [DataMember(Order = 3)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 
@@ -122,13 +123,13 @@ namespace ServiceStack
             this.Permissions = new List<string>();
         }
 
-        [DataMember]
+        [DataMember(Order = 1)]
         public string UserName { get; set; }
 
-        [DataMember]
+        [DataMember(Order = 2)]
         public List<string> Permissions { get; set; }
 
-        [DataMember]
+        [DataMember(Order = 3)]
         public List<string> Roles { get; set; }
     }
 
@@ -140,14 +141,13 @@ namespace ServiceStack
             this.AllRoles = new List<string>();
         }
 
-        [DataMember]
+        [DataMember(Order = 1)]
         public List<string> AllRoles { get; set; }
 
-        [DataMember]
+        [DataMember(Order = 2)]
         public List<string> AllPermissions { get; set; }
 
-        [DataMember]
+        [DataMember(Order = 3)]
         public ResponseStatus ResponseStatus { get; set; }
     }
-
 }
