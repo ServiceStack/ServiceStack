@@ -256,10 +256,7 @@ namespace ServiceStack.Host.Handlers
             var responseMsg = CreateResponseMessage(response, msgVersion, req.Dto.GetType(), noMsgVersion);
             SetErrorStatusIfAny(req.Response, responseMsg, req.Response.StatusCode);
 
-            using (var writer = CreateXmlWriter(stream))
-            {
-                responseMsg.WriteMessage(writer);
-            }
+            HostContext.AppHost.WriteSoapMessage(responseMsg, stream);
         }
 
         private static void SetErrorStatusIfAny(IResponse res, Message responseMsg, int statusCode)
