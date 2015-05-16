@@ -182,6 +182,7 @@
     <Compile Include="CompressionTests.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="ContentTypeTests.cs" />
+    <Compile Include="CustomerRestExample.cs" />
     <Compile Include="CustomFormatTests.cs" />
     <Compile Include="HttpErrorSyncTests.cs" />
     <Compile Include="Issues\XmlContentTypeIssue.cs" />
