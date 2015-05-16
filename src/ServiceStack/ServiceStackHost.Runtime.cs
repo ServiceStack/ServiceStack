@@ -5,9 +5,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
+using System.Xml;
 using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
@@ -420,6 +422,11 @@ namespace ServiceStack
             return response;
         }
 
+        public virtual IHashProvider GetHashProvider()
+        {
+            return new SaltedHash();
+        }
+
         public virtual MetadataTypesConfig GetTypesConfigForMetadata(IRequest req)
         {
             var typesConfig = new NativeTypesFeature().MetadataTypesConfig;
@@ -446,9 +453,12 @@ namespace ServiceStack
                         .Any(attr => attr.Feature.HasFlag(Feature.Soap));
         }
 
-        public virtual IHashProvider GetHashProvider()
+        public virtual void WriteSoapMessage(System.ServiceModel.Channels.Message message, Stream outputStream)
         {
-            return new SaltedHash();
+            using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
+            {
+                message.WriteMessage(writer);
+            }
         }
     }
 

@@ -379,10 +379,5 @@ namespace ServiceStack.Host.Handlers
         {
             throw new NotImplementedException();
         }
-
-        public static XmlWriter CreateXmlWriter(Stream stream)
-        {
-            return XmlWriter.Create(stream, HostContext.Config.XmlWriterSettings);
-        }
     }
 }
