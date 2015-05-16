@@ -13,9 +13,9 @@ using ServiceStack.WebHost.Endpoints.Tests.Support;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-    [Route("/customers")]
-    [Route("/customers/{Id}")]
-    public class Customers
+    [Route("/validcustomers")]
+    [Route("/validcustomers/{Id}")]
+    public class ValidCustomers
     {
         public int Id { get; set; }
         public string FirstName { get; set; }
@@ -42,7 +42,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         }
     }
 
-    public class CustomersValidator : AbstractValidator<Customers>
+    public class CustomersValidator : AbstractValidator<ValidCustomers>
     {
         public IAddressValidator AddressValidator { get; set; }
 
@@ -69,34 +69,34 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         }
     }
 
-    public class CustomersResponse
+    public class ValidCustomersResponse
     {
-        public Customers Result { get; set; }
+        public ValidCustomers Result { get; set; }
 
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [DefaultRequest(typeof(Customers))]
+    [DefaultRequest(typeof(ValidCustomers))]
     public class CustomerService : Service
     {
-        public object Get(Customers request)
+        public object Get(ValidCustomers request)
         {
-            return new CustomersResponse { Result = request };
+            return new ValidCustomersResponse { Result = request };
         }
 
-        public object Post(Customers request)
+        public object Post(ValidCustomers request)
         {
-            return new CustomersResponse { Result = request };
+            return new ValidCustomersResponse { Result = request };
         }
 
-        public object Put(Customers request)
+        public object Put(ValidCustomers request)
         {
-            return new CustomersResponse { Result = request };
+            return new ValidCustomersResponse { Result = request };
         }
 
-        public object Delete(Customers request)
+        public object Delete(ValidCustomers request)
         {
-            return new CustomersResponse { Result = request };
+            return new ValidCustomersResponse { Result = request };
         }
     }
 
@@ -135,7 +135,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             appHost.Dispose();
         }
 
-        private static List<ResponseError> GetValidationFieldErrors(string httpMethod, Customers request)
+        private static List<ResponseError> GetValidationFieldErrors(string httpMethod, ValidCustomers request)
         {
             var validator = (IValidator)new CustomersValidator
             {
@@ -169,12 +169,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			"Predicate",
 		};
 
-        Customers validRequest;
+        ValidCustomers validRequest;
 
         [SetUp]
         public void SetUp()
         {
-            validRequest = new Customers
+            validRequest = new ValidCustomers
             {
                 Id = 1,
                 FirstName = "FirstName",
@@ -223,7 +223,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [Test]
         public void Validates_empty_request_on_Post()
         {
-            var request = new Customers();
+            var request = new ValidCustomers();
             var errorFields = GetValidationFieldErrors(HttpMethods.Post, request);
 
             var fieldNames = errorFields.Select(x => x.FieldName).ToArray();
@@ -237,7 +237,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [Test]
         public void Validates_empty_request_on_Put()
         {
-            var request = new Customers();
+            var request = new ValidCustomers();
             var errorFields = GetValidationFieldErrors(HttpMethods.Put, request);
 
             var fieldNames = errorFields.Select(x => x.FieldName).ToArray();
@@ -251,7 +251,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [Test]
         public void Validates_empty_request_on_Get()
         {
-            var request = new Customers();
+            var request = new ValidCustomers();
             var errorFields = GetValidationFieldErrors(HttpMethods.Get, request);
 
             Assert.That(errorFields.Count, Is.EqualTo(1));
@@ -262,7 +262,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [Test]
         public void Validates_empty_request_on_Delete()
         {
-            var request = new Customers();
+            var request = new ValidCustomers();
             var errorFields = GetValidationFieldErrors(HttpMethods.Delete, request);
 
             Assert.That(errorFields.Count, Is.EqualTo(1));
@@ -297,12 +297,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             try
             {
                 var client = factory();
-                var response = client.Send<CustomersResponse>(new Customers());
+                var response = client.Send<ValidCustomersResponse>(new ValidCustomers());
                 Assert.Fail("Should throw Validation Exception");
             }
             catch (WebServiceException ex)
             {
-                var response = (CustomersResponse)ex.ResponseDto;
+                var response = (ValidCustomersResponse)ex.ResponseDto;
 
                 var errorFields = response.ResponseStatus.Errors;
                 var fieldNames = errorFields.Select(x => x.FieldName).ToArray();
@@ -321,12 +321,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             try
             {
                 var client = (IRestClient)factory();
-                var response = client.Get<CustomersResponse>("Customers");
+                var response = client.Get<ValidCustomersResponse>("ValidCustomers");
                 Assert.Fail("Should throw Validation Exception");
             }
             catch (WebServiceException ex)
             {
-                var response = (CustomersResponse)ex.ResponseDto;
+                var response = (ValidCustomersResponse)ex.ResponseDto;
 
                 var errorFields = response.ResponseStatus.Errors;
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
@@ -343,7 +343,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public void Post_ValidRequest_succeeds(Func<IServiceClient> factory)
         {
             var client = factory();
-            var response = client.Send<CustomersResponse>(validRequest);
+            var response = client.Send<ValidCustomersResponse>(validRequest);
             Assert.That(response.ResponseStatus, Is.Null);
         }
 

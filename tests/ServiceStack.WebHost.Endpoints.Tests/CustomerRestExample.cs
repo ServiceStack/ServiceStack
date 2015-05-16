@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
@@ -124,21 +125,29 @@ namespace NewApi.Customers
         public void Run_Customer_REST_Example()
         {
             var client = new JsonServiceClient(BaseUri);
+
+            //GET /customers
             List<Customer> all = client.Get(new GetCustomers());
             Assert.That(all.Count, Is.EqualTo(0));
 
+            //POST /customers
             var customer = client.Post(new CreateCustomer { Name = "Foo" });
             Assert.That(customer.Id, Is.EqualTo(1));
+            //GET /customer/1
             customer = client.Get(new GetCustomer { Id = customer.Id });
             Assert.That(customer.Name, Is.EqualTo("Foo"));
 
+            //GET /customers
             all = client.Get(new GetCustomers());
             Assert.That(all.Count, Is.EqualTo(1));
 
+            //PUT /customers/1
             customer = client.Put(new UpdateCustomer { Id = customer.Id, Name = "Updated Foo" });
             Assert.That(customer.Name, Is.EqualTo("Updated Foo"));
 
+            //DELETE /customers/1
             client.Delete(new DeleteCustomer { Id = customer.Id });
+            //GET /customers
             all = client.Get(new GetCustomers());
             Assert.That(all.Count, Is.EqualTo(0));
         }
