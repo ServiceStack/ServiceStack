@@ -254,6 +254,12 @@
             <para>db.Select&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Single``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Object)">
+            <summary>
+            Returns results from using an SqlExpression lambda. E.g:
+            <para>db.Single(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Scalar``2(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,``1}})">
             <summary>
             Returns a scalar result from using an SqlExpression lambda. E.g:
