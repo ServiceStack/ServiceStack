@@ -539,7 +539,7 @@ namespace ServiceStack.Api.Swagger
 
             if (!DisableAutoDtoInBodyParam)
             {
-                if (!HttpMethods.Get.Equals(verb, StringComparison.OrdinalIgnoreCase) 
+                if (!HttpMethods.Get.EqualsIgnoreCase(verb) && !HttpMethods.Delete.EqualsIgnoreCase(verb) 
                     && !methodOperationParameters.Any(p => "body".EqualsIgnoreCase(p.ParamType)))
                 {
                     ParseModel(models, operationType, route, verb);
