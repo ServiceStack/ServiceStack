@@ -260,12 +260,12 @@
             Define custom after serialization hook
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig`1.DeSerializeFn">
+        <member name="F:ServiceStack.Text.JsConfig`1.deSerializeFn">
             <summary>
             Define custom deserialization fn for BCL Structs
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig`1.RawDeserializeFn">
+        <member name="F:ServiceStack.Text.JsConfig`1.rawDeserializeFn">
             <summary>
             Define custom raw deserialization fn for objects
             </summary>
