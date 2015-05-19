@@ -55,5 +55,10 @@ namespace ServiceStack
         /// Gets or sets route to which applies attribute, matches using StartsWith. By default applies to all routes. 
         /// </summary>
         public string Route { get; set; }
+
+        /// <summary>
+        /// Whether to exclude this property from being included in the ModelSchema
+        /// </summary>
+        public bool ExcludeInSchema { get; set; }
     }
 }
