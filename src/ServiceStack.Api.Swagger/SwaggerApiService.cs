@@ -312,19 +312,22 @@ namespace ServiceStack.Api.Swagger
 
             foreach (var prop in properties)
             {
-                var allApiDocAttributes = prop
+                var apiMembers = prop
                     .AllAttributes<ApiMemberAttribute>()
-                    .Where(attr => prop.Name.Equals(attr.Name, StringComparison.InvariantCultureIgnoreCase))
+                    //.Where(attr => prop.Name.Equals(attr.Name, StringComparison.InvariantCultureIgnoreCase))
                     .OrderByDescending(attr => attr.Route)
                     .ToList();
-                var apiDoc = allApiDocAttributes
+                var apiDoc = apiMembers
                     .Where(attr => string.IsNullOrEmpty(verb) || string.IsNullOrEmpty(attr.Verb) || (verb ?? "").Equals(attr.Verb))
                     .Where(attr => string.IsNullOrEmpty(route) || string.IsNullOrEmpty(attr.Route) || (route ?? "").StartsWith(attr.Route))
                     .FirstOrDefault(attr => attr.ParameterType == "body" || attr.ParameterType == "model");
 
-                if (allApiDocAttributes.Any(x => !string.IsNullOrEmpty(x.Verb) 
+                if (apiMembers.Any(x => !string.IsNullOrEmpty(x.Verb) 
                     || !string.IsNullOrEmpty(x.Route)) 
                     && apiDoc == null) 
+                    continue;
+
+                if (apiMembers.Any(x => x.ExcludeInSchema))
                     continue;
 
                 var propertyType = prop.PropertyType;
