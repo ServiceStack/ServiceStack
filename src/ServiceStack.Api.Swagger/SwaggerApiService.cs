@@ -312,6 +312,9 @@ namespace ServiceStack.Api.Swagger
 
             foreach (var prop in properties)
             {
+                if (prop.HasAttribute<IgnoreDataMemberAttribute>())
+                    continue;
+
                 var apiMembers = prop
                     .AllAttributes<ApiMemberAttribute>()
                     //.Where(attr => prop.Name.Equals(attr.Name, StringComparison.InvariantCultureIgnoreCase))

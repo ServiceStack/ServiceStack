@@ -70,9 +70,23 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public int TestRange { get; set; }
     }
 
+    [Route("/swaggertest2", "POST")]
+    public class SwaggerTest2
+    {
+        public int Id { get; set; }
+
+        [IgnoreDataMember]
+        public string Ignored { get; set; }
+    }
+
     public class SwaggerTestService : Service
     {
         public object Get(SwaggerTest request)
+        {
+            return request;
+        }
+
+        public object Post(SwaggerTest2 request)
         {
             return request;
         }
