@@ -69,11 +69,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [ApiAllowableValues("TestRange", 1, 10)]
         public int TestRange { get; set; }
     }
+    
+    public enum MyEnum { A, B, C }
 
     [Route("/swaggertest2", "POST")]
     public class SwaggerTest2
     {
-        public int Id { get; set; }
+        [ApiMember]
+        [ApiAllowableValues("MyEnumProperty", typeof(MyEnum))]
+        public MyEnum MyEnumProperty { get; set; }
 
         [IgnoreDataMember]
         public string Ignored { get; set; }
