@@ -711,6 +711,8 @@ namespace ServiceStack
         {
             if (string.IsNullOrEmpty(fromPathInfo))
                 fromPathInfo = "/" + (HostContext.Config.HandlerFactoryPath ?? "");
+            else
+                fromPathInfo = fromPathInfo.TrimEnd('/');
 
             if (string.IsNullOrEmpty(absoluteUri))
                 return null;

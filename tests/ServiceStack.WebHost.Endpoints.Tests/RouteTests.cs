@@ -3,6 +3,7 @@ using System.Net;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Formats;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -333,6 +334,144 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 {
                     Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.MethodNotAllowed));
                 }
+            }
+        }
+    }
+
+    [Route("/routeinfo/{Path*}")]
+    public class GetRouteInfo
+    {
+        public string Path { get; set; }
+    }
+
+    public class GetRouteInfoResponse
+    {
+        public string BaseUrl { get; set; }
+        public string ResolvedUrl { get; set; }
+    }
+
+    public class RouteInfoService : Service
+    {
+        public object Any(GetRouteInfo request)
+        {
+            return new GetRouteInfoResponse
+            {
+                BaseUrl = base.Request.GetBaseUrl(),
+                ResolvedUrl = base.Request.ResolveAbsoluteUrl("~/resolved")
+            };
+        }
+    }
+
+    class RouteInfoAppHost : AppSelfHostBase
+    {
+        public RouteInfoAppHost() : base(typeof(RouteInfoAppHost).Name, typeof(RouteInfoAppHost).Assembly) { }
+        public override void Configure(Container container)
+        {
+            CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
+            {
+                if (pathInfo.StartsWith("/swagger-ui"))
+                {
+                    return new CustomResponseHandler((req, res) => 
+                        new GetRouteInfoResponse
+                        {
+                            BaseUrl = req.GetBaseUrl(),
+                            ResolvedUrl = req.ResolveAbsoluteUrl("~/resolved")
+                        });
+                }
+                return null;
+            });
+        }
+    }
+
+    public class RouteInfoPathTests
+    {
+        [Test]
+        public void RootPath_returns_BaseUrl()
+        {
+            var url = Config.ServiceStackBaseUri;
+            using (var appHost = new RouteInfoAppHost()
+                .Init()
+                .Start(url + "/"))
+            {
+                var response = url.CombineWith("/routeinfo").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/routeinfo/dir").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/routeinfo/dir/sub").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/swagger-ui").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/swagger-ui/").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+            }
+        }
+
+        [Test]
+        public void ApiPath_returns_BaseUrl()
+        {
+            var url = Config.AbsoluteBaseUri.AppendPath("api");
+            using (var appHost = new RouteInfoAppHost()
+                .Init()
+                .Start(url + "/"))
+            {
+                var response = url.CombineWith("/routeinfo").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/routeinfo/dir").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/routeinfo/dir/sub").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/swagger-ui").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/swagger-ui/").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+            }
+        }
+
+        [Test]
+        public void ApiV1Path_returns_BaseUrl()
+        {
+            var url = Config.AbsoluteBaseUri.AppendPath("api").AppendPath("v1");
+            using (var appHost = new RouteInfoAppHost()
+                .Init()
+                .Start(url + "/"))
+            {
+                var response = url.CombineWith("/routeinfo").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/routeinfo/dir").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/routeinfo/dir/sub").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/swagger-ui").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
+
+                response = url.CombineWith("/swagger-ui/").GetJsonFromUrl().FromJson<GetRouteInfoResponse>();
+                Assert.That(response.BaseUrl, Is.EqualTo(url));
+                Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
             }
         }
     }
