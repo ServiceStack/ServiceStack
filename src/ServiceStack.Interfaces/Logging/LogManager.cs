@@ -20,7 +20,7 @@ namespace ServiceStack.Logging
             {
                 if (logFactory == null)
                 {
-                    return new DebugLogFactory();
+                    return new NullLogFactory();
                 }
                 return logFactory;
             }
