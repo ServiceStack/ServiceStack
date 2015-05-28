@@ -18,8 +18,18 @@ namespace ServiceStack.Auth
             }
         }
 
+        private class PrivateAuthValidator : AbstractValidator<Authenticate>
+        {
+            public PrivateAuthValidator()
+            {
+                RuleFor(x => x.UserName).NotEmpty();
+            }
+        }
+
         public static string Name = AuthenticateService.CredentialsProvider;
         public static string Realm = "/auth/" + AuthenticateService.CredentialsProvider;
+
+        public bool SkipPasswordVerificationForPrivateRequests { get; set; }
 
         public CredentialsAuthProvider()
         {
@@ -44,18 +54,23 @@ namespace ServiceStack.Auth
                 if (IsAccountLocked(authRepo, userAuth))
                     throw new AuthenticationException("This account has been locked");
 
-                var holdSessionId = session.Id;
-                session.PopulateWith(userAuth); //overwrites session.Id
-                session.Id = holdSessionId;
-                session.IsAuthenticated = true;
-                session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-                session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
-                    .ConvertAll(x => (IAuthTokens)x);
+                PopulateSession(authRepo, userAuth, session);
 
                 return true;
             }
 
             return false;
+        }
+
+        private static void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
+        {
+            var holdSessionId = session.Id;
+            session.PopulateWith(userAuth); //overwrites session.Id
+            session.Id = holdSessionId;
+            session.IsAuthenticated = true;
+            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+            session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
+                .ConvertAll(x => (IAuthTokens) x);
         }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
@@ -73,6 +88,12 @@ namespace ServiceStack.Auth
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
+            if (SkipPasswordVerificationForPrivateRequests && authService.Request.IsPrivateRequest())
+            {
+                new PrivateAuthValidator().ValidateAndThrow(request);
+                return AuthenticatePrivateRequest(authService, session, request.UserName, request.Password, request.Continue);
+            }
+            
             new CredentialsAuthValidator().ValidateAndThrow(request);
             return Authenticate(authService, session, request.UserName, request.Password, request.Continue);
         }
@@ -113,6 +134,38 @@ namespace ServiceStack.Auth
             }
 
             throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword);
+        }
+
+        protected object AuthenticatePrivateRequest(
+            IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
+        {
+            var authRepo = authService.TryResolve<IAuthRepository>().AsUserAuthRepository(authService.GetResolver());
+
+            var userAuth = authRepo.GetUserAuthByUserName(userName);
+            if (userAuth == null)
+                throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword);
+
+            if (IsAccountLocked(authRepo, userAuth))
+                throw new AuthenticationException("This account has been locked");
+
+            PopulateSession(authRepo, userAuth, session);
+
+            session.IsAuthenticated = true;
+
+            if (session.UserAuthName == null)
+                session.UserAuthName = userName;
+
+            var response = OnAuthenticated(authService, session, null, null);
+            if (response != null)
+                return response;
+
+            return new AuthenticateResponse
+            {
+                UserId = session.UserAuthId,
+                UserName = userName,
+                SessionId = session.Id,
+                ReferrerUrl = referrerUrl
+            };
         }
 
         public override IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
