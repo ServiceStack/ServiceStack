@@ -62,7 +62,8 @@ namespace ServiceStack.NativeTypes.VbNet
             "Then",
             "With",
             "When",
-            "Operator"
+            "Operator",
+            "Class"
         };
 
         public string GetCode(MetadataTypes metadata, IRequest request)
