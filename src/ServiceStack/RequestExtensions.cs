@@ -127,5 +127,26 @@ namespace ServiceStack
         {
             return new RequestBaseWrapper((IHttpRequest) httpReq);
         }
+
+        public static void SetPrivateRequest(this IRequest httpReq)
+        {
+            if (httpReq == null) return;
+
+            httpReq.RequestAttributes |= RequestAttributes.Private;
+        }
+
+        public static bool IsPrivateRequest(this IRequest httpReq)
+        {
+            if (httpReq == null) return false;
+
+            return (RequestAttributes.Private & httpReq.RequestAttributes) == RequestAttributes.Private;
+        }
+
+        public static void ReleaseIfPrivateRequest(this IRequest httpReq)
+        {
+            if (httpReq == null) return;
+
+            httpReq.RequestAttributes = httpReq.RequestAttributes & ~RequestAttributes.Private;
+        }
     }
 }

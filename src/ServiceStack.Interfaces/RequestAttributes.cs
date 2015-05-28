@@ -65,6 +65,8 @@ namespace ServiceStack
         MessageQueue = 1 << 27,
         Tcp = 1 << 28,
         EndpointOther = 1 << 29,
+
+        Private = 1 << 30, //Service was executed within code (e.g. ResolveService<T>)
     }
 
     public enum Network : long
