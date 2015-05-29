@@ -66,7 +66,7 @@ namespace ServiceStack.Common.Tests.OAuth
 				if (UseSqlServer)
 				{
 					var connStr = @"Data Source=.\SQLEXPRESS;AttachDbFilename=|DataDirectory|\App_Data\auth.mdf;Integrated Security=True;Connect Timeout=30;User Instance=True";
-					var sqlServerFactory = new OrmLiteConnectionFactory(connStr, SqlServerOrmLiteDialectProvider.Instance);
+					var sqlServerFactory = new OrmLiteConnectionFactory(connStr, SqlServerDialect.Provider);
 					var sqlServerRepo = new OrmLiteAuthRepository(sqlServerFactory);
 					sqlServerRepo.DropAndReCreateTables();
 					yield return new TestCaseData(sqlServerRepo);

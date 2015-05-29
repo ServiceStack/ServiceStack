@@ -108,7 +108,9 @@ namespace ServiceStack.AuthWeb.Tests
                     //    LoadUserAuthFilter = LoadUserAuthInfo,
                     //    AllowAllWindowsAuthUsers = true
                     //}, 
-                    new CredentialsAuthProvider(),        //HTML Form post of UserName/Password credentials
+                    new CredentialsAuthProvider {  //HTML Form post of UserName/Password credentials
+                        SkipPasswordVerificationForPrivateRequests = true,
+                    },        
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
                     new DigestAuthProvider(appSettings),        //Sign-in with Digest Auth
@@ -283,6 +285,26 @@ namespace ServiceStack.AuthWeb.Tests
             catch (Exception ex)
             {
                 return ex;
+            }
+        }
+    }
+
+    [Route("/privateauth")]
+    public class PrivateAuth
+    {
+        public string UserName { get; set; }
+    }
+
+    public class PrivateAuthService : Service
+    {
+        public object Any(PrivateAuth request)
+        {
+            using (var service = base.ResolveService<AuthenticateService>())
+            {
+                return service.Post(new Authenticate {
+                    provider = AuthenticateService.CredentialsProvider,
+                    UserName = request.UserName,
+                });
             }
         }
     }

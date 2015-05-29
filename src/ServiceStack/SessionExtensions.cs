@@ -38,14 +38,21 @@ namespace ServiceStack
 
         public static string GetPermanentSessionId(this IRequest httpReq)
         {
-            return httpReq.GetItemOrCookie(SessionFeature.PermanentSessionId)
-                ?? httpReq.GetHeader("X-" + SessionFeature.PermanentSessionId);
+            return httpReq.GetSessionParam(SessionFeature.PermanentSessionId);
         }
 
         public static string GetTemporarySessionId(this IRequest httpReq)
         {
-            return httpReq.GetItemOrCookie(SessionFeature.SessionId)
-                ?? httpReq.GetHeader("X-" + SessionFeature.SessionId);
+            return httpReq.GetSessionParam(SessionFeature.SessionId);
+        }
+
+        public static string GetSessionParam(this IRequest httpReq, string sessionKey)
+        {
+            return httpReq.GetItemOrCookie(sessionKey)
+                ?? httpReq.GetHeader("X-" + sessionKey)
+                ?? (HostContext.Config.AllowSessionIdsInHttpParams
+                    ? (httpReq.QueryString[sessionKey] ?? httpReq.FormData[sessionKey])
+                    : null);
         }
 
         /// <summary>

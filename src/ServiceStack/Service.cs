@@ -39,12 +39,7 @@ namespace ServiceStack
         public virtual T ResolveService<T>()
         {
             var service = TryResolve<T>();
-            var requiresContext = service as IRequiresRequest;
-            if (requiresContext != null)
-            {
-                requiresContext.Request = this.Request;
-            }
-            return service;
+            return HostContext.ResolveService(this.Request, service);
         }
 
         public object ExecuteRequest(object requestDto)
@@ -166,6 +161,8 @@ namespace ServiceStack
                 messageProducer.Dispose();
 
             RequestContext.Instance.ReleaseDisposables();
+
+            Request.ReleaseIfPrivateRequest();
         }
     }
 

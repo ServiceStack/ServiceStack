@@ -137,12 +137,7 @@ namespace ServiceStack
         public virtual T ResolveService<T>()
         {
             var service = TryResolve<T>();
-            var requiresContext = service as IRequiresRequest;
-            if (requiresContext != null)
-            {
-                requiresContext.Request = Request;
-            }
-            return service;
+            return HostContext.ResolveService(Request, service);
         }
 
         public object Execute(object requestDto)
