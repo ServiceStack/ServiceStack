@@ -469,11 +469,11 @@ namespace ServiceStack.Api.Swagger
             else
                 verbs.AddRange(restPath.AllowedVerbs.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
 
-            var nickName = nicknameCleanerRegex.Replace(restPath.Path, "");
-
+            var routePath = restPath.Path.Replace("*","");
+            var nickName = nicknameCleanerRegex.Replace(routePath, "");
             var md = new MethodDescription
             {
-                Path = restPath.Path,
+                Path = routePath,
                 Description = summary,
                 Operations = verbs.Select(verb =>
                     new MethodOperation
@@ -482,7 +482,7 @@ namespace ServiceStack.Api.Swagger
                         Nickname = verb.ToLowerInvariant() + nickName,
                         Summary = summary,
                         Notes = notes,
-                        Parameters = ParseParameters(verb, restPath.RequestType, models, restPath.Path),
+                        Parameters = ParseParameters(verb, restPath.RequestType, models, routePath),
                         ResponseClass = GetResponseClass(restPath, models),
                         ErrorResponses = GetMethodResponseCodes(restPath.RequestType)
                     }).ToList()
@@ -540,7 +540,8 @@ namespace ServiceStack.Api.Swagger
                 if (hasDataContract && attr == null)
                     continue;
 
-                var paramType = (route ?? "").ToLower().Replace("*","").Contains("{" + propertyName.ToLower() + "}") 
+                var inPath = (route ?? "").ToLower().Contains("{" + propertyName.ToLower() + "}");
+                var paramType = inPath
                     ? "path" 
                     : verb == HttpMethods.Post || verb == HttpMethods.Put 
                         ? "form" 
@@ -593,9 +594,9 @@ namespace ServiceStack.Api.Swagger
                     ParseModel(models, operationType, route, verb);
                     methodOperationParameters.Add(new MethodOperationParameter
                     {
-                        Type = GetSwaggerTypeName(operationType, route, verb),
                         ParamType = "body",
-                        Name = GetSwaggerTypeName(operationType)
+                        Name = "body",
+                        Type = GetSwaggerTypeName(operationType, route, verb),
                     });
                 }
             }
