@@ -628,6 +628,7 @@ namespace ServiceStack.ServiceClient.Web
             {
                 client.Accept = Accept;
                 client.Method = httpMethod;
+                client.ServicePoint.Expect100Continue = true;
                 client.Headers.Add(Headers);
 
                 if (Proxy != null) client.Proxy = Proxy;
