@@ -14,7 +14,7 @@ namespace ServiceStack.Authentication.OAuth2
          */
         public class MicrosoftLiveOAuth2Provider : OAuth2Provider
         {
-            public const string Name = "MicrosoftOAuth";
+            public const string Name = "microsoftlive";
 
             public const string Realm = "https://login.live.com/oauth20_authorize.srf";
 

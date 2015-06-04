@@ -14,7 +14,7 @@ namespace ServiceStack.Authentication.OAuth2
     /// </summary>
     public class InstagramOAuth2Provider : OAuth2Provider
     {
-        public const string Name = "Instagram";
+        public const string Name = "instagram";
 
         public const string Realm = "https://api.instagram.com/oauth/authorize";
 
