@@ -366,6 +366,7 @@ namespace ServiceStack
 
         public virtual void OnBeforeInit()
         {
+            Container.Register<IHashProvider>(c => new SaltedHash());
         }
 
         //After configure called
@@ -472,9 +473,6 @@ namespace ServiceStack
             {
                 Container.Register<IAuthRepository>(c => c.Resolve<IUserAuthRepository>());
             }
-
-            if (!Container.Exists<IHashProvider>())
-                Container.Register<IHashProvider>(c => new SaltedHash());
 
             foreach (var callback in AfterInitCallbacks)
             {
