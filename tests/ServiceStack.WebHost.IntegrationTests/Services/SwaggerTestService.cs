@@ -22,9 +22,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     {
         [ApiMember(Description = "Color Description",
                    ParameterType = "path", DataType = "string", IsRequired = true)]
-        [ApiAllowableValues("ColorName", typeof(MyColor))] //Enum
+        [ApiAllowableValues("Name", typeof(MyColor))] //Enum
         [DataMember]
-        public string ColorName { get; set; }
+        public string Name { get; set; }
 
         [ApiMember]
         [ApiAllowableValues("Color", typeof(MyColor))] //Enum
@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [ApiMember(Description = "Aliased Description",
                    DataType = "string", IsRequired = true)]
         [DataMember(Name = "Aliased")]
-        public string Name { get; set; }
+        public string Original { get; set; }
 
         [ApiMember(Description = "Not Aliased Description",
                    DataType = "string", IsRequired = true)]
@@ -85,7 +85,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
     public class SwaggerTestService : Service
     {
-        public object Get(SwaggerTest request)
+        public object Any(SwaggerTest request)
         {
             return request;
         }

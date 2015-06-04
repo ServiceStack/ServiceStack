@@ -583,7 +583,7 @@ namespace ServiceStack.Host
 
             var isRequest = type.Name == op.RequestType.Name;
 
-            return !isRequest ? "body" : GetRequestParamType(op, prop.Name);
+            return !isRequest ? "form" : GetRequestParamType(op, prop.Name);
         }
 
         public static string GetParamType(this ApiMemberAttribute attr, Type type, string verb)
@@ -595,7 +595,7 @@ namespace ServiceStack.Host
             var isRequestType = op != null;
 
             var defaultType = verb == HttpMethods.Post || verb == HttpMethods.Put
-                ? "body"
+                ? "form"
                 : "query";
 
             return !isRequestType ? defaultType : GetRequestParamType(op, attr.Name, defaultType);

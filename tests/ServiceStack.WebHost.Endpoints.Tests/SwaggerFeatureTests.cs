@@ -471,7 +471,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var p1 = getOperation.Parameters[0];
             Assert.That(p1.Name, Is.EqualTo("Name"));
             Assert.That(p1.Description, Is.EqualTo("Name Description"));
-            Assert.That(p1.DataType, Is.EqualTo("string"));
+            Assert.That(p1.Type, Is.EqualTo("string"));
             Assert.That(p1.ParamType, Is.EqualTo("path"));
             Assert.That(p1.Required, Is.EqualTo(true));
 

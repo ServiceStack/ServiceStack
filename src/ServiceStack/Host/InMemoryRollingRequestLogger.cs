@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using ServiceStack.Web;
@@ -75,7 +74,6 @@ namespace ServiceStack.Host
                 entry.SessionId = request.GetSessionId();
                 entry.Items = SerializableItems(request.Items);
                 entry.Session = EnableSessionTracking ? request.GetSession() : null;
-                new NameValueCollection().ToDictionary();
             }
 
             if (HideRequestBodyForRequestDtoTypes != null

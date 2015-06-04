@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Data;
@@ -12,8 +11,6 @@ namespace ServiceStack.Auth
     public class OrmLiteAuthRepository : OrmLiteAuthRepository<UserAuth, UserAuthDetails>, IUserAuthRepository
     {
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory) : base(dbFactory) { }
-
-        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher) : base(dbFactory, passwordHasher) { }
     }
 
     public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles
@@ -26,18 +23,13 @@ namespace ServiceStack.Auth
         public int? MaxLoginAttempts { get; set; }
 
         private readonly IDbConnectionFactory dbFactory;
-        private readonly IHashProvider passwordHasher;
         private bool hasInitSchema;
 
         public bool UseDistinctRoleTables { get; set; }
 
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory)
-            : this(dbFactory, HostContext.AppHost.GetHashProvider()) { }
-
-        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, IHashProvider passwordHasher)
         {
             this.dbFactory = dbFactory;
-            this.passwordHasher = passwordHasher;
         }
 
         public void InitSchema()
@@ -88,7 +80,7 @@ namespace ServiceStack.Auth
 
                 string salt;
                 string hash;
-                passwordHasher.GetHashAndSaltString(password, out hash, out salt);
+                HostContext.AppHost.GetHashProvider().GetHashAndSaltString(password, out hash, out salt);
                 var digestHelper = new DigestAuthFunctions();
                 newUser.DigestHa1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
                 newUser.PasswordHash = hash;
@@ -137,7 +129,7 @@ namespace ServiceStack.Auth
                 var salt = existingUser.Salt;
                 if (password != null)
                 {
-                    passwordHasher.GetHashAndSaltString(password, out hash, out salt);
+                    HostContext.AppHost.GetHashProvider().GetHashAndSaltString(password, out hash, out salt);
                 }
                 // If either one changes the digest hash has to be recalculated
                 var digestHash = existingUser.DigestHa1Hash;
@@ -239,7 +231,7 @@ namespace ServiceStack.Auth
                 return false;
             }
 
-            if (passwordHasher.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+            if (HostContext.AppHost.GetHashProvider().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
                 RecordSuccessfulLogin(userAuth);
 
