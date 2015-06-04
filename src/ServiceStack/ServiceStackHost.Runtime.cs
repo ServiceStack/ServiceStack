@@ -422,11 +422,6 @@ namespace ServiceStack
             return response;
         }
 
-        public virtual IHashProvider GetHashProvider()
-        {
-            return new SaltedHash();
-        }
-
         public virtual MetadataTypesConfig GetTypesConfigForMetadata(IRequest req)
         {
             var typesConfig = new NativeTypesFeature().MetadataTypesConfig;

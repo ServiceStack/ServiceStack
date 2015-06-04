@@ -89,7 +89,7 @@ namespace ServiceStack.Auth
             {
                 AssertNoExistingUser(redis, newUser);
 
-                var saltedHash = HostContext.AppHost.GetHashProvider();
+                var saltedHash = HostContext.Resolve<IHashProvider>();
                 string salt;
                 string hash;
                 saltedHash.GetHashAndSaltString(password, out hash, out salt);
@@ -139,7 +139,7 @@ namespace ServiceStack.Auth
                 var salt = existingUser.Salt;
                 if (password != null)
                 {
-                    var saltedHash = HostContext.AppHost.GetHashProvider();
+                    var saltedHash = HostContext.Resolve<IHashProvider>();
                     saltedHash.GetHashAndSaltString(password, out hash, out salt);
                 }
                 // If either one changes the digest hash has to be recalculated
@@ -205,7 +205,7 @@ namespace ServiceStack.Auth
                 return false;
             }
 
-            var saltedHash = HostContext.AppHost.GetHashProvider();
+            var saltedHash = HostContext.Resolve<IHashProvider>();
             if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
                 return true;

@@ -80,7 +80,7 @@ namespace ServiceStack.Auth
 
                 string salt;
                 string hash;
-                HostContext.AppHost.GetHashProvider().GetHashAndSaltString(password, out hash, out salt);
+                HostContext.Resolve<IHashProvider>().GetHashAndSaltString(password, out hash, out salt);
                 var digestHelper = new DigestAuthFunctions();
                 newUser.DigestHa1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
                 newUser.PasswordHash = hash;
@@ -129,7 +129,7 @@ namespace ServiceStack.Auth
                 var salt = existingUser.Salt;
                 if (password != null)
                 {
-                    HostContext.AppHost.GetHashProvider().GetHashAndSaltString(password, out hash, out salt);
+                    HostContext.Resolve<IHashProvider>().GetHashAndSaltString(password, out hash, out salt);
                 }
                 // If either one changes the digest hash has to be recalculated
                 var digestHash = existingUser.DigestHa1Hash;
@@ -231,7 +231,7 @@ namespace ServiceStack.Auth
                 return false;
             }
 
-            if (HostContext.AppHost.GetHashProvider().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+            if (HostContext.Resolve<IHashProvider>().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
                 RecordSuccessfulLogin(userAuth);
 

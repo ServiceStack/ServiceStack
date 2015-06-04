@@ -473,6 +473,9 @@ namespace ServiceStack
                 Container.Register<IAuthRepository>(c => c.Resolve<IUserAuthRepository>());
             }
 
+            if (!Container.Exists<IHashProvider>())
+                Container.Register<IHashProvider>(c => new SaltedHash());
+
             foreach (var callback in AfterInitCallbacks)
             {
                 try
