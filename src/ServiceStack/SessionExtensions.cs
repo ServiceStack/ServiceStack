@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Web;
@@ -111,7 +112,8 @@ namespace ServiceStack
 
             var httpRes = res as IHttpResponse;
             if (httpRes != null)
-                httpRes.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId);
+                httpRes.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId,
+                    (HostContext.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
 
             req.Items[SessionFeature.PermanentSessionId] = sessionId;
             return sessionId;
