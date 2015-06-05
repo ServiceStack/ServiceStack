@@ -330,6 +330,16 @@ namespace ServiceStack
             AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
         }
 
+        public static void RaiseAndHandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        {
+            AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+
+            if (httpRes.IsClosed)
+                return;
+
+            AssertAppHost().HandleUncaughtException(httpReq, httpRes, operationName, ex);
+        }
+
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a ASP.NET HttpContext.
         /// </summary>

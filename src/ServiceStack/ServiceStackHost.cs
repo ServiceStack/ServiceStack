@@ -318,10 +318,10 @@ namespace ServiceStack
                     errorHandler(httpReq, httpRes, operationName, ex);
                 }
             }
+        }
 
-            if (httpRes.IsClosed)
-                return;
-
+        public virtual void HandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        {
             //Only add custom error messages to StatusDescription
             var httpError = ex as IHttpError;
             var errorMessage = httpError != null ? httpError.Message : null;

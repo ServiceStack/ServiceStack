@@ -259,7 +259,7 @@ namespace ServiceStack
                 }
                 catch (Exception originalEx)
                 {
-                    HostContext.RaiseUncaughtException(request, response, request.OperationName, originalEx);
+                    HostContext.RaiseAndHandleUncaughtException(request, response, request.OperationName, originalEx);
 
                     if (!HostContext.Config.WriteErrorsToResponse) 
                         return originalEx.AsTaskException<bool>();
