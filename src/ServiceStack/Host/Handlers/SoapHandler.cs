@@ -114,7 +114,7 @@ namespace ServiceStack.Host.Handlers
                     requiresSoapMessage.Message = requestMsg;
                 }
 
-                httpReq.SetItem("SoapMessage", requestMsg);
+                httpReq.SetItem(Keywords.SoapMessage, requestMsg);
 
                 httpRes.ContentType = GetSoapContentType(httpReq.ContentType);
 
@@ -156,6 +156,11 @@ namespace ServiceStack.Host.Handlers
             }
             catch (Exception ex)
             {
+                if (httpReq.Dto != null)
+                    HostContext.RaiseServiceException(httpReq, httpReq.Dto, ex);
+                else
+                    HostContext.RaiseUncaughtException(httpReq, httpRes, httpReq.OperationName, ex);
+
                 throw new SerializationException("3) Error trying to deserialize requestType: "
                     + requestType
                     + ", xml body: " + requestXml, ex);
@@ -246,7 +251,7 @@ namespace ServiceStack.Host.Handlers
 
         private static void SerializeSoapToStream(IRequest req, object response, MessageVersion defaultMsgVersion, Stream stream)
         {
-            var requestMsg = req.GetItem("SoapMessage") as Message;
+            var requestMsg = req.GetItem(Keywords.SoapMessage) as Message;
             var msgVersion = requestMsg != null
                 ? requestMsg.Version
                 : defaultMsgVersion;
