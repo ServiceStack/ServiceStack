@@ -119,7 +119,7 @@ namespace ServiceStack.Messaging
         {
             using (__requestAccess())
             {
-                var unblockingKeyAndValue = this.ReadOnlyClient.BRPop(queueName, (int)timeOut.GetValueOrDefault().TotalSeconds);
+                var unblockingKeyAndValue = this.ReadWriteClient.BRPop(queueName, (int)timeOut.GetValueOrDefault().TotalSeconds);
                 var messageBytes = unblockingKeyAndValue.Length != 2
                     ? null
                     : unblockingKeyAndValue[1];
@@ -132,7 +132,7 @@ namespace ServiceStack.Messaging
         {
             using (__requestAccess())
             {
-                var messageBytes = this.ReadOnlyClient.RPop(queueName);
+                var messageBytes = this.ReadWriteClient.RPop(queueName);
                 return messageBytes.ToMessage<T>();
             }
         }

@@ -55,6 +55,8 @@ namespace ServiceStack.Serialization
 
         public void SerializeToStream<T>(T obj, Stream stream)
         {
+            if (obj == null) return;
+
             if (TextSerializer != null)
             {
                 var streamSerializer = TextSerializer as IStringStreamSerializer;
