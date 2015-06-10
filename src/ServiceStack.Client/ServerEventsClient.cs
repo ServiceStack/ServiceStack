@@ -474,6 +474,9 @@ namespace ServiceStack
             if (!string.IsNullOrEmpty(e.Selector))
             {
                 parts = e.Selector.SplitOnFirst('.');
+                if (parts.Length < 2)
+                    throw new ArgumentException("Invalid Selector '{0}'".Fmt(e.Selector));
+
                 e.Op = parts[0];
                 var target = parts[1].Replace("%20", " ");
 
