@@ -63,14 +63,29 @@ namespace ServiceStack.Redis
         string this[string key] { get; set; }
 
         List<string> GetAllKeys();
+
+        [Obsolete("Use SetValue()")]
         void SetEntry(string key, string value);
+        [Obsolete("Use SetValue()")]
         void SetEntry(string key, string value, TimeSpan expireIn);
+        [Obsolete("Use SetValueIfNotExists()")]
         bool SetEntryIfNotExists(string key, string value);
+        [Obsolete("Use GetValue()")]
+        string GetEntry(string key);
+        [Obsolete("Use GetAndSetValue()")]
+        string GetAndSetEntry(string key, string value);
+
         void SetAll(IEnumerable<string> keys, IEnumerable<string> values);
         void SetAll(Dictionary<string, string> map);
-        string GetEntry(string key);
+
+        void SetValue(string key, string value);
+        void SetValue(string key, string value, TimeSpan expireIn);
+        bool SetValueIfNotExists(string key, string value);
+        bool SetValueIfExists(string key, string value);
+
         string GetValue(string key);
-        string GetAndSetEntry(string key, string value);
+        string GetAndSetValue(string key, string value);
+
         List<string> GetValues(List<string> keys);
         List<T> GetValues<T>(List<string> keys);
         Dictionary<string, string> GetValuesMap(List<string> keys);
