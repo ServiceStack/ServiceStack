@@ -126,11 +126,6 @@
             Creates a new instance of the Redis Client from NewFactoryFn. 
             </summary>
         </member>
-        <member name="M:ServiceStack.Redis.RedisClient.GetEntry(System.String)">
-            <summary>
-            Alias for GetValue
-            </summary>
-        </member>
         <member name="M:ServiceStack.Redis.RedisClient.UrnKey``1(``0)">
             <summary>
             Returns key with automatic object id detection in provided value with <typeparam name="T">generic type</typeparam>.
