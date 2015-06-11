@@ -75,6 +75,7 @@ namespace ServiceStack
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
             AfterInitCallbacks = new List<Action<IAppHost>>();
             OnDisposeCallbacks = new List<Action<IAppHost>>();
+            OnEndRequestCallbacks = new List<Action<IRequest>>();
             RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
                  HttpHandlerFactory.ReturnRequestInfo,
                  MiniProfilerHandler.MatchesRequest,
@@ -260,6 +261,8 @@ namespace ServiceStack
         public List<Action<IAppHost>> AfterInitCallbacks { get; set; }
 
         public List<Action<IAppHost>> OnDisposeCallbacks { get; set; }
+
+        public List<Action<IRequest>> OnEndRequestCallbacks { get; set; }
 
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
@@ -571,6 +574,11 @@ namespace ServiceStack
             }
 
             RequestContext.Instance.EndRequest();
+
+            foreach (var fn in OnEndRequestCallbacks)
+            {
+                fn(request);
+            }
         }
 
         public virtual void Register<T>(T instance)
