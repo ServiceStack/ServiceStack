@@ -104,7 +104,8 @@ namespace ServiceStack.Host.Handlers
 
                 var request = useXmlSerializerRequest
                     ? XmlSerializableSerializer.Instance.DeserializeFromString(requestXml, requestType)
-                    : Serialization.DataContractSerializer.Instance.DeserializeFromString(requestXml, requestType);
+                    : Serialization.DataContractSerializer.Instance.DeserializeFromString(requestXml,
+                                                                                                        requestType);
 
                 httpReq.Dto = request;
 
@@ -135,7 +136,7 @@ namespace ServiceStack.Host.Handlers
                 }
 
                 var hasResponseFilters = HostContext.GlobalResponseFilters.Count > 0
-                   || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
+                    || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
 
                 if (hasResponseFilters && HostContext.ApplyResponseFilters(httpReq, httpRes, response))
                     return EmptyResponse(requestMsg, requestType);
@@ -164,6 +165,10 @@ namespace ServiceStack.Host.Handlers
                 throw new SerializationException("3) Error trying to deserialize requestType: "
                     + requestType
                     + ", xml body: " + requestXml, ex);
+            }
+            finally
+            {
+                HostContext.CompleteRequest(httpReq);
             }
         }
 
