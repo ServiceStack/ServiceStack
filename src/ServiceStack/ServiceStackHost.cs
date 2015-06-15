@@ -156,10 +156,31 @@ namespace ServiceStack
 
             OnAfterInit();
 
-            var elapsed = DateTime.UtcNow - this.StartedAt;
-            Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
+            LogInitComplete();
 
             return this;
+        }
+
+        private void LogInitComplete()
+        {
+            var elapsed = DateTime.UtcNow - StartedAt;
+            var hasErrors = StartUpErrors.Any();
+
+            if (!hasErrors)
+            {
+                Log.InfoFormat(
+                    "Initializing Application {0} took {1}ms. No errors detected.",
+                    ServiceName,
+                    elapsed.TotalMilliseconds);
+                return;
+            }
+
+            Log.ErrorFormat(
+                "Initializing Application {0} took {1}ms. {2} error detected. {3}",
+                ServiceName,
+                elapsed.TotalMilliseconds,
+                StartUpErrors.Count,
+                StartUpErrors.ToJson());
         }
 
         public virtual List<IVirtualPathProvider> GetVirtualPathProviders()
