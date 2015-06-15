@@ -266,7 +266,7 @@ namespace ServiceStack.Host.Handlers
             var responseMsg = CreateResponseMessage(response, msgVersion, req.Dto.GetType(), noMsgVersion);
             SetErrorStatusIfAny(req.Response, responseMsg, req.Response.StatusCode);
 
-            HostContext.AppHost.WriteSoapMessage(responseMsg, stream);
+            HostContext.AppHost.WriteSoapMessage(req, responseMsg, stream);
         }
 
         private static void SetErrorStatusIfAny(IResponse res, Message responseMsg, int statusCode)

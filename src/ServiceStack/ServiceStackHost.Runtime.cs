@@ -448,7 +448,7 @@ namespace ServiceStack
                         .Any(attr => attr.Feature.HasFlag(Feature.Soap));
         }
 
-        public virtual void WriteSoapMessage(System.ServiceModel.Channels.Message message, Stream outputStream)
+        public virtual void WriteSoapMessage(IRequest req, System.ServiceModel.Channels.Message message, Stream outputStream)
         {
             using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
             {
