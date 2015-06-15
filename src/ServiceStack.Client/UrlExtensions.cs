@@ -297,7 +297,7 @@ namespace ServiceStack
     {
         private static readonly char[] ArrayBrackets = new[] { '[', ']' };
 
-        private static string FormatValue(object value)
+        public static string FormatValue(object value)
         {
             if (value == null) return null;
 
