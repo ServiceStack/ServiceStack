@@ -866,7 +866,7 @@ namespace ServiceStack
                 if (aliases.TryGetValue(name, out alias))
                     match = GetQueryMatch(q, alias, options);
 
-                if (match == null && JsConfig.EmitLowercaseUnderscoreNames)
+                if (match == null && JsConfig.EmitLowercaseUnderscoreNames && name.Contains("_"))
                     match = GetQueryMatch(q, name.Replace("_", ""), options);
             }
 

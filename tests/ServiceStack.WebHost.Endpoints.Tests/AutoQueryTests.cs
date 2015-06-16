@@ -517,6 +517,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .AddQueryParam("last_name", "Hendrix")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Adhoc>>();
+            JsConfig.Reset();
+
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Results[0].FirstName, Is.EqualTo("Jimi"));
         }
