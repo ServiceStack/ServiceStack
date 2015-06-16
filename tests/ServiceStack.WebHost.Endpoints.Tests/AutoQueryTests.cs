@@ -367,6 +367,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public virtual Guid? NullableGuid { get; set; }
     }
 
+    [DataContract]
+    [Route("/adhoc-rockstars")]
+    public class QueryAdhoc : QueryBase<Rockstar>
+    {
+        [DataMember(Name = "first_name")]
+        public string FirstName { get; set; }
+    }
+
     public class AutoQueryService : Service
     {
         public IAutoQuery AutoQuery { get; set; }
@@ -444,6 +452,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Can_execute_adhoc_query()
+        {
+            var request = new QueryAdhoc { FirstName = "Jimi" };
+
+            Assert.That(request.ToGetUrl(), Is.EqualTo("/adhoc-rockstars?first_name=Jimi"));
+
+            var response = client.Get(request);
+
+            Assert.That(response.Offset, Is.EqualTo(0));
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo(request.FirstName));
         }
 
         [Test]
