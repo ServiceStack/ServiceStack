@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
@@ -44,6 +45,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 db.InsertAll(SeedAlbums);
                 db.InsertAll(SeedGenres);
                 db.InsertAll(SeedMovies);
+
+                db.DropAndCreateTable<AllFields>();
+                db.Insert(new AllFields {
+                    Id = 1,
+                    NullableId = 2,
+                    Byte = 3,
+                    DateTime = new DateTime(2001,01,01),
+                    NullableDateTime = new DateTime(2002, 02, 02),
+                    Decimal = 4,
+                    Double = 5.5,
+                    Float = 6.6f,
+                    Guid = new Guid("3EE6865A-4149-4940-B7A2-F952E0FEFC5E"),
+                    NullableGuid = new Guid("7A2FDDD8-4BB0-4735-8230-A6AC79088489"),
+                    Long = 7,
+                    Short = 8,
+                    String = "string",
+                    TimeSpan = TimeSpan.FromHours(1),
+                    NullableTimeSpan = TimeSpan.FromDays(1),
+                    UInt = 9,
+                    ULong = 10,
+                    UShort = 11,
+                });
             }
 
             var autoQuery = new AutoQueryFeature
@@ -316,6 +339,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<RockstarAlbum> Albums { get; set; } 
     }
 
+    public class QueryAllFields : QueryBase<AllFields>
+    {
+        public virtual Guid Guid { get; set; }
+    }
+
+    public class AllFields
+    {
+        public virtual int Id { get; set; }
+        public virtual int? NullableId { get; set; }
+        public virtual byte Byte { get; set; }
+        public virtual short Short { get; set; }
+        public virtual int Int { get; set; }
+        public virtual long Long { get; set; }
+        public virtual ushort UShort { get; set; }
+        public virtual uint UInt { get; set; }
+        public virtual ulong ULong { get; set; }
+        public virtual float Float { get; set; }
+        public virtual double Double { get; set; }
+        public virtual decimal Decimal { get; set; }
+        public virtual string String { get; set; }
+        public virtual DateTime DateTime { get; set; }
+        public virtual TimeSpan TimeSpan { get; set; }
+        public virtual Guid Guid { get; set; }
+        public virtual DateTime? NullableDateTime { get; set; }
+        public virtual TimeSpan? NullableTimeSpan { get; set; }
+        public virtual Guid? NullableGuid { get; set; }
+    }
 
     public class AutoQueryService : Service
     {
@@ -959,6 +1009,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var kurt = response.Results.First(x => x.FirstName == "Kurt");
             Assert.That(kurt.Albums.Count, Is.EqualTo(1));
             Assert.That(kurt.Albums[0].Name, Is.EqualTo("Nevermind"));
+        }
+
+        [Test]
+        public void Can_Query_AllFields_Guid()
+        {
+            var guid = new Guid("3EE6865A-4149-4940-B7A2-F952E0FEFC5E");
+            var response = client.Get(new QueryAllFields {
+                Guid = guid
+            });
+
+            response.PrintDump();
+
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+
+            Assert.That(response.Results[0].Guid, Is.EqualTo(guid));
         }
     }
 
