@@ -154,6 +154,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [TestFixture]
+        public class JsonHttpClientAsyncTaskTests : AsyncTaskTests
+        {
+            protected override IServiceClient CreateServiceClient()
+            {
+                return new JsonHttpClient(Config.ListeningOn);
+            }
+        }
+
+        [TestFixture]
         public class JsvAsyncRestServiceClientTests : AsyncTaskTests
         {
             protected override IServiceClient CreateServiceClient()
@@ -357,9 +366,44 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Load_test_GetFactorialSync_HttpClient_sync()
+        {
+            var client = new JsonHttpClient(Config.ListeningOn);
+
+            for (var i = 0; i < NoOfTimes; i++)
+            {
+                var response = client.Get(new GetFactorialSync { ForNumber = 3 });
+                if (i % 100 == 0)
+                {
+                    "{0}: {1}".Print(i, response.Result);
+                }
+            }
+        }
+
+        [Test]
         public async Task Load_test_GetFactorialSync_async()
         {
             var client = new JsonServiceClient(Config.ListeningOn);
+
+            int i = 0;
+
+            var fetchTasks = NoOfTimes.Times(() =>
+                client.GetAsync(new GetFactorialSync { ForNumber = 3 })
+                .ContinueWith(t =>
+                {
+                    if (++i % 100 == 0)
+                    {
+                        "{0}: {1}".Print(i, t.Result.Result);
+                    }
+                }));
+
+            await Task.WhenAll(fetchTasks);
+        }
+
+        [Test]
+        public async Task Load_test_GetFactorialSync_HttpClient_async()
+        {
+            var client = new JsonHttpClient(Config.ListeningOn);
 
             int i = 0;
 

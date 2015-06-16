@@ -163,6 +163,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Authentication
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Caching.AwsDynamoDbV2", "ServiceStack.Caching.AwsDynamoDbV2\ServiceStack.Caching.AwsDynamoDbV2.csproj", "{AA7027C6-2C94-4E44-83A2-275EEE473045}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.HttpClient", "ServiceStack.HttpClient\ServiceStack.HttpClient.csproj", "{C05DE4A1-84C5-481B-8BD4-C837A1303B01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1707,6 +1709,41 @@ Global
 		{AA7027C6-2C94-4E44-83A2-275EEE473045}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Signed|Any CPU
 		{AA7027C6-2C94-4E44-83A2-275EEE473045}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Signed|Any CPU
 		{AA7027C6-2C94-4E44-83A2-275EEE473045}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Signed|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoRelease|Any CPU.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoRelease|Mixed Platforms.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoRelease|x86.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoTouch|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoTouch|Mixed Platforms.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoTouch|x86.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|x86.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|x86.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

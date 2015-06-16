@@ -19,7 +19,7 @@ using ServiceStack.Web;
 #if !(__IOS__ || SL5)
 #endif
 
-#if SL5
+#if SL5SendOneWay
 using ServiceStack.Text;
 #endif
 

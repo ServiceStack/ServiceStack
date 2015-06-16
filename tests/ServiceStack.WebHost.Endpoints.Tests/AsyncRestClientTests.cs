@@ -123,6 +123,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [TestFixture]
+        public class JsonAsyncRestServiceHttpClientTests : AsyncRestClientTests
+        {
+            protected override IRestClientAsync CreateAsyncRestClient()
+            {
+                return new JsonHttpClient(ListeningOn);
+            }
+        }
+
+        [TestFixture]
         public class JsvAsyncRestServiceClientTests : AsyncRestClientTests
         {
             protected override IRestClientAsync CreateAsyncRestClient()
