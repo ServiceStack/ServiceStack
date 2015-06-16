@@ -67,6 +67,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     ULong = 10,
                     UShort = 11,
                 });
+
+                db.DropAndCreateTable<Adhoc>();
+                db.InsertAll(SeedRockstars.Map(x => new Adhoc {
+                    Id = x.Id, FirstName = x.FirstName, LastName = x.LastName
+                }));
             }
 
             var autoQuery = new AutoQueryFeature
@@ -368,12 +373,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [DataContract]
+    public class Adhoc
+    {
+        [DataMember]
+        public int Id { get; set; }
+
+        [DataMember(Name = "first_name")]
+        public string FirstName { get; set; }
+
+        [DataMember]
+        public string LastName { get; set; }
+    }
+
+    [DataContract]
     [Route("/adhoc-rockstars")]
-    public class QueryAdhoc : QueryBase<Rockstar>
+    public class QueryAdhocRockstars : QueryBase<Rockstar>
     {
         [DataMember(Name = "first_name")]
         public string FirstName { get; set; }
     }
+
+    [DataContract]
+    [Route("/adhoc")]
+    public class QueryAdhoc : QueryBase<Adhoc> {}
 
     public class AutoQueryService : Service
     {
@@ -455,9 +477,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_execute_adhoc_query()
+        public void Can_execute_AdhocRockstars_query()
         {
-            var request = new QueryAdhoc { FirstName = "Jimi" };
+            var request = new QueryAdhocRockstars { FirstName = "Jimi" };
 
             Assert.That(request.ToGetUrl(), Is.EqualTo("/adhoc-rockstars?first_name=Jimi"));
 
@@ -467,6 +489,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Results[0].FirstName, Is.EqualTo(request.FirstName));
+        }
+
+        [Test]
+        public void Can_execute_Adhoc_query_alias()
+        {
+            var response = Config.ListeningOn.CombineWith("adhoc")
+                .AddQueryParam("first_name", "Jimi")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Adhoc>>();
+
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Jimi"));
+        }
+
+        [Test]
+        public void Can_execute_Adhoc_query_convention()
+        {
+            var response = Config.ListeningOn.CombineWith("adhoc")
+                .AddQueryParam("last_name", "Hendrix")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Adhoc>>();
+            Assert.That(response.Results.Count, Is.EqualTo(7));
+
+            JsConfig.EmitLowercaseUnderscoreNames = true;
+            response = Config.ListeningOn.CombineWith("adhoc")
+                .AddQueryParam("last_name", "Hendrix")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Adhoc>>();
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Jimi"));
         }
 
         [Test]

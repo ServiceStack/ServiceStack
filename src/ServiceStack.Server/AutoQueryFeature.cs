@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.Serialization;
 using System.Threading;
 
 using Funq;
@@ -608,11 +609,20 @@ namespace ServiceStack
             var dtoAttr = model.GetType().FirstAttribute<QueryAttribute>();
             var defaultTerm = dtoAttr != null && dtoAttr.DefaultTerm == QueryTerm.Or ? "OR" : "AND";
 
-            AppendTypedQueries(q, model, dynamicParams, defaultTerm, options);
+            var aliases = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            var props = typeof(From).GetProperties();
+            foreach (var pi in props)
+            {
+                var attr = pi.FirstAttribute<DataMemberAttribute>();
+                if (attr == null || attr.Name == null) continue;
+                aliases[attr.Name] = pi.Name;
+            }
+
+            AppendTypedQueries(q, model, dynamicParams, defaultTerm, options, aliases);
 
             if (options != null && options.EnableUntypedQueries)
             {
-                AppendUntypedQueries(q, dynamicParams, defaultTerm, options);
+                AppendUntypedQueries(q, dynamicParams, defaultTerm, options, aliases);
             }
 
             if (defaultTerm == "OR" && q.WhereExpression == null)
@@ -704,8 +714,7 @@ namespace ServiceStack
             }
         }
 
-        private static void AppendTypedQueries(SqlExpression<From> q, IQuery model,
-            Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options)
+        private static void AppendTypedQueries(SqlExpression<From> q, IQuery model, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options, Dictionary<string, string> aliases)
         {
             foreach (var entry in PropertyGetters)
             {
@@ -717,7 +726,7 @@ namespace ServiceStack
                 if (implicitQuery != null && implicitQuery.Field != null)
                     name = implicitQuery.Field;
 
-                var match = GetQueryMatch(q, name, options);
+                var match = GetQueryMatch(q, name, options, aliases);
                 if (match == null)
                     continue;
 
@@ -802,13 +811,13 @@ namespace ServiceStack
             q.AddCondition(defaultTerm, format, value);
         }
 
-        private static void AppendUntypedQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options)
+        private static void AppendUntypedQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options, Dictionary<string, string> aliases)
         {
             foreach (var entry in dynamicParams)
             {
                 var name = entry.Key;
 
-                var match = GetQueryMatch(q, name, options);
+                var match = GetQueryMatch(q, name, options, aliases);
                 if (match == null)
                     continue;
 
@@ -846,6 +855,23 @@ namespace ServiceStack
         }
 
         private const string Pluralized = "s";
+
+        private static MatchQuery GetQueryMatch(SqlExpression<From> q, string name, IAutoQueryOptions options, Dictionary<string,string> aliases)
+        {
+            var match = GetQueryMatch(q, name, options);
+
+            if (match == null)
+            {
+                string alias;
+                if (aliases.TryGetValue(name, out alias))
+                    match = GetQueryMatch(q, alias, options);
+
+                if (match == null && JsConfig.EmitLowercaseUnderscoreNames)
+                    match = GetQueryMatch(q, name.Replace("_", ""), options);
+            }
+
+            return match;
+        }
 
         private static MatchQuery GetQueryMatch(SqlExpression<From> q, string name, IAutoQueryOptions options)
         {
