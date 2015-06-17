@@ -20,8 +20,8 @@ namespace ServiceStack
     {
         public static ILog log = LogManager.GetLogger(typeof (JsonHttpClient));
 
-        public static HttpMessageHandler GlobalHttpMessageHandler { get; set; }
-        public HttpMessageHandler HttpMessageHandler { get; set; }
+        public static Func<HttpMessageHandler> GlobalHttpMessageHandlerFactory { get; set; }
+        public Func<HttpMessageHandler> HttpMessageHandlerFactory { get; set; }
 
         public ResultsFilterHttpDelegate ResultsFilter { get; set; }
         public ResultsFilterHttpResponseDelegate ResultsFilterResponse { get; set; }
@@ -82,7 +82,11 @@ namespace ServiceStack
 
         public HttpClient GetHttpClient()
         {
-            var msgHandler = HttpMessageHandler ?? GlobalHttpMessageHandler;
+            var msgHandlerFn = HttpMessageHandlerFactory ?? GlobalHttpMessageHandlerFactory;
+            var msgHandler = msgHandlerFn != null
+                ? msgHandlerFn()
+                : null;
+
             return msgHandler != null
                 ? new HttpClient(msgHandler)
                 : new HttpClient();
