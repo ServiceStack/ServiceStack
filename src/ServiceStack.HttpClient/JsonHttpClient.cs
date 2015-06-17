@@ -23,7 +23,7 @@ namespace ServiceStack
         public static HttpMessageHandler GlobalHttpMessageHandler { get; set; }
         public HttpMessageHandler HttpMessageHandler { get; set; }
 
-        public ResultsFilterDelegate ResultsFilter { get; set; }
+        public ResultsFilterHttpDelegate ResultsFilter { get; set; }
         public ResultsFilterHttpResponseDelegate ResultsFilterResponse { get; set; }
 
         public const string DefaultHttpMethod = "POST";
@@ -124,7 +124,7 @@ namespace ServiceStack
 
             ApplyWebRequestFilters(httpReq);
 
-            if (CancelTokenSource == null || CancelTokenSource.IsCancellationRequested)
+            if (CancelTokenSource == null)
                 CancelTokenSource = new CancellationTokenSource();
 
             var sendAsyncTask = client.SendAsync(httpReq, CancelTokenSource.Token);
@@ -151,6 +151,8 @@ namespace ServiceStack
                             if (ResultsFilterResponse != null)
                                 ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
 
+                            DisposeCancelToken();
+
                             return response;
                         });
                     }
@@ -164,6 +166,8 @@ namespace ServiceStack
 
                             if (ResultsFilterResponse != null)
                                 ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
+
+                            DisposeCancelToken();
 
                             return response;
                         });
@@ -179,9 +183,19 @@ namespace ServiceStack
                         if (ResultsFilterResponse != null)
                             ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
 
+                        DisposeCancelToken();
+
                         return response;
                     });
                 }).Unwrap();
+        }
+
+        private void DisposeCancelToken()
+        {
+            if (CancelTokenSource == null) return;
+            
+            CancelTokenSource.Dispose();
+            CancelTokenSource = null;
         }
 
         public virtual void SerializeToStream(IRequest requestContext, object request, Stream stream)
@@ -243,7 +257,7 @@ namespace ServiceStack
         {
             if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password)) return;
 
-            var byteArray = Encoding.ASCII.GetBytes("{0}:{1}".Fmt(UserName, Password));
+            var byteArray = Encoding.UTF8.GetBytes("{0}:{1}".Fmt(UserName, Password));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
         }
 
@@ -764,6 +778,8 @@ namespace ServiceStack
         }
     }
 
+    public delegate object ResultsFilterHttpDelegate(Type responseType, string httpMethod, string requestUri, object request);
+
     public delegate void ResultsFilterHttpResponseDelegate(HttpResponseMessage webResponse, object response, string httpMethod, string requestUri, object request);
 
     public static class JsonHttpClientUtils
@@ -783,7 +799,7 @@ namespace ServiceStack
             var to = new WebHeaderCollection();
             foreach (var header in headers)
             {
-                to.Add(header.Key, string.Join(", ", header.Value));
+                to[header.Key] = string.Join(", ", header.Value);
             }
             return to;
         }
