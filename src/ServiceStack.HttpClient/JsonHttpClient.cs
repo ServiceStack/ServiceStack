@@ -56,9 +56,13 @@ namespace ServiceStack
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/oneway/";
         }
 
-        public JsonHttpClient(string baseUri)
+        public JsonHttpClient(string baseUri) : this()
         {
-            BaseUri = baseUri;
+            SetBaseUri(baseUri);
+        }
+
+        public JsonHttpClient()
+        {
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
         }
 
@@ -312,11 +316,11 @@ namespace ServiceStack
             try
             {
                 var contentType = httpRes.GetContentType();
-                var bytes = GetResponseBytes(response);
 
+                var bytes = GetResponseBytes(response);
                 if (bytes != null)
                 {
-                    if (contentType.MatchesContentType(ContentType))
+                    if (contentType == null || contentType.MatchesContentType(ContentType))
                     {
                         using (__requestAccess())
                         {
@@ -354,6 +358,31 @@ namespace ServiceStack
             //    throw WebRequestUtils.CreateCustomException(requestUri, authEx);
             //}
         }
+
+        public T GetSyncResponse<T>(Task<T> task)
+        {
+            try
+            {
+                return task.Result;
+            }
+            catch (Exception ex)
+            {
+                throw ex.UnwrapIfSingleException();
+            }
+        }
+
+        public void WaitSyncResponse(Task task)
+        {
+            try
+            {
+                task.Wait();
+            }
+            catch (Exception ex)
+            {
+                throw ex.UnwrapIfSingleException();
+            }
+        }
+
 
         public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto)
         {
@@ -497,16 +526,6 @@ namespace ServiceStack
         }
 
 
-        public void CancelAsync()
-        {
-            CancelTokenSource.Cancel();
-        }
-
-        public void Dispose()
-        {
-        }
-
-
         public void SendOneWay(object requestDto)
         {
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
@@ -526,12 +545,14 @@ namespace ServiceStack
 
         public void SendAllOneWay(IEnumerable<object> requests)
         {
-            throw new NotImplementedException();
+            var elType = requests.GetType().GetCollectionType();
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            SendOneWay(HttpMethods.Post, requestUri, requests);
         }
 
         public void Get(IReturnVoid request)
         {
-            GetAsync(request).Wait();
+            WaitSyncResponse(GetAsync(request));
         }
 
         public HttpWebResponse Get(object request)
@@ -541,17 +562,17 @@ namespace ServiceStack
 
         public TResponse Get<TResponse>(IReturn<TResponse> request)
         {
-            return GetAsync(request).Result;
+            return GetSyncResponse(GetAsync(request));
         }
 
         public TResponse Get<TResponse>(object request)
         {
-            return GetAsync<TResponse>(request).Result;
+            return GetSyncResponse(GetAsync<TResponse>(request));
         }
 
         public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
         {
-            return GetAsync<TResponse>(relativeOrAbsoluteUrl).Result;
+            return GetSyncResponse(GetAsync<TResponse>(relativeOrAbsoluteUrl));
         }
 
         public IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
@@ -561,7 +582,7 @@ namespace ServiceStack
 
         public void Delete(IReturnVoid requestDto)
         {
-            DeleteAsync(requestDto).Wait();
+            WaitSyncResponse(DeleteAsync(requestDto));
         }
 
         public HttpWebResponse Delete(object requestDto)
@@ -571,22 +592,22 @@ namespace ServiceStack
 
         public TResponse Delete<TResponse>(IReturn<TResponse> request)
         {
-            return DeleteAsync(request).Result;
+            return GetSyncResponse(DeleteAsync(request));
         }
 
         public TResponse Delete<TResponse>(object request)
         {
-            return DeleteAsync<TResponse>(request).Result;
+            return GetSyncResponse(DeleteAsync<TResponse>(request));
         }
 
         public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
         {
-            return DeleteAsync<TResponse>(relativeOrAbsoluteUrl).Result;
+            return GetSyncResponse(DeleteAsync<TResponse>(relativeOrAbsoluteUrl));
         }
 
         public void Post(IReturnVoid requestDto)
         {
-            PostAsync(requestDto).Wait();
+            WaitSyncResponse(PostAsync(requestDto));
         }
 
         public HttpWebResponse Post(object request)
@@ -596,22 +617,22 @@ namespace ServiceStack
 
         public TResponse Post<TResponse>(IReturn<TResponse> request)
         {
-            return PostAsync(request).Result;
+            return GetSyncResponse(PostAsync(request));
         }
 
         public TResponse Post<TResponse>(object request)
         {
-            return PostAsync<TResponse>(request).Result;
+            return GetSyncResponse(PostAsync<TResponse>(request));
         }
 
         public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            return PostAsync<TResponse>(relativeOrAbsoluteUrl, request).Result;
+            return GetSyncResponse(PostAsync<TResponse>(relativeOrAbsoluteUrl, request));
         }
 
         public void Put(IReturnVoid requestDto)
         {
-            PutAsync(requestDto).Wait();
+            WaitSyncResponse(PutAsync(requestDto));
         }
 
         public HttpWebResponse Put(object request)
@@ -621,22 +642,22 @@ namespace ServiceStack
 
         public TResponse Put<TResponse>(IReturn<TResponse> request)
         {
-            return PutAsync(request).Result;
+            return GetSyncResponse(PutAsync(request));
         }
 
         public TResponse Put<TResponse>(object request)
         {
-            return PutAsync<TResponse>(request).Result;
+            return GetSyncResponse(PutAsync<TResponse>(request));
         }
 
         public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            return PutAsync<TResponse>(relativeOrAbsoluteUrl, request).Result;
+            return GetSyncResponse(PutAsync<TResponse>(relativeOrAbsoluteUrl, request));
         }
 
         public void Patch(IReturnVoid request)
         {
-            SendAsync<byte[]>(HttpMethods.Patch, request.ToUrl(HttpMethods.Patch, Format), null).Wait();
+            WaitSyncResponse(SendAsync<byte[]>(HttpMethods.Patch, request.ToUrl(HttpMethods.Patch, Format), null));
         }
 
         public HttpWebResponse Patch(object requestDto)
@@ -646,22 +667,22 @@ namespace ServiceStack
 
         public TResponse Patch<TResponse>(IReturn<TResponse> request)
         {
-            return SendAsync<TResponse>(HttpMethods.Patch, request.ToUrl(HttpMethods.Patch, Format), request).Result;
+            return GetSyncResponse(SendAsync<TResponse>(HttpMethods.Patch, request.ToUrl(HttpMethods.Patch, Format), request));
         }
 
         public TResponse Patch<TResponse>(object request)
         {
-            return SendAsync<TResponse>(HttpMethods.Patch, request.ToUrl(HttpMethods.Patch, Format), request).Result;
+            return GetSyncResponse(SendAsync<TResponse>(HttpMethods.Patch, request.ToUrl(HttpMethods.Patch, Format), request));
         }
 
         public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            return SendAsync<TResponse>(HttpMethods.Patch, relativeOrAbsoluteUrl, request).Result;
+            return GetSyncResponse(SendAsync<TResponse>(HttpMethods.Patch, relativeOrAbsoluteUrl, request));
         }
 
         public void CustomMethod(string httpVerb, IReturnVoid request)
         {
-            SendAsync<byte[]>(httpVerb, request.ToUrl(httpVerb, Format), request).Wait();
+            WaitSyncResponse(SendAsync<byte[]>(httpVerb, request.ToUrl(httpVerb, Format), request));
         }
 
         public HttpWebResponse CustomMethod(string httpVerb, object request)
@@ -671,12 +692,12 @@ namespace ServiceStack
 
         public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request)
         {
-            return SendAsync<TResponse>(httpVerb, request.ToUrl(httpVerb, Format), request).Result;
+            return GetSyncResponse(SendAsync<TResponse>(httpVerb, request.ToUrl(httpVerb, Format), request));
         }
 
         public TResponse CustomMethod<TResponse>(string httpVerb, object request)
         {
-            return SendAsync<TResponse>(httpVerb, request.ToUrl(httpVerb, Format), null).Result;
+            return GetSyncResponse(SendAsync<TResponse>(httpVerb, request.ToUrl(httpVerb, Format), null));
         }
 
         public HttpWebResponse Head(IReturn requestDto)
@@ -713,7 +734,7 @@ namespace ServiceStack
 
         public TResponse Send<TResponse>(object request)
         {
-            return SendAsync<TResponse>(request).Result;
+            return GetSyncResponse(SendAsync<TResponse>(request));
         }
 
         public virtual TResponse Send<TResponse>(IReturn<TResponse> request)
@@ -728,7 +749,18 @@ namespace ServiceStack
 
         public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
-            throw new NotImplementedException();
+            return GetSyncResponse(SendAllAsync(requests));
+        }
+
+
+
+        public void CancelAsync()
+        {
+            CancelTokenSource.Cancel();
+        }
+
+        public void Dispose()
+        {
         }
     }
 

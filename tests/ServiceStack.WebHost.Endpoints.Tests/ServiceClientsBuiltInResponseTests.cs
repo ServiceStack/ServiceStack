@@ -133,6 +133,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         protected static IRestClient[] RestClients = 
 		{
 			new JsonServiceClient(Config.AbsoluteBaseUri),
+			new JsonHttpClient(Config.AbsoluteBaseUri),
 			new XmlServiceClient(Config.AbsoluteBaseUri),
 			new JsvServiceClient(Config.AbsoluteBaseUri),
 		};
@@ -178,6 +179,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test, TestCaseSource("RestClients")]
         public void Can_download_Poco_response_as_PocoResponse(IRestClient client)
         {
+            if (client is JsonHttpClient) return;
+
             HttpWebResponse response = client.Get<HttpWebResponse>("/poco/Test");
 
             using (var stream = response.GetResponseStream())
@@ -190,6 +193,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test, TestCaseSource("RestClients")]
         public void Can_download_Headers_response(IRestClient client)
         {
+            if (client is JsonHttpClient) return;
+
             HttpWebResponse response = client.Get(new Headers { Text = "Test" });
             Assert.That(response.Headers["X-Response"], Is.EqualTo("Test"));
         }
@@ -197,6 +202,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test, TestCaseSource("RestClients")]
         public async Task Can_download_Headers_response_Async(IServiceClient client)
         {
+            if (client is JsonHttpClient) return;
+
             //Note: HttpWebResponse is returned before any response is read, so it's ideal point for streaming in app code
 
             var response = await client.GetAsync(new Headers { Text = "Test" });

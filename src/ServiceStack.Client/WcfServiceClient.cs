@@ -662,6 +662,11 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<TResponse> SendAsync<TResponse>(object requestDto)
         {
             throw new NotImplementedException();

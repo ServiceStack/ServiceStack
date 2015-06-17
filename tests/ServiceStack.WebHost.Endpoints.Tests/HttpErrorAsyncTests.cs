@@ -8,8 +8,28 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [TestFixture]
-    public class HttpErrorAsyncTests
+    public class HttpErrorAsyncJsonServiceClientTests : HttpErrorAsyncTests
+    {
+        public override IRestClientAsync CreateRestClient(string baseUri = null)
+        {
+            return baseUri != null
+                ? new JsonServiceClient(baseUri)
+                : new JsonServiceClient();
+        }
+    }
+
+    public class HttpErrorAsyncJsonHttpClientTests : HttpErrorAsyncTests
+    {
+        public override IRestClientAsync CreateRestClient(string baseUri = null)
+        {
+            return baseUri != null
+                ? new JsonHttpClient(baseUri)
+                : new JsonHttpClient();
+        }
+    }
+
+
+    public abstract class HttpErrorAsyncTests
     {
         private const string ListeningOn = "http://localhost:1337/";
 
@@ -29,12 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Dispose();
         }
 
-        public IRestClientAsync CreateRestClient(string baseUri = null)
-        {
-            return baseUri != null
-                ? new JsonServiceClient(baseUri)
-                : new JsonServiceClient();
-        }
+        public abstract IRestClientAsync CreateRestClient(string baseUri = null);
 
         [Test]
         public async Task GET_returns_ArgumentNullException()

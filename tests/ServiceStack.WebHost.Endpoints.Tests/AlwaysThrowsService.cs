@@ -290,6 +290,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class JsonHttpIntegrationTests : WebServicesTests
+    {
+        protected override IServiceClient CreateNewServiceClient()
+        {
+            return new JsonHttpClient(ListeningOn);
+        }
+    }
+
     public class JsvIntegrationTests : WebServicesTests
     {
         protected override IServiceClient CreateNewServiceClient()

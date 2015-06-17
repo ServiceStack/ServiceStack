@@ -362,6 +362,11 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
+            public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto)
+            {
+                return SendAsync<TResponse>((object)requestDto);
+            }
+
             public Task<TResponse> SendAsync<TResponse>(object requestDto)
             {
                 var tcs = new TaskCompletionSource<TResponse>();

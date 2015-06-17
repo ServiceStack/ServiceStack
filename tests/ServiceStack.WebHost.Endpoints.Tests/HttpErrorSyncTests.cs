@@ -5,8 +5,28 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    public class HttpErrorSyncJsonServiceClientTests : HttpErrorSyncTests
+    {
+        public override IRestClient CreateRestClient(string baseUri = null)
+        {
+            return baseUri != null
+                ? new JsonServiceClient(baseUri)
+                : new JsonServiceClient();
+        }
+    }
+
+    public class HttpErrorSyncJsonHttpClientTests : HttpErrorSyncTests
+    {
+        public override IRestClient CreateRestClient(string baseUri = null)
+        {
+            return baseUri != null
+                ? new JsonHttpClient(baseUri)
+                : new JsonHttpClient();
+        }
+    }
+
     [TestFixture]
-    public class HttpErrorSyncTests
+    public abstract class HttpErrorSyncTests
     {
         private const string ListeningOn = "http://localhost:1337/";
 
@@ -26,12 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Dispose();
         }
 
-        public IRestClient CreateRestClient(string baseUri = null)
-        {
-            return baseUri != null
-                       ? new JsonServiceClient(baseUri)
-                       : new JsonServiceClient();
-        }
+        public abstract IRestClient CreateRestClient(string baseUri = null);
 
         [Test]
         public void PUT_returning_custom_403_Exception()

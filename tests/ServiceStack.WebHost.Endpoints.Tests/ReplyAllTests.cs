@@ -260,8 +260,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class ReplyAllJsonServiceClientTests : ReplyAllTests
+    {
+        public override IServiceClient CreateClient(string baseUri)
+        {
+            return new JsonServiceClient(baseUri);
+        }
+
+        public override IServiceClientAsync CreateClientAsync(string baseUri)
+        {
+            return new JsonServiceClient(baseUri);
+        }
+    }
+
+    public class ReplyAllJsonHttpClientTests : ReplyAllTests
+    {
+        public override IServiceClient CreateClient(string baseUri)
+        {
+            return new JsonHttpClient(baseUri);
+        }
+
+        public override IServiceClientAsync CreateClientAsync(string baseUri)
+        {
+            return new JsonHttpClient(baseUri);
+        }
+    }
+
     [TestFixture]
-    public class ReplyAllTests
+    public abstract class ReplyAllTests
     {
         private ServiceStackHost appHost;
 
@@ -279,10 +305,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Dispose();
         }
 
+        public abstract IServiceClient CreateClient(string baseUri);
+        public abstract IServiceClientAsync CreateClientAsync(string baseUri);
+
         [Test]
         public void Can_send_single_HelloAll_request()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
 
             var request = new HelloAll { Name = "Foo" };
             var response = client.Send(request);
@@ -292,7 +321,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_send_single_HelloAllAsync_request()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClientAsync(Config.AbsoluteBaseUri);
 
             var request = new HelloAllAsync { Name = "Foo" };
             var response = await client.SendAsync(request);
@@ -304,7 +333,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             ReplyAllService.TimesExecuted = 0;
 
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
 
             var requests = new[]
             {
@@ -328,7 +357,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_send_multi_reply_HelloAllAsync_requests()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
 
             var requests = new[]
             {
@@ -378,7 +407,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_send_single_HelloAllCustom_request()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
 
             var request = new HelloAllCustom { Name = "Foo" };
             var response = client.Send(request);
@@ -388,7 +417,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_send_multi_reply_HelloAllCustom_requests()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
 
             var requests = new[]
             {
@@ -410,7 +439,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_send_async_multi_reply_HelloAllCustom_requests()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
 
             var requests = new[]
             {
@@ -432,7 +461,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_send_multi_oneway_HelloAllCustom_requests()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
 
             var requests = new[]
             {
@@ -452,7 +481,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 db.DropAndCreateTable<HelloAllTransaction>();
             }
 
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
 
             var names = new[] { "Foo", "Bar", "Baz" };
 
@@ -486,7 +515,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 db.DropAndCreateTable<HelloAllTransaction>();
             }
 
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
             var requests = new[]
             {
                 new HelloAllTransaction { Name = "Foo" },
@@ -519,7 +548,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 redis.FlushAll();
 
-                var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+                var client = CreateClient(Config.AbsoluteBaseUri);
                 var requests = new[]
                 {
                     new Request { Id = 1, Name = "Foo" },
@@ -541,7 +570,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_not_repeat()
         {
             //var client = new JsonServiceClient("http://localhost:55799/");
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
             var batch = new[] { new NoRepeat { Id = Guid.NewGuid() }, new NoRepeat { Id = Guid.NewGuid() } };
 
             var results = client.SendAll(batch);
@@ -552,7 +581,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_throw_WebServiceException_on_Error()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
             //var client = new JsonServiceClient("http://localhost:55799/");
 
             var requests = new[]
@@ -581,7 +610,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Does_throw_WebServiceException_on_Error_Async()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient(Config.AbsoluteBaseUri);
             //var client = new JsonServiceClient("http://localhost:55799/");
 
             var requests = new[]

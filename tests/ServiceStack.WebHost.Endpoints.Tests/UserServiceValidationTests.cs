@@ -111,6 +111,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return new Func<IServiceClient>[] {
 					() => UnitTestServiceClient(),
 					() => new JsonServiceClient(ListeningOn),
+					() => new JsonHttpClient(ListeningOn),
 					() => new JsvServiceClient(ListeningOn),
 					() => new XmlServiceClient(ListeningOn),
 				};
@@ -142,6 +143,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 return new Func<IServiceClient>[] {
 					() => new JsonServiceClient(ListeningOn),
+					() => new JsonHttpClient(ListeningOn),
 					() => new JsvServiceClient(ListeningOn),
 					() => new XmlServiceClient(ListeningOn),
 				};
@@ -153,8 +155,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var client = (ServiceClientBase)factory();
-                client.AlwaysSendBasicAuthHeader = false;
+                var client = factory();
+                var serviceClient = client as ServiceClientBase;
+                if (serviceClient != null)
+                    serviceClient.AlwaysSendBasicAuthHeader = false;
+                var httpClient = client as JsonHttpClient;
+                if (httpClient != null)
+                    httpClient.AlwaysSendBasicAuthHeader = false;
+
                 var response = client.Get<OperationResponse>("UserValidation");
                 Assert.Fail("Should throw Validation Exception");
             }
