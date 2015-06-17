@@ -113,6 +113,8 @@
 
       <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ClientFiles>
 
+      <HttpClientFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/ServiceStack.HttpClient.*"></HttpClientFiles>
+
       <CommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Common.*"></CommonFiles>
 
       <InterfacesFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/ServiceStack.Interfaces.*"></InterfacesFiles>
@@ -438,6 +440,18 @@
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client/lib/net40" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client/servicestack.client.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.HttpClient -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj"
+            Targets="Build"
+            Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.HttpClient/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.HttpClient/lib/net45')" />
+    <Copy SourceFiles="%(HttpClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.HttpClient/lib/net45" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.HttpClient/servicestack.httpclient.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Common -->

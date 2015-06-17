@@ -84,6 +84,8 @@
       <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/Pcl/ServiceStack.Client.*"></ClientFiles>
       <ClientFilesSL5 Include="$(SrcDir)/ServiceStack.Client/bin/SL5/ServiceStack.Client.*"></ClientFilesSL5>
 
+      <HttpClientFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/Pcl/ServiceStack.HttpClient.*"></HttpClientFiles>
+
       <Net45Files Include="$(SrcDir)/ServiceStack.Pcl.Net45/bin/$(Configuration)/ServiceStack.Pcl.Net45.*"></Net45Files>
       <WinStoreFiles Include="$(SrcDir)/ServiceStack.Pcl.WinStore/bin/$(Configuration)/ServiceStack.Pcl.WinStore.*"></WinStoreFiles>
       <AndroidFiles Include="$(SrcDir)/ServiceStack.Pcl.Android/bin/$(Configuration)/ServiceStack.Pcl.Android.*"></AndroidFiles>
@@ -108,6 +110,15 @@
 
     <!--<Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces/servicestack.interfaces.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />-->
+
+
+    <!-- ServiceStack.HttpClient -->
+
+    <MSBuild Projects="../src/ServiceStack.HttpClient/ServiceStack.HttpClient.Pcl.csproj" Properties="Configuration=$(Configuration);DefineConstants=PCL"/>
+    <Copy SourceFiles="%(HttpClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
+
+    <MakeDir Directories="$(BuildSolutionDir)/NuGet/ServiceStack.HttpClient/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" Condition="!Exists('$(BuildSolutionDir)/NuGet/ServiceStack.HttpClient/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10')" />
+    <Copy SourceFiles="%(HttpClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.HttpClient/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" />
 
     <!-- ServiceStack.Client -->
 
