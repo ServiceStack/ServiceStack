@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Serialization;
@@ -40,6 +41,8 @@ namespace ServiceStack
         public string UserName { get; set; }
         public string Password { get; set; }
         public bool AlwaysSendBasicAuthHeader { get; set; }
+
+        public CancellationTokenSource CancelTokenSource { get; set; }
 
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
@@ -115,9 +118,12 @@ namespace ServiceStack
 
             httpReq.Headers.Add(HttpHeaders.Accept, ContentType);
 
-            var sendAsyncTask = client.SendAsync(httpReq);
-
             ApplyWebRequestFilters(httpReq);
+
+            if (CancelTokenSource == null || CancelTokenSource.IsCancellationRequested)
+                CancelTokenSource = new CancellationTokenSource();
+
+            var sendAsyncTask = client.SendAsync(httpReq, CancelTokenSource.Token);
 
             if (typeof(TResponse) == typeof(HttpResponseMessage))
             {
@@ -493,13 +499,12 @@ namespace ServiceStack
 
         public void CancelAsync()
         {
-            throw new System.NotImplementedException();
+            CancelTokenSource.Cancel();
         }
 
         public void Dispose()
         {
         }
-
 
 
         public void SendOneWay(object requestDto)
@@ -729,7 +734,6 @@ namespace ServiceStack
 
     public delegate void ResultsFilterHttpResponseDelegate(HttpResponseMessage webResponse, object response, string httpMethod, string requestUri, object request);
 
-
     public static class JsonHttpClientUtils
     {
         public static Dictionary<string, string> ToDictionary(this HttpResponseHeaders headers)
@@ -755,9 +759,9 @@ namespace ServiceStack
         public static string GetContentType(this HttpResponseMessage httpRes)
         {
             IEnumerable<string> values;
-            if (httpRes.Headers.TryGetValues(HttpHeaders.ContentType, out values))
-                return values.FirstOrDefault();
-            return null;
+            return httpRes.Headers.TryGetValues(HttpHeaders.ContentType, out values) 
+                ? values.FirstOrDefault() 
+                : null;
         }
     }
 
