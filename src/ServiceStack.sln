@@ -46,6 +46,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Common\servicestack.common.nuspec = ..\NuGet\ServiceStack.Common\servicestack.common.nuspec
 		..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec = ..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec
 		..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec = ..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec
+		..\NuGet\ServiceStack.HttpClient\servicestack.httpclient.nuspec = ..\NuGet\ServiceStack.HttpClient\servicestack.httpclient.nuspec
 		..\NuGet\ServiceStack.Interfaces\servicestack.interfaces.nuspec = ..\NuGet\ServiceStack.Interfaces\servicestack.interfaces.nuspec
 		..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec = ..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec
 		..\NuGet\ServiceStack.Logging.EntLib5\servicestack.logging.entlib5.nuspec = ..\NuGet\ServiceStack.Logging.EntLib5\servicestack.logging.entlib5.nuspec
@@ -164,6 +165,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Caching.AwsDynamoDbV2", "ServiceStack.Caching.AwsDynamoDbV2\ServiceStack.Caching.AwsDynamoDbV2.csproj", "{AA7027C6-2C94-4E44-83A2-275EEE473045}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.HttpClient", "ServiceStack.HttpClient\ServiceStack.HttpClient.csproj", "{C05DE4A1-84C5-481B-8BD4-C837A1303B01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.HttpClient.PCL", "ServiceStack.HttpClient\ServiceStack.HttpClient.PCL.csproj", "{D35A83DA-61E4-4315-AE02-4D30956467FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1744,6 +1747,41 @@ Global
 		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Release|Any CPU
 		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoRelease|Any CPU.Build.0 = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoRelease|Mixed Platforms.Build.0 = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoRelease|x86.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoTouch|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoTouch|Mixed Platforms.Build.0 = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.MonoTouch|x86.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Release|x86.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Signed|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.Signed|x86.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Release|Any CPU
+		{D35A83DA-61E4-4315-AE02-4D30956467FF}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
