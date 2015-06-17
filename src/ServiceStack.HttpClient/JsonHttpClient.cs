@@ -18,10 +18,12 @@ namespace ServiceStack
 {
     public class JsonHttpClient : IServiceClient
     {
-        public static ILog log = LogManager.GetLogger(typeof (JsonHttpClient));
+        public static ILog log = LogManager.GetLogger(typeof(JsonHttpClient));
 
         public static Func<HttpMessageHandler> GlobalHttpMessageHandlerFactory { get; set; }
-        public Func<HttpMessageHandler> HttpMessageHandlerFactory { get; set; }
+        public HttpMessageHandler HttpMessageHandler { get; set; }
+
+        public HttpClient HttpClient { get; set; }
 
         public ResultsFilterHttpDelegate ResultsFilter { get; set; }
         public ResultsFilterHttpResponseDelegate ResultsFilterResponse { get; set; }
@@ -82,13 +84,15 @@ namespace ServiceStack
 
         public HttpClient GetHttpClient()
         {
-            var msgHandlerFn = HttpMessageHandlerFactory ?? GlobalHttpMessageHandlerFactory;
-            var msgHandler = msgHandlerFn != null
-                ? msgHandlerFn()
-                : null;
+            //Should reuse same instance: http://social.msdn.microsoft.com/Forums/en-US/netfxnetcom/thread/4e12d8e2-e0bf-4654-ac85-3d49b07b50af/
+            if (HttpClient != null)
+                return HttpClient;
 
-            return msgHandler != null
-                ? new HttpClient(msgHandler)
+            if (HttpMessageHandler == null && GlobalHttpMessageHandlerFactory != null)
+                HttpMessageHandler = GlobalHttpMessageHandlerFactory();
+
+            return HttpClient = HttpMessageHandler != null
+                ? new HttpClient(HttpMessageHandler)
                 : new HttpClient();
         }
 
