@@ -222,6 +222,9 @@ namespace ServiceStack
             if (cancel.IsCancellationRequested)
                 return;
 
+            if (ConnectionInfo == null)
+                return;
+
             var elapsedMs = (DateTime.UtcNow - LastPulseAt).TotalMilliseconds;
             if (elapsedMs > ConnectionInfo.IdleTimeoutMs)
             {
@@ -230,9 +233,6 @@ namespace ServiceStack
             }
 
             EnsureSynchronizationContext();
-
-            if (ConnectionInfo == null)
-                return;
 
             ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter:HeartbeatRequestFilter)
                 .Success(t => {
