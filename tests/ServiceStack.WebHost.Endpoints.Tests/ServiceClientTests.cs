@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Text;
@@ -145,6 +146,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             using (client.Post<HttpWebResponse>(new ReturnsWebResponse { Message = "Bar" })) { }
             Assert.That(TestAsyncService.ReturnWebResponseMessage, Is.EqualTo("Bar"));
+        }
+
+        [Test]
+        public void Can_WaitAsync()
+        {
+            var called = 0;
+
+            PclExportClient.Instance.WaitAsync(100)
+                .ContinueWith(_ => {
+                    called++;
+                });
+
+            Thread.Sleep(200);
+            Assert.That(called, Is.EqualTo(1));
         }
     }
 

@@ -1727,14 +1727,16 @@ namespace ServiceStack
 
         public virtual Task WaitAsync(int waitForMs)
         {
-#if PCL
-            return EmptyTask;
-#else
-            var tcs = new TaskCompletionSource<object>();
-            Thread.Sleep(waitForMs);
-            tcs.SetResult(null);
+            if (waitForMs <= 0)
+                throw new ArgumentOutOfRangeException("waitForMs");
+
+            var tcs = new TaskCompletionSource<bool>();
+            var timer = new Timer(self => {
+                ((Timer)self).Dispose();
+                tcs.TrySetResult(true);
+            });
+            timer.Change(waitForMs, Timeout.Infinite);
             return tcs.Task;
-#endif
         }
 
         public virtual void RunOnUiThread(Action fn)
