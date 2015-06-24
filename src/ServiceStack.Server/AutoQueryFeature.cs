@@ -18,6 +18,10 @@ using ServiceStack.Web;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
+using ServiceStack.OrmLite.Dapper;
+using System.Collections.Concurrent;
+using System.Text;
+
 namespace ServiceStack
 {
     public delegate ISqlExpression QueryFilterDelegate(IRequest request, ISqlExpression sqlExpression, IQuery model);
@@ -955,5 +959,173 @@ namespace ServiceStack
             }
             return query;
         }
+    }
+
+    public abstract class AutoQueryWithAggregatesService : AutoQueryServiceBase
+    {
+        private static readonly char[] FieldSeperators = new[] { ',', ';' };
+        private static readonly string[] AggregateFunctions = new[] { "SUM", "MAX", "MIN", "AVG" }; // can be dialect provider specific
+        private static readonly ConcurrentDictionary<RuntimeTypeHandle, Dictionary<string, string>> AggregateQueryCache = new ConcurrentDictionary<RuntimeTypeHandle, Dictionary<string, string>>();
+
+        private IDictionary<string, object> GetAggregatesResult<T>(string aggregates, SqlExpression<T> query)
+        {
+            var aggregateQuery = query.Clone();
+            aggregateQuery.ClearLimits();
+            aggregateQuery.OrderByExpression = "";
+
+            Dictionary<string, string> queryCache = AggregateQueryCache.GetOrAdd(typeof(T).TypeHandle, _ => new Dictionary<string, string>());
+
+            if (!queryCache.ContainsKey(aggregates))
+            {
+                var aggregateRequests = aggregates.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
+                var builder = new StringBuilder();
+                builder.Append("SELECT COUNT(*) as Total");
+                foreach (string agrField in aggregateRequests)
+                {
+                    foreach (string agr in AggregateFunctions)
+                    {
+                        if (agrField.StartsWith(agr, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            var field = agrField.Substring(agr.Length);
+                            var fieldDef = query.FirstMatchingField(field);
+                            if (fieldDef == null)
+                                continue;
+                            builder.Append(", ");
+                            builder.Append(agr);
+                            builder.Append("(");
+                            builder.Append(fieldDef.Item2.GetQuotedName(query.DialectProvider));
+                            builder.Append(")");
+                            builder.Append(" AS ");
+                            builder.Append(agrField.SqlColumn(query.DialectProvider));
+                            break;
+                        }
+                    }
+                }
+                queryCache[aggregates] = builder.ToString();
+            }
+            aggregateQuery.SelectExpression = queryCache[aggregates];
+
+            // Need Microsoft.CSharp for this to compile
+            //return (IDictionary<string, object>)Db.Query(aggregateQuery.ToSelectStatement()).FirstOrDefault();
+
+            var vals = new Dictionary<string, object>();
+            using (var dr = Db.ExecuteReader(aggregateQuery.ToSelectStatement(), System.Data.CommandBehavior.SingleRow))
+            {
+                if (dr.Read())
+                {
+                    for (int i = 0; i < dr.FieldCount; i++)
+                    {
+                        vals[dr.GetName(i)] = dr.GetValue(i);
+                    }
+                }
+            }
+            return vals;
+        }
+
+        public override object Exec<From, Into>(IQuery<From, Into> dto)
+        {
+            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
+            var agrQuery = dto as QueryWithAggregates<Into>;
+            if (agrQuery != null && !string.IsNullOrWhiteSpace(agrQuery.Aggregates))
+            {
+                var aggregateResults = GetAggregatesResult(agrQuery.Aggregates, q);
+                return new QueryWithAggregatesResponse<Into>() {
+                    Offset = q.Offset.GetValueOrDefault(0),
+                    Results = Db.LoadSelect<Into, From>(q),
+                    Total = aggregateResults.ContainsKey("Total") ? Convert.ToInt32(aggregateResults["Total"]) : 0,
+                    Aggregates = aggregateResults.ToDictionary(r => r.Key, r => Convert.ToString(r.Value, System.Globalization.CultureInfo.InvariantCulture)) //new Dictionary<string, object>(aggregateResults)
+                };
+            }
+            return AutoQuery.Execute(dto, q);
+        }
+
+        public override object Exec<From>(IQuery<From> dto)
+        {
+            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
+            var agrQuery = dto as QueryWithAggregates<From>;
+            if (agrQuery != null && !string.IsNullOrWhiteSpace(agrQuery.Aggregates))
+            {
+                var aggregateResults = GetAggregatesResult(agrQuery.Aggregates, q);
+                return new QueryWithAggregatesResponse<From>() {
+                    Offset = q.Offset.GetValueOrDefault(0),
+                    Results = Db.LoadSelect<From>(q),
+                    Total = aggregateResults.ContainsKey("Total") ? Convert.ToInt32(aggregateResults["Total"]) : 0,
+                    Aggregates = aggregateResults.ToDictionary(r => r.Key, r => Convert.ToString(r.Value, System.Globalization.CultureInfo.InvariantCulture)) //new Dictionary<string, object>(aggregateResults)
+                };
+            }
+            return AutoQuery.Execute(dto, q);
+        }
+    }
+
+    // Those should go to ServiceStack.Interfaces or we can add missing properties to QueryBase
+
+    [DataContract]
+    public class QueryWithAggregates<T> : IQuery<T>, IReturn<QueryWithAggregatesResponse<T>>
+    {
+        [DataMember(Order = 1)]
+        public virtual int? Skip { get; set; }
+        [DataMember(Order = 2)]
+        public virtual int? Take { get; set; }
+        [DataMember(Order = 3)]
+        public virtual string OrderBy { get; set; }
+        [DataMember(Order = 4)]
+        public virtual string OrderByDesc { get; set; }
+        [DataMember(Order = 5)]
+        public string Aggregates { get; set; }
+    }
+
+    [DataContract]
+    public class QueryWithAggregates<From, Into> : IQuery<From, Into>, IReturn<QueryWithAggregatesResponse<Into>>
+    {
+        [DataMember(Order = 1)]
+        public virtual int? Skip { get; set; }
+        [DataMember(Order = 2)]
+        public virtual int? Take { get; set; }
+        [DataMember(Order = 3)]
+        public virtual string OrderBy { get; set; }
+        [DataMember(Order = 4)]
+        public virtual string OrderByDesc { get; set; }
+        [DataMember(Order = 5)]
+        public string Aggregates { get; set; }
+    }
+
+    [DataContract]
+    public class QueryWithAggregatesResponse<T> : IHasResponseStatus, IMeta
+    {
+        [DataMember(Order = 1)]
+        public virtual int Offset { get; set; }
+        [DataMember(Order = 2)]
+        public virtual int Total { get; set; }
+        [DataMember(Order = 3)]
+        public virtual List<T> Results { get; set; }
+        [DataMember(Order = 4)]
+        public virtual Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 5)]
+        public virtual ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 6)]
+        public virtual Dictionary<string, string> Aggregates { get; set; }
+
+    }
+    // wont work with ProtoBuf
+    //public class QueryWithAggregateResponse<T> : QueryResponse<T>
+    //{
+    //    public virtual Dictionary<string, object> Aggregates { get; set; }
+    //}
+
+    // More detailed response
+    [DataContract]
+    public class AggregateResult
+    {
+        [DataMember(Order = 1)]
+        public string Aggregate { get; set; }
+        [DataMember(Order = 2)]
+        public string Field { get; set; }
+
+        // again wont work with ProtoBuf
+        //[DataMember(Order = 3)]
+        // public object Value { get; set; }
+
+        [DataMember(Order = 3)]
+        public string Value { get; set; }
     }
 }
