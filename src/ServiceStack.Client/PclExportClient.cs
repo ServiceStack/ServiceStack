@@ -1764,8 +1764,11 @@ namespace ServiceStack
 
     public sealed class Timer : CancellationTokenSource, ITimer, IDisposable
     {
-        public Timer(TimerCallback callback, object state, int dueTime)
+        public Timer(TimerCallback callback, object state, int dueTime, int period=0)
         {
+            if (period > 0)
+                throw new NotImplementedException("period is not supported in PCL libraries");
+
             Task.Delay(dueTime, Token).ContinueWith((t, s) =>
             {
                 var tuple = (Tuple<TimerCallback, object>)s;
