@@ -125,18 +125,14 @@ namespace ServiceStack.RabbitMq
             get { return connection ?? (connection = ConnectionFactory.CreateConnection()); }
         }
 
-        private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap
-            = new Dictionary<Type, IMessageHandlerFactory>();
-
-        private readonly Dictionary<Type, int> handlerThreadCountMap
-            = new Dictionary<Type, int>();
+        private readonly Dictionary<Type, HandlerRegistration> _handlerRegistrations = new Dictionary<Type, HandlerRegistration>();
 
         private RabbitMqWorker[] workers;
         private Dictionary<string, int[]> queueWorkerIndexMap;
 
         public List<Type> RegisteredTypes
         {
-            get { return handlerMap.Keys.ToList(); }
+            get { return this._handlerRegistrations.Keys.ToList(); }
         }
 
         public RabbitMqServer(string connectionString="localhost",
@@ -174,17 +170,142 @@ namespace ServiceStack.RabbitMq
             RegisterHandler(processMessageFn, processExceptionEx, noOfThreads: 1);
         }
 
-        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads)
+        private class HandlerRegistration
         {
-            if (handlerMap.ContainsKey(typeof(T)))
+            private readonly QueueNames _queueNames;
+            private readonly Type _type;
+            private readonly int _noOfThreads;
+            private readonly Dictionary<string, IMessageHandlerFactory> _messageHandlerFactories = new Dictionary<string, IMessageHandlerFactory>();
+
+            public HandlerRegistration(Type type,
+                                       QueueNames queueNames,
+                                       int noOfThreads)
             {
-                throw new ArgumentException("Message handler has already been registered for type: " + typeof(T).Name);
+                this._queueNames = queueNames;
+                this._type = type;
+                this._noOfThreads = noOfThreads;
             }
 
-            handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
-            handlerThreadCountMap[typeof(T)] = noOfThreads;
+            public Type Type
+            {
+                get
+                {
+                    return this._type;
+                }
+            }
 
-            LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, handlerMap.Count);
+            public QueueNames QueueNames
+            {
+                get
+                {
+                    return this._queueNames;
+                }
+            }
+
+            public int NoOfThreads
+            {
+                get
+                {
+                    return this._noOfThreads;
+                }
+            }
+
+            public void AddMessageHandlerFactory(string queueName,
+                                                 IMessageHandlerFactory messageHandlerFactory)
+            {
+                if (this._messageHandlerFactories.ContainsKey(queueName))
+                {
+                    throw new ArgumentException("Message handler for queue " + queueName + " has already been registered for type: " + this.Type.Name);
+                }
+
+                this._messageHandlerFactories[queueName] = messageHandlerFactory;
+            }
+
+            public IMessageHandlerFactory GetMessageHandlerFactory(string queueName)
+            {
+                return this._messageHandlerFactories[queueName];
+            }
+
+            public IEnumerable<KeyValuePair<string, IMessageHandlerFactory>> GetAdditionalMessageHandlerFactories()
+            {
+                return this._messageHandlerFactories.Where(arg => arg.Key != this.QueueNames.In && arg.Key != this.QueueNames.Priority);
+            }
+        }
+
+        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads)
+        {
+            var messageHandlerFactory = this.CreateMessageHandlerFactory(processMessageFn,
+                                                                         processExceptionEx);
+
+            this.RegisterHandler<T>(QueueNames<T>.In,
+                                    messageHandlerFactory,
+                                    noOfThreads);
+            this.RegisterHandler<T>(QueueNames<T>.Priority,
+                                    messageHandlerFactory,
+                                    noOfThreads);
+        }
+
+        public void RegisterHandler<T>(string queueName,
+                                       Func<IMessage<T>, object> processMessageFn)
+        {
+            this.RegisterHandler(queueName,
+                                 processMessageFn,
+                                 null);
+        }
+
+        public void RegisterHandler<T>(string queueName,
+                                       Func<IMessage<T>, object> processMessageFn,
+                                       int noOfThreads)
+        {
+            this.RegisterHandler(queueName,
+                                 processMessageFn,
+                                 null,
+                                 noOfThreads);
+        }
+
+        public void RegisterHandler<T>(string queueName,
+                                       Func<IMessage<T>, object> processMessageFn,
+                                       Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
+        {
+            this.RegisterHandler(queueName,
+                                 processMessageFn,
+                                 processExceptionEx,
+                                 noOfThreads: 1);
+        }
+        
+        public void RegisterHandler<T>(string queueName,
+                                       Func<IMessage<T>, object> processMessageFn,
+                                       Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx,
+                                       int noOfThreads)
+        {
+            var messageHandlerFactory = this.CreateMessageHandlerFactory(processMessageFn,
+                                                                         processExceptionEx);
+
+            this.RegisterHandler<T>(queueName,
+                                    messageHandlerFactory,
+                                    noOfThreads);
+        }
+
+        private void RegisterHandler<T>(string queueName,
+                                        IMessageHandlerFactory messageHandlerFactory,
+                                        int noOfThreads)
+        {
+            HandlerRegistration handlerRegistration;
+            var messageType = typeof (T);
+            if (!this._handlerRegistrations.TryGetValue(messageType,
+                                                        out handlerRegistration))
+            {
+                var queueNames = new QueueNames(messageType);
+                handlerRegistration = new HandlerRegistration(messageType,
+                                                              queueNames,
+                                                              noOfThreads);
+                this._handlerRegistrations[messageType] = handlerRegistration;
+            }
+
+            handlerRegistration.AddMessageHandlerFactory(queueName,
+                                                         messageHandlerFactory);
+            
+            LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, this.RegisteredTypes.Count);
         }
 
         protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
@@ -272,34 +393,52 @@ namespace ServiceStack.RabbitMq
 
             using (var channel = Connection.OpenChannel())
             {
-                foreach (var entry in handlerMap)
+                foreach (var handlerRegistration in this._handlerRegistrations.Values)
                 {
-                    var msgType = entry.Key;
-                    var handlerFactory = entry.Value;
+                    var msgType = handlerRegistration.Type;
+                    var queueNames = handlerRegistration.QueueNames;
+                    var noOfThreads = handlerRegistration.NoOfThreads;
 
-                    var queueNames = new QueueNames(msgType);
-                    var noOfThreads = handlerThreadCountMap[msgType];
+                    IMessageHandlerFactory handlerFactory;
+                    string queueName;
 
                     if (PriortyQueuesWhitelist == null
                         || PriortyQueuesWhitelist.Any(x => x == msgType.Name))
                     {
+                        queueName = queueNames.Priority;
+                        handlerFactory = handlerRegistration.GetMessageHandlerFactory(queueName);
                         noOfThreads.Times(i =>
                             workerBuilder.Add(new RabbitMqWorker(
                                 messageFactory,
                                 handlerFactory.CreateMessageHandler(),
-                                queueNames.Priority,
+                                queueName,
                                 WorkerErrorHandler,
                                 AutoReconnect)));
 
                     }
 
+                    queueName = queueNames.In;
+                    handlerFactory = handlerRegistration.GetMessageHandlerFactory(queueName);
                     noOfThreads.Times(i =>
                         workerBuilder.Add(new RabbitMqWorker(
                                 messageFactory,
                                 handlerFactory.CreateMessageHandler(),
-                                queueNames.In,
+                                queueName,
                                 WorkerErrorHandler,
                                 AutoReconnect)));
+
+                    foreach (var additionalHandlerFactory in handlerRegistration.GetAdditionalMessageHandlerFactories())
+                    {
+                        queueName = additionalHandlerFactory.Key;
+                        handlerFactory = additionalHandlerFactory.Value;
+                        noOfThreads.Times(i =>
+                            workerBuilder.Add(new RabbitMqWorker(
+                                    messageFactory,
+                                    handlerFactory.CreateMessageHandler(),
+                                    queueName,
+                                    WorkerErrorHandler,
+                                    AutoReconnect)));
+                    }
 
                     channel.RegisterQueues(queueNames);
                 }
