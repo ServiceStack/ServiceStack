@@ -13,14 +13,14 @@ namespace ServiceStack
         public const string SessionOptionsKey = "ss-opt";
         public const string XUserAuthId = HttpHeaders.XUserAuthId;
         public const string RequestItemsSessionKey = "__session";
+        
         public static TimeSpan DefaultSessionExpiry = TimeSpan.FromDays(7 * 2); //2 weeks
-        public TimeSpan SessionExpiry { get; set; }
-        public static bool VerifyCachedSessionId = false;
+        public static TimeSpan DefaultPermanentSessionExpiry = TimeSpan.FromDays(7 * 8); //8 weeks
 
-        public SessionFeature()
-        {
-            this.SessionExpiry = DefaultSessionExpiry;
-        }
+        public TimeSpan? SessionExpiry { get; set; }
+        public TimeSpan? PermanentSessionExpiry { get; set; }
+
+        public static bool VerifyCachedSessionId = false;
 
         private static bool alreadyConfigured;
 

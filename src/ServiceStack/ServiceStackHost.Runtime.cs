@@ -256,15 +256,18 @@ namespace ServiceStack
             }
         }
 
-        public virtual TimeSpan GetDefaultSessionExpiry()
+        public virtual TimeSpan GetDefaultSessionExpiry(IRequest req)
         {
-            var authFeature = this.GetPlugin<AuthFeature>();
-            if (authFeature != null)
-                return authFeature.GetDefaultSessionExpiry();
-
             var sessionFeature = this.GetPlugin<SessionFeature>();
-            return sessionFeature != null
-                ? sessionFeature.SessionExpiry
+            if (sessionFeature != null)
+            {
+                return req.IsPermanentSession()
+                    ? sessionFeature.PermanentSessionExpiry ?? SessionFeature.DefaultPermanentSessionExpiry
+                    : sessionFeature.SessionExpiry ?? SessionFeature.DefaultSessionExpiry;
+            }
+
+            return req.IsPermanentSession()
+                ? SessionFeature.DefaultPermanentSessionExpiry
                 : SessionFeature.DefaultSessionExpiry;
         }
 
@@ -406,7 +409,7 @@ namespace ServiceStack
             {
                 var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
                 session.LastModified = DateTime.UtcNow;
-                cache.CacheSet(sessionKey, session, expiresIn ?? HostContext.GetDefaultSessionExpiry());
+                cache.CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
             }
 
             httpReq.Items[SessionFeature.RequestItemsSessionKey] = session;

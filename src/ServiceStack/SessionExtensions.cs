@@ -30,9 +30,7 @@ namespace ServiceStack
             if (httpReq == null)
                 httpReq = HostContext.GetCurrentRequest();
 
-            var sessionOptions = GetSessionOptions(httpReq);
-
-            return sessionOptions.Contains(SessionOptions.Permanent)
+            return httpReq.IsPermanentSession()
                 ? httpReq.GetPermanentSessionId()
                 : httpReq.GetTemporarySessionId();
         }
@@ -62,8 +60,7 @@ namespace ServiceStack
         /// <returns></returns>
         public static string CreateSessionId(this IResponse res, IRequest req)
         {
-            var sessionOptions = GetSessionOptions(req);
-            return sessionOptions.Contains(SessionOptions.Permanent)
+            return req.IsPermanentSession()
                 ? res.CreatePermanentSessionId(req)
                 : res.CreateTemporarySessionId(req);
         }
@@ -74,10 +71,9 @@ namespace ServiceStack
         /// <returns></returns>
         public static string CreateSessionIds(this IResponse res, IRequest req)
         {
-            var sessionOptions = GetSessionOptions(req);
             var permId = res.CreatePermanentSessionId(req);
             var tempId = res.CreateTemporarySessionId(req);
-            return sessionOptions.Contains(SessionOptions.Permanent)
+            return req.IsPermanentSession()
                 ? permId
                 : tempId;
         }
@@ -132,6 +128,11 @@ namespace ServiceStack
 
             req.Items[SessionFeature.SessionId] = sessionId;
             return sessionId;
+        }
+
+        public static bool IsPermanentSession(this IRequest req)
+        {
+            return req != null && GetSessionOptions(req).Contains(SessionOptions.Permanent);
         }
 
         public static HashSet<string> GetSessionOptions(this IRequest httpReq)

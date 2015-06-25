@@ -30,6 +30,9 @@ namespace ServiceStack
 
         public bool DeleteSessionCookiesOnLogout { get; set; }
 
+        public TimeSpan? SessionExpiry { get; set; }
+        public TimeSpan? PermanentSessionExpiry { get; set; }
+
         public bool IncludeAssignRoleServices
         {
             set
@@ -79,7 +82,7 @@ namespace ServiceStack
             };
 
             RegisterPlugins = new List<IPlugin> {
-                new SessionFeature()                          
+                new SessionFeature()        
             };
 
             AuthEvents = new List<IAuthEvents>();
@@ -103,18 +106,14 @@ namespace ServiceStack
                 appHost.RegisterService(registerService.Key, registerService.Value);
             }
 
+            var sessionFeature = RegisterPlugins.OfType<SessionFeature>().First();
+            sessionFeature.SessionExpiry = SessionExpiry;
+            sessionFeature.PermanentSessionExpiry = PermanentSessionExpiry;
+
             appHost.LoadPlugin(RegisterPlugins.ToArray());
 
             if (IncludeAuthMetadataProvider && appHost.TryResolve<IAuthMetadataProvider>() == null)
                 appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
-        }
-
-        public TimeSpan GetDefaultSessionExpiry()
-        {
-            var authProvider = authProviders.FirstOrDefault() as AuthProvider;
-            return authProvider != null 
-                ? authProvider.SessionExpiry
-                : SessionFeature.DefaultSessionExpiry;
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

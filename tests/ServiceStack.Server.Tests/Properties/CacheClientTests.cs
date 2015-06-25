@@ -259,7 +259,7 @@ namespace ServiceStack.Server.Tests.Properties
             };
 
             var sessionKey = SessionFeature.GetSessionKey(session.Id);
-            Cache.Set(sessionKey, session, HostContext.GetDefaultSessionExpiry());
+            Cache.Set(sessionKey, session, SessionFeature.DefaultSessionExpiry);
 
             var sessionCache = Cache.Get<IAuthSession>(sessionKey);
             Assert.That(sessionCache, Is.Not.Null);
@@ -289,7 +289,7 @@ namespace ServiceStack.Server.Tests.Properties
             ttl = Cache.GetTimeToLive(sessionKey);
             Assert.That(ttl.Value, Is.EqualTo(TimeSpan.MaxValue));
 
-            var sessionExpiry = HostContext.GetDefaultSessionExpiry();
+            var sessionExpiry = SessionFeature.DefaultSessionExpiry;
             Cache.Set(sessionKey, session, sessionExpiry);
             ttl = Cache.GetTimeToLive(sessionKey);
             Assert.That(ttl.Value, Is.GreaterThan(TimeSpan.FromSeconds(0)));
@@ -309,7 +309,7 @@ namespace ServiceStack.Server.Tests.Properties
             };
 
             var sessionKey = SessionFeature.GetSessionKey(session.Id);
-            Cache.Set(sessionKey, session, HostContext.GetDefaultSessionExpiry());
+            Cache.Set(sessionKey, session, SessionFeature.DefaultSessionExpiry);
 
             var sessionCache = Cache.Get<IAuthSession>(sessionKey);
             Assert.That(sessionCache, Is.Not.Null);

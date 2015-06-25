@@ -16,7 +16,7 @@ namespace ServiceStack.Auth
     {
         protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
 
-        public TimeSpan SessionExpiry { get; set; }
+        public TimeSpan? SessionExpiry { get; set; }
         public string AuthRealm { get; set; }
         public string Provider { get; set; }
         public string CallbackUrl { get; set; }
@@ -36,11 +36,8 @@ namespace ServiceStack.Auth
         {
             return url;
         }
-        
-        protected AuthProvider()
-        {
-            this.SessionExpiry = SessionFeature.DefaultSessionExpiry;
-        }
+
+        protected AuthProvider(){}
 
         protected AuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
             : this()
