@@ -15,7 +15,7 @@ namespace ServiceStack
         public const string RequestItemsSessionKey = "__session";
         
         public static TimeSpan DefaultSessionExpiry = TimeSpan.FromDays(7 * 2); //2 weeks
-        public static TimeSpan DefaultPermanentSessionExpiry = TimeSpan.FromDays(7 * 8); //8 weeks
+        public static TimeSpan DefaultPermanentSessionExpiry = TimeSpan.FromDays(7 * 4); //4 weeks
 
         public TimeSpan? SessionExpiry { get; set; }
         public TimeSpan? PermanentSessionExpiry { get; set; }
