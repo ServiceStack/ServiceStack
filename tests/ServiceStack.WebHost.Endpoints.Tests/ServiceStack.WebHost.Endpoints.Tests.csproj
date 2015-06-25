@@ -187,6 +187,7 @@
     <Compile Include="CustomFormatTests.cs" />
     <Compile Include="HttpErrorSyncTests.cs" />
     <Compile Include="Issues\EmptyDtoIssue.cs" />
+    <Compile Include="Issues\NetworkIssues.cs" />
     <Compile Include="Issues\XmlContentTypeIssue.cs" />
     <Compile Include="ReplyAllTests.cs" />
     <Compile Include="MultiTennantAppHostTests.cs" />
@@ -234,6 +235,7 @@
     <Compile Include="IocServiceTests.cs" />
     <Compile Include="Support\EndpointHandlerBaseTests.cs" />
     <Compile Include="UnitTestExample.cs" />
+    <Compile Include="UseCases\EncryptedMessagesTests.cs" />
     <Compile Include="UserServiceValidationTests.cs" />
     <Compile Include="JsonpTests.cs" />
     <Compile Include="Shared\IocService.cs" />
