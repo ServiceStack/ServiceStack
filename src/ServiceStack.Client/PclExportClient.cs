@@ -1731,11 +1731,11 @@ namespace ServiceStack
                 throw new ArgumentOutOfRangeException("waitForMs");
 
             var tcs = new TaskCompletionSource<bool>();
-            var timer = new Timer(self => {
-                ((Timer)self).Dispose();
+            Timer timer = null;
+            timer = new Timer(self => {
                 tcs.TrySetResult(true);
-            });
-            timer.Change(waitForMs, Timeout.Infinite);
+                timer.Dispose();
+            }, null, waitForMs, Timeout.Infinite);
             return tcs.Task;
         }
 
