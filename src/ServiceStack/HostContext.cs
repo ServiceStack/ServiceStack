@@ -155,16 +155,6 @@ namespace ServiceStack
             return AssertAppHost().ApplyRequestFilters(httpReq, httpRes, requestDto);
         }
 
-        public static bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
-        {
-            return AssertAppHost().ApplyMessageResponseFilters(req, res, response);
-        }
-
-        public static bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
-        {
-            return AssertAppHost().ApplyMessageRequestFilters(req, res, requestDto);
-        }
-
         public static bool ApplyResponseFilters(IRequest httpReq, IResponse httpRes, object response)
         {
             return AssertAppHost().ApplyResponseFilters(httpReq, httpRes, response);
