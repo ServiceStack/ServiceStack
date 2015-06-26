@@ -20,9 +20,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
         public override void Configure(Container container)
         {
-            RequestBinders[typeof(EncryptedMessage)] = req =>
-            {
-                var encRequest = req.GetRawBody().FromJson<EncryptedMessage>();
+            RequestConverters.Add((req, requestDto) => {
+                var encRequest = requestDto as EncryptedMessage;
+                if (encRequest == null)
+                    return null;
 
                 var requestType = Metadata.GetOperationType(encRequest.OperationName);
                 var decryptedJson = CryptUtils.Decrypt(SecureConfig.PrivateKey, encRequest.EncryptedBody);
@@ -31,20 +32,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 req.Items["_encrypt"] = encRequest;
 
                 return request;
-            };
-        }
+            });
 
-        public override object OnAfterExecute(IRequest req, object requestDto, object response)
-        {
-            if (!req.Items.ContainsKey("_encrypt"))
-                return base.OnAfterExecute(req, requestDto, response);
+            ResponseConverters.Add((req, response) => {
+                if (!req.Items.ContainsKey("_encrypt"))
+                    return null;
 
-            var encResponse = CryptUtils.Encrypt(SecureConfig.PublicKey, response.ToJson());
-            return new EncryptedMessageResponse
-            {
-                OperationName = response.GetType().Name,
-                EncryptedBody = encResponse
-            };
+                var encResponse = CryptUtils.Encrypt(SecureConfig.PublicKey, response.ToJson());
+                return new EncryptedMessageResponse
+                {
+                    OperationName = response.GetType().Name,
+                    EncryptedBody = encResponse
+                };
+            });
         }
     }
 

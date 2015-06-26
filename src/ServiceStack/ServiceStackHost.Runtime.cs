@@ -24,6 +24,26 @@ namespace ServiceStack
 {
     public abstract partial class ServiceStackHost
     {
+        public virtual object ApplyRequestConverters(IRequest req, object requestDto)
+        {
+            foreach (var converter in RequestConverters)
+            {
+                requestDto = converter(req, requestDto) ?? requestDto;
+            }
+
+            return requestDto;
+        }
+
+        public virtual object ApplyResponseConverters(IRequest req, object responseDto)
+        {
+            foreach (var converter in ResponseConverters)
+            {
+                responseDto = converter(req, responseDto) ?? responseDto;
+            }
+
+            return responseDto;
+        }
+
         /// <summary>
         /// Apply PreRequest Filters for participating Custom Handlers, e.g. RazorFormat, MarkdownFormat, etc
         /// </summary>
