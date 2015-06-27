@@ -147,7 +147,7 @@ namespace ServiceStack
 
         public object Execute(IRequest request)
         {
-            return HostContext.ServiceController.Execute(Request);
+            return HostContext.ServiceController.Execute(request);
         }
 
         public object ForwardRequest()
