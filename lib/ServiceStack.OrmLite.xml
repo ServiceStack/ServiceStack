@@ -1068,6 +1068,13 @@
             </summary>
             <returns>number of rows deleted</returns>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.DeleteAll``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Delete all rows provided. E.g:
+            <para>db.DeleteAll&lt;Person&gt;(people)</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.DeleteAll(System.Data.IDbConnection,System.Type)">
             <summary>
             Delete all rows in the runtime table type. E.g:
