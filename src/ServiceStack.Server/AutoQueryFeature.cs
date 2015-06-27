@@ -651,7 +651,11 @@ namespace ServiceStack
 
         public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> sqlExpression, IQuery model)
         {
-            var meta = new Dictionary<string, string>();
+            var meta = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+
+            var emptyInclude = string.IsNullOrWhiteSpace(model.Include);
+            if (emptyInclude || !model.Include.ToUpper().Contains("COUNT(*)"))
+                model.Include = "COUNT(*)" + (emptyInclude ? "" : "," + model.Include);
 
             foreach (var responseFilter in ResponseFilters)
             {
@@ -660,6 +664,11 @@ namespace ServiceStack
 
             if (meta.Count > 0)
                 response.Meta = meta;
+
+            string total;
+            response.Total = meta.TryGetValue("COUNT(*)", out total) 
+                ? total.ToInt() 
+                : (int) Db.Count(sqlExpression); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
 
             return response;
         }
@@ -1055,7 +1064,6 @@ namespace ServiceStack
                 var response = new QueryResponse<Into>
                 {
                     Offset = q.Offset.GetValueOrDefault(0),
-                    Total = (int)db.Count(q),
                     Results = db.LoadSelect<Into, From>(q),
                 };
 

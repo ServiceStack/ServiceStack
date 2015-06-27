@@ -1104,6 +1104,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_populate_Total()
+        {
+            var response = client.Get(new QueryRockstars());
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+
+            response = client.Get(new QueryRockstars { Include = "COUNT" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+
+            response = client.Get(new QueryRockstars { Include = "COUNT(*)" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+
+            response = client.Get(new QueryRockstars { Include = "COUNT(DISTINCT LivingStatus)" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+
+            response = client.Get(new QueryRockstars { Include = "Count(*), Min(Age), Max(Age), Sum(Id)" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+        }
+
+        [Test]
         public void Can_Include_Aggregates_in_AutoQuery()
         {
             var response = client.Get(new QueryRockstars { Include = "COUNT" });
