@@ -895,7 +895,7 @@ namespace ServiceStack
                 else if (implicitQuery.Term == QueryTerm.And)
                     defaultTerm = "AND";
 
-                format = quotedColumn + " " + operand + " {0}";
+                format = "(" + quotedColumn + " " + operand + " {0}" + ")";
                 if (implicitQuery.Template != null)
                 {
                     format = implicitQuery.Template.Replace("{Field}", quotedColumn);
