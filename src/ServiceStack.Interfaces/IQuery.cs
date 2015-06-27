@@ -5,12 +5,13 @@ using System.Runtime.Serialization;
 namespace ServiceStack
 {
     //Interfaces and DTO's used in AutoQuery
-    public interface IQuery
+    public interface IQuery : IMeta
     {
         int? Skip { get; set; }
         int? Take { get; set; }
         string OrderBy { get; set; }
         string OrderByDesc { get; set; }
+        string Include { get; set; }
     }
 
     public interface IQuery<From> : IQuery { }
@@ -78,6 +79,12 @@ namespace ServiceStack
 
         [DataMember(Order = 4)]
         public virtual string OrderByDesc { get; set; }
+
+        [DataMember(Order = 5)]
+        public virtual string Include { get; set; }
+
+        [DataMember(Order = 6)]
+        public virtual Dictionary<string, string> Meta { get; set; }
     }
 
     public abstract class QueryBase<T> : QueryBase, IQuery<T>, IReturn<QueryResponse<T>> { }
