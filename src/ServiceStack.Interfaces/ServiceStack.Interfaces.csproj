@@ -174,12 +174,6 @@
     <Compile Include="Model\IHasStringId.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\IHasUserId.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Model\IHasUserSession.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="IO\IVirtualDirectory.cs" />
     <Compile Include="IO\IVirtualFile.cs" />
     <Compile Include="IO\IVirtualNode.cs" />
