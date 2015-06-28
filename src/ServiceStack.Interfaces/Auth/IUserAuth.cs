@@ -72,4 +72,9 @@ namespace ServiceStack.Auth
         string RequestTokenSecret { get; set; }
         Dictionary<string, string> Items { get; set; }
     }
+
+    public interface IHasSessionId
+    {
+        string SessionId { get; }
+    }
 }
