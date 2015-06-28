@@ -737,6 +737,8 @@ namespace ServiceStack
             {
                 foreach (var atRestPath in atRestPaths)
                 {
+                    if (atRestPath == null) continue;
+
                     this.Routes.Add(reqAttr.RequestType, atRestPath, null);
                 }
             }

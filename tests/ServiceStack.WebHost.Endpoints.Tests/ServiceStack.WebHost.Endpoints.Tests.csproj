@@ -235,7 +235,9 @@
     <Compile Include="IocServiceTests.cs" />
     <Compile Include="Support\EndpointHandlerBaseTests.cs" />
     <Compile Include="UnitTestExample.cs" />
+    <Compile Include="UseCases\BasicEncryptedMessagesTests.cs" />
     <Compile Include="UseCases\EncryptedMessagesTests.cs" />
+    <Compile Include="UseCases\SecureConfig.cs" />
     <Compile Include="UserServiceValidationTests.cs" />
     <Compile Include="JsonpTests.cs" />
     <Compile Include="Shared\IocService.cs" />

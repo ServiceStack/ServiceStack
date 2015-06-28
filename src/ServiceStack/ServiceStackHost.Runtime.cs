@@ -29,6 +29,8 @@ namespace ServiceStack
             foreach (var converter in RequestConverters)
             {
                 requestDto = converter(req, requestDto) ?? requestDto;
+                if (req.Response.IsClosed)
+                    return requestDto;
             }
 
             return requestDto;
@@ -39,6 +41,8 @@ namespace ServiceStack
             foreach (var converter in ResponseConverters)
             {
                 responseDto = converter(req, responseDto) ?? responseDto;
+                if (req.Response.IsClosed)
+                    return responseDto;
             }
 
             return responseDto;
@@ -83,6 +87,9 @@ namespace ServiceStack
         {
             req.ThrowIfNull("req");
             res.ThrowIfNull("res");
+
+            if (res.IsClosed)
+                return true;
 
             using (Profiler.Current.Step("Executing Request Filters"))
             {
@@ -145,6 +152,9 @@ namespace ServiceStack
         {
             req.ThrowIfNull("req");
             res.ThrowIfNull("res");
+
+            if (res.IsClosed)
+                return true;
 
             using (Profiler.Current.Step("Executing Response Filters"))
             {
