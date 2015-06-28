@@ -790,7 +790,7 @@
             leads to continual memory growth as each stream approaches the maximum allowed size.
             3. Memory copying - Each time a MemoryStream grows, all the bytes are copied into new buffers.
             This implementation only copies the bytes when GetBuffer is called.
-            4. Memory fragmentation - By using homogenous buffer sizes, it ensures that blocks of memory
+            4. Memory fragmentation - By using homogeneous buffer sizes, it ensures that blocks of memory
             can be easily reused.
             
             The stream is implemented on top of a series of uniformly-sized blocks. As the stream's length grows,
