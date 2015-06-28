@@ -255,6 +255,8 @@ namespace ServiceStack
         {
             if (string.IsNullOrEmpty(model.Include)) return;
             var q = sqlExpression.GetUntypedSqlExpression().Clone();
+            q.ClearLimits();
+            q.OrderByExpression = "";
 
             var unknown = new List<string>();
             var columns = new List<string>();
@@ -338,6 +340,11 @@ namespace ServiceStack
 
                         sb.Append(" ")
                           .Append(alias.SafeVarName());
+                    }
+                    else
+                    {
+                        sb.Append(" ")
+                          .Append(q.DialectProvider.GetQuotedName(cmd));
                     }
                 }
                 else
