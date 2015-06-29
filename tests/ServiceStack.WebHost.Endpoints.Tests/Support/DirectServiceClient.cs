@@ -5,8 +5,6 @@ using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Host;
 using ServiceStack.Testing;
-using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support
 {
@@ -464,6 +462,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         }
 
         public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
         {
             throw new NotImplementedException();
         }
