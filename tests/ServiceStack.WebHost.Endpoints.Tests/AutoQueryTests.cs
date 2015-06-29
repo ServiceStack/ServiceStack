@@ -1108,6 +1108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = client.Get(new QueryRockstars());
             Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Meta, Is.Null);
 
             response = client.Get(new QueryRockstars { Include = "COUNT" });
             Assert.That(response.Total, Is.EqualTo(response.Results.Count));

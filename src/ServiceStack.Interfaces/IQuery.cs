@@ -91,8 +91,14 @@ namespace ServiceStack
 
     public abstract class QueryBase<From, Into> : QueryBase, IQuery<From, Into>, IReturn<QueryResponse<Into>> { }
 
+    public interface IQueryResponse : IHasResponseStatus, IMeta
+    {
+        int Offset { get; set; }
+        int Total { get; set; }
+    }
+
     [DataContract]
-    public class QueryResponse<T> : IHasResponseStatus, IMeta
+    public class QueryResponse<T> : IQueryResponse
     {
         [DataMember(Order = 1)]
         public virtual int Offset { get; set; }

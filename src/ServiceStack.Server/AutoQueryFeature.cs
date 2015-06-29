@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Threading;
 
 using Funq;
@@ -23,7 +22,16 @@ namespace ServiceStack
 {
     public delegate ISqlExpression QueryFilterDelegate(IRequest request, ISqlExpression sqlExpression, IQuery model);
 
-    public delegate void QueryResponseFilterDelegate(IDbConnection db, IQuery model, ISqlExpression sqlExpression, Dictionary<string, string> Meta);
+    public class QueryFilterContext
+    {
+        public IDbConnection Db { get; set; }
+        public List<Command> Commands { get; set; }
+        public IQuery Request { get; set; }
+        public ISqlExpression SqlExpression { get; set; }
+        public IQueryResponse Response { get; set; }
+    }
+
+    public delegate void QueryResponseFilterDelegate(QueryFilterContext ctx);
 
     public class AutoQueryFeature : IPlugin, IPostInitPlugin
     {
@@ -247,123 +255,87 @@ namespace ServiceStack
         }
 
         public HashSet<string> SqlAggregateFunctions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
-            {
-                "AVG", "COUNT", "FIRST", "LAST", "MAX", "MIN", "SUM"
-            };
-
-        public void IncludeAggregates(IDbConnection db, IQuery model, ISqlExpression sqlExpression, Dictionary<string, string> Meta)
         {
-            if (string.IsNullOrEmpty(model.Include)) return;
-            var q = sqlExpression.GetUntypedSqlExpression().Clone();
-            q.ClearLimits();
-            q.OrderByExpression = "";
+            "AVG", "COUNT", "FIRST", "LAST", "MAX", "MIN", "SUM"
+        };
 
-            var unknown = new List<string>();
-            var columns = new List<string>();
+        public void IncludeAggregates(QueryFilterContext ctx)
+        {
+            var commands = ctx.Commands;
+            if (commands.Count == 0)
+                return;
 
-            var sb = new StringBuilder();
-            var commands = model.Include.Split(',');
+            var q = ctx.SqlExpression.GetUntypedSqlExpression()
+                .Clone()
+                .ClearLimits()
+                .OrderBy();
+
             double d;
+            var unhandledCommands = new List<Command>();
 
             foreach (var cmd in commands)
             {
-                var parts = cmd.SplitOnFirst('(');
-                var name = parts[0].Trim();
-                var args = new[] {"*"};
-                string alias = null;
-                
-                if (parts.Length > 1)
+                if (!SqlAggregateFunctions.Contains(cmd.Name))
                 {
-                    var argParts = parts[1].SplitOnLast(')');
-                    args = argParts[0].Split(',');
-                    if (argParts.Length > 1 && !string.IsNullOrWhiteSpace(argParts[1]))
-                        alias = argParts[1].Trim();
+                    unhandledCommands.Add(cmd);
+                    continue;
                 }
 
-                if (SqlAggregateFunctions.Contains(name))
+                if (cmd.Args.Count == 0)
+                    cmd.Args.Add("*");
+
+                var hasAlias = !string.IsNullOrWhiteSpace(cmd.Suffix);
+
+                for (var i = 0; i < cmd.Args.Count; i++)
                 {
-                    columns.Add(cmd);
+                    var arg = cmd.Args[i];
 
-                    if (sb.Length > 0)
-                        sb.Append(", ");
-
-                    sb.Append(name)
-                      .Append("(");
-
-                    for (var i = 0; i < args.Length; i++)
+                    string modifier = "";
+                    if (arg.StartsWithIgnoreCase("DISTINCT "))
                     {
-                        if (i > 0)
-                            sb.Append(",");
-
-                        var arg = args[i];
-
-                        string modifier = null;
-                        if (arg.StartsWithIgnoreCase("DISTINCT "))
-                        {
-                            var argParts = arg.SplitOnFirst(' ');
-                            modifier = argParts[0];
-                            arg = argParts[1];
-
-                            sb.Append(modifier)
-                              .Append(" ");
-                        }
-
-                        var fieldRef = q.FirstMatchingField(arg);
-                        if (fieldRef != null)
-                        {
-                            //To return predictable aliases, if it's primary table don't fully qualify name
-                            if (fieldRef.Item1 == q.ModelDef && alias == null)
-                            {
-                                sb.Append(arg);
-                            }
-                            else
-                            {
-                                sb.Append(q.DialectProvider.GetQuotedColumnName(fieldRef.Item1, fieldRef.Item2));
-                            }
-                        }
-                        else if (arg == "*" || double.TryParse(arg, out d))
-                        {
-                            sb.Append(arg);
-                        }
-                        else
-                        {
-                            sb.Append("{0}".SqlFmt(arg));
-                        }
+                        var argParts = arg.SplitOnFirst(' ');
+                        modifier = argParts[0] + " ";
+                        arg = argParts[1];
                     }
 
-                    sb.Append(")");
-
-                    if (alias != null)
+                    var fieldRef = q.FirstMatchingField(arg);
+                    if (fieldRef != null)
                     {
-                        if (alias.StartsWithIgnoreCase("as "))
-                            alias = alias.Substring("as ".Length);
-
-                        sb.Append(" ")
-                          .Append(alias.SafeVarName());
+                        //To return predictable aliases, if it's primary table don't fully qualify name
+                        if (fieldRef.Item1 != q.ModelDef || hasAlias)
+                        {
+                            cmd.Args[i] = modifier + q.DialectProvider.GetQuotedColumnName(fieldRef.Item1, fieldRef.Item2);
+                        }
                     }
-                    else
+                    else if (arg != "*" && !double.TryParse(arg, out d))
                     {
-                        sb.Append(" ")
-                          .Append(q.DialectProvider.GetQuotedName(cmd));
+                        cmd.Args[i] = "{0}".SqlFmt(arg);
                     }
                 }
-                else
+
+                if (hasAlias)
                 {
-                    unknown.Add(cmd);
+                    var alias = cmd.Suffix.TrimStart();
+                    if (alias.StartsWithIgnoreCase("as "))
+                        alias = alias.Substring("as ".Length);
+
+                    cmd.Suffix = " " + alias.SafeVarName();
                 }
             }
 
-            q.UnsafeSelect(sb.ToString());
+            var selectSql = string.Join(", ", commands.Map(x => x.ToString()));
 
-            var rows = db.Select<Dictionary<string,object>>(q);
+            q.UnsafeSelect(selectSql);
+
+            var rows = ctx.Db.Select<Dictionary<string, object>>(q);
             var row = rows.FirstOrDefault();
 
             foreach (var key in row.Keys)
             {
-                Meta[key] = row[key].ToString();
+                ctx.Response.Meta[key] = row[key].ToString();
             }
 
-            model.Include = string.Join(",", unknown.ToArray());
+            ctx.Commands = unhandledCommands.ToList();
         }
     }
 
@@ -658,24 +630,44 @@ namespace ServiceStack
 
         public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> sqlExpression, IQuery model)
         {
-            var meta = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            response.Meta = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
-            var emptyInclude = string.IsNullOrWhiteSpace(model.Include);
-            if (emptyInclude || !model.Include.ToUpper().Contains("COUNT(*)"))
-                model.Include = "COUNT(*)" + (emptyInclude ? "" : "," + model.Include);
+            var commands = model.Include.ParseCommands();
+            var emptyInclude = commands.Count == 0;
+
+            var totalCountRequested = commands.Any(x =>
+                "COUNT".EqualsIgnoreCase(x.Name) && 
+                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*"))); 
+
+            if (!totalCountRequested)
+                commands.Add(new Command { Name = "COUNT", Args = { "*" }});
+
+            var ctx = new QueryFilterContext
+            {
+                Db = Db,
+                Commands = commands,
+                Request = model,
+                SqlExpression = sqlExpression,
+                Response = response,
+            };
 
             foreach (var responseFilter in ResponseFilters)
             {
-                responseFilter(Db, model, sqlExpression, meta);
+                responseFilter(ctx);
             }
 
-            if (meta.Count > 0)
-                response.Meta = meta;
-
             string total;
-            response.Total = meta.TryGetValue("COUNT(*)", out total) 
+            response.Total = response.Meta.TryGetValue("COUNT(*)", out total) 
                 ? total.ToInt() 
                 : (int) Db.Count(sqlExpression); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
+
+            //reduce payload on wire
+            if (emptyInclude)
+            {
+                response.Meta.Remove("COUNT(*)");
+                if (response.Meta.Count == 0)
+                    response.Meta = null;
+            }
 
             return response;
         }
