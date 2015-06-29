@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -342,7 +345,7 @@ namespace ServiceStack
                 var bytes = GetResponseBytes(response);
                 if (bytes != null)
                 {
-                    if (contentType == null || contentType.MatchesContentType(ContentType))
+                    if (string.IsNullOrEmpty(contentType) || contentType.MatchesContentType(ContentType))
                     {
                         using (__requestAccess())
                         {

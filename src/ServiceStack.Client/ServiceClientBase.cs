@@ -662,7 +662,7 @@ namespace ServiceStack
 
                 try
                 {
-                    if (errorResponse.ContentType.MatchesContentType(ContentType))
+                    if (string.IsNullOrEmpty(errorResponse.ContentType) || errorResponse.ContentType.MatchesContentType(ContentType))
                     {
                         var bytes = errorResponse.GetResponseStream().ReadFully();
                         using (__requestAccess())
@@ -1477,7 +1477,7 @@ namespace ServiceStack
         public void Dispose() { }
     }
 
-    public static class ServiceClientExtensions
+    public static partial class ServiceClientExtensions
     {
 #if !(NETFX_CORE || SL5 || PCL)
         public static TResponse PostFile<TResponse>(this IRestClient client,
