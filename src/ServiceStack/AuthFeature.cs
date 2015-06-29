@@ -12,7 +12,7 @@ namespace ServiceStack
     public class AuthFeature : IPlugin, IPostInitPlugin
     {
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
-        public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,20}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
+        public Regex ValidUserNameRegEx = AuthFeatureExtensions.ValidUserNameRegEx;
 
         public Func<string, bool> IsValidUsernameFn { get; set; } 
 
@@ -140,13 +140,6 @@ namespace ServiceStack
                 throw new Exception("Registering IAuthEvents via both AuthFeature.AuthEvents and IOC is not allowed");
             }
         }
-
-        public bool IsValidUsername(string userName)
-        {
-            return IsValidUsernameFn != null
-                ? IsValidUsernameFn(userName)
-                : ValidUserNameRegEx.IsMatch(userName);
-        }
     }
 
     public static class AuthFeatureExtensions
@@ -157,6 +150,19 @@ namespace ServiceStack
                 return feature.HtmlRedirect;
 
             return "~/" + HostContext.ResolveLocalizedString(LocalizedStrings.Login);
+        }
+
+        //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
+        public static Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,20}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
+
+        public static bool IsValidUsername(this AuthFeature feature, string userName)
+        {
+            if (feature == null)
+                return ValidUserNameRegEx.IsMatch(userName);
+
+            return feature.IsValidUsernameFn != null
+                ? feature.IsValidUsernameFn(userName)
+                : ValidUserNameRegEx.IsMatch(userName);
         }
     }
 }
