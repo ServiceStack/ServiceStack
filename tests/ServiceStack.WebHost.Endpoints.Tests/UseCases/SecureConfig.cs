@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+using System;
+using ServiceStack.Auth;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 {
@@ -19,11 +23,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public string Result { get; set; }
     }
 
+    public class HelloAuthenticated : IReturn<HelloAuthenticatedResponse>, IHasSessionId
+    {
+        public string SessionId { get; set; }
+    }
+
+    public class HelloAuthenticatedResponse
+    {
+        public bool IsAuthenticated { get; set; }
+        public string SessionId { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
     public class SecureServices : Service
     {
         public object Any(HelloSecure request)
         {
+            if (request.Name == null)
+                throw new ArgumentNullException("Name");
+
             return new HelloSecureResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+
+        [Authenticate]
+        public object Any(HelloAuthenticated request)
+        {
+            var session = GetSession();
+
+            return new HelloAuthenticatedResponse
+            {
+                SessionId = session.Id,
+                UserName = session.UserName,
+                Email = session.Email,
+                IsAuthenticated = session.IsAuthenticated,
+            };
         }
     }
 }

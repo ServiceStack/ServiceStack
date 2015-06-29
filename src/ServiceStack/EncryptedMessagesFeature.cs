@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+using System;
 using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Text;
@@ -7,20 +10,6 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class EncryptedMessage : IReturn<EncryptedMessageResponse>
-    {
-        public string SymmetricKeyEncrypted { get; set; }
-        public string EncryptedBody { get; set; }
-    }
-
-    public class EncryptedMessageResponse
-    {
-        public string EncryptedBody { get; set; }
-    }
-
-    [Route("/encryptedmessages/publickey")]
-    public class GetPublicKey : IReturn<string> {}
-
     [DefaultRequest(typeof(GetPublicKey))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class EncryptedMessagesService : Service
@@ -32,7 +21,7 @@ namespace ServiceStack
 
         public object Any(GetPublicKey request)
         {
-            var rsaParameters = HostContext.GetPlugin<EncryptedMessagesFeature>().PrivateKey;
+            var rsaParameters = HostContext.GetPlugin<EncryptedMessagesFeature>().PrivateKey.Value;
             return rsaParameters.ToPublicKeyXml();
         }
     }
@@ -42,14 +31,14 @@ namespace ServiceStack
         public static readonly string RequestItemsAesKey = "_encryptKey";
         public static readonly string RequestItemsIv = "_encryptIv";
 
-        public RSAParameters PrivateKey { get; set; }
+        public RSAParameters? PrivateKey { get; set; }
 
         public string PublicKeyPath { get; set; }
 
         public string PrivateKeyXml
         {
-            get { return PrivateKey.FromRSAParameters(); }
-            set { PrivateKey = value.ToRSAParameters(); }
+            get { return PrivateKey.Value.FromPrivateRSAParameters(); }
+            set { PrivateKey = value.ToPrivateRSAParameters(); }
         }
 
         public EncryptedMessagesFeature()
@@ -59,8 +48,8 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            if (Equals(PrivateKey, default(RSAParameters)))
-                PrivateKey = Rsa.CreatePrivateKeyParams();
+            if (PrivateKey == null)
+                PrivateKey = RsaUtils.CreatePrivateKeyParams();
 
             appHost.RegisterService(typeof(EncryptedMessagesService), PublicKeyPath);
 
@@ -74,15 +63,15 @@ namespace ServiceStack
                 byte[] iv = null;
                 try
                 {
-                    var rsaEncAesKeyBytes = Rsa.Decrypt(Convert.FromBase64String(encRequest.SymmetricKeyEncrypted), PrivateKey);
+                    var rsaEncAesKeyBytes = RsaUtils.Decrypt(Convert.FromBase64String(encRequest.SymmetricKeyEncrypted), PrivateKey.Value);
 
-                    aesKey = new byte[Aes.KeySize / 8];
-                    iv = new byte[Aes.IvSize / 8];
+                    aesKey = new byte[AesUtils.KeySize / 8];
+                    iv = new byte[AesUtils.IvSize / 8];
 
                     Buffer.BlockCopy(rsaEncAesKeyBytes, 0, aesKey, 0, aesKey.Length);
                     Buffer.BlockCopy(rsaEncAesKeyBytes, aesKey.Length, iv, 0, iv.Length);
 
-                    var requestBodyBytes = Aes.Decrypt(Convert.FromBase64String(encRequest.EncryptedBody), aesKey, iv);
+                    var requestBodyBytes = AesUtils.Decrypt(Convert.FromBase64String(encRequest.EncryptedBody), aesKey, iv);
                     var requestBody = requestBodyBytes.FromUtf8Bytes();
 
                     if (string.IsNullOrEmpty(requestBody))
@@ -106,12 +95,12 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    WriteEncryptedError(req, aesKey, iv, ex);
+                    WriteEncryptedError(req, aesKey, iv, ex, "Invalid EncryptedMessage");
                     return null;
                 }
             });
 
-            appHost.ResponseConverters.Add((req, dto) =>
+            appHost.ResponseConverters.Add((req, response) =>
             {
                 object oAesKey;
                 object oIv;
@@ -119,8 +108,15 @@ namespace ServiceStack
                     !req.Items.TryGetValue(RequestItemsIv, out oIv))
                     return null;
 
-                var responseBody = dto.ToJson();
-                var encryptedBody = Aes.Encrypt(responseBody, (byte[])oAesKey, (byte[])oIv);
+                var ex = response as Exception;
+                if (ex != null)
+                {
+                    WriteEncryptedError(req, (byte[])oAesKey, (byte[])oIv, ex);
+                    return null;
+                }
+
+                var responseBody = response.ToJson();
+                var encryptedBody = AesUtils.Encrypt(responseBody, (byte[])oAesKey, (byte[])oIv);
                 return new EncryptedMessageResponse
                 {
                     EncryptedBody = encryptedBody
@@ -128,18 +124,27 @@ namespace ServiceStack
             });
         }
 
-        public static void WriteEncryptedError(IRequest req, byte[] aesKey, byte[] iv, Exception ex)
+        public static void WriteEncryptedError(IRequest req, byte[] aesKey, byte[] iv, Exception ex, string description = null)
         {
             var error = new ErrorResponse {
                 ResponseStatus = ex.ToResponseStatus()
             };
 
             var responseBody = error.ToJson();
-            var encryptedBody = Aes.Encrypt(responseBody, aesKey, iv);
+            var encryptedBody = AesUtils.Encrypt(responseBody, aesKey, iv);
+
+            var httpError = ex as IHttpError;
 
             req.Response.StatusCode = (int) HttpStatusCode.BadRequest;
-            req.Response.StatusDescription = "Invalid EncryptedMessage";
-            req.Response.Write(encryptedBody.ToJson());
+            req.Response.StatusDescription = description ?? (httpError != null ? httpError.ErrorCode : ex.GetType().Name);
+
+            var errorResponse = new EncryptedMessageResponse
+            {
+                EncryptedBody = encryptedBody
+            };
+
+            req.Response.ContentType = MimeTypes.Json;
+            req.Response.Write(errorResponse.ToJson());
             req.Response.EndRequest();
         }
     }
