@@ -4,12 +4,6 @@
         <name>ServiceStack.Common</name>
     </assembly>
     <members>
-        <member name="T:ServiceStack.CryptUtils">
-            <summary>
-            Useful .NET Encryption Utils from:
-            https://msdn.microsoft.com/en-us/library/system.security.cryptography.rsacryptoserviceprovider(v=vs.110).aspx
-            </summary>
-        </member>
         <member name="M:ServiceStack.EnumerableExtensions.Safe``1(System.Collections.Generic.IEnumerable{``0})">
             <summary>
             Return T[0] when enumerable is null, safe to use in enumerations like foreach
