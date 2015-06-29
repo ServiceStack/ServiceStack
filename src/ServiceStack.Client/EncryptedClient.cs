@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if !PCL
+#if !(PCL || SL5)
 
 using System;
 using System.Collections.Generic;
