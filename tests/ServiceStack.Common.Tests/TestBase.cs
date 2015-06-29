@@ -513,6 +513,11 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
+            public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
             {
                 var tcs = new TaskCompletionSource<TResponse>();
