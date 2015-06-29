@@ -1032,23 +1032,23 @@ namespace ServiceStack
             return PatchAsync<byte[]>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
         }
 
-
         public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
-            if (!HttpMethods.HasVerb(httpVerb))
-                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
-
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
-            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
+            return CustomMethodAsync<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
         }
 
         public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
         {
+            return CustomMethodAsync<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
+        }
+
+        public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
+        {
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
-            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
+            var requestBody = httpVerb.HasRequestBody() ? request : null;
+            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(relativeOrAbsoluteUrl), requestBody);
         }
 
         public virtual Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
