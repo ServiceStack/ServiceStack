@@ -270,16 +270,13 @@ namespace ServiceStack
                 .ClearLimits()
                 .OrderBy();
 
-            double d;
-            var unhandledCommands = new List<Command>();
-
+            var aggregateCommands = new List<Command>();
             foreach (var cmd in commands)
             {
                 if (!SqlAggregateFunctions.Contains(cmd.Name))
-                {
-                    unhandledCommands.Add(cmd);
                     continue;
-                }
+
+                aggregateCommands.Add(cmd);
 
                 if (cmd.Args.Count == 0)
                     cmd.Args.Add("*");
@@ -307,9 +304,13 @@ namespace ServiceStack
                             cmd.Args[i] = modifier + q.DialectProvider.GetQuotedColumnName(fieldRef.Item1, fieldRef.Item2);
                         }
                     }
-                    else if (arg != "*" && !double.TryParse(arg, out d))
+                    else
                     {
-                        cmd.Args[i] = "{0}".SqlFmt(arg);
+                        double d;
+                        if (arg != "*" && !double.TryParse(arg, out d))
+                        {
+                            cmd.Args[i] = "{0}".SqlFmt(arg);
+                        }
                     }
                 }
 
@@ -323,8 +324,7 @@ namespace ServiceStack
                 }
             }
 
-            var selectSql = string.Join(", ", commands.Map(x => x.ToString()));
-
+            var selectSql = string.Join(", ", aggregateCommands.Map(x => x.ToString()));
             q.UnsafeSelect(selectSql);
 
             var rows = ctx.Db.Select<Dictionary<string, object>>(q);
@@ -335,7 +335,7 @@ namespace ServiceStack
                 ctx.Response.Meta[key] = row[key].ToString();
             }
 
-            ctx.Commands = unhandledCommands.ToList();
+            ctx.Commands.RemoveAll(aggregateCommands.Contains);
         }
     }
 
@@ -633,7 +633,6 @@ namespace ServiceStack
             response.Meta = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
             var commands = model.Include.ParseCommands();
-            var emptyInclude = commands.Count == 0;
 
             var totalCountRequested = commands.Any(x =>
                 "COUNT".EqualsIgnoreCase(x.Name) && 
@@ -662,7 +661,7 @@ namespace ServiceStack
                 : (int) Db.Count(sqlExpression); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
 
             //reduce payload on wire
-            if (emptyInclude)
+            if (!totalCountRequested)
             {
                 response.Meta.Remove("COUNT(*)");
                 if (response.Meta.Count == 0)

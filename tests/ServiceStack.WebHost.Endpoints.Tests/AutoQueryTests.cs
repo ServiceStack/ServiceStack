@@ -1146,6 +1146,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_ignore_unknown_aggregate_commands()
+        {
+            var response = client.Get(new QueryRockstars { Include = "FOO(1)" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Meta, Is.Null);
+
+            response = client.Get(new QueryRockstars { Include = "FOO(1), Min(Age), Bar('a') alias, Count(*), Baz(1,'foo')" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Meta["Min(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
+            Assert.That(response.Meta["Count(*)"], Is.EqualTo(response.Results.Count.ToString()));
+        }
+
+        [Test]
         public void Can_Include_Aggregates_in_AutoQuery_with_Aliases()
         {
             var response = client.Get(new QueryRockstars { Include = "COUNT(*) Count" });
