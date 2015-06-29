@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+#if !PCL
+
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -6,25 +11,6 @@ using ServiceStack.Text;
 
 namespace ServiceStack
 {
-    [Obsolete("Use Rsa.* static class")]
-    public class CryptUtils
-    {
-        public static string Encrypt(string publicKeyXml, string data, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
-        {
-            return Rsa.Encrypt(data, publicKeyXml, rsaKeyLength);
-        }
-
-        public static string Decrypt(string privateKeyXml, string encryptedData, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
-        {
-            return Rsa.Encrypt(encryptedData, privateKeyXml, rsaKeyLength);
-        }
-
-        public static RsaKeyPair CreatePublicAndPrivateKeyPair(RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
-        {
-            return Rsa.CreatePublicAndPrivateKeyPair(rsaKeyLength);
-        }
-    }
-
     public enum RsaKeyLengths
     {
         Bit1024 = 1024,
@@ -42,22 +28,31 @@ namespace ServiceStack
     /// Useful .NET Encryption Utils from:
     /// https://msdn.microsoft.com/en-us/library/system.security.cryptography.rsacryptoserviceprovider(v=vs.110).aspx
     /// </summary>
-    public static class Rsa
+    public static class RsaUtils
     {
         public static RsaKeyLengths KeyLength = RsaKeyLengths.Bit2048;
-        public static RsaKeyPair DefaultKeyPair; 
+        public static RsaKeyPair DefaultKeyPair;
         public static bool DoOAEPPadding = true;
 
-        public static string FromRSAParameters(this RSAParameters rsaParams)
+        public static string FromPrivateRSAParameters(this RSAParameters privateKey)
         {
             using (var rsa = new RSACryptoServiceProvider())
             {
-                rsa.ImportParameters(rsaParams);
+                rsa.ImportParameters(privateKey);
                 return rsa.ToXmlString(includePrivateParameters: true);
             }
         }
 
-        public static RSAParameters ToRSAParameters(this string privateKeyXml)
+        public static string FromPublicRSAParameters(this RSAParameters publicKey)
+        {
+            using (var rsa = new RSACryptoServiceProvider())
+            {
+                rsa.ImportParameters(publicKey);
+                return rsa.ToXmlString(includePrivateParameters: false);
+            }
+        }
+
+        public static RSAParameters ToPrivateRSAParameters(this string privateKeyXml)
         {
             using (var rsa = new RSACryptoServiceProvider())
             {
@@ -66,12 +61,20 @@ namespace ServiceStack
             }
         }
 
-        public static string ToPublicKeyXml(this RSAParameters privateKey)
+        public static RSAParameters ToPublicRSAParameters(this string publicKeyXml)
         {
             using (var rsa = new RSACryptoServiceProvider())
             {
-                rsa.ImportParameters(privateKey);
+                rsa.FromXmlString(publicKeyXml);
+                return rsa.ExportParameters(includePrivateParameters: false);
+            }
+        }
 
+        public static string ToPublicKeyXml(this RSAParameters publicKey)
+        {
+            using (var rsa = new RSACryptoServiceProvider())
+            {
+                rsa.ImportParameters(publicKey);
                 return rsa.ToXmlString(includePrivateParameters: false);
             }
         }
@@ -80,22 +83,22 @@ namespace ServiceStack
         {
             if (DefaultKeyPair != null)
                 return Encrypt(text, DefaultKeyPair.PublicKey, KeyLength);
-            else 
+            else
                 throw new ArgumentNullException("No KeyPair given for encryption in CryptUtils");
         }
 
-        public static string Decrypt(this string data)
+        public static string Decrypt(this string text)
         {
             if (DefaultKeyPair != null)
-                return Decrypt(data, DefaultKeyPair.PrivateKey, KeyLength);
-            else 
+                return Decrypt(text, DefaultKeyPair.PrivateKey, KeyLength);
+            else
                 throw new ArgumentNullException("No KeyPair given for encryption in CryptUtils");
         }
 
         public static string Encrypt(string text, string publicKeyXml, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
             var bytes = Encoding.UTF8.GetBytes(text);
-            var encryptedBytes = Encrypt(publicKeyXml, bytes, rsaKeyLength);
+            var encryptedBytes = Encrypt(bytes, publicKeyXml, rsaKeyLength);
             string encryptedData = Convert.ToBase64String(encryptedBytes);
             return encryptedData;
         }
@@ -108,7 +111,7 @@ namespace ServiceStack
             return encryptedData;
         }
 
-        public static byte[] Encrypt(string publicKeyXml, byte[] bytes, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
+        public static byte[] Encrypt(byte[] bytes, string publicKeyXml, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
             using (var rsa = new RSACryptoServiceProvider((int)rsaKeyLength))
             {
@@ -164,7 +167,7 @@ namespace ServiceStack
 
         public static RsaKeyPair CreatePublicAndPrivateKeyPair(RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
-            using (var rsa = new RSACryptoServiceProvider((int) rsaKeyLength))
+            using (var rsa = new RSACryptoServiceProvider((int)rsaKeyLength))
             {
                 return new RsaKeyPair
                 {
@@ -183,7 +186,7 @@ namespace ServiceStack
         }
     }
 
-    public static class Aes
+    public static class AesUtils
     {
         public readonly static int KeySize = 256;
         public readonly static int IvSize = 128;
@@ -237,4 +240,24 @@ namespace ServiceStack
         }
     }
 
+    [Obsolete("Use Rsa.* static class")]
+    public class CryptUtils
+    {
+        public static string Encrypt(string publicKeyXml, string data, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
+        {
+            return RsaUtils.Encrypt(data, publicKeyXml, rsaKeyLength);
+        }
+
+        public static string Decrypt(string privateKeyXml, string encryptedData, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
+        {
+            return RsaUtils.Encrypt(encryptedData, privateKeyXml, rsaKeyLength);
+        }
+
+        public static RsaKeyPair CreatePublicAndPrivateKeyPair(RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
+        {
+            return RsaUtils.CreatePublicAndPrivateKeyPair(rsaKeyLength);
+        }
+    }
 }
+
+#endif

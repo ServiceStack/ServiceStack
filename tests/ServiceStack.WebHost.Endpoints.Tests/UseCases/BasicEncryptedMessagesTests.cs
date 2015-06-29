@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+using System;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Text;
@@ -18,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                     return null;
 
                 var requestType = Metadata.GetOperationType(encRequest.OperationName);
-                var decryptedJson = Rsa.Decrypt(encRequest.EncryptedBody, SecureConfig.PrivateKeyXml);
+                var decryptedJson = RsaUtils.Decrypt(encRequest.EncryptedBody, SecureConfig.PrivateKeyXml);
                 var request = JsonSerializer.DeserializeFromString(decryptedJson, requestType);
 
                 req.Items["_encrypt"] = encRequest;
@@ -30,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 if (!req.Items.ContainsKey("_encrypt"))
                     return null;
 
-                var encResponse = Rsa.Encrypt(response.ToJson(), SecureConfig.PublicKeyXml);
+                var encResponse = RsaUtils.Encrypt(response.ToJson(), SecureConfig.PublicKeyXml);
                 return new BasicEncryptedMessageResponse
                 {
                     OperationName = response.GetType().Name,
@@ -83,7 +86,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         [Test]
         public void Generate_Key_Pair()
         {
-            var keyPair = Rsa.CreatePublicAndPrivateKeyPair();
+            var keyPair = RsaUtils.CreatePublicAndPrivateKeyPair();
 
             "Public Key: {0}\n".Print(keyPair.PublicKey);
             "Private Key: {0}\n".Print(keyPair.PrivateKey);
@@ -94,9 +97,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         {
             var request = new HelloSecure { Name = "World" };
             var requestJson = request.ToJson();
-            var encRequest = Rsa.Encrypt(requestJson, SecureConfig.PublicKeyXml);
+            var encRequest = RsaUtils.Encrypt(requestJson, SecureConfig.PublicKeyXml);
 
-            var decJson = Rsa.Decrypt(encRequest, SecureConfig.PrivateKeyXml);
+            var decJson = RsaUtils.Decrypt(encRequest, SecureConfig.PrivateKeyXml);
 
             Assert.That(decJson, Is.EqualTo(requestJson));
         }
@@ -107,7 +110,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var client = new JsonServiceClient(Config.AbsoluteBaseUri);
 
             var request = new HelloSecure { Name = "World" };
-            var encRequest = Rsa.Encrypt(request.ToJson(), SecureConfig.PublicKeyXml);
+            var encRequest = RsaUtils.Encrypt(request.ToJson(), SecureConfig.PublicKeyXml);
 
             var encResponse = client.Post(new BasicEncryptedMessage
             {
@@ -115,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 EncryptedBody = encRequest
             });
 
-            var responseJson = Rsa.Decrypt(encResponse.EncryptedBody, SecureConfig.PrivateKeyXml);
+            var responseJson = RsaUtils.Decrypt(encResponse.EncryptedBody, SecureConfig.PrivateKeyXml);
             var response = responseJson.FromJson<HelloSecureResponse>();
 
             Assert.That(response.Result, Is.EqualTo("Hello, World!"));
