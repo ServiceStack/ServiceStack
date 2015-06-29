@@ -550,6 +550,15 @@ namespace ServiceStack
             return SendAsync<byte[]>(httpVerb, GetBaseUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
         }
 
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
+        {
+            if (!HttpMethods.HasVerb(httpVerb))
+                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+            var requestBody = httpVerb.HasRequestBody() ? request : null;
+            return SendAsync<TResponse>(httpVerb, GetBaseUrl(relativeOrAbsoluteUrl), requestBody);
+        }
+
 
         public void SendOneWay(object requestDto)
         {

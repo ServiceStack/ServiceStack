@@ -31,6 +31,7 @@ namespace ServiceStack
         Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto);
         Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto);
         Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto);
+	    Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request);
 
         void CancelAsync();
 	}
