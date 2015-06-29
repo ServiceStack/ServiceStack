@@ -14,9 +14,6 @@ namespace ServiceStack.Authentication.NHibernate
     /// </summary>
     public class NHibernateUserAuthRepository : IUserAuthRepository
     {
-        //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
-        public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
-
         private readonly ISessionFactory sessionFactory;
         public static Func<ISessionFactory, ISession> GetCurrentSessionFn = GetCurrentSession;
 
@@ -234,7 +231,7 @@ namespace ServiceStack.Authentication.NHibernate
 
             if (!string.IsNullOrEmpty(newUser.UserName))
             {
-                if (!ValidUserNameRegEx.IsMatch(newUser.UserName))
+                if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
                     throw new ArgumentException("UserName contains invalid characters", "UserName");
             }
         }

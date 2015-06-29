@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text.RegularExpressions;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
@@ -17,9 +16,6 @@ namespace ServiceStack.Auth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
-        //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
-        public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
-
         public int? MaxLoginAttempts { get; set; }
 
         private readonly IDbConnectionFactory dbFactory;
@@ -66,7 +62,7 @@ namespace ServiceStack.Auth
             if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
                 throw new ArgumentNullException(ErrorMessages.UsernameOrEmailRequired);
 
-            if (!newUser.UserName.IsNullOrEmpty() && !ValidUserNameRegEx.IsMatch(newUser.UserName))
+            if (!newUser.UserName.IsNullOrEmpty() && !HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
                 throw new ArgumentException(ErrorMessages.IllegalUsername, "UserName");
         }
 
