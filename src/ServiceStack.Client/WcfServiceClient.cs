@@ -657,6 +657,11 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
+        {
+            throw new NotImplementedException();
+        }
+
         public void CancelAsync()
         {
             throw new NotImplementedException();
