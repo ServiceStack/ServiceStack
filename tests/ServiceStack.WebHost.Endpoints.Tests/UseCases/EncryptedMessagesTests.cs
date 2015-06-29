@@ -33,11 +33,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
     }
 
-    public class EncryptedMessagesTests
+    public class JsonServiceClientEncryptedMessagesTests : EncryptedMessagesTests
+    {
+        protected override IServiceClient CreateClient()
+        {
+            return new JsonServiceClient(Config.AbsoluteBaseUri);
+        }
+    }
+
+    public class JsonHttpClientEncryptedMessagesTests : EncryptedMessagesTests
+    {
+        protected override IServiceClient CreateClient()
+        {
+            return new JsonHttpClient(Config.AbsoluteBaseUri);
+        }
+    }
+
+    public abstract class EncryptedMessagesTests
     {
         private readonly ServiceStackHost appHost;
 
-        public EncryptedMessagesTests()
+        protected EncryptedMessagesTests()
         {
             appHost = new EncryptedMessagesAppHost()
                 .Init()
@@ -49,6 +65,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         {
             appHost.Dispose();
         }
+
+        protected abstract IServiceClient CreateClient();
 
         [Test]
         public void Can_Send_Encrypted_Message()
@@ -77,15 +95,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             Assert.That(response.Result, Is.EqualTo("Hello, World!"));
         }
 
-        static readonly IServiceClient[] JsonClients = 
+        [Test]
+        public void Can_Send_Encrypted_Message_with_ServiceClients()
         {
-            new JsonServiceClient(Config.AbsoluteBaseUri),
-            new JsonHttpClient(Config.AbsoluteBaseUri), 
-        };
-
-        [Test, TestCaseSource("JsonClients")]
-        public void Can_Send_Encrypted_Message_with_ServiceClients(IServiceClient client)
-        {
+            var client = CreateClient();
             IEncryptedClient encryptedClient = client.GetEncryptedClient();
 
             var response = encryptedClient.Send(new HelloSecure { Name = "World" });
@@ -93,9 +106,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             Assert.That(response.Result, Is.EqualTo("Hello, World!"));
         }
 
-        [Test, TestCaseSource("JsonClients")]
-        public void Does_handle_Exceptions(IServiceClient client)
+        [Test]
+        public void Can_authenticate_and_call_authenticated_Service()
         {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient();
+
+            var authResponse = encryptedClient.Send(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "test@gmail.com",
+                Password = "p@55word",
+            });
+
+            var response = encryptedClient.Send(new HelloAuthenticated
+            {
+                SessionId = authResponse.SessionId,
+            });
+
+            Assert.That(response.IsAuthenticated);
+            Assert.That(response.Email, Is.EqualTo("test@gmail.com"));
+            Assert.That(response.SessionId, Is.EqualTo(authResponse.SessionId));
+        }
+
+        [Test]
+        public void Does_handle_Exceptions()
+        {
+            var client = CreateClient();
             IEncryptedClient encryptedClient = client.GetEncryptedClient();
 
             try
@@ -119,26 +156,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
                 Assert.That(ex.StatusDescription, Is.EqualTo("Unauthorized"));
             }
-        }
-
-        [Test, TestCaseSource("JsonClients")]
-        public void Can_authenticate_and_call_authenticated_Service(IServiceClient client)
-        {
-            IEncryptedClient encryptedClient = client.GetEncryptedClient();
-
-            var authResponse = encryptedClient.Send(new Authenticate {
-                provider = CredentialsAuthProvider.Name,
-                UserName = "test@gmail.com",
-                Password = "p@55word",
-            });
-
-            var response = encryptedClient.Send(new HelloAuthenticated {
-                SessionId = authResponse.SessionId,
-            });
-
-            Assert.That(response.IsAuthenticated);
-            Assert.That(response.Email, Is.EqualTo("test@gmail.com"));
-            Assert.That(response.SessionId, Is.EqualTo(authResponse.SessionId));
         }
     }
 }
