@@ -163,6 +163,7 @@ namespace ServiceStack.Redis
         void AddRangeToSet(string setId, List<string> items);
         void RemoveItemFromSet(string setId, string item);
         string PopItemFromSet(string setId);
+        List<string> PopItemsFromSet(string setId, int count);
         void MoveBetweenSets(string fromSetId, string toSetId, string item);
         long GetSetCount(string setId);
         bool SetContainsItem(string setId, string item);
