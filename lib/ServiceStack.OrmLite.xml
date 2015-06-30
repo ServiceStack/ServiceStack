@@ -4,17 +4,6 @@
         <name>ServiceStack.OrmLite</name>
     </assembly>
     <members>
-        <member name="F:ServiceStack.OrmLite.OrmLiteContext.UseThreadStatic">
-            <summary>
-            Tell ServiceStack to use ThreadStatic Items Collection for Context Scoped items.
-            Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.OrmLite.OrmLiteContext.Items">
-            <summary>
-            Gets a list of items for this context. 
-            </summary>
-        </member>
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select">
             <summary>
             Clear select expression. All properties will be selected.
@@ -129,6 +118,17 @@
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert">
             <summary>
             Clear InsertFields list ( all fields will be inserted)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.OrmLiteContext.UseThreadStatic">
+            <summary>
+            Tell ServiceStack to use ThreadStatic Items Collection for Context Scoped items.
+            Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.OrmLiteContext.Items">
+            <summary>
+            Gets a list of items for this context. 
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.PredicateBuilder">
@@ -1139,6 +1139,11 @@
             <summary>
             Populates the related references with the instance primary key and saves them. Uses '(T)Id' naming convention. E.g:
             <para>db.SaveReferences(customer, customer.Orders)</para> 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.OrmLiteConfig.UseParameterizeSqlExpressions">
+            <summary>
+            Only supported in Oracle DialectProvider
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.OrmLiteConnection">
