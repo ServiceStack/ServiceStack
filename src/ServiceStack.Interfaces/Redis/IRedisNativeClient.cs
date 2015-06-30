@@ -142,6 +142,7 @@ namespace ServiceStack.Redis
         long SAdd(string setId, byte[][] value);
         long SRem(string setId, byte[] value);
         byte[] SPop(string setId);
+        byte[][] SPop(string setId, int count);
         void SMove(string fromSetId, string toSetId, byte[] value);
         long SCard(string setId);
         long SIsMember(string setId, byte[] value);
