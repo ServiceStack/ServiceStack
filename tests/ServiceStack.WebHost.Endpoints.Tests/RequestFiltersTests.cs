@@ -65,6 +65,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 	}
 
+    [DataContract(Namespace = HostConfig.DefaultWsdlNamespace)]
+    public class SoapDeserializationException : IReturn<SoapDeserializationExceptionResponse> { }
+
+    [DataContract(Namespace = HostConfig.DefaultWsdlNamespace)]
+    public class SoapDeserializationExceptionResponse
+    {
+	    [DataMember(EmitDefaultValue = false, IsRequired = true)]
+	    public string RequiredProperty { get; set; }
+
+        [DataMember]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public class SoapServices : Service
+    {
+        public object Any(SoapDeserializationException request)
+        {
+            return new SoapDeserializationExceptionResponse();
+        }
+    }
+
 	[TestFixture]
 	public abstract class RequestFiltersTests
 	{
@@ -73,6 +94,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		private const string AllowedUser = "user";
 		private const string AllowedPass = "p@55word";
+
+	    public static object LastServiceExceptionHandlersError = null;
 
 		public class RequestFiltersAppHostHttpListener
 			: AppHostHttpListenerBase
@@ -115,6 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 						}
 					}
 				});
+                this.ServiceExceptionHandlers.Add((req, dto, ex) => LastServiceExceptionHandlersError = dto);
 			}
 		}
 
@@ -494,6 +518,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				return null;
 			}
+
+		    [Test]
+            public void Response_serialization_errors_does_call_ServiceExceptionHandlers()
+		    {
+		        var client = CreateNewServiceClient();
+                try
+                {
+                    LastServiceExceptionHandlersError = null;
+                    var response = client.Send(new SoapDeserializationException());
+                    Assert.Fail("Should throw");
+                }
+                catch (Exception)
+                {
+                    Assert.That(LastServiceExceptionHandlersError is SoapDeserializationException);
+                }
+            }
 		}
 
 #endif

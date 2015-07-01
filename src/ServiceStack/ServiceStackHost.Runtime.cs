@@ -483,9 +483,16 @@ namespace ServiceStack
 
         public virtual void WriteSoapMessage(IRequest req, System.ServiceModel.Channels.Message message, Stream outputStream)
         {
-            using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
+            try
             {
-                message.WriteMessage(writer);
+                using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
+                {
+                    message.WriteMessage(writer);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnServiceException(req, req.Dto, ex);
             }
         }
     }
