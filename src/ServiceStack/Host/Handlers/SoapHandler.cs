@@ -171,10 +171,6 @@ namespace ServiceStack.Host.Handlers
                     + requestType
                     + ", xml body: " + requestXml, ex);
             }
-            finally
-            {
-                HostContext.CompleteRequest(httpReq);
-            }
         }
 
         public static string GetAction(Message message)

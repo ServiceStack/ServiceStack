@@ -480,7 +480,7 @@ namespace ServiceStack
                    !type.AllAttributes<ExcludeAttribute>()
                         .Any(attr => attr.Feature.HasFlag(Feature.Soap));
         }
- 
+
         public virtual void WriteSoapMessage(IRequest req, System.ServiceModel.Channels.Message message, Stream outputStream)
         {
             try
@@ -492,7 +492,11 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                OnUncaughtException(req, req.Response, req.OperationName, ex);
+                OnServiceException(req, req.Dto, ex);
+            }
+            finally
+            {
+                HostContext.CompleteRequest(req);
             }
         }
     }
