@@ -99,6 +99,8 @@ namespace ServiceStack
                 : new HttpClient();
         }
 
+        private int activeAsyncRequests = 0;
+
         public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request)
         {
             if (ResultsFilter != null)
@@ -135,6 +137,8 @@ namespace ServiceStack
 
             ApplyWebRequestFilters(httpReq);
 
+            Interlocked.Increment(ref activeAsyncRequests);
+
             if (CancelTokenSource == null)
                 CancelTokenSource = new CancellationTokenSource();
 
@@ -162,8 +166,6 @@ namespace ServiceStack
                             if (ResultsFilterResponse != null)
                                 ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
 
-                            DisposeCancelToken();
-
                             return response;
                         });
                     }
@@ -177,8 +179,6 @@ namespace ServiceStack
 
                             if (ResultsFilterResponse != null)
                                 ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
-
-                            DisposeCancelToken();
 
                             return response;
                         });
@@ -194,8 +194,6 @@ namespace ServiceStack
                         if (ResultsFilterResponse != null)
                             ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
 
-                        DisposeCancelToken();
-
                         return response;
                     });
                 }).Unwrap();
@@ -203,6 +201,8 @@ namespace ServiceStack
 
         private void DisposeCancelToken()
         {
+            if (Interlocked.Decrement(ref activeAsyncRequests) > 0) return;
+
             if (CancelTokenSource == null) return;
             
             CancelTokenSource.Dispose();
@@ -257,6 +257,8 @@ namespace ServiceStack
 
         private void ThrowIfError<TResponse>(Task task, HttpResponseMessage httpRes, object request, string requestUri, object response)
         {
+            DisposeCancelToken();
+
             if (task.IsFaulted)
                 throw CreateException<TResponse>(httpRes, task.Exception);
 
