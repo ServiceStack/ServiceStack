@@ -452,7 +452,7 @@ namespace ServiceStack
 
         public virtual object OnAfterExecute(IRequest req, object requestDto, object response)
         {
-            return response;
+            return req.Response.Dto = response;
         }
 
         public virtual MetadataTypesConfig GetTypesConfigForMetadata(IRequest req)
