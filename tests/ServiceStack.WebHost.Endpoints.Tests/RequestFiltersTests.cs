@@ -95,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private const string AllowedUser = "user";
         private const string AllowedPass = "p@55word";
 
-        public static object LastUncaughtExceptionHandlersError = null;
+        public static object LastServiceExceptionHandlersError = null;
 
         public class RequestFiltersAppHostHttpListener
             : AppHostHttpListenerBase
@@ -138,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         }
                     }
                 });
-                this.UncaughtExceptionHandlers.Add((req, res, opName, ex) => LastUncaughtExceptionHandlersError = req.Dto);
+                this.ServiceExceptionHandlers.Add((req, dto, ex) => LastServiceExceptionHandlersError = dto);
             }
         }
 
@@ -525,13 +525,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var client = CreateNewServiceClient();
                 try
                 {
-                    LastUncaughtExceptionHandlersError = null;
+                    LastServiceExceptionHandlersError = null;
                     var response = client.Send(new SoapDeserializationException());
                     Assert.Fail("Should throw");
                 }
                 catch (Exception)
                 {
-                    Assert.That(LastUncaughtExceptionHandlersError is SoapDeserializationException);
+                    Assert.That(LastServiceExceptionHandlersError is SoapDeserializationException);
                 }
             }
         }
