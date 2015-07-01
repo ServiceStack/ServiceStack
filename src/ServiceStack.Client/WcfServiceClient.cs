@@ -400,7 +400,7 @@ namespace ServiceStack
 
         public void Post(IReturnVoid requestDto)
         {
-            throw new NotImplementedException();
+            Send(requestDto);
         }
 
         public HttpWebResponse Post(object requestDto)
@@ -410,12 +410,12 @@ namespace ServiceStack
 
         public TResponse Post<TResponse>(IReturn<TResponse> requestDto)
         {
-            throw new NotImplementedException();
+            return Send(requestDto);
         }
 
         public TResponse Post<TResponse>(object requestDto)
         {
-            throw new NotImplementedException();
+            return Send<TResponse>(requestDto);
         }
 
         public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
