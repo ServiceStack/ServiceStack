@@ -95,8 +95,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private const string AllowedUser = "user";
         private const string AllowedPass = "p@55word";
 
-        public static object LastServiceExceptionHandlersError = null;
-
         public class RequestFiltersAppHostHttpListener
             : AppHostHttpListenerBase
         {
@@ -137,8 +135,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                             res.ReturnAuthRequired();
                         }
                     }
+                    if (dto is SoapDeserializationException)
+                    {
+                        req.Response.UseBufferedStream = true;
+                    }
                 });
-                this.ServiceExceptionHandlers.Add((req, dto, ex) => LastServiceExceptionHandlersError = dto);
+                this.ServiceExceptionHandlers.Add((req, dto, ex) => 
+                    dto is SoapDeserializationException
+                        ? new SoapDeserializationExceptionResponse { RequiredProperty = "ServiceExceptionHandlers" }
+                        : null);
             }
         }
 
@@ -523,16 +528,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public void Response_serialization_errors_does_call_ServiceExceptionHandlers()
             {
                 var client = CreateNewServiceClient();
-                try
-                {
-                    LastServiceExceptionHandlersError = null;
-                    var response = client.Send(new SoapDeserializationException());
-                    Assert.Fail("Should throw");
-                }
-                catch (Exception)
-                {
-                    Assert.That(LastServiceExceptionHandlersError is SoapDeserializationException);
-                }
+                var response = client.Send(new SoapDeserializationException());
+                Assert.That(response.RequiredProperty, Is.EqualTo("ServiceExceptionHandlers"));
             }
         }
 

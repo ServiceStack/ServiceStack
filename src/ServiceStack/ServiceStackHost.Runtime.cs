@@ -492,7 +492,21 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                OnServiceException(req, req.Dto, ex);
+                var response = OnServiceException(req, req.Dto, ex);
+                if (response == null || !outputStream.CanSeek)
+                    return;
+
+                outputStream.Position = 0;
+                try
+                {
+                    message = SoapHandler.CreateResponseMessage(response, message.Version, req.Dto.GetType(),
+                        req.GetSoapMessage().Headers.Action == null);
+                    using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
+                    {
+                        message.WriteMessage(writer);
+                    }
+                }
+                catch { }
             }
             finally
             {
