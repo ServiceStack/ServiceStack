@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 PrivateKeyXml = SecureConfig.PrivateKeyXml
             });
 
-            Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new IAuthProvider[] {
                     new CredentialsAuthProvider(AppSettings), 
                 }));
@@ -156,6 +156,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
                 Assert.That(ex.StatusDescription, Is.EqualTo("Unauthorized"));
             }
+        }
+
+        [Test]
+        public void Can_send_auto_batched_requests()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient();
+
+            var names = new[] { "Foo", "Bar", "Baz" };
+            var requests = names.Map(x => new HelloSecure { Name = x });
+
+            var responses = encryptedClient.SendAll(requests);
+            var responseNames = responses.Map(x => x.Result);
+
+            Assert.That(responseNames, Is.EqualTo(names.Map(x => "Hello, {0}!".Fmt(x))));
         }
     }
 }

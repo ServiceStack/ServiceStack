@@ -56,7 +56,7 @@ namespace ServiceStack
             {
                 try
                 {
-                    var encryptedMessage = CreateEncryptedMessage(request, aes);
+                    var encryptedMessage = CreateEncryptedMessage(request, request.GetType().Name, aes);
                     var encResponse = Client.Send(encryptedMessage);
 
                     var responseJson = AesUtils.Decrypt(encResponse.EncryptedBody, aes.Key, aes.IV);
@@ -71,7 +71,29 @@ namespace ServiceStack
             }
         }
 
-        public EncryptedMessage CreateEncryptedMessage(object request, SymmetricAlgorithm aes)
+        public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            using (var aes = new AesManaged { KeySize = AesUtils.KeySize })
+            {
+                try
+                {
+                    var elType = requests.GetType().GetCollectionType();
+                    var encryptedMessage = CreateEncryptedMessage(requests, elType.Name + "[]", aes);
+                    var encResponse = Client.Send(encryptedMessage);
+
+                    var responseJson = AesUtils.Decrypt(encResponse.EncryptedBody, aes.Key, aes.IV);
+                    var response = responseJson.FromJson<List<TResponse>>();
+
+                    return response;
+                }
+                catch (WebServiceException ex)
+                {
+                    throw DecryptedException(ex, aes);
+                }
+            }
+        }
+
+        public EncryptedMessage CreateEncryptedMessage(object request, string operationName, SymmetricAlgorithm aes)
         {
             var aesKeyBytes = aes.Key.Combine(aes.IV);
 
@@ -79,8 +101,7 @@ namespace ServiceStack
 
             var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, publicKey);
 
-            var requestType = request.GetType();
-            var requestBody = requestType.Name + " " + request.ToJson();
+            var requestBody = operationName + " " + request.ToJson();
 
             var encryptedMessage = new EncryptedMessage
             {
@@ -102,7 +123,7 @@ namespace ServiceStack
             {
                 try
                 {
-                    var encryptedMessage = CreateEncryptedMessage(request, aes);
+                    var encryptedMessage = CreateEncryptedMessage(request, request.GetType().Name, aes);
                     Client.SendOneWay(encryptedMessage);
                 }
                 catch (WebServiceException ex)
@@ -124,11 +145,6 @@ namespace ServiceStack
             }
 
             return ex;
-        }
-
-        public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
-        {
-            throw new NotImplementedException();
         }
     }
 
