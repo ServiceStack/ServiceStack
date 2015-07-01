@@ -492,7 +492,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                OnServiceException(req, req.Dto, ex);
+                OnUncaughtException(req, req.Response, req.OperationName, ex);
             }
         }
     }
