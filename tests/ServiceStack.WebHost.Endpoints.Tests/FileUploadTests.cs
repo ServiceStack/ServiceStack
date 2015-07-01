@@ -263,7 +263,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         isFilterCalled = true;
                     };
                     var response = client.PostFile<FileUploadResponse>(
-                        ListeningOn + "/fileuploads", fileStream, fileName, MimeTypes.GetMimeType(fileName));
+                        "/fileuploads", fileStream, fileName, MimeTypes.GetMimeType(fileName));
 
                     fileStream.Position = 0;
                     var expectedContents = new StreamReader(fileStream).ReadToEnd();
@@ -282,7 +282,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void PostFileWithRequest_returns_the_same_date_as_normal_Put()
+        public void Can_POST_upload_stream_using_JsonHttpClient()
+        {
+            try
+            {
+                var client = new JsonHttpClient(ListeningOn);
+
+                using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath()).OpenRead())
+                {
+                    var fileName = "upload.html";
+
+                    bool isFilterCalled = false;
+                    JsonHttpClient.GlobalRequestFilter = request =>
+                    {
+                        isFilterCalled = true;
+                    };
+                    var response = client.PostFile<FileUploadResponse>(
+                        "/fileuploads", fileStream, fileName, MimeTypes.GetMimeType(fileName));
+
+                    fileStream.Position = 0;
+                    var expectedContents = new StreamReader(fileStream).ReadToEnd();
+
+                    Assert.That(isFilterCalled);
+                    Assert.That(response.FileName, Is.EqualTo(fileName));
+                    Assert.That(response.ContentLength, Is.EqualTo(fileStream.Length));
+                    Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName)));
+                    Assert.That(response.Contents, Is.EqualTo(expectedContents));
+                }
+            }
+            finally
+            {
+                JsonHttpClient.GlobalRequestFilter = null;  //reset this to not cause side-effects
+            }
+        }
+
+        [Test]
+        public void PostFileWithRequest_returns_the_same_date_as_normal_Put_with_ServiceClient()
         {
             var client = new JsonServiceClient(ListeningOn);
 
@@ -293,16 +328,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 };
                 
                 var response = client.PostFileWithRequest<FileUploadResponse>(
-                    ListeningOn + "/fileuploads",
+                    "/fileuploads",
                     fileStream,
                     "upload.html",
                     request);
 
-                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromMilliseconds(1)));
+                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
 
                 response = client.Put(request);
 
-                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromMilliseconds(1)));
+                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
+            }
+        }
+
+        [Test]
+        public void PostFileWithRequest_returns_the_same_date_as_normal_Put_with_JsonHttpClient()
+        {
+            var client = new JsonHttpClient(ListeningOn);
+
+            using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath()).OpenRead())
+            {
+                var request = new FileUpload
+                {
+                    CreatedDate = new DateTime(2014, 1, 1, 1, 0, 0)
+                };
+
+                var response = client.PostFileWithRequest<FileUploadResponse>(
+                    "/fileuploads",
+                    fileStream,
+                    "upload.html",
+                    request);
+
+                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
+
+                response = client.Put(request);
+
+                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
             }
         }
     }

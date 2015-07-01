@@ -748,32 +748,33 @@ namespace ServiceStack.Host.HttpListener
 
             static string GetContentDispositionAttribute(string l, string name)
             {
-                int idx = l.IndexOf(name + "=\"");
+                int idx = l.IndexOf(name + "=\""), begin, end;
                 if (idx < 0)
-                    return null;
-                int begin = idx + name.Length + "=\"".Length;
-                int end = l.IndexOf('"', begin);
-                if (end < 0)
-                    return null;
-                if (begin == end)
-                    return "";
-                return l.Substring(begin, end - begin);
+                {
+                    idx = l.IndexOf(name + "=");
+                    if (idx < 0)
+                        return null;
+                    begin = idx + name.Length + "=".Length;
+                    end = l.IndexOf(';', begin);
+                    if (end < 0)
+                        end = l.Length;
+                }
+                else
+                {
+                    begin = idx + name.Length + "=\"".Length;
+                    end = l.IndexOf('"', begin);
+                    if (end < 0)
+                        return null;
+                }
+                return begin == end ? "" : l.Substring(begin, end - begin);
             }
 
             string GetContentDispositionAttributeWithEncoding(string l, string name)
             {
-                int idx = l.IndexOf(name + "=\"");
-                if (idx < 0)
-                    return null;
-                int begin = idx + name.Length + "=\"".Length;
-                int end = l.IndexOf('"', begin);
-                if (end < 0)
-                    return null;
-                if (begin == end)
-                    return "";
-
-                string temp = l.Substring(begin, end - begin);
-                byte[] source = new byte[temp.Length];
+                var temp = GetContentDispositionAttribute(l, name);
+                if (string.IsNullOrEmpty(temp))
+                    return temp;
+                var source = new byte[temp.Length];
                 for (int i = temp.Length - 1; i >= 0; i--)
                     source[i] = (byte)temp[i];
 

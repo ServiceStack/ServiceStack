@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -127,9 +128,18 @@ namespace ServiceStack
                 {
                     httpReq.Headers.Add(name, Headers[name]);
                 }
-                using (__requestAccess())
+
+                var httpContent = request as HttpContent;
+                if (httpContent != null)
                 {
-                    httpReq.Content = new StringContent(request.ToJson(), Encoding.UTF8, ContentType);
+                    httpReq.Content = httpContent;
+                }
+                else
+                {
+                    using (__requestAccess())
+                    {
+                        httpReq.Content = new StringContent(request.ToJson(), Encoding.UTF8, ContentType);
+                    }
                 }
             }
 
@@ -751,21 +761,72 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+        public Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null)
         {
-            throw new NotImplementedException();
+            var content = new MultipartFormDataContent();
+            var fileBytes = fileToUpload.ReadFully();
+            var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
+            fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+            {
+                Name = "file",
+                FileName = fileName
+            };
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
+            content.Add(fileContent, "file", fileName);
+
+            return SendAsync<TResponse>(HttpMethods.Post, GetBaseUrl(relativeOrAbsoluteUrl), content)
+                .ContinueWith(t => { content.Dispose(); fileContent.Dispose(); return t.Result; },
+                TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request,
-                                                        string fieldName = "upload")
+        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
-            throw new NotImplementedException();
+            return GetSyncResponse(PostFileAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, mimeType));
+        }
+
+        public Task<TResponse> PostFileWithRequestAsync<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+        {
+            return PostFileWithRequestAsync<TResponse>(request.ToPostUrl(), fileToUpload, fileName, request, fieldName);
+        }
+
+        public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+        {
+            return GetSyncResponse(PostFileWithRequestAsync<TResponse>(fileToUpload, fileName, request, fileName));
+        }
+
+        public Task<TResponse> PostFileWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
+                                                        object request, string fieldName = "upload")
+        {
+            var queryString = QueryStringSerializer.SerializeToString(request);
+            var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
+
+            var content = new MultipartFormDataContent();
+
+            foreach (string key in nameValueCollection)
+            {
+                var value = nameValueCollection[key];
+                content.Add(new StringContent(value), "\"{0}\"".Fmt(key));
+            }
+
+            var fileBytes = fileToUpload.ReadFully();
+            var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
+            fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+            {
+                Name = "file",
+                FileName = fileName
+            };
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MimeTypes.GetMimeType(fileName));
+            content.Add(fileContent, "file", fileName);
+
+            return SendAsync<TResponse>(HttpMethods.Post, GetBaseUrl(relativeOrAbsoluteUrl), content)
+                .ContinueWith(t => { content.Dispose(); fileContent.Dispose(); return t.Result; },
+                TaskContinuationOptions.ExecuteSynchronously);
         }
 
         public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
                                                         object request, string fieldName = "upload")
         {
-            throw new NotImplementedException();
+            return GetSyncResponse(PostFileWithRequestAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, request, fileName));
         }
 
         public TResponse Send<TResponse>(object request)
