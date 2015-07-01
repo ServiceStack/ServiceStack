@@ -14,6 +14,7 @@ namespace ServiceStack
             bool convertDescriptionToComments = true,
             bool addDataContractAttributes = false,
             bool addIndexesToDataMembers = false,
+            bool addGeneratedCodeAttributes = false,
             string addDefaultXmlNamespace = null,
             string baseClass = null,
             string package = null,
@@ -38,6 +39,7 @@ namespace ServiceStack
             Package = package;
             MakeDataContractsExtensible = makeDataContractsExtensible;
             AddIndexesToDataMembers = addIndexesToDataMembers;
+            AddGeneratedCodeAttributes = addGeneratedCodeAttributes;
             InitializeCollections = initializeCollections;
             AddResponseStatus = addResponseStatus;
             AddServiceStackTypes = addServiceStackTypes;
@@ -57,6 +59,7 @@ namespace ServiceStack
         public bool AddDescriptionAsComments { get; set; }
         public bool AddDataContractAttributes { get; set; }
         public bool AddIndexesToDataMembers { get; set; }
+        public bool AddGeneratedCodeAttributes { get; set; }
         public int? AddImplicitVersion { get; set; }
         public bool AddResponseStatus { get; set; }
         public bool AddServiceStackTypes { get; set; }

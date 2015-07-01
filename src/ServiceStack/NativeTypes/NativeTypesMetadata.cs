@@ -32,6 +32,7 @@ namespace ServiceStack.NativeTypes
                 AddDataContractAttributes = req.AddDataContractAttributes ?? defaults.AddDataContractAttributes,
                 MakeDataContractsExtensible = req.MakeDataContractsExtensible ?? defaults.MakeDataContractsExtensible,
                 AddIndexesToDataMembers = req.AddIndexesToDataMembers ?? defaults.AddIndexesToDataMembers,
+                AddGeneratedCodeAttributes = req.AddGeneratedCodeAttributes ?? defaults.AddGeneratedCodeAttributes,
                 InitializeCollections = req.InitializeCollections ?? defaults.InitializeCollections,
                 AddImplicitVersion = req.AddImplicitVersion ?? defaults.AddImplicitVersion,
                 BaseClass = req.BaseClass ?? defaults.BaseClass,

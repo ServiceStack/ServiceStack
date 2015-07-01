@@ -480,7 +480,7 @@ namespace ServiceStack
                    !type.AllAttributes<ExcludeAttribute>()
                         .Any(attr => attr.Feature.HasFlag(Feature.Soap));
         }
-
+ 
         public virtual void WriteSoapMessage(IRequest req, System.ServiceModel.Channels.Message message, Stream outputStream)
         {
             try

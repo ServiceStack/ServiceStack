@@ -48,6 +48,7 @@ namespace ServiceStack.NativeTypes
         public bool? AddDataContractAttributes { get; set; }
         public bool? MakeDataContractsExtensible { get; set; }
         public bool? AddIndexesToDataMembers { get; set; }
+        public bool? AddGeneratedCodeAttributes { get; set; }
         public bool? InitializeCollections { get; set; }
         public int? AddImplicitVersion { get; set; }
         public bool? AddResponseStatus { get; set; }

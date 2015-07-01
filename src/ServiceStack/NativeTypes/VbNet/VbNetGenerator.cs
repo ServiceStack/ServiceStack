@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes.VbNet
@@ -99,6 +100,7 @@ namespace ServiceStack.NativeTypes.VbNet
             sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
             sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
             sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(defaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
+            sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(defaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
@@ -109,6 +111,8 @@ namespace ServiceStack.NativeTypes.VbNet
             sb.AppendLine();
 
             namespaces.Each(x => sb.AppendLine("Imports {0}".Fmt(x)));
+            if (Config.AddGeneratedCodeAttributes)
+                sb.AppendLine("Imports System.CodeDom.Compiler");
 
             if (Config.AddDataContractAttributes
                 && Config.AddDefaultXmlNamespace != null)
@@ -244,6 +248,8 @@ namespace ServiceStack.NativeTypes.VbNet
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
+            if (Config.AddGeneratedCodeAttributes)
+                sb.AppendLine("<GeneratedCode(\"AddServiceStackReference\", \"{0}\")>".Fmt(Env.VersionString));
 
             if (type.IsEnum.GetValueOrDefault())
             {
