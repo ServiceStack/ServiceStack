@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace ServiceStack.Web
 {
     public interface ICookies

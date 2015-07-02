@@ -5,7 +5,7 @@
     <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</ProjectGuid>
+    <ProjectGuid>{55942102-033A-4DA8-A6AF-1DB7B2F34A2D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ServiceStack</RootNamespace>

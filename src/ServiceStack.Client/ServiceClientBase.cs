@@ -1505,7 +1505,78 @@ namespace ServiceStack
             }            
         }
 #endif
-        
+
+        public static HttpWebResponse Get(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Get(request);
+        }
+
+        public static HttpWebResponse Delete(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Delete(request);
+        }
+
+        public static HttpWebResponse Post(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Post(request);
+        }
+
+        public static HttpWebResponse Put(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Put(request);
+        }
+
+        public static HttpWebResponse Patch(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Patch(request);
+        }
+
+        public static HttpWebResponse CustomMethod(this IRestClient client, string httpVerb, object requestDto)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.CustomMethod(httpVerb, requestDto);
+        }
+
+        public static HttpWebResponse Head(this IRestClient client, IReturn requestDto)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Head(requestDto);
+        }
+
+        public static HttpWebResponse Head(this IRestClient client, object requestDto)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Head(requestDto);
+        }
+
+        public static HttpWebResponse Head(this IRestClient client, string relativeOrAbsoluteUrl)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Head(relativeOrAbsoluteUrl);
+        }
     }
 
     public delegate object ResultsFilterDelegate(Type responseType, string httpMethod, string requestUri, object request);

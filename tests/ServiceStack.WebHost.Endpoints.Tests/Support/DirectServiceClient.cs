@@ -121,32 +121,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse CustomMethod(string httpVerb, object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
         public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
         }
 
         public TResponse CustomMethod<TResponse>(string httpVerb, object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Head(IReturn requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Head(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Head(string relativeOrAbsoluteUrl)
         {
             throw new NotImplementedException();
         }
@@ -163,11 +143,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
         public TResponse PostFileWithRequest<TResponse>(
             Stream fileToUpload, string fileName, object request, string fieldName = "upload")
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Get(object request)
         {
             throw new NotImplementedException();
         }
@@ -218,11 +193,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse Delete(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
         public TResponse Delete<TResponse>(IReturn<TResponse> request)
         {
             throw new NotImplementedException();
@@ -239,11 +209,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         }
 
         public void Post(IReturnVoid requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Post(object requestDto)
         {
             throw new NotImplementedException();
         }
@@ -268,11 +233,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse Put(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
         public TResponse Put<TResponse>(IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
@@ -289,11 +249,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         }
 
         public void Patch(IReturnVoid requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Patch(object requestDto)
         {
             throw new NotImplementedException();
         }

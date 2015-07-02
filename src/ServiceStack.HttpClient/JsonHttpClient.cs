@@ -601,11 +601,6 @@ namespace ServiceStack
             WaitSyncResponse(GetAsync(request));
         }
 
-        public HttpWebResponse Get(object request)
-        {
-            throw new NotImplementedException();
-        }
-
         public TResponse Get<TResponse>(IReturn<TResponse> request)
         {
             return GetSyncResponse(GetAsync(request));
@@ -631,11 +626,6 @@ namespace ServiceStack
             WaitSyncResponse(DeleteAsync(requestDto));
         }
 
-        public HttpWebResponse Delete(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
         public TResponse Delete<TResponse>(IReturn<TResponse> request)
         {
             return GetSyncResponse(DeleteAsync(request));
@@ -654,11 +644,6 @@ namespace ServiceStack
         public void Post(IReturnVoid requestDto)
         {
             WaitSyncResponse(PostAsync(requestDto));
-        }
-
-        public HttpWebResponse Post(object request)
-        {
-            throw new NotImplementedException();
         }
 
         public TResponse Post<TResponse>(IReturn<TResponse> request)
@@ -681,11 +666,6 @@ namespace ServiceStack
             WaitSyncResponse(PutAsync(requestDto));
         }
 
-        public HttpWebResponse Put(object request)
-        {
-            throw new NotImplementedException();
-        }
-
         public TResponse Put<TResponse>(IReturn<TResponse> request)
         {
             return GetSyncResponse(PutAsync(request));
@@ -704,11 +684,6 @@ namespace ServiceStack
         public void Patch(IReturnVoid request)
         {
             WaitSyncResponse(SendAsync<byte[]>(HttpMethods.Patch, request.ToUrl(HttpMethods.Patch, Format), null));
-        }
-
-        public HttpWebResponse Patch(object requestDto)
-        {
-            throw new NotImplementedException();
         }
 
         public TResponse Patch<TResponse>(IReturn<TResponse> request)
@@ -731,11 +706,6 @@ namespace ServiceStack
             WaitSyncResponse(SendAsync<byte[]>(httpVerb, request.ToUrl(httpVerb, Format), request));
         }
 
-        public HttpWebResponse CustomMethod(string httpVerb, object request)
-        {
-            throw new NotImplementedException();
-        }
-
         public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request)
         {
             return GetSyncResponse(SendAsync<TResponse>(httpVerb, request.ToUrl(httpVerb, Format), request));
@@ -744,21 +714,6 @@ namespace ServiceStack
         public TResponse CustomMethod<TResponse>(string httpVerb, object request)
         {
             return GetSyncResponse(SendAsync<TResponse>(httpVerb, request.ToUrl(httpVerb, Format), null));
-        }
-
-        public HttpWebResponse Head(IReturn requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Head(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Head(string relativeOrAbsoluteUrl)
-        {
-            throw new NotImplementedException();
         }
 
         public Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null)
