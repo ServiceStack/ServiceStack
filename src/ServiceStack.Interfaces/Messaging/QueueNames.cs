@@ -57,6 +57,7 @@ namespace ServiceStack.Messaging
         public static string Exchange = "mx.servicestack";
         public static string ExchangeDlq = "mx.servicestack.dlq";
         public static string ExchangeTopic = "mx.servicestack.topic";
+        public static string ExchangeFanout = "mx.servicestack.fanout";
 
         public static string MqPrefix = "mq:";
         public static string QueuePrefix = "";
