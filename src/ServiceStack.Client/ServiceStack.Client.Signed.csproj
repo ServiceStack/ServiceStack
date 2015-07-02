@@ -73,7 +73,7 @@
     <Compile Include="ClientFactory.cs" />
     <Compile Include="ContentFormat.cs" />
     <Compile Include="CryptUtils.cs" />
-    <Compile Include="EncryptedClient.cs" />
+    <Compile Include="EncryptedServiceClient.cs" />
     <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
     <Compile Include="PclExportClient.Xbox.cs" />
     <Compile Include="PclExportClient.Wp.cs" />
