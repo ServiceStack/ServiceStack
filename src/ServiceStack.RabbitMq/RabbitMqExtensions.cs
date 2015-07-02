@@ -82,6 +82,14 @@ namespace ServiceStack.RabbitMq
             channel.QueueBind(queueName, QueueNames.ExchangeTopic, routingKey: queueName);
         }
 
+        public static void RegisterFanout<T>(this IModel channel,
+                                             string queueName)
+        {
+            channel.QueueBind(queue: queueName,
+                              exchange: QueueNames.ExchangeFanout,
+                              routingKey: QueueNames<T>.In);
+        }
+
         public static void DeleteQueue<T>(this IModel model)
         {
             model.DeleteQueues(QueueNames<T>.AllQueueNames);
