@@ -354,6 +354,7 @@ namespace ServiceStack.Common.Tests.Messaging
                 QueueNames.Exchange,
                 QueueNames.ExchangeDlq,
                 QueueNames.ExchangeTopic,
+                QueueNames.ExchangeFanout,
             };
 
             using (IConnection connection = mqFactory.CreateConnection())
