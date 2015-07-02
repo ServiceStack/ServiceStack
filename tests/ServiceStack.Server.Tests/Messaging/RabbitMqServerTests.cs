@@ -535,5 +535,42 @@ namespace ServiceStack.Server.Tests.Messaging
                 Assert.That(msgsReceived, Is.EqualTo(1));
             }
         }
+
+        [Test]
+        public void Message_is_broadcasted()
+        {
+            var messageCounter = 0;
+            using (var rabbitMqServer = RabbitMqServerTests.CreateMqServer())
+            {
+                string tempQueueName;
+                using (var messageQueueClient = rabbitMqServer.CreateMessageQueueClient())
+                {
+                    tempQueueName = messageQueueClient.GetTempQueueName();
+                }
+
+                rabbitMqServer.RegisterHandler<Hello>(tempQueueName,
+                                                      message =>
+                                                      {
+                                                          messageCounter = 0;
+
+                                                          return null;
+                                                      });
+                rabbitMqServer.Start();
+
+                using (var messageProducer = rabbitMqServer.CreateMessageProducer())
+                {
+                    var rabbitMqProducer = (RabbitMqProducer) messageProducer;
+                    rabbitMqProducer.Broadcast(new Hello
+                                               {
+                                                   Name = "Into the void"
+                                               });
+                }
+
+                Thread.Sleep(100);
+            }
+
+            Assert.AreEqual(messageCounter,
+                            1);
+        }
     }
 }
