@@ -130,6 +130,8 @@ namespace ServiceStack.RabbitMq
                 channel.RegisterDlqExchange(exchange);
             else if (exchange.EndsWith(".topic"))
                 channel.RegisterTopicExchange(exchange);
+            else if (exchange.EndsWith(".fanout"))
+                channel.RegisterFanoutExchange(exchange);
             else 
                 channel.RegisterDirectExchange(exchange);
         }
