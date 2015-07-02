@@ -76,6 +76,7 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeGenericBaseTypes: {1}".Fmt(defaultValue("ExcludeGenericBaseTypes"), Config.ExcludeGenericBaseTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
@@ -187,6 +188,12 @@ namespace ServiceStack.NativeTypes.Swift
             CreateTypeOptions options)
         {
             //sb = sb.Indent();
+
+            if (Config.ExcludeGenericBaseTypes && type.Inherits != null && !type.Inherits.GenericArgs.IsEmpty())
+            {
+                sb.AppendLine("//Excluded {0} : {1}<{2}>".Fmt(type.Name, type.Inherits.Name.SplitOnFirst('`')[0], string.Join(",", type.Inherits.GenericArgs)));
+                return lastNS;
+            }
 
             sb.AppendLine();
             AppendComments(sb, type.Description);
