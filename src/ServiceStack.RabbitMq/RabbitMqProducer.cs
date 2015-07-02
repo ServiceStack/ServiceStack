@@ -73,6 +73,34 @@ namespace ServiceStack.RabbitMq
             Publish(queueName, message, QueueNames.Exchange);
         }
 
+        public void Broadcast<T>(T messageBody)
+        {
+            var message = messageBody as IMessage;
+            if (message != null)
+            {
+                this.Broadcast(message.ToInQueueName(),
+                               message);
+            }
+            else
+            {
+                this.Broadcast(new Message<T>(messageBody));
+            }
+        }
+
+        public void Broadcast<T>(IMessage<T> message)
+        {
+            this.Broadcast(message.ToInQueueName(),
+                           message);
+        }
+
+        public void Broadcast(string queueName,
+                              IMessage message)
+        {
+            this.Publish(queueName,
+                         message,
+                         QueueNames.ExchangeFanout);
+        }
+
         public void SendOneWay(object requestDto)
         {
             Publish(MessageFactory.Create(requestDto));
