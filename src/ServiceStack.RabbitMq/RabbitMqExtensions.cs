@@ -33,9 +33,9 @@ namespace ServiceStack.RabbitMq
             channel.ExchangeDeclare(exchangeName ?? QueueNames.ExchangeTopic, "topic", durable: false, autoDelete: false, arguments: null);
         }
 
-        public static void RegisterFanoutExchange(this IModel channel, string exchangeName)
+        public static void RegisterFanoutExchange(this IModel channel, string exchangeName = null)
         {
-            channel.ExchangeDeclare(exchangeName, "fanout", durable: false, autoDelete: false, arguments: null);
+            channel.ExchangeDeclare(exchangeName ?? QueueNames.ExchangeFanout, ExchangeType.Fanout, durable: false, autoDelete: false, arguments: null);
         }
 
         public static void RegisterQueues<T>(this IModel channel)
