@@ -15,6 +15,7 @@ namespace ServiceStack.RabbitMq
             channel.RegisterDirectExchange();
             channel.RegisterDlqExchange();
             channel.RegisterTopicExchange();
+            channel.RegisterFanoutExchange();
             return channel;
         }
 
