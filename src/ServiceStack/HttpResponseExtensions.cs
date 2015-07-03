@@ -144,6 +144,13 @@ namespace ServiceStack
             httpRes.EndRequest();
         }
 
+        public static void ClearCookies(this IResponse response)
+        {
+            var httpRes = response as IHttpResponse;
+            if (httpRes != null)
+                httpRes.ClearCookies();
+        }
+
 		/// <summary>
 		/// Sets a persistent cookie which never expires
 		/// </summary>

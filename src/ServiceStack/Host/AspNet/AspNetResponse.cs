@@ -57,8 +57,6 @@ namespace ServiceStack.Host.AspNet
             set { response.ContentType = value; }
         }
 
-        public ICookies Cookies { get; set; }
-
         public void AddHeader(string name, string value)
         {
             response.AddHeader(name, value);
@@ -159,10 +157,17 @@ namespace ServiceStack.Host.AspNet
 
         public Dictionary<string, object> Items { get; private set; }
 
+        public ICookies Cookies { get; set; }
+
         public void SetCookie(Cookie cookie)
         {
             var httpCookie = cookie.ToHttpCookie();
             response.SetCookie(httpCookie);            
+        }
+
+        public void ClearCookies()
+        {
+            response.Cookies.Clear();
         }
     }
 }

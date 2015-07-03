@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Testing
@@ -96,6 +95,10 @@ namespace ServiceStack.Testing
 
         public void SetCookie(Cookie cookie)
         {            
+        }
+
+        public void ClearCookies()
+        {
         }
     }
 }

@@ -89,7 +89,7 @@ namespace ServiceStack
 
                     var hasSessionId = request as IHasSessionId;
                     if (hasSessionId != null)
-                        req.Items[SessionFeature.RequestItemsSessionKey] = hasSessionId.SessionId;
+                        req.SetSessionId(hasSessionId.SessionId);
 
                     return request;
                 }
@@ -102,11 +102,20 @@ namespace ServiceStack
 
             appHost.ResponseConverters.Add((req, response) =>
             {
+                //Clear all Cookies returned to EncryptedServiceClient
+                if (req.Dto is GetPublicKey)
+                {
+                    req.Response.ClearCookies(); 
+                    return null;
+                }
+
                 object oAesKey;
                 object oIv;
                 if (!req.Items.TryGetValue(RequestItemsAesKey, out oAesKey) ||
                     !req.Items.TryGetValue(RequestItemsIv, out oIv))
                     return null;
+
+                req.Response.ClearCookies();
 
                 var ex = response as Exception;
                 if (ex != null)

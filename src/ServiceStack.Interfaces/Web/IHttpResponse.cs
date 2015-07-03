@@ -13,5 +13,7 @@ namespace ServiceStack.Web
         ICookies Cookies { get; }
 
         void SetCookie(Cookie cookie);
+
+        void ClearCookies();
     }
 }
