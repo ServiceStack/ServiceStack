@@ -43,8 +43,13 @@ namespace ServiceStack
             this.DirSep = Path.DirectorySeparatorChar;
             this.AltDirSep = Path.DirectorySeparatorChar == '/' ? '\\' : '/';
             this.RegexOptions = RegexOptions.Compiled;
+#if DNXCORE50
+            this.InvariantComparison = CultureInfo.InvariantCulture.CompareInfo.GetStringComparer();
+            this.InvariantComparisonIgnoreCase = CultureInfo.InvariantCultureIgnoreCase.CompareInfo.GetStringComparer();
+#else
             this.InvariantComparison = StringComparison.InvariantCulture;
             this.InvariantComparisonIgnoreCase = StringComparison.InvariantCultureIgnoreCase;
+#endif
             this.InvariantComparer = StringComparer.InvariantCulture;
             this.InvariantComparerIgnoreCase = StringComparer.InvariantCultureIgnoreCase;
 
