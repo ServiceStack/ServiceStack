@@ -23,17 +23,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public string Result { get; set; }
     }
 
-    public class HelloAuthenticated : IReturn<HelloAuthenticatedResponse>, IHasSessionId
+    public class HelloAuthenticated : IReturn<HelloAuthenticatedResponse>, IHasSessionId, IHasVersion
     {
         public string SessionId { get; set; }
+        public int Version { get; set; }
     }
 
     public class HelloAuthenticatedResponse
     {
-        public bool IsAuthenticated { get; set; }
+        public int Version { get; set; }
         public string SessionId { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
+        public bool IsAuthenticated { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
     }
 
@@ -54,6 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             return new HelloAuthenticatedResponse
             {
+                Version = request.Version,
                 SessionId = session.Id,
                 UserName = session.UserName,
                 Email = session.Email,

@@ -532,6 +532,9 @@ namespace ServiceStack.Common.Tests
             {
                 throw new NotImplementedException();
             }
+
+            public int Version { get; set; }
+            public string SessionId { get; set; }
         }
 
         public object ExecutePath(string pathInfo)

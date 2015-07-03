@@ -110,34 +110,41 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         [Test]
         public void Can_authenticate_and_call_authenticated_Service()
         {
-            var client = CreateClient();
-            IEncryptedClient encryptedClient = client.GetEncryptedClient();
-
-            var authResponse = encryptedClient.Send(new Authenticate
+            try
             {
-                provider = CredentialsAuthProvider.Name,
-                UserName = "test@gmail.com",
-                Password = "p@55word",
-            });
+                var client = CreateClient();
+                IEncryptedClient encryptedClient = client.GetEncryptedClient();
 
-            var encryptedClientCookies = client.GetCookieValues();
-            Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+                var authResponse = encryptedClient.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = "test@gmail.com",
+                    Password = "p@55word",
+                });
 
-            var response = encryptedClient.Send(new HelloAuthenticated
+                var encryptedClientCookies = client.GetCookieValues();
+                Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+
+                var response = encryptedClient.Send(new HelloAuthenticated
+                {
+                    SessionId = authResponse.SessionId,
+                });
+
+                Assert.That(response.IsAuthenticated);
+                Assert.That(response.Email, Is.EqualTo("test@gmail.com"));
+                Assert.That(response.SessionId, Is.EqualTo(authResponse.SessionId));
+
+                encryptedClientCookies = client.GetCookieValues();
+                Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+            }
+            catch (Exception ex)
             {
-                SessionId = authResponse.SessionId,
-            });
-
-            Assert.That(response.IsAuthenticated);
-            Assert.That(response.Email, Is.EqualTo("test@gmail.com"));
-            Assert.That(response.SessionId, Is.EqualTo(authResponse.SessionId));
-
-            encryptedClientCookies = client.GetCookieValues();
-            Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+                throw ex;
+            }
         }
 
         [Test]
-        public void Can_authenticate_and_call_authenticated_Service_with_implicit_SessionId()
+        public void Does_populate_Request_metadata()
         {
             var client = CreateClient();
             IEncryptedClient encryptedClient = client.GetEncryptedClient();
@@ -152,16 +159,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var encryptedClientCookies = client.GetCookieValues();
             Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
 
+            encryptedClient.Version = 1;
             encryptedClient.SessionId = authResponse.SessionId;
 
             var response = encryptedClient.Send(new HelloAuthenticated());
-
-            Assert.That(response.IsAuthenticated);
-            Assert.That(response.Email, Is.EqualTo("test@gmail.com"));
-            Assert.That(response.SessionId, Is.EqualTo(authResponse.SessionId));
+            Assert.That(response.SessionId, Is.EqualTo(encryptedClient.SessionId));
+            Assert.That(response.Version, Is.EqualTo(encryptedClient.Version));
 
             encryptedClientCookies = client.GetCookieValues();
             Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+
+            client.SessionId = authResponse.SessionId;
+            client.Version = 2;
+
+            response = client.Send(new HelloAuthenticated());
+            Assert.That(response.SessionId, Is.EqualTo(client.SessionId));
+            Assert.That(response.Version, Is.EqualTo(client.Version));
         }
 
         [Test]

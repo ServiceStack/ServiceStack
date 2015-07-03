@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Reflection;
+using ServiceStack.Auth;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
@@ -198,6 +199,9 @@ namespace ServiceStack
         public string SyncReplyBaseUri { get; set; }
 
         public string AsyncOneWayBaseUri { get; set; }
+
+        public int Version { get; set; }
+        public string SessionId { get; set; }
 
         private string userAgent;
         public string UserAgent
@@ -724,6 +728,8 @@ namespace ServiceStack
         {
             if (httpMethod == null)
                 throw new ArgumentNullException("httpMethod");
+
+            this.PopulateRequestMetadata(request);
 
             if (!httpMethod.HasRequestBody() && request != null)
             {
@@ -1514,6 +1520,23 @@ namespace ServiceStack
             }            
         }
 #endif
+
+        public static void PopulateRequestMetadata(this IHasSessionId client, object request)
+        {
+            if (client.SessionId != null)
+            {
+                var hasSession = request as IHasSessionId;
+                if (hasSession != null && hasSession.SessionId == null)
+                    hasSession.SessionId = client.SessionId;
+            }
+            var clientVersion = client as IHasVersion;
+            if (clientVersion != null && clientVersion.Version > 0)
+            {
+                var hasVersion = request as IHasVersion;
+                if (hasVersion != null && hasVersion.Version <= 0)
+                    hasVersion.Version = clientVersion.Version;
+            }
+        }
 
         public static Dictionary<string,string> ToDictionary(this CookieContainer cookies, string baseUri)
         {

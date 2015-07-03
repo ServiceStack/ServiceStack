@@ -162,6 +162,9 @@ namespace ServiceStack
         // CCB Custom
         public bool StoreCookies { get; set; }
 
+        public int Version { get; set; }
+        public string SessionId { get; set; }
+
         public WcfServiceClient()
         {
             // CCB Custom
@@ -206,6 +209,8 @@ namespace ServiceStack
 
         public Message Send(object request)
         {
+            this.PopulateRequestMetadata(request);
+
             return Send(request, request.GetType().Name);
         }
 

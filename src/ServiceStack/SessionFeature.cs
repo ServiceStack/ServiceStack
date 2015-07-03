@@ -35,6 +35,8 @@ namespace ServiceStack
 
         public static void AddSessionIdToRequestFilter(IRequest req, IResponse res, object requestDto)
         {
+            if (req.PopulateFromRequestIfHasSessionId(requestDto)) return;
+
             if (req.GetTemporarySessionId() == null)
             {
                 res.CreateTemporarySessionId(req);

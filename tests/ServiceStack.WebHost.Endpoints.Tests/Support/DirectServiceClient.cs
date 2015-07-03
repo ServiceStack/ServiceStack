@@ -15,6 +15,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         private readonly MockHttpRequest httpReq;
         private readonly MockHttpResponse httpRes;
 
+        public int Version { get; set; }
+        public string SessionId { get; set; }
+
         public DirectServiceClient(ServiceController serviceController)
         {
             this.ServiceController = serviceController;
@@ -87,6 +90,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             httpReq.Dto = request;
 
             if (ApplyRequestFilters<TResponse>(request)) return default(TResponse);
+
+            this.PopulateRequestMetadata(request);
 
             httpReq.HttpMethod = HttpMethods.Post;
             var response = ServiceController.Execute(request, httpReq);

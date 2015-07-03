@@ -87,10 +87,6 @@ namespace ServiceStack
                     req.Items[RequestItemsAesKey] = aesKey;
                     req.Items[RequestItemsIv] = iv;
 
-                    var hasSessionId = request as IHasSessionId;
-                    if (hasSessionId != null)
-                        req.SetSessionId(hasSessionId.SessionId);
-
                     return request;
                 }
                 catch (Exception ex)

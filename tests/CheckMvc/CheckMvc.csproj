@@ -163,6 +163,10 @@
       <Project>{672f2dfe-4ee8-498b-b449-23e9e7f6961c}</Project>
       <Name>ServiceStack.Mvc</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
+      <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
+      <Name>ServiceStack.Server</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>

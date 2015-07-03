@@ -447,6 +447,17 @@ namespace ServiceStack.Auth
         {
             return (url ?? "").Replace("\\/", "/");
         }
+
+        internal static bool PopulateFromRequestIfHasSessionId(this IRequest req, object requestDto)
+        {
+            var hasSession = requestDto as IHasSessionId;
+            if (hasSession != null && hasSession.SessionId != null)
+            {
+                req.SetSessionId(hasSession.SessionId);
+                return true;
+            }
+            return false;
+        }
     }
 
 }

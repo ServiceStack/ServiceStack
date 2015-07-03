@@ -44,6 +44,9 @@ namespace ServiceStack
 
         public string AsyncOneWayBaseUri { get; set; }
 
+        public int Version { get; set; }
+        public string SessionId { get; set; }
+
         public string UserName { get; set; }
         public string Password { get; set; }
         public bool AlwaysSendBasicAuthHeader { get; set; }
@@ -120,6 +123,8 @@ namespace ServiceStack
 
             if (AlwaysSendBasicAuthHeader)
                 AddBasicAuth(client);
+
+            this.PopulateRequestMetadata(request);
 
             var httpReq = new HttpRequestMessage(new HttpMethod(httpMethod), absoluteUrl);
 
