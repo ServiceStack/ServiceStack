@@ -101,7 +101,8 @@ namespace ServiceStack
             if (SessionId != null)
             {
                 var hasSession = request as IHasSessionId;
-                hasSession.SessionId = SessionId;
+                if (hasSession != null)
+                    hasSession.SessionId = SessionId;
             }
 
             var aesKeyBytes = aes.Key.Combine(aes.IV);
