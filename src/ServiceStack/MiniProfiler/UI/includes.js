@@ -488,14 +488,13 @@ var MiniProfiler = (function ($)
 				container.toggleClass('profiler-min');
 			});
 
-			container.hover(function ()
+			container.mouseenter(function ()
 			{
 				if ($(this).hasClass('profiler-min'))
 				{
 					$(this).find('.profiler-min-max').show();
 				}
-			},
-            function ()
+			}).mouseleave(function ()
             {
             	if ($(this).hasClass('profiler-min'))
             	{
