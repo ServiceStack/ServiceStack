@@ -3,8 +3,11 @@ using System.IO;
 
 namespace ServiceStack
 {
-	public interface IRestClient 
-	{
+    public interface IRestClient
+    {
+        void ClearCookies();
+        Dictionary<string, string> GetCookieValues();
+
         void Get(IReturnVoid request);
         TResponse Get<TResponse>(IReturn<TResponse> requestDto);
         TResponse Get<TResponse>(object requestDto);

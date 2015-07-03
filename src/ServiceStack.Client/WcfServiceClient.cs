@@ -343,6 +343,16 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public void ClearCookies()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Dictionary<string, string> GetCookieValues()
+        {
+            return new Dictionary<string, string>();
+        }
+
         public void Get(IReturnVoid request)
         {
             throw new NotImplementedException();

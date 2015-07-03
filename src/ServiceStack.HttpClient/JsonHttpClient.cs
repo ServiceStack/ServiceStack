@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -28,6 +27,7 @@ namespace ServiceStack
         public HttpMessageHandler HttpMessageHandler { get; set; }
 
         public HttpClient HttpClient { get; set; }
+        public CookieContainer CookieContainer { get; set; }
 
         public ResultsFilterHttpDelegate ResultsFilter { get; set; }
         public ResultsFilterHttpResponseDelegate ResultsFilterResponse { get; set; }
@@ -70,6 +70,7 @@ namespace ServiceStack
         public JsonHttpClient()
         {
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
+            this.CookieContainer = new CookieContainer();
         }
 
         public void SetCredentials(string userName, string password)
@@ -97,7 +98,7 @@ namespace ServiceStack
 
             return HttpClient = HttpMessageHandler != null
                 ? new HttpClient(HttpMessageHandler)
-                : new HttpClient();
+                : new HttpClient(new HttpClientHandler { CookieContainer = CookieContainer });
         }
 
         private int activeAsyncRequests = 0;
@@ -594,6 +595,16 @@ namespace ServiceStack
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
             SendOneWay(HttpMethods.Post, requestUri, requests);
+        }
+
+        public void ClearCookies()
+        {
+            CookieContainer = new CookieContainer();
+        }
+
+        public Dictionary<string, string> GetCookieValues()
+        {
+            return CookieContainer.ToDictionary(BaseUri);
         }
 
         public void Get(IReturnVoid request)

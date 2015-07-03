@@ -157,6 +157,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
+        public void ClearCookies()
+        {
+        }
+
+        public Dictionary<string, string> GetCookieValues()
+        {
+            return new Dictionary<string, string>();
+        }
+
         public void Get(IReturnVoid request)
         {
             throw new NotImplementedException();

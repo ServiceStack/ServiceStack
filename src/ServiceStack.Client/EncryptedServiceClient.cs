@@ -33,6 +33,7 @@ namespace ServiceStack
         {
             PublicKeyPath = "/publickey";
             Client = client;
+            Client.ClearCookies();
         }
 
         private RSAParameters GetPublicKey()

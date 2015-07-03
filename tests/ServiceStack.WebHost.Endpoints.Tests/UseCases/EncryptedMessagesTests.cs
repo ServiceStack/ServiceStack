@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 {
@@ -119,6 +120,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Password = "p@55word",
             });
 
+            var encryptedClientCookies = client.GetCookieValues();
+            Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+
             var response = encryptedClient.Send(new HelloAuthenticated
             {
                 SessionId = authResponse.SessionId,
@@ -127,6 +131,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             Assert.That(response.IsAuthenticated);
             Assert.That(response.Email, Is.EqualTo("test@gmail.com"));
             Assert.That(response.SessionId, Is.EqualTo(authResponse.SessionId));
+
+            encryptedClientCookies = client.GetCookieValues();
+            Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
         }
 
         [Test]

@@ -1111,6 +1111,15 @@ namespace ServiceStack
             }
         }
 
+        public void ClearCookies()
+        {
+            CookieContainer = new CookieContainer();
+        }
+
+        public Dictionary<string, string> GetCookieValues()
+        {
+            return CookieContainer.ToDictionary(BaseUri);
+        }
 
         public virtual void Get(IReturnVoid requestDto)
         {
@@ -1505,6 +1514,19 @@ namespace ServiceStack
             }            
         }
 #endif
+
+        public static Dictionary<string,string> ToDictionary(this CookieContainer cookies, string baseUri)
+        {
+            var to = new Dictionary<string, string>();
+            if (cookies == null)
+                return to;
+
+            foreach (Cookie cookie in cookies.GetCookies(new Uri(baseUri)))
+            {
+                to[cookie.Name] = cookie.Value;
+            }
+            return to;
+        }
 
         public static HttpWebResponse Get(this IRestClient client, object request)
         {
