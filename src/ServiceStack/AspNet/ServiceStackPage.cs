@@ -130,6 +130,10 @@ namespace ServiceStack.AspNet
         {
             return ServiceStackProvider.Execute(requestDto);
         }
+        protected virtual TResponse Execute<TResponse>(IReturn<TResponse> requestDto)
+        {
+            return ServiceStackProvider.Execute(requestDto);
+        }
         public virtual object ForwardRequestToServiceStack(IRequest request = null)
         {
             return ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
