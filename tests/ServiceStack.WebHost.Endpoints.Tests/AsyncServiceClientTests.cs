@@ -48,6 +48,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [TestFixture]
+        public class JsonAsyncHttpClientTests : AsyncServiceClientTests
+        {
+            protected override IServiceClient CreateServiceClient()
+            {
+                return new JsonHttpClient(ListeningOn);
+            }
+        }
+
+        [TestFixture]
         public class JsvAsyncServiceClientTests : AsyncServiceClientTests
         {
             protected override IServiceClient CreateServiceClient()

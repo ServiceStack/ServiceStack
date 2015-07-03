@@ -173,7 +173,7 @@ namespace ServiceStack.Host.Handlers
 
             try
             {
-                HostContext.RaiseUncaughtException(httpReq, httpRes, operationName, ex);
+                HostContext.RaiseAndHandleUncaughtException(httpReq, httpRes, operationName, ex);
                 return EmptyTask;
             }
             catch (Exception writeErrorEx)

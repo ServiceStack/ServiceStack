@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
@@ -58,6 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.ResultsFilter = (type, method, uri, request) =>
             {
                 var cacheKey = "{0} {1}".Fmt(method, uri);
+                Assert.That(cacheKey, Is.EqualTo("GET {0}json/reply/GetCustomer?customerId=5".Fmt(client.BaseUri)));
                 object entry;
                 cache.TryGetValue(cacheKey, out entry);
                 return entry;
@@ -69,8 +72,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 cache[cacheKey] = res;
             };
 
-            var response1 = client.Send(new GetCustomer { CustomerId = 5 });
-            var response2 = client.Send(new GetCustomer { CustomerId = 5 });
+            var response1 = client.Get(new GetCustomer { CustomerId = 5 });
+            var response2 = client.Get(new GetCustomer { CustomerId = 5 });
             Assert.That(response1.Created, Is.EqualTo(response2.Created));
         }
 
@@ -82,6 +85,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.ResultsFilter = (type, method, uri, request) =>
             {
                 var cacheKey = "{0} {1}".Fmt(method, uri);
+                Assert.That(cacheKey, Is.EqualTo("GET {0}json/reply/GetCustomer?customerId=5".Fmt(client.BaseUri)));
                 object entry;
                 cache.TryGetValue(cacheKey, out entry);
                 return entry;
@@ -93,8 +97,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 cache[cacheKey] = res;
             };
 
-            var response1 = await client.SendAsync(new GetCustomer { CustomerId = 5 });
-            var response2 = await client.SendAsync(new GetCustomer { CustomerId = 5 });
+            var response1 = await client.GetAsync(new GetCustomer { CustomerId = 5 });
+            var response2 = await client.GetAsync(new GetCustomer { CustomerId = 5 });
             Assert.That(response1.Created, Is.EqualTo(response2.Created));
         }
 
@@ -142,6 +146,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             using (client.Post<HttpWebResponse>(new ReturnsWebResponse { Message = "Bar" })) { }
             Assert.That(TestAsyncService.ReturnWebResponseMessage, Is.EqualTo("Bar"));
+        }
+
+        [Test]
+        public void Can_WaitAsync()
+        {
+            var called = 0;
+
+            PclExportClient.Instance.WaitAsync(100)
+                .ContinueWith(_ => {
+                    called++;
+                });
+
+            Thread.Sleep(200);
+            Assert.That(called, Is.EqualTo(1));
         }
     }
 

@@ -24,6 +24,30 @@ namespace ServiceStack
 {
     public abstract partial class ServiceStackHost
     {
+        public virtual object ApplyRequestConverters(IRequest req, object requestDto)
+        {
+            foreach (var converter in RequestConverters)
+            {
+                requestDto = converter(req, requestDto) ?? requestDto;
+                if (req.Response.IsClosed)
+                    return requestDto;
+            }
+
+            return requestDto;
+        }
+
+        public virtual object ApplyResponseConverters(IRequest req, object responseDto)
+        {
+            foreach (var converter in ResponseConverters)
+            {
+                responseDto = converter(req, responseDto) ?? responseDto;
+                if (req.Response.IsClosed)
+                    return responseDto;
+            }
+
+            return responseDto;
+        }
+
         /// <summary>
         /// Apply PreRequest Filters for participating Custom Handlers, e.g. RazorFormat, MarkdownFormat, etc
         /// </summary>
@@ -63,6 +87,9 @@ namespace ServiceStack
         {
             req.ThrowIfNull("req");
             res.ThrowIfNull("res");
+
+            if (res.IsClosed)
+                return true;
 
             using (Profiler.Current.Step("Executing Request Filters"))
             {
@@ -125,6 +152,9 @@ namespace ServiceStack
         {
             req.ThrowIfNull("req");
             res.ThrowIfNull("res");
+
+            if (res.IsClosed)
+                return true;
 
             using (Profiler.Current.Step("Executing Response Filters"))
             {
@@ -256,15 +286,18 @@ namespace ServiceStack
             }
         }
 
-        public virtual TimeSpan GetDefaultSessionExpiry()
+        public virtual TimeSpan GetDefaultSessionExpiry(IRequest req)
         {
-            var authFeature = this.GetPlugin<AuthFeature>();
-            if (authFeature != null)
-                return authFeature.GetDefaultSessionExpiry();
-
             var sessionFeature = this.GetPlugin<SessionFeature>();
-            return sessionFeature != null
-                ? sessionFeature.SessionExpiry
+            if (sessionFeature != null)
+            {
+                return req.IsPermanentSession()
+                    ? sessionFeature.PermanentSessionExpiry ?? SessionFeature.DefaultPermanentSessionExpiry
+                    : sessionFeature.SessionExpiry ?? SessionFeature.DefaultSessionExpiry;
+            }
+
+            return req.IsPermanentSession()
+                ? SessionFeature.DefaultPermanentSessionExpiry
                 : SessionFeature.DefaultSessionExpiry;
         }
 
@@ -406,7 +439,7 @@ namespace ServiceStack
             {
                 var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
                 session.LastModified = DateTime.UtcNow;
-                cache.CacheSet(sessionKey, session, expiresIn ?? HostContext.GetDefaultSessionExpiry());
+                cache.CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
             }
 
             httpReq.Items[SessionFeature.RequestItemsSessionKey] = session;
@@ -419,12 +452,7 @@ namespace ServiceStack
 
         public virtual object OnAfterExecute(IRequest req, object requestDto, object response)
         {
-            return response;
-        }
-
-        public virtual IHashProvider GetHashProvider()
-        {
-            return new SaltedHash();
+            return req.Response.Dto = response;
         }
 
         public virtual MetadataTypesConfig GetTypesConfigForMetadata(IRequest req)
@@ -453,11 +481,36 @@ namespace ServiceStack
                         .Any(attr => attr.Feature.HasFlag(Feature.Soap));
         }
 
-        public virtual void WriteSoapMessage(System.ServiceModel.Channels.Message message, Stream outputStream)
+        public virtual void WriteSoapMessage(IRequest req, System.ServiceModel.Channels.Message message, Stream outputStream)
         {
-            using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
+            try
             {
-                message.WriteMessage(writer);
+                using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
+                {
+                    message.WriteMessage(writer);
+                }
+            }
+            catch (Exception ex)
+            {
+                var response = OnServiceException(req, req.Dto, ex);
+                if (response == null || !outputStream.CanSeek)
+                    return;
+
+                outputStream.Position = 0;
+                try
+                {
+                    message = SoapHandler.CreateResponseMessage(response, message.Version, req.Dto.GetType(),
+                        req.GetSoapMessage().Headers.Action == null);
+                    using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
+                    {
+                        message.WriteMessage(writer);
+                    }
+                }
+                catch { }
+            }
+            finally
+            {
+                HostContext.CompleteRequest(req);
             }
         }
     }

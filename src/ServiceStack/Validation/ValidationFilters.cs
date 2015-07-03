@@ -20,6 +20,8 @@ namespace ServiceStack.Validation
 
             if (validationResult.IsValid) return;
 
+            HostContext.RaiseServiceException(req, requestDto, validationResult.ToException());
+
             var errorResponse = DtoUtils.CreateErrorResponse(
                 requestDto, validationResult.ToErrorResult());
 

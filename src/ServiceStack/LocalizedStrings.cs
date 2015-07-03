@@ -11,6 +11,8 @@
         public static string Ignore = "ignore";
         public static string IgnorePlaceHolder = "_";
         public static string Bare = "bare";
+        public static string SoapMessage = "SoapMessage";
+        public static string Route = "__route";
     }
 
     public static class LocalizedStrings

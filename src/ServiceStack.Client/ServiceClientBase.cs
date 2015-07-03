@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -19,7 +20,7 @@ using ServiceStack.Web;
 #if !(__IOS__ || SL5)
 #endif
 
-#if SL5
+#if SL5SendOneWay
 using ServiceStack.Text;
 #endif
 
@@ -662,7 +663,7 @@ namespace ServiceStack
 
                 try
                 {
-                    if (errorResponse.ContentType.MatchesContentType(ContentType))
+                    if (string.IsNullOrEmpty(errorResponse.ContentType) || errorResponse.ContentType.MatchesContentType(ContentType))
                     {
                         var bytes = errorResponse.GetResponseStream().ReadFully();
                         using (__requestAccess())
@@ -1032,23 +1033,23 @@ namespace ServiceStack
             return PatchAsync<byte[]>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
         }
 
-
         public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
-            if (!HttpMethods.HasVerb(httpVerb))
-                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
-
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
-            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
+            return CustomMethodAsync<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
         }
 
         public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
         {
+            return CustomMethodAsync<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
+        }
+
+        public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
+        {
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
-            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
+            var requestBody = httpVerb.HasRequestBody() ? request : null;
+            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(relativeOrAbsoluteUrl), requestBody);
         }
 
         public virtual Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
@@ -1338,7 +1339,7 @@ namespace ServiceStack
                 var queryString = QueryStringSerializer.SerializeToString(request);
 
                 var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
-                var boundary = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+                var boundary = "----------------------------" + Stopwatch.GetTimestamp().ToString("x");
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
                 var newLine = "\r\n";
@@ -1477,7 +1478,7 @@ namespace ServiceStack
         public void Dispose() { }
     }
 
-    public static class ServiceClientExtensions
+    public static partial class ServiceClientExtensions
     {
 #if !(NETFX_CORE || SL5 || PCL)
         public static TResponse PostFile<TResponse>(this IRestClient client,
@@ -1504,7 +1505,78 @@ namespace ServiceStack
             }            
         }
 #endif
-        
+
+        public static HttpWebResponse Get(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Get(request);
+        }
+
+        public static HttpWebResponse Delete(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Delete(request);
+        }
+
+        public static HttpWebResponse Post(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Post(request);
+        }
+
+        public static HttpWebResponse Put(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Put(request);
+        }
+
+        public static HttpWebResponse Patch(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Patch(request);
+        }
+
+        public static HttpWebResponse CustomMethod(this IRestClient client, string httpVerb, object requestDto)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.CustomMethod(httpVerb, requestDto);
+        }
+
+        public static HttpWebResponse Head(this IRestClient client, IReturn requestDto)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Head(requestDto);
+        }
+
+        public static HttpWebResponse Head(this IRestClient client, object requestDto)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Head(requestDto);
+        }
+
+        public static HttpWebResponse Head(this IRestClient client, string relativeOrAbsoluteUrl)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Head(relativeOrAbsoluteUrl);
+        }
     }
 
     public delegate object ResultsFilterDelegate(Type responseType, string httpMethod, string requestUri, object request);

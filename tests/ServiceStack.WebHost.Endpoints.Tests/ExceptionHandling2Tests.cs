@@ -170,6 +170,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         static IRestClient[] ServiceClients = 
 		{
 			new JsonServiceClient(testUri),
+			new JsonHttpClient(testUri),
 			new XmlServiceClient(testUri),
 			new JsvServiceClient(testUri),
 			new ProtoBufServiceClient(testUri)

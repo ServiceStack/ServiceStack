@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text.RegularExpressions;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
@@ -17,9 +16,6 @@ namespace ServiceStack.Auth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
-        //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
-        public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
-
         public int? MaxLoginAttempts { get; set; }
 
         private readonly IDbConnectionFactory dbFactory;
@@ -66,7 +62,7 @@ namespace ServiceStack.Auth
             if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
                 throw new ArgumentNullException(ErrorMessages.UsernameOrEmailRequired);
 
-            if (!newUser.UserName.IsNullOrEmpty() && !ValidUserNameRegEx.IsMatch(newUser.UserName))
+            if (!newUser.UserName.IsNullOrEmpty() && !HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
                 throw new ArgumentException(ErrorMessages.IllegalUsername, "UserName");
         }
 
@@ -80,7 +76,7 @@ namespace ServiceStack.Auth
 
                 string salt;
                 string hash;
-                HostContext.AppHost.GetHashProvider().GetHashAndSaltString(password, out hash, out salt);
+                HostContext.Resolve<IHashProvider>().GetHashAndSaltString(password, out hash, out salt);
                 var digestHelper = new DigestAuthFunctions();
                 newUser.DigestHa1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
                 newUser.PasswordHash = hash;
@@ -129,7 +125,7 @@ namespace ServiceStack.Auth
                 var salt = existingUser.Salt;
                 if (password != null)
                 {
-                    HostContext.AppHost.GetHashProvider().GetHashAndSaltString(password, out hash, out salt);
+                    HostContext.Resolve<IHashProvider>().GetHashAndSaltString(password, out hash, out salt);
                 }
                 // If either one changes the digest hash has to be recalculated
                 var digestHash = existingUser.DigestHa1Hash;
@@ -231,7 +227,7 @@ namespace ServiceStack.Auth
                 return false;
             }
 
-            if (HostContext.AppHost.GetHashProvider().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+            if (HostContext.Resolve<IHashProvider>().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
                 RecordSuccessfulLogin(userAuth);
 

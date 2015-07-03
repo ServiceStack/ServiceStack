@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
@@ -44,6 +45,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 db.InsertAll(SeedAlbums);
                 db.InsertAll(SeedGenres);
                 db.InsertAll(SeedMovies);
+
+                db.DropAndCreateTable<AllFields>();
+                db.Insert(new AllFields {
+                    Id = 1,
+                    NullableId = 2,
+                    Byte = 3,
+                    DateTime = new DateTime(2001,01,01),
+                    NullableDateTime = new DateTime(2002, 02, 02),
+                    Decimal = 4,
+                    Double = 5.5,
+                    Float = 6.6f,
+                    Guid = new Guid("3EE6865A-4149-4940-B7A2-F952E0FEFC5E"),
+                    NullableGuid = new Guid("7A2FDDD8-4BB0-4735-8230-A6AC79088489"),
+                    Long = 7,
+                    Short = 8,
+                    String = "string",
+                    TimeSpan = TimeSpan.FromHours(1),
+                    NullableTimeSpan = TimeSpan.FromDays(1),
+                    UInt = 9,
+                    ULong = 10,
+                    UShort = 11,
+                });
+
+                db.DropAndCreateTable<Adhoc>();
+                db.InsertAll(SeedRockstars.Map(x => new Adhoc {
+                    Id = x.Id, FirstName = x.FirstName, LastName = x.LastName
+                }));
             }
 
             var autoQuery = new AutoQueryFeature
@@ -316,6 +344,58 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<RockstarAlbum> Albums { get; set; } 
     }
 
+    public class QueryAllFields : QueryBase<AllFields>
+    {
+        public virtual Guid Guid { get; set; }
+    }
+
+    public class AllFields
+    {
+        public virtual int Id { get; set; }
+        public virtual int? NullableId { get; set; }
+        public virtual byte Byte { get; set; }
+        public virtual short Short { get; set; }
+        public virtual int Int { get; set; }
+        public virtual long Long { get; set; }
+        public virtual ushort UShort { get; set; }
+        public virtual uint UInt { get; set; }
+        public virtual ulong ULong { get; set; }
+        public virtual float Float { get; set; }
+        public virtual double Double { get; set; }
+        public virtual decimal Decimal { get; set; }
+        public virtual string String { get; set; }
+        public virtual DateTime DateTime { get; set; }
+        public virtual TimeSpan TimeSpan { get; set; }
+        public virtual Guid Guid { get; set; }
+        public virtual DateTime? NullableDateTime { get; set; }
+        public virtual TimeSpan? NullableTimeSpan { get; set; }
+        public virtual Guid? NullableGuid { get; set; }
+    }
+
+    [DataContract]
+    public class Adhoc
+    {
+        [DataMember]
+        public int Id { get; set; }
+
+        [DataMember(Name = "first_name")]
+        public string FirstName { get; set; }
+
+        [DataMember]
+        public string LastName { get; set; }
+    }
+
+    [DataContract]
+    [Route("/adhoc-rockstars")]
+    public class QueryAdhocRockstars : QueryBase<Rockstar>
+    {
+        [DataMember(Name = "first_name")]
+        public string FirstName { get; set; }
+    }
+
+    [DataContract]
+    [Route("/adhoc")]
+    public class QueryAdhoc : QueryBase<Adhoc> {}
 
     public class AutoQueryService : Service
     {
@@ -394,6 +474,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Can_execute_AdhocRockstars_query()
+        {
+            var request = new QueryAdhocRockstars { FirstName = "Jimi" };
+
+            Assert.That(request.ToGetUrl(), Is.EqualTo("/adhoc-rockstars?first_name=Jimi"));
+
+            var response = client.Get(request);
+
+            Assert.That(response.Offset, Is.EqualTo(0));
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo(request.FirstName));
+        }
+
+        [Test]
+        public void Can_execute_Adhoc_query_alias()
+        {
+            var response = Config.ListeningOn.CombineWith("adhoc")
+                .AddQueryParam("first_name", "Jimi")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Adhoc>>();
+
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Jimi"));
+        }
+
+        [Test]
+        public void Can_execute_Adhoc_query_convention()
+        {
+            var response = Config.ListeningOn.CombineWith("adhoc")
+                .AddQueryParam("last_name", "Hendrix")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Adhoc>>();
+            Assert.That(response.Results.Count, Is.EqualTo(7));
+
+            JsConfig.EmitLowercaseUnderscoreNames = true;
+            response = Config.ListeningOn.CombineWith("adhoc")
+                .AddQueryParam("last_name", "Hendrix")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Adhoc>>();
+            JsConfig.Reset();
+
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Jimi"));
         }
 
         [Test]
@@ -959,6 +1086,95 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var kurt = response.Results.First(x => x.FirstName == "Kurt");
             Assert.That(kurt.Albums.Count, Is.EqualTo(1));
             Assert.That(kurt.Albums[0].Name, Is.EqualTo("Nevermind"));
+        }
+
+        [Test]
+        public void Can_Query_AllFields_Guid()
+        {
+            var guid = new Guid("3EE6865A-4149-4940-B7A2-F952E0FEFC5E");
+            var response = client.Get(new QueryAllFields {
+                Guid = guid
+            });
+
+            response.PrintDump();
+
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+
+            Assert.That(response.Results[0].Guid, Is.EqualTo(guid));
+        }
+
+        [Test]
+        public void Does_populate_Total()
+        {
+            var response = client.Get(new QueryRockstars());
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Meta, Is.Null);
+
+            response = client.Get(new QueryRockstars { Include = "COUNT" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+
+            response = client.Get(new QueryRockstars { Include = "COUNT(*)" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+
+            response = client.Get(new QueryRockstars { Include = "COUNT(DISTINCT LivingStatus)" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+
+            response = client.Get(new QueryRockstars { Include = "Count(*), Min(Age), Max(Age), Sum(Id)" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+        }
+
+        [Test]
+        public void Can_Include_Aggregates_in_AutoQuery()
+        {
+            var response = client.Get(new QueryRockstars { Include = "COUNT" });
+            Assert.That(response.Meta["COUNT(*)"], Is.EqualTo(response.Results.Count.ToString()));
+
+            response = client.Get(new QueryRockstars { Include = "COUNT(*)" });
+            Assert.That(response.Meta["COUNT(*)"], Is.EqualTo(response.Results.Count.ToString()));
+
+            response = client.Get(new QueryRockstars { Include = "COUNT(DISTINCT LivingStatus)" });
+            Assert.That(response.Meta["COUNT(DISTINCT LivingStatus)"], Is.EqualTo("2"));
+
+            response = client.Get(new QueryRockstars { Include = "MIN(Age)" });
+            Assert.That(response.Meta["MIN(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
+
+            response = client.Get(new QueryRockstars { Include = "Count(*), Min(Age), Max(Age), Sum(Id)" });
+            Assert.That(response.Meta["Count(*)"], Is.EqualTo(response.Results.Count.ToString()));
+            Assert.That(response.Meta["Min(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
+            Assert.That(response.Meta["Max(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Max().ToString()));
+            Assert.That(response.Meta["Sum(Id)"], Is.EqualTo(response.Results.Map(x => x.Id).Sum().ToString()));
+        }
+
+        [Test]
+        public void Does_ignore_unknown_aggregate_commands()
+        {
+            var response = client.Get(new QueryRockstars { Include = "FOO(1)" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Meta, Is.Null);
+
+            response = client.Get(new QueryRockstars { Include = "FOO(1), Min(Age), Bar('a') alias, Count(*), Baz(1,'foo')" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Meta["Min(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
+            Assert.That(response.Meta["Count(*)"], Is.EqualTo(response.Results.Count.ToString()));
+        }
+
+        [Test]
+        public void Can_Include_Aggregates_in_AutoQuery_with_Aliases()
+        {
+            var response = client.Get(new QueryRockstars { Include = "COUNT(*) Count" });
+            Assert.That(response.Meta["Count"], Is.EqualTo(response.Results.Count.ToString()));
+
+            response = client.Get(new QueryRockstars { Include = "COUNT(DISTINCT LivingStatus) as UniqueStatus" });
+            Assert.That(response.Meta["UniqueStatus"], Is.EqualTo("2"));
+
+            response = client.Get(new QueryRockstars { Include = "MIN(Age) MinAge" });
+            Assert.That(response.Meta["MinAge"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
+
+            response = client.Get(new QueryRockstars { Include = "Count(*) count, Min(Age) min, Max(Age) max, Sum(Id) sum" });
+            Assert.That(response.Meta["count"], Is.EqualTo(response.Results.Count.ToString()));
+            Assert.That(response.Meta["min"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
+            Assert.That(response.Meta["max"], Is.EqualTo(response.Results.Map(x => x.Age).Max().ToString()));
+            Assert.That(response.Meta["sum"], Is.EqualTo(response.Results.Map(x => x.Id).Sum().ToString()));
         }
     }
 

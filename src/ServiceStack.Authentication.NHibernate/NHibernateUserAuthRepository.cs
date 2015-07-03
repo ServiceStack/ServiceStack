@@ -10,12 +10,10 @@ namespace ServiceStack.Authentication.NHibernate
 {
     /// <summary>
     /// Originally from: https://gist.github.com/2000863 by https://github.com/joshilewis
+    /// Applied fix for Session issues based on http://stackoverflow.com/a/2553579/28004
     /// </summary>
     public class NHibernateUserAuthRepository : IUserAuthRepository
     {
-        //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
-        public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
-
         private readonly ISessionFactory sessionFactory;
         public static Func<ISessionFactory, ISession> GetCurrentSessionFn = GetCurrentSession;
 
@@ -54,19 +52,17 @@ namespace ServiceStack.Authentication.NHibernate
             if (tokens == null || string.IsNullOrEmpty(tokens.Provider) || string.IsNullOrEmpty(tokens.UserId))
                 return null;
 
-            using (var nhSession = GetCurrentSessionFn(sessionFactory))
-            {
-                var oAuthProvider = nhSession.QueryOver<UserAuthDetailsNHibernate>()
-                    .Where(x => x.Provider == tokens.Provider)
-                    .And(x => x.UserId == tokens.UserId)
-                    .SingleOrDefault();
+            var nhSession = GetCurrentSessionFn(sessionFactory);
+            var oAuthProvider = nhSession.QueryOver<UserAuthDetailsNHibernate>()
+                .Where(x => x.Provider == tokens.Provider)
+                .And(x => x.UserId == tokens.UserId)
+                .SingleOrDefault();
 
-                if (oAuthProvider != null)
-                {
-                    return nhSession.QueryOver<UserAuthNHibernate>()
-                        .Where(x => x.Id == oAuthProvider.UserAuthId)
-                        .SingleOrDefault();
-                }
+            if (oAuthProvider != null)
+            {
+                return nhSession.QueryOver<UserAuthNHibernate>()
+                    .Where(x => x.Id == oAuthProvider.UserAuthId)
+                    .SingleOrDefault();
             }
 
             return null;
@@ -74,13 +70,11 @@ namespace ServiceStack.Authentication.NHibernate
 
         public IUserAuth GetUserAuth(string userAuthId)
         {
-            using (var nhSession = GetCurrentSessionFn(sessionFactory))
-            {
-                int authId = int.Parse(userAuthId);
-                return nhSession.QueryOver<UserAuthNHibernate>()
-                    .Where(x => x.Id == authId)
-                    .SingleOrDefault();
-            }
+            var nhSession = GetCurrentSessionFn(sessionFactory);
+            int authId = int.Parse(userAuthId);
+            return nhSession.QueryOver<UserAuthNHibernate>()
+                .Where(x => x.Id == authId)
+                .SingleOrDefault();
         }
 
         private void LoadUserAuth(IAuthSession session, UserAuth userAuth)
@@ -106,7 +100,7 @@ namespace ServiceStack.Authentication.NHibernate
             userAuth = GetUserAuthByUserName(userName);
             if (userAuth == null) return false;
 
-            var saltedHash = HostContext.AppHost.GetHashProvider();
+            var saltedHash = HostContext.Resolve<IHashProvider>();
             return saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt);
         }
 
@@ -125,92 +119,84 @@ namespace ServiceStack.Authentication.NHibernate
             if (userNameOrEmail == null)
                 return null;
 
-            using (var nhSession = GetCurrentSessionFn(sessionFactory))
+            var nhSession = GetCurrentSessionFn(sessionFactory);
+            UserAuthNHibernate user;
+            if (userNameOrEmail.Contains("@"))
             {
-                UserAuthNHibernate user;
-                if (userNameOrEmail.Contains("@"))
-                {
-                    user = nhSession.QueryOver<UserAuthNHibernate>()
-                                    .Where(x => x.Email == userNameOrEmail)
-                                    .SingleOrDefault();
-                }
-                else
-                {
-                    user = nhSession.QueryOver<UserAuthNHibernate>()
-                                    .Where(x => x.UserName == userNameOrEmail)
-                                    .SingleOrDefault();
-                }
-                return user;
+                user = nhSession.QueryOver<UserAuthNHibernate>()
+                                .Where(x => x.Email == userNameOrEmail)
+                                .SingleOrDefault();
             }
+            else
+            {
+                user = nhSession.QueryOver<UserAuthNHibernate>()
+                                .Where(x => x.UserName == userNameOrEmail)
+                                .SingleOrDefault();
+            }
+            return user;
         }
 
         public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
             var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuthNHibernate();
 
-            using (var nhSession = GetCurrentSessionFn(sessionFactory))
+            var nhSession = GetCurrentSessionFn(sessionFactory);
+            var authDetails = nhSession.QueryOver<UserAuthDetailsNHibernate>()
+                .Where(x => x.Provider == tokens.Provider)
+                .And(x => x.UserId == tokens.UserId)
+                .SingleOrDefault();
+
+            if (authDetails == null)
             {
-                var authDetails = nhSession.QueryOver<UserAuthDetailsNHibernate>()
-                    .Where(x => x.Provider == tokens.Provider)
-                    .And(x => x.UserId == tokens.UserId)
-                    .SingleOrDefault();
-
-                if (authDetails == null)
+                authDetails = new UserAuthDetailsNHibernate
                 {
-                    authDetails = new UserAuthDetailsNHibernate
-                    {
-                        Provider = tokens.Provider,
-                        UserId = tokens.UserId,
-                    };
-                }
-
-                authDetails.PopulateMissing(tokens);
-                userAuth.PopulateMissingExtended(authDetails);
-
-                userAuth.ModifiedDate = DateTime.UtcNow;
-                if (userAuth.CreatedDate == default(DateTime))
-                    userAuth.CreatedDate = userAuth.ModifiedDate;
-
-                nhSession.Save(userAuth);
-
-                authDetails.UserAuthId = userAuth.Id;
-
-                if (authDetails.CreatedDate == default(DateTime))
-                    authDetails.CreatedDate = userAuth.ModifiedDate;
-                authDetails.ModifiedDate = userAuth.ModifiedDate;
-
-                nhSession.Save(authDetails);
-
-                return authDetails;
+                    Provider = tokens.Provider,
+                    UserId = tokens.UserId,
+                };
             }
+
+            authDetails.PopulateMissing(tokens);
+            userAuth.PopulateMissingExtended(authDetails);
+
+            userAuth.ModifiedDate = DateTime.UtcNow;
+            if (userAuth.CreatedDate == default(DateTime))
+                userAuth.CreatedDate = userAuth.ModifiedDate;
+
+            nhSession.Save(userAuth);
+
+            authDetails.UserAuthId = userAuth.Id;
+
+            if (authDetails.CreatedDate == default(DateTime))
+                authDetails.CreatedDate = userAuth.ModifiedDate;
+            authDetails.ModifiedDate = userAuth.ModifiedDate;
+
+            nhSession.Save(authDetails);
+
+            return authDetails;
         }
 
         public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
-            using (var nhSession = GetCurrentSessionFn(sessionFactory))
-            {
-                int authId = int.Parse(userAuthId);
-                var value = nhSession.QueryOver<UserAuthDetailsNHibernate>()
-                    .Where(x => x.UserAuthId == authId)
-                    .OrderBy(x => x.ModifiedDate).Asc
-                    .List();
+            var nhSession = GetCurrentSessionFn(sessionFactory);
+            int authId = int.Parse(userAuthId);
+            var value = nhSession.QueryOver<UserAuthDetailsNHibernate>()
+                .Where(x => x.UserAuthId == authId)
+                .OrderBy(x => x.ModifiedDate).Asc
+                .List();
 
-                return value.Cast<IUserAuthDetails>().ToList();
-            }
+            return value.Cast<IUserAuthDetails>().ToList();
         }
 
         public void DeleteUserAuth(string userAuthId)
         {
-            using (var nhSession = GetCurrentSessionFn(sessionFactory))
-            {
-                int authId = int.Parse(userAuthId);
+            var nhSession = GetCurrentSessionFn(sessionFactory);
+            int authId = int.Parse(userAuthId);
 
-                nhSession.Delete(nhSession.QueryOver<UserAuthNHibernate>()
-                    .Where(x => x.Id == authId));
+            nhSession.Delete(nhSession.QueryOver<UserAuthNHibernate>()
+                .Where(x => x.Id == authId));
 
-                nhSession.Delete(nhSession.QueryOver<UserAuthDetailsNHibernate>()
-                    .Where(x => x.UserAuthId == authId));
-            }
+            nhSession.Delete(nhSession.QueryOver<UserAuthDetailsNHibernate>()
+                .Where(x => x.UserAuthId == authId));
         }
 
         public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
@@ -219,7 +205,7 @@ namespace ServiceStack.Authentication.NHibernate
 
             AssertNoExistingUser(newUser);
 
-            var saltedHash = HostContext.AppHost.GetHashProvider();
+            var saltedHash = HostContext.Resolve<IHashProvider>();
             string salt;
             string hash;
             saltedHash.GetHashAndSaltString(password, out hash, out salt);
@@ -229,10 +215,8 @@ namespace ServiceStack.Authentication.NHibernate
             newUser.CreatedDate = DateTime.UtcNow;
             newUser.ModifiedDate = newUser.CreatedDate;
 
-            using (var nhSession = GetCurrentSessionFn(sessionFactory))
-            {
-                nhSession.Save(new UserAuthNHibernate(newUser));
-            }
+            var nhSession = GetCurrentSessionFn(sessionFactory);
+            nhSession.Save(new UserAuthNHibernate(newUser));
 
             return newUser;
         }
@@ -247,7 +231,7 @@ namespace ServiceStack.Authentication.NHibernate
 
             if (!string.IsNullOrEmpty(newUser.UserName))
             {
-                if (!ValidUserNameRegEx.IsMatch(newUser.UserName))
+                if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
                     throw new ArgumentException("UserName contains invalid characters", "UserName");
             }
         }
@@ -277,29 +261,25 @@ namespace ServiceStack.Authentication.NHibernate
             if (userAuth.CreatedDate == default(DateTime))
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            using (var nhSession = GetCurrentSessionFn(sessionFactory))
-            {
-                nhSession.Save(new UserAuthNHibernate(userAuth));
-            }
+            var nhSession = GetCurrentSessionFn(sessionFactory);
+            nhSession.Save(new UserAuthNHibernate(userAuth));
         }
 
         public void SaveUserAuth(IAuthSession authSession)
         {
-            using (var nhSession = GetCurrentSessionFn(sessionFactory))
-            {
-                var userAuth = !string.IsNullOrEmpty(authSession.UserAuthId)
-                    ? nhSession.Load<UserAuthNHibernate>(int.Parse(authSession.UserAuthId))
-                    : authSession.ConvertTo<UserAuth>();
+            var nhSession = GetCurrentSessionFn(sessionFactory);
+            var userAuth = !string.IsNullOrEmpty(authSession.UserAuthId)
+                ? nhSession.Load<UserAuthNHibernate>(int.Parse(authSession.UserAuthId))
+                : authSession.ConvertTo<UserAuth>();
 
-                if (userAuth.Id == default(int) && !string.IsNullOrEmpty(authSession.UserAuthId))
-                    userAuth.Id = int.Parse(authSession.UserAuthId);
+            if (userAuth.Id == default(int) && !string.IsNullOrEmpty(authSession.UserAuthId))
+                userAuth.Id = int.Parse(authSession.UserAuthId);
 
-                userAuth.ModifiedDate = userAuth.ModifiedDate;
-                if (userAuth.CreatedDate == default(DateTime))
-                    userAuth.CreatedDate = userAuth.ModifiedDate;
+            userAuth.ModifiedDate = userAuth.ModifiedDate;
+            if (userAuth.CreatedDate == default(DateTime))
+                userAuth.CreatedDate = userAuth.ModifiedDate;
 
-                nhSession.Save(new UserAuthNHibernate(userAuth));
-            }
+            nhSession.Save(new UserAuthNHibernate(userAuth));
         }
 
         public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
@@ -312,7 +292,7 @@ namespace ServiceStack.Authentication.NHibernate
             var salt = existingUser.Salt;
             if (password != null)
             {
-                var saltedHash = HostContext.AppHost.GetHashProvider();
+                var saltedHash = HostContext.Resolve<IHashProvider>();
                 saltedHash.GetHashAndSaltString(password, out hash, out salt);
             }
 
@@ -322,10 +302,8 @@ namespace ServiceStack.Authentication.NHibernate
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
 
-            using (var nhSession = GetCurrentSessionFn(sessionFactory))
-            {
-                nhSession.Save(new UserAuthNHibernate(newUser));
-            }
+            var nhSession = GetCurrentSessionFn(sessionFactory);
+            nhSession.Save(new UserAuthNHibernate(newUser));
 
             return newUser;
         }

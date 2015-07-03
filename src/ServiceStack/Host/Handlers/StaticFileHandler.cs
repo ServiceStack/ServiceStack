@@ -87,7 +87,7 @@ namespace ServiceStack.Host.Handlers
             HostContext.ApplyCustomHandlerRequestFilters(request, response);
             if (response.IsClosed) return;
 
-            response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r =>
+            response.EndHttpHandlerRequest(afterHeaders: r =>
             {
                 var node = this.VirtualNode ?? request.GetVirtualNode();
                 var file = node as IVirtualFile;

@@ -136,6 +136,7 @@
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -185,6 +186,8 @@
     <Compile Include="CustomerRestExample.cs" />
     <Compile Include="CustomFormatTests.cs" />
     <Compile Include="HttpErrorSyncTests.cs" />
+    <Compile Include="Issues\EmptyDtoIssue.cs" />
+    <Compile Include="Issues\NetworkIssues.cs" />
     <Compile Include="Issues\XmlContentTypeIssue.cs" />
     <Compile Include="ReplyAllTests.cs" />
     <Compile Include="MultiTennantAppHostTests.cs" />
@@ -232,6 +235,9 @@
     <Compile Include="IocServiceTests.cs" />
     <Compile Include="Support\EndpointHandlerBaseTests.cs" />
     <Compile Include="UnitTestExample.cs" />
+    <Compile Include="UseCases\BasicEncryptedMessagesTests.cs" />
+    <Compile Include="UseCases\EncryptedMessagesTests.cs" />
+    <Compile Include="UseCases\SecureConfig.cs" />
     <Compile Include="UserServiceValidationTests.cs" />
     <Compile Include="JsonpTests.cs" />
     <Compile Include="Shared\IocService.cs" />
@@ -293,6 +299,7 @@
     <Compile Include="Support\Services\TestServiceBase.cs" />
     <Compile Include="Support\Host\TestAppHost.cs" />
     <Compile Include="Support\Services\TestService.cs" />
+    <Compile Include="BuiltinRouteTests.cs" />
     <Compile Include="WebServiceExceptionTests.cs" />
     <Compile Include="WsdlMetadataTests.cs" />
     <Compile Include="OperationTests.cs" />
@@ -313,6 +320,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj">
+      <Project>{c05de4a1-84c5-481b-8bd4-c837a1303b01}</Project>
+      <Name>ServiceStack.HttpClient</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj">
       <Project>{ef36a253-c53f-4bf3-b0ec-4d29211fa67d}</Project>

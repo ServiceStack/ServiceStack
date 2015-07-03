@@ -155,16 +155,6 @@ namespace ServiceStack
             return AssertAppHost().ApplyRequestFilters(httpReq, httpRes, requestDto);
         }
 
-        public static bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
-        {
-            return AssertAppHost().ApplyMessageResponseFilters(req, res, response);
-        }
-
-        public static bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
-        {
-            return AssertAppHost().ApplyMessageRequestFilters(req, res, requestDto);
-        }
-
         public static bool ApplyResponseFilters(IRequest httpReq, IResponse httpRes, object response)
         {
             return AssertAppHost().ApplyResponseFilters(httpReq, httpRes, response);
@@ -313,13 +303,6 @@ namespace ServiceStack
             return null;
         }
 
-        public static TimeSpan GetDefaultSessionExpiry()
-        {
-            return ServiceStackHost.Instance == null 
-                ? SessionFeature.DefaultSessionExpiry 
-                : ServiceStackHost.Instance.GetDefaultSessionExpiry();
-        }
-
         public static object RaiseServiceException(IRequest httpReq, object request, Exception ex)
         {
             return AssertAppHost().OnServiceException(httpReq, request, ex);
@@ -328,6 +311,16 @@ namespace ServiceStack
         public static void RaiseUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+        }
+
+        public static void RaiseAndHandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        {
+            AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+
+            if (httpRes.IsClosed)
+                return;
+
+            AssertAppHost().HandleUncaughtException(httpReq, httpRes, operationName, ex);
         }
 
         /// <summary>

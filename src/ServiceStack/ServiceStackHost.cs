@@ -62,6 +62,8 @@ namespace ServiceStack
             Routes = new ServiceRoutes(this);
             Metadata = new ServiceMetadata(RestPaths);
             PreRequestFilters = new List<Action<IRequest, IResponse>>();
+            RequestConverters = new List<Func<IRequest, object, object>>();
+            ResponseConverters = new List<Func<IRequest, object, object>>();
             GlobalRequestFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalTypedRequestFilters = new Dictionary<Type, ITypedFilter>();
             GlobalResponseFilters = new List<Action<IRequest, IResponse, object>>();
@@ -75,6 +77,7 @@ namespace ServiceStack
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
             AfterInitCallbacks = new List<Action<IAppHost>>();
             OnDisposeCallbacks = new List<Action<IAppHost>>();
+            OnEndRequestCallbacks = new List<Action<IRequest>>();
             RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
                  HttpHandlerFactory.ReturnRequestInfo,
                  MiniProfilerHandler.MatchesRequest,
@@ -104,7 +107,7 @@ namespace ServiceStack
             };
 
             // force deterministic initialization of static constructor
-            using (JsConfig.BeginScope()) { }
+            using (JsConfig.BeginScope()) {}
         }
 
         public abstract void Configure(Container container);
@@ -155,10 +158,32 @@ namespace ServiceStack
 
             OnAfterInit();
 
-            var elapsed = DateTime.UtcNow - this.StartedAt;
-            Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
+            LogInitComplete();
 
             return this;
+        }
+
+        private void LogInitComplete()
+        {
+            var elapsed = DateTime.UtcNow - StartedAt;
+            var hasErrors = StartUpErrors.Any();
+
+            if (hasErrors)
+            {
+                Log.ErrorFormat(
+                    "Initializing Application {0} took {1}ms. {2} error(s) detected: {3}",
+                    ServiceName,
+                    elapsed.TotalMilliseconds,
+                    StartUpErrors.Count,
+                    StartUpErrors.ToJson());
+            }
+            else
+            {
+                Log.InfoFormat(
+                    "Initializing Application {0} took {1}ms. No errors detected.",
+                    ServiceName,
+                    elapsed.TotalMilliseconds);
+            }
         }
 
         public virtual List<IVirtualPathProvider> GetVirtualPathProviders()
@@ -235,6 +260,10 @@ namespace ServiceStack
 
         public List<Action<IRequest, IResponse>> PreRequestFilters { get; set; }
 
+        public List<Func<IRequest, object, object>> RequestConverters { get; set; }
+
+        public List<Func<IRequest, object, object>> ResponseConverters { get; set; }
+
         public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; }
 
         public Dictionary<Type, ITypedFilter> GlobalTypedRequestFilters { get; set; }
@@ -260,6 +289,8 @@ namespace ServiceStack
         public List<Action<IAppHost>> AfterInitCallbacks { get; set; }
 
         public List<Action<IAppHost>> OnDisposeCallbacks { get; set; }
+
+        public List<Action<IRequest>> OnEndRequestCallbacks { get; set; }
 
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
@@ -318,10 +349,10 @@ namespace ServiceStack
                     errorHandler(httpReq, httpRes, operationName, ex);
                 }
             }
+        }
 
-            if (httpRes.IsClosed)
-                return;
-
+        public virtual void HandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        {
             //Only add custom error messages to StatusDescription
             var httpError = ex as IHttpError;
             var errorMessage = httpError != null ? httpError.Message : null;
@@ -366,6 +397,7 @@ namespace ServiceStack
 
         public virtual void OnBeforeInit()
         {
+            Container.Register<IHashProvider>(c => new SaltedHash());
         }
 
         //After configure called
@@ -570,6 +602,11 @@ namespace ServiceStack
             }
 
             RequestContext.Instance.EndRequest();
+
+            foreach (var fn in OnEndRequestCallbacks)
+            {
+                fn(request);
+            }
         }
 
         public virtual void Register<T>(T instance)
@@ -700,6 +737,8 @@ namespace ServiceStack
             {
                 foreach (var atRestPath in atRestPaths)
                 {
+                    if (atRestPath == null) continue;
+
                     this.Routes.Add(reqAttr.RequestType, atRestPath, null);
                 }
             }

@@ -296,21 +296,14 @@ namespace ServiceStack
     public class RestRoute
     {
         private static readonly char[] ArrayBrackets = new[] { '[', ']' };
-
-        private static string FormatValue(object value)
-        {
-            if (value == null) return null;
-
-            var jsv = value.ToJsv().Trim(ArrayBrackets);
-            return jsv;
-        }
+        public const string EmptyArray = "[]";
 
         public static Func<object, string> FormatVariable = value =>
         {
             if (value == null) return null;
 
             var valueString = value as string;
-            valueString = valueString ?? FormatValue(value);
+            valueString = valueString ?? value.ToJsv().Trim(ArrayBrackets);
             return Uri.EscapeDataString(valueString);
         };
 
@@ -320,11 +313,18 @@ namespace ServiceStack
 
             // Perhaps custom formatting needed for DateTimes, lists, etc.
             var valueString = value as string;
-            valueString = valueString ?? FormatValue(value);
+            if (valueString == null)
+            {
+                valueString = value.ToJsv();
+
+                if (valueString != EmptyArray)
+                    valueString = valueString.Trim(ArrayBrackets);
+            }
+
             return Uri.EscapeDataString(valueString);
         };
 
-        private static char[] PathSeparatorChars = new[] { '/', '.' };
+        private static readonly char[] PathSeparatorChars = new[] { '/', '.' };
         private const string VariablePrefix = "{";
         private const char VariablePrefixChar = '{';
         private const string VariablePostfix = "}";

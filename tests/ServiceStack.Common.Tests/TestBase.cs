@@ -166,11 +166,6 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public HttpWebResponse Get(object request)
-            {
-                throw new NotImplementedException();
-            }
-
             public TResponse Get<TResponse>(IReturn<TResponse> requestDto)
             {
                 throw new NotImplementedException();
@@ -196,11 +191,6 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public HttpWebResponse Delete(object requestDto)
-            {
-                throw new NotImplementedException();
-            }
-
             public TResponse Delete<TResponse>(IReturn<TResponse> request)
             {
                 throw new NotImplementedException();
@@ -219,11 +209,6 @@ namespace ServiceStack.Common.Tests
             public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
             {
                 return parent.ExecutePath<TResponse>(HttpMethods.Delete, new UrlParts(relativeOrAbsoluteUrl), null);
-            }
-
-            public HttpWebResponse Post(object requestDto)
-            {
-                throw new NotImplementedException();
             }
 
             public TResponse Post<TResponse>(IReturn<TResponse> requestDto)
@@ -251,11 +236,6 @@ namespace ServiceStack.Common.Tests
                 return parent.ExecutePath<TResponse>(HttpMethods.Post, new UrlParts(relativeOrAbsoluteUrl), request);
             }
 
-            public HttpWebResponse Put(object requestDto)
-            {
-                throw new NotImplementedException();
-            }
-
             public TResponse Put<TResponse>(IReturn<TResponse> requestDto)
             {
                 throw new NotImplementedException();
@@ -279,11 +259,6 @@ namespace ServiceStack.Common.Tests
             public TResponse Put<TResponse>(object requestDto, string relativeOrAbsoluteUrl)
             {
                 return parent.ExecutePath<TResponse>(HttpMethods.Put, new UrlParts(relativeOrAbsoluteUrl), requestDto);
-            }
-
-            public HttpWebResponse Patch(object requestDto)
-            {
-                throw new NotImplementedException();
             }
 
             public TResponse Patch<TResponse>(IReturn<TResponse> requestDto)
@@ -321,32 +296,12 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
-            public HttpWebResponse CustomMethod(string httpVerb, object requestDto)
-            {
-                throw new NotImplementedException();
-            }
-
             public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
             {
                 throw new NotImplementedException();
             }
 
             public TResponse CustomMethod<TResponse>(string httpVerb, object requestDto)
-            {
-                throw new NotImplementedException();
-            }
-
-            public HttpWebResponse Head(IReturn requestDto)
-            {
-                throw new NotImplementedException();
-            }
-
-            public HttpWebResponse Head(object requestDto)
-            {
-                throw new NotImplementedException();
-            }
-
-            public HttpWebResponse Head(string relativeOrAbsoluteUrl)
             {
                 throw new NotImplementedException();
             }
@@ -360,6 +315,11 @@ namespace ServiceStack.Common.Tests
                 Stream fileToUpload, string fileName, object request, string fieldName = "upload")
             {
                 throw new NotImplementedException();
+            }
+
+            public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto)
+            {
+                return SendAsync<TResponse>((object)requestDto);
             }
 
             public Task<TResponse> SendAsync<TResponse>(object requestDto)
@@ -504,6 +464,11 @@ namespace ServiceStack.Common.Tests
             }
 
             public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
             {
                 throw new NotImplementedException();
             }

@@ -954,18 +954,18 @@ namespace ServiceStack
 
         public static System.ServiceModel.Channels.Message GetSoapMessage(this IRequest httpReq)
         {
-            return httpReq.Items["SoapMessage"] as System.ServiceModel.Channels.Message;
+            return httpReq.Items[Keywords.SoapMessage] as System.ServiceModel.Channels.Message;
         }
 
         public static void SetRoute(this IRequest req, RestPath route)
         {
-            req.Items["__route"] = route;
+            req.Items[Keywords.Route] = route;
         }
 
         public static RestPath GetRoute(this IRequest req)
         {
             object route;
-            req.Items.TryGetValue("__route", out route);
+            req.Items.TryGetValue(Keywords.Route, out route);
             return route as RestPath;
         }
 

@@ -261,6 +261,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         static IRestClient[] ServiceClients = 
 		{
 			new JsonServiceClient(ListeningOn),
+			new JsonHttpClient(ListeningOn),
 			new XmlServiceClient(ListeningOn),
 			new JsvServiceClient(ListeningOn)
 			//SOAP not supported in HttpListener

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using ServiceStack.Redis;
 
 namespace ServiceStack.Auth
@@ -18,9 +17,6 @@ namespace ServiceStack.Auth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
-        //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
-        public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
-
         private readonly IRedisClientManagerFacade factory;
 
         public RedisAuthRepository(IRedisClientsManager factory)
@@ -52,7 +48,7 @@ namespace ServiceStack.Auth
 
             if (!newUser.UserName.IsNullOrEmpty())
             {
-                if (!ValidUserNameRegEx.IsMatch(newUser.UserName))
+                if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
                 {
                     throw new ArgumentException("UserName contains invalid characters", "UserName");
                 }
@@ -89,7 +85,7 @@ namespace ServiceStack.Auth
             {
                 AssertNoExistingUser(redis, newUser);
 
-                var saltedHash = HostContext.AppHost.GetHashProvider();
+                var saltedHash = HostContext.Resolve<IHashProvider>();
                 string salt;
                 string hash;
                 saltedHash.GetHashAndSaltString(password, out hash, out salt);
@@ -139,7 +135,7 @@ namespace ServiceStack.Auth
                 var salt = existingUser.Salt;
                 if (password != null)
                 {
-                    var saltedHash = HostContext.AppHost.GetHashProvider();
+                    var saltedHash = HostContext.Resolve<IHashProvider>();
                     saltedHash.GetHashAndSaltString(password, out hash, out salt);
                 }
                 // If either one changes the digest hash has to be recalculated
@@ -205,7 +201,7 @@ namespace ServiceStack.Auth
                 return false;
             }
 
-            var saltedHash = HostContext.AppHost.GetHashProvider();
+            var saltedHash = HostContext.Resolve<IHashProvider>();
             if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
                 return true;

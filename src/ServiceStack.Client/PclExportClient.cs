@@ -1727,14 +1727,16 @@ namespace ServiceStack
 
         public virtual Task WaitAsync(int waitForMs)
         {
-#if PCL
-            return EmptyTask;
-#else
-            var tcs = new TaskCompletionSource<object>();
-            Thread.Sleep(waitForMs);
-            tcs.SetResult(null);
+            if (waitForMs <= 0)
+                throw new ArgumentOutOfRangeException("waitForMs");
+
+            var tcs = new TaskCompletionSource<bool>();
+            Timer timer = null;
+            timer = new Timer(self => {
+                tcs.TrySetResult(true);
+                timer.Dispose();
+            }, null, waitForMs, Timeout.Infinite);
             return tcs.Task;
-#endif
         }
 
         public virtual void RunOnUiThread(Action fn)
@@ -1762,8 +1764,11 @@ namespace ServiceStack
 
     public sealed class Timer : CancellationTokenSource, ITimer, IDisposable
     {
-        public Timer(TimerCallback callback, object state, int dueTime)
+        public Timer(TimerCallback callback, object state, int dueTime, int period=0)
         {
+            if (period > 0)
+                throw new NotImplementedException("period is not supported in PCL libraries");
+
             Task.Delay(dueTime, Token).ContinueWith((t, s) =>
             {
                 var tuple = (Tuple<TimerCallback, object>)s;

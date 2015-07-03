@@ -222,6 +222,9 @@ namespace ServiceStack
             if (cancel.IsCancellationRequested)
                 return;
 
+            if (ConnectionInfo == null)
+                return;
+
             var elapsedMs = (DateTime.UtcNow - LastPulseAt).TotalMilliseconds;
             if (elapsedMs > ConnectionInfo.IdleTimeoutMs)
             {
@@ -230,9 +233,6 @@ namespace ServiceStack
             }
 
             EnsureSynchronizationContext();
-
-            if (ConnectionInfo == null)
-                return;
 
             ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter:HeartbeatRequestFilter)
                 .Success(t => {
@@ -474,6 +474,9 @@ namespace ServiceStack
             if (!string.IsNullOrEmpty(e.Selector))
             {
                 parts = e.Selector.SplitOnFirst('.');
+                if (parts.Length < 2)
+                    throw new ArgumentException("Invalid Selector '{0}'".Fmt(e.Selector));
+
                 e.Op = parts[0];
                 var target = parts[1].Replace("%20", " ");
 

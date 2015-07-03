@@ -96,6 +96,11 @@ namespace ServiceStack
         {
             return HostContext.AppHost.ResolveLocalizedString(text, request);
         }
+
+        public static Exception ApplyResponseConverters(this Exception ex, IRequest httpReq)
+        {
+            return (HostContext.AppHost.ApplyResponseConverters(httpReq, ex) as Exception) ?? ex;
+        }
 	}
 
 }

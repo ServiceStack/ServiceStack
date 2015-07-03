@@ -46,6 +46,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Common\servicestack.common.nuspec = ..\NuGet\ServiceStack.Common\servicestack.common.nuspec
 		..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec = ..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec
 		..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec = ..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec
+		..\NuGet\ServiceStack.HttpClient\servicestack.httpclient.nuspec = ..\NuGet\ServiceStack.HttpClient\servicestack.httpclient.nuspec
 		..\NuGet\ServiceStack.Interfaces\servicestack.interfaces.nuspec = ..\NuGet\ServiceStack.Interfaces\servicestack.interfaces.nuspec
 		..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec = ..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec
 		..\NuGet\ServiceStack.Logging.EntLib5\servicestack.logging.entlib5.nuspec = ..\NuGet\ServiceStack.Logging.EntLib5\servicestack.logging.entlib5.nuspec
@@ -162,6 +163,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Authentication.RavenDbV45", "ServiceStack.Authentication.RavenDbV45\ServiceStack.Authentication.RavenDbV45.csproj", "{2E728F63-E19A-4FC7-9C30-46D1396852C1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Caching.AwsDynamoDbV2", "ServiceStack.Caching.AwsDynamoDbV2\ServiceStack.Caching.AwsDynamoDbV2.csproj", "{AA7027C6-2C94-4E44-83A2-275EEE473045}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.HttpClient", "ServiceStack.HttpClient\ServiceStack.HttpClient.csproj", "{C05DE4A1-84C5-481B-8BD4-C837A1303B01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1707,6 +1710,41 @@ Global
 		{AA7027C6-2C94-4E44-83A2-275EEE473045}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Signed|Any CPU
 		{AA7027C6-2C94-4E44-83A2-275EEE473045}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Signed|Any CPU
 		{AA7027C6-2C94-4E44-83A2-275EEE473045}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Signed|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoRelease|Any CPU.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoRelease|Mixed Platforms.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoRelease|x86.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoTouch|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoTouch|Mixed Platforms.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.MonoTouch|x86.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|x86.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|x86.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

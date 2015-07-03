@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Web;
@@ -29,9 +30,7 @@ namespace ServiceStack
             if (httpReq == null)
                 httpReq = HostContext.GetCurrentRequest();
 
-            var sessionOptions = GetSessionOptions(httpReq);
-
-            return sessionOptions.Contains(SessionOptions.Permanent)
+            return httpReq.IsPermanentSession()
                 ? httpReq.GetPermanentSessionId()
                 : httpReq.GetTemporarySessionId();
         }
@@ -61,8 +60,7 @@ namespace ServiceStack
         /// <returns></returns>
         public static string CreateSessionId(this IResponse res, IRequest req)
         {
-            var sessionOptions = GetSessionOptions(req);
-            return sessionOptions.Contains(SessionOptions.Permanent)
+            return req.IsPermanentSession()
                 ? res.CreatePermanentSessionId(req)
                 : res.CreateTemporarySessionId(req);
         }
@@ -73,10 +71,9 @@ namespace ServiceStack
         /// <returns></returns>
         public static string CreateSessionIds(this IResponse res, IRequest req)
         {
-            var sessionOptions = GetSessionOptions(req);
             var permId = res.CreatePermanentSessionId(req);
             var tempId = res.CreateTemporarySessionId(req);
-            return sessionOptions.Contains(SessionOptions.Permanent)
+            return req.IsPermanentSession()
                 ? permId
                 : tempId;
         }
@@ -111,7 +108,8 @@ namespace ServiceStack
 
             var httpRes = res as IHttpResponse;
             if (httpRes != null)
-                httpRes.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId);
+                httpRes.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId,
+                    (HostContext.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
 
             req.Items[SessionFeature.PermanentSessionId] = sessionId;
             return sessionId;
@@ -130,6 +128,11 @@ namespace ServiceStack
 
             req.Items[SessionFeature.SessionId] = sessionId;
             return sessionId;
+        }
+
+        public static bool IsPermanentSession(this IRequest req)
+        {
+            return req != null && GetSessionOptions(req).Contains(SessionOptions.Permanent);
         }
 
         public static HashSet<string> GetSessionOptions(this IRequest httpReq)

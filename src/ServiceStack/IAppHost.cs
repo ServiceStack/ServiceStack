@@ -58,6 +58,16 @@ namespace ServiceStack
         List<Action<IRequest, IResponse>> PreRequestFilters { get; }
 
         /// <summary>
+        /// Add Request Converter to convert Request DTO's
+        /// </summary>
+        List<Func<IRequest, object, object>> RequestConverters { get; }
+
+        /// <summary>
+        /// Add Response Converter to convert Response DTO's
+        /// </summary>
+        List<Func<IRequest, object, object>> ResponseConverters { get; }
+
+        /// <summary>
         /// Add Request Filters for HTTP Requests
         /// </summary>
         List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes.FSharp
@@ -50,6 +51,7 @@ namespace ServiceStack.NativeTypes.FSharp
             sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
             sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
             sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(defaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
+            sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(defaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
@@ -59,23 +61,6 @@ namespace ServiceStack.NativeTypes.FSharp
             //sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), Config.DefaultNamespaces.ToArray().Join(", ")));
             sb.AppendLine("*)");
             sb.AppendLine();
-
-            //if (Config.AddDataContractAttributes
-            //    && Config.AddDefaultXmlNamespace != null)
-            //{
-            //    sb.AppendLine();
-
-            //    var list = namespaces.Where(x => !Config.DefaultNamespaces.Contains(x)).ToList();
-            //    list.ForEach(x =>
-            //        sb.AppendLine("[<assembly: ContractNamespace(\"{0}\", ClrNamespace=\"{1}\")>]"
-            //            .Fmt(Config.AddDefaultXmlNamespace, x)));
-
-            //    if (list.Count > 0)
-            //    {
-            //        sb.AppendLine("do()"); //http://scottseely.com/2009/01/23/f-assembly-level-attributes-assemblyinfo-fs-and-do/
-            //    }
-            //}
-            //sb.AppendLine();
 
             string lastNS = null;
 
@@ -101,6 +86,8 @@ namespace ServiceStack.NativeTypes.FSharp
             {
                 sb.AppendLine("open " + ns);
             }
+            if (Config.AddGeneratedCodeAttributes)
+                sb.AppendLine("open System.CodeDom.Compiler");
 
             foreach (var type in orderedTypes)
             {
@@ -181,6 +168,10 @@ namespace ServiceStack.NativeTypes.FSharp
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
+            if (Config.AddGeneratedCodeAttributes)
+            {
+                sb.AppendLine("[<GeneratedCode(\"AddServiceStackReference\", \"{0}\")>]".Fmt(Env.VersionString));
+            }
 
             if (type.IsEnum.GetValueOrDefault())
             {

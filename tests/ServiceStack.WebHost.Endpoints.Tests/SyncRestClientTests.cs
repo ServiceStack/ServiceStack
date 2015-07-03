@@ -246,6 +246,35 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [TestFixture]
+    public class JsonSyncRestHttpClientTests : SyncRestClientTests
+    {
+        public JsonSyncRestHttpClientTests()
+            : base(8090)
+        {
+        }
+
+        protected override IRestClient CreateRestClient()
+        {
+            return new JsonHttpClient(ListeningOn);
+        }
+
+        [Test]
+        public void Can_use_response_filters()
+        {
+            var isActioncalledGlobal = false;
+            var isActioncalledLocal = false;
+            JsonHttpClient.GlobalResponseFilter = r => isActioncalledGlobal = true;
+            var restClient = (JsonHttpClient)CreateRestClient();
+            restClient.ResponseFilter = r => isActioncalledLocal = true;
+            restClient.Get<MoviesResponse>("all-movies");
+            Assert.That(isActioncalledGlobal, Is.True);
+            Assert.That(isActioncalledLocal, Is.True);
+
+            JsonHttpClient.GlobalResponseFilter = null;
+        }
+    }
+
+    [TestFixture]
     public class JsvSyncRestClientTests : SyncRestClientTests
     {
         public JsvSyncRestClientTests()

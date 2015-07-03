@@ -466,8 +466,8 @@ namespace ServiceStack.Host
         /// </summary>
         public object ExecuteMessage(IMessage dto, IRequest req)
         {
-            req.Dto = dto.Body;
-            if (HostContext.ApplyMessageRequestFilters(req, req.Response, dto.Body))
+            req.Dto = appHost.ApplyRequestConverters(req, dto.Body);
+            if (appHost.ApplyMessageRequestFilters(req, req.Response, dto.Body))
                 return req.Response.Dto;
 
             var response = Execute(dto.Body, req);
@@ -480,7 +480,9 @@ namespace ServiceStack.Host
                 response = taskResponse.GetResult();
             }
 
-            if (HostContext.ApplyMessageResponseFilters(req, req.Response, response))
+            response = appHost.ApplyResponseConverters(req, response);
+
+            if (appHost.ApplyMessageResponseFilters(req, req.Response, response))
                 return req.Response.Dto;
 
             return response;
@@ -522,7 +524,7 @@ namespace ServiceStack.Host
             if (appHost.ApplyRequestFilters(req, req.Response, request))
                 return null;
 
-            var response = Execute(request, req);
+            var response = appHost.ApplyResponseConverters(req, Execute(request, req));
 
             if (appHost.ApplyResponseFilters(req, req.Response, response))
                 return null;
@@ -547,10 +549,10 @@ namespace ServiceStack.Host
             var taskResponse = response as Task;
             if (taskResponse != null)
             {
-                return taskResponse.ContinueWith(x => x.GetResult());
+                return taskResponse.ContinueWith(x => appHost.ApplyResponseConverters(req, x.GetResult()));
             }
 
-            return response.AsTaskResult();
+            return appHost.ApplyResponseConverters(req, response).AsTaskResult();
         }
 
         public ServiceExecFn GetService(Type requestType)

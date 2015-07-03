@@ -38,6 +38,8 @@ namespace ServiceStack.Metadata
                 httpRes.ContentType = "text/html";
                 ProcessOperations(writer, httpReq, httpRes);
             }
+
+            httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
 
         public virtual string CreateResponse(Type type)

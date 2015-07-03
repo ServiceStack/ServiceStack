@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes.CSharp
@@ -66,17 +67,22 @@ namespace ServiceStack.NativeTypes.CSharp
             sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
             sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
             sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(defaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
+            sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(defaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
+
+            //[GeneratedCode]
             //sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), Config.DefaultNamespaces.ToArray().Join(", ")));
             sb.AppendLine("*/");
             sb.AppendLine();
 
             namespaces.Each(x => sb.AppendLine("using {0};".Fmt(x)));
+            if (Config.AddGeneratedCodeAttributes)
+                sb.AppendLine("using System.CodeDom.Compiler;");
 
             if (Config.AddDataContractAttributes
                 && Config.AddDefaultXmlNamespace != null)
@@ -204,6 +210,8 @@ namespace ServiceStack.NativeTypes.CSharp
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
+            if (Config.AddGeneratedCodeAttributes)
+                sb.AppendLine("[GeneratedCode(\"AddServiceStackReference\", \"{0}\")]".Fmt(Env.VersionString));
 
             if (type.IsEnum.GetValueOrDefault())
             {

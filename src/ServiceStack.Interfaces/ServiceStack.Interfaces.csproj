@@ -139,6 +139,7 @@
     <Compile Include="IQuery.cs" />
     <Compile Include="IReceiver.cs" />
     <Compile Include="IRestGateway.cs" />
+    <Compile Include="IEncryptedClient.cs" />
     <Compile Include="Logging\DebugLogFactory.cs" />
     <Compile Include="Logging\DebugLogger.cs" />
     <Compile Include="Logging\GenericLogFactory.cs" />
@@ -172,12 +173,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\IHasStringId.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Model\IHasUserId.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Model\IHasUserSession.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="IO\IVirtualDirectory.cs" />

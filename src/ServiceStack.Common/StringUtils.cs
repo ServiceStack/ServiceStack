@@ -4,12 +4,143 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ServiceStack
 {
+    public class Command
+    {
+        public Command()
+        {
+            Args = new List<string>();
+        }
+
+        public string Name { get; set; }
+
+        public List<string> Args { get; set; }
+
+        public string Suffix { get; set; }
+
+        //Output different format for debugging to verify command was parsed correctly
+        public string ToDebugString()
+        {
+            var sb = new StringBuilder();
+            foreach (var arg in Args)
+            {
+                if (sb.Length > 0)
+                    sb.Append('|');
+                sb.Append(arg);
+            }
+            return "[{0}:{1}]{2}".Fmt(Name, sb.ToString(), Suffix);
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            foreach (var arg in Args)
+            {
+                if (sb.Length > 0)
+                    sb.Append(',');
+                sb.Append(arg);
+            }
+            return "{0}({1}){2}".Fmt(Name, sb.ToString(), Suffix);
+        }
+    }
+
     public static class StringUtils
     {
+        public static List<Command> ParseCommands(this string commandsString)
+        {
+            var to = new List<Command>();
+
+            if (string.IsNullOrEmpty(commandsString))
+                return to;
+
+            var inDoubleQuotes = false;
+            var inSingleQuotes = false;
+            var inBraces = false;
+
+            var pos = 0;
+            var cmd = new Command();
+
+            for (var i = 0; i < commandsString.Length; i++)
+            {
+                var c = commandsString[i];
+                if (inDoubleQuotes)
+                {
+                    if (c == '"')
+                        inDoubleQuotes = false;
+                    continue;
+                }
+                if (inSingleQuotes)
+                {
+                    if (c == '\'')
+                        inSingleQuotes = false;
+                    continue;
+                }
+                if (c == '"')
+                {
+                    inDoubleQuotes = true;
+                    continue;
+                }
+                if (c == '\'')
+                {
+                    inSingleQuotes = true;
+                    continue;
+                }
+
+                if (c == '(')
+                {
+                    inBraces = true;
+                    cmd.Name = commandsString.Substring(pos, i - pos).Trim();
+                    pos = i + 1;
+                    continue;
+                }
+                if (c == ')')
+                {
+                    inBraces = false;
+                    var arg = commandsString.Substring(pos, i - pos).Trim();
+                    cmd.Args.Add(arg);
+                    pos = i + 1;
+
+                    var endPos = commandsString.IndexOf(',', pos);
+                    if (endPos == -1)
+                        endPos = commandsString.Length;
+
+                    cmd.Suffix = commandsString.Substring(pos, endPos - pos);
+                    pos = endPos;
+
+                    continue;
+                }
+
+                if (c == ',')
+                {
+                    if (inBraces)
+                    {
+                        var arg = commandsString.Substring(pos, i - pos).Trim();
+                        cmd.Args.Add(arg);
+                        pos = i + 1;
+                    }
+                    else
+                    {
+                        to.Add(cmd);
+                        cmd = new Command();
+                        pos = i + 1;
+                    }
+                }
+            }
+
+            var remaining = commandsString.Substring(pos, commandsString.Length - pos);
+            if (!string.IsNullOrEmpty(remaining))
+                cmd.Name = remaining.Trim();
+
+            if (!string.IsNullOrEmpty(cmd.Name))
+                to.Add(cmd);
+
+            return to;
+        }
+
 #if !SL5
         static readonly Regex StripHtmlUnicodeRegEx = new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);", RegexOptions.Compiled);
 #else
