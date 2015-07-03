@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using ServiceStack.Auth;
 
 namespace ServiceStack
 {
@@ -26,6 +27,7 @@ namespace ServiceStack
     {
         public string PublicKeyPath { get; set; }
         public string PublicKeyXml { get; set; }
+        public string SessionId { get; set; }
         public RSAParameters? PublicKey { get; set; }
         public IServiceClient Client { get; set; }
 
@@ -96,6 +98,12 @@ namespace ServiceStack
 
         public EncryptedMessage CreateEncryptedMessage(object request, string operationName, SymmetricAlgorithm aes)
         {
+            if (SessionId != null)
+            {
+                var hasSession = request as IHasSessionId;
+                hasSession.SessionId = SessionId;
+            }
+
             var aesKeyBytes = aes.Key.Combine(aes.IV);
 
             var publicKey = GetPublicKey();

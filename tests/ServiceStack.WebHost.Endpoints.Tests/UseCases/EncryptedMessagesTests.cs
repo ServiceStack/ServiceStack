@@ -137,6 +137,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         [Test]
+        public void Can_authenticate_and_call_authenticated_Service_with_implicit_SessionId()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient();
+
+            var authResponse = encryptedClient.Send(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "test@gmail.com",
+                Password = "p@55word",
+            });
+
+            var encryptedClientCookies = client.GetCookieValues();
+            Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+
+            encryptedClient.SessionId = authResponse.SessionId;
+
+            var response = encryptedClient.Send(new HelloAuthenticated());
+
+            Assert.That(response.IsAuthenticated);
+            Assert.That(response.Email, Is.EqualTo("test@gmail.com"));
+            Assert.That(response.SessionId, Is.EqualTo(authResponse.SessionId));
+
+            encryptedClientCookies = client.GetCookieValues();
+            Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+        }
+
+        [Test]
         public void Does_handle_Exceptions()
         {
             var client = CreateClient();

@@ -75,6 +75,6 @@ namespace ServiceStack.Auth
 
     public interface IHasSessionId
     {
-        string SessionId { get; }
+        string SessionId { get; set; }
     }
 }

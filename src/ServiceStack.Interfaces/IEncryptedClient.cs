@@ -3,7 +3,7 @@
 
 namespace ServiceStack
 {
-    public interface IEncryptedClient : IReplyClient
+    public interface IEncryptedClient : IReplyClient, Auth.IHasSessionId
     {
         string PublicKeyPath { get; set; }
         string PublicKeyXml { get; set; }
