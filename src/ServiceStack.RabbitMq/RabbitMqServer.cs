@@ -174,16 +174,12 @@ namespace ServiceStack.RabbitMq
         {
             private readonly QueueNames _queueNames;
             private readonly Type _type;
-            private readonly int _noOfThreads;
-            private readonly Dictionary<string, IMessageHandlerFactory> _messageHandlerFactories = new Dictionary<string, IMessageHandlerFactory>();
+            private readonly Dictionary<string, MessageHandlerFactoryWrapper> _messageHandlerFactories = new Dictionary<string, MessageHandlerFactoryWrapper>();
 
-            public HandlerRegistration(Type type,
-                                       QueueNames queueNames,
-                                       int noOfThreads)
+            public HandlerRegistration(Type type)
             {
-                this._queueNames = queueNames;
+                this._queueNames = new QueueNames(type);
                 this._type = type;
-                this._noOfThreads = noOfThreads;
             }
 
             public Type Type
@@ -202,6 +198,42 @@ namespace ServiceStack.RabbitMq
                 }
             }
 
+            public void AddMessageHandlerFactory(string queueName,
+                                                 IMessageHandlerFactory messageHandlerFactory,
+                                                 int noOfThreads)
+            {
+                if (this._messageHandlerFactories.ContainsKey(queueName))
+                {
+                    throw new ArgumentException("Message handler for queue " + queueName + " has already been registered for type: " + this.Type.Name);
+                }
+
+                this._messageHandlerFactories[queueName] = new MessageHandlerFactoryWrapper(messageHandlerFactory,
+                                                                                            noOfThreads);
+            }
+
+            public MessageHandlerFactoryWrapper GetMessageHandlerFactoryWrapper(string queueName)
+            {
+                return this._messageHandlerFactories[queueName];
+            }
+
+            public IEnumerable<KeyValuePair<string, MessageHandlerFactoryWrapper>> GetAdditionalMessageHandlerFactoryWrappers()
+            {
+                return this._messageHandlerFactories.Where(arg => arg.Key != this.QueueNames.In && arg.Key != this.QueueNames.Priority);
+            }
+        }
+
+        private class MessageHandlerFactoryWrapper
+        {
+            private readonly IMessageHandlerFactory _messageHandlerFactory;
+            private readonly int _noOfThreads;
+
+            public MessageHandlerFactoryWrapper(IMessageHandlerFactory messageHandlerFactory,
+                                                int noOfThreads)
+            {
+                this._messageHandlerFactory = messageHandlerFactory;
+                this._noOfThreads = noOfThreads;
+            }
+
             public int NoOfThreads
             {
                 get
@@ -210,25 +242,12 @@ namespace ServiceStack.RabbitMq
                 }
             }
 
-            public void AddMessageHandlerFactory(string queueName,
-                                                 IMessageHandlerFactory messageHandlerFactory)
+            public IMessageHandlerFactory MessageHandlerFactory
             {
-                if (this._messageHandlerFactories.ContainsKey(queueName))
+                get
                 {
-                    throw new ArgumentException("Message handler for queue " + queueName + " has already been registered for type: " + this.Type.Name);
+                    return this._messageHandlerFactory;
                 }
-
-                this._messageHandlerFactories[queueName] = messageHandlerFactory;
-            }
-
-            public IMessageHandlerFactory GetMessageHandlerFactory(string queueName)
-            {
-                return this._messageHandlerFactories[queueName];
-            }
-
-            public IEnumerable<KeyValuePair<string, IMessageHandlerFactory>> GetAdditionalMessageHandlerFactories()
-            {
-                return this._messageHandlerFactories.Where(arg => arg.Key != this.QueueNames.In && arg.Key != this.QueueNames.Priority);
             }
         }
 
@@ -295,15 +314,13 @@ namespace ServiceStack.RabbitMq
             if (!this._handlerRegistrations.TryGetValue(messageType,
                                                         out handlerRegistration))
             {
-                var queueNames = new QueueNames(messageType);
-                handlerRegistration = new HandlerRegistration(messageType,
-                                                              queueNames,
-                                                              noOfThreads);
+                handlerRegistration = new HandlerRegistration(messageType);
                 this._handlerRegistrations[messageType] = handlerRegistration;
             }
 
             handlerRegistration.AddMessageHandlerFactory(queueName,
-                                                         messageHandlerFactory);
+                                                         messageHandlerFactory,
+                                                         noOfThreads);
             
             LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, this.RegisteredTypes.Count);
         }
@@ -397,20 +414,19 @@ namespace ServiceStack.RabbitMq
                 {
                     var msgType = handlerRegistration.Type;
                     var queueNames = handlerRegistration.QueueNames;
-                    var noOfThreads = handlerRegistration.NoOfThreads;
 
-                    IMessageHandlerFactory handlerFactory;
+                    MessageHandlerFactoryWrapper messageHandlerFactoryWrapper;
                     string queueName;
 
                     if (PriortyQueuesWhitelist == null
                         || PriortyQueuesWhitelist.Any(x => x == msgType.Name))
                     {
                         queueName = queueNames.Priority;
-                        handlerFactory = handlerRegistration.GetMessageHandlerFactory(queueName);
-                        noOfThreads.Times(i =>
+                        messageHandlerFactoryWrapper = handlerRegistration.GetMessageHandlerFactoryWrapper(queueName);
+                        messageHandlerFactoryWrapper.NoOfThreads.Times(i =>
                             workerBuilder.Add(new RabbitMqWorker(
                                 messageFactory,
-                                handlerFactory.CreateMessageHandler(),
+                                messageHandlerFactoryWrapper.MessageHandlerFactory.CreateMessageHandler(),
                                 queueName,
                                 WorkerErrorHandler,
                                 AutoReconnect)));
@@ -418,23 +434,23 @@ namespace ServiceStack.RabbitMq
                     }
 
                     queueName = queueNames.In;
-                    handlerFactory = handlerRegistration.GetMessageHandlerFactory(queueName);
-                    noOfThreads.Times(i =>
+                    messageHandlerFactoryWrapper = handlerRegistration.GetMessageHandlerFactoryWrapper(queueName);
+                    messageHandlerFactoryWrapper.NoOfThreads.Times(i =>
                         workerBuilder.Add(new RabbitMqWorker(
                                 messageFactory,
-                                handlerFactory.CreateMessageHandler(),
+                                messageHandlerFactoryWrapper.MessageHandlerFactory.CreateMessageHandler(),
                                 queueName,
                                 WorkerErrorHandler,
                                 AutoReconnect)));
 
-                    foreach (var additionalHandlerFactory in handlerRegistration.GetAdditionalMessageHandlerFactories())
+                    foreach (var additionalHandlerFactory in handlerRegistration.GetAdditionalMessageHandlerFactoryWrappers())
                     {
                         queueName = additionalHandlerFactory.Key;
-                        handlerFactory = additionalHandlerFactory.Value;
-                        noOfThreads.Times(i =>
+                        messageHandlerFactoryWrapper = additionalHandlerFactory.Value;
+                        messageHandlerFactoryWrapper.NoOfThreads.Times(i =>
                             workerBuilder.Add(new RabbitMqWorker(
                                     messageFactory,
-                                    handlerFactory.CreateMessageHandler(),
+                                    messageHandlerFactoryWrapper.MessageHandlerFactory.CreateMessageHandler(),
                                     queueName,
                                     WorkerErrorHandler,
                                     AutoReconnect)));
