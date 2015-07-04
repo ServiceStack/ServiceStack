@@ -167,6 +167,7 @@ namespace ServiceStack.Auth
             {
                 var ctx = new AuthContext
                 {
+                    Request = authService.Request,
                     Service = authService,
                     AuthProvider = this,
                     Session = session,
@@ -413,6 +414,7 @@ namespace ServiceStack.Auth
 
     public class AuthContext
     {
+        public IRequest Request { get; set; }
         public IServiceBase Service { get; set; }
         public AuthProvider AuthProvider { get; set; }
         public IAuthSession Session { get; set; }

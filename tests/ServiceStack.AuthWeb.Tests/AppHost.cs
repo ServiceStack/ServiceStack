@@ -110,6 +110,10 @@ namespace ServiceStack.AuthWeb.Tests
                     //}, 
                     new CredentialsAuthProvider {  //HTML Form post of UserName/Password credentials
                         SkipPasswordVerificationForPrivateRequests = true,
+                        //CustomValidationFilter = authCtx => 
+                        //    authCtx.Request.UserHostAddress.StartsWith("175.45.17")
+                        //        ? HttpResult.Redirect("https://youtu.be/dQw4w9WgXcQ")
+                        //        : null
                     },        
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook

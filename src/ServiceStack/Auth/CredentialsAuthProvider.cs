@@ -188,6 +188,7 @@ namespace ServiceStack.Auth
             {
                 var ctx = new AuthContext
                 {
+                    Request = authService.Request,
                     Service = authService,
                     AuthProvider = this,
                     Session = session,
