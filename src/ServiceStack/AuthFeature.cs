@@ -162,7 +162,7 @@ namespace ServiceStack
 
             return feature.IsValidUsernameFn != null
                 ? feature.IsValidUsernameFn(userName)
-                : ValidUserNameRegEx.IsMatch(userName);
+                : feature.ValidUserNameRegEx.IsMatch(userName);
         }
     }
 }
