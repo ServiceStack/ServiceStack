@@ -25,33 +25,21 @@ namespace ServiceStack
 
     public class EncryptedServiceClient : IEncryptedClient
     {
-        public string PublicKeyPath { get; set; }
-        public string PublicKeyXml { get; set; }
+        public string ServerPublicKeyXml { get; private set; }
         public int Version { get; set; }
         public string SessionId { get; set; }
-        public RSAParameters? PublicKey { get; set; }
+        public RSAParameters PublicKey { get; set; }
         public IServiceClient Client { get; set; }
 
-        public EncryptedServiceClient(IServiceClient client)
+        public EncryptedServiceClient(IServiceClient client, string publicKeyXml)
+            : this(client, publicKeyXml.ToPublicRSAParameters()) {}
+
+        public EncryptedServiceClient(IServiceClient client, RSAParameters publicKey)
         {
-            PublicKeyPath = "/publickey";
             Client = client;
             Client.ClearCookies();
-        }
-
-        private RSAParameters GetPublicKey()
-        {
-            if (PublicKey == null)
-            {
-                if (PublicKeyXml == null)
-                {
-                    PublicKeyXml = Client.Get<string>(PublicKeyPath);
-                }
-
-                PublicKey = PublicKeyXml.ToPublicRSAParameters();
-            }
-
-            return PublicKey.Value;
+            PublicKey = publicKey;
+            ServerPublicKeyXml = publicKey.ToPublicKeyXml();
         }
 
         public TResponse Send<TResponse>(object request)
@@ -113,9 +101,7 @@ namespace ServiceStack
 
             var aesKeyBytes = aes.Key.Combine(aes.IV);
 
-            var publicKey = GetPublicKey();
-
-            var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, publicKey);
+            var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, PublicKey);
 
             if (verb == null)
                 verb = HttpMethods.Post;
@@ -169,9 +155,17 @@ namespace ServiceStack
 
     public static partial class ServiceClientExtensions
     {
-        public static IEncryptedClient GetEncryptedClient(this IServiceClient client)
+        public static IEncryptedClient GetEncryptedClient(this IServiceClient client, string serverPublicKeyXml)
         {
-            return new EncryptedServiceClient(client);
+            if (string.IsNullOrEmpty(serverPublicKeyXml))
+                throw new ArgumentNullException("serverPublicKeyXml");
+
+            return new EncryptedServiceClient(client, serverPublicKeyXml);
+        }
+
+        public static IEncryptedClient GetEncryptedClient(this IServiceClient client, RSAParameters publicKey)
+        {
+            return new EncryptedServiceClient(client, publicKey);
         }
 
         public static TResponse Get<TResponse>(this IEncryptedClient client, IReturn<TResponse> request)

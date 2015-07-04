@@ -100,7 +100,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public void Can_Send_Encrypted_Message_with_ServiceClients()
         {
             var client = CreateClient();
-            IEncryptedClient encryptedClient = client.GetEncryptedClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
 
             var response = encryptedClient.Send(new HelloSecure { Name = "World" });
 
@@ -113,7 +113,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             try
             {
                 var client = CreateClient();
-                IEncryptedClient encryptedClient = client.GetEncryptedClient();
+                IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
 
                 var authResponse = encryptedClient.Send(new Authenticate
                 {
@@ -147,7 +147,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public void Does_populate_Request_metadata()
         {
             var client = CreateClient();
-            IEncryptedClient encryptedClient = client.GetEncryptedClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
 
             var authResponse = encryptedClient.Send(new Authenticate
             {
@@ -181,7 +181,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public void Does_handle_Exceptions()
         {
             var client = CreateClient();
-            IEncryptedClient encryptedClient = client.GetEncryptedClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
 
             try
             {
@@ -210,7 +210,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public void Can_call_GET_only_Services()
         {
             var client = CreateClient();
-            IEncryptedClient encryptedClient = client.GetEncryptedClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
 
             var response = encryptedClient.Get(new GetSecure { Name = "World" });
 
@@ -221,7 +221,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public void Can_send_auto_batched_requests()
         {
             var client = CreateClient();
-            IEncryptedClient encryptedClient = client.GetEncryptedClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
 
             var names = new[] { "Foo", "Bar", "Baz" };
             var requests = names.Map(x => new HelloSecure { Name = x });

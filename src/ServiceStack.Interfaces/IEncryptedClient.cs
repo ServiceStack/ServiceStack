@@ -5,8 +5,7 @@ namespace ServiceStack
 {
     public interface IEncryptedClient : IReplyClient, IHasSessionId, IHasVersion
     {
-        string PublicKeyPath { get; set; }
-        string PublicKeyXml { get; set; }
+        string ServerPublicKeyXml { get; }
         IServiceClient Client { get; }
 
         TResponse Send<TResponse>(string httpMethod, object request);
