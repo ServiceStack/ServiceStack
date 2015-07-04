@@ -78,6 +78,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 {
                     MaxLimit = 100,
                     EnableRawSqlFilters = true,
+                    ResponseFilters = {
+                        ctx => {
+                            var executedCmds = new List<Command>();
+                            var supportedFns = new Dictionary<string, Func<int, int, int>>(StringComparer.OrdinalIgnoreCase)
+                            {
+                                {"ADD",      (a,b) => a + b },
+                                {"MULTIPLY", (a,b) => a * b },
+                                {"DIVIDE",   (a,b) => a / b },
+                                {"SUBTRACT", (a,b) => a - b },
+                            };
+                            foreach (var cmd in ctx.Commands)
+                            {
+                                Func<int, int, int> fn;
+                                if (!supportedFns.TryGetValue(cmd.Name, out fn)) continue;
+                                var label = !string.IsNullOrWhiteSpace(cmd.Suffix) ? cmd.Suffix.Trim() : cmd.ToString();
+                                ctx.Response.Meta[label] = fn(int.Parse(cmd.Args[0]), int.Parse(cmd.Args[1])).ToString();
+                                executedCmds.Add(cmd);
+                            }
+                            ctx.Commands.RemoveAll(executedCmds.Contains);
+                        }        
+                    }
                 }
                 .RegisterQueryFilter<QueryRockstarsFilter, Rockstar>((req, q, dto) =>
                     q.And(x => x.LastName.EndsWith("son"))
@@ -1175,6 +1196,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Meta["min"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
             Assert.That(response.Meta["max"], Is.EqualTo(response.Results.Map(x => x.Age).Max().ToString()));
             Assert.That(response.Meta["sum"], Is.EqualTo(response.Results.Map(x => x.Id).Sum().ToString()));
+        }
+
+        [Test]
+        public void Can_execute_custom_aggregate_functions()
+        {
+            var response = client.Get(new QueryRockstars {
+                Include = "ADD(6,2), Multiply(6,2) SixTimesTwo, Subtract(6,2), divide(6,2) TheDivide"
+            });
+            response.PrintDump();
+            Assert.That(response.Meta["ADD(6,2)"], Is.EqualTo("8"));
+            Assert.That(response.Meta["SixTimesTwo"], Is.EqualTo("12"));
+            Assert.That(response.Meta["Subtract(6,2)"], Is.EqualTo("4"));
+            Assert.That(response.Meta["TheDivide"], Is.EqualTo("3"));
         }
     }
 
