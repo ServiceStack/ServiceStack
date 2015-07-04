@@ -81,7 +81,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var aesKeyBytes = aes.Key.Combine(aes.IV);
             var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, SecureConfig.PublicKeyXml);
 
-            var requestBody = typeof(HelloSecure).Name + " " + request.ToJson();
+            var requestBody = "POST " + typeof(HelloSecure).Name + " " + request.ToJson();
 
             var encryptedMessage = new EncryptedMessage
             {
@@ -204,6 +204,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
                 Assert.That(ex.StatusDescription, Is.EqualTo("Unauthorized"));
             }
+        }
+
+        [Test]
+        public void Can_call_GET_only_Services()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient();
+
+            var response = encryptedClient.Get(new GetSecure { Name = "World" });
+
+            Assert.That(response.Result, Is.EqualTo("Hello, World!"));
         }
 
         [Test]

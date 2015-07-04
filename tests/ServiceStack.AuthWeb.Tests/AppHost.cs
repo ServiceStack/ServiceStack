@@ -293,6 +293,8 @@ namespace ServiceStack.AuthWeb.Tests
         }
     }
 
+    //[RequiredRole("Admin")]
+    //[Restrict(InternalOnly = true)]
     [Route("/privateauth")]
     public class PrivateAuth
     {

@@ -161,6 +161,10 @@ namespace ServiceStack.Host
             var actionName = request.Verb 
                 ?? HttpMethods.Post; //MQ Services
 
+            var overrideVerb = request.GetItem(Keywords.InvokeVerb) as string;
+            if (overrideVerb != null)
+                actionName = overrideVerb;
+
             InstanceExecFn action;
             if (execMap.TryGetValue(ActionContext.Key(actionName, requestName), out action)
                 || execMap.TryGetValue(ActionContext.AnyKey(requestName), out action))

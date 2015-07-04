@@ -56,11 +56,16 @@ namespace ServiceStack
 
         public TResponse Send<TResponse>(object request)
         {
+            return Send<TResponse>(HttpMethods.Post, request);
+        }
+
+        public TResponse Send<TResponse>(string httpMethod, object request)
+        {
             using (var aes = new AesManaged { KeySize = AesUtils.KeySize })
             {
                 try
                 {
-                    var encryptedMessage = CreateEncryptedMessage(request, request.GetType().Name, aes);
+                    var encryptedMessage = CreateEncryptedMessage(request, request.GetType().Name, aes, httpMethod);
                     var encResponse = Client.Send(encryptedMessage);
 
                     var responseJson = AesUtils.Decrypt(encResponse.EncryptedBody, aes.Key, aes.IV);
@@ -73,6 +78,11 @@ namespace ServiceStack
                     throw DecryptedException(ex, aes);
                 }
             }
+        }
+
+        public TResponse Send<TResponse>(string httpMethod, IReturn<TResponse> request)
+        {
+            return Send<TResponse>(httpMethod, (object) request);
         }
 
         public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
@@ -97,7 +107,7 @@ namespace ServiceStack
             }
         }
 
-        public EncryptedMessage CreateEncryptedMessage(object request, string operationName, SymmetricAlgorithm aes)
+        public EncryptedMessage CreateEncryptedMessage(object request, string operationName, SymmetricAlgorithm aes, string verb = null)
         {
             this.PopulateRequestMetadata(request);
 
@@ -107,7 +117,10 @@ namespace ServiceStack
 
             var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, publicKey);
 
-            var requestBody = operationName + " " + request.ToJson();
+            if (verb == null)
+                verb = HttpMethods.Post;
+
+            var requestBody = verb + " " + operationName + " " + request.ToJson();
 
             var encryptedMessage = new EncryptedMessage
             {
@@ -159,6 +172,26 @@ namespace ServiceStack
         public static IEncryptedClient GetEncryptedClient(this IServiceClient client)
         {
             return new EncryptedServiceClient(client);
+        }
+
+        public static TResponse Get<TResponse>(this IEncryptedClient client, IReturn<TResponse> request)
+        {
+            return client.Send(HttpMethods.Get, request);
+        }
+
+        public static TResponse Delete<TResponse>(this IEncryptedClient client, IReturn<TResponse> request)
+        {
+            return client.Send(HttpMethods.Delete, request);
+        }
+
+        public static TResponse Post<TResponse>(this IEncryptedClient client, IReturn<TResponse> request)
+        {
+            return client.Send(HttpMethods.Post, request);
+        }
+
+        public static TResponse Put<TResponse>(this IEncryptedClient client, IReturn<TResponse> request)
+        {
+            return client.Send(HttpMethods.Put, request);
         }
     }
 }

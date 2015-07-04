@@ -13,6 +13,7 @@
         public static string Bare = "bare";
         public static string SoapMessage = "SoapMessage";
         public static string Route = "__route";
+        public static string InvokeVerb = "__verb";
     }
 
     public static class LocalizedStrings

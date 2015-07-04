@@ -23,6 +23,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public string Result { get; set; }
     }
 
+    public class GetSecure : IReturn<GetSecureResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class GetSecureResponse
+    {
+        public string Result { get; set; }
+    }
+
     public class HelloAuthenticated : IReturn<HelloAuthenticatedResponse>, IHasSessionId, IHasVersion
     {
         public string SessionId { get; set; }
@@ -41,6 +51,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
     public class SecureServices : Service
     {
+        public object Get(GetSecure request)
+        {
+            if (request.Name == null)
+                throw new ArgumentNullException("Name");
+
+            return new GetSecureResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+
         public object Any(HelloSecure request)
         {
             if (request.Name == null)

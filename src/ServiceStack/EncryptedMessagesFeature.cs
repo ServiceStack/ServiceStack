@@ -78,6 +78,9 @@ namespace ServiceStack
                         throw new ArgumentNullException("EncryptedBody");
 
                     var parts = requestBody.SplitOnFirst(' ');
+                    req.Items[Keywords.InvokeVerb] = parts[0];
+
+                    parts = parts[1].SplitOnFirst(' ');
                     var operationName = parts[0];
                     var requestJson = parts[1];
 

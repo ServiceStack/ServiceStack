@@ -8,5 +8,8 @@ namespace ServiceStack
         string PublicKeyPath { get; set; }
         string PublicKeyXml { get; set; }
         IServiceClient Client { get; }
+
+        TResponse Send<TResponse>(string httpMethod, object request);
+        TResponse Send<TResponse>(string httpMethod, IReturn<TResponse> request);
     }
 }
