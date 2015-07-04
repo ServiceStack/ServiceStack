@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Web;
 

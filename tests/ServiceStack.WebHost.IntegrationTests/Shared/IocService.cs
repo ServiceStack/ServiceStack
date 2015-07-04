@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Funq;
 using ServiceStack.Configuration;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Web;
 
 namespace ServiceStack.Shared.Tests
@@ -169,6 +170,7 @@ namespace ServiceStack.Shared.Tests
     }
 
 
+    [Exclude(Feature.Metadata)]
     [Route("/action-attr")]
     public class ActionAttr : IReturn<IocResponse> { }
 

@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Api.Swagger
@@ -268,7 +269,7 @@ namespace ServiceStack.Api.Swagger
 
         private void ParseModel(IDictionary<string, SwaggerModel> models, Type modelType, string route, string verb)
         {
-            if (IsSwaggerScalarType(modelType)) return;
+            if (IsSwaggerScalarType(modelType) || modelType.ExcludesFeature(Feature.Metadata)) return;
 
             var modelId = GetModelTypeName(modelType, route, verb);
             if (models.ContainsKey(modelId)) return;

@@ -205,6 +205,9 @@ namespace ServiceStack.Host
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
+            if (operation.RequestType.ExcludesFeature(Feature.Metadata))
+                return false;
+
             if (operation.RestrictTo == null) return true;
 
             //Less fine-grained on /metadata pages. Only check Network and Format
@@ -230,6 +233,8 @@ namespace ServiceStack.Host
             Operation operation;
             OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
             if (operation == null) return false;
+
+            if (operation.RequestType.ExcludesFeature(Feature.Metadata)) return false;
 
             var canCall = HasImplementation(operation, format);
             if (!canCall) return false;
@@ -639,6 +644,12 @@ namespace ServiceStack.Host
         {
             return type.IsAbstract.GetValueOrDefault()
                 || type.Name == typeof(AuthUserSession).Name; //not abstract but treat it as so
+        }
+
+        public static bool ExcludesFeature(this Type type, Feature feature)
+        {
+            var excludeAttr = type.FirstAttribute<ExcludeAttribute>();
+            return excludeAttr != null && excludeAttr.Feature.HasFlag(feature);
         }
     }
 }
