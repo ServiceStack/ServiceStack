@@ -240,7 +240,7 @@ namespace ServiceStack
         }
     }
 
-    [Obsolete("Use Rsa.* static class")]
+    [Obsolete("Use RsaUtils.* static class")]
     public class CryptUtils
     {
         public static string Encrypt(string publicKeyXml, string data, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)

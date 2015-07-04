@@ -31,8 +31,6 @@ namespace ServiceStack
         public IQueryResponse Response { get; set; }
     }
 
-    public delegate void QueryResponseFilterDelegate(QueryFilterContext ctx);
-
     public class AutoQueryFeature : IPlugin, IPostInitPlugin
     {
         public HashSet<string> IgnoreProperties { get; set; }
@@ -47,7 +45,7 @@ namespace ServiceStack
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
-        public List<QueryResponseFilterDelegate> ResponseFilters { get; set; }
+        public List<Action<QueryFilterContext>> ResponseFilters { get; set; }
 
         public const string GreaterThanOrEqualFormat = "{Field} >= {Value}";
         public const string GreaterThanFormat =        "{Field} > {Value}";
@@ -112,7 +110,7 @@ namespace ServiceStack
             IllegalSqlFragmentTokens = new HashSet<string>();
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
-            ResponseFilters = new List<QueryResponseFilterDelegate> { IncludeAggregates };
+            ResponseFilters = new List<Action<QueryFilterContext>> { IncludeAggregates };
             EnableUntypedQueries = true;
             EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
@@ -576,7 +574,7 @@ namespace ServiceStack
 
         public virtual IDbConnection Db { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
-        public List<QueryResponseFilterDelegate> ResponseFilters { get; set; }
+        public List<Action<QueryFilterContext>> ResponseFilters { get; set; }
 
         public virtual void Dispose()
         {
