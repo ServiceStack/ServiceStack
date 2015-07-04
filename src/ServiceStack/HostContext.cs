@@ -353,7 +353,7 @@ namespace ServiceStack
             var hasRequest = service as IRequiresRequest;
             if (hasRequest != null)
             {
-                httpReq.SetPrivateRequest();
+                httpReq.SetInProcessRequest();
                 hasRequest.Request = httpReq;
             }
             return service;
