@@ -119,7 +119,7 @@ namespace ServiceStack
                 },
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, 
-                    Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.Version.ToPascalCase(),
+                    Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version.ToPascalCase(),
                 },
                 XmlWriterSettings = new XmlWriterSettings
                 {

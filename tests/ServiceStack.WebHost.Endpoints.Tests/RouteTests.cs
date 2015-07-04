@@ -159,6 +159,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Size, Is.EqualTo("100x100"));
             Assert.That(response.Id, Is.EqualTo("1"));
         }
+
+        [Test]
+        public void Does_populate_version_when_using_Version_Abbreviation()
+        {
+            var response = Config.AbsoluteBaseUri.CombineWith("/versioned-request?v=1")
+                .GetJsonFromUrl()
+                .FromJson<RequestWithVersion>();
+
+            Assert.That(response.Version, Is.EqualTo(1));
+
+            response = Config.AbsoluteBaseUri.CombineWith("/versioned-request/1?v=2")
+                .GetJsonFromUrl()
+                .FromJson<RequestWithVersion>();
+
+            Assert.That(response.Version, Is.EqualTo(2));
+
+            response = Config.AbsoluteBaseUri.CombineWith("/versioned-request/1?v=4&Version=3")
+                .GetJsonFromUrl()
+                .FromJson<RequestWithVersion>();
+
+            Assert.That(response.Version, Is.EqualTo(3));
+        }
     }
 
     public class RouteAppHost : AppHostHttpListenerBase
@@ -209,6 +231,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Size { get; set; }
     }
 
+    [Route("/versioned-request")]
+    [Route("/versioned-request/{Id}")]
+    public class RequestWithVersion : IHasVersion
+    {
+        public int Id { get; set; }
+        public int Version { get; set; }
+    }
+
     public class CustomRouteService : IService
     {
         public object Any(CustomRoute request)
@@ -222,6 +252,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         public object Any(GetPngPic request)
+        {
+            return request;
+        }
+
+        public object Any(RequestWithVersion request)
         {
             return request;
         }
