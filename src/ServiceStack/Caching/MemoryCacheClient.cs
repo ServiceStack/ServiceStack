@@ -370,6 +370,22 @@ namespace ServiceStack.Caching
             return keys;
         }
 
+        public void RemoveExpiredEntries()
+        {
+            var expiredKeys = new List<string>();
+            var enumerator = this.memory.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                var current = enumerator.Current;
+                if (current.Value.HasExpired)
+                {
+                    expiredKeys.Add(current.Key);
+                }
+            }
+
+            RemoveAll(expiredKeys);
+        }
+
         public TimeSpan? GetTimeToLive(string key)
         {
             CacheEntry cacheEntry;

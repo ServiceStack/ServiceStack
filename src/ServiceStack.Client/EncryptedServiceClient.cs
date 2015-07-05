@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using ServiceStack.Auth;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -106,7 +107,9 @@ namespace ServiceStack
             if (verb == null)
                 verb = HttpMethods.Post;
 
-            var requestBody = verb + " " + operationName + " " + request.ToJson();
+            var timestamp = DateTime.UtcNow.ToUnixTime();
+
+            var requestBody = timestamp + " " + verb + " " + operationName + " " + request.ToJson();
 
             var encryptedMessage = new EncryptedMessage
             {

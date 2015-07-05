@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         [Test]
         public void Can_Send_Encrypted_Message()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient();
 
             var request = new HelloSecure { Name = "World" };
 
@@ -81,7 +81,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var aesKeyBytes = aes.Key.Combine(aes.IV);
             var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, SecureConfig.PublicKeyXml);
 
-            var requestBody = "POST " + typeof(HelloSecure).Name + " " + request.ToJson();
+            var timestamp = DateTime.UtcNow.ToUnixTime();
+
+            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
 
             var encryptedMessage = new EncryptedMessage
             {
@@ -94,6 +96,83 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var response = responseJson.FromJson<HelloSecureResponse>();
 
             Assert.That(response.Result, Is.EqualTo("Hello, World!"));
+        }
+
+        [Test]
+        public void Does_throw_on_old_messages()
+        {
+            var client = CreateClient();
+
+            var request = new HelloSecure { Name = "World" };
+
+            var aes = new AesManaged { KeySize = AesUtils.KeySize };
+
+            var aesKeyBytes = aes.Key.Combine(aes.IV);
+            var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, SecureConfig.PublicKeyXml);
+
+            var timestamp = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(21)).ToUnixTime();
+
+            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
+
+            try
+            {
+                var encryptedMessage = new EncryptedMessage
+                {
+                    SymmetricKeyEncrypted = Convert.ToBase64String(rsaEncAesKeyBytes),
+                    EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
+                };
+                var encResponse = client.Post(encryptedMessage);
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.StatusDescription.Print();
+
+                var errorResponse = (EncryptedMessageResponse)ex.ResponseDto;
+                var responseJson = AesUtils.Decrypt(errorResponse.EncryptedBody, aes.Key, aes.IV);
+                var response = responseJson.FromJson<ErrorResponse>();
+                Assert.That(response.ResponseStatus.Message, Is.EqualTo("Request too old"));
+            }
+        }
+
+        [Test]
+        public void Does_throw_on_replayed_messages()
+        {
+            var client = CreateClient();
+
+            var request = new HelloSecure { Name = "World" };
+
+            var aes = new AesManaged { KeySize = AesUtils.KeySize };
+
+            var aesKeyBytes = aes.Key.Combine(aes.IV);
+            var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, SecureConfig.PublicKeyXml);
+
+            var timestamp = DateTime.UtcNow.ToUnixTime();
+            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
+
+            var encryptedMessage = new EncryptedMessage
+            {
+                SymmetricKeyEncrypted = Convert.ToBase64String(rsaEncAesKeyBytes),
+                EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
+            };
+            var encResponse = client.Post(encryptedMessage);
+
+            try
+            {
+                client.Post(encryptedMessage);
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.StatusDescription.Print();
+
+                var errorResponse = (EncryptedMessageResponse)ex.ResponseDto;
+                var responseJson = AesUtils.Decrypt(errorResponse.EncryptedBody, aes.Key, aes.IV);
+                var response = responseJson.FromJson<ErrorResponse>();
+                Assert.That(response.ResponseStatus.Message, Is.EqualTo("Nonce already seen"));
+            }
         }
 
         [Test]

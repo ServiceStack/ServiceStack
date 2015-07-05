@@ -2,6 +2,8 @@
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Net;
 using ServiceStack.Text;
 using System.Security.Cryptography;
@@ -29,10 +31,19 @@ namespace ServiceStack
     {
         public static readonly string RequestItemsAesKey = "_encryptKey";
         public static readonly string RequestItemsIv = "_encryptIv";
+        public static readonly TimeSpan DefaultMaxMaxRequestAge = TimeSpan.FromMinutes(20);
+
+        public static string ErrorInvalidMessage = "Invalid EncryptedMessage";
+        public static string ErrorNonceSeen = "Nonce already seen";
+        public static string ErrorRequestTooOld = "Request too old";
+
+        private readonly ConcurrentDictionary<byte[], DateTime> nonceCache = new ConcurrentDictionary<byte[], DateTime>(ByteArrayComparer.Instance);
 
         public RSAParameters? PrivateKey { get; set; }
 
         public string PublicKeyPath { get; set; }
+
+        public TimeSpan MaxRequestAge { get; set; }
 
         public string PrivateKeyXml
         {
@@ -43,6 +54,7 @@ namespace ServiceStack
         public EncryptedMessagesFeature()
         {
             PublicKeyPath = "/publickey";
+            MaxRequestAge = DefaultMaxMaxRequestAge;
         }
 
         public void Register(IAppHost appHost)
@@ -70,6 +82,12 @@ namespace ServiceStack
                     Buffer.BlockCopy(rsaEncAesKeyBytes, 0, aesKey, 0, aesKey.Length);
                     Buffer.BlockCopy(rsaEncAesKeyBytes, aesKey.Length, iv, 0, iv.Length);
 
+                    if (nonceCache.ContainsKey(iv))
+                        throw HttpError.Forbidden(ErrorNonceSeen);
+
+                    var now = DateTime.UtcNow;
+                    nonceCache.TryAdd(iv, now.Add(MaxRequestAge));
+
                     var requestBodyBytes = AesUtils.Decrypt(Convert.FromBase64String(encRequest.EncryptedBody), aesKey, iv);
                     var requestBody = requestBodyBytes.FromUtf8Bytes();
 
@@ -77,6 +95,17 @@ namespace ServiceStack
                         throw new ArgumentNullException("EncryptedBody");
 
                     var parts = requestBody.SplitOnFirst(' ');
+                    var unixTime = int.Parse(parts[0]);
+
+                    var minRequestDate = now.Subtract(MaxRequestAge);
+                    if (unixTime.FromUnixTime() < minRequestDate)
+                        throw HttpError.Forbidden(ErrorRequestTooOld);
+
+                    DateTime expiredEntry;
+                    nonceCache.Where(x => now > x.Value).ToList()
+                        .Each(entry => nonceCache.TryRemove(entry.Key, out expiredEntry));
+
+                    parts = parts[1].SplitOnFirst(' ');
                     req.Items[Keywords.InvokeVerb] = parts[0];
 
                     parts = parts[1].SplitOnFirst(' ');
@@ -93,7 +122,7 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    WriteEncryptedError(req, aesKey, iv, ex, "Invalid EncryptedMessage");
+                    WriteEncryptedError(req, aesKey, iv, ex, ErrorInvalidMessage);
                     return null;
                 }
             });
