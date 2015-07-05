@@ -87,7 +87,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             var encryptedMessage = new EncryptedMessage
             {
-                SymmetricKeyEncrypted = Convert.ToBase64String(rsaEncAesKeyBytes),
+                EncryptedSymmetricKey = Convert.ToBase64String(rsaEncAesKeyBytes),
                 EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
             };
             var encResponse = client.Post(encryptedMessage);
@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             {
                 var encryptedMessage = new EncryptedMessage
                 {
-                    SymmetricKeyEncrypted = Convert.ToBase64String(rsaEncAesKeyBytes),
+                    EncryptedSymmetricKey = Convert.ToBase64String(rsaEncAesKeyBytes),
                     EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
                 };
                 var encResponse = client.Post(encryptedMessage);
@@ -153,7 +153,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             var encryptedMessage = new EncryptedMessage
             {
-                SymmetricKeyEncrypted = Convert.ToBase64String(rsaEncAesKeyBytes),
+                EncryptedSymmetricKey = Convert.ToBase64String(rsaEncAesKeyBytes),
                 EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
             };
             var encResponse = client.Post(encryptedMessage);

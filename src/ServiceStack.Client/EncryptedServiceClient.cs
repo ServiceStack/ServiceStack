@@ -14,7 +14,7 @@ namespace ServiceStack
 
     public class EncryptedMessage : IReturn<EncryptedMessageResponse>
     {
-        public string SymmetricKeyEncrypted { get; set; }
+        public string EncryptedSymmetricKey { get; set; }
         public string EncryptedBody { get; set; }
     }
 
@@ -112,7 +112,7 @@ namespace ServiceStack
 
             var encryptedMessage = new EncryptedMessage
             {
-                SymmetricKeyEncrypted = Convert.ToBase64String(rsaEncAesKeyBytes),
+                EncryptedSymmetricKey = Convert.ToBase64String(rsaEncAesKeyBytes),
                 EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
             };
 

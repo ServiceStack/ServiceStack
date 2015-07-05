@@ -77,7 +77,7 @@ namespace ServiceStack
                 byte[] iv = null;
                 try
                 {
-                    var rsaEncAesKeyBytes = RsaUtils.Decrypt(Convert.FromBase64String(encRequest.SymmetricKeyEncrypted), PrivateKey.Value);
+                    var rsaEncAesKeyBytes = RsaUtils.Decrypt(Convert.FromBase64String(encRequest.EncryptedSymmetricKey), PrivateKey.Value);
 
                     aesKey = new byte[AesUtils.KeySize / 8];
                     iv = new byte[AesUtils.IvSize / 8];
