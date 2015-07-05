@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using ServiceStack.Auth;
 using ServiceStack.Text;
 
 namespace ServiceStack
@@ -30,12 +29,12 @@ namespace ServiceStack
         public int Version { get; set; }
         public string SessionId { get; set; }
         public RSAParameters PublicKey { get; set; }
-        public IServiceClient Client { get; set; }
+        public IJsonServiceClient Client { get; set; }
 
-        public EncryptedServiceClient(IServiceClient client, string publicKeyXml)
+        public EncryptedServiceClient(IJsonServiceClient client, string publicKeyXml)
             : this(client, publicKeyXml.ToPublicRSAParameters()) {}
 
-        public EncryptedServiceClient(IServiceClient client, RSAParameters publicKey)
+        public EncryptedServiceClient(IJsonServiceClient client, RSAParameters publicKey)
         {
             Client = client;
             Client.ClearCookies();
@@ -58,7 +57,7 @@ namespace ServiceStack
                     var encResponse = Client.Send(encryptedMessage);
 
                     var responseJson = AesUtils.Decrypt(encResponse.EncryptedBody, aes.Key, aes.IV);
-                    var response = responseJson.FromJson<TResponse>();
+                    var response = JsonServiceClient.FromJson<TResponse>(responseJson);
 
                     return response;
                 }
@@ -85,7 +84,7 @@ namespace ServiceStack
                     var encResponse = Client.Send(encryptedMessage);
 
                     var responseJson = AesUtils.Decrypt(encResponse.EncryptedBody, aes.Key, aes.IV);
-                    var response = responseJson.FromJson<List<TResponse>>();
+                    var response = JsonServiceClient.FromJson<List<TResponse>>(responseJson);
 
                     return response;
                 }
@@ -109,7 +108,7 @@ namespace ServiceStack
 
             var timestamp = DateTime.UtcNow.ToUnixTime();
 
-            var requestBody = timestamp + " " + verb + " " + operationName + " " + request.ToJson();
+            var requestBody = timestamp + " " + verb + " " + operationName + " " + JsonServiceClient.ToJson(request);
 
             var encryptedMessage = new EncryptedMessage
             {
@@ -148,7 +147,7 @@ namespace ServiceStack
             if (encResponse != null)
             {
                 var responseJson = AesUtils.Decrypt(encResponse.EncryptedBody, aes.Key, aes.IV);
-                var errorResponse = responseJson.FromJson<ErrorResponse>();
+                var errorResponse = JsonServiceClient.FromJson<ErrorResponse>(responseJson);
                 ex.ResponseDto = errorResponse;
             }
 
@@ -158,7 +157,7 @@ namespace ServiceStack
 
     public static partial class ServiceClientExtensions
     {
-        public static IEncryptedClient GetEncryptedClient(this IServiceClient client, string serverPublicKeyXml)
+        public static IEncryptedClient GetEncryptedClient(this IJsonServiceClient client, string serverPublicKeyXml)
         {
             if (string.IsNullOrEmpty(serverPublicKeyXml))
                 throw new ArgumentNullException("serverPublicKeyXml");
@@ -166,7 +165,7 @@ namespace ServiceStack
             return new EncryptedServiceClient(client, serverPublicKeyXml);
         }
 
-        public static IEncryptedClient GetEncryptedClient(this IServiceClient client, RSAParameters publicKey)
+        public static IEncryptedClient GetEncryptedClient(this IJsonServiceClient client, RSAParameters publicKey)
         {
             return new EncryptedServiceClient(client, publicKey);
         }

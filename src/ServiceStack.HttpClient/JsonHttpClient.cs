@@ -19,7 +19,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class JsonHttpClient : IServiceClient
+    public class JsonHttpClient : IServiceClient, IJsonServiceClient
     {
         public static ILog log = LogManager.GetLogger(typeof(JsonHttpClient));
 

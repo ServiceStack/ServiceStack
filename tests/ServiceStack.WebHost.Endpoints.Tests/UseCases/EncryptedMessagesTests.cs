@@ -36,7 +36,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
     public class JsonServiceClientEncryptedMessagesTests : EncryptedMessagesTests
     {
-        protected override IServiceClient CreateClient()
+        protected override IJsonServiceClient CreateClient()
         {
             return new JsonServiceClient(Config.AbsoluteBaseUri);
         }
@@ -44,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
     public class JsonHttpClientEncryptedMessagesTests : EncryptedMessagesTests
     {
-        protected override IServiceClient CreateClient()
+        protected override IJsonServiceClient CreateClient()
         {
             return new JsonHttpClient(Config.AbsoluteBaseUri);
         }
@@ -67,7 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             appHost.Dispose();
         }
 
-        protected abstract IServiceClient CreateClient();
+        protected abstract IJsonServiceClient CreateClient();
 
         [Test]
         public void Can_Send_Encrypted_Message()
@@ -179,7 +179,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public void Can_Send_Encrypted_Message_with_ServiceClients()
         {
             var client = CreateClient();
-            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get(new GetPublicKey()));
 
             var response = encryptedClient.Send(new HelloSecure { Name = "World" });
 
