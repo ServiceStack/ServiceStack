@@ -129,13 +129,6 @@ namespace ServiceStack
 
             appHost.ResponseConverters.Add((req, response) =>
             {
-                //Clear all Cookies returned to EncryptedServiceClient
-                if (req.Dto is GetPublicKey)
-                {
-                    req.Response.ClearCookies(); 
-                    return null;
-                }
-
                 object oAesKey;
                 object oIv;
                 if (!req.Items.TryGetValue(RequestItemsAesKey, out oAesKey) ||
