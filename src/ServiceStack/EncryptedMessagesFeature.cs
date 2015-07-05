@@ -25,6 +25,7 @@ namespace ServiceStack
         {
             var rsaParameters = HostContext.GetPlugin<EncryptedMessagesFeature>().PrivateKey.Value;
             var publicKeyXml = rsaParameters.ToPublicKeyXml();
+            Request.Response.ContentType = MimeTypes.Xml;
             Request.Response.AddHeader("X-PublicKey-Hash", publicKeyXml.ToSha256Hash());
             return publicKeyXml;
         }
