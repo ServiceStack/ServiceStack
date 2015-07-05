@@ -3,7 +3,6 @@
 
 using System;
 using System.Net;
-using ServiceStack.Auth;
 using ServiceStack.Text;
 using System.Security.Cryptography;
 using ServiceStack.Web;
@@ -154,6 +153,15 @@ namespace ServiceStack
             req.Response.ContentType = MimeTypes.Json;
             req.Response.Write(errorResponse.ToJson());
             req.Response.EndRequest();
+        }
+    }
+
+    public static class EncryptedMessagesFeatureExtensions
+    {
+        public static bool IsEncryptedMessage(this IRequest req)
+        {
+            return req.Items.ContainsKey(EncryptedMessagesFeature.RequestItemsAesKey)
+                && req.Items.ContainsKey(EncryptedMessagesFeature.RequestItemsIv);
         }
     }
 }

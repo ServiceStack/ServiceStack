@@ -116,6 +116,7 @@
     <None Include="Pages\_Layout.shtml" />
     <None Include="Pages\Dir\_Layout.shtml" />
     <EmbeddedResource Include="static-root-embedded.txt" />
+    <Content Include="sqlite3.dll" />
     <Content Include="static-root.txt" />
     <Content Include="Views\Shared\HtmlReport.cshtml" />
     <Content Include="Views\Shared\Empty.cshtml" />
