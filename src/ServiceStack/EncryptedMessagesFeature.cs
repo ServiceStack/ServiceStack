@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Net;
+using ServiceStack.Auth;
 using ServiceStack.Text;
 using System.Security.Cryptography;
 using ServiceStack.Web;
@@ -23,7 +24,9 @@ namespace ServiceStack
         public object Any(GetPublicKey request)
         {
             var rsaParameters = HostContext.GetPlugin<EncryptedMessagesFeature>().PrivateKey.Value;
-            return rsaParameters.ToPublicKeyXml();
+            var publicKeyXml = rsaParameters.ToPublicKeyXml();
+            Request.Response.AddHeader("X-PublicKey-Hash", publicKeyXml.ToSha256Hash());
+            return publicKeyXml;
         }
     }
 
