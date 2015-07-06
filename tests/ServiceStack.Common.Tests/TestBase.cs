@@ -185,6 +185,11 @@ namespace ServiceStack.Common.Tests
                 return new Dictionary<string, string>();
             }
 
+            public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Get(IReturnVoid request)
             {
                 throw new NotImplementedException();

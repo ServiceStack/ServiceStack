@@ -32,7 +32,7 @@ namespace ServiceStack
      * Need to provide async request options
      * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
      */
-    public abstract class ServiceClientBase : IServiceClient, IMessageProducer
+    public abstract class ServiceClientBase : IServiceClient, IMessageProducer, IHasCookieContainer
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
@@ -1127,6 +1127,12 @@ namespace ServiceStack
             return CookieContainer.ToDictionary(BaseUri);
         }
 
+        public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
+        {
+            this.SetCookie(name, value, new Uri(BaseUri).Host,
+                expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : (DateTime?)null);
+        }
+
         public virtual void Get(IReturnVoid requestDto)
         {
             Get<byte[]>(requestDto.ToUrl(HttpMethods.Get, Format));
@@ -1622,6 +1628,32 @@ namespace ServiceStack
                 throw new NotSupportedException();
             return c.Head(relativeOrAbsoluteUrl);
         }
+
+        public static void SetCookie(this IServiceClient client, string name, string value, string domain,
+            DateTime? expiresAt = null, string path = null,  
+            bool? httpOnly = null, bool? secure = null)
+        {
+            var hasCookies = client as IHasCookieContainer;
+            if (hasCookies == null)
+                throw new NotSupportedException("Client does not implement IHasCookieContainer");
+
+            var cookie = new Cookie(name, value, path ?? "/", domain);
+            if (expiresAt != null)
+                cookie.Expires = expiresAt.Value;
+            if (path != null)
+                cookie.Path = path;
+            if (httpOnly != null)
+                cookie.HttpOnly = httpOnly.Value;
+            if (secure != null)
+                cookie.Secure = secure.Value;
+
+            hasCookies.CookieContainer.Add(cookie);
+        }
+    }
+
+    public interface IHasCookieContainer
+    {
+        CookieContainer CookieContainer { get; }
     }
 
     public delegate object ResultsFilterDelegate(Type responseType, string httpMethod, string requestUri, object request);

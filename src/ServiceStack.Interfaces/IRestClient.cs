@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -7,6 +8,7 @@ namespace ServiceStack
     {
         void ClearCookies();
         Dictionary<string, string> GetCookieValues();
+        void SetCookie(string name, string value, TimeSpan? expiresIn = null);
 
         void Get(IReturnVoid request);
         TResponse Get<TResponse>(IReturn<TResponse> requestDto);

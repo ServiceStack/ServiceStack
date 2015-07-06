@@ -19,7 +19,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class JsonHttpClient : IServiceClient, IJsonServiceClient
+    public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieContainer
     {
         public static ILog log = LogManager.GetLogger(typeof(JsonHttpClient));
 
@@ -610,6 +610,12 @@ namespace ServiceStack
         public Dictionary<string, string> GetCookieValues()
         {
             return CookieContainer.ToDictionary(BaseUri);
+        }
+
+        public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
+        {
+            this.SetCookie(name, value, new Uri(BaseUri).Host,
+                expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : (DateTime?)null);
         }
 
         public void Get(IReturnVoid request)
