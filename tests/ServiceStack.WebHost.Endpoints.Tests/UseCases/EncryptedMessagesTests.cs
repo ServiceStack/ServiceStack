@@ -269,7 +269,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Password = "p@55word",
             });
 
-            client.SetCookie("ss-id", authResponse.SessionId);
+            client.SetCookie("ss-id", authResponse.SessionId, expiresIn:TimeSpan.FromDays(1));
             var response = client.Send(new HelloAuthSecure { Name = "World" });
         }
 
