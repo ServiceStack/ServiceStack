@@ -39,6 +39,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public int Version { get; set; }
     }
 
+    [Authenticate]
+    public class HelloAuthSecure : IReturn<HelloAuthSecureResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class HelloAuthSecureResponse
+    {
+        public string Result { get; set; }
+    }
+
     public class HelloAuthenticatedResponse
     {
         public int Version { get; set; }
@@ -65,6 +76,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 throw new ArgumentNullException("Name");
 
             return new HelloSecureResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+
+        public object Any(HelloAuthSecure request)
+        {
+            if (request.Name == null)
+                throw new ArgumentNullException("Name");
+
+            return new HelloAuthSecureResponse { Result = "Hello, {0}!".Fmt(request.Name) };
         }
 
         [Authenticate]

@@ -257,6 +257,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         [Test]
+        public void Can_Authenticate_then_call_AuthOnly_Services_with_ServiceClients()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+
+            var authResponse = encryptedClient.Send(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "test@gmail.com",
+                Password = "p@55word",
+            });
+
+            client.SetCookie("ss-id", authResponse.SessionId);
+            var response = client.Send(new HelloAuthSecure { Name = "World" });
+        }
+
+        [Test]
         public void Does_handle_Exceptions()
         {
             var client = CreateClient();
