@@ -614,7 +614,7 @@ namespace ServiceStack
 
         public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
         {
-            this.SetCookie(name, value, new Uri(BaseUri).Host,
+            this.SetCookie(BaseUri, name, value,
                 expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : (DateTime?)null);
         }
 

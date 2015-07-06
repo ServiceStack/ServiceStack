@@ -1129,7 +1129,7 @@ namespace ServiceStack
 
         public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
         {
-            this.SetCookie(name, value, new Uri(BaseUri).Host,
+            this.SetCookie(BaseUri, name, value,
                 expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : (DateTime?)null);
         }
 
@@ -1629,7 +1629,7 @@ namespace ServiceStack
             return c.Head(relativeOrAbsoluteUrl);
         }
 
-        public static void SetCookie(this IServiceClient client, string name, string value, string domain,
+        public static void SetCookie(this IServiceClient client, string baseUrl, string name, string value,
             DateTime? expiresAt = null, string path = null,  
             bool? httpOnly = null, bool? secure = null)
         {
@@ -1637,7 +1637,8 @@ namespace ServiceStack
             if (hasCookies == null)
                 throw new NotSupportedException("Client does not implement IHasCookieContainer");
 
-            var cookie = new Cookie(name, value, path ?? "/", domain);
+            var baseUri = new Uri(baseUrl);
+            var cookie = new Cookie(name, value, path ?? "/", baseUri.Host);
             if (expiresAt != null)
                 cookie.Expires = expiresAt.Value;
             if (path != null)
@@ -1647,7 +1648,7 @@ namespace ServiceStack
             if (secure != null)
                 cookie.Secure = secure.Value;
 
-            hasCookies.CookieContainer.Add(cookie);
+            hasCookies.CookieContainer.Add(baseUri, cookie);
         }
     }
 
