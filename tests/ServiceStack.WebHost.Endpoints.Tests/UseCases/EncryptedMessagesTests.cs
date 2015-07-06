@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
@@ -257,7 +258,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         [Test]
-        public void Can_Authenticate_then_call_AuthOnly_Services_with_ServiceClients()
+        public async Task Can_Authenticate_then_call_AuthOnly_Services_with_ServiceClients()
         {
             var client = CreateClient();
             IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
@@ -269,8 +270,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Password = "p@55word",
             });
 
-            client.SetCookie("ss-id", authResponse.SessionId, expiresIn:TimeSpan.FromDays(1));
-            var response = client.Send(new HelloAuthSecure { Name = "World" });
+            client.SetCookie("ss-id", authResponse.SessionId);
+            var response = await client.GetAsync(new HelloAuthSecure { Name = "World" });
         }
 
         [Test]
