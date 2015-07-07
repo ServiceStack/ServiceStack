@@ -60,7 +60,7 @@ Also, all API's are **Async** under-the-hood where any Sync API's that doesn't r
 One of the benefits of adopting a message-based design is being able to easily layer functionality and generically add value to all Services, we've seen this recently with [Auto Batched Requests](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Batched-Requests) which automatically enables each Service to be batched and executed in a single HTTP Request. Similarly the new Encrypted Messaging feature 
 enables a secure channel for all Services (inc Auto Batched Requests :) offering protection to clients who can now easily send and receive encrypted messages over unsecured HTTP!
 
-> Encrypted Messaging Overview
+### Encrypted Messaging Overview
 
 ![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/encrypted-messaging.png)
 
