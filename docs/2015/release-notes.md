@@ -440,15 +440,13 @@ var cache = new Dictionary<string, object>();
 
 client.ResultsFilter = (type, method, uri, request) => {
     if (method != HttpMethods.Get) return null;
-    var cacheKey = "{0} {1}".Fmt(method, uri); 
     object cachedResponse;
-    cache.TryGetValue(cacheKey, out cachedResponse);
+    cache.TryGetValue(uri, out cachedResponse);
     return cachedResponse;
 };
 client.ResultsFilterResponse = (webRes, response, method, uri, request) => {
     if (method != HttpMethods.Get) return;
-    var cacheKey = "{0} {1}".Fmt(method, uri);
-    cache[cacheKey] = response;
+    cache[uri] = response;
 };
 
 //Subsequent requests returns cached result
