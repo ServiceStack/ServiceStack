@@ -258,7 +258,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         [Test]
-        public async Task Can_Authenticate_then_call_AuthOnly_Services_with_ServiceClients()
+        public void Can_Authenticate_then_call_AuthOnly_Services_with_ServiceClients_Temp()
         {
             var client = CreateClient();
             IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
@@ -270,8 +270,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Password = "p@55word",
             });
 
+            "Client: {0}".Print(authResponse.SessionId);
+
             client.SetCookie("ss-id", authResponse.SessionId);
-            var response = await client.GetAsync(new HelloAuthSecure { Name = "World" });
+            var response = client.Get(new HelloAuthSecure { Name = "World" });
+        }
+
+        [Test]
+        public void Can_Authenticate_then_call_AuthOnly_Services_with_ServiceClients_Perm()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+
+            var authResponse = encryptedClient.Send(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "test@gmail.com",
+                Password = "p@55word",
+                RememberMe = true,
+            });
+
+            "Client: {0}".Print(authResponse.SessionId);
+
+            client.SetCookie("ss-pid", authResponse.SessionId);
+            client.SetCookie("ss-opt", "perm");
+            var response = client.Get(new HelloAuthSecure { Name = "World" });
         }
 
         [Test]

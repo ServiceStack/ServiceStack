@@ -100,8 +100,15 @@ namespace ServiceStack
                 HttpMessageHandler = GlobalHttpMessageHandlerFactory();
 
             return HttpClient = HttpMessageHandler != null
-                ? new HttpClient(HttpMessageHandler)
-                : new HttpClient(new HttpClientHandler { CookieContainer = CookieContainer });
+                ? new HttpClient(HttpMessageHandler) { BaseAddress = new Uri(BaseUri) }
+                : new HttpClient(new HttpClientHandler {
+                        UseCookies = true,
+                        CookieContainer = CookieContainer, 
+                        UseDefaultCredentials = true,
+                    })
+                    {
+                        BaseAddress = new Uri(BaseUri)
+                    };
         }
 
         private int activeAsyncRequests = 0;
@@ -605,6 +612,8 @@ namespace ServiceStack
         public void ClearCookies()
         {
             CookieContainer = new CookieContainer();
+            HttpClient = null;
+            GetHttpClient();
         }
 
         public Dictionary<string, string> GetCookieValues()
@@ -614,7 +623,7 @@ namespace ServiceStack
 
         public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
         {
-            this.SetCookie(BaseUri, name, value,
+            this.SetCookie(HttpClient.BaseAddress, name, value,
                 expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : (DateTime?)null);
         }
 
