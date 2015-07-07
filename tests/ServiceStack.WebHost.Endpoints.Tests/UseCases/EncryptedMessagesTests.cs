@@ -270,8 +270,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Password = "p@55word",
             });
 
-            "Client: {0}".Print(authResponse.SessionId);
-
             client.SetCookie("ss-id", authResponse.SessionId);
             var response = client.Get(new HelloAuthSecure { Name = "World" });
         }
@@ -289,8 +287,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Password = "p@55word",
                 RememberMe = true,
             });
-
-            "Client: {0}".Print(authResponse.SessionId);
 
             client.SetCookie("ss-pid", authResponse.SessionId);
             client.SetCookie("ss-opt", "perm");
