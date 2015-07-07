@@ -99,15 +99,16 @@ namespace ServiceStack
             if (HttpMessageHandler == null && GlobalHttpMessageHandlerFactory != null)
                 HttpMessageHandler = GlobalHttpMessageHandlerFactory();
 
+            var baseUri = BaseUri != null ? new Uri(BaseUri) : null;
+
             return HttpClient = HttpMessageHandler != null
-                ? new HttpClient(HttpMessageHandler) { BaseAddress = new Uri(BaseUri) }
+                ? new HttpClient(HttpMessageHandler) { BaseAddress = baseUri }
                 : new HttpClient(new HttpClientHandler {
                         UseCookies = true,
                         CookieContainer = CookieContainer, 
-                        UseDefaultCredentials = true,
-                    })
-                    {
-                        BaseAddress = new Uri(BaseUri)
+                        UseDefaultCredentials = true
+                    }) {
+                        BaseAddress = baseUri
                     };
         }
 
