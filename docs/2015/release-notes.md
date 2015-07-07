@@ -1,3 +1,1083 @@
+# v4.0.42 Release Notes
+
+## New JsonHttpClient!
+
+The new `JsonHttpClient` is an alternative to the existing generic typed `JsonServiceClient` for consuming ServiceStack Services 
+which instead of `HttpWebRequest` is based on Microsoft's latest async `HttpClient` (from [Microsoft.Net.Http](https://www.nuget.org/packages/Microsoft.Net.Http) on NuGet). 
+
+`JsonHttpClient` implements the full [IServiceClient API](https://gist.github.com/mythz/4683438240820b522d39) making it an easy drop-in replacement for your existing `JsonServiceClient` 
+where in most cases it can simply be renamed to `JsonHttpClient`, e.g:
+
+```csharp
+//IServiceClient client = new JsonServiceClient("http://techstacks.io");
+IServiceClient client = new JsonHttpClient("http://techstacks.io");
+```
+
+Which can then be [used as normal](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client):
+
+```csharp
+var response = await client.GetAsync(new GetTechnology { Slug = "servicestack" });
+```
+
+### Install
+
+JsonHttpClient can be downloaded from NuGet at:
+
+    > Install-Package ServiceStack.HttpClient
+
+### PCL Support
+
+JsonHttpClient also comes in PCL flavour and can be used on the same platforms as the 
+[existing PCL Service Clients](https://github.com/ServiceStackApps/HelloMobile) enabling the same clean and productive development experience on popular mobile platforms like 
+[Xamarin.iOS](http://developer.xamarin.com/guides/ios/) and [Xamarin.Android](http://developer.xamarin.com/guides/android/).
+
+### [ModernHttpClient](https://github.com/paulcbetts/ModernHttpClient)
+
+One of the primary benefits of being based on `HttpClient` is being able to make use of 
+[ModernHttpClient](https://github.com/paulcbetts/ModernHttpClient) which provides a thin wrapper around iOS's native `NSURLSession` or `OkHttp` client on Android, offering improved stability for 3G mobile connectivity.
+
+To enable, install [ModernHttpClient](https://www.nuget.org/packages/ModernHttpClient) then set the 
+Global HttpMessageHandler Factory to configure all `JsonHttpClient` instances to use ModernHttpClient's `NativeMessageHandler`: 
+
+```csharp
+JsonHttpClient.GlobalHttpMessageHandlerFactory = () => new NativeMessageHandler();
+```
+
+Alternatively, you can configure a single client instance to use ModernHttpClient with:
+
+```csharp
+client.HttpMessageHandler = new NativeMessageHandler();
+```
+
+### Differences with JsonServiceClient
+
+Whilst our goal is to retain the same behavior in both clients, there are some differences resulting from using HttpClient where the Global and Instance Request and Response Filters are instead passed HttpClients `HttpRequestMessage` and `HttpResponseMessage`. 
+
+Also, all API's are **Async** under-the-hood where any Sync API's that doesn't return a `Task<T>` just blocks on the Async `Task.Result` response. As this can dead-lock in certain environments we recommend sticking with the Async API's unless safe to do otherwise. 
+
+## Encrypted Messaging!
+
+One of the benefits of adopting a message-based design is being able to easily layer functionality and generically add value to all Services, we've seen this recently with [Auto Batched Requests](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Batched-Requests) which automatically enables each Service to be batched and executed in a single HTTP Request. Similarly the new Encrypted Messaging feature 
+enables a secure channel for all Services (inc Auto Batched Requests :) offering protection to clients who can now easily send and receive encrypted messages over unsecured HTTP!
+
+> Encrypted Messaging Overview
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/encrypted-messaging.png)
+
+### Configuration
+
+Encrypted Messaging support is enabled by registering the plugin:
+
+```csharp
+Plugins.Add(new EncryptedMessagesFeature {
+    PrivateKeyXml = ServerRsaPrivateKeyXml
+});
+```
+
+Where `PrivateKeyXml` is the Servers RSA Private Key Serialized as XML. If you don't have an existing one, a new one can be generated with:
+
+```csharp
+var rsaKeyPair = RsaUtils.CreatePublicAndPrivateKeyPair();
+string ServerRsaPrivateKeyXml = rsaKeyPair.PrivateKey;
+```
+
+Once generated, it's important the Private Key is kept confidential as anyone with access will be able to decrypt 
+the encrypted messages! Whilst most [obfuscation efforts are ultimately futile](http://stackoverflow.com/a/6018247/85785) the goal should be to contain the private key to your running Web Application, limiting as much access as possible.
+
+Once registered, the EncryptedMessagesFeature enables the 2 Services below:
+
+ - `GetPublicKey` - Returns the Serialized XML of your Public Key (extracted from the configured Private Key)
+ - `EncryptedMessage` - The Request DTO which encapsulates all encrypted Requests (can't be called directly)
+
+### Giving Clients the Public Key
+
+To communicate clients need access to the Server's Public Key, it doesn't matter who has accessed the Public Key only that clients use the **real** Servers Public Key. It's therefore not advisable to download the Public Key over unsecure `http://` where traffic can potentially be intercepted and the key spoofed, subjecting them to a [Man-in-the-middle attack](https://en.wikipedia.org/wiki/Man-in-the-middle_attack). 
+
+It's safer instead to download the public key over a trusted `https://` url where the servers origin is verified by a trusted [CA](https://en.wikipedia.org/wiki/Certificate_authority). Sharing the Public Key over Dropbox, Google Drive, OneDrive or other encrypted channels are other good options.
+
+Since `GetPublicKey` is just a ServiceStack Service it can also be downloaded using a Service Client:
+
+```csharp
+var client = new JsonServiceClient(BaseUrl);
+string publicKeyXml = client.Get(new GetPublicKey());
+```
+
+If the registered `EncryptedMessagesFeature.PublicKeyPath` has been changed from its default `/publickey`, it can be dowloaded with:
+
+```csharp
+string publicKeyXml = client.Get<string>("/custom-publickey"); // or with HttpUtils:
+string publicKeyXml = BaseUrl.CombineWith("/custom-publickey").GetStringFromUrl();
+```
+
+> To help with verification the SHA256 Hash of the PublicKey is returned in `X-PublicKey-Hash` HTTP Header
+
+### Encrypted Service Client
+
+Once they have the Server's Public Key, clients can use it to get an `EncryptedServiceClient` via the `GetEncryptedClient()` extension method on `JsonServiceClient` or new `JsonHttpClient`, e.g:
+
+```csharp
+var client = new JsonServiceClient(BaseUrl);
+IEncryptedClient encryptedClient = client.GetEncryptedClient(publicKeyXml);
+```
+
+Once configured, clients have access to the familiar typed Service Client API's and productive workflow they're used to with the generic Service Clients, sending typed Request DTO's and returning the typed Response DTO's - rendering the underlying encrypted messages a transparent implementation detail:
+
+```csharp
+HelloResponse response = encryptedClient.Send(new Hello { Name = "World" });
+response.Result.Print(); //Hello, World!
+```
+
+REST Services Example:
+
+```csharp
+HelloResponse response = encryptedClient.Get(new Hello { Name = "World" });
+```
+
+Auto-Batched Requests Example:
+
+```csharp
+var requests = new[] { "Foo", "Bar", "Baz" }.Map(x => new HelloSecure { Name = x });
+var responses = encryptedClient.SendAll(requests);
+```
+
+When using the `IEncryptedClient`, the entire Request and Response bodies are encrypted including Exceptions which continue to throw a populated `WebServiceException`:
+
+```csharp
+try
+{
+    var response = encryptedClient.Send(new Hello());
+}
+catch (WebServiceException ex)
+{
+    ex.ResponseStatus.ErrorCode.Print(); //= ArgumentNullException
+    ex.ResponseStatus.Message.Print();   //= Value cannot be null. Parameter name: Name
+}
+```
+
+### Authentication with Encrypted Messaging
+
+Many encrypted messaging solutions use Client Certificates which Servers can use to cryptographically verify a client's identity - providing an alternative to HTTP-based Authentication. We've decided against using this as it would've forced an opinionated implementation and increased burden of PKI certificate management and configuration onto Clients and Servers - reducing the applicability and instant utility of this feature.
+
+We instead leverage the existing Session-based Authentication Model in ServiceStack letting clients continue to use the existing Auth functionality and Auth Providers they're already used to, e.g:
+
+```csharp
+var authResponse = encryptedClient.Send(new Authenticate {
+    provider = CredentialsAuthProvider.Name,
+    UserName = "test@gmail.com",
+    Password = "p@55w0rd",
+});
+```
+
+Encrypted Messages have their cookies stripped so they're no longer visible in the clear which minimizes the exposure to Session hijacking. This does pose the problem of how we can call authenticated Services if the encrypted HTTP Client is no longer sending Session Cookies? 
+
+Without the use of clear-text Cookies or HTTP Headers there's no longer an *established Authenticated Session* for the `encryptedClient` to use to make subsequent Authenticated requests. What we can do  instead is pass the Session Id in the encrypted body for Request DTO's that implement the new `IHasSessionId` interface, e.g:
+
+```csharp
+[Authenticate]
+public class HelloAuthenticated : IReturn<HelloAuthenticatedResponse>, IHasSessionId
+{
+    public string SessionId { get; set; }
+    public string Name { get; set; }
+}
+
+var response = encryptedClient.Send(new HelloAuthenticated {
+    SessionId = authResponse.SessionId,
+    Name = "World"
+});
+```
+
+Here we're injecting the returned Authenticated `SessionId` to access the `[Authenticate]` protected Request DTO. However remembering to do this for every authenticated request can get tedious, a nicer alternative is just setting it once on the `encryptedClient` which will then use it to automatically populate any `IHasSessionId` Request DTO's:
+
+```csharp
+encryptedClient.SessionId = authResponse.SessionId;
+
+var response = encryptedClient.Send(new HelloAuthenticated {
+    Name = "World"
+});
+```
+
+> Incidentally this feature is now supported in **all Service Clients**
+
+### Combined Authentication Strategy
+
+Another potential use-case is to only use Encrypted Messaging when sending any sensitive information and the normal Service Client for other requests. In which case we can Authenticate and send the user's password with the `encryptedClient`:
+
+```csharp
+var authResponse = encryptedClient.Send(new Authenticate {
+    provider = CredentialsAuthProvider.Name,
+    UserName = "test@gmail.com",
+    Password = "p@55w0rd",
+});
+```
+
+But then fallback to using the normal `IServiceClient` for subsequent requests. But as the `encryptedClient` doesn't receive cookies we'd need to set it explicitly on the client ourselves with:
+
+```csharp
+client.SetCookie("ss-id", authResponse.SessionId);
+```
+
+After which the ServiceClient "establishes an authenticated session" and can be used to make Authenticated requests, e.g:
+
+```csharp
+var response = await client.GetAsync(new HelloAuthenticated { Name = "World" });
+```
+
+> Note: EncryptedServiceClient is unavailable in PCL Clients
+
+### [Hybrid Encryption Scheme](https://en.wikipedia.org/wiki/Hybrid_cryptosystem)
+
+The Encrypted Messaging Feature follows a [Hybrid Cryptosystem](https://en.wikipedia.org/wiki/Hybrid_cryptosystem) which uses RSA Public Keys for [Asymmetric Encryption](https://en.wikipedia.org/wiki/Public-key_cryptography) combined with the performance of AES [Symmetric Encryption](https://en.wikipedia.org/wiki/Symmetric-key_algorithm) making it suitable for encrypting large message payloads. 
+
+The key steps in the process are outlined below:
+
+  1. The Client creates a new `IEncryptedClient` configured with the Server **Public Key**
+  2. The Client uses the `IEncryptedClient` to send a Request DTO:
+    1. A new 256-bit Symmetric **AES Key** and [IV](https://en.wikipedia.org/wiki/Initialization_vector) is generated
+    2. The **AES Key** and **IV** bytes are merged, encrypted with the Servers **Public Key** and Base64 encoded
+    3. The Request DTO is serialized into JSON and packed with the current **Timestamp**, **Verb** and **Operation** and encrypted with the new **AES Key**
+  3. The `IEncryptedClient` uses the underlying JSON Service Client to send the `EncryptedMessage` to the remote Server
+  4. The `EncryptedMessage` is picked up and decrypted by the EncryptedMessagingFeature **Request Converter**:
+    1. The **AES Key** is decrypted with the Servers **Private Key**
+    2. The **IV** is checked against the nonce Cache, verified it's never been used before, then cached 
+    3. The unencrypted **AES Key** is used to decrypt the **EncryptedBody**
+    4. The **timestamp** is verified it's not older than `EncryptedMessagingFeature.MaxRequestAge`
+    5. Any expired nonces are removed. (The **timestamp** and **IV** are used to prevent replay attacks)
+    6. The JSON body is deserialized and resulting **Request DTO** returned from the Request Converter
+  5. The converted **Request DTO** is executed in ServiceStack's Request Pipeline as normal
+  6. The **Response DTO** is picked up by the EncryptedMessagingFeature **Response Converter**:
+    1. Any **Cookies** set during the Request are removed
+    2. The **Response DTO** is serialized with the **AES Key** and returned in an `EncryptedMessageResponse`
+  7. The `IEncryptedClient` decrypts the `EncryptedMessageResponse` with the **AES Key**
+    1. The **Response DTO** is extracted and returned to the caller
+
+A visual of how this all fits together in captured in the high-level diagram below:
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/encrypted-messaging.png)
+
+ - Components in **Yellow** show the encapsulated Encrypted Messaging functionality where all encryption and decryption is performed
+ - Components in **Blue** show Unencrypted DTO's
+ - Components in **Green** show Encrypted content:
+    - The AES Key and IV in **Dark Green** is encrypted by the client using the Server's Public Key
+    - The EncryptedRequest in **Light Green** is encrypted with a new AES Key generated by the client on each Request
+ - Components in **Dark Grey** depict existing ServiceStack functionality where Requests are executed as normal through the [Service Client](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) and [Request Pipeline](https://github.com/ServiceStack/ServiceStack/wiki/Order-of-Operations)
+
+All Request and Response DTO's get encrypted and embedded in the `EncryptedMessage` and `EncryptedMessageResponse` DTO's below:
+
+```csharp
+public class EncryptedMessage : IReturn<EncryptedMessageResponse>
+{
+    public string EncryptedSymmetricKey { get; set; }
+    public string EncryptedBody { get; set; }
+}
+
+public class EncryptedMessageResponse
+{
+    public string EncryptedBody { get; set; }
+}
+```
+
+The diagram also expands the `EncryptedBody` Content containing the **EncryptedRequest** consisting of the following parts:
+
+ - **Timestamp** - Unix Timestamp of the Request
+ - **Verb** - Target HTTP Method
+ - **Operation** - Request DTO Name
+ - **JSON** - Request DTO serialized as JSON
+
+### Source Code
+
+ - The Client implementation is available in [EncryptedServiceClient.cs](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.Client/EncryptedServiceClient.cs)
+ - The Server implementation is available in [EncryptedMessagesFeature.cs](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack/EncryptedMessagesFeature.cs)
+ - The Crypto Utils used are available in the [RsaUtils.cs](https://github.com/ServiceStack/ServiceStack/blob/b4a2a1f74936c8a100b688cbdbca08ff5b212cbe/src/ServiceStack.Client/CryptUtils.cs#L31) and [AesUtils.cs](https://github.com/ServiceStack/ServiceStack/blob/b4a2a1f74936c8a100b688cbdbca08ff5b212cbe/src/ServiceStack.Client/CryptUtils.cs#L189)
+ - Tests are available in [EncryptedMessagesTests.cs](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/UseCases/EncryptedMessagesTests.cs)
+
+## Request and Response Converters
+
+The Encrypted Messaging Feature takes advantage of new Converters that let you change the Request DTO and Response DTO's that get used in ServiceStack's Request Pipeline where:
+
+Request Converters are executed directly after any [Custom Request Binders](https://github.com/ServiceStack/ServiceStack/wiki/Serialization-deserialization#create-a-custom-request-dto-binder):
+
+```csharp
+appHost.RequestConverters.Add((req, requestDto) => {
+    //Return alternative Request DTO or null to retain existing DTO
+});
+```
+
+Response Converters are executed directly after the Service:
+
+```csharp
+appHost.ResponseConverters.Add((req, response) =>
+    //Return alternative Response or null to retain existing Service response
+});
+```
+
+In addition to the converters above, Plugins can now register new callbacks in `IAppHost.OnEndRequestCallbacks` which gets fired at the end of a request.
+
+## [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
+
+### Eclipse Integration!
+
+We've further expanded our support for Java with our new **ServiceStackEclipse** plugin providing cross-platform [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) integration with Eclipse on Windows, OSX and Linux!
+
+#### Install from Eclipse Marketplace
+
+To install, search for **ServiceStack** in the Eclipse Marketplace at `Help > Eclipse Marketplace`:
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackeclipse/ss-eclipse-install-win.gif)
+
+Find the **ServiceStackEclipse** plugin, click **Install** and follow the wizard to the end, restarting to launch Eclipse with the plugin loaded!
+
+> **ServiceStackEclipse** is best used with Java Maven Projects where it automatically adds the **ServiceStack.Java** client library to your Maven Dependencies and when your project is set to **Build Automatically**, are then downloaded and registered, so you're ready to start consuming ServiceStack Services with the new `JsonServiceClient`!
+
+#### Eclipse Add ServiceStack Reference
+
+Just like Android Studio you can right-click on a Java Package to open the **Add ServiceStack Reference...** dialog from the Context Menu:
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackeclipse/add-reference-demo.gif)
+
+Complete the dialog to add the remote Servers generated Java DTO's to your selected Java package and the `net.servicestack.client` dependency to your Maven dependencies.
+
+#### Eclipse Update ServiceStack Reference
+
+Updating a ServiceStack Reference works as normal where you can change any of the available options in the header comments, save, then right-click on the file in the File Explorer and click on **Update ServiceStack Reference** in the Context Menu:
+ 
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackeclipse/update-reference-demo.gif)
+
+### ServiceStack IDEA IntelliJ Plugin 
+
+The **ServiceStackIDEA** plugin has added support for IntelliJ Maven projects giving Java devs a productive and familiar development experience whether they're creating Android Apps or pure cross-platform Java clients.
+
+#### Install ServiceStack IDEA from the Plugin repository
+
+The ServiceStack IDEA is now available to install directly from within IntelliJ or Android Studio IDE Plugins Repository, to Install Go to: 
+
+ 1. `File -> Settings...` Main Menu Item
+ 2. Select **Plugins** on left menu then click **Browse repositories...** at bottom
+ 3. Search for **ServiceStack** and click **Install plugin**
+ 4. Restart to load the installed ServiceStack IDEA plugin
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackidea/android-plugin-download.gif)
+
+### ssutil.exe - Command line ServiceStack Reference tool
+
+Add ServiceStack Reference is also moving beyond our growing list of supported IDEs and is now available in a single cross-platform .NET command-line **.exe** making it easy for build servers and automated tasks or command-line runners of your favorite text editors to easily Add and Update ServiceStack References!
+
+To Get Started download **ssutil.exe** and open a command prompt to the containing directory:
+
+#### Download [ssutil.exe](https://github.com/ServiceStack/ServiceStackVS/raw/master/dist/ssutil.exe)
+
+#### ssutil.exe Usage:
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/servicestackvs/ssutil-help.png)
+
+**Adding a new ServiceStack Reference**
+
+To create a new ServiceStack Reference, pass the remote ServiceStack **BaseUrl** then specify both which `-file` and `-lang` you want, e.g:
+
+    ssutil http://techstacks.io -file TechStacks -lang CSharp
+
+Executing the above command fetches the C# DTOs and saves them in a local file named `TechStacks.dtos.cs`.
+
+**Available Languages**
+
+ - CSharp
+ - FSharp
+ - VbNet
+ - Java
+ - Swift
+ - TypeScript.d
+
+**Update existing ServiceStack Reference**
+
+Updating a ServiceStack Reference is even easier we just specify the path to the existing generated DTO's. E.g. Update the `TechStacks.dtos.cs` we just created with:
+
+    ssutil TechStacks.dtos.cs
+
+### [Using Xamarin.Auth with ServiceStack](https://github.com/ServiceStackApps/TechStacksAuth)
+
+[Xamarin.Auth](https://components.xamarin.com/gettingstarted/xamarin.auth) 
+is an extensible Component and provides a good base for handling authenticating with ServiceStack from Xamarin platforms. To show how to make use of it we've created the [TechStacksAuth](https://github.com/ServiceStackApps/TechStacksAuth) example repository containing a custom `WebAuthenticator` we use to call our remote ServiceStack Web Application and reuse its existing OAuth integration. 
+
+Here's an example using `TwitterAuthProvider`:
+
+![](https://github.com/ServiceStack/Assets/raw/master/img/apps/TechStacks/xamarin-android-auth-demo.gif)
+
+Checkout the [TechStacksAuth](https://github.com/ServiceStackApps/TechStacksAuth) repo for the docs and source code.
+
+### Swift
+
+Unfortunately the recent release of Xcode 6.4 and Swift 1.2 still haven't fixed the [earlier regression added in Xcode 6.3 and Swift 1.2](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2015/release-notes.md#swift-native-types-upgraded-to-swift-12) where the Swift compiler segfaults trying to compile Extensions to Types with a Generic Base Class. The [swift-compiler-crashes](https://github.com/practicalswift/swift-compiler-crashes) repository is reporting this is now fixed in Swift 2.0 / Xcode 7 beta but as that wont be due till later this year we've decided to improve the experience by not generating any types with the problematic Generic Base Types from the generated DTO's by default. This is configurable with:
+
+```swift
+//ExcludeGenericBaseTypes: True
+```
+
+Any types that were omitted from the generated DTO's will be emitted in comments, using the format:
+
+```swift
+//Excluded: {TypeName}
+```
+
+### C#, F#, VB.NET Service Reference
+
+The C#, F# and VB.NET Native Type providers can emit `[GeneratedCode]` attributes with:
+
+```csharp
+AddGeneratedCodeAttributes: True
+```
+
+This is useful for skipping any internal Style Cop rules on generated code.
+
+## Service Clients
+
+### Custom Client Caching Strategy
+
+New `ResultsFilter` and `ResultsFilterResponse` delegates have been added to all Service Clients allowing clients to employ a custom caching strategy. 
+
+Here's a basic example implementing a cache for all **GET** Requests:
+
+```csharp
+var cache = new Dictionary<string, object>();
+
+client.ResultsFilter = (type, method, uri, request) => {
+    if (method != HttpMethods.Get) return null;
+    var cacheKey = "{0} {1}".Fmt(method, uri); 
+    object entry;
+    cache.TryGetValue(cacheKey, out entry);
+    return entry;
+};
+client.ResultsFilterResponse = (webRes, response, method, uri, request) => {
+    if (method != HttpMethods.Get) return;
+    var cacheKey = "{0} {1}".Fmt(method, uri);
+    cache[cacheKey] = response;
+};
+
+//Subsequent requests returns cached result
+var response1 = client.Get(new GetCustomer { CustomerId = 5 });
+var response2 = client.Get(new GetCustomer { CustomerId = 5 }); //cached response
+```
+
+The `ResultsFilter` delegate is executed with the context of the request before the request is made. Returning a value of type `TResponse` short-circuits the request and returns that response. Otherwise the request continues and its response passed into the `ResultsFilterResponse` delegate where it can be cached. 
+
+#### New ServiceClient API's
+
+The following new API's were added to all .NET Service Clients:
+
+ - `SetCookie()` - Sets a Cookie on the clients `CookieContainer`
+ - `GetCookieValues()` - Return all site Cookies in a string Dictionary
+ - `CustomMethodAsync()` - Call any Custom HTTP Method Asynchronously
+
+### Implicit Versioning
+
+Similar to the behavior of `IHasSessionId` above, Service Clients that have specified a `Version` number, e.g:
+
+```csharp
+client.Version = 2;
+```
+
+Will populate that version number in all Request DTO's implementing `IHasVersion`, e.g:
+
+```csharp
+public class Hello : IReturn<HelloResponse>, IHasVersion {
+    public int Version { get; set; }
+    public string Name { get; set; }
+}
+
+client.Version = 2;
+client.Get(new Hello { Name = "World" });  // Hello.Version=2
+```
+
+#### Version Abbreviation Convention
+
+A popular convention for specifying versions in API requests is with the `?v=1` QueryString which ServiceStack now uses as a fallback for populating any Request DTO's that implement `IHasVersion` (as above).
+
+> Note: as ServiceStack's message-based design promotes forward and backwards-compatible Service API designs, our recommendation is to only consider implementing versioning when necessary, at which point check out our [recommended versioning strategy](http://stackoverflow.com/a/12413091/85785).
+
+## Cancellable Requests Feature
+
+The new Cancellable Requests Feature makes it easy to design long-running Services that are cancellable with an external Web Service Request. To enable this feature, register the `CancellableRequestsFeature` plugin:
+
+```csharp
+Plugins.Add(new CancellableRequestsFeature());
+```
+
+### Designing a Cancellable Service
+
+Then in your Service you can wrap your implementation within a disposable `ICancellableRequest` block which encapsulates a Cancellation Token that you can watch to determine if the Request has been cancelled, e.g: 
+
+```csharp
+public object Any(TestCancelRequest req)
+{
+    using (var cancellableRequest = base.Request.CreateCancellableRequest())
+    {
+        //Simulate long-running request
+        while (true)
+        {
+            cancellableRequest.Token.ThrowIfCancellationRequested();
+            Thread.Sleep(100);
+        }
+    }
+}
+```
+
+### Cancelling a remote Service
+
+To be able to cancel a Server request on the client, the client must first **Tag** the request which it does by assigning the `X-Tag` HTTP Header with a user-defined string in a Request Filter before calling a cancellable Service, e.g:
+
+```csharp
+var tag = Guid.NewGuid().ToString();
+var client = new JsonServiceClient(baseUri) {
+    RequestFilter = req => req.Headers[HttpHeaders.XTag] = tag
+};
+
+var responseTask = client.PostAsync(new TestCancelRequest());
+```
+
+Then at anytime whilst the Service is still executing the remote request can be cancelled by calling the `CancelRequest` Service with the specified **Tag**, e.g: 
+
+```csharp
+var cancelResponse = client.Post(new CancelRequest { Tag = tag });
+```
+
+If it was successfully cancelled it will return a `CancelRequestResponse` DTO with the elapsed time of how long the Service ran for. Otherwise if the remote Service had completed or never existed it will throw **404 Not Found** in a `WebServiceException`.
+
+## Include Aggregates in AutoQuery
+
+AutoQuery now supports running additional Aggregate queries on the queried result-set. 
+To include aggregates in your Query's response specify them in the `Include` property of your AutoQuery Request DTO, e.g:
+
+    var response = client.Get(new Query Rockstars { Include = "COUNT(*)" })
+
+Or in the `Include` QueryString param if you're calling AutoQuery Services from a browser, e.g:
+
+    /rockstars?include=COUNT(*)
+
+The result is then published in the `QueryResponse<T>.Meta` String Dictionary and is accessible with:
+
+    response.Meta["COUNT(*)"] //= 7
+
+By default any of the functions in the SQL Aggregate whitelist can be referenced: 
+
+    AVG, COUNT, FIRST, LAST, MAX, MIN, SUM
+
+Which can be added to or removed from by modifying `SqlAggregateFunctions` collection, e.g, you can allow usage of a `CustomAggregate` SQL Function with:
+
+    Plugins.Add(new AutoQueryFeature { 
+        SqlAggregateFunctions = { "CustomAggregate" }
+    })
+
+### Aggregate Query Usage
+
+The syntax for aggregate functions is modelled after their usage in SQL so they should be instantly familiar. 
+At its most basic usage you can just specify the name of the aggregate function which will use `*` as a default argument so you can also query `COUNT(*)` with: 
+
+    ?include=COUNT
+
+It also supports SQL aliases:
+
+    COUNT(*) Total
+    COUNT(*) as Total
+
+Which is used to change what key the result is saved into:
+
+    response.Meta["Total"]
+
+Columns can be referenced by name:
+
+    COUNT(LivingStatus)
+
+If an argument matches a column in the primary table the literal reference is used as-is, if it matches a column in a joined table it's replaced with its fully-qualified reference and when it doesn't match any column, Numbers are passed as-is otherwise its automatically escaped and quoted and passed in as a string literal.
+
+The `DISTINCT` modifier can also be used, so a complex example looks like:
+
+    COUNT(DISTINCT LivingStatus) as UniqueStatus
+
+Which saves the result of the above function in:
+
+    response.Meta["UniqueStatus"]
+
+Any number of aggregate functions can be combined in a comma-delimited list:
+
+    Count(*) Total, Min(Age), AVG(Age) AverageAge
+
+Which returns results in:
+
+    response.Meta["Total"]
+    response.Meta["Min(Age)"]
+    response.Meta["AverageAge"]
+
+#### Aggregate Query Performance
+
+Surprisingly AutoQuery is able to execute any number of Aggregate functions without performing any additional queries as previously to support paging a `Total` needed to be executed for each AutoQuery. Now the Total query is combined with any number of aggregate functions and executed in a single query.
+
+### AutoQuery Response Filters
+
+The Aggregate functions feature is built on the new `ResponseFilters` support in AutoQuery which provides a new extensibility option enabling customization and additional metadata to be attached to AutoQuery Responses. As Aggregate functions feature is just a Response Filter in can disabled by clearing them:
+
+```csharp
+Plugins.Add(new AutoQueryFeature {
+    ResponseFilters = new List<Action<QueryFilterContext>>()
+})
+```
+
+The Response Filters are executed after each AutoQuery and gets passed the full context of the executed query, i.e:
+
+```csharp
+class QueryFilterContext
+{
+    IDbConnection Db             // The ADO.NET DB Connection
+    List<Command> Commands       // Tokenized list of commands
+    IQuery Request               // The AutoQuery Request DTO
+    ISqlExpression SqlExpression // The AutoQuery SqlExpression
+    IQueryResponse Response      // The AutoQuery Response DTO
+}
+```
+
+Where the `Commands` property contains the parsed list of commands from the `Include` property, tokenized into the structure below:
+
+```csharp
+class Command 
+{
+    string Name
+    List<string> Args
+    string Suffix
+}
+```
+
+With this we could add basic calculator functionality to AutoQuery with the custom Response Filter below:
+
+```csharp
+Plugins.Add(new AutoQueryFeature {
+    ResponseFilters = {
+        ctx => {
+            var supportedFns = new Dictionary<string, Func<int, int, int>>(StringComparer.OrdinalIgnoreCase)
+            {
+                {"ADD",      (a,b) => a + b },
+                {"MULTIPLY", (a,b) => a * b },
+                {"DIVIDE",   (a,b) => a / b },
+                {"SUBTRACT", (a,b) => a - b },
+            };
+            var executedCmds = new List<Command>();
+            foreach (var cmd in ctx.Commands)
+            {
+                Func<int, int, int> fn;
+                if (!supportedFns.TryGetValue(cmd.Name, out fn)) continue;
+                var label = !string.IsNullOrWhiteSpace(cmd.Suffix) ? cmd.Suffix.Trim() : cmd.ToString();
+                ctx.Response.Meta[label] = fn(int.Parse(cmd.Args[0]), int.Parse(cmd.Args[1])).ToString();
+                executedCmds.Add(cmd);
+            }
+            ctx.Commands.RemoveAll(executedCmds.Contains);
+        }        
+    }
+})
+```
+
+Which lets users perform multiple basic arithmetic operations with any AutoQuery request, e.g:
+
+```csharp
+var response = client.Get(new QueryRockstars {
+    Include = "ADD(6,2), Multiply(6,2) SixTimesTwo, Subtract(6,2), divide(6,2) TheDivide"
+});
+
+response.Meta["ADD(6,2)"]      //= 8
+response.Meta["SixTimesTwo"]   //= 12
+response.Meta["Subtract(6,2)"] //= 4
+response.Meta["TheDivide"]     //= 3
+```
+
+### Untyped SqlExpression
+
+If you need to introspect or modify the executed `ISqlExpression`, it’s useful to access it as a `IUntypedSqlExpression` so its non-generic API's are still accessible without having to convert it back into its concrete generic `SqlExpression<T>` Type, e.g:
+
+```csharp
+IUntypedSqlExpression q = ctx.SqlExpression.GetUntypedSqlExpression()
+    .Clone();
+```
+
+> Cloning the SqlExpression allows you to modify a copy that won't affect any other Response Filter.
+
+### AutoQuery Property Mapping
+
+AutoQuery can map `[DataMember]` property aliases on Request DTO's to the queried table, e.g:
+
+```csharp
+public class QueryPerson : QueryBase<Person>
+{
+    [DataMember("first_name")]
+    public string FirstName { get; set; }
+}
+
+public class Person
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+}
+```
+
+Which can be queried with:
+
+    ?first_name=Jimi
+
+or by setting the global `JsConfig.EmitLowercaseUnderscoreNames=true` convention:
+
+```csharp
+public class QueryPerson : QueryBase<Person>
+{
+    public string LastName { get; set; }
+}
+```
+
+Where it's also queryable with:
+
+    ?last_name=Hendrix
+
+## OrmLite
+
+### Dynamic Result Sets
+
+There's new support for returning unstructured resultsets letting you Select `List<object>` instead of having results mapped to a concrete Poco class, e.g:
+
+```csharp
+db.Select<List<object>>(db.From<Poco>()
+  .Select("COUNT(*), MIN(Id), MAX(Id)"))[0].PrintDump();
+```
+
+Output of objects in the returned `List<object>`:
+
+    [
+        10,
+        1,
+        10
+    ]
+
+You can also Select `Dictionary<string,object>` to return a dictionary of column names mapped with their values, e.g:
+
+```csharp
+db.Select<Dictionary<string,object>>(db.From<Poco>()
+  .Select("COUNT(*) Total, MIN(Id) MinId, MAX(Id) MaxId"))[0].PrintDump();
+```
+
+Output of objects in the returned `Dictionary<string,object>`:
+
+    {
+        Total: 10,
+        MinId: 1,
+        MaxId: 10
+    }
+
+and can be used for API's returning a **Single** row result:
+
+```csharp
+db.Single<List<object>>(db.From<Poco>()
+  .Select("COUNT(*) Total, MIN(Id) MinId, MAX(Id) MaxId")).PrintDump();
+```
+
+or use `object` to fetch an unknown **Scalar** value:
+
+```csharp
+object result = db.Scalar<object>(db.From<Poco>().Select(x => x.Id));
+```
+
+### New DB Parameters API's
+
+To enable even finer-grained control of parameterized queries we've added new overloads that take a collection of IDbDataParameter:
+
+```csharp
+List<T> Select<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
+T Single<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
+T Scalar<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
+List<T> Column<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
+IEnumerable<T> ColumnLazy<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
+HashSet<T> ColumnDistinct<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
+Dictionary<K, List<V>> Lookup<K, V>(string sql, IEnumerable<IDbDataParameter> sqlParams)
+List<T> SqlList<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
+List<T> SqlColumn<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
+T SqlScalar<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
+```
+
+> There are also Async equivalents for the above Sync API's.
+
+Which let you execute parameterized SQL with finer-grained control over the `IDbDataParameter` used, e.g:
+
+```csharp
+IDbDataParameter pAge = db.CreateParam("age", 40, dbType:DbType.Int16);
+db.Select<Person>("SELECT * FROM Person WHERE Age > @age", new[] { pAge });
+```
+
+The new `CreateParam()` extension method above is a useful helper for creating custom IDbDataParameter's.
+
+### Customize null values
+
+The new `OrmLiteConfig.OnDbNullFilter` lets you to replace DBNull values with a custom value, e.g. you can convert all `null` strings to instead be populated with `"NULL"` with:
+
+```csharp
+OrmLiteConfig.OnDbNullFilter = fieldDef => 
+    fieldDef.FieldType == typeof(string)
+        ? "NULL"
+        : null;
+```
+
+### Case Insensitive References
+
+If you're using a case-insensitive database you can tell OrmLite to match on case-insensitive POCO references with:
+
+```csharp
+OrmLiteConfig.IsCaseInsensitive = true;
+```
+
+### Enhanced CaptureSqlFilter
+
+CaptureSqlFilter now also tracks DB Parameters used in each query which you can use to surround your DB calls with to quickly found out what SQL it generates, e.g:
+
+```csharp
+using (var captured = new CaptureSqlFilter())
+using (var db = OpenDbConnection())
+{
+    db.Where<Person>(new { Age = 27 });
+
+    captured.SqlCommandHistory[0].PrintDump();
+}
+```
+
+Emits the Executed SQL along with any DB Parameters: 
+
+    {
+        Sql: "SELECT ""Id"", ""FirstName"", ""LastName"", ""Age"" FROM ""Person"" WHERE ""Age"" = @Age",
+        Parameters: 
+        {
+            Age: 27
+        }
+    }
+
+### Other OrmLite Features
+
+ - New `IncludeFunctions = true` T4 Template configuration for generating Table Valued Functions
+ - New `OrmLiteConfig.SanitizeFieldNameForParamNameFn` can be used to support sanitizing field names with non-ascii values into legal DB Param names
+
+## Authentication
+
+### Enable Session Ids on QueryString
+
+Setting `Config.AllowSessionIdsInHttpParams=true` will allow clients to specify the `ss-id`, `ss-pid` Session Cookies on the QueryString or FormData. This is useful for getting Authenticated SSE Sessions working in IE9 which needs to rely on SSE Polyfills that's unable to send Cookies or Custom HTTP Headers.
+
+The [SSE enabled Chat Demo](http://chat.servicestack.net/default_ieshim) has an example of adding the Current Session Id on the [JavaScript SSE EventSource Url](https://github.com/ServiceStackApps/Chat/blob/master/src/Chat/default_ieshim.cshtml#L93):
+
+```js
+var source = new EventSource('/event-stream?channels=@channels&ss-id=@(base.GetSession().Id));
+```
+
+### In Process Authenticated Requests
+
+You can enable the `CredentialsAuthProvider` to allow **In Process** requests to Authenticate without a Password with:
+
+```csharp
+new CredentialsAuthProvider {
+    SkipPasswordVerificationForInProcessRequests = true,
+}
+```
+
+When enabled this lets **In Process** Service Requests to login as a specified user without needing to provide their password. 
+
+For example this could be used to create an [Intranet Restricted](https://github.com/ServiceStack/ServiceStack/wiki/Restricting-Services) Admin-only Service that lets you login as another user so you can debug their account without needing to know their password with:
+
+```csharp
+[RequiredRole("Admin")]
+[Restrict(InternalOnly=true)]
+public class ImpersonateUser 
+{
+    public string UserName { get; set; }
+}
+
+public object Any(ImpersonateUser request)
+{
+    using (var service = base.ResolveService<AuthenticateService>()) //In Process
+    {
+        return service.Post(new Authenticate {
+            provider = AuthenticateService.CredentialsProvider,
+            UserName = request.UserName,
+        });
+    }
+}
+```
+
+Your Services can use the new `Request.IsInProcessRequest()` to identify Services that were executed in-process.
+
+### New CustomValidationFilter Filter
+
+The new `CustomValidationFilter` is available on each `AuthProvider` and can be used to add custom validation logic where returning any non-null response will short-circuit the Auth Process and return the response to the client. 
+
+The Validation Filter receives the full [AuthContext](https://github.com/ServiceStack/ServiceStack/blob/dd938c284ea509c4cdfab0e416c489aae7877981/src/ServiceStack/Auth/AuthProvider.cs#L415-L424) captured about the Authentication Request. E.g. you can use this to Rick Roll North Korean hackers if you're under attack :)
+
+```csharp
+Plugins.Add(new AuthFeature(..., 
+    new IAuthProvider[] {
+        new CredentialsAuthProvider {
+            CustomValidationFilter = authCtx => 
+                authCtx.Request.UserHostAddress.StartsWith("175.45.17")
+                    ? HttpResult.Redirect("https://youtu.be/dQw4w9WgXcQ")
+                    : null
+        }   
+    }));
+```
+
+### UserName Validation
+
+The UserName validation for all Auth Repositories have been consolidated in a central location, configurable at:
+
+```csharp
+Plugins.Add(new AuthFeature(...){
+    ValidUserNameRegEx = new Regex(@"^(?=.{3,20}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled),
+})
+```
+
+> The default UserName RegEx was also increased from 15 char limit to 20 chars as seen above
+
+Instead of RegEx you can choose to validate using a Custom Predicate. The example below ensures UserNames don't include specific chars:
+
+```csharp
+Plugins.Add(new AuthFeature(...){
+    IsValidUsernameFn = userName => userName.IndexOfAny(new[] { '@', '.', ' ' }) == -1
+})
+```
+
+### Overridable Hash Provider
+
+The `IHashProvider` used to generate and verify password hashes and salts in each UserAuth Repository is now overridable with:
+
+```csharp
+container.Register<IHashProvider>(c => 
+    new SaltedHash(HashAlgorithm:new SHA256Managed(), theSaltLength:4));
+```
+
+### Configurable Session Expiry
+
+Permanent and Temporary Sessions can now be configured to have different Session Expiries, configurable on either  `AuthFeature` or `SessionFeature` plugins, e.g:
+
+```csharp
+new AuthFeature(...) {
+    SessionExpiry = TimeSpan.FromDays(7 * 2),
+    PermanentSessionExpiry = TimeSpan.FromDays(7 * 4),
+}
+```
+
+The above defaults configures Temporary Sessions to last a maximum of 2 weeks and Permanent Sessions lasting 4 weeks.
+
+## Redis
+
+ - New `PopItemsFromSet(setId, count)` API added by [@scottmcarthur](https://github.com/scottmcarthur)
+ - The `SetEntry()` API's for setting string values in `IRedisClient` have been deprecated in favor of new `SetValue()` API's. 
+ - Large performance improvement for saving large values (>8MB)  
+ - Internal Buffer pool now configurable with `RedisConfig.BufferLength` and `RedisConfig.BufferPoolMaxSize`
+
+## ServiceStack.Text
+
+ - Use `JsConfig.ExcludeDefaultValues=true` to reduce payloads by omitting properties with default values
+ - Text serializers now serialize any property or field annotated with the `[DataMember]` attribute, inc. private fields.
+ - Updated `RecyclableMemoryStream` to the latest version, no longer throws an exception for disposing streams twice
+ - Added support for serializing collections with base types
+
+#### T[].NewArray() Usage
+
+The `NewArray()` extension method reduces boilerplate required in modifying and returning an Array, it's useful when modifying configuration using fixed-size `T[]` arrays, e.g:
+
+```csharp
+JsConfig.IgnoreAttributesNamed = JsConfig.IgnoreAttributesNamed.NewArray(
+     with: typeof(ScriptIgnoreAttribute).Name,
+  without: typeof(JsonIgnoreAttribute).Name);
+```
+
+Which is equivalent to the imperative alternative:
+
+```csharp
+var attrNames = new List<string>(JsConfig.IgnoreAttributesNamed) { 
+    typeof(ScriptIgnoreAttribute).Name 
+};
+attrNames.Remove(typeof(JsonIgnoreAttribute).Name));
+JsConfig.IgnoreAttributesNamed = attrNames.ToArray();
+```
+
+#### byte[].Combine() Usage
+
+The `Combine(byte[]...)` extension method combines multiple byte arrays into a single byte[], e.g:
+
+```csharp
+byte[] bytes = "FOO".ToUtf8Bytes().Combine(" BAR".ToUtf8Bytes(), " BAZ".ToUtf8Bytes());
+bytes.FromUtf8Bytes() //= FOO BAR BAZ
+```
+
+## Swagger
+
+Swagger support has received a number of fixes and enhancements which now generates default params for DTO properties that aren't attributed with `[ApiMember]` attribute. Specifying a single `[ApiMember]` attribute reverts back to the existing behavior of only showing `[ApiMember]` DTO properties.
+
+You can now Exclude **properties** from being listed in Swagger when using:
+
+```csharp
+[IgnoreDataMember]
+```
+
+Exclude **properties** from being listed in Swagger Schema Body with:
+
+```csharp
+[ApiMember(ExcludeInSchema=true)]
+```
+
+Or exclude entire Services from showing up in Swagger or any other Metadata Services (i.e. Metadata Pages, Postman, NativeTypes, etc) by annotating **Request DTO's** with:
+
+```csharp
+[Exclude(Feature.Metadata)]
+```
+
+## SOAP
+
+There's finer-grain control over which Operations and Types are exported in SOAP WSDL's and XSD's by overriding the new `ExportSoapOperationTypes()` and `ExportSoapType()` methods in your AppHost.
+
+You can also exclude specific Request DTO's from being emitted in WSDL's and XSD's with:
+
+```csharp
+[Exclude(Feature.Soap)]
+public class HiddenFromSoapWsdl { .. } 
+```
+
+You can also override and customize how the SOAP Message Responses are written, here's a basic example:
+
+```csharp
+public override WriteSoapMessage(Message message, Stream outputStream)
+{
+    using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
+    {
+        message.WriteMessage(writer);
+    }
+}
+```
+
+> The default [WriteSoapMessage](https://github.com/ServiceStack/ServiceStack/blob/fb08f5cb408ece66f203f677a4ec14ee9aad78ae/src/ServiceStack/ServiceStackHost.Runtime.cs#L484) implementation also raises a ServiceException and writes any returned response to a buffered Response Stream (if configured).
+
+## Minor Enhancements
+
+ - The Validation Features `AbstractValidator<T>` base class now implements `IRequiresRequest` and gets injected with the current Request
+ - Response DTO is available at `IResponse.Dto`
+ - Use `IResponse.ClearCookies()` to clear any cookies added during the Request pipeline before their written to the response
+ - Use `[Exclude(Feature.Metadata)]` to hide Operations from being exposed in Metadata Services, inc. Metadata pages, Swagger, Postman, NativeTypes, etc
+ - Use new `container.TryResolve(Type)` to resolve dependencies by runtime `Type`
+ - New `debugEnabled` option added to `InMemoryLog` and `EventLogger`
+ 
+### [Simple Customer REST Example](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/CustomerRestExample.cs)
+
+New stand-alone [Customer REST Example](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/CustomerRestExample.cs) added showing an complete example of creating a Typed Client / Server REST Service with ServiceStack. Overview of this example was [answered on StackOverflow](http://stackoverflow.com/a/30273466/85785).
+
+## Community 
+
+ - [Jacob Foshee](https://twitter.com/82unpluggd) released a [custom short URLs ServiceStack Service](https://github.com/Durwella/UrlShortening) hosted on Azure.
+
+## Breaking changes 
+
+ - The provider ids for `InstagramOAuth2Provider` was renamed to `/auth/instagram` and `MicrosoftLiveOAuth2Provider` was renamed to `/auth/microsoftlive`.
+ - All API's that return `HttpWebResponse` have been removed from `IServiceClient` and replaced with source-compatible extension methods 
+ - `CryptUtils` have been deprecated and replaced with the more specific `RsaUtils`
+ - `System.IO.Compression` functionality was removed from the PCL clients to workaround an [issue on Xamarin platforms](https://forums.servicestack.net/t/xamarin-ios-and-servicestack-dependency-issue/803/11)
+ 
+All external NuGet packages were upgraded to their most recent major version (as done before every release).
+
 # 4.0.40 Release Notes
 
 ## Native support for Java and Android Studio!
