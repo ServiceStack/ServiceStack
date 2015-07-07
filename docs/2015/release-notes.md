@@ -82,7 +82,7 @@ string ServerRsaPrivateKeyXml = rsaKeyPair.PrivateKey;
 ```
 
 Once generated, it's important the Private Key is kept confidential as anyone with access will be able to decrypt 
-the encrypted messages! Whilst most [obfuscation efforts are ultimately futile](http://stackoverflow.com/a/6018247/85785) the goal should be to contain the private key to your running Web Application, limiting as much access as possible.
+the encrypted messages! Whilst most [obfuscation efforts are ultimately futile](http://stackoverflow.com/a/6018247/85785) the goal should be to contain the private key to your running Web Application, limiting access as much as possible.
 
 Once registered, the EncryptedMessagesFeature enables the 2 Services below:
 
@@ -93,9 +93,9 @@ Once registered, the EncryptedMessagesFeature enables the 2 Services below:
 
 To communicate clients need access to the Server's Public Key, it doesn't matter who has accessed the Public Key only that clients use the **real** Servers Public Key. It's therefore not advisable to download the Public Key over unsecure `http://` where traffic can potentially be intercepted and the key spoofed, subjecting them to a [Man-in-the-middle attack](https://en.wikipedia.org/wiki/Man-in-the-middle_attack). 
 
-It's safer instead to download the public key over a trusted `https://` url where the servers origin is verified by a trusted [CA](https://en.wikipedia.org/wiki/Certificate_authority). Sharing the Public Key over Dropbox, Google Drive, OneDrive or other encrypted channels are other good options.
+It's safer instead to download the public key over a trusted `https://` url where the servers origin is verified by a trusted [CA](https://en.wikipedia.org/wiki/Certificate_authority). Sharing the Public Key over Dropbox, Google Drive, OneDrive or other encrypted channels are also good options.
 
-Since `GetPublicKey` is just a ServiceStack Service it can also be downloaded using a Service Client:
+Since `GetPublicKey` is just a ServiceStack Service it's easily downloadable using a Service Client:
 
 ```csharp
 var client = new JsonServiceClient(BaseUrl);
@@ -158,7 +158,7 @@ catch (WebServiceException ex)
 
 Many encrypted messaging solutions use Client Certificates which Servers can use to cryptographically verify a client's identity - providing an alternative to HTTP-based Authentication. We've decided against using this as it would've forced an opinionated implementation and increased burden of PKI certificate management and configuration onto Clients and Servers - reducing the applicability and instant utility of this feature.
 
-We instead leverage the existing Session-based Authentication Model in ServiceStack letting clients continue to use the existing Auth functionality and Auth Providers they're already used to, e.g:
+We can instead leverage the existing Session-based Authentication Model in ServiceStack letting clients continue to use the existing Auth functionality and Auth Providers they're already used to, e.g:
 
 ```csharp
 var authResponse = encryptedClient.Send(new Authenticate {
@@ -168,7 +168,7 @@ var authResponse = encryptedClient.Send(new Authenticate {
 });
 ```
 
-Encrypted Messages have their cookies stripped so they're no longer visible in the clear which minimizes the exposure to Session hijacking. This does pose the problem of how we can call authenticated Services if the encrypted HTTP Client is no longer sending Session Cookies? 
+Encrypted Messages have their cookies stripped so they're no longer visible in the clear which minimizes their exposure to Session hijacking. This does pose the problem of how we can call authenticated Services if the encrypted HTTP Client is no longer sending Session Cookies? 
 
 Without the use of clear-text Cookies or HTTP Headers there's no longer an *established Authenticated Session* for the `encryptedClient` to use to make subsequent Authenticated requests. What we can do  instead is pass the Session Id in the encrypted body for Request DTO's that implement the new `IHasSessionId` interface, e.g:
 
@@ -607,11 +607,11 @@ Which returns results in:
 
 #### Aggregate Query Performance
 
-Surprisingly AutoQuery is able to execute any number of Aggregate functions without performing any additional queries as previously to support paging a `Total` needed to be executed for each AutoQuery. Now the Total query is combined with any number of aggregate functions and executed in a single query.
+Surprisingly AutoQuery is able to execute any number of Aggregate functions without performing any additional queries as previously to support paging, a `Total` needed to be executed for each AutoQuery. Now the `Total` query is combined with all other aggregate functions and executed in a single query.
 
 ### AutoQuery Response Filters
 
-The Aggregate functions feature is built on the new `ResponseFilters` support in AutoQuery which provides a new extensibility option enabling customization and additional metadata to be attached to AutoQuery Responses. As Aggregate functions feature is just a Response Filter in can disabled by clearing them:
+The Aggregate functions feature is built on the new `ResponseFilters` support in AutoQuery which provides a new extensibility option enabling customization and additional metadata to be attached to AutoQuery Responses. As the Aggregate Functions support is itself a Response Filter in can disabled by clearing them:
 
 ```csharp
 Plugins.Add(new AutoQueryFeature {
@@ -671,7 +671,7 @@ Plugins.Add(new AutoQueryFeature {
 })
 ```
 
-Which lets users perform multiple basic arithmetic operations with any AutoQuery request, e.g:
+Which now lets users perform multiple basic arithmetic operations with any AutoQuery request!
 
 ```csharp
 var response = client.Get(new QueryRockstars {
@@ -780,7 +780,7 @@ object result = db.Scalar<object>(db.From<Poco>().Select(x => x.Id));
 
 ### New DB Parameters API's
 
-To enable even finer-grained control of parameterized queries we've added new overloads that take a collection of IDbDataParameter:
+To enable even finer-grained control of parameterized queries we've added new overloads that take a collection of IDbDataParameter's:
 
 ```csharp
 List<T> Select<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
@@ -795,20 +795,20 @@ List<T> SqlColumn<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
 T SqlScalar<T>(string sql, IEnumerable<IDbDataParameter> sqlParams)
 ```
 
-> There are also Async equivalents for the above Sync API's.
+> Including Async equivalents for each of the above Sync API's.
 
-Which let you execute parameterized SQL with finer-grained control over the `IDbDataParameter` used, e.g:
+The new API's let you execute parameterized SQL with finer-grained control over the `IDbDataParameter` used, e.g:
 
 ```csharp
 IDbDataParameter pAge = db.CreateParam("age", 40, dbType:DbType.Int16);
-db.Select<Person>("SELECT * FROM Person WHERE Age > @age", new[] { pAge });
+db.Select<Person>("SELECT * FROM Person WHERE Age > @pAge", new[] { pAge });
 ```
 
 The new `CreateParam()` extension method above is a useful helper for creating custom IDbDataParameter's.
 
 ### Customize null values
 
-The new `OrmLiteConfig.OnDbNullFilter` lets you to replace DBNull values with a custom value, e.g. you can convert all `null` strings to instead be populated with `"NULL"` with:
+The new `OrmLiteConfig.OnDbNullFilter` lets you to replace DBNull values with a custom value, so you could convert all `null` strings to be populated with `"NULL"` using:
 
 ```csharp
 OrmLiteConfig.OnDbNullFilter = fieldDef => 
@@ -827,7 +827,7 @@ OrmLiteConfig.IsCaseInsensitive = true;
 
 ### Enhanced CaptureSqlFilter
 
-CaptureSqlFilter now also tracks DB Parameters used in each query which you can use to surround your DB calls with to quickly found out what SQL it generates, e.g:
+CaptureSqlFilter now tracks DB Parameters used in each query which can be used to quickly found out what SQL your DB calls generate by surrounding DB access in a using scope like:
 
 ```csharp
 using (var captured = new CaptureSqlFilter())
@@ -851,7 +851,7 @@ Emits the Executed SQL along with any DB Parameters:
 
 ### Other OrmLite Features
 
- - New `IncludeFunctions = true` T4 Template configuration for generating Table Valued Functions
+ - New `IncludeFunctions = true` T4 Template configuration for generating Table Valued Functions added by [@mikepugh](https://github.com/mikepugh)
  - New `OrmLiteConfig.SanitizeFieldNameForParamNameFn` can be used to support sanitizing field names with non-ascii values into legal DB Param names
 
 ## Authentication
@@ -860,7 +860,7 @@ Emits the Executed SQL along with any DB Parameters:
 
 Setting `Config.AllowSessionIdsInHttpParams=true` will allow clients to specify the `ss-id`, `ss-pid` Session Cookies on the QueryString or FormData. This is useful for getting Authenticated SSE Sessions working in IE9 which needs to rely on SSE Polyfills that's unable to send Cookies or Custom HTTP Headers.
 
-The [SSE enabled Chat Demo](http://chat.servicestack.net/default_ieshim) has an example of adding the Current Session Id on the [JavaScript SSE EventSource Url](https://github.com/ServiceStackApps/Chat/blob/master/src/Chat/default_ieshim.cshtml#L93):
+The [SSE-polyfills Chat Demo](http://chat.servicestack.net/default_ieshim) has an example of adding the Current Session Id on the [JavaScript SSE EventSource Url](https://github.com/ServiceStackApps/Chat/blob/master/src/Chat/default_ieshim.cshtml#L93):
 
 ```js
 var source = new EventSource('/event-stream?channels=@channels&ss-id=@(base.GetSession().Id));
@@ -878,7 +878,7 @@ new CredentialsAuthProvider {
 
 When enabled this lets **In Process** Service Requests to login as a specified user without needing to provide their password. 
 
-For example this could be used to create an [Intranet Restricted](https://github.com/ServiceStack/ServiceStack/wiki/Restricting-Services) Admin-only Service that lets you login as another user so you can debug their account without needing to know their password with:
+For example this could be used to create an [Intranet Restricted](https://github.com/ServiceStack/ServiceStack/wiki/Restricting-Services) **Admin-Only** Service that lets you login as another user so you can debug their account without knowing their password with:
 
 ```csharp
 [RequiredRole("Admin")]
@@ -900,13 +900,15 @@ public object Any(ImpersonateUser request)
 }
 ```
 
-Your Services can use the new `Request.IsInProcessRequest()` to identify Services that were executed in-process.
+> Your Services can use the new `Request.IsInProcessRequest()` to identify Services that were executed in-process.
 
 ### New CustomValidationFilter Filter
 
 The new `CustomValidationFilter` is available on each `AuthProvider` and can be used to add custom validation logic where returning any non-null response will short-circuit the Auth Process and return the response to the client. 
 
-The Validation Filter receives the full [AuthContext](https://github.com/ServiceStack/ServiceStack/blob/dd938c284ea509c4cdfab0e416c489aae7877981/src/ServiceStack/Auth/AuthProvider.cs#L415-L424) captured about the Authentication Request. E.g. you can use this to Rick Roll North Korean hackers if you're under attack :)
+The Validation Filter receives the full [AuthContext](https://github.com/ServiceStack/ServiceStack/blob/dd938c284ea509c4cdfab0e416c489aae7877981/src/ServiceStack/Auth/AuthProvider.cs#L415-L424) captured about the Authentication Request. 
+
+So if you're under attack you could use this filter to Rick Roll North Korean hackers :)
 
 ```csharp
 Plugins.Add(new AuthFeature(..., 
@@ -930,7 +932,7 @@ Plugins.Add(new AuthFeature(...){
 })
 ```
 
-> The default UserName RegEx was also increased from 15 char limit to 20 chars as seen above
+> Note: the default UserName RegEx above was increased from 15 chars limit to 20 chars
 
 Instead of RegEx you can choose to validate using a Custom Predicate. The example below ensures UserNames don't include specific chars:
 
@@ -942,7 +944,7 @@ Plugins.Add(new AuthFeature(...){
 
 ### Overridable Hash Provider
 
-The `IHashProvider` used to generate and verify password hashes and salts in each UserAuth Repository is now overridable with:
+The `IHashProvider` used to generate and verify password hashes and salts in each UserAuth Repository is now overridable from its default with:
 
 ```csharp
 container.Register<IHashProvider>(c => 
@@ -951,7 +953,7 @@ container.Register<IHashProvider>(c =>
 
 ### Configurable Session Expiry
 
-Permanent and Temporary Sessions can now be configured to have different Session Expiries, configurable on either  `AuthFeature` or `SessionFeature` plugins, e.g:
+Permanent and Temporary Sessions can now be configured separately with different Session Expiries, configurable on either  `AuthFeature` or `SessionFeature` plugins, e.g:
 
 ```csharp
 new AuthFeature(...) {
@@ -978,7 +980,7 @@ The above defaults configures Temporary Sessions to last a maximum of 2 weeks an
 
 #### T[].NewArray() Usage
 
-The `NewArray()` extension method reduces boilerplate required in modifying and returning an Array, it's useful when modifying configuration using fixed-size `T[]` arrays, e.g:
+The `NewArray()` extension method reduces boilerplate required in modifying and returning an Array, it's useful when modifying configuration using fixed-size arrays, e.g:
 
 ```csharp
 JsConfig.IgnoreAttributesNamed = JsConfig.IgnoreAttributesNamed.NewArray(
@@ -1029,13 +1031,13 @@ Or exclude entire Services from showing up in Swagger or any other Metadata Serv
 
 ## SOAP
 
-There's finer-grain control over which Operations and Types are exported in SOAP WSDL's and XSD's by overriding the new `ExportSoapOperationTypes()` and `ExportSoapType()` methods in your AppHost.
+There's finer-grain control available over which **Operations** and **Types** are exported in SOAP WSDL's and XSD's by overriding the new `ExportSoapOperationTypes()` and `ExportSoapType()` methods in your AppHost.
 
 You can also exclude specific Request DTO's from being emitted in WSDL's and XSD's with:
 
 ```csharp
 [Exclude(Feature.Soap)]
-public class HiddenFromSoapWsdl { .. } 
+public class HiddenFromSoap { .. } 
 ```
 
 You can also override and customize how the SOAP Message Responses are written, here's a basic example:
