@@ -74,20 +74,20 @@ including idiomatic Java Generic Service Clients supporting Sync and Async Reque
 
 #### [IntelliJ integration with ServiceStackIDEA](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference#install-servicestack-idea-from-the-plugin-repository)
 
-The ServiceStack IDEA plugin can be installed directly from IntelliJ's Plugin repository to provide seamless integration with IntellJ Java Maven projects for genearting a Typed API to quickly and effortlessly consume remote ServiceStack Web Services from pure cross-platform Java Clients.
+The ServiceStack IDEA plugin is installable directly from IntelliJ's Plugin repository and enables seamless integration with IntelliJ Java Maven projects for genearting a Typed API to quickly and effortlessly consume remote ServiceStack Web Services from pure cross-platform Java Clients.
 
 #### [Eclipse integration with ServiceStackEclipse](https://github.com/ServiceStack/ServiceStack.Java/tree/master/src/ServiceStackEclipse#eclipse-integration-with-servicestack)
 
 The unmatched productivity offered by [Java Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference) is also available in the 
-[ServiceStackEclipse IDE Plugin](https://github.com/ServiceStack/ServiceStack.Java/tree/master/src/ServiceStackEclipse#eclipse-integration-with-servicestack) that can be installed 
-directly from the [Eclipse MarketPlace](https://marketplace.eclipse.org/content/servicestackeclipse) to provide deep integration of Add ServiceStack Reference with Java Maven Projects
-to effortlessly Add and Update the clean Typed API's of your evolving remote Web Services.
+[ServiceStackEclipse IDE Plugin](https://github.com/ServiceStack/ServiceStack.Java/tree/master/src/ServiceStackEclipse#eclipse-integration-with-servicestack) that's installable 
+from the [Eclipse MarketPlace](https://marketplace.eclipse.org/content/servicestackeclipse) to provide deep integration of Add ServiceStack Reference with Eclipse Java Maven Projects
+enabling Java Developers to effortlessly Add and Update the references of their evolving remote ServiceStack Web Services.
 
 #### [ssutil.exe - Command line ServiceStack Reference tool](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference#ssutilexe---command-line-servicestack-reference-tool)
 
 In addition to our growing list of supported IDE's, the
 [ssutil.exe](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference#ssutilexe---command-line-servicestack-reference-tool)
-cross-platform .NET command-line .exe makes it easy for build servers, automated tasks and command-line runners of your 
+cross-platform command-line .NET .exe makes it easy for build servers, automated tasks and command-line runners of your 
 favorite text editors to easily Add and Update ServiceStack References!
 
 ## Simple Customer Database REST Services Example
@@ -227,9 +227,9 @@ client.Delete(new DeleteCustomer { Id = customer.Id });
 all = client.Get(new GetCustomers());                             // Count = 0
 ```
 
-> F# and VB.NET can re-use same .NET Service Clients and DTO's
+> [F#](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference) and [VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference) can re-use same .NET Service Clients and DTO's
 
-### Calling the Customer REST service from Java
+### [Calling from Java](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference#jsonserviceclient-usage)
 
 ```java
 JsonServiceClient client = new JsonServiceClient(BaseUri);
@@ -237,12 +237,21 @@ JsonServiceClient client = new JsonServiceClient(BaseUri);
 GetCustomersResponse all = client.get(new GetCustomers());
 ```
 
-### Calling from Swift
+### [Calling from Swift](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference#jsonserviceclientswift)
 
 ```java
 var client = JsonServiceClient(baseUrl: BaseUri)
 
 var response = client.get(GetCustomers())
+```
+
+### [Calling from jQuery using TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference)
+
+```js
+$.getJSON($.ss.createUrl("/customers", request), request, 
+    function (r: dtos.GetCustomersResponse) {
+    	alert(r.Results.length == 1);
+    });
 ```
 
 ### Calling from jQuery
@@ -251,15 +260,6 @@ var response = client.get(GetCustomers())
 $.getJSON(baseUri + "/customers", function(r) {
 	alert(r.Results.length == 1);
 });
-```
-
-### Calling from jQuery using [generated TypeScript DTO's](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference)
-
-```js
-$.getJSON($.ss.createUrl("/customers", request), request, 
-    function (r: dtos.GetCustomersResponse) {
-    	alert(r.Results.length == 1);
-    });
 ```
 
 ### Calling the from [Dart JsonClient](https://github.com/mythz/DartJsonClient)
