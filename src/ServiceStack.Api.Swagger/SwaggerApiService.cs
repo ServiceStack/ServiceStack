@@ -379,11 +379,9 @@ namespace ServiceStack.Api.Swagger
                 {
                     ParseModel(models, propertyType, route, verb);
 
-                    var propAttr = prop.AllAttributes<ApiMemberAttribute>().ToList();
-                    if (propAttr.Count > 0 && !string.IsNullOrEmpty(propAttr.FirstOrDefault().DataType))
-                    {
-                        modelProp.Type = propAttr.FirstOrDefault().DataType;
-                    }
+                    var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
+                    if (propAttr != null && propAttr.DataType != null)
+                        modelProp.Type = propAttr.DataType;
                 }
                 
                 modelProp.Description = prop.GetDescription();
