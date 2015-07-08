@@ -98,7 +98,8 @@ This example is also available as a [stand-alone integration test](https://githu
 //Web Service Host Configuration
 public class AppHost : AppSelfHostBase
 {
-    public CustomerAppHost() : base("Customer REST Example", typeof(CustomerService).Assembly) {}
+    public CustomerAppHost() 
+        : base("Customer REST Example", typeof(CustomerService).Assembly) {}
 
     public override void Configure(Container container)
     {
