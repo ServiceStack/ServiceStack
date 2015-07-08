@@ -25,6 +25,7 @@ namespace ServiceStack.Caching.Memcached
 
         public MemcachedValueWrapper(object value)
         {
+            if (value == null) return;
             ValueType = value.GetType();
             _value = value;
             JsonString = value.ToJson();
