@@ -31,7 +31,10 @@ namespace ServiceStack.Host.HttpListener
 
         private readonly AutoResetEvent ListenForNextRequest = new AutoResetEvent(false);
 
+        [Obsolete("Use OnBeforeRequestFn")]
         public event DelReceiveWebRequest ReceiveWebRequest;
+
+        public Action<HttpListenerContext> BeforeRequest { get; set; }
 
         protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
@@ -196,14 +199,14 @@ namespace ServiceStack.Host.HttpListener
 
             //if (request.HasEntityBody)
 
-            RaiseReceiveWebRequest(context);
+            OnBeginRequest(context);
 
-            InitTask(context);
+            ProcessRequestContext(context);
 
             //System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.UtcNow);
         }
 
-        public virtual void InitTask(HttpListenerContext context)
+        public virtual void ProcessRequestContext(HttpListenerContext context)
         {
             try
             {
@@ -286,10 +289,13 @@ namespace ServiceStack.Host.HttpListener
             return httpReq;
         }
 
-        protected void RaiseReceiveWebRequest(HttpListenerContext context)
+        protected virtual void OnBeginRequest(HttpListenerContext context)
         {
             if (this.ReceiveWebRequest != null)
                 this.ReceiveWebRequest(context);
+
+            if (BeforeRequest != null)
+                BeforeRequest(context);
         }
 
 
