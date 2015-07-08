@@ -30,7 +30,7 @@ ServiceStack Services also maximize productivity for consumers providing an
 [instant end-to-end typed API without code-gen](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) enabling
 the most productive development experience for developing .NET to .NET Web Services.
 
-### [Generate Instant Typed APIs within all Major IDEs!](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
+### [Generate Instant Typed APIs from within all Major IDEs!](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
 
 ServiceStack now integrates with all Major IDE's used for creating the best native experiences on the most popular platforms 
 to enable a highly productive dev workflow for consuming Web Services, making ServiceStack the ideal back-end choice for powering 
@@ -98,7 +98,7 @@ This example is also available as a [stand-alone integration test](https://githu
 //Web Service Host Configuration
 public class AppHost : AppSelfHostBase
 {
-    public CustomerAppHost() 
+    public AppHost() 
         : base("Customer REST Example", typeof(CustomerService).Assembly) {}
 
     public override void Configure(Container container)
