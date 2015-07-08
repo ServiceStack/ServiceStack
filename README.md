@@ -199,7 +199,7 @@ public class CustomerService : Service
 
 ```
 
-### [Calling the above TODO REST service from any C#/.NET Client](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client)
+### [Calling the above REST Service from any C#/.NET Client](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client)
 
 ```csharp
 var client = new JsonServiceClient(BaseUri);
@@ -262,7 +262,7 @@ $.getJSON($.ss.createUrl("/customers", request), request,
     });
 ```
 
-### Calling the TODO REST service from [Dart JsonClient](https://github.com/mythz/DartJsonClient)
+### Calling the from [Dart JsonClient](https://github.com/mythz/DartJsonClient)
 
 ```dart
 var client = new JsonClient(baseUri);
