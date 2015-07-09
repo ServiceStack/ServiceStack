@@ -254,7 +254,16 @@ namespace ServiceStack
                 return EmptyTask;
 
             var subscriptionId = req.QueryString["id"];
-            if (!feature.CanAccessSubscription(req, subscriptionId))
+            var subscription = serverEvents.GetSubscriptionInfo(subscriptionId);
+            if (subscription == null)
+            {
+                res.StatusCode = 404;
+                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId);
+                res.EndHttpHandlerRequest(skipHeaders: true);
+                return EmptyTask;
+            }
+
+            if (!feature.CanAccessSubscription(req, subscription))
             {
                 res.StatusCode = 403;
                 res.StatusDescription = "Invalid User Address";
