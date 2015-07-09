@@ -162,7 +162,7 @@ namespace ServiceStack
                 UserId = userId,
                 UserName = session != null ? session.UserName : null,
                 DisplayName = displayName,
-                SessionId = req.GetPermanentSessionId(),
+                SessionId = req.GetSessionId(),
                 IsAuthenticated = session != null && session.IsAuthenticated,
                 UserAddress = req.UserHostAddress,
                 OnPublish = feature.OnPublish,
