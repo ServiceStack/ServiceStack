@@ -204,12 +204,12 @@ namespace ServiceStack.Logging.NLogger
 
         public void Log(NLog.LogLevel logLevel, string format, params object[] args)
         {
-            log.Log(typeof(NLogLogger), new LogEventInfo(LogLevel.Info, log.Name, null, format, args));
+            log.Log(typeof(NLogLogger), new LogEventInfo(logLevel, log.Name, null, format, args));
         }
 
         public void Log(NLog.LogLevel logLevel, string format, object[] args, Exception ex)
         {
-            log.Log(typeof(NLogLogger), new LogEventInfo(LogLevel.Info, log.Name, null, format, args, ex));
+            log.Log(typeof(NLogLogger), new LogEventInfo(logLevel, log.Name, null, format, args, ex));
         }
     }
 }
