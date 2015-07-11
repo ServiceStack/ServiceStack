@@ -4,6 +4,7 @@
 }
 
 Test
+@ServiceStack.MiniProfiler.Profiler.RenderIncludes(showControls: true).AsRaw()
 
 @(new MarkdownSharp.Markdown().Transform("## Heading").AsRaw())
 

@@ -50,6 +50,12 @@
             The ResultsFilterResponse is called before returning the response allowing responses to be cached.
             </summary>
         </member>
+        <member name="T:ServiceStack.RsaUtils">
+            <summary>
+            Useful .NET Encryption Utils from:
+            https://msdn.microsoft.com/en-us/library/system.security.cryptography.rsacryptoserviceprovider(v=vs.110).aspx
+            </summary>
+        </member>
         <member name="M:ServiceStack.Messaging.MessageQueueClientFactory.GetMessageAsync(System.String)">
             <summary>
             Returns the next message from queueName or null if no message

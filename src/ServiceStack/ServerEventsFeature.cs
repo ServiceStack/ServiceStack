@@ -162,7 +162,7 @@ namespace ServiceStack
                 UserId = userId,
                 UserName = session != null ? session.UserName : null,
                 DisplayName = displayName,
-                SessionId = req.GetPermanentSessionId(),
+                SessionId = req.GetSessionId(),
                 IsAuthenticated = session != null && session.IsAuthenticated,
                 UserAddress = req.UserHostAddress,
                 OnPublish = feature.OnPublish,
@@ -184,6 +184,10 @@ namespace ServiceStack
                 .AddQueryParam("id", subscriptionId);
             var unRegisterUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath))
                 .AddQueryParam("id", subscriptionId);
+
+            heartbeatUrl = AddSessionParamsIfAny(heartbeatUrl, req);
+            unRegisterUrl = AddSessionParamsIfAny(unRegisterUrl, req);
+
             subscription.ConnectArgs = new Dictionary<string, string>(subscription.Meta) {
                 {"id", subscriptionId },
                 {"unRegisterUrl", unRegisterUrl},
@@ -211,6 +215,22 @@ namespace ServiceStack
 
             return tcs.Task;
         }
+
+        static string AddSessionParamsIfAny(string url, IRequest req)
+        {
+            if (HostContext.Config.AllowSessionIdsInHttpParams)
+            {
+                var sessionKeys = new[] { "ss-id", "ss-pid", "ss-opt" };
+                foreach (var key in sessionKeys)
+                {
+                    var value = req.QueryString[key];
+                    if (value != null)
+                        url = url.AddQueryParam(key, value);
+                }
+            }
+
+            return url;
+        }
     }
 
     public class ServerEventsHeartbeatHandler : HttpAsyncTaskHandler
@@ -234,7 +254,16 @@ namespace ServiceStack
                 return EmptyTask;
 
             var subscriptionId = req.QueryString["id"];
-            if (!feature.CanAccessSubscription(req, subscriptionId))
+            var subscription = serverEvents.GetSubscriptionInfo(subscriptionId);
+            if (subscription == null)
+            {
+                res.StatusCode = 404;
+                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId);
+                res.EndHttpHandlerRequest(skipHeaders: true);
+                return EmptyTask;
+            }
+
+            if (!feature.CanAccessSubscription(req, subscription))
             {
                 res.StatusCode = 403;
                 res.StatusDescription = "Invalid User Address";

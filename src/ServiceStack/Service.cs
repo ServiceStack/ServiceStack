@@ -162,7 +162,7 @@ namespace ServiceStack
 
             RequestContext.Instance.ReleaseDisposables();
 
-            Request.ReleaseIfPrivateRequest();
+            Request.ReleaseIfInProcessRequest();
         }
     }
 

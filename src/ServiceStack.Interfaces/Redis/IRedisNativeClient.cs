@@ -5,7 +5,7 @@
 // Authors:
 //   Demis Bellot (demis.bellot@gmail.com)
 //
-// Copyright 2014 Service Stack LLC. All Rights Reserved.
+// Copyright 2015 Service Stack LLC. All Rights Reserved.
 //
 // Licensed under the same terms of ServiceStack.
 //
@@ -142,6 +142,7 @@ namespace ServiceStack.Redis
         long SAdd(string setId, byte[][] value);
         long SRem(string setId, byte[] value);
         byte[] SPop(string setId);
+        byte[][] SPop(string setId, int count);
         void SMove(string fromSetId, string toSetId, byte[] value);
         long SCard(string setId);
         long SIsMember(string setId, byte[] value);

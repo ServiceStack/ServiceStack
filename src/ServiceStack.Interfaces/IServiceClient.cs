@@ -1,10 +1,10 @@
 namespace ServiceStack
 {
-	public interface IServiceClient : IServiceClientAsync, IOneWayClient
-#if !(SL5 || __IOS__ || ANDROIDINDIE)
-, IRestClient, IReplyClient
-#endif
+    public interface IServiceClient : IServiceClientAsync, IOneWayClient, IRestClient, IReplyClient, IHasSessionId, IHasVersion
     {
 	}
 
+    public interface IJsonServiceClient : IServiceClient
+    {
+    }
 }

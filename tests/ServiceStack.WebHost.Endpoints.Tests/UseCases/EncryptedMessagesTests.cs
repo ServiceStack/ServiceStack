@@ -1,97 +1,61 @@
-﻿using System;
+﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+// License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+
+using System;
+using System.Net;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 {
-    public class SecureConfig
-    {
-        public static string PublicKey = "<RSAKeyValue><Modulus>s1/rrg2UxchL5O4yFKCHTaDQgr8Bfkr1kmPf8TCXUFt4WNgAxRFGJ4ap1Kc22rt/k0BRJmgC3xPIh7Z6HpYVzQroXuYI6+q66zyk0DRHG7ytsoMiGWoj46raPBXRH9Gj5hgv+E3W/NRKtMYXqq60hl1DvtGLUs2wLGv15K9NABc=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
-
-        public static string PrivateKey = "<RSAKeyValue><Modulus>s1/rrg2UxchL5O4yFKCHTaDQgr8Bfkr1kmPf8TCXUFt4WNgAxRFGJ4ap1Kc22rt/k0BRJmgC3xPIh7Z6HpYVzQroXuYI6+q66zyk0DRHG7ytsoMiGWoj46raPBXRH9Gj5hgv+E3W/NRKtMYXqq60hl1DvtGLUs2wLGv15K9NABc=</Modulus><Exponent>AQAB</Exponent><P>6CiNjgn8Ov6nodG56rCOXBoSGksYUf/2C8W23sEBfwfLtKyqTbTk3WolBj8sY8QptjwFBF4eaQiFdVLt3jg08w==</P><Q>xcuu4OGTcSOs5oYqyzsQrOAys3stMauM2RYLIWqw7JGEF1IV9LBwbaW/7foq2dG8saEI48jxcskySlDgq5dhTQ==</Q><DP>KqzhsH13ZyTOjblusox37shAEaNCOjiR8wIKJpJWAxLcyD6BI72f4G+VlLtiHoi9nikURwRCFM6jMbjnztSILw==</DP><DQ>H4CvW7XRy+VItnaL/k5r+3zB1oA51H1kM3clUq8xepw6k5RJVu17GpuZlAeSJ5sWGJxzVAQ/IG8XCWsUPYAgyQ==</DQ><InverseQ>vTLuAT3rSsoEdNwZeH2/JDEWmQ1NGa5PUq1ak1UbDD0snhsfJdLo6at3isRqEtPVsSUK6I07Nrfkd6okGhzGDg==</InverseQ><D>M8abO9lVuSVQqtsKf6O6inDB3wuNPcwbSE8l4/O3qY1Nlq96wWd0DZK0UNqXXdnDQFjPU7uwIH4QYwQMCeoejl3dZlllkyvKVa3jihImDD++qgswX2DmHGDqTIkVABf1NF730gqTmt1kqXoVp5Y+VcO7CZPEygIQyTK4WwYlRjk=</D></RSAKeyValue>";
-    }
-
     public class EncryptedMessagesAppHost : AppSelfHostBase
     {
         public EncryptedMessagesAppHost()
-            : base(typeof(EncryptedMessagesAppHost).Name, typeof(EncryptedMessagesService).Assembly) { }
+            : base(typeof(EncryptedMessagesAppHost).Name, typeof(SecureServices).Assembly) { }
 
         public override void Configure(Container container)
         {
-            RequestBinders[typeof(EncryptedMessage)] = req =>
+            Plugins.Add(new EncryptedMessagesFeature
             {
-                var encRequest = req.GetRawBody().FromJson<EncryptedMessage>();
+                PrivateKeyXml = SecureConfig.PrivateKeyXml
+            });
 
-                var requestType = Metadata.GetOperationType(encRequest.OperationName);
-                var decryptedJson = CryptUtils.Decrypt(SecureConfig.PrivateKey, encRequest.EncryptedBody);
-                var request = JsonSerializer.DeserializeFromString(decryptedJson, requestType);
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                new IAuthProvider[] {
+                    new CredentialsAuthProvider(AppSettings), 
+                }));
 
-                req.Items["_encrypt"] = encRequest;
-
-                return request;
-            };
+            container.Register<IUserAuthRepository>(c => new InMemoryAuthRepository());
+            container.Resolve<IUserAuthRepository>().CreateUserAuth(
+                new UserAuth { Email = "test@gmail.com" }, "p@55word");
         }
+    }
 
-        public override object OnAfterExecute(IRequest req, object requestDto, object response)
+    public class JsonServiceClientEncryptedMessagesTests : EncryptedMessagesTests
+    {
+        protected override IJsonServiceClient CreateClient()
         {
-            if (!req.Items.ContainsKey("_encrypt"))
-                return base.OnAfterExecute(req, requestDto, response);
-
-            var encResponse = CryptUtils.Encrypt(SecureConfig.PublicKey, response.ToJson());
-            return new EncryptedMessageResponse
-            {
-                OperationName = response.GetType().Name,
-                EncryptedBody = encResponse
-            };
+            return new JsonServiceClient(Config.AbsoluteBaseUri);
         }
     }
 
-    public class EncryptedMessage : IReturn<EncryptedMessageResponse>
+    public class JsonHttpClientEncryptedMessagesTests : EncryptedMessagesTests
     {
-        public string OperationName { get; set; }
-        public string EncryptedBody { get; set; }
-    }
-
-    public class EncryptedMessageResponse
-    {
-        public string OperationName { get; set; }
-        public string EncryptedBody { get; set; }
-
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
-    public class HelloSecure : IReturn<HelloSecureResponse>
-    {
-        public string Name { get; set; }
-    }
-
-    public class HelloSecureResponse
-    {
-        public string Result { get; set; }
-    }
-
-    public class EncryptedMessagesService : Service
-    {
-        public object Any(EncryptedMessage request)
+        protected override IJsonServiceClient CreateClient()
         {
-            throw new NotImplementedException("Dummy method so EncryptedMessage is treated as a Service");
-        }
-
-        public object Any(HelloSecure request)
-        {
-            return new HelloSecureResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+            return new JsonHttpClient(Config.AbsoluteBaseUri);
         }
     }
 
-
-    [TestFixture]
-    public class EncryptedMessagesTests
+    public abstract class EncryptedMessagesTests
     {
         private readonly ServiceStackHost appHost;
 
-        public EncryptedMessagesTests()
+        protected EncryptedMessagesTests()
         {
             appHost = new EncryptedMessagesAppHost()
                 .Init()
@@ -104,46 +68,284 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             appHost.Dispose();
         }
 
-        [Test]
-        public void Generate_Key_Pair()
-        {
-            var keyPair = CryptUtils.CreatePublicAndPrivateKeyPair();
-
-            "Public Key: {0}\n".Print(keyPair.PublicKey);
-            "Private Key: {0}\n".Print(keyPair.PrivateKey);
-        }
-
-        [Test]
-        public void Can_Encryt_and_Decrypt_String()
-        {
-            var request = new HelloSecure { Name = "World" };
-            var requestJson = request.ToJson();
-            var encRequest = CryptUtils.Encrypt(SecureConfig.PublicKey, requestJson);
-
-            var decJson = CryptUtils.Decrypt(SecureConfig.PrivateKey, encRequest);
-
-            Assert.That(decJson, Is.EqualTo(requestJson));
-        }
+        protected abstract IJsonServiceClient CreateClient();
 
         [Test]
         public void Can_Send_Encrypted_Message()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = CreateClient();
 
             var request = new HelloSecure { Name = "World" };
-            var encRequest = CryptUtils.Encrypt(SecureConfig.PublicKey, request.ToJson());
 
-            var encResponse = client.Post(new EncryptedMessage
+            var aes = new AesManaged { KeySize = AesUtils.KeySize };
+
+            var aesKeyBytes = aes.Key.Combine(aes.IV);
+            var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, SecureConfig.PublicKeyXml);
+
+            var timestamp = DateTime.UtcNow.ToUnixTime();
+
+            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
+
+            var encryptedMessage = new EncryptedMessage
             {
-                OperationName = typeof(HelloSecure).Name,
-                EncryptedBody = encRequest
-            });
+                EncryptedSymmetricKey = Convert.ToBase64String(rsaEncAesKeyBytes),
+                EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
+            };
+            var encResponse = client.Post(encryptedMessage);
 
-            var responseJson = CryptUtils.Decrypt(SecureConfig.PrivateKey, encResponse.EncryptedBody);
+            var responseJson = AesUtils.Decrypt(encResponse.EncryptedBody, aes.Key, aes.IV);
             var response = responseJson.FromJson<HelloSecureResponse>();
 
             Assert.That(response.Result, Is.EqualTo("Hello, World!"));
         }
-    }
 
+        [Test]
+        public void Does_throw_on_old_messages()
+        {
+            var client = CreateClient();
+
+            var request = new HelloSecure { Name = "World" };
+
+            var aes = new AesManaged { KeySize = AesUtils.KeySize };
+
+            var aesKeyBytes = aes.Key.Combine(aes.IV);
+            var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, SecureConfig.PublicKeyXml);
+
+            var timestamp = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(21)).ToUnixTime();
+
+            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
+
+            try
+            {
+                var encryptedMessage = new EncryptedMessage
+                {
+                    EncryptedSymmetricKey = Convert.ToBase64String(rsaEncAesKeyBytes),
+                    EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
+                };
+                var encResponse = client.Post(encryptedMessage);
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.StatusDescription.Print();
+
+                var errorResponse = (EncryptedMessageResponse)ex.ResponseDto;
+                var responseJson = AesUtils.Decrypt(errorResponse.EncryptedBody, aes.Key, aes.IV);
+                var response = responseJson.FromJson<ErrorResponse>();
+                Assert.That(response.ResponseStatus.Message, Is.EqualTo("Request too old"));
+            }
+        }
+
+        [Test]
+        public void Does_throw_on_replayed_messages()
+        {
+            var client = CreateClient();
+
+            var request = new HelloSecure { Name = "World" };
+
+            var aes = new AesManaged { KeySize = AesUtils.KeySize };
+
+            var aesKeyBytes = aes.Key.Combine(aes.IV);
+            var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, SecureConfig.PublicKeyXml);
+
+            var timestamp = DateTime.UtcNow.ToUnixTime();
+            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
+
+            var encryptedMessage = new EncryptedMessage
+            {
+                EncryptedSymmetricKey = Convert.ToBase64String(rsaEncAesKeyBytes),
+                EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
+            };
+            var encResponse = client.Post(encryptedMessage);
+
+            try
+            {
+                client.Post(encryptedMessage);
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.StatusDescription.Print();
+
+                var errorResponse = (EncryptedMessageResponse)ex.ResponseDto;
+                var responseJson = AesUtils.Decrypt(errorResponse.EncryptedBody, aes.Key, aes.IV);
+                var response = responseJson.FromJson<ErrorResponse>();
+                Assert.That(response.ResponseStatus.Message, Is.EqualTo("Nonce already seen"));
+            }
+        }
+
+        [Test]
+        public void Can_Send_Encrypted_Message_with_ServiceClients()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get(new GetPublicKey()));
+
+            var response = encryptedClient.Send(new HelloSecure { Name = "World" });
+
+            Assert.That(response.Result, Is.EqualTo("Hello, World!"));
+        }
+
+        [Test]
+        public void Can_authenticate_and_call_authenticated_Service()
+        {
+            try
+            {
+                var client = CreateClient();
+                IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+
+                var authResponse = encryptedClient.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = "test@gmail.com",
+                    Password = "p@55word",
+                });
+
+                var encryptedClientCookies = client.GetCookieValues();
+                Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+
+                var response = encryptedClient.Send(new HelloAuthenticated
+                {
+                    SessionId = authResponse.SessionId,
+                });
+
+                Assert.That(response.IsAuthenticated);
+                Assert.That(response.Email, Is.EqualTo("test@gmail.com"));
+                Assert.That(response.SessionId, Is.EqualTo(authResponse.SessionId));
+
+                encryptedClientCookies = client.GetCookieValues();
+                Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        [Test]
+        public void Does_populate_Request_metadata()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+
+            var authResponse = encryptedClient.Send(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "test@gmail.com",
+                Password = "p@55word",
+            });
+
+            var encryptedClientCookies = client.GetCookieValues();
+            Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+
+            encryptedClient.Version = 1;
+            encryptedClient.SessionId = authResponse.SessionId;
+
+            var response = encryptedClient.Send(new HelloAuthenticated());
+            Assert.That(response.SessionId, Is.EqualTo(encryptedClient.SessionId));
+            Assert.That(response.Version, Is.EqualTo(encryptedClient.Version));
+
+            encryptedClientCookies = client.GetCookieValues();
+            Assert.That(encryptedClientCookies.Count, Is.EqualTo(0));
+
+            client.SessionId = authResponse.SessionId;
+            client.Version = 2;
+
+            response = client.Send(new HelloAuthenticated());
+            Assert.That(response.SessionId, Is.EqualTo(client.SessionId));
+            Assert.That(response.Version, Is.EqualTo(client.Version));
+        }
+
+        [Test]
+        public void Can_Authenticate_then_call_AuthOnly_Services_with_ServiceClients_Temp()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+
+            var authResponse = encryptedClient.Send(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "test@gmail.com",
+                Password = "p@55word",
+            });
+
+            client.SetCookie("ss-id", authResponse.SessionId);
+            var response = client.Get(new HelloAuthSecure { Name = "World" });
+        }
+
+        [Test]
+        public void Can_Authenticate_then_call_AuthOnly_Services_with_ServiceClients_Perm()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+
+            var authResponse = encryptedClient.Send(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "test@gmail.com",
+                Password = "p@55word",
+                RememberMe = true,
+            });
+
+            client.SetCookie("ss-pid", authResponse.SessionId);
+            client.SetCookie("ss-opt", "perm");
+            var response = client.Get(new HelloAuthSecure { Name = "World" });
+        }
+
+        [Test]
+        public void Does_handle_Exceptions()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+
+            try
+            {
+                var response = encryptedClient.Send(new HelloSecure());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(ArgumentNullException).Name));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("Value cannot be null.\r\nParameter name: Name"));
+            }
+
+            try
+            {
+                var response = encryptedClient.Send(new HelloAuthenticated());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+                Assert.That(ex.StatusDescription, Is.EqualTo("Unauthorized"));
+            }
+        }
+
+        [Test]
+        public void Can_call_GET_only_Services()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+
+            var response = encryptedClient.Get(new GetSecure { Name = "World" });
+
+            Assert.That(response.Result, Is.EqualTo("Hello, World!"));
+        }
+
+        [Test]
+        public void Can_send_auto_batched_requests()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+
+            var names = new[] { "Foo", "Bar", "Baz" };
+            var requests = names.Map(x => new HelloSecure { Name = x });
+
+            var responses = encryptedClient.SendAll(requests);
+            var responseNames = responses.Map(x => x.Result);
+
+            Assert.That(responseNames, Is.EqualTo(names.Map(x => "Hello, {0}!".Fmt(x))));
+        }
+    }
 }

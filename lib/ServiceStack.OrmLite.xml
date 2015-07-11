@@ -4,17 +4,6 @@
         <name>ServiceStack.OrmLite</name>
     </assembly>
     <members>
-        <member name="F:ServiceStack.OrmLite.OrmLiteContext.UseThreadStatic">
-            <summary>
-            Tell ServiceStack to use ThreadStatic Items Collection for Context Scoped items.
-            Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.OrmLite.OrmLiteContext.Items">
-            <summary>
-            Gets a list of items for this context. 
-            </summary>
-        </member>
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select">
             <summary>
             Clear select expression. All properties will be selected.
@@ -129,6 +118,17 @@
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert">
             <summary>
             Clear InsertFields list ( all fields will be inserted)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.OrmLite.OrmLiteContext.UseThreadStatic">
+            <summary>
+            Tell ServiceStack to use ThreadStatic Items Collection for Context Scoped items.
+            Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.OrmLiteContext.Items">
+            <summary>
+            Gets a list of items for this context. 
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.PredicateBuilder">
@@ -513,6 +513,12 @@
             <para>db.Select&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; 40")</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Select``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            Returns results from using sql. E.g:
+            <para>db.Select&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; @age", new[] { db.CreateParam("age", 40) })</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Select``1(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns results from using a parameterized query. E.g:
@@ -607,6 +613,12 @@
             <para>db.Single&lt;Person&gt;(new { Age = 42 })</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Single``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            Returns results from using a single name, value filter. E.g:
+            <para>db.Single&lt;Person&gt;("Age = @age", new[] { db.CreateParam("age",40) })</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Single``1(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns results from using a single name, value filter. E.g:
@@ -637,6 +649,12 @@
             <para>db.Column&lt;int&gt;(db.From&lt;Persion&gt;().Select(x => Sql.Count("*")).Where(q => q.Age > 40))</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Scalar``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            Returns a single scalar value using a parameterized query. E.g:
+            <para>db.Scalar&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &gt; @age", new[] { db.CreateParam("age",40) })</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Scalar``1(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns a single scalar value using a parameterized query. E.g:
@@ -655,16 +673,28 @@
             <para>db.Column&lt;int&gt;(db.From&lt;Persion&gt;().Select(x => x.LastName).Where(q => q.Age == 27))</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.ColumnLazy``1(System.Data.IDbConnection,System.String,System.Object)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Column``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
             <summary>
             Returns the first column in a List using a SqlFormat query. E.g:
-            <para>db.ColumnLazy&lt;string&gt;("SELECT LastName FROM Person WHERE Age = @age", new { age = 27 })</para>
+            <para>db.Column&lt;string&gt;("SELECT LastName FROM Person WHERE Age = @age", new[] { db.CreateParam("age",27) })</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.ColumnLazy``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)">
             <summary>
             Returns the distinct first column values in a HashSet using an SqlExpression. E.g:
             <para>db.ColumnLazy&lt;int&gt;(db.From&lt;Persion&gt;().Select(x => x.LastName).Where(q => q.Age == 27))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.ColumnLazy``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            Returns the first column in a List using a SqlFormat query. E.g:
+            <para>db.ColumnLazy&lt;string&gt;("SELECT LastName FROM Person WHERE Age = @age", new[] { db.CreateParam("age",27) })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.ColumnLazy``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Returns the first column in a List using a SqlFormat query. E.g:
+            <para>db.ColumnLazy&lt;string&gt;("SELECT LastName FROM Person WHERE Age = @age", new { age = 27 })</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Column``1(System.Data.IDbConnection,System.String,System.Object)">
@@ -686,6 +716,12 @@
             <para>db.ColumnDistinct&lt;int&gt;("SELECT Age FROM Person WHERE Age &lt; @age", new { age = 50 })</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.ColumnDistinct``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            Returns the distinct first column values in a HashSet using an SqlFormat query. E.g:
+            <para>db.ColumnDistinct&lt;int&gt;("SELECT Age FROM Person WHERE Age &lt; @age", new[] { db.CreateParam("age",50) })</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.ColumnDistinctFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
             <summary>
             Returns the distinct first column values in a HashSet using an SqlFormat query. E.g:
@@ -693,6 +729,12 @@
             </summary>
         </member>
         <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteReadApi.Lookup``2(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)" -->
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Lookup``2(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            Returns an Dictionary&lt;K, List&lt;V&gt;&gt; grouping made from the first two columns using an parameterized query. E.g:
+            <para>db.Lookup&lt;int, string&gt;("SELECT Age, LastName FROM Person WHERE Age &lt; @age", new[] { db.CreateParam("age",50) })</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Lookup``2(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns an Dictionary&lt;K, List&lt;V&gt;&gt; grouping made from the first two columns using an parameterized query. E.g:
@@ -762,6 +804,12 @@
             <para>db.SqlList&lt;Person&gt;(db.From&lt;Person&gt;().Select("*").Where(q => q.Age &lt; 50))</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SqlList``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            Returns results from an arbitrary parameterized raw sql query. E.g:
+            <para>db.SqlList&lt;Person&gt;("EXEC GetRockstarsAged @age", new[] { db.CreateParam("age",50) })</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SqlList``1(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns results from an arbitrary parameterized raw sql query. E.g:
@@ -787,6 +835,12 @@
             </summary>
         </member>
         <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteReadApi.SqlColumn``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)" -->
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SqlColumn``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            Returns the first column in a List using a parameterized query. E.g:
+            <para>db.SqlColumn&lt;string&gt;("SELECT LastName FROM Person WHERE Age &lt; @age", new[] { db.CreateParam("age",50) })</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SqlColumn``1(System.Data.IDbConnection,System.String,System.Object)">
             <summary>
             Returns the first column in a List using a parameterized query. E.g:
@@ -803,6 +857,12 @@
             <summary>
             Returns a single Scalar value using an SqlExpression. E.g:
             <para>db.SqlScalar&lt;int&gt;(db.From&lt;Person&gt;().Select(Sql.Count("*")).Where(q => q.Age &lt; 50))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SqlScalar``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter})">
+            <summary>
+            Returns a single Scalar value using a parameterized query. E.g:
+            <para>db.SqlScalar&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &lt; @age", new[]{ db.CreateParam("age",50) })</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SqlScalar``1(System.Data.IDbConnection,System.String,System.Object)">
@@ -1068,6 +1128,13 @@
             </summary>
             <returns>number of rows deleted</returns>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.DeleteAll``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Delete all rows provided. E.g:
+            <para>db.DeleteAll&lt;Person&gt;(people)</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.DeleteAll(System.Data.IDbConnection,System.Type)">
             <summary>
             Delete all rows in the runtime table type. E.g:
@@ -1132,6 +1199,11 @@
             <summary>
             Populates the related references with the instance primary key and saves them. Uses '(T)Id' naming convention. E.g:
             <para>db.SaveReferences(customer, customer.Orders)</para> 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.OrmLiteConfig.UseParameterizeSqlExpressions">
+            <summary>
+            Only supported in Oracle DialectProvider
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.OrmLiteConnection">

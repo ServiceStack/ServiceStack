@@ -23,7 +23,9 @@ namespace ServiceStack.AuthWeb.Tests
 
         public RuntimeEvent ExecuteOn
         {
-            get { return RuntimeEvent.EndRequest; }
+			// The RuntimeEvent.ExecuteResource is only needed in case you create a security policy
+			// Have a look at http://blog.getglimpse.com/2013/12/09/protect-glimpse-axd-with-your-custom-runtime-policy/ for more details
+            get { return RuntimeEvent.EndRequest | RuntimeEvent.ExecuteResource; }
         }
     }
 }

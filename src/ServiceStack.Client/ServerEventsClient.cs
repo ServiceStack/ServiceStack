@@ -55,6 +55,10 @@ namespace ServiceStack
         static int DefaultHeartbeatMs = 10 * 1000;
         static int DefaultIdleTimeoutMs = 30 * 1000;
         private bool stopped = true;
+        public bool IsStopped
+        {
+            get { return stopped; }
+        }
 
         byte[] buffer;
         Encoding encoding = new UTF8Encoding();
@@ -333,6 +337,8 @@ namespace ServiceStack
                 SleepBackOffMultiplier(errorsCount)
                     .ContinueWith(t =>
                     {
+                        if (stopped)
+                            return;
                         try
                         {
                             Start();

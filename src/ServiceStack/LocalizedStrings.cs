@@ -8,11 +8,13 @@
         public static string RequestInfo = "requestinfo";
         public static string Debug = "debug";
         public static string Version = "version";
+        public static string VersionAbbr = "v";
         public static string Ignore = "ignore";
         public static string IgnorePlaceHolder = "_";
         public static string Bare = "bare";
         public static string SoapMessage = "SoapMessage";
         public static string Route = "__route";
+        public static string InvokeVerb = "__verb";
     }
 
     public static class LocalizedStrings

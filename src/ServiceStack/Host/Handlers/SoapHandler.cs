@@ -7,7 +7,6 @@ using System.ServiceModel.Channels;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
-using ServiceStack.Host.AspNet;
 using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
@@ -18,9 +17,12 @@ namespace ServiceStack.Host.Handlers
 {
     public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
     {
+        private ServiceStackHost appHost;
+
         public SoapHandler(RequestAttributes soapType)
         {
             this.HandlerAttributes = soapType;
+            this.appHost = HostContext.AppHost;
         }
 
         public void SendOneWay(Message requestMsg)
@@ -64,7 +66,7 @@ namespace ServiceStack.Host.Handlers
         protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IRequest httpReq, IResponse httpRes)
         {
             var soapFeature = requestAttributes.ToSoapFeature();
-            HostContext.AppHost.AssertFeatures(soapFeature);
+            appHost.AssertFeatures(soapFeature);
 
             if (httpReq == null)
                 httpReq = HostContext.GetCurrentRequest();
@@ -102,10 +104,11 @@ namespace ServiceStack.Host.Handlers
             {
                 var useXmlSerializerRequest = requestType.HasAttribute<XmlSerializerFormatAttribute>();
 
-                var request = useXmlSerializerRequest
-                    ? XmlSerializableSerializer.Instance.DeserializeFromString(requestXml, requestType)
-                    : Serialization.DataContractSerializer.Instance.DeserializeFromString(requestXml,
-                                                                                                        requestType);
+                var request = appHost.ApplyRequestConverters(httpReq, 
+                    useXmlSerializerRequest
+                        ? XmlSerializableSerializer.Instance.DeserializeFromString(requestXml, requestType)
+                        : Serialization.DataContractSerializer.Instance.DeserializeFromString(requestXml, requestType)
+                );
 
                 httpReq.Dto = request;
 
@@ -134,6 +137,8 @@ namespace ServiceStack.Host.Handlers
                     taskResponse.Wait();
                     response = TypeAccessor.Create(taskResponse.GetType())[taskResponse, "Result"];
                 }
+
+                response = HostContext.AppHost.ApplyResponseConverters(httpReq, response);
 
                 var hasResponseFilters = HostContext.GlobalResponseFilters.Count > 0
                     || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
@@ -165,10 +170,6 @@ namespace ServiceStack.Host.Handlers
                 throw new SerializationException("3) Error trying to deserialize requestType: "
                     + requestType
                     + ", xml body: " + requestXml, ex);
-            }
-            finally
-            {
-                HostContext.CompleteRequest(httpReq);
             }
         }
 

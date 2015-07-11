@@ -128,25 +128,25 @@ namespace ServiceStack
             return new RequestBaseWrapper((IHttpRequest) httpReq);
         }
 
-        public static void SetPrivateRequest(this IRequest httpReq)
+        public static void SetInProcessRequest(this IRequest httpReq)
         {
             if (httpReq == null) return;
 
-            httpReq.RequestAttributes |= RequestAttributes.Private;
+            httpReq.RequestAttributes |= RequestAttributes.InProcess;
         }
 
-        public static bool IsPrivateRequest(this IRequest httpReq)
+        public static bool IsInProcessRequest(this IRequest httpReq)
         {
             if (httpReq == null) return false;
 
-            return (RequestAttributes.Private & httpReq.RequestAttributes) == RequestAttributes.Private;
+            return (RequestAttributes.InProcess & httpReq.RequestAttributes) == RequestAttributes.InProcess;
         }
 
-        public static void ReleaseIfPrivateRequest(this IRequest httpReq)
+        public static void ReleaseIfInProcessRequest(this IRequest httpReq)
         {
             if (httpReq == null) return;
 
-            httpReq.RequestAttributes = httpReq.RequestAttributes & ~RequestAttributes.Private;
+            httpReq.RequestAttributes = httpReq.RequestAttributes & ~RequestAttributes.InProcess;
         }
     }
 }

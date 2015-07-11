@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using ServiceStack.Auth;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -18,10 +16,6 @@ namespace ServiceStack.Authentication.MongoDb
             public int UserAuthCounter { get; set; }
             public int UserOAuthProviderCounter { get; set; }
         }
-
-        //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
-        public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
-
         private readonly MongoDatabase mongoDatabase;
 
         // UserAuth collection name
@@ -115,7 +109,7 @@ namespace ServiceStack.Authentication.MongoDb
 
             if (!newUser.UserName.IsNullOrEmpty())
             {
-                if (!ValidUserNameRegEx.IsMatch(newUser.UserName))
+                if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
                     throw new ArgumentException("UserName contains invalid characters", "UserName");
             }
         }

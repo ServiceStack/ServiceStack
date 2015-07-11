@@ -101,9 +101,9 @@
     <Reference Include="Npgsql">
       <HintPath>..\..\lib\Npgsql.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\src\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\..\src\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="protobuf-net">
       <HintPath>..\..\src\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
@@ -235,7 +235,9 @@
     <Compile Include="IocServiceTests.cs" />
     <Compile Include="Support\EndpointHandlerBaseTests.cs" />
     <Compile Include="UnitTestExample.cs" />
+    <Compile Include="UseCases\BasicEncryptedMessagesTests.cs" />
     <Compile Include="UseCases\EncryptedMessagesTests.cs" />
+    <Compile Include="UseCases\SecureConfig.cs" />
     <Compile Include="UserServiceValidationTests.cs" />
     <Compile Include="JsonpTests.cs" />
     <Compile Include="Shared\IocService.cs" />
@@ -297,6 +299,7 @@
     <Compile Include="Support\Services\TestServiceBase.cs" />
     <Compile Include="Support\Host\TestAppHost.cs" />
     <Compile Include="Support\Services\TestService.cs" />
+    <Compile Include="BuiltinRouteTests.cs" />
     <Compile Include="WebServiceExceptionTests.cs" />
     <Compile Include="WsdlMetadataTests.cs" />
     <Compile Include="OperationTests.cs" />

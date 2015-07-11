@@ -74,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Tag = tag
             });
 
-            Thread.Sleep(1000);
+            await Task.Delay(1000);
 
             var cancelResponse = client.Post(new CancelRequest { Tag = tag });
             Assert.That(cancelResponse.Tag, Is.EqualTo(tag));

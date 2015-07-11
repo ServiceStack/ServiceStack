@@ -134,7 +134,7 @@ namespace Amib.Threading
 		/// <summary>
 		/// Indicate to copy the security context of the caller and then use it in the call. (false)
 		/// </summary>
-		public const bool DefaultUseCallerCallContext = false; 
+		public const bool DefaultUseCallerCallContext = true; 
 
 		/// <summary>
 		/// Indicate to copy the HTTP context of the caller and then use it in the call. (false)

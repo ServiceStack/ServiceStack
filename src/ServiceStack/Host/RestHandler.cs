@@ -101,6 +101,8 @@ namespace ServiceStack.Host
                 var rawResponse = GetResponse(httpReq, request);
                 return HandleResponse(rawResponse, response => 
                 {
+                    response = appHost.ApplyResponseConverters(httpReq, response);
+
                     if (appHost.ApplyResponseFilters(httpReq, httpRes, response)) 
                         return EmptyTask;
 
@@ -113,14 +115,14 @@ namespace ServiceStack.Host
                     return httpRes.WriteToResponse(httpReq, response);
                 },  
                 ex => !HostContext.Config.WriteErrorsToResponse 
-                    ? ex.AsTaskException() 
-                    : HandleException(httpReq, httpRes, operationName, ex));
+                    ? ex.ApplyResponseConverters(httpReq).AsTaskException()
+                    : HandleException(httpReq, httpRes, operationName, ex.ApplyResponseConverters(httpReq)));
             }
             catch (Exception ex)
             {
-                return !HostContext.Config.WriteErrorsToResponse 
-                    ? ex.AsTaskException() 
-                    : HandleException(httpReq, httpRes, operationName, ex);
+                return !HostContext.Config.WriteErrorsToResponse
+                    ? ex.ApplyResponseConverters(httpReq).AsTaskException()
+                    : HandleException(httpReq, httpRes, operationName, ex.ApplyResponseConverters(httpReq));
             }
         }
 
@@ -140,11 +142,12 @@ namespace ServiceStack.Host
                 try
                 {
                     var dtoFromBinder = GetCustomRequestFromBinder(httpReq, restPath.RequestType);
-                    if (dtoFromBinder != null) 
-                        return dtoFromBinder;
+                    if (dtoFromBinder != null)
+                        return HostContext.AppHost.ApplyRequestConverters(httpReq, dtoFromBinder);
 
                     var requestParams = httpReq.GetRequestParams();
-                    return CreateRequest(httpReq, restPath, requestParams);
+                    return HostContext.AppHost.ApplyRequestConverters(httpReq, 
+                        CreateRequest(httpReq, restPath, requestParams));
                 }
                 catch (SerializationException e)
                 {

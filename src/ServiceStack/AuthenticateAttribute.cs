@@ -69,6 +69,8 @@ namespace ServiceStack
                 return;
             }
 
+            req.PopulateFromRequestIfHasSessionId(requestDto);
+
             matchingOAuthConfigs.OfType<IAuthWithRequest>()
                 .Each(x => x.PreAuthenticate(req, res));
 

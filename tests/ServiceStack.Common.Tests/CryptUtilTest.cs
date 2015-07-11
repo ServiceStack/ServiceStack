@@ -13,8 +13,8 @@ namespace ServiceStack.Common.Tests
         [TestCase]
         public void CanEncryptWithStringExtension()
         {
-            CryptUtils.Length = RsaKeyLengths.Bit1024;
-            CryptUtils.KeyPair = CryptUtils.CreatePublicAndPrivateKeyPair();
+            RsaUtils.KeyLength = RsaKeyLengths.Bit1024;
+            RsaUtils.DefaultKeyPair = RsaUtils.CreatePublicAndPrivateKeyPair();
 
             string TestStart = "Mr. Watson--come here--I want to see you.";
             string Encrypted;
@@ -32,8 +32,8 @@ namespace ServiceStack.Common.Tests
         [Test, ExpectedException(typeof(ArgumentNullException))]
         public void CanEncryptWithStringExtensionFailsWithoutKeyPair()
         {
-            CryptUtils.Length = RsaKeyLengths.Bit1024;
-            CryptUtils.KeyPair = null;
+            RsaUtils.KeyLength = RsaKeyLengths.Bit1024;
+            RsaUtils.DefaultKeyPair = null;
             string TestStart = "Mr. Watson--come here--I want to see you.";
             string Encrypted;
 

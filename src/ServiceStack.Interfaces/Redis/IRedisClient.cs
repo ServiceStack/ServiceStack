@@ -5,7 +5,7 @@
 // Authors:
 //   Demis Bellot (demis.bellot@gmail.com)
 //
-// Copyright 2014 Service Stack LLC. All Rights Reserved.
+// Copyright 2015 Service Stack LLC. All Rights Reserved.
 //
 // Licensed under the same terms of ServiceStack.
 //
@@ -163,6 +163,7 @@ namespace ServiceStack.Redis
         void AddRangeToSet(string setId, List<string> items);
         void RemoveItemFromSet(string setId, string item);
         string PopItemFromSet(string setId);
+        List<string> PopItemsFromSet(string setId, int count);
         void MoveBetweenSets(string fromSetId, string toSetId, string item);
         long GetSetCount(string setId);
         bool SetContainsItem(string setId, string item);

@@ -62,6 +62,8 @@ namespace ServiceStack
             Routes = new ServiceRoutes(this);
             Metadata = new ServiceMetadata(RestPaths);
             PreRequestFilters = new List<Action<IRequest, IResponse>>();
+            RequestConverters = new List<Func<IRequest, object, object>>();
+            ResponseConverters = new List<Func<IRequest, object, object>>();
             GlobalRequestFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalTypedRequestFilters = new Dictionary<Type, ITypedFilter>();
             GlobalResponseFilters = new List<Action<IRequest, IResponse, object>>();
@@ -105,7 +107,7 @@ namespace ServiceStack
             };
 
             // force deterministic initialization of static constructor
-            using (JsConfig.BeginScope()) { }
+            using (JsConfig.BeginScope()) {}
         }
 
         public abstract void Configure(Container container);
@@ -257,6 +259,10 @@ namespace ServiceStack
         public IContentTypes ContentTypes { get; set; }
 
         public List<Action<IRequest, IResponse>> PreRequestFilters { get; set; }
+
+        public List<Func<IRequest, object, object>> RequestConverters { get; set; }
+
+        public List<Func<IRequest, object, object>> ResponseConverters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; }
 
@@ -731,6 +737,8 @@ namespace ServiceStack
             {
                 foreach (var atRestPath in atRestPaths)
                 {
+                    if (atRestPath == null) continue;
+
                     this.Routes.Add(reqAttr.RequestType, atRestPath, null);
                 }
             }

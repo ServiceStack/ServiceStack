@@ -37,6 +37,7 @@ namespace ServiceStack
         T TryResolve<T>();
         T ResolveService<T>();
         object Execute(object requestDto);
+        TResponse Execute<TResponse>(IReturn<TResponse> requestDto);
         object Execute(IRequest request);
         IAuthSession GetSession(bool reload = false);
         TUserSession SessionAs<TUserSession>();
@@ -145,9 +146,14 @@ namespace ServiceStack
             return HostContext.ServiceController.Execute(requestDto, Request);
         }
 
+        public TResponse Execute<TResponse>(IReturn<TResponse> requestDto)
+        {
+            return (TResponse)Execute((object)requestDto);
+        }
+
         public object Execute(IRequest request)
         {
-            return HostContext.ServiceController.Execute(Request);
+            return HostContext.ServiceController.Execute(request);
         }
 
         public object ForwardRequest()

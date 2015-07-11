@@ -22,9 +22,20 @@ namespace ServiceStack.Host.Handlers
 
         public RequestAttributes ContentTypeAttribute { get; set; }
 
-        public override object CreateRequest(IRequest request, string operationName)
+        public override object CreateRequest(IRequest req, string operationName)
         {
-            return GetRequest(request, operationName);
+            var requestType = GetOperationType(operationName);
+
+            AssertOperationExists(operationName, requestType);
+
+            using (Profiler.Current.Step("Deserialize Request"))
+            {
+                var requestDto = GetCustomRequestFromBinder(req, requestType) 
+                    ?? (DeserializeHttpRequest(requestType, req, HandlerContentType)
+                        ?? requestType.CreateInstance());
+
+                return appHost.ApplyRequestConverters(req, requestDto);
+            }
         }
 
         public override object GetResponse(IRequest httpReq, object request)
@@ -33,20 +44,6 @@ namespace ServiceStack.Host.Handlers
             var response = ExecuteService(request, httpReq);
 
             return response;
-        }
-
-        public object GetRequest(IRequest httpReq, string operationName)
-        {
-            var requestType = GetOperationType(operationName);
-
-            AssertOperationExists(operationName, requestType);
-
-            using (Profiler.Current.Step("Deserialize Request"))
-            {
-                var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
-                return requestDto ?? DeserializeHttpRequest(requestType, httpReq, HandlerContentType)
-                    ?? requestType.CreateInstance();
-            }
         }
 
         public override bool RunAsAsync()
@@ -76,6 +73,8 @@ namespace ServiceStack.Host.Handlers
                 var rawResponse = GetResponse(httpReq, request);
                 return HandleResponse(rawResponse, response =>
                 {
+                    response = appHost.ApplyResponseConverters(httpReq, response);
+
                     if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
                         return EmptyTask;
 
@@ -85,14 +84,14 @@ namespace ServiceStack.Host.Handlers
                     return httpRes.WriteToResponse(httpReq, response);
                 },
                 ex => !HostContext.Config.WriteErrorsToResponse
-                    ? ex.AsTaskException()
-                    : HandleException(httpReq, httpRes, operationName, ex));
+                    ? ex.ApplyResponseConverters(httpReq).AsTaskException()
+                    : HandleException(httpReq, httpRes, operationName, ex.ApplyResponseConverters(httpReq)));
             }
             catch (Exception ex)
             {
                 return !HostContext.Config.WriteErrorsToResponse
-                    ? ex.AsTaskException()
-                    : HandleException(httpReq, httpRes, operationName, ex);
+                    ? ex.ApplyResponseConverters(httpReq).AsTaskException()
+                    : HandleException(httpReq, httpRes, operationName, ex.ApplyResponseConverters(httpReq));
             }
         }
 

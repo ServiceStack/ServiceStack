@@ -162,6 +162,9 @@ namespace ServiceStack
         // CCB Custom
         public bool StoreCookies { get; set; }
 
+        public int Version { get; set; }
+        public string SessionId { get; set; }
+
         public WcfServiceClient()
         {
             // CCB Custom
@@ -206,6 +209,8 @@ namespace ServiceStack
 
         public Message Send(object request)
         {
+            this.PopulateRequestMetadata(request);
+
             return Send(request, request.GetType().Name);
         }
 
@@ -343,12 +348,22 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public void Get(IReturnVoid request)
+        public void ClearCookies()
         {
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse Get(object request)
+        public Dictionary<string, string> GetCookieValues()
+        {
+            return new Dictionary<string, string>();
+        }
+
+        public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Get(IReturnVoid request)
         {
             throw new NotImplementedException();
         }
@@ -378,11 +393,6 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse Delete(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
         public TResponse Delete<TResponse>(IReturn<TResponse> request)
         {
             throw new NotImplementedException();
@@ -400,22 +410,17 @@ namespace ServiceStack
 
         public void Post(IReturnVoid requestDto)
         {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Post(object requestDto)
-        {
-            throw new NotImplementedException();
+            Send(requestDto);
         }
 
         public TResponse Post<TResponse>(IReturn<TResponse> requestDto)
         {
-            throw new NotImplementedException();
+            return Send(requestDto);
         }
 
         public TResponse Post<TResponse>(object requestDto)
         {
-            throw new NotImplementedException();
+            return Send<TResponse>(requestDto);
         }
 
         public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
@@ -424,11 +429,6 @@ namespace ServiceStack
         }
 
         public void Put(IReturnVoid requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Put(object requestDto)
         {
             throw new NotImplementedException();
         }
@@ -449,11 +449,6 @@ namespace ServiceStack
         }
 
         public void Patch(IReturnVoid requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Patch(object requestDto)
         {
             throw new NotImplementedException();
         }
@@ -483,32 +478,12 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public HttpWebResponse CustomMethod(string httpVerb, object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
         public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
             throw new NotImplementedException();
         }
 
         public TResponse CustomMethod<TResponse>(string httpVerb, object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Head(IReturn requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Head(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HttpWebResponse Head(string relativeOrAbsoluteUrl)
         {
             throw new NotImplementedException();
         }
@@ -653,6 +628,11 @@ namespace ServiceStack
         }
 
         public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
         {
             throw new NotImplementedException();
         }

@@ -84,6 +84,23 @@ namespace ServiceStack.Auth
         }
     }
 
+    public static class HashExtensions
+    {
+        public static string ToSha256Hash(this string value)
+        {
+            var sb = new StringBuilder();
+            using (var hash = SHA256Managed.Create())
+            {
+                var result = hash.ComputeHash(value.ToUtf8Bytes());
+                foreach (var b in result)
+                {
+                    sb.Append(b.ToString("x2"));
+                }
+            }
+            return sb.ToString();
+        }
+    }
+
     /*
     /// <summary>
     /// This little demo code shows how to encode a users password.

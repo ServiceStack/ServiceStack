@@ -48,15 +48,18 @@ namespace ServiceStack.Metadata
                     schema.Write(httpRes.OutputStream);
                     break;
                 }
-                return;
+            }
+            else
+            {
+                using (var sw = new StreamWriter(httpRes.OutputStream))
+                {
+                    var writer = new HtmlTextWriter(sw);
+                    httpRes.ContentType = "text/html";
+                    ProcessOperations(writer, httpReq, httpRes);
+                }
             }
 
-            using (var sw = new StreamWriter(httpRes.OutputStream))
-            {
-                var writer = new HtmlTextWriter(sw);
-                httpRes.ContentType = "text/html";
-                ProcessOperations(writer, httpReq, httpRes);
-            }
+            httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
 
     }

@@ -29,7 +29,7 @@ namespace ServiceStack.Auth
         public static string Name = AuthenticateService.CredentialsProvider;
         public static string Realm = "/auth/" + AuthenticateService.CredentialsProvider;
 
-        public bool SkipPasswordVerificationForPrivateRequests { get; set; }
+        public bool SkipPasswordVerificationForInProcessRequests { get; set; }
 
         public CredentialsAuthProvider()
         {
@@ -88,7 +88,7 @@ namespace ServiceStack.Auth
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
-            if (SkipPasswordVerificationForPrivateRequests && authService.Request.IsPrivateRequest())
+            if (SkipPasswordVerificationForInProcessRequests && authService.Request.IsInProcessRequest())
             {
                 new PrivateAuthValidator().ValidateAndThrow(request);
                 return AuthenticatePrivateRequest(authService, session, request.UserName, request.Password, request.Continue);
@@ -188,6 +188,7 @@ namespace ServiceStack.Auth
             {
                 var ctx = new AuthContext
                 {
+                    Request = authService.Request,
                     Service = authService,
                     AuthProvider = this,
                     Session = session,

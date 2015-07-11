@@ -98,6 +98,17 @@ namespace ServiceStack.Serialization
 
                     if (!propertySetterMap.TryGetValue(propertyName, out propertySerializerEntry))
                     {
+                        if (propertyName == "v")
+                        {
+                            int version;
+                            var hasVersion = instance as IHasVersion;
+                            if (hasVersion != null && int.TryParse(pair.Value, out version))
+                            {
+                                hasVersion.Version = version;
+                            }
+                            continue;
+                        }
+
                         var ignoredProperty = propertyName.ToLowerInvariant();
                         if (ignoredWarningsOnPropertyNames == null || !ignoredWarningsOnPropertyNames.Contains(ignoredProperty))
                         {

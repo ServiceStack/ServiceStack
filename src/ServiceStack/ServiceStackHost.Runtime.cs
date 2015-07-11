@@ -24,6 +24,30 @@ namespace ServiceStack
 {
     public abstract partial class ServiceStackHost
     {
+        public virtual object ApplyRequestConverters(IRequest req, object requestDto)
+        {
+            foreach (var converter in RequestConverters)
+            {
+                requestDto = converter(req, requestDto) ?? requestDto;
+                if (req.Response.IsClosed)
+                    return requestDto;
+            }
+
+            return requestDto;
+        }
+
+        public virtual object ApplyResponseConverters(IRequest req, object responseDto)
+        {
+            foreach (var converter in ResponseConverters)
+            {
+                responseDto = converter(req, responseDto) ?? responseDto;
+                if (req.Response.IsClosed)
+                    return responseDto;
+            }
+
+            return responseDto;
+        }
+
         /// <summary>
         /// Apply PreRequest Filters for participating Custom Handlers, e.g. RazorFormat, MarkdownFormat, etc
         /// </summary>
@@ -63,6 +87,9 @@ namespace ServiceStack
         {
             req.ThrowIfNull("req");
             res.ThrowIfNull("res");
+
+            if (res.IsClosed)
+                return true;
 
             using (Profiler.Current.Step("Executing Request Filters"))
             {
@@ -125,6 +152,9 @@ namespace ServiceStack
         {
             req.ThrowIfNull("req");
             res.ThrowIfNull("res");
+
+            if (res.IsClosed)
+                return true;
 
             using (Profiler.Current.Step("Executing Response Filters"))
             {
@@ -422,7 +452,7 @@ namespace ServiceStack
 
         public virtual object OnAfterExecute(IRequest req, object requestDto, object response)
         {
-            return response;
+            return req.Response.Dto = response;
         }
 
         public virtual MetadataTypesConfig GetTypesConfigForMetadata(IRequest req)
@@ -453,9 +483,34 @@ namespace ServiceStack
 
         public virtual void WriteSoapMessage(IRequest req, System.ServiceModel.Channels.Message message, Stream outputStream)
         {
-            using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
+            try
             {
-                message.WriteMessage(writer);
+                using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
+                {
+                    message.WriteMessage(writer);
+                }
+            }
+            catch (Exception ex)
+            {
+                var response = OnServiceException(req, req.Dto, ex);
+                if (response == null || !outputStream.CanSeek)
+                    return;
+
+                outputStream.Position = 0;
+                try
+                {
+                    message = SoapHandler.CreateResponseMessage(response, message.Version, req.Dto.GetType(),
+                        req.GetSoapMessage().Headers.Action == null);
+                    using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
+                    {
+                        message.WriteMessage(writer);
+                    }
+                }
+                catch { }
+            }
+            finally
+            {
+                HostContext.CompleteRequest(req);
             }
         }
     }

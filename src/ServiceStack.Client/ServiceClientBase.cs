@@ -5,12 +5,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Reflection;
+using ServiceStack.Auth;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
@@ -30,7 +32,7 @@ namespace ServiceStack
      * Need to provide async request options
      * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
      */
-    public abstract class ServiceClientBase : IServiceClient, IMessageProducer
+    public abstract class ServiceClientBase : IServiceClient, IMessageProducer, IHasCookieContainer
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
@@ -197,6 +199,9 @@ namespace ServiceStack
         public string SyncReplyBaseUri { get; set; }
 
         public string AsyncOneWayBaseUri { get; set; }
+
+        public int Version { get; set; }
+        public string SessionId { get; set; }
 
         private string userAgent;
         public string UserAgent
@@ -662,7 +667,7 @@ namespace ServiceStack
 
                 try
                 {
-                    if (errorResponse.ContentType.MatchesContentType(ContentType))
+                    if (string.IsNullOrEmpty(errorResponse.ContentType) || errorResponse.ContentType.MatchesContentType(ContentType))
                     {
                         var bytes = errorResponse.GetResponseStream().ReadFully();
                         using (__requestAccess())
@@ -723,6 +728,8 @@ namespace ServiceStack
         {
             if (httpMethod == null)
                 throw new ArgumentNullException("httpMethod");
+
+            this.PopulateRequestMetadata(request);
 
             if (!httpMethod.HasRequestBody() && request != null)
             {
@@ -1032,23 +1039,23 @@ namespace ServiceStack
             return PatchAsync<byte[]>(requestDto.ToUrl(HttpMethods.Patch, Format), requestDto);
         }
 
-
         public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
-            if (!HttpMethods.HasVerb(httpVerb))
-                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
-
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
-            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
+            return CustomMethodAsync<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
         }
 
         public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
         {
+            return CustomMethodAsync<TResponse>(httpVerb, requestDto.ToUrl(httpVerb, Format), requestDto);
+        }
+
+        public virtual Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
+        {
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
-            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(requestDto.ToUrl(httpVerb, Format)), requestBody);
+            var requestBody = httpVerb.HasRequestBody() ? request : null;
+            return asyncClient.SendAsync<TResponse>(httpVerb, GetUrl(relativeOrAbsoluteUrl), requestBody);
         }
 
         public virtual Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
@@ -1110,6 +1117,21 @@ namespace ServiceStack
             }
         }
 
+        public void ClearCookies()
+        {
+            CookieContainer = new CookieContainer();
+        }
+
+        public Dictionary<string, string> GetCookieValues()
+        {
+            return CookieContainer.ToDictionary(BaseUri);
+        }
+
+        public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
+        {
+            this.SetCookie(new Uri(BaseUri), name, value,
+                expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : (DateTime?)null);
+        }
 
         public virtual void Get(IReturnVoid requestDto)
         {
@@ -1338,7 +1360,7 @@ namespace ServiceStack
                 var queryString = QueryStringSerializer.SerializeToString(request);
 
                 var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
-                var boundary = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+                var boundary = "----------------------------" + Stopwatch.GetTimestamp().ToString("x");
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
                 var newLine = "\r\n";
@@ -1477,7 +1499,7 @@ namespace ServiceStack
         public void Dispose() { }
     }
 
-    public static class ServiceClientExtensions
+    public static partial class ServiceClientExtensions
     {
 #if !(NETFX_CORE || SL5 || PCL)
         public static TResponse PostFile<TResponse>(this IRestClient client,
@@ -1504,7 +1526,134 @@ namespace ServiceStack
             }            
         }
 #endif
-        
+
+        public static void PopulateRequestMetadata(this IHasSessionId client, object request)
+        {
+            if (client.SessionId != null)
+            {
+                var hasSession = request as IHasSessionId;
+                if (hasSession != null && hasSession.SessionId == null)
+                    hasSession.SessionId = client.SessionId;
+            }
+            var clientVersion = client as IHasVersion;
+            if (clientVersion != null && clientVersion.Version > 0)
+            {
+                var hasVersion = request as IHasVersion;
+                if (hasVersion != null && hasVersion.Version <= 0)
+                    hasVersion.Version = clientVersion.Version;
+            }
+        }
+
+        public static Dictionary<string,string> ToDictionary(this CookieContainer cookies, string baseUri)
+        {
+            var to = new Dictionary<string, string>();
+            if (cookies == null)
+                return to;
+
+            foreach (Cookie cookie in cookies.GetCookies(new Uri(baseUri)))
+            {
+                to[cookie.Name] = cookie.Value;
+            }
+            return to;
+        }
+
+        public static HttpWebResponse Get(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Get(request);
+        }
+
+        public static HttpWebResponse Delete(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Delete(request);
+        }
+
+        public static HttpWebResponse Post(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Post(request);
+        }
+
+        public static HttpWebResponse Put(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Put(request);
+        }
+
+        public static HttpWebResponse Patch(this IRestClient client, object request)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Patch(request);
+        }
+
+        public static HttpWebResponse CustomMethod(this IRestClient client, string httpVerb, object requestDto)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.CustomMethod(httpVerb, requestDto);
+        }
+
+        public static HttpWebResponse Head(this IRestClient client, IReturn requestDto)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Head(requestDto);
+        }
+
+        public static HttpWebResponse Head(this IRestClient client, object requestDto)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Head(requestDto);
+        }
+
+        public static HttpWebResponse Head(this IRestClient client, string relativeOrAbsoluteUrl)
+        {
+            var c = client as ServiceClientBase;
+            if (c == null)
+                throw new NotSupportedException();
+            return c.Head(relativeOrAbsoluteUrl);
+        }
+
+        public static void SetCookie(this IServiceClient client, Uri baseUri, string name, string value,
+            DateTime? expiresAt = null, string path = "/",  
+            bool? httpOnly = null, bool? secure = null)
+        {
+            var hasCookies = client as IHasCookieContainer;
+            if (hasCookies == null)
+                throw new NotSupportedException("Client does not implement IHasCookieContainer");
+
+            var cookie = new Cookie(name, value, path);
+            if (expiresAt != null)
+                cookie.Expires = expiresAt.Value;
+            if (path != null)
+                cookie.Path = path;
+            if (httpOnly != null)
+                cookie.HttpOnly = httpOnly.Value;
+            if (secure != null)
+                cookie.Secure = secure.Value;
+
+            hasCookies.CookieContainer.Add(baseUri, cookie);
+        }
+    }
+
+    public interface IHasCookieContainer
+    {
+        CookieContainer CookieContainer { get; }
     }
 
     public delegate object ResultsFilterDelegate(Type responseType, string httpMethod, string requestUri, object request);

@@ -31,7 +31,6 @@ namespace ServiceStack.Host
         public string StatusDescription { set; get; }
         public string ContentType { get; set; }
         public bool KeepOpen { get; set; }
-
         public ICookies Cookies { get; set; }
 
         public void AddHeader(string name, string value)
@@ -89,6 +88,10 @@ namespace ServiceStack.Host
         public Dictionary<string, object> Items { get; private set; }
 
         public void SetCookie(Cookie cookie)
+        {
+        }
+
+        public void ClearCookies()
         {
         }
     }

@@ -21,7 +21,7 @@ namespace ServiceStack
      * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
      */
 
-    public partial class AsyncServiceClient
+    public partial class AsyncServiceClient : IHasSessionId, IHasVersion
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(AsyncServiceClient));
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
@@ -116,6 +116,9 @@ namespace ServiceStack
 
         public bool ShareCookiesWithBrowser { get; set; }
 
+        public int Version { get; set; }
+        public string SessionId { get; set; }
+
         internal Action CancelAsyncFn;
 
         public void CancelAsync()
@@ -177,6 +180,8 @@ namespace ServiceStack
             Action<TResponse> onSuccess, Action<object, Exception> onError, Action<WebResponse> onResponseInit = null)
         {
             if (httpMethod == null) throw new ArgumentNullException("httpMethod");
+
+            this.PopulateRequestMetadata(request);
 
             var requestUri = absoluteUrl;
             var hasQueryString = request != null && !httpMethod.HasRequestBody();

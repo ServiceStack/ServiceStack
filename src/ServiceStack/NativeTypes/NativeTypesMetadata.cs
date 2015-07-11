@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
@@ -32,6 +33,7 @@ namespace ServiceStack.NativeTypes
                 AddDataContractAttributes = req.AddDataContractAttributes ?? defaults.AddDataContractAttributes,
                 MakeDataContractsExtensible = req.MakeDataContractsExtensible ?? defaults.MakeDataContractsExtensible,
                 AddIndexesToDataMembers = req.AddIndexesToDataMembers ?? defaults.AddIndexesToDataMembers,
+                AddGeneratedCodeAttributes = req.AddGeneratedCodeAttributes ?? defaults.AddGeneratedCodeAttributes,
                 InitializeCollections = req.InitializeCollections ?? defaults.InitializeCollections,
                 AddImplicitVersion = req.AddImplicitVersion ?? defaults.AddImplicitVersion,
                 BaseClass = req.BaseClass ?? defaults.BaseClass,
@@ -40,6 +42,7 @@ namespace ServiceStack.NativeTypes
                 AddServiceStackTypes = req.AddServiceStackTypes ?? defaults.AddServiceStackTypes,
                 AddModelExtensions = req.AddModelExtensions ?? defaults.AddModelExtensions,
                 AddPropertyAccessors = req.AddPropertyAccessors ?? defaults.AddPropertyAccessors,
+                ExcludeGenericBaseTypes = req.ExcludeGenericBaseTypes ?? defaults.ExcludeGenericBaseTypes,
                 SettersReturnThis = req.SettersReturnThis ?? defaults.SettersReturnThis,
                 MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,

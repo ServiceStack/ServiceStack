@@ -14,6 +14,7 @@ namespace ServiceStack
             bool convertDescriptionToComments = true,
             bool addDataContractAttributes = false,
             bool addIndexesToDataMembers = false,
+            bool addGeneratedCodeAttributes = false,
             string addDefaultXmlNamespace = null,
             string baseClass = null,
             string package = null,
@@ -21,6 +22,7 @@ namespace ServiceStack
             bool addServiceStackTypes = true,
             bool addModelExtensions = true,
             bool addPropertyAccessors = true,
+            bool excludeGenericBaseTypes = true,
             bool settersReturnThis = true,
             bool makePropertiesOptional = true,
             bool makeDataContractsExtensible = false,
@@ -38,11 +40,13 @@ namespace ServiceStack
             Package = package;
             MakeDataContractsExtensible = makeDataContractsExtensible;
             AddIndexesToDataMembers = addIndexesToDataMembers;
+            AddGeneratedCodeAttributes = addGeneratedCodeAttributes;
             InitializeCollections = initializeCollections;
             AddResponseStatus = addResponseStatus;
             AddServiceStackTypes = addServiceStackTypes;
             AddModelExtensions = addModelExtensions;
             AddPropertyAccessors = addPropertyAccessors;
+            ExcludeGenericBaseTypes = excludeGenericBaseTypes;
             SettersReturnThis = settersReturnThis;
             MakePropertiesOptional = makePropertiesOptional;
             AddImplicitVersion = addImplicitVersion;
@@ -57,11 +61,13 @@ namespace ServiceStack
         public bool AddDescriptionAsComments { get; set; }
         public bool AddDataContractAttributes { get; set; }
         public bool AddIndexesToDataMembers { get; set; }
+        public bool AddGeneratedCodeAttributes { get; set; }
         public int? AddImplicitVersion { get; set; }
         public bool AddResponseStatus { get; set; }
         public bool AddServiceStackTypes { get; set; }
         public bool AddModelExtensions { get; set; }
         public bool AddPropertyAccessors { get; set; }
+        public bool ExcludeGenericBaseTypes { get; set; }
         public bool SettersReturnThis { get; set; }
         public bool MakePropertiesOptional { get; set; }
         public string AddDefaultXmlNamespace { get; set; }

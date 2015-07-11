@@ -100,6 +100,11 @@ namespace ServiceStack.AuthWeb.Tests
             //Look in Web.config for examples on how to configure your oauth providers, e.g. oauth.facebook.AppId, etc.
             var appSettings = new AppSettings();
 
+            Plugins.Add(new EncryptedMessagesFeature
+            {
+                PrivateKeyXml = "<RSAKeyValue><Modulus>s1/rrg2UxchL5O4yFKCHTaDQgr8Bfkr1kmPf8TCXUFt4WNgAxRFGJ4ap1Kc22rt/k0BRJmgC3xPIh7Z6HpYVzQroXuYI6+q66zyk0DRHG7ytsoMiGWoj46raPBXRH9Gj5hgv+E3W/NRKtMYXqq60hl1DvtGLUs2wLGv15K9NABc=</Modulus><Exponent>AQAB</Exponent><P>6CiNjgn8Ov6nodG56rCOXBoSGksYUf/2C8W23sEBfwfLtKyqTbTk3WolBj8sY8QptjwFBF4eaQiFdVLt3jg08w==</P><Q>xcuu4OGTcSOs5oYqyzsQrOAys3stMauM2RYLIWqw7JGEF1IV9LBwbaW/7foq2dG8saEI48jxcskySlDgq5dhTQ==</Q><DP>KqzhsH13ZyTOjblusox37shAEaNCOjiR8wIKJpJWAxLcyD6BI72f4G+VlLtiHoi9nikURwRCFM6jMbjnztSILw==</DP><DQ>H4CvW7XRy+VItnaL/k5r+3zB1oA51H1kM3clUq8xepw6k5RJVu17GpuZlAeSJ5sWGJxzVAQ/IG8XCWsUPYAgyQ==</DQ><InverseQ>vTLuAT3rSsoEdNwZeH2/JDEWmQ1NGa5PUq1ak1UbDD0snhsfJdLo6at3isRqEtPVsSUK6I07Nrfkd6okGhzGDg==</InverseQ><D>M8abO9lVuSVQqtsKf6O6inDB3wuNPcwbSE8l4/O3qY1Nlq96wWd0DZK0UNqXXdnDQFjPU7uwIH4QYwQMCeoejl3dZlllkyvKVa3jihImDD++qgswX2DmHGDqTIkVABf1NF730gqTmt1kqXoVp5Y+VcO7CZPEygIQyTK4WwYlRjk=</D></RSAKeyValue>"
+            });
+
             //Register all Authentication methods you want to enable for this web app.            
             Plugins.Add(new AuthFeature(
                 () => new CustomUserSession(), //Use your own typed Custom UserSession type
@@ -109,7 +114,11 @@ namespace ServiceStack.AuthWeb.Tests
                     //    AllowAllWindowsAuthUsers = true
                     //}, 
                     new CredentialsAuthProvider {  //HTML Form post of UserName/Password credentials
-                        SkipPasswordVerificationForPrivateRequests = true,
+                        SkipPasswordVerificationForInProcessRequests = true,
+                        //CustomValidationFilter = authCtx => 
+                        //    authCtx.Request.UserHostAddress.StartsWith("175.45.17")
+                        //        ? HttpResult.Redirect("https://youtu.be/dQw4w9WgXcQ")
+                        //        : null
                     },        
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
@@ -289,6 +298,8 @@ namespace ServiceStack.AuthWeb.Tests
         }
     }
 
+    //[RequiredRole("Admin")]
+    //[Restrict(InternalOnly = true)]
     [Route("/privateauth")]
     public class PrivateAuth
     {

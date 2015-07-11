@@ -22,6 +22,15 @@ namespace ServiceStack
 {
     public delegate ISqlExpression QueryFilterDelegate(IRequest request, ISqlExpression sqlExpression, IQuery model);
 
+    public class QueryFilterContext
+    {
+        public IDbConnection Db { get; set; }
+        public List<Command> Commands { get; set; }
+        public IQuery Request { get; set; }
+        public ISqlExpression SqlExpression { get; set; }
+        public IQueryResponse Response { get; set; }
+    }
+
     public class AutoQueryFeature : IPlugin, IPostInitPlugin
     {
         public HashSet<string> IgnoreProperties { get; set; }
@@ -36,6 +45,7 @@ namespace ServiceStack
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
+        public List<Action<QueryFilterContext>> ResponseFilters { get; set; }
 
         public const string GreaterThanOrEqualFormat = "{Field} >= {Value}";
         public const string GreaterThanFormat =        "{Field} > {Value}";
@@ -100,6 +110,7 @@ namespace ServiceStack
             IllegalSqlFragmentTokens = new HashSet<string>();
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
+            ResponseFilters = new List<Action<QueryFilterContext>> { IncludeAggregates };
             EnableUntypedQueries = true;
             EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
@@ -146,6 +157,7 @@ namespace ServiceStack
                     EnableSqlFilters = EnableRawSqlFilters,
                     OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
                     QueryFilters = QueryFilters,
+                    ResponseFilters = ResponseFilters,
                     StartsWithConventions = StartsWithConventions,
                     EndsWithConventions = EndsWithConventions,
                     Db = UseNamedConnection != null
@@ -238,6 +250,90 @@ namespace ServiceStack
                 filterFn(req, (SqlExpression<From>)expression, (Request)model);
 
             return this;
+        }
+
+        public HashSet<string> SqlAggregateFunctions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+        {
+            "AVG", "COUNT", "FIRST", "LAST", "MAX", "MIN", "SUM"
+        };
+
+        public void IncludeAggregates(QueryFilterContext ctx)
+        {
+            var commands = ctx.Commands;
+            if (commands.Count == 0)
+                return;
+
+            var q = ctx.SqlExpression.GetUntypedSqlExpression()
+                .Clone()
+                .ClearLimits()
+                .OrderBy();
+
+            var aggregateCommands = new List<Command>();
+            foreach (var cmd in commands)
+            {
+                if (!SqlAggregateFunctions.Contains(cmd.Name))
+                    continue;
+
+                aggregateCommands.Add(cmd);
+
+                if (cmd.Args.Count == 0)
+                    cmd.Args.Add("*");
+
+                var hasAlias = !string.IsNullOrWhiteSpace(cmd.Suffix);
+
+                for (var i = 0; i < cmd.Args.Count; i++)
+                {
+                    var arg = cmd.Args[i];
+
+                    string modifier = "";
+                    if (arg.StartsWithIgnoreCase("DISTINCT "))
+                    {
+                        var argParts = arg.SplitOnFirst(' ');
+                        modifier = argParts[0] + " ";
+                        arg = argParts[1];
+                    }
+
+                    var fieldRef = q.FirstMatchingField(arg);
+                    if (fieldRef != null)
+                    {
+                        //To return predictable aliases, if it's primary table don't fully qualify name
+                        if (fieldRef.Item1 != q.ModelDef || hasAlias)
+                        {
+                            cmd.Args[i] = modifier + q.DialectProvider.GetQuotedColumnName(fieldRef.Item1, fieldRef.Item2);
+                        }
+                    }
+                    else
+                    {
+                        double d;
+                        if (arg != "*" && !double.TryParse(arg, out d))
+                        {
+                            cmd.Args[i] = "{0}".SqlFmt(arg);
+                        }
+                    }
+                }
+
+                if (hasAlias)
+                {
+                    var alias = cmd.Suffix.TrimStart();
+                    if (alias.StartsWithIgnoreCase("as "))
+                        alias = alias.Substring("as ".Length);
+
+                    cmd.Suffix = " " + alias.SafeVarName();
+                }
+            }
+
+            var selectSql = string.Join(", ", aggregateCommands.Map(x => x.ToString()));
+            q.UnsafeSelect(selectSql);
+
+            var rows = ctx.Db.Select<Dictionary<string, object>>(q);
+            var row = rows.FirstOrDefault();
+
+            foreach (var key in row.Keys)
+            {
+                ctx.Response.Meta[key] = row[key].ToString();
+            }
+
+            ctx.Commands.RemoveAll(aggregateCommands.Contains);
         }
     }
 
@@ -478,6 +574,7 @@ namespace ServiceStack
 
         public virtual IDbConnection Db { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
+        public List<Action<QueryFilterContext>> ResponseFilters { get; set; }
 
         public virtual void Dispose()
         {
@@ -529,6 +626,49 @@ namespace ServiceStack
             return (SqlExpression<From>)expr;
         }
 
+        public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> sqlExpression, IQuery model)
+        {
+            response.Meta = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+
+            var commands = model.Include.ParseCommands();
+
+            var totalCountRequested = commands.Any(x =>
+                "COUNT".EqualsIgnoreCase(x.Name) && 
+                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*"))); 
+
+            if (!totalCountRequested)
+                commands.Add(new Command { Name = "COUNT", Args = { "*" }});
+
+            var ctx = new QueryFilterContext
+            {
+                Db = Db,
+                Commands = commands,
+                Request = model,
+                SqlExpression = sqlExpression,
+                Response = response,
+            };
+
+            foreach (var responseFilter in ResponseFilters)
+            {
+                responseFilter(ctx);
+            }
+
+            string total;
+            response.Total = response.Meta.TryGetValue("COUNT(*)", out total) 
+                ? total.ToInt() 
+                : (int) Db.Count(sqlExpression); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
+
+            //reduce payload on wire
+            if (!totalCountRequested)
+            {
+                response.Meta.Remove("COUNT(*)");
+                if (response.Meta.Count == 0)
+                    response.Meta = null;
+            }
+
+            return response;
+        }
+
         public SqlExpression<From> CreateQuery<From>(IQuery<From> model, Dictionary<string, string> dynamicParams, IRequest request = null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
@@ -538,7 +678,7 @@ namespace ServiceStack
         public QueryResponse<From> Execute<From>(IQuery<From> model, SqlExpression<From> query)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return typedQuery.Execute<From>(Db, query);
+            return ResponseFilter(typedQuery.Execute<From>(Db, query), query, model);
         }
 
         public SqlExpression<From> CreateQuery<From, Into>(IQuery<From, Into> model, Dictionary<string, string> dynamicParams, IRequest request = null)
@@ -550,7 +690,7 @@ namespace ServiceStack
         public QueryResponse<Into> Execute<From, Into>(IQuery<From, Into> model, SqlExpression<From> query)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return typedQuery.Execute<Into>(Db, query);
+            return ResponseFilter(typedQuery.Execute<Into>(Db, query), query, model);
         }
     }
 
@@ -760,7 +900,7 @@ namespace ServiceStack
                 else if (implicitQuery.Term == QueryTerm.And)
                     defaultTerm = "AND";
 
-                format = quotedColumn + " " + operand + " {0}";
+                format = "(" + quotedColumn + " " + operand + " {0}" + ")";
                 if (implicitQuery.Template != null)
                 {
                     format = implicitQuery.Template.Replace("{Field}", quotedColumn);
@@ -920,7 +1060,6 @@ namespace ServiceStack
                 var response = new QueryResponse<Into>
                 {
                     Offset = q.Offset.GetValueOrDefault(0),
-                    Total = (int)db.Count(q),
                     Results = db.LoadSelect<Into, From>(q),
                 };
 

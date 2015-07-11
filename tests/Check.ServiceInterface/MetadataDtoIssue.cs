@@ -7,7 +7,7 @@ namespace Check.ServiceInterface
     [Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")]
     [Route("/api/acsprofiles/{profileId}")]
     [Alias("ACSProfiles")]
-    public class ACSProfile : IReturn<acsprofileResponse>
+    public class ACSProfile : IReturn<acsprofileResponse>, IHasVersion, IHasSessionId
     {
         [PrimaryKey]
         public string profileId { get; set; }
@@ -34,6 +34,8 @@ namespace Check.ServiceInterface
         public DateTime lastUpdated { get; set; }
 
         public bool enabled { get; set; }
+        public int Version { get; set; }
+        public string SessionId { get; set; }
     }
 
     public class acsprofileResponse

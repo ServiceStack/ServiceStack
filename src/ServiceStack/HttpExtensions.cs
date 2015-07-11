@@ -84,7 +84,7 @@ namespace ServiceStack
         {
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
             if (afterHeaders != null) afterHeaders(httpRes);
-            if (!skipClose) httpRes.Close();
+            if (!skipClose && !httpRes.IsClosed) httpRes.Close();
 
             //skipHeaders used when Apache+mod_mono doesn't like:
             //response.OutputStream.Flush();
