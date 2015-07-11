@@ -545,9 +545,7 @@ namespace ServiceStack.Server.Tests.Messaging
                 string tempQueueName;
                 using (var messageQueueClient = rabbitMqServer.CreateMessageQueueClient())
                 {
-                    tempQueueName = messageQueueClient.GetTempQueueName();
-                    var channel = messageQueueClient.Channel;
-                    channel.RegisterFanout<Hello>(tempQueueName);
+                    tempQueueName = messageQueueClient.GetTempQueueNameForBroadcast<Hello>();
                 }
 
                 rabbitMqServer.RegisterHandler<Hello>(tempQueueName,

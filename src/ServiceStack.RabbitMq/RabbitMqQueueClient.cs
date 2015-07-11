@@ -105,5 +105,12 @@ namespace ServiceStack.RabbitMq
 
             return anonMq.QueueName;
         }
+
+        public string GetTempQueueNameForBroadcast<T>()
+        {
+            var queueName = this.GetTempQueueName();
+            this.Channel.RegisterFanout<T>(queueName);
+            return queueName;
+        }
     }
 }
