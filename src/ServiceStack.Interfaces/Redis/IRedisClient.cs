@@ -43,9 +43,11 @@ namespace ServiceStack.Redis
         void Save();
         void SaveAsync();
         void Shutdown();
+        void ShutdownNoSave();
         void RewriteAppendOnlyFileAsync();
         void FlushDb();
 
+        RedisServerRole GetServerRole();
         RedisText GetServerRoleInfo();
         string GetConfig(string item);
         void SetConfig(string item, string value);

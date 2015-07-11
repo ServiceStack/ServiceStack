@@ -2,6 +2,7 @@
 {
     public enum RedisServerRole
     {
+        Unknown,
         Master,
         Slave,
         Sentinel,
