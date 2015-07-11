@@ -545,9 +545,8 @@ namespace ServiceStack.Server.Tests.Messaging
                 string tempQueueName;
                 using (var messageQueueClient = rabbitMqServer.CreateMessageQueueClient())
                 {
-                    var rabbitMqQueueClient = (RabbitMqQueueClient) messageQueueClient;
-                    tempQueueName = rabbitMqQueueClient.GetTempQueueName();
-                    var channel = rabbitMqQueueClient.Channel;
+                    tempQueueName = messageQueueClient.GetTempQueueName();
+                    var channel = messageQueueClient.Channel;
                     channel.RegisterFanout<Hello>(tempQueueName);
                 }
 
@@ -562,8 +561,7 @@ namespace ServiceStack.Server.Tests.Messaging
 
                 using (var messageProducer = rabbitMqServer.CreateMessageProducer())
                 {
-                    var rabbitMqProducer = (RabbitMqProducer) messageProducer;
-                    rabbitMqProducer.Broadcast(new Hello
+                    messageProducer.Broadcast(new Hello
                                                {
                                                    Name = "Into the void"
                                                });

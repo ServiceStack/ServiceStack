@@ -4,7 +4,7 @@ using ServiceStack.Messaging;
 
 namespace ServiceStack.RabbitMq
 {
-    public class RabbitMqMessageFactory : IMessageFactory
+    public class RabbitMqMessageFactory : IMessageFactory<RabbitMqProducer, RabbitMqQueueClient>
     {
         public ConnectionFactory ConnectionFactory { get; private set; }
         public Action<string, IBasicProperties, IMessage> PublishMessageFilter { get; set; }
@@ -63,18 +63,30 @@ namespace ServiceStack.RabbitMq
             ConnectionFactory = connectionFactory;
         }
 
-        public IMessageQueueClient CreateMessageQueueClient()
+        IMessageQueueClient IMessageQueueClientFactory.CreateMessageQueueClient()
         {
-            return new RabbitMqQueueClient(this) {
+            return this.CreateMessageQueueClient();
+        }
+
+        IMessageProducer IMessageFactory.CreateMessageProducer()
+        {
+            return this.CreateMessageProducer();
+        }
+
+        public RabbitMqQueueClient CreateMessageQueueClient()
+        {
+            return new RabbitMqQueueClient(this)
+            {
                 RetryCount = RetryCount,
                 PublishMessageFilter = PublishMessageFilter,
                 GetMessageFilter = GetMessageFilter,
             };
         }
 
-        public IMessageProducer CreateMessageProducer()
+        public RabbitMqProducer CreateMessageProducer()
         {
-            return new RabbitMqProducer(this) {
+            return new RabbitMqProducer(this)
+            {
                 RetryCount = RetryCount,
                 PublishMessageFilter = PublishMessageFilter,
                 GetMessageFilter = GetMessageFilter,

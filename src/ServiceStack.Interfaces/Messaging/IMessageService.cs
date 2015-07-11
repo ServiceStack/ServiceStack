@@ -63,4 +63,11 @@ namespace ServiceStack.Messaging
         void Stop();
     }
 
+    public interface IMessageService<out TMessageProducer, out TMessageQueueClient> : IMessageService
+        where TMessageProducer : IMessageProducer
+        where TMessageQueueClient : IMessageQueueClient
+    {
+        TMessageProducer CreateMessageProducer();
+        TMessageQueueClient CreateMessageQueueClient();
+    }
 }

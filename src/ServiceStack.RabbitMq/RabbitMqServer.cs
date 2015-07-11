@@ -9,7 +9,7 @@ using ServiceStack.Messaging;
 
 namespace ServiceStack.RabbitMq
 {
-    public class RabbitMqServer : IMessageService
+    public class RabbitMqServer : IMessageService<RabbitMqProducer, RabbitMqQueueClient>
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(RabbitMqServer));
 
@@ -708,6 +708,16 @@ namespace ServiceStack.RabbitMq
                 }
                 bgThread = null;
             }
+        }
+
+        public RabbitMqProducer CreateMessageProducer()
+        {
+            return this.messageFactory.CreateMessageProducer();
+        }
+
+        public RabbitMqQueueClient CreateMessageQueueClient()
+        {
+            return this.messageFactory.CreateMessageQueueClient();
         }
 
         public void Dispose()
