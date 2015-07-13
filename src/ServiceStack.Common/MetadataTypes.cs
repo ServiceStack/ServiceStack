@@ -137,7 +137,7 @@ namespace ServiceStack
         public List<MetadataTypeName> InnerTypes { get; set; }
 
         public List<string> EnumNames { get; set; }
-        public List<string> EnumValues { get; set; } 
+        public List<string> EnumValues { get; set; }
 
         public string GetFullName()
         {

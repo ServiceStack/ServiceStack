@@ -94,7 +94,7 @@ namespace ServiceStack
 
         public static string Create<T>(string idFieldName, string idFieldValue)
         {
-            return Create(typeof (T), idFieldName, idFieldValue);
+            return Create(typeof(T), idFieldName, idFieldValue);
         }
 
         public static string Create(Type objectType, string idFieldName, string idFieldValue)

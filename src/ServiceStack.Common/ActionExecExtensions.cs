@@ -62,7 +62,7 @@ namespace ServiceStack
             var waitHandles = asyncResults.ConvertAll(x => x.AsyncWaitHandle);
             return WaitAll(waitHandles.ToArray(), (int)timeout.TotalMilliseconds);
         }
-        
+
         public static bool WaitAll(WaitHandle[] waitHandles, TimeSpan timeout)
         {
             return WaitAll(waitHandles, (int)timeout.TotalMilliseconds);
@@ -81,7 +81,7 @@ namespace ServiceStack
                 var successfullyComplete = true;
                 foreach (var waitHandle in waitHandles)
                 {
-                    successfullyComplete = successfullyComplete 
+                    successfullyComplete = successfullyComplete
                         && waitHandle.WaitOne(timeOutMs, false);
                 }
                 return successfullyComplete;
