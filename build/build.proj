@@ -83,6 +83,11 @@
         <Find>version="4\.0(\.\d+)?"</Find>
         <ReplaceWith>version="$(PackageVersion)"</ReplaceWith>
       </RegexTransform>
+      <!--Manually restore conflict package versions-->
+      <RegexTransform Include="$(NuGetPackageDir)/**/ServiceStack.Logging.NLog.nuspec">
+        <Find>version="4"</Find>
+        <ReplaceWith>version="4.0.1"</ReplaceWith>
+      </RegexTransform>
     </ItemGroup>
 
     <RegexTransform Items="@(RegexTransform)" />
