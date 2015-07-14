@@ -10,6 +10,9 @@ namespace ServiceStack
         {
             foreach (var disposable in resources)
             {
+                if (disposable == null)
+                    continue;
+
                 try
                 {
                     disposable.Dispose();
