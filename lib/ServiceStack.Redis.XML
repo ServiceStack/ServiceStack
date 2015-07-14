@@ -21,7 +21,7 @@
             1 master that replicates to multiple read slaves.
             </summary>
         </member>
-        <member name="M:ServiceStack.Redis.BasicRedisClientManager.#ctor(System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String})">
+        <member name="M:ServiceStack.Redis.BasicRedisClientManager.#ctor(System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String},System.Nullable{System.Int64})">
             <summary>
             Hosts can be an IP Address or Hostname in the format: host[:port]
             e.g. 127.0.0.1:6379
@@ -29,6 +29,7 @@
             </summary>
             <param name="readWriteHosts">The write hosts.</param>
             <param name="readOnlyHosts">The read hosts.</param>
+            <param name="initalDb"></param>
         </member>
         <member name="M:ServiceStack.Redis.BasicRedisClientManager.GetClient">
             <summary>
@@ -45,6 +46,11 @@
         <member name="P:ServiceStack.Redis.BasicRedisClientManager.NamespacePrefix">
             <summary>
             Gets or sets object key prefix.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Redis.IRedisResolver">
+            <summary>
+            Resolver strategy for resolving hosts and creating clients
             </summary>
         </member>
         <member name="T:ServiceStack.Redis.BufferPool">
@@ -232,13 +238,6 @@
             <returns></returns>
             <remarks>This will be true if the failures is less than either RedisSentinel.MaxFailures or the # of sentinels, whatever is greater</remarks>
         </member>
-        <member name="M:ServiceStack.Redis.RedisSentinel.OnSentinelError(System.Exception)">
-            <summary>
-            Raised if there is an error from a sentinel worker
-            </summary>
-            <param name="sender"></param>
-            <param name="e"></param>
-        </member>
         <member name="M:ServiceStack.Redis.RedisSentinelWorker.SentinelMessageReceived(System.String,System.String)">
             <summary>
             Event that is fired when the sentinel subscription raises an event
@@ -246,24 +245,10 @@
             <param name="channel"></param>
             <param name="message"></param>
         </member>
-        <member name="M:ServiceStack.Redis.RedisSentinelWorker.ConfigureRedisFromSentinel">
+        <member name="T:ServiceStack.Redis.RedisState">
             <summary>
-            Does a sentinel check for masters and slaves and either sets up or fails over to the new config
+            Don't immediately kill connections of active clients after failover
             </summary>
-        </member>
-        <member name="M:ServiceStack.Redis.RedisSentinelWorker.ConvertSlaveArrayToList(System.Object[])">
-            <summary>
-            Takes output from sentinel slaves command and converts into a list of servers
-            </summary>
-            <param name="items"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Redis.RedisSentinelWorker.ConvertMasterArrayToList(System.Object[])">
-            <summary>
-            Takes output from sentinel master command and converts into a list of servers
-            </summary>
-            <param name="items"></param>
-            <returns></returns>
         </member>
         <member name="T:ServiceStack.Redis.ShardedConnectionPool">
             <summary>
@@ -762,11 +747,6 @@
             customize the client serializer
             </summary>
         </member>
-        <member name="T:ServiceStack.Redis.Support.Queue.Implementation.SerializingRedisClientFactory">
-            <summary>
-            Factory to create SerializingRedisClient objects
-            </summary>
-        </member>
         <member name="T:ServiceStack.Redis.RedisCommandQueue">
             <summary>
             </summary>
@@ -851,21 +831,9 @@
             </summary>
             <param name="count"></param>
         </member>
-        <member name="T:ServiceStack.Redis.RedisClientFactory">
-            <summary>
-            Provide the default factory implementation for creating a RedisClient that 
-            can be mocked and used by different 'Redis Client Managers' 
-            </summary>
-        </member>
         <member name="T:ServiceStack.Redis.Generic.RedisClientSet`1">
             <summary>
             Wrap the common redis set operations under a ICollection[string] interface.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.Redis.RedisCacheClientFactory">
-            <summary>
-            Provide the factory implementation for creating a RedisCacheClient that 
-            can be mocked and used by different 'Redis Client Managers' 
             </summary>
         </member>
         <member name="T:ServiceStack.Redis.RedisClientSet">
