@@ -1,5 +1,7 @@
 using System;
 using NUnit.Framework;
+using ServiceStack.Model;
+using ServiceStack.Testing;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
@@ -97,6 +99,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (Exception ex)
             {
                 throw;
+            }
+        }
+    }
+
+    public class Custom400Exception : Exception {}
+
+    public class Custom400SubException : Custom400Exception {}
+
+    public class Custom401Exception : Exception, IHasStatusCode
+    {
+        public int StatusCode { get { return 401; } }
+    }
+
+    [TestFixture]
+    public class ErrorStatusTests
+    {
+        [Test]
+        public void Does_map_Exception_to_StatusCode()
+        {
+            using (new BasicAppHost {
+                ConfigFilter = c => {
+                    c.MapExceptionToStatusCode[typeof(Custom400Exception)] = 400;
+                }
+            }.Init())
+            {
+                Assert.That(new Custom400Exception().ToStatusCode(), Is.EqualTo(400));
+                Assert.That(new Custom400SubException().ToStatusCode(), Is.EqualTo(400));
+                Assert.That(new Custom401Exception().ToStatusCode(), Is.EqualTo(401));
             }
         }
     }
