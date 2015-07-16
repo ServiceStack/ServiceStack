@@ -180,10 +180,13 @@ namespace ServiceStack
             if (req.Response.IsClosed)
                 return EmptyTask; //Allow short-circuiting in OnCreated callback
 
-            var heartbeatUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath))
-                .AddQueryParam("id", subscriptionId);
-            var unRegisterUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath))
-                .AddQueryParam("id", subscriptionId);
+            var heartbeatUrl = feature.HeartbeatPath != null 
+                ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath)).AddQueryParam("id", subscriptionId)
+                : null;
+
+            var unRegisterUrl = feature.UnRegisterPath != null 
+                ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath)).AddQueryParam("id", subscriptionId)
+                : null;
 
             heartbeatUrl = AddSessionParamsIfAny(heartbeatUrl, req);
             unRegisterUrl = AddSessionParamsIfAny(unRegisterUrl, req);
@@ -218,7 +221,7 @@ namespace ServiceStack
 
         static string AddSessionParamsIfAny(string url, IRequest req)
         {
-            if (HostContext.Config.AllowSessionIdsInHttpParams)
+            if (url != null && HostContext.Config.AllowSessionIdsInHttpParams)
             {
                 var sessionKeys = new[] { "ss-id", "ss-pid", "ss-opt" };
                 foreach (var key in sessionKeys)
