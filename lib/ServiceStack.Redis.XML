@@ -70,7 +70,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Redis.RedisManagerPool.GetInActiveClient">
+        <member name="M:ServiceStack.Redis.RedisManagerPool.GetInActiveClient(ServiceStack.Redis.RedisClient@)">
             <summary>
             Called within a lock
             </summary>
@@ -247,7 +247,8 @@
         </member>
         <member name="T:ServiceStack.Redis.RedisState">
             <summary>
-            Don't immediately kill connections of active clients after failover
+            Don't immediately kill connections of active clients after failover to give them a chance to dispose gracefully. 
+            Deactivating clients are automatically cleared from the pool.
             </summary>
         </member>
         <member name="T:ServiceStack.Redis.ShardedConnectionPool">
@@ -278,7 +279,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Redis.PooledRedisClientManager.GetInActiveWriteClient">
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.GetInActiveWriteClient(ServiceStack.Redis.RedisClient@)">
             <summary>
             Called within a lock
             </summary>
@@ -290,7 +291,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Redis.PooledRedisClientManager.GetInActiveReadClient">
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.GetInActiveReadClient(ServiceStack.Redis.RedisClient@)">
             <summary>
             Called within a lock
             </summary>
