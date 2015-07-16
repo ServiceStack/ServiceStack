@@ -320,6 +320,10 @@ namespace ServiceStack
 
                     cmd.Suffix = " " + alias.SafeVarName();
                 }
+                else
+                {
+                    cmd.Suffix = " " + q.DialectProvider.GetQuotedName(cmd.ToString());
+                }
             }
 
             var selectSql = string.Join(", ", aggregateCommands.Map(x => x.ToString()));
