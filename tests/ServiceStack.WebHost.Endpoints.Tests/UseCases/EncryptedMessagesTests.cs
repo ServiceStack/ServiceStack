@@ -4,7 +4,6 @@
 using System;
 using System.Net;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
@@ -346,6 +345,102 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var responseNames = responses.Map(x => x.Result);
 
             Assert.That(responseNames, Is.EqualTo(names.Map(x => "Hello, {0}!".Fmt(x))));
+        }
+    }
+
+    public class CryptUtilsTests
+    {
+        [Test]
+        public void Can_Encrypt_and_Decrypt_with_AES()
+        {
+            var msg = new HelloSecure { Name = "World" };
+
+            byte[] cryptKey, iv;
+            AesUtils.CreateKeyAndIv(out cryptKey, out iv);
+
+            var encryptedText = AesUtils.Encrypt(msg.ToJson(), cryptKey, iv);
+
+            var decryptedJson = AesUtils.Decrypt(encryptedText, cryptKey, iv);
+
+            var decryptedMsg = decryptedJson.FromJson<HelloSecure>();
+
+            Assert.That(decryptedMsg.Name, Is.EqualTo(msg.Name));
+        }
+
+        [Test]
+        public void Can_Encrypt_and_Decrypt_with_AES_bytes()
+        {
+            var msg = new HelloSecure { Name = "World" };
+
+            byte[] cryptKey, iv;
+            AesUtils.CreateKeyAndIv(out cryptKey, out iv);
+
+            var encryptedBytes = AesUtils.Encrypt(msg.ToJson().ToUtf8Bytes(), cryptKey, iv);
+
+            var msgBytes = AesUtils.Decrypt(encryptedBytes, cryptKey, iv);
+
+            var decryptedMsg = msgBytes.FromUtf8Bytes().FromJson<HelloSecure>();
+
+            Assert.That(decryptedMsg.Name, Is.EqualTo(msg.Name));
+        }
+
+        [Test]
+        public void Can_Hybrid_RSA_AES_and_HmacSha256()
+        {
+            using (var aes = AesUtils.CreateSymmetricAlgorithm())
+            {
+                var request = new HelloSecure { Name = "World" };
+                var msg = request.ToJson();
+
+                byte[] rsaEncAesKeyNonceBytes, signedEncryptedBytes;
+
+                RsaEncryptAesThanHMAC(msg.ToUtf8Bytes(), aes.Key, aes.IV,
+                    out rsaEncAesKeyNonceBytes, out signedEncryptedBytes);
+
+                var aesKeyNonceBytes = RsaUtils.Decrypt(rsaEncAesKeyNonceBytes, SecureConfig.PrivateKeyXml);
+
+                var aesKey = new byte[AesUtils.KeySizeBytes];
+                var iv = new byte[AesUtils.BlockSizeBytes];
+
+                Buffer.BlockCopy(aesKeyNonceBytes, 0, iv, 0, iv.Length);
+                Buffer.BlockCopy(aesKeyNonceBytes, iv.Length, aesKey, 0, aesKey.Length);
+
+                var sha512HashBytes = aesKey.ToSha512HashBytes();
+                var cryptKey = new byte[sha512HashBytes.Length / 2];
+                var authKey = new byte[sha512HashBytes.Length / 2];
+
+                Buffer.BlockCopy(sha512HashBytes, 0, cryptKey, 0, cryptKey.Length);
+                Buffer.BlockCopy(sha512HashBytes, cryptKey.Length, authKey, 0, authKey.Length);
+
+                if (!HmacUtils.Verify(signedEncryptedBytes, authKey))
+                    throw new Exception("Verification Failed");
+
+                var msgBytes = HmacUtils.DecryptSigned(signedEncryptedBytes, cryptKey);
+
+                var json = msgBytes.FromUtf8Bytes();
+
+                var fromJson = json.FromJson<HelloSecure>();
+
+                Assert.That(fromJson.Name, Is.EqualTo(request.Name));
+            }
+        }
+
+        private static void RsaEncryptAesThanHMAC(byte[] msgBytes, byte[] masterKey, byte[] iv,
+            out byte[] rsaEncAesKeyNonceBytes, out byte[] signedEncryptedBytes)
+        {
+            var sha512KeyBytes = masterKey.ToSha512HashBytes();
+
+            var cryptKey = new byte[sha512KeyBytes.Length / 2];
+            var authKey = new byte[sha512KeyBytes.Length / 2];
+
+            Buffer.BlockCopy(sha512KeyBytes, 0, cryptKey, 0, cryptKey.Length);
+            Buffer.BlockCopy(sha512KeyBytes, cryptKey.Length, authKey, 0, authKey.Length);
+
+            var encryptedBytes = AesUtils.Encrypt(msgBytes, cryptKey, iv);
+            signedEncryptedBytes = HmacUtils.Sign(encryptedBytes, authKey, iv);
+
+            var aesKeyNonceBytes = iv.Combine(masterKey);
+            rsaEncAesKeyNonceBytes = RsaUtils.Encrypt(aesKeyNonceBytes, SecureConfig.PublicKeyXml);
         }
     }
 }
