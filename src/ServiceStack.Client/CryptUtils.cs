@@ -229,6 +229,19 @@ namespace ServiceStack
             }
         }
 
+        public static void CreateCryptAuthKeysAndIv(out byte[] cryptKey, out byte[] authKey, out byte[] iv)
+        {
+            using (var aes = CreateSymmetricAlgorithm())
+            {
+                cryptKey = aes.Key;
+                iv = aes.IV;
+            }
+            using (var aes = CreateSymmetricAlgorithm())
+            {
+                authKey = aes.Key;
+            }
+        }
+
         public static string Encrypt(string text, byte[] cryptKey, byte[] iv)
         {
             var encBytes = Encrypt(text.ToUtf8Bytes(), cryptKey, iv);
@@ -345,25 +358,29 @@ namespace ServiceStack
         public static byte[] DecryptAuthenticated(byte[] authEncryptedBytes, byte[] cryptKey)
         {
             if (cryptKey == null || cryptKey.Length != KeySizeBytes)
-                throw new ArgumentException(String.Format("CryptKey needs to be {0} bit!", KeySize), "cryptKey");
+                throw new ArgumentException("CryptKey needs to be {0} bit!".Fmt(KeySize), "cryptKey");
 
             //Grab IV from message
             var iv = new byte[AesUtils.BlockSizeBytes];
             Buffer.BlockCopy(authEncryptedBytes, 0, iv, 0, iv.Length);
 
             using (var aes = AesUtils.CreateSymmetricAlgorithm())
-            using (var decrypter = aes.CreateDecryptor(cryptKey, iv))
-            using (var decryptedStream = MemoryStreamFactory.GetStream())
-            using (var decrypterStream = new CryptoStream(decryptedStream, decrypter, CryptoStreamMode.Write))
-            using (var writer = new BinaryWriter(decrypterStream))
             {
-                //Decrypt Cipher Text from Message
-                writer.Write(
-                    authEncryptedBytes,
-                    iv.Length,
-                    authEncryptedBytes.Length - iv.Length - KeySizeBytes);
+                using (var decrypter = aes.CreateDecryptor(cryptKey, iv))
+                using (var decryptedStream = MemoryStreamFactory.GetStream())
+                {
+                    using (var decrypterStream = new CryptoStream(decryptedStream, decrypter, CryptoStreamMode.Write))
+                    using (var writer = new BinaryWriter(decrypterStream))
+                    {
+                        //Decrypt Cipher Text from Message
+                        writer.Write(
+                            authEncryptedBytes,
+                            iv.Length,
+                            authEncryptedBytes.Length - iv.Length - KeySizeBytes);
+                    }
 
-                return decryptedStream.ToArray();
+                    return decryptedStream.ToArray();
+                }
             }
         }
     }

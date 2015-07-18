@@ -33,8 +33,9 @@ namespace ServiceStack
 
     public class EncryptedMessagesFeature : IPlugin
     {
-        public static readonly string RequestItemsAesKey = "_encryptKey";
         public static readonly string RequestItemsIv = "_encryptIv";
+        public static readonly string RequestItemsCryptKey = "_encryptCryptKey";
+        public static readonly string RequestItemsAuthKey = "_encryptAuthKey";
         public static readonly TimeSpan DefaultMaxMaxRequestAge = TimeSpan.FromMinutes(20);
 
         public static string ErrorInvalidMessage = "Invalid EncryptedMessage";
@@ -74,25 +75,40 @@ namespace ServiceStack
                 if (encRequest == null)
                     return null;
 
-                byte[] aesKey = null;
-                byte[] iv = null;
+                var cryptKey = new byte[AesUtils.KeySizeBytes];
+                var authKey = new byte[AesUtils.KeySizeBytes];
+                var iv = new byte[AesUtils.BlockSizeBytes];
+                const int tagLength = HmacUtils.KeySizeBytes;
                 try
                 {
-                    var rsaEncAesKeyBytes = RsaUtils.Decrypt(Convert.FromBase64String(encRequest.EncryptedSymmetricKey), PrivateKey.Value);
+                    var authRsaEncCryptKey = Convert.FromBase64String(encRequest.EncryptedSymmetricKey);
 
-                    aesKey = new byte[AesUtils.KeySize / 8];
-                    iv = new byte[AesUtils.BlockSize / 8];
+                    var rsaEncCryptAuthKeys = new byte[authRsaEncCryptKey.Length - iv.Length - tagLength];
 
-                    Buffer.BlockCopy(rsaEncAesKeyBytes, 0, aesKey, 0, aesKey.Length);
-                    Buffer.BlockCopy(rsaEncAesKeyBytes, aesKey.Length, iv, 0, iv.Length);
+                    Buffer.BlockCopy(authRsaEncCryptKey, 0, iv, 0, iv.Length);
+                    Buffer.BlockCopy(authRsaEncCryptKey, iv.Length, rsaEncCryptAuthKeys, 0, rsaEncCryptAuthKeys.Length);
 
+                    var cryptAuthKeys = RsaUtils.Decrypt(rsaEncCryptAuthKeys, PrivateKey.Value);
+
+                    Buffer.BlockCopy(cryptAuthKeys, 0, cryptKey, 0, cryptKey.Length);
+                    Buffer.BlockCopy(cryptAuthKeys, cryptKey.Length, authKey, 0, authKey.Length);
+
+                    //Needs to be after cryptKey,authKey populated
                     if (nonceCache.ContainsKey(iv))
                         throw HttpError.Forbidden(ErrorNonceSeen);
 
                     var now = DateTime.UtcNow;
                     nonceCache.TryAdd(iv, now.Add(MaxRequestAge));
 
-                    var requestBodyBytes = AesUtils.Decrypt(Convert.FromBase64String(encRequest.EncryptedBody), aesKey, iv);
+                    if (!HmacUtils.Verify(authRsaEncCryptKey, authKey))
+                        throw new Exception("EncryptedSymmetricKey is Invalid");
+
+                    var authEncryptedBytes = Convert.FromBase64String(encRequest.EncryptedBody);
+
+                    if (!HmacUtils.Verify(authEncryptedBytes, authKey))
+                        throw new Exception("EncryptedBody is Invalid");
+
+                    var requestBodyBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
                     var requestBody = requestBodyBytes.FromUtf8Bytes();
 
                     if (string.IsNullOrEmpty(requestBody))
@@ -119,23 +135,24 @@ namespace ServiceStack
                     var requestType = appHost.Metadata.GetOperationType(operationName);
                     var request = JsonSerializer.DeserializeFromString(requestJson, requestType);
 
-                    req.Items[RequestItemsAesKey] = aesKey;
+                    req.Items[RequestItemsCryptKey] = cryptKey;
+                    req.Items[RequestItemsAuthKey] = authKey;
                     req.Items[RequestItemsIv] = iv;
 
                     return request;
                 }
                 catch (Exception ex)
                 {
-                    WriteEncryptedError(req, aesKey, iv, ex, ErrorInvalidMessage);
+                    WriteEncryptedError(req, cryptKey, authKey, iv, ex, ErrorInvalidMessage);
                     return null;
                 }
             });
 
             appHost.ResponseConverters.Add((req, response) =>
             {
-                object oAesKey;
-                object oIv;
-                if (!req.Items.TryGetValue(RequestItemsAesKey, out oAesKey) ||
+                object oCryptKey, oAuthKey, oIv;
+                if (!req.Items.TryGetValue(RequestItemsCryptKey, out oCryptKey) ||
+                    !req.Items.TryGetValue(RequestItemsAuthKey, out oAuthKey) ||
                     !req.Items.TryGetValue(RequestItemsIv, out oIv))
                     return null;
 
@@ -144,27 +161,31 @@ namespace ServiceStack
                 var ex = response as Exception;
                 if (ex != null)
                 {
-                    WriteEncryptedError(req, (byte[])oAesKey, (byte[])oIv, ex);
+                    WriteEncryptedError(req, (byte[])oCryptKey, (byte[])oAuthKey, (byte[])oIv, ex);
                     return null;
                 }
 
-                var responseBody = response.ToJson();
-                var encryptedBody = AesUtils.Encrypt(responseBody, (byte[])oAesKey, (byte[])oIv);
-                return new EncryptedMessageResponse
+                var responseBodyBytes = response.ToJson().ToUtf8Bytes();
+                var encryptedBytes = AesUtils.Encrypt(responseBodyBytes, (byte[])oCryptKey, (byte[])oIv);
+                var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, (byte[])oAuthKey, (byte[])oIv);
+
+                var encResponse = new EncryptedMessageResponse
                 {
-                    EncryptedBody = encryptedBody
+                    EncryptedBody = Convert.ToBase64String(authEncryptedBytes)
                 };
+                return encResponse;
             });
         }
 
-        public static void WriteEncryptedError(IRequest req, byte[] aesKey, byte[] iv, Exception ex, string description = null)
+        public static void WriteEncryptedError(IRequest req, byte[] cryptKey, byte[] authKey, byte[] iv, Exception ex, string description = null)
         {
             var error = new ErrorResponse {
                 ResponseStatus = ex.ToResponseStatus()
             };
 
-            var responseBody = error.ToJson();
-            var encryptedBody = AesUtils.Encrypt(responseBody, aesKey, iv);
+            var responseBodyBytes = error.ToJson().ToUtf8Bytes();
+            var encryptedBytes = AesUtils.Encrypt(responseBodyBytes, cryptKey, iv);
+            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
 
             var httpError = ex as IHttpError;
 
@@ -173,7 +194,7 @@ namespace ServiceStack
 
             var errorResponse = new EncryptedMessageResponse
             {
-                EncryptedBody = encryptedBody
+                EncryptedBody = Convert.ToBase64String(authEncryptedBytes)
             };
 
             req.Response.ContentType = MimeTypes.Json;
@@ -186,7 +207,7 @@ namespace ServiceStack
     {
         public static bool IsEncryptedMessage(this IRequest req)
         {
-            return req.Items.ContainsKey(EncryptedMessagesFeature.RequestItemsAesKey)
+            return req.Items.ContainsKey(EncryptedMessagesFeature.RequestItemsCryptKey)
                 && req.Items.ContainsKey(EncryptedMessagesFeature.RequestItemsIv);
         }
     }

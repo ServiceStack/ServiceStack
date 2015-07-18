@@ -76,23 +76,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             var request = new HelloSecure { Name = "World" };
 
-            var aes = new AesManaged { KeySize = AesUtils.KeySize };
+            byte[] cryptKey, authKey, iv;
+            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
 
-            var aesKeyBytes = aes.Key.Combine(aes.IV);
-            var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, SecureConfig.PublicKeyXml);
+            var cryptAuthKeys = cryptKey.Combine(authKey);
+
+            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, SecureConfig.PublicKeyXml);
+            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
 
             var timestamp = DateTime.UtcNow.ToUnixTime();
-
             var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
+
+            var encryptedBytes = AesUtils.Encrypt(requestBody.ToUtf8Bytes(), cryptKey, iv);
+            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
 
             var encryptedMessage = new EncryptedMessage
             {
-                EncryptedSymmetricKey = Convert.ToBase64String(rsaEncAesKeyBytes),
-                EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
+                EncryptedSymmetricKey = Convert.ToBase64String(authRsaEncCryptAuthKeys),
+                EncryptedBody = Convert.ToBase64String(authEncryptedBytes),
             };
+
             var encResponse = client.Post(encryptedMessage);
 
-            var responseJson = AesUtils.Decrypt(encResponse.EncryptedBody, aes.Key, aes.IV);
+            authEncryptedBytes = Convert.FromBase64String(encResponse.EncryptedBody);
+
+            if (!HmacUtils.Verify(authEncryptedBytes, authKey))
+                throw new Exception("Invalid EncryptedBody");
+
+            var decryptedBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
+
+            var responseJson = decryptedBytes.FromUtf8Bytes();
             var response = responseJson.FromJson<HelloSecureResponse>();
 
             Assert.That(response.Result, Is.EqualTo("Hello, World!"));
@@ -105,21 +118,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             var request = new HelloSecure { Name = "World" };
 
-            var aes = new AesManaged { KeySize = AesUtils.KeySize };
+            byte[] cryptKey, authKey, iv;
+            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
 
-            var aesKeyBytes = aes.Key.Combine(aes.IV);
-            var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, SecureConfig.PublicKeyXml);
+            var cryptAuthKeys = cryptKey.Combine(authKey);
+
+            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, SecureConfig.PublicKeyXml);
+            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
 
             var timestamp = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(21)).ToUnixTime();
 
             var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
 
+            var encryptedBytes = AesUtils.Encrypt(requestBody.ToUtf8Bytes(), cryptKey, iv);
+            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
+
             try
             {
                 var encryptedMessage = new EncryptedMessage
                 {
-                    EncryptedSymmetricKey = Convert.ToBase64String(rsaEncAesKeyBytes),
-                    EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
+                    EncryptedSymmetricKey = Convert.ToBase64String(authRsaEncCryptAuthKeys),
+                    EncryptedBody = Convert.ToBase64String(authEncryptedBytes),
                 };
                 var encResponse = client.Post(encryptedMessage);
 
@@ -130,7 +149,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 ex.StatusDescription.Print();
 
                 var errorResponse = (EncryptedMessageResponse)ex.ResponseDto;
-                var responseJson = AesUtils.Decrypt(errorResponse.EncryptedBody, aes.Key, aes.IV);
+
+                authEncryptedBytes = Convert.FromBase64String(errorResponse.EncryptedBody);
+                if (!HmacUtils.Verify(authEncryptedBytes, authKey))
+                    throw new Exception("EncryptedBody is Invalid");
+
+                var responseBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
+                var responseJson = responseBytes.FromUtf8Bytes();
                 var response = responseJson.FromJson<ErrorResponse>();
                 Assert.That(response.ResponseStatus.Message, Is.EqualTo("Request too old"));
             }
@@ -143,19 +168,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             var request = new HelloSecure { Name = "World" };
 
-            var aes = new AesManaged { KeySize = AesUtils.KeySize };
+            byte[] cryptKey, iv;
+            AesUtils.CreateKeyAndIv(out cryptKey, out iv);
 
-            var aesKeyBytes = aes.Key.Combine(aes.IV);
-            var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, SecureConfig.PublicKeyXml);
+            byte[] authKey = AesUtils.CreateKey();
+
+            var cryptAuthKeys = cryptKey.Combine(authKey);
+
+            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, SecureConfig.PublicKeyXml);
+            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
 
             var timestamp = DateTime.UtcNow.ToUnixTime();
             var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
 
+            var encryptedBytes = AesUtils.Encrypt(requestBody.ToUtf8Bytes(), cryptKey, iv);
+            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
+            
             var encryptedMessage = new EncryptedMessage
             {
-                EncryptedSymmetricKey = Convert.ToBase64String(rsaEncAesKeyBytes),
-                EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
+                EncryptedSymmetricKey = Convert.ToBase64String(authRsaEncCryptAuthKeys),
+                EncryptedBody = Convert.ToBase64String(authEncryptedBytes),
             };
+
             var encResponse = client.Post(encryptedMessage);
 
             try
@@ -169,7 +203,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 ex.StatusDescription.Print();
 
                 var errorResponse = (EncryptedMessageResponse)ex.ResponseDto;
-                var responseJson = AesUtils.Decrypt(errorResponse.EncryptedBody, aes.Key, aes.IV);
+
+                authEncryptedBytes = Convert.FromBase64String(errorResponse.EncryptedBody);
+                if (!HmacUtils.Verify(authEncryptedBytes, authKey))
+                    throw new Exception("EncryptedBody is Invalid");
+
+                var responseBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
+                var responseJson = responseBytes.FromUtf8Bytes();
                 var response = responseJson.FromJson<ErrorResponse>();
                 Assert.That(response.ResponseStatus.Message, Is.EqualTo("Nonce already seen"));
             }
@@ -385,6 +425,76 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         [Test]
+        public void Does_Hybrid_RSA_Crypt_and_Auth_AES_with_HMAC_SHA256()
+        {
+            var request = new HelloSecure { Name = "World" };
+            var timestamp = DateTime.UtcNow.ToUnixTime();
+            var msg = timestamp + " POST " + request.GetType().Name + " " + request.ToJson();
+            var msgBytes = msg.ToUtf8Bytes();
+
+            byte[] cryptKey, authKey, iv;
+            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+
+            var encryptedBytes = AesUtils.Encrypt(msgBytes, cryptKey, iv);
+
+            var decryptedBytes = AesUtils.Decrypt(encryptedBytes, cryptKey, iv);
+            Assert.That(decryptedBytes, Is.EquivalentTo(msgBytes));
+
+            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
+
+            var cryptAuthKeys = cryptKey.Combine(authKey);
+
+            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, SecureConfig.PublicKeyXml);
+            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
+
+            var decryptedMsg = ValidateAndDecrypt(authRsaEncCryptAuthKeys, authEncryptedBytes);
+            
+            var parts = decryptedMsg.SplitOnFirst(' ');
+            Assert.That(long.Parse(parts[0]), Is.EqualTo(timestamp));
+
+            parts = parts[1].SplitOnFirst(' ');
+            Assert.That(parts[0], Is.EqualTo("POST"));
+
+            parts = parts[1].SplitOnFirst(' ');
+            Assert.That(parts[0], Is.EqualTo(request.GetType().Name));
+
+            var decryptedJson = parts[1];
+            var decryptedRequest = decryptedJson.FromJson<HelloSecure>();
+
+            Assert.That(decryptedRequest.Name, Is.EqualTo(request.Name));
+        }
+
+        private static string ValidateAndDecrypt(byte[] authRsaEncCryptKey, byte[] authEncryptedBytes)
+        {
+            byte[] iv = new byte[AesUtils.BlockSizeBytes];
+            const int tagLength = HmacUtils.KeySizeBytes;
+            byte[] rsaEncCryptAuthKeys = new byte[authRsaEncCryptKey.Length - iv.Length - tagLength];
+
+            Buffer.BlockCopy(authRsaEncCryptKey, 0, iv, 0, iv.Length);
+            Buffer.BlockCopy(authRsaEncCryptKey, iv.Length, rsaEncCryptAuthKeys, 0, rsaEncCryptAuthKeys.Length);
+
+            var cryptAuthKeys = RsaUtils.Decrypt(rsaEncCryptAuthKeys, SecureConfig.PrivateKeyXml);
+
+            byte[] cryptKey = new byte[AesUtils.KeySizeBytes];
+            byte[] authKey = new byte[AesUtils.KeySizeBytes];
+
+            Buffer.BlockCopy(cryptAuthKeys, 0, cryptKey, 0, cryptKey.Length);
+            Buffer.BlockCopy(cryptAuthKeys, cryptKey.Length, authKey, 0, authKey.Length);
+
+            if (!HmacUtils.Verify(authRsaEncCryptKey, authKey))
+                throw new Exception("authRsaEncCryptKey is Invalid");
+
+            if (!HmacUtils.Verify(authEncryptedBytes, authKey))
+                throw new Exception("authEncryptedBytes is Invalid");
+
+            var msgBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
+
+            return msgBytes.FromUtf8Bytes();
+        }
+
+        //Alternate approach use Master Key with SHA-512 to create Crypt + Auth Keys
+
+        [Test]
         public void Does_Hybrid_RSA_SHA512_AES_MasterKey_and_HmacSha256()
         {
             var request = new HelloSecure { Name = "World" };
@@ -425,8 +535,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             Buffer.BlockCopy(aesKeyNonceBytes, iv.Length, aesKey, 0, aesKey.Length);
 
             var sha512HashBytes = aesKey.ToSha512HashBytes();
-            var cryptKey = new byte[sha512HashBytes.Length/2];
-            var authKey = new byte[sha512HashBytes.Length/2];
+            var cryptKey = new byte[sha512HashBytes.Length / 2];
+            var authKey = new byte[sha512HashBytes.Length / 2];
 
             Buffer.BlockCopy(sha512HashBytes, 0, cryptKey, 0, cryptKey.Length);
             Buffer.BlockCopy(sha512HashBytes, cryptKey.Length, authKey, 0, authKey.Length);
@@ -438,59 +548,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             var json = msgBytes.FromUtf8Bytes();
             return json;
-        }
-
-        [Test]
-        public void Does_Hybrid_RSA_Crypt_and_Auth_AES_with_HMAC_SHA256()
-        {
-            var request = new HelloSecure { Name = "World" };
-            var msgBytes = request.ToJson().ToUtf8Bytes();
-
-            byte[] cryptKey, iv;
-            AesUtils.CreateKeyAndIv(out cryptKey, out iv);
-
-            byte[] authKey = AesUtils.CreateKey();
-
-            var encryptedBytes = AesUtils.Encrypt(msgBytes, cryptKey, iv);
-            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
-
-            var cryptAuthKeys = cryptKey.Combine(authKey);
-
-            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, SecureConfig.PublicKeyXml);
-            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
-
-            var decryptedJson = ValidateAndDecrypt(authRsaEncCryptAuthKeys, authEncryptedBytes);
-            var decryptedRequest = decryptedJson.FromJson<HelloSecure>();
-
-            Assert.That(decryptedRequest.Name, Is.EqualTo(request.Name));
-        }
-
-        private static string ValidateAndDecrypt(byte[] authRsaEncCryptKey, byte[] authEncryptedBytes)
-        {
-            byte[] iv = new byte[AesUtils.BlockSizeBytes];
-            const int tagLength = HmacUtils.KeySizeBytes;
-            byte[] rsaEncCryptAuthKeys = new byte[authRsaEncCryptKey.Length - iv.Length - tagLength];
-
-            Buffer.BlockCopy(authRsaEncCryptKey, 0, iv, 0, iv.Length);
-            Buffer.BlockCopy(authRsaEncCryptKey, iv.Length, rsaEncCryptAuthKeys, 0, rsaEncCryptAuthKeys.Length);
-
-            var cryptAuthKeys = RsaUtils.Decrypt(rsaEncCryptAuthKeys, SecureConfig.PrivateKeyXml);
-
-            byte[] cryptKey = new byte[AesUtils.KeySizeBytes];
-            byte[] authKey = new byte[AesUtils.KeySizeBytes];
-
-            Buffer.BlockCopy(cryptAuthKeys, 0, cryptKey, 0, cryptKey.Length);
-            Buffer.BlockCopy(cryptAuthKeys, cryptKey.Length, authKey, 0, authKey.Length);
-
-            if (!HmacUtils.Verify(authRsaEncCryptKey, authKey))
-                throw new Exception("authRsaEncCryptKey is Invalid");
-
-            if (!HmacUtils.Verify(authEncryptedBytes, authKey))
-                throw new Exception("authEncryptedBytes is Invalid");
-
-            var msgBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
-
-            return msgBytes.FromUtf8Bytes();
         }
     }
 }
