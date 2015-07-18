@@ -204,6 +204,22 @@ namespace ServiceStack
             };
         }
 
+        public static byte[] CreateKey()
+        {
+            using (var aes = CreateSymmetricAlgorithm())
+            {
+                return aes.Key;
+            }
+        }
+
+        public static byte[] CreateIv()
+        {
+            using (var aes = CreateSymmetricAlgorithm())
+            {
+                return aes.IV;
+            }
+        }
+
         public static void CreateKeyAndIv(out byte[] cryptKey, out byte[] iv)
         {
             using (var aes = CreateSymmetricAlgorithm())
@@ -269,7 +285,7 @@ namespace ServiceStack
             return new HMACSHA256(authKey);
         }
 
-        public static byte[] Sign(byte[] encryptedBytes, byte[] authKey, byte[] iv)
+        public static byte[] Authenticate(byte[] encryptedBytes, byte[] authKey, byte[] iv)
         {
             using (var hmac = CreateHashAlgorithm(authKey))
             using (var ms = MemoryStreamFactory.GetStream())
@@ -291,27 +307,27 @@ namespace ServiceStack
             }
         }
 
-        public static bool Verify(byte[] signedEncryptedBytes, byte[] authKey)
+        public static bool Verify(byte[] authEncryptedBytes, byte[] authKey)
         {
             if (authKey == null || authKey.Length != KeySizeBytes)
-                throw new ArgumentException(String.Format("AuthKey needs to be {0} bit!", KeySize), "authKey");
+                throw new ArgumentException("AuthKey needs to be {0} bit!".Fmt(KeySize), "authKey");
 
-            if (signedEncryptedBytes == null || signedEncryptedBytes.Length == 0)
-                throw new ArgumentException("Encrypted Message Required!", "signedEncryptedBytes");
+            if (authEncryptedBytes == null || authEncryptedBytes.Length == 0)
+                throw new ArgumentException("Encrypted Message Required!", "authEncryptedBytes");
 
             using (var hmac = CreateHashAlgorithm(authKey))
             {
                 var sentTag = new byte[KeySizeBytes];
                 //Calculate Tag
-                var calcTag = hmac.ComputeHash(signedEncryptedBytes, 0, signedEncryptedBytes.Length - sentTag.Length);
+                var calcTag = hmac.ComputeHash(authEncryptedBytes, 0, authEncryptedBytes.Length - sentTag.Length);
                 const int ivLength = AesUtils.BlockSizeBytes;
 
                 //return false if message length is too small
-                if (signedEncryptedBytes.Length < sentTag.Length + ivLength)
+                if (authEncryptedBytes.Length < sentTag.Length + ivLength)
                     return false;
 
                 //Grab Sent Tag
-                Array.Copy(signedEncryptedBytes, signedEncryptedBytes.Length - sentTag.Length, sentTag, 0, sentTag.Length);
+                Buffer.BlockCopy(authEncryptedBytes, authEncryptedBytes.Length - sentTag.Length, sentTag, 0, sentTag.Length);
 
                 //Compare Tag with constant time comparison
                 var compare = 0;
@@ -326,14 +342,14 @@ namespace ServiceStack
             return true; //Haz Success!
         }
 
-        public static byte[] DecryptSigned(byte[] signedEncryptedBytes, byte[] cryptKey)
+        public static byte[] DecryptAuthenticated(byte[] authEncryptedBytes, byte[] cryptKey)
         {
             if (cryptKey == null || cryptKey.Length != KeySizeBytes)
                 throw new ArgumentException(String.Format("CryptKey needs to be {0} bit!", KeySize), "cryptKey");
 
             //Grab IV from message
             var iv = new byte[AesUtils.BlockSizeBytes];
-            Array.Copy(signedEncryptedBytes, 0, iv, 0, iv.Length);
+            Buffer.BlockCopy(authEncryptedBytes, 0, iv, 0, iv.Length);
 
             using (var aes = AesUtils.CreateSymmetricAlgorithm())
             using (var decrypter = aes.CreateDecryptor(cryptKey, iv))
@@ -343,9 +359,9 @@ namespace ServiceStack
             {
                 //Decrypt Cipher Text from Message
                 writer.Write(
-                    signedEncryptedBytes,
+                    authEncryptedBytes,
                     iv.Length,
-                    signedEncryptedBytes.Length - iv.Length - KeySizeBytes);
+                    authEncryptedBytes.Length - iv.Length - KeySizeBytes);
 
                 return decryptedStream.ToArray();
             }
