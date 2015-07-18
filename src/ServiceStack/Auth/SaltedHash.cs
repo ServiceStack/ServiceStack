@@ -99,6 +99,22 @@ namespace ServiceStack.Auth
             }
             return sb.ToString();
         }
+
+        public static byte[] ToSha256HashBytes(this byte[] bytes)
+        {
+            using (var hash = SHA256Managed.Create())
+            {
+                return hash.ComputeHash(bytes);
+            }
+        }
+
+        public static byte[] ToSha512HashBytes(this byte[] bytes)
+        {
+            using (var hash = SHA512Managed.Create())
+            {
+                return hash.ComputeHash(bytes);
+            }
+        }
     }
 
     /*
