@@ -5,7 +5,7 @@
 // Authors:
 //   Demis Bellot (demis.bellot@gmail.com)
 //
-// Copyright 2014 Service Stack LLC. All Rights Reserved.
+// Copyright 2015 Service Stack LLC. All Rights Reserved.
 //
 // Licensed under the same terms of ServiceStack.
 //
@@ -43,9 +43,11 @@ namespace ServiceStack.Redis
         void Save();
         void SaveAsync();
         void Shutdown();
+        void ShutdownNoSave();
         void RewriteAppendOnlyFileAsync();
         void FlushDb();
 
+        RedisServerRole GetServerRole();
         RedisText GetServerRoleInfo();
         string GetConfig(string item);
         void SetConfig(string item, string value);

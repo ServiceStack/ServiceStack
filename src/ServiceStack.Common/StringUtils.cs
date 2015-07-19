@@ -190,7 +190,7 @@ namespace ServiceStack
         {
             return Convert.ToChar(codePoint).ToString(CultureInfo.InvariantCulture);
         }
-        
+
         // http://www.w3.org/TR/html5/entities.json
         // TODO: conditional compilation for NET45 that uses ReadOnlyDictionary
         public static readonly IDictionary<string, string> HtmlCharacterCodes = new SortedDictionary<string, string>

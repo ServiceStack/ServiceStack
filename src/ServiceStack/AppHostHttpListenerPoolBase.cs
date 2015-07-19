@@ -171,11 +171,11 @@ namespace ServiceStack
             if (Config.DebugMode)
                 log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
-            RaiseReceiveWebRequest(context);
+            OnBeginRequest(context);
 
             threadPoolManager.Peek(() =>
             {
-                InitTask(context);
+                ProcessRequestContext(context);
 
                 threadPoolManager.Free();
             }).Start();

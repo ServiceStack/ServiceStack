@@ -2,6 +2,7 @@
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Generic;
 using ServiceStack.Auth;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
@@ -37,6 +38,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
     {
         public string SessionId { get; set; }
         public int Version { get; set; }
+    }
+
+    public class LargeMessage : IReturn<LargeMessage>
+    {
+        public List<HelloSecure> Messages { get; set; }
     }
 
     [Authenticate]
@@ -99,6 +105,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Email = session.Email,
                 IsAuthenticated = session.IsAuthenticated,
             };
+        }
+
+        public object Any(LargeMessage request)
+        {
+            return request;
         }
     }
 }

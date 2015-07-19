@@ -16,9 +16,9 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>Swagger API REST Docs ServiceStack</tags>
     <language>en-US</language>
-    <copyright>StackExpress.net 2012 and contributors</copyright>
+    <copyright>Copyright 2015 Service Stack</copyright>
     <dependencies>
-      <dependency id="ServiceStack" version="4.0" />
+    <dependency id="ServiceStack" version="4.0" />
     </dependencies>
   </metadata>
   <files>

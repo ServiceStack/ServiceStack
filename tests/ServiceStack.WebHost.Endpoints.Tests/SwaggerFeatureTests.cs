@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [ApiMember(Name = "RequestBody", Description = "The request body",
             ParameterType = "body", DataType = "SwaggerModelsRequest", IsRequired = true)]
         [System.ComponentModel.Description("Name description")]
-        public string Name { get; set; }
+        public string RequestBody { get; set; }
 
         [System.ComponentModel.Description("NestedModel description")]
         public SwaggerNestedModel NestedModel { get; set;}
@@ -53,6 +53,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<SwaggerNestedModel2> ListProperty { get; set; }
 
         public SwaggerNestedModel3[] ArrayProperty { get; set; }
+
+        public string StringProperty { get; set; }
 
         [System.ComponentModel.Description("Byte description")]
         public byte ByteProperty { get; set; }
@@ -547,9 +549,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(requestClassModel.Id, Is.EqualTo(key));
             Assert.That(requestClassModel.Properties, Is.Not.Empty);
 
-            Assert.That(requestClassModel.Properties.ContainsKey("Name"), Is.True);
-            Assert.That(requestClassModel.Properties["Name"].Type, Is.EqualTo(SwaggerType.String));
-            Assert.That(requestClassModel.Properties["Name"].Description, Is.EqualTo("The request body"));
+            Assert.That(requestClassModel.Properties.ContainsKey("RequestBody"), Is.True);
+            Assert.That(requestClassModel.Properties["RequestBody"].Type, Is.EqualTo("SwaggerModelsRequest"));
+            Assert.That(requestClassModel.Properties["RequestBody"].Description, Is.EqualTo("The request body"));
+
+            Assert.That(requestClassModel.Properties.ContainsKey("StringProperty"), Is.True);
+            Assert.That(requestClassModel.Properties["StringProperty"].Type, Is.EqualTo(SwaggerType.String));
 
             Assert.That(requestClassModel.Properties.ContainsKey("ByteProperty"));
             Assert.That(requestClassModel.Properties["ByteProperty"].Type, Is.EqualTo(SwaggerType.Byte));

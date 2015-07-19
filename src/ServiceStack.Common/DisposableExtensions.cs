@@ -10,6 +10,9 @@ namespace ServiceStack
         {
             foreach (var disposable in resources)
             {
+                if (disposable == null)
+                    continue;
+
                 try
                 {
                     disposable.Dispose();
@@ -17,9 +20,7 @@ namespace ServiceStack
                 catch (Exception ex)
                 {
                     if (log != null)
-                    {
                         log.Error(string.Format("Error disposing of '{0}'", disposable.GetType().FullName), ex);
-                    }
                 }
             }
         }

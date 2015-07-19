@@ -14,9 +14,11 @@ namespace ServiceStack.Authentication.OAuth2
         protected OAuth2Provider(IAppSettings appSettings, string realm, string provider)
             : base(appSettings, realm, provider)
         {
-            this.ConsumerKey = appSettings.GetString("oauth.{0}.ConsumerKey".Fmt(provider))
+            this.ConsumerKey = appSettings.GetString("oauth.{0}.ClientId".Fmt(provider))
+                ?? appSettings.GetString("oauth.{0}.ConsumerKey".Fmt(provider))
                 ?? FallbackConfig(appSettings.GetString("oauth.ConsumerKey"));
-            this.ConsumerSecret = appSettings.GetString("oauth.{0}.ConsumerSecret".Fmt(provider))
+            this.ConsumerSecret = appSettings.GetString("oauth.{0}.ClientSecret".Fmt(provider))
+                ?? appSettings.GetString("oauth.{0}.ConsumerSecret".Fmt(provider))
                 ?? FallbackConfig(appSettings.GetString("oauth.ConsumerSecret"));
             var scopes = appSettings.GetString("oauth.{0}.Scopes".Fmt(provider))
                 ?? FallbackConfig(appSettings.GetString("oauth.Scopes")) ?? "";

@@ -20,7 +20,7 @@ namespace ServiceStack
         /// <param name="enum"></param>
         /// <returns></returns>
 #if !NETFX_CORE
-        public static string ToDescription(this Enum @enum) 
+        public static string ToDescription(this Enum @enum)
         {
             var type = @enum.GetType();
 
@@ -50,7 +50,7 @@ namespace ServiceStack
         {
             return Type.GetTypeCode(Enum.GetUnderlyingType(@enum.GetType()));
         }
-        
+
         public static bool Has<T>(this Enum @enum, T value)
         {
             var typeCode = @enum.GetTypeCode();

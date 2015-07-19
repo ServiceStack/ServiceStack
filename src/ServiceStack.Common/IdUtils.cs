@@ -46,7 +46,8 @@ namespace ServiceStack
 
             if (typeof(T) == typeof(object))
             {
-                CanGetId = x => {
+                CanGetId = x =>
+                {
                     var piId = x.GetType().GetIdProperty();
                     if (piId != null && piId.GetMethodInfo() != null)
                         return x.GetObjectId();

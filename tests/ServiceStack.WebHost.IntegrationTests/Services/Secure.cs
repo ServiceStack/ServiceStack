@@ -33,6 +33,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string Role { get; set; }
     }
 
+
+    [Authenticate]
+    [Route("/testauth")]
+    public class TestAuth
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
     public class SecureService : Service
     {
         public object Any(Secure request)
@@ -44,6 +53,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         {
             RequiredRoleAttribute.AssertRequiredRoles(Request, request.Role ?? RoleNames.Admin);
 
+            return request;
+        }
+
+        public object Any(TestAuth request)
+        {
             return request;
         }
     }

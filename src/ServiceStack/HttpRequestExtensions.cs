@@ -14,6 +14,7 @@ using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.IO;
 using ServiceStack.Logging;
+using ServiceStack.Model;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -290,10 +291,18 @@ namespace ServiceStack
 
         public static int ToStatusCode(this Exception ex)
         {
-            int errorStatus;
-            if (HostContext.Config != null && HostContext.Config.MapExceptionToStatusCode.TryGetValue(ex.GetType(), out errorStatus))
+            var hasStatusCode = ex as IHasStatusCode;
+            if (hasStatusCode != null)
+                return hasStatusCode.StatusCode;
+            
+            if (HostContext.Config != null)
             {
-                return errorStatus;
+                var exType = ex.GetType();
+                foreach (var entry in HostContext.Config.MapExceptionToStatusCode)
+                {
+                    if (entry.Key.IsAssignableFromType(exType))
+                        return entry.Value;
+                }
             }
 
             if (ex is HttpError) return ((HttpError)ex).Status;

@@ -188,53 +188,198 @@ namespace ServiceStack
 
     public static class AesUtils
     {
-        public readonly static int KeySize = 256;
-        public readonly static int IvSize = 128;
+        public const int KeySize = 256;
+        public const int KeySizeBytes = 256 / 8;
+        public const int BlockSize = 128;
+        public const int BlockSizeBytes = 128 / 8;
 
-        public static string Encrypt(string text, byte[] aesKey, byte[] iv)
+        public static SymmetricAlgorithm CreateSymmetricAlgorithm()
         {
-            using (SymmetricAlgorithm aes = new AesCryptoServiceProvider())
+            return new AesCryptoServiceProvider
             {
-                aes.KeySize = KeySize;
-                aes.Key = aesKey;
-                aes.IV = iv;
+                KeySize = KeySize,
+                BlockSize = BlockSize,
+                Mode = CipherMode.CBC,
+                Padding = PaddingMode.PKCS7
+            };
+        }
 
-                using (var ms = MemoryStreamFactory.GetStream())
-                {
-                    using (var encryptor = aes.CreateEncryptor(aes.Key, aes.IV))
-                    using (var encryptStream = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-                    using (var swEncrypt = new StreamWriter(encryptStream))
-                    {
-                        swEncrypt.Write(text);
-                        swEncrypt.Flush();
-                        encryptStream.FlushFinalBlock();
-
-                        var encryptedBody = Convert.ToBase64String(ms.GetBuffer(), 0, (int)ms.Length);
-                        return encryptedBody;
-                    }
-                }
+        public static byte[] CreateKey()
+        {
+            using (var aes = CreateSymmetricAlgorithm())
+            {
+                return aes.Key;
             }
         }
 
-        public static string Decrypt(string encryptedBase64, byte[] aesKey, byte[] iv)
+        public static byte[] CreateIv()
         {
-            var bytes = Decrypt(Convert.FromBase64String(encryptedBase64), aesKey, iv);
+            using (var aes = CreateSymmetricAlgorithm())
+            {
+                return aes.IV;
+            }
+        }
+
+        public static void CreateKeyAndIv(out byte[] cryptKey, out byte[] iv)
+        {
+            using (var aes = CreateSymmetricAlgorithm())
+            {
+                cryptKey = aes.Key;
+                iv = aes.IV;
+            }
+        }
+
+        public static void CreateCryptAuthKeysAndIv(out byte[] cryptKey, out byte[] authKey, out byte[] iv)
+        {
+            using (var aes = CreateSymmetricAlgorithm())
+            {
+                cryptKey = aes.Key;
+                iv = aes.IV;
+            }
+            using (var aes = CreateSymmetricAlgorithm())
+            {
+                authKey = aes.Key;
+            }
+        }
+
+        public static string Encrypt(string text, byte[] cryptKey, byte[] iv)
+        {
+            var encBytes = Encrypt(text.ToUtf8Bytes(), cryptKey, iv);
+            return Convert.ToBase64String(encBytes);
+        }
+
+        public static byte[] Encrypt(byte[] bytesToEncrypt, byte[] cryptKey, byte[] iv)
+        {
+            using (var aes = CreateSymmetricAlgorithm())
+            using (var encrypter = aes.CreateEncryptor(cryptKey, iv))
+            using (var cipherStream = MemoryStreamFactory.GetStream())
+            {
+                using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
+                using (var binaryWriter = new BinaryWriter(cryptoStream))
+                {
+                    binaryWriter.Write(bytesToEncrypt);
+                }
+                return cipherStream.ToArray();
+            }
+        }
+
+        public static string Decrypt(string encryptedBase64, byte[] cryptKey, byte[] iv)
+        {
+            var bytes = Decrypt(Convert.FromBase64String(encryptedBase64), cryptKey, iv);
             return bytes.FromUtf8Bytes();
         }
 
-        public static byte[] Decrypt(byte[] encryptedBytes, byte[] aesKey, byte[] iv)
+        public static byte[] Decrypt(byte[] encryptedBytes, byte[] cryptKey, byte[] iv)
         {
-            using (SymmetricAlgorithm aes = new AesCryptoServiceProvider())
+            using (var aes = CreateSymmetricAlgorithm())
+            using (var decryptor = aes.CreateDecryptor(cryptKey, iv))
+            using (var ms = MemoryStreamFactory.GetStream(encryptedBytes))
+            using (var cryptStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
             {
-                aes.KeySize = KeySize;
-                aes.Key = aesKey;
-                aes.IV = iv;
+                return cryptStream.ReadFully();
+            }
+        }
+    }
 
-                using (var decryptor = aes.CreateDecryptor(aes.Key, aes.IV))
-                using (var ms = MemoryStreamFactory.GetStream(encryptedBytes))
-                using (var cryptStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+    /*
+     * Original Source:
+     * This work (Modern Encryption of a String C#, by James Tuley), 
+     * identified by James Tuley, is free of known copyright restrictions.
+     * https://gist.github.com/4336842
+     * http://creativecommons.org/publicdomain/mark/1.0/ 
+     */
+    public static class HmacUtils
+    {
+        public const int KeySize = 256;
+        public const int KeySizeBytes = 256 / 8;
+
+        public static HMAC CreateHashAlgorithm(byte[] authKey)
+        {
+            return new HMACSHA256(authKey);
+        }
+
+        public static byte[] Authenticate(byte[] encryptedBytes, byte[] authKey, byte[] iv)
+        {
+            using (var hmac = CreateHashAlgorithm(authKey))
+            using (var ms = MemoryStreamFactory.GetStream())
+            {
+                using (var writer = new BinaryWriter(ms))
                 {
-                    return cryptStream.ReadFully();
+                    //Prepend IV
+                    writer.Write(iv);
+                    //Write Ciphertext
+                    writer.Write(encryptedBytes);
+                    writer.Flush();
+
+                    //Authenticate all data
+                    var tag = hmac.ComputeHash(ms.ToArray());
+                    //Postpend tag
+                    writer.Write(tag);
+                }
+                return ms.ToArray();
+            }
+        }
+
+        public static bool Verify(byte[] authEncryptedBytes, byte[] authKey)
+        {
+            if (authKey == null || authKey.Length != KeySizeBytes)
+                throw new ArgumentException("AuthKey needs to be {0} bit!".Fmt(KeySize), "authKey");
+
+            if (authEncryptedBytes == null || authEncryptedBytes.Length == 0)
+                throw new ArgumentException("Encrypted Message Required!", "authEncryptedBytes");
+
+            using (var hmac = CreateHashAlgorithm(authKey))
+            {
+                var sentTag = new byte[KeySizeBytes];
+                //Calculate Tag
+                var calcTag = hmac.ComputeHash(authEncryptedBytes, 0, authEncryptedBytes.Length - sentTag.Length);
+                const int ivLength = AesUtils.BlockSizeBytes;
+
+                //return false if message length is too small
+                if (authEncryptedBytes.Length < sentTag.Length + ivLength)
+                    return false;
+
+                //Grab Sent Tag
+                Buffer.BlockCopy(authEncryptedBytes, authEncryptedBytes.Length - sentTag.Length, sentTag, 0, sentTag.Length);
+
+                //Compare Tag with constant time comparison
+                var compare = 0;
+                for (var i = 0; i < sentTag.Length; i++)
+                    compare |= sentTag[i] ^ calcTag[i];
+
+                //return false if message doesn't authenticate
+                if (compare != 0)
+                    return false;
+            }
+
+            return true; //Haz Success!
+        }
+
+        public static byte[] DecryptAuthenticated(byte[] authEncryptedBytes, byte[] cryptKey)
+        {
+            if (cryptKey == null || cryptKey.Length != KeySizeBytes)
+                throw new ArgumentException("CryptKey needs to be {0} bit!".Fmt(KeySize), "cryptKey");
+
+            //Grab IV from message
+            var iv = new byte[AesUtils.BlockSizeBytes];
+            Buffer.BlockCopy(authEncryptedBytes, 0, iv, 0, iv.Length);
+
+            using (var aes = AesUtils.CreateSymmetricAlgorithm())
+            {
+                using (var decrypter = aes.CreateDecryptor(cryptKey, iv))
+                using (var decryptedStream = MemoryStreamFactory.GetStream())
+                {
+                    using (var decrypterStream = new CryptoStream(decryptedStream, decrypter, CryptoStreamMode.Write))
+                    using (var writer = new BinaryWriter(decrypterStream))
+                    {
+                        //Decrypt Cipher Text from Message
+                        writer.Write(
+                            authEncryptedBytes,
+                            iv.Length,
+                            authEncryptedBytes.Length - iv.Length - KeySizeBytes);
+                    }
+
+                    return decryptedStream.ToArray();
                 }
             }
         }
@@ -259,5 +404,4 @@ namespace ServiceStack
         }
     }
 }
-
 #endif

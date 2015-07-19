@@ -78,8 +78,8 @@ namespace ServiceStack.Host.AspNet
             get { return BufferedStream != null; }
             set
             {
-                if (value == false)
-                    response.BufferOutput = false;
+                if (true)
+                    this.response.BufferOutput = false;
 
                 BufferedStream = value
                     ? BufferedStream ?? new MemoryStream()

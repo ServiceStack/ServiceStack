@@ -162,7 +162,7 @@ namespace ServiceStack
                 UserId = userId,
                 UserName = session != null ? session.UserName : null,
                 DisplayName = displayName,
-                SessionId = req.GetPermanentSessionId(),
+                SessionId = req.GetSessionId(),
                 IsAuthenticated = session != null && session.IsAuthenticated,
                 UserAddress = req.UserHostAddress,
                 OnPublish = feature.OnPublish,
@@ -180,10 +180,13 @@ namespace ServiceStack
             if (req.Response.IsClosed)
                 return EmptyTask; //Allow short-circuiting in OnCreated callback
 
-            var heartbeatUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath))
-                .AddQueryParam("id", subscriptionId);
-            var unRegisterUrl = req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath))
-                .AddQueryParam("id", subscriptionId);
+            var heartbeatUrl = feature.HeartbeatPath != null 
+                ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath)).AddQueryParam("id", subscriptionId)
+                : null;
+
+            var unRegisterUrl = feature.UnRegisterPath != null 
+                ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath)).AddQueryParam("id", subscriptionId)
+                : null;
 
             heartbeatUrl = AddSessionParamsIfAny(heartbeatUrl, req);
             unRegisterUrl = AddSessionParamsIfAny(unRegisterUrl, req);
@@ -218,7 +221,7 @@ namespace ServiceStack
 
         static string AddSessionParamsIfAny(string url, IRequest req)
         {
-            if (HostContext.Config.AllowSessionIdsInHttpParams)
+            if (url != null && HostContext.Config.AllowSessionIdsInHttpParams)
             {
                 var sessionKeys = new[] { "ss-id", "ss-pid", "ss-opt" };
                 foreach (var key in sessionKeys)
@@ -254,7 +257,16 @@ namespace ServiceStack
                 return EmptyTask;
 
             var subscriptionId = req.QueryString["id"];
-            if (!feature.CanAccessSubscription(req, subscriptionId))
+            var subscription = serverEvents.GetSubscriptionInfo(subscriptionId);
+            if (subscription == null)
+            {
+                res.StatusCode = 404;
+                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId);
+                res.EndHttpHandlerRequest(skipHeaders: true);
+                return EmptyTask;
+            }
+
+            if (!feature.CanAccessSubscription(req, subscription))
             {
                 res.StatusCode = 403;
                 res.StatusDescription = "Invalid User Address";

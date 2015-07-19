@@ -40,7 +40,7 @@ namespace ServiceStack
                 action(i++, value);
             }
         }
-        
+
         public static List<To> Map<To, From>(this IEnumerable<From> items, Func<From, To> converter)
         {
             if (items == null)
