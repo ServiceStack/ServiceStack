@@ -20,5 +20,7 @@ namespace ServiceStack
 
         [DataMember(IsRequired = false, EmitDefaultValue = false, Order = 3)]
         public string Message { get; set; }
+        [DataMember(IsRequired = false, EmitDefaultValue = false, Order = 4)]
+        public object CustomState { get; set; }
     }
 }

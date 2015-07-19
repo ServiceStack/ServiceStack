@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.Model;
 using ServiceStack.Text;
@@ -64,12 +65,12 @@ namespace ServiceStack
         public static object CreateErrorResponse(object request, ValidationErrorResult validationError)
         {
             var responseStatus = validationError.ToResponseStatus();
-
+            
             var errorResponse = CreateErrorResponse(
                 request,
                 new ValidationError(validationError),
                 responseStatus);
-
+            
             return errorResponse;
         }
 
