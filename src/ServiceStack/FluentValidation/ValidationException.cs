@@ -16,17 +16,15 @@
 // The latest version of this file can be found at http://www.codeplex.com/FluentValidation
 #endregion
 
-using ServiceStack.Common;
+using System;
+using System.Linq;
 using ServiceStack.Model;
 using ServiceStack.Validation;
+using System.Collections.Generic;
+using ServiceStack.FluentValidation.Results;
 
 namespace ServiceStack.FluentValidation
 {
-    using System;
-    using System.Collections.Generic;
-    using Results;
-    using System.Linq;
-
     public class ValidationException : ArgumentException, IResponseStatusConvertible 
     {
         public IEnumerable<ValidationFailure> Errors { get; private set; }
@@ -43,7 +41,9 @@ namespace ServiceStack.FluentValidation
         public ResponseStatus ToResponseStatus()
         {
             var errors = Errors.Map(x =>
-                new ValidationErrorField(x.ErrorCode, x.PropertyName, x.ErrorMessage));
+                new ValidationErrorField(x.ErrorCode, x.PropertyName, x.ErrorMessage) {
+                    Meta = x.CustomState as Dictionary<string,string>
+                });
 
             var responseStatus = ResponseStatusUtils.CreateResponseStatus(typeof(ValidationException).GetOperationName(), Message, errors);
             return responseStatus;

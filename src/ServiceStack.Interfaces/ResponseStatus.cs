@@ -10,7 +10,7 @@ namespace ServiceStack
     /// Common ResponseStatus class that should be present on all response DTO's
     /// </summary>
     [DataContract]
-    public class ResponseStatus
+    public class ResponseStatus : IMeta
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ResponseStatus"/> class.
@@ -21,7 +21,6 @@ namespace ServiceStack
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResponseStatus"/> class.
-        /// 
         /// A response status with an errorcode == failure
         /// </summary>
         public ResponseStatus(string errorCode)
@@ -31,7 +30,6 @@ namespace ServiceStack
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResponseStatus"/> class.
-        /// 
         /// A response status with an errorcode == failure
         /// </summary>
         public ResponseStatus(string errorCode, string message)
@@ -56,7 +54,7 @@ namespace ServiceStack
         public string Message { get; set; }
 
         /// <summary>
-        /// 
+        /// The Server StackTrace when DebugMode is enabled
         /// </summary>
         [DataMember(Order = 3)]
         public string StackTrace { get; set; }
@@ -67,5 +65,11 @@ namespace ServiceStack
         /// </summary>
         [DataMember(Order = 4)]
         public List<ResponseError> Errors { get; set; }
+
+        /// <summary>
+        /// For additional custom metadata about the error
+        /// </summary>
+        [DataMember(Order = 5)]
+        public Dictionary<string, string> Meta { get; set; }
     }
 }
