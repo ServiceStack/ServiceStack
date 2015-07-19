@@ -68,153 +68,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         protected abstract IJsonServiceClient CreateClient();
-
-        [Test]
-        public void Can_Send_Encrypted_Message()
-        {
-            var client = CreateClient();
-
-            var request = new HelloSecure { Name = "World" };
-
-            byte[] cryptKey, authKey, iv;
-            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
-
-            var cryptAuthKeys = cryptKey.Combine(authKey);
-
-            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, SecureConfig.PublicKeyXml);
-            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
-
-            var timestamp = DateTime.UtcNow.ToUnixTime();
-            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
-
-            var encryptedBytes = AesUtils.Encrypt(requestBody.ToUtf8Bytes(), cryptKey, iv);
-            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
-
-            var encryptedMessage = new EncryptedMessage
-            {
-                EncryptedSymmetricKey = Convert.ToBase64String(authRsaEncCryptAuthKeys),
-                EncryptedBody = Convert.ToBase64String(authEncryptedBytes),
-            };
-
-            var encResponse = client.Post(encryptedMessage);
-
-            authEncryptedBytes = Convert.FromBase64String(encResponse.EncryptedBody);
-
-            if (!HmacUtils.Verify(authEncryptedBytes, authKey))
-                throw new Exception("Invalid EncryptedBody");
-
-            var decryptedBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
-
-            var responseJson = decryptedBytes.FromUtf8Bytes();
-            var response = responseJson.FromJson<HelloSecureResponse>();
-
-            Assert.That(response.Result, Is.EqualTo("Hello, World!"));
-        }
-
-        [Test]
-        public void Does_throw_on_old_messages()
-        {
-            var client = CreateClient();
-
-            var request = new HelloSecure { Name = "World" };
-
-            byte[] cryptKey, authKey, iv;
-            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
-
-            var cryptAuthKeys = cryptKey.Combine(authKey);
-
-            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, SecureConfig.PublicKeyXml);
-            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
-
-            var timestamp = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(21)).ToUnixTime();
-
-            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
-
-            var encryptedBytes = AesUtils.Encrypt(requestBody.ToUtf8Bytes(), cryptKey, iv);
-            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
-
-            try
-            {
-                var encryptedMessage = new EncryptedMessage
-                {
-                    EncryptedSymmetricKey = Convert.ToBase64String(authRsaEncCryptAuthKeys),
-                    EncryptedBody = Convert.ToBase64String(authEncryptedBytes),
-                };
-                var encResponse = client.Post(encryptedMessage);
-
-                Assert.Fail("Should throw");
-            }
-            catch (WebServiceException ex)
-            {
-                ex.StatusDescription.Print();
-
-                var errorResponse = (EncryptedMessageResponse)ex.ResponseDto;
-
-                authEncryptedBytes = Convert.FromBase64String(errorResponse.EncryptedBody);
-                if (!HmacUtils.Verify(authEncryptedBytes, authKey))
-                    throw new Exception("EncryptedBody is Invalid");
-
-                var responseBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
-                var responseJson = responseBytes.FromUtf8Bytes();
-                var response = responseJson.FromJson<ErrorResponse>();
-                Assert.That(response.ResponseStatus.Message, Is.EqualTo("Request too old"));
-            }
-        }
-
-        [Test]
-        public void Does_throw_on_replayed_messages()
-        {
-            var client = CreateClient();
-
-            var request = new HelloSecure { Name = "World" };
-
-            byte[] cryptKey, iv;
-            AesUtils.CreateKeyAndIv(out cryptKey, out iv);
-
-            byte[] authKey = AesUtils.CreateKey();
-
-            var cryptAuthKeys = cryptKey.Combine(authKey);
-
-            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, SecureConfig.PublicKeyXml);
-            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
-
-            var timestamp = DateTime.UtcNow.ToUnixTime();
-            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
-
-            var encryptedBytes = AesUtils.Encrypt(requestBody.ToUtf8Bytes(), cryptKey, iv);
-            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
-            
-            var encryptedMessage = new EncryptedMessage
-            {
-                EncryptedSymmetricKey = Convert.ToBase64String(authRsaEncCryptAuthKeys),
-                EncryptedBody = Convert.ToBase64String(authEncryptedBytes),
-            };
-
-            var encResponse = client.Post(encryptedMessage);
-
-            try
-            {
-                client.Post(encryptedMessage);
-
-                Assert.Fail("Should throw");
-            }
-            catch (WebServiceException ex)
-            {
-                ex.StatusDescription.Print();
-
-                var errorResponse = (EncryptedMessageResponse)ex.ResponseDto;
-
-                authEncryptedBytes = Convert.FromBase64String(errorResponse.EncryptedBody);
-                if (!HmacUtils.Verify(authEncryptedBytes, authKey))
-                    throw new Exception("EncryptedBody is Invalid");
-
-                var responseBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
-                var responseJson = responseBytes.FromUtf8Bytes();
-                var response = responseJson.FromJson<ErrorResponse>();
-                Assert.That(response.ResponseStatus.Message, Is.EqualTo("Nonce already seen"));
-            }
-        }
-
         [Test]
         public void Can_Send_Encrypted_Message_with_ServiceClients()
         {
@@ -373,6 +226,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         [Test]
+        public void Can_send_large_messages()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+
+            var request = new LargeMessage {
+                Messages = 100.Times(i => new HelloSecure {Name = "Name" + i})
+            };
+
+            var response = encryptedClient.Send(request);
+
+            Assert.That(response.Messages.Count, Is.EqualTo(request.Messages.Count));
+        }
+
+        [Test]
         public void Can_send_auto_batched_requests()
         {
             var client = CreateClient();
@@ -385,6 +253,152 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var responseNames = responses.Map(x => x.Result);
 
             Assert.That(responseNames, Is.EqualTo(names.Map(x => "Hello, {0}!".Fmt(x))));
+        }
+
+        [Test]
+        public void Can_Send_Encrypted_Message()
+        {
+            var client = CreateClient();
+
+            var request = new HelloSecure { Name = "World" };
+
+            byte[] cryptKey, authKey, iv;
+            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+
+            var cryptAuthKeys = cryptKey.Combine(authKey);
+
+            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, SecureConfig.PublicKeyXml);
+            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
+
+            var timestamp = DateTime.UtcNow.ToUnixTime();
+            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
+
+            var encryptedBytes = AesUtils.Encrypt(requestBody.ToUtf8Bytes(), cryptKey, iv);
+            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
+
+            var encryptedMessage = new EncryptedMessage
+            {
+                EncryptedSymmetricKey = Convert.ToBase64String(authRsaEncCryptAuthKeys),
+                EncryptedBody = Convert.ToBase64String(authEncryptedBytes),
+            };
+
+            var encResponse = client.Post(encryptedMessage);
+
+            authEncryptedBytes = Convert.FromBase64String(encResponse.EncryptedBody);
+
+            if (!HmacUtils.Verify(authEncryptedBytes, authKey))
+                throw new Exception("Invalid EncryptedBody");
+
+            var decryptedBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
+
+            var responseJson = decryptedBytes.FromUtf8Bytes();
+            var response = responseJson.FromJson<HelloSecureResponse>();
+
+            Assert.That(response.Result, Is.EqualTo("Hello, World!"));
+        }
+
+        [Test]
+        public void Does_throw_on_old_messages()
+        {
+            var client = CreateClient();
+
+            var request = new HelloSecure { Name = "World" };
+
+            byte[] cryptKey, authKey, iv;
+            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+
+            var cryptAuthKeys = cryptKey.Combine(authKey);
+
+            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, SecureConfig.PublicKeyXml);
+            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
+
+            var timestamp = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(21)).ToUnixTime();
+
+            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
+
+            var encryptedBytes = AesUtils.Encrypt(requestBody.ToUtf8Bytes(), cryptKey, iv);
+            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
+
+            try
+            {
+                var encryptedMessage = new EncryptedMessage
+                {
+                    EncryptedSymmetricKey = Convert.ToBase64String(authRsaEncCryptAuthKeys),
+                    EncryptedBody = Convert.ToBase64String(authEncryptedBytes),
+                };
+                var encResponse = client.Post(encryptedMessage);
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.StatusDescription.Print();
+
+                var errorResponse = (EncryptedMessageResponse)ex.ResponseDto;
+
+                authEncryptedBytes = Convert.FromBase64String(errorResponse.EncryptedBody);
+                if (!HmacUtils.Verify(authEncryptedBytes, authKey))
+                    throw new Exception("EncryptedBody is Invalid");
+
+                var responseBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
+                var responseJson = responseBytes.FromUtf8Bytes();
+                var response = responseJson.FromJson<ErrorResponse>();
+                Assert.That(response.ResponseStatus.Message, Is.EqualTo("Request too old"));
+            }
+        }
+
+        [Test]
+        public void Does_throw_on_replayed_messages()
+        {
+            var client = CreateClient();
+
+            var request = new HelloSecure { Name = "World" };
+
+            byte[] cryptKey, iv;
+            AesUtils.CreateKeyAndIv(out cryptKey, out iv);
+
+            byte[] authKey = AesUtils.CreateKey();
+
+            var cryptAuthKeys = cryptKey.Combine(authKey);
+
+            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, SecureConfig.PublicKeyXml);
+            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
+
+            var timestamp = DateTime.UtcNow.ToUnixTime();
+            var requestBody = timestamp + " POST " + typeof(HelloSecure).Name + " " + request.ToJson();
+
+            var encryptedBytes = AesUtils.Encrypt(requestBody.ToUtf8Bytes(), cryptKey, iv);
+            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
+
+            var encryptedMessage = new EncryptedMessage
+            {
+                EncryptedSymmetricKey = Convert.ToBase64String(authRsaEncCryptAuthKeys),
+                EncryptedBody = Convert.ToBase64String(authEncryptedBytes),
+            };
+
+            var encResponse = client.Post(encryptedMessage);
+
+            try
+            {
+                client.Post(encryptedMessage);
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.StatusDescription.Print();
+
+                var errorResponse = (EncryptedMessageResponse)ex.ResponseDto;
+
+                authEncryptedBytes = Convert.FromBase64String(errorResponse.EncryptedBody);
+                if (!HmacUtils.Verify(authEncryptedBytes, authKey))
+                    throw new Exception("EncryptedBody is Invalid");
+
+                var responseBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
+                var responseJson = responseBytes.FromUtf8Bytes();
+                var response = responseJson.FromJson<ErrorResponse>();
+                Assert.That(response.ResponseStatus.Message, Is.EqualTo("Nonce already seen"));
+            }
         }
     }
 
