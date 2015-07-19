@@ -461,27 +461,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             resource.Apis.PrintDump();
 
-            var operations = new List<MethodOperation>();
+            var operations = new List<SwaggerOperation>();
             foreach(var api in resource.Apis) operations.AddRange(api.Operations);
 
-            var getOperation = operations.Single(t => t.HttpMethod == "GET");
+            var getOperation = operations.Single(t => t.Method == "GET");
             Assert.That(getOperation.Summary, Is.EqualTo("GET Summary"));
             Assert.That(getOperation.Notes, Is.EqualTo("GET Notes"));
-            Assert.That(getOperation.HttpMethod, Is.EqualTo("GET"));
+            Assert.That(getOperation.Method, Is.EqualTo("GET"));
 
             Assert.That(getOperation.Parameters, Is.Not.Empty);
             var p1 = getOperation.Parameters[0];
             Assert.That(p1.Name, Is.EqualTo("Name"));
             Assert.That(p1.Description, Is.EqualTo("Name Description"));
-            Assert.That(p1.Type, Is.EqualTo("string"));
+            Assert.That(p1.ParamType, Is.EqualTo("string"));
             Assert.That(p1.ParamType, Is.EqualTo("path"));
             Assert.That(p1.Required, Is.EqualTo(true));
 
 
-            var postOperation = operations.Single(t => t.HttpMethod == "POST");
+            var postOperation = operations.Single(t => t.Method == "POST");
             Assert.That(postOperation.Summary, Is.EqualTo("POST Summary"));
             Assert.That(postOperation.Notes, Is.EqualTo("POST Notes"));
-            Assert.That(postOperation.HttpMethod, Is.EqualTo("POST"));
+            Assert.That(postOperation.Method, Is.EqualTo("POST"));
         }
 
         [Test, TestCaseSource("RestClients")]

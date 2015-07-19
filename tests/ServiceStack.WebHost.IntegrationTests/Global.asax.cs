@@ -109,6 +109,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                     });
                 Plugins.Add(new PostmanFeature());
                 Plugins.Add(new CorsFeature());
+                Plugins.Add(new AutoQueryFeature());
 
                 container.RegisterValidators(typeof(CustomersValidator).Assembly);
 

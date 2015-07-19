@@ -455,7 +455,7 @@ namespace ServiceStack.NativeTypes.CSharp
             return TypeAlias(type, includeNested: includeNested);
         }
 
-        private string TypeAlias(string type, bool includeNested = false)
+        public static string TypeAlias(string type, bool includeNested = false)
         {
             type = type.SanitizeType();
             var arrParts = type.SplitOnFirst('[');
@@ -468,7 +468,7 @@ namespace ServiceStack.NativeTypes.CSharp
             return typeAlias ?? NameOnly(type, includeNested: includeNested);
         }
 
-        public string NameOnly(string type, bool includeNested = false)
+        public static string NameOnly(string type, bool includeNested = false)
         {
             var name = type.SplitOnFirst('`')[0];
 

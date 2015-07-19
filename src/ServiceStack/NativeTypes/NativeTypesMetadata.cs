@@ -775,6 +775,19 @@ namespace ServiceStack.NativeTypes
             return node;
         }
 
+        public static string ToPrettyName(this Type type)
+        {
+            if (!type.IsGenericType)
+                return type.Name;
+            
+            var genericTypeName = type.GetGenericTypeDefinition().Name;
+            genericTypeName = genericTypeName.SplitOnFirst('`')[0];
+            var genericArgs = string.Join(",",
+                type.GetGenericArguments()
+                    .Select(ToPrettyName).ToArray());
+            return genericTypeName + "<" + genericArgs + ">";
+        }
+
         private static List<string> SplitGenericArgs(string argList)
         {
             var to = new List<string>();

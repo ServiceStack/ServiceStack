@@ -24,7 +24,7 @@ namespace ServiceStack.Api.Swagger
 
         public Action<SwaggerModel> ModelFilter { get; set; }
 
-        public Action<ModelProperty> ModelPropertyFilter { get; set; }
+        public Action<SwaggerProperty> ModelPropertyFilter { get; set; }
 
         public SwaggerFeature()
         {

@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Net;
 using System.Runtime.Serialization;
 
@@ -48,6 +49,26 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [ApiMember(Description = "Nested model 2", DataType = "SwaggerNestedModel2")]
         [DataMember]
         public SwaggerNestedModel2 NestedModel2 { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public string[] ArrayString { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public int[] ArrayInt { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public List<string> ListString { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public List<int> ListInt { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public Dictionary<string, string> DictionaryString { get; set; }
     }
 
     public class SwaggerNestedModel

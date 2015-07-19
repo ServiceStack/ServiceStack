@@ -67,7 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     .AddAttributes(new RouteAttribute("/custom-register"))
                     .AddAttributes(new RestrictAttribute(RequestAttributes.Json));
 
-                typeof (ResourceRequest)
+                typeof (SwaggerResource)
                     .AddAttributes(new ExcludeAttribute(Feature.Soap));
 
                 this.RegisterService<RegisterService>("/register");

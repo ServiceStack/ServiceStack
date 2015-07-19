@@ -3,32 +3,53 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
-using ServiceStack.Host;
 
 namespace ServiceStack.Api.Swagger
 {
     [DataContract]
-    public class Resources
+    public class SwaggerResources : IReturn<SwaggerResourcesResponse>
     {
         [DataMember(Name = "apiKey")]
         public string ApiKey { get; set; }
     }
 
     [DataContract]
-    public class ResourcesResponse
+    public class SwaggerResourcesResponse
     {
         [DataMember(Name = "swaggerVersion")]
-        public string SwaggerVersion { get; set; }
+        public string SwaggerVersion
+        {
+            get { return "1.2"; }
+        }
+        [DataMember(Name = "apis")]
+        public List<SwaggerResourceRef> Apis { get; set; }
         [DataMember(Name = "apiVersion")]
         public string ApiVersion { get; set; }
         [DataMember(Name = "basePath")]
         public string BasePath { get; set; }
-        [DataMember(Name = "apis")]
-        public List<RestService> Apis { get; set; }
+        [DataMember(Name = "info")]
+        public SwaggerInfo Info { get; set; }
     }
 
     [DataContract]
-    public class RestService
+    public class SwaggerInfo
+    {
+        [DataMember(Name = "title")]
+        public string Title { get; set; }
+        [DataMember(Name = "description")]
+        public string Description { get; set; }
+        [DataMember(Name = "termsOfServiceUrl")]
+        public string TermsOfServiceUrl { get; set; }
+        [DataMember(Name = "contact")]
+        public string Contact { get; set; }
+        [DataMember(Name = "license")]
+        public string License { get; set; }
+        [DataMember(Name = "licenseUrl")]
+        public string LicenseUrl { get; set; }
+    }
+
+    [DataContract]
+    public class SwaggerResourceRef
     {
         [DataMember(Name = "path")]
         public string Path { get; set; }
@@ -37,7 +58,7 @@ namespace ServiceStack.Api.Swagger
     }
 
     [AddHeader(DefaultContentType = MimeTypes.Json)]
-    [DefaultRequest(typeof(Resources))]
+    [DefaultRequest(typeof(SwaggerResources))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class SwaggerResourcesService : Service
     {
@@ -46,16 +67,15 @@ namespace ServiceStack.Api.Swagger
 
         internal const string RESOURCE_PATH = "/resource";
 
-        public object Get(Resources request)
+        public object Get(SwaggerResources request)
         {
             var basePath = HostContext.Config.WebHostUrl 
                 ?? Request.GetParentPathUrl().NormalizeScheme();
 
-            var result = new ResourcesResponse
+            var result = new SwaggerResourcesResponse
             {
-                SwaggerVersion = "1.1",
                 BasePath = basePath,
-                Apis = new List<RestService>(),
+                Apis = new List<SwaggerResourceRef>(),
                 ApiVersion = HostContext.Config.ApiVersion
             };
             var operations = HostContext.Metadata;
@@ -67,7 +87,7 @@ namespace ServiceStack.Api.Swagger
                 var name = operationName;
                 var operationType = allTypes.FirstOrDefault(x => x.Name == name);
                 if (operationType == null) continue;
-                if (operationType == typeof(Resources) || operationType == typeof(ResourceRequest))
+                if (operationType == typeof(SwaggerResources) || operationType == typeof(SwaggerResource))
                     continue;
                 if (!operations.IsVisible(Request, Format.Json, operationName)) continue;
 
@@ -78,7 +98,7 @@ namespace ServiceStack.Api.Swagger
             return result;
         }
 
-        protected void CreateRestPaths(List<RestService> apis, Type operationType, String operationName)
+        protected void CreateRestPaths(List<SwaggerResourceRef> apis, Type operationType, String operationName)
         {
             var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<string>();
@@ -98,7 +118,7 @@ namespace ServiceStack.Api.Swagger
                 if (string.IsNullOrEmpty(bp)) continue;
                 if (apis.All(a => a.Path != string.Concat(RESOURCE_PATH, "/" + bp)))
                 {
-                    apis.Add(new RestService
+                    apis.Add(new SwaggerResourceRef
                     {
                         Path = string.Concat(RESOURCE_PATH, "/" + bp),
                         Description = operationType.GetDescription()
