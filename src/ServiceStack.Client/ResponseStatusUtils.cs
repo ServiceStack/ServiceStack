@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Validation;
 
 namespace ServiceStack
@@ -34,7 +35,7 @@ namespace ServiceStack
                         ErrorCode = validationError.ErrorCode,
                         FieldName = validationError.FieldName,
                         Message = validationError.ErrorMessage,
-                        CustomState = validationError.CustomState
+                        Meta = validationError.CustomState.ToObjectDictionary().ToDictionary(kv => kv.Key, kv => kv.Value != null ? kv.Value.ToString() : null)
                     };
                     to.Errors.Add(error);
 
