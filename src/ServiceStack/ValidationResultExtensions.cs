@@ -13,7 +13,7 @@ namespace ServiceStack
         public static ValidationErrorResult ToErrorResult(this ValidationResult result)
         {
             var validationResult = new ValidationErrorResult();
-            foreach (var error in result.Errors)                
+            foreach (var error in result.Errors)
                 validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage, error.AttemptedValue, error.CustomState));
 
             return validationResult;
