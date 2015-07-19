@@ -103,7 +103,7 @@ namespace ServiceStack.NativeTypes.Java
             var sb = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(metadata.Version));
+            sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));

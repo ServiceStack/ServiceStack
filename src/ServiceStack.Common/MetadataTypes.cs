@@ -93,10 +93,8 @@ namespace ServiceStack
             Types = new List<MetadataType>();
             Operations = new List<MetadataOperationType>();
             Namespaces = new List<string>();
-            Version = 1;
         }
 
-        public int Version { get; set; }
         public MetadataTypesConfig Config { get; set; }
         public List<string> Namespaces { get; set; }
         public List<MetadataType> Types { get; set; }
