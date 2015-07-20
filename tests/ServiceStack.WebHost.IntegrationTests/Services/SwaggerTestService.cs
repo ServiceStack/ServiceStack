@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Net;
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -49,30 +50,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [ApiMember(Description = "Nested model 2", DataType = "SwaggerNestedModel2")]
         [DataMember]
         public SwaggerNestedModel2 NestedModel2 { get; set; }
-
-        [ApiMember(IsRequired = true)]
-        [DataMember]
-        public bool IsRequired { get; set; }
-
-        [ApiMember]
-        [DataMember]
-        public string[] ArrayString { get; set; }
-
-        [ApiMember]
-        [DataMember]
-        public int[] ArrayInt { get; set; }
-
-        [ApiMember]
-        [DataMember]
-        public List<string> ListString { get; set; }
-
-        [ApiMember]
-        [DataMember]
-        public List<int> ListInt { get; set; }
-
-        [ApiMember]
-        [DataMember]
-        public Dictionary<string, string> DictionaryString { get; set; }
     }
 
     public class SwaggerNestedModel
@@ -108,6 +85,62 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string Ignored { get; set; }
     }
 
+    [Route("/swagger-complex", "POST")]
+    public class SwaggerComplex : IReturn<SwaggerComplexResponse>
+    {
+        [ApiMember]
+        [DataMember]
+        [Description("IsRequired Description")]
+        public bool IsRequired { get; set; }
+
+        [ApiMember(IsRequired = true)]
+        [DataMember]
+        public string[] ArrayString { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public int[] ArrayInt { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public List<string> ListString { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public List<int> ListInt { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public Dictionary<string, string> DictionaryString { get; set; }
+    }
+
+    public class SwaggerComplexResponse
+    {
+        [ApiMember]
+        [DataMember]
+        public bool IsRequired { get; set; }
+
+        [ApiMember(IsRequired = true)]
+        [DataMember]
+        public string[] ArrayString { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public int[] ArrayInt { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public List<string> ListString { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public List<int> ListInt { get; set; }
+
+        [ApiMember]
+        [DataMember]
+        public Dictionary<string, string> DictionaryString { get; set; }
+    }
+
     public class SwaggerTestService : Service
     {
         public object Any(SwaggerTest request)
@@ -118,6 +151,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public object Post(SwaggerTest2 request)
         {
             return request;
+        }
+
+        public object Post(SwaggerComplex request)
+        {
+            return request.ConvertTo<SwaggerComplexResponse>();
         }
     }
 }
