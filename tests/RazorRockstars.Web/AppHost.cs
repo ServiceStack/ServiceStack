@@ -24,9 +24,9 @@ namespace RazorRockstars.Web
             Plugins.Add(new MsgPackFormat());
             Plugins.Add(new SwaggerFeature { UseBootstrapTheme = true });
 
-            typeof(Resources)
+            typeof(SwaggerResources)
                 .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
-            typeof(ResourceRequest)
+            typeof(SwaggerResource)
                 .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
 
             var metadata = (MetadataFeature)Plugins.First(x => x is MetadataFeature);
