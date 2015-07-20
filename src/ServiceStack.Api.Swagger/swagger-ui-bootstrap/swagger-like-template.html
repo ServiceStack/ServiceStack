@@ -148,12 +148,12 @@ function notUndefinedNullOrZeroLength(obj) {
 
 {% function name="apiAccordionPanel" %}
 
-<div class="panel panel-${ getVerbClass(a.httpMethod ) }">
+<div class="panel panel-${ getVerbClass(a.method ) }">
     <div class="panel-heading">
         <div class="panel-title clearfix">
             <div class="col-md-2">
                 <a data-toggle="collapse" data-parent="#${ a.accordionId }" href="#${ a.nickname }Panel" class="verb">
-                    <span class="label label-${ getVerbClass(a.httpMethod ) } verb">${ a.httpMethod }</span>
+                    <span class="label label-${ getVerbClass(a.method ) } verb">${ a.method }</span>
                 </a>
             </div>
             <a data-toggle="collapse" data-parent="#${ a.accordionId }" href="#${ a.nickname }Panel">
@@ -297,7 +297,7 @@ function notUndefinedNullOrZeroLength(obj) {
             % _.each(a.properties, function(prop, key) {
             <tr>
                 <td>${ key }</td>
-                <td>${ prop.required }</td>
+                <td>${ o.required && o.required[key] ? "true" : "" }</td>
                 <td>${ toSwaggerType(prop) }</td>
                 <td>${ prop.description }</td>
             </tr>

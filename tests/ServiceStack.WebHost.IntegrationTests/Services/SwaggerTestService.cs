@@ -50,6 +50,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [DataMember]
         public SwaggerNestedModel2 NestedModel2 { get; set; }
 
+        [ApiMember(IsRequired = true)]
+        [DataMember]
+        public bool IsRequired { get; set; }
+
         [ApiMember]
         [DataMember]
         public string[] ArrayString { get; set; }

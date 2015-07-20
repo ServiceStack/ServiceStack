@@ -105,7 +105,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                 });
                 Plugins.Add(new SwaggerFeature
                     {
-                        //UseBootstrapTheme = true
+                        UseBootstrapTheme = true
                     });
                 Plugins.Add(new PostmanFeature());
                 Plugins.Add(new CorsFeature());

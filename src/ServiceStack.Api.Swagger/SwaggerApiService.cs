@@ -322,12 +322,6 @@ namespace ServiceStack.Api.Swagger
                 Properties = new OrderedDictionary<string, SwaggerProperty>()
             };
             models[model.Id] = model;
-            models[modelTypeName] = new SwaggerModel
-            {
-                Id = modelTypeName,
-                Description = modelTypeName,
-                Properties = model.Properties,
-            };
 
             var properties = modelType.GetProperties();
 
@@ -389,12 +383,12 @@ namespace ServiceStack.Api.Swagger
                         Type = GetSwaggerTypeName(propertyType, route, verb),
                     };
 
-                    if (!IsNullable(propertyType))
+                    if ((propertyType.IsValueType && !IsNullable(propertyType)) || apiMembers.Any(x => x.IsRequired))
                     {
                         if (model.Required == null)
                             model.Required = new List<string>();
 
-                        model.Required.Add(propertyType.Name);
+                        model.Required.Add(prop.Name);
                     }
 
                     if (IsListType(propertyType))
@@ -521,7 +515,6 @@ namespace ServiceStack.Api.Swagger
                 : restPath.AllowedVerbs.Split(new[] {',', ' '}, StringSplitOptions.RemoveEmptyEntries));
 
             var routePath = restPath.Path.Replace("*","");
-            var nickName = nicknameCleanerRegex.Replace(routePath, "");
             var md = new SwaggerApi
             {
                 Path = routePath,
@@ -530,7 +523,7 @@ namespace ServiceStack.Api.Swagger
                     new SwaggerOperation
                     {
                         Method = verb,
-                        Nickname = verb.ToLowerInvariant() + nickName,
+                        Nickname = restPath.RequestType.Name,
                         Summary = summary,
                         Notes = notes,
                         Parameters = ParseParameters(verb, restPath.RequestType, models, routePath),
