@@ -9,6 +9,16 @@ namespace ServiceStack.FluentValidation.Internal
         readonly Dictionary<string, object> placeholderValues = new Dictionary<string, object>();
         object[] additionalArgs;
 
+        internal Dictionary<string, string> PlaceholderValues
+        {
+            get
+            {
+                return
+                    placeholderValues.ToDictionary(
+                        kv => new KeyValuePair<string, string>(kv.Key, kv.Value != null ? kv.Value.ToString() : null));
+            }
+        }
+
         /// <summary>
         /// Default Property Name placeholder.
         /// </summary>
