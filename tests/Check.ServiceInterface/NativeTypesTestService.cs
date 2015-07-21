@@ -180,6 +180,11 @@ namespace Check.ServiceInterface
         {
             return new QueryResponseTemplate<Poco>();
         }
+
+        public object Any(HelloReserved request)
+        {
+            return request;
+        }
     }
 
     public class GetUserSession : IReturn<CustomUserSession>

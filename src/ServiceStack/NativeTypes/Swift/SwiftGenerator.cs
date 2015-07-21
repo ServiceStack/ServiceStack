@@ -1039,7 +1039,59 @@ extension NSString : JsonSerializable
 
         public static HashSet<string> SwiftKeyWords = new HashSet<string>
         {
+            "class",
+            "deinit",
+            "enum",
+            "extension",
+            "func",
+            "import",
+            "init",
+            "let",
+            "protocol",
+            "static",
+            "struct",
+            "subscript",
+            "typealias",
+            "var",
+            "break",
+            "case",
             "continue",
+            "default",
+            "do",
+            "else",
+            "fallthrough",
+            "if",
+            "in",
+            "for",
+            "return",
+            "switch",
+            "where",
+            "while",
+            "dynamicType",
+            "is",
+            "new",
+            "super",
+            "self",
+            "Self",
+            "Type",
+            "didSet",
+            "get",
+            "infix",
+            "inout",
+            "left",
+            "mutating",
+            "none",
+            "nonmutating",
+            "operator",
+            "override",
+            "postfix",
+            "precedence",
+            "prefix",
+            "right",
+            "set",
+            "unowned",
+            "weak",
+            "willSet",
             "description", //can't override NSObject's description computed property
         };
 
@@ -1047,7 +1099,7 @@ extension NSString : JsonSerializable
         {
             var propName = name.ToCamelCase(); //Always use Swift conventions for now
             return SwiftKeyWords.Contains(propName)
-                ? propName.ToPascalCase() 
+                ? "`{0}`".Fmt(propName) 
                 : propName;
 
             //return JsConfig.EmitCamelCaseNames

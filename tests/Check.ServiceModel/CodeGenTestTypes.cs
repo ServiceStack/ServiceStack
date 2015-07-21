@@ -472,6 +472,14 @@ namespace Check.ServiceModel.Types
         [DataMember(Order = 5)]
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
+
+    public class HelloReserved
+    {
+        public string Class { get; set; }
+        public string Type { get; set; }
+        public string extension { get; set; }
+    }
+
 }
 
 
