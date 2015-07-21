@@ -1092,21 +1092,19 @@ extension NSString : JsonSerializable
             "unowned",
             "weak",
             "willSet",
-            "description", //can't override NSObject's description computed property
         };
 
         public static string PropertyStyle(this string name)
         {
             var propName = name.ToCamelCase(); //Always use Swift conventions for now
+
+            //can't override NSObject's description computed property
+            if (propName == "description")
+                return "Description";
+
             return SwiftKeyWords.Contains(propName)
                 ? "`{0}`".Fmt(propName) 
                 : propName;
-
-            //return JsConfig.EmitCamelCaseNames
-            //    ? name.ToCamelCase()
-            //    : JsConfig.EmitLowercaseUnderscoreNames
-            //        ? name.ToLowercaseUnderscore()
-            //        : name;
         }
 
         public static string AddGenericConstraints(this string typeDef)
