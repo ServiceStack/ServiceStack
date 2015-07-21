@@ -4,9 +4,8 @@
 
 using NUnit.Framework;
 using ServiceStack;
-using ServiceStack.Text;
 
-namespace RazorRockstars.Web
+namespace RazorRockstars.Web.Tests
 {
     [TestFixture]
     public class VirtualPathTests

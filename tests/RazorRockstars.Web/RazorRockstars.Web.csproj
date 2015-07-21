@@ -26,6 +26,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\src\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <TargetFrameworkProfile />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -50,9 +51,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ServiceStack.Interfaces, Version=4.0.0.0, Culture=neutral, PublicKeyToken=e06fbc6124f57c43, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite, Version=4.0.40.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -103,7 +104,6 @@
     <None Include="MRootPage.md" />
     <Content Include="Global.asax" />
     <Content Include="NoModelNoController.cshtml" />
-    <Content Include="packages.config" />
     <Content Include="Pages\default.cshtml" />
     <None Include="Pages\Dir2\default.md" />
     <None Include="Pages\Dir2\MPage3.md" />
@@ -159,9 +159,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RazorRockstars_WebTests.cs" />
     <Compile Include="ReqStarsService.cs" />
-    <Compile Include="VirtualPathTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj">
@@ -176,10 +174,6 @@
       <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.MsgPack\ServiceStack.MsgPack.csproj">
       <Project>{6b751a07-75d4-4a9d-b3a0-eea27808e64c}</Project>
       <Name>ServiceStack.MsgPack</Name>
@@ -191,6 +185,10 @@
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RazorRockstars.Web.Tests\RazorRockstars.Web.Tests.csproj">
+      <Project>{1AD83DAD-3C69-4343-983E-074F0374EE80}</Project>
+      <Name>RazorRockstars.Web.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

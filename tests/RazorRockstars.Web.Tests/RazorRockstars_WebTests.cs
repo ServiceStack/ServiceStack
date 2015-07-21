@@ -5,10 +5,9 @@ using System.Net;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack;
-using ServiceStack.Common;
 using ServiceStack.Text;
 
-namespace RazorRockstars.Web
+namespace RazorRockstars.Web.Tests
 {
 	[TestFixture]
 	public class RazorRockstars_WebTests

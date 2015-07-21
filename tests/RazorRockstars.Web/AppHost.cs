@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using Funq;
+using RazorRockstars.Web.Tests;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Data;
@@ -54,7 +55,7 @@ namespace RazorRockstars.Web
                 db.Insert(Rockstar.SeedData); //Populate with seed data
 
                 db.DropAndCreateTable<Reqstar>();
-                db.Insert(ReqstarsService.SeedData);
+                db.Insert(SeedData.Reqstars);
             }
         }
     }
