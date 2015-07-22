@@ -16,6 +16,8 @@
 // The latest version of this file can be found at http://www.codeplex.com/FluentValidation
 #endregion
 
+using System.Collections.Generic;
+
 namespace ServiceStack.FluentValidation.Results
 {
     using System;
@@ -64,6 +66,11 @@ namespace ServiceStack.FluentValidation.Results
         /// Custom state associated with the failure.
         /// </summary>
         public object CustomState { get; set; }
+
+        /// <summary>
+        /// Placeholder values used for string substitution when building ErrorMessage
+        /// </summary>
+        public Dictionary<string,string> PlaceholderValues { get; set; }
 
         /// <summary>
         /// Creates a textual representation of the failure.
