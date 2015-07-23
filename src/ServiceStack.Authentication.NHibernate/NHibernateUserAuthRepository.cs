@@ -83,35 +83,43 @@ namespace ServiceStack.Authentication.NHibernate
                 GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
         }
 
-        public bool TryAuthenticate(string userName, string password, out string userId)
-        {
-            userId = null;
-            IUserAuth userAuth;
-            if (TryAuthenticate(userName, password, out userAuth))
-            {
-                userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-                return true;
-            }
-            return false;
-        }
-
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
             userAuth = GetUserAuthByUserName(userName);
-            if (userAuth == null) return false;
+            if (userAuth == null)
+                return false;
 
-            var saltedHash = HostContext.Resolve<IHashProvider>();
-            return saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt);
+            if (HostContext.Resolve<IHashProvider>().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+            {
+                this.RecordSuccessfulLogin(userAuth);
+
+                return true;
+            }
+
+            this.RecordInvalidLoginAttempt(userAuth);
+
+            userAuth = null;
+            return false;
         }
 
         public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
         {
-            //userId = null;
             userAuth = GetUserAuthByUserName(digestHeaders["username"]);
-            if (userAuth == null) return false;
+            if (userAuth == null)
+                return false;
 
             var digestHelper = new DigestAuthFunctions();
-            return digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence);
+            if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
+            {
+                this.RecordSuccessfulLogin(userAuth);
+
+                return true;
+            }
+
+            this.RecordInvalidLoginAttempt(userAuth);
+
+            userAuth = null;
+            return false;
         }
 
         public IUserAuth GetUserAuthByUserName(string userNameOrEmail)

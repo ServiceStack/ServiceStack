@@ -16,7 +16,11 @@ namespace ServiceStack.Auth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
-        public int? MaxLoginAttempts { get; set; }
+        [Obsolete("Use AuthFeature.MaxLoginAttempts")]
+        public int? MaxLoginAttempts
+        {
+            set { throw new NotImplementedException("Use AuthFeature.MaxLoginAttempts"); }
+        }
 
         private readonly IDbConnectionFactory dbFactory;
         private bool hasInitSchema;
@@ -196,45 +200,21 @@ namespace ServiceStack.Auth
 
             return userAuth;
         }
-
-        protected virtual void RecordInvalidLoginAttempt(IUserAuth userAuth)
-        {
-            if (MaxLoginAttempts == null) return;
-
-            userAuth.InvalidLoginAttempts += 1;
-            userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
-            if (userAuth.InvalidLoginAttempts >= MaxLoginAttempts.Value)
-            {
-                userAuth.LockedDate = userAuth.LastLoginAttempt;
-            }
-            SaveUserAuth(userAuth);
-        }
-
-        protected virtual void RecordSuccessfulLogin(IUserAuth userAuth)
-        {
-            if (MaxLoginAttempts == null) return;
-
-            userAuth.InvalidLoginAttempts = 0;
-            userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
-            SaveUserAuth(userAuth);
-        }
-
+        
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
             userAuth = GetUserAuthByUserName(userName);
             if (userAuth == null)
-            {
                 return false;
-            }
 
             if (HostContext.Resolve<IHashProvider>().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
-                RecordSuccessfulLogin(userAuth);
+                this.RecordSuccessfulLogin(userAuth);
 
                 return true;
             }
 
-            RecordInvalidLoginAttempt(userAuth);
+            this.RecordInvalidLoginAttempt(userAuth);
 
             userAuth = null;
             return false;
@@ -242,22 +222,19 @@ namespace ServiceStack.Auth
 
         public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
         {
-            //userId = null;
             userAuth = GetUserAuthByUserName(digestHeaders["username"]);
             if (userAuth == null)
-            {
                 return false;
-            }
 
             var digestHelper = new DigestAuthFunctions();
             if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
             {
-                RecordSuccessfulLogin(userAuth);
+                this.RecordSuccessfulLogin(userAuth);
 
                 return true;
             }
 
-            RecordInvalidLoginAttempt(userAuth);
+            this.RecordInvalidLoginAttempt(userAuth);
 
             userAuth = null;
             return false;

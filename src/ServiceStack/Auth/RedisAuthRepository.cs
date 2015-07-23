@@ -204,8 +204,12 @@ namespace ServiceStack.Auth
             var saltedHash = HostContext.Resolve<IHashProvider>();
             if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
+                this.RecordSuccessfulLogin(userAuth);
+
                 return true;
             }
+
+            this.RecordInvalidLoginAttempt(userAuth);
 
             userAuth = null;
             return false;
@@ -222,8 +226,13 @@ namespace ServiceStack.Auth
             var digestHelper = new DigestAuthFunctions();
             if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
             {
+                this.RecordSuccessfulLogin(userAuth);
+
                 return true;
             }
+
+            this.RecordInvalidLoginAttempt(userAuth);
+
             userAuth = null;
             return false;
         }

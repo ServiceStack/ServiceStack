@@ -234,16 +234,19 @@ namespace ServiceStack.Authentication.MongoDb
 
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
-            //userId = null;
             userAuth = GetUserAuthByUserName(userName);
-            if (userAuth == null) return false;
+            if (userAuth == null)
+                return false;
 
             var saltedHash = HostContext.Resolve<IHashProvider>();
             if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
-                //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+                this.RecordSuccessfulLogin(userAuth);
+
                 return true;
             }
+
+            this.RecordInvalidLoginAttempt(userAuth);
 
             userAuth = null;
             return false;
@@ -253,14 +256,19 @@ namespace ServiceStack.Authentication.MongoDb
         {
             //userId = null;
             userAuth = GetUserAuthByUserName(digestHeaders["username"]);
-            if (userAuth == null) return false;
+            if (userAuth == null)
+                return false;
 
             var digestHelper = new DigestAuthFunctions();
             if (digestHelper.ValidateResponse(digestHeaders, PrivateKey, NonceTimeOut, userAuth.DigestHa1Hash, sequence))
             {
-                //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+                this.RecordSuccessfulLogin(userAuth);
+
                 return true;
             }
+
+            this.RecordInvalidLoginAttempt(userAuth);
+
             userAuth = null;
             return false;
         }

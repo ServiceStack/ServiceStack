@@ -39,6 +39,8 @@ namespace ServiceStack
         public TimeSpan? SessionExpiry { get; set; }
         public TimeSpan? PermanentSessionExpiry { get; set; }
 
+        public int? MaxLoginAttempts { get; set; }
+
         public bool IncludeAssignRoleServices
         {
             set
