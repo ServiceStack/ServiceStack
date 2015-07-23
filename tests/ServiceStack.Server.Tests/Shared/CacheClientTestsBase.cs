@@ -1,112 +1,15 @@
-﻿using System;
+using System;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
-using ServiceStack.OrmLite;
-using ServiceStack.Redis;
+using ServiceStack.Server.Tests.Caching;
 using ServiceStack.Text;
 
-namespace ServiceStack.Server.Tests.Properties
+namespace ServiceStack.Server.Tests.Shared
 {
-    public class Config
-    {
-        public const string ServiceStackBaseUri = "http://localhost:20000";
-        public const string AbsoluteBaseUri = ServiceStackBaseUri + "/";
-        public const string ListeningOn = ServiceStackBaseUri + "/";
-
-        public static string SqlServerBuildDb = "Server={0};Database=test;User Id=test;Password=test;".Fmt(Environment.GetEnvironmentVariable("CI_HOST"));
-    }
-
-    public class Item
-    {
-        public int Id { get; set; }
-
-        public string Name { get; set; }
-
-        protected bool Equals(Item other)
-        {
-            return Id == other.Id && string.Equals(Name, other.Name);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((Item) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return (Id*397) ^ (Name != null ? Name.GetHashCode() : 0);
-            }
-        }
-    }
-
-    public class CustomAuthSession : AuthUserSession
-    {
-        [DataMember]
-        public string Custom { get; set; }
-    }
-
-    public class SqlServerOrmLiteCacheClientTests : CacheClientTestsBase
-    {
-        public override ICacheClient CreateClient()
-        {
-            var cache = new OrmLiteCacheClient
-            {
-                DbFactory = new OrmLiteConnectionFactory(
-                    Config.SqlServerBuildDb, SqlServerDialect.Provider)
-            };
-
-            using (var db = cache.DbFactory.Open())
-            {
-                db.DropTable<CacheEntry>();
-            }
-
-            cache.InitSchema();
-
-            return cache;
-        }
-    }
-
-    public class SqliteOrmLiteCacheClientTests : CacheClientTestsBase
-    {
-        public override ICacheClient CreateClient()
-        {
-            var cache = new OrmLiteCacheClient
-            {
-                DbFactory = new OrmLiteConnectionFactory(
-                    ":memory:", SqliteDialect.Provider)
-            };
-            cache.InitSchema();
-
-            return cache;
-        }
-    }
-
-    public class MemoryCacheClientTests : CacheClientTestsBase
-    {
-        public override ICacheClient CreateClient()
-        {
-            return new MemoryCacheClient();
-        }
-    }
-
-    public class RedisCacheClientTests : CacheClientTestsBase
-    {
-        public override ICacheClient CreateClient()
-        {
-            return new RedisManagerPool(Environment.GetEnvironmentVariable("CI_HOST")).GetCacheClient();
-        }
-    }
-
     [TestFixture]
     public abstract class CacheClientTestsBase
     {
@@ -343,8 +246,8 @@ namespace ServiceStack.Server.Tests.Properties
             var sessionB = new SessionFactory(CreateClient()).CreateSession("b");
 
             3.Times(i => {
-                sessionA.Set("key" + i, "value" + i);
-                sessionB.Set("key" + i, "value" + i);
+                             sessionA.Set("key" + i, "value" + i);
+                             sessionB.Set("key" + i, "value" + i);
             });
 
             var value1 = sessionA.Get<String>("key1");

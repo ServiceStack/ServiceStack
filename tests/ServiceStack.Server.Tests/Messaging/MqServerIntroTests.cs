@@ -7,7 +7,7 @@ using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
 using ServiceStack.RabbitMq;
 using ServiceStack.Redis;
-using ServiceStack.Server.Tests.Properties;
+using ServiceStack.Server.Tests.Caching;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
