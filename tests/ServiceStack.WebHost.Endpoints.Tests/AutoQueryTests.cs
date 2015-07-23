@@ -687,7 +687,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_execute_query_with_LEFTJOIN_on_RockstarAlbums()
         {
             var response = client.Get(new QueryRockstarAlbumsLeftJoin());
-            response.PrintDump();
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
             var albumNames = response.Results.Where(x => x.RockstarAlbumName != null).Select(x => x.RockstarAlbumName);
@@ -931,7 +930,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(2));
 
             response = client.Get(new QueryGetRockstars { IdsBetween = new[] { 1, 3 } });
-            response.Results.PrintDump();
             Assert.That(response.Results.Count, Is.EqualTo(3));
         }
 
@@ -951,7 +949,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(2));
 
             response = baseUrl.AddQueryParam("IdsBetween", "1,3").AsJsonInto<Rockstar>();
-            response.Results.PrintDump();
             Assert.That(response.Results.Count, Is.EqualTo(3));
         }
 
@@ -1093,8 +1090,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Age = 27
             });
          
-            response.PrintDump();
-
             Assert.That(response.Results.Count, Is.EqualTo(3));
 
             var jimi = response.Results.First(x => x.FirstName == "Jimi");
@@ -1116,8 +1111,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Get(new QueryAllFields {
                 Guid = guid
             });
-
-            response.PrintDump();
 
             Assert.That(response.Results.Count, Is.EqualTo(1));
 
@@ -1204,7 +1197,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Get(new QueryRockstars {
                 Include = "ADD(6,2), Multiply(6,2) SixTimesTwo, Subtract(6,2), divide(6,2) TheDivide"
             });
-            response.PrintDump();
             Assert.That(response.Meta["ADD(6,2)"], Is.EqualTo("8"));
             Assert.That(response.Meta["SixTimesTwo"], Is.EqualTo("12"));
             Assert.That(response.Meta["Subtract(6,2)"], Is.EqualTo("4"));

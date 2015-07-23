@@ -17,15 +17,12 @@ namespace ServiceStack.Common.Tests
             var env = new EnvironmentVariableSettings();
             var path = env.Get("PATH");
             Assert.That(path, Is.Not.Null);
-            path.Print();
 
             var unknown = env.Get("UNKNOWN");
             Assert.That(unknown, Is.Null);
 
             var envVars = env.GetAllKeys();
             Assert.That(envVars.Count, Is.GreaterThan(0));
-
-            envVars.PrintDump();
         }
     }
 

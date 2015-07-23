@@ -157,7 +157,7 @@ namespace ServiceStack.Html
         {
             if (model != null)
             {
-                model.PrintDump();
+                return model.Dump();
             }
 
             return null;

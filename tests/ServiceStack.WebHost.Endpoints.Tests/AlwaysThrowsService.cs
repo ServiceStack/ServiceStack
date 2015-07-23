@@ -192,7 +192,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var response = client.Send<AlwaysThrowsResponse>(
                     new AlwaysThrows { Value = TestString });
 
-                response.PrintDump();
                 Assert.Fail("Should throw HTTP errors");
             }
             catch (WebServiceException webEx)
@@ -215,7 +214,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var response = client.Get<List<AlwaysThrows>>("/throwslist/404/{0}".Fmt(TestString));
 
-                response.PrintDump();
                 Assert.Fail("Should throw HTTP errors");
             }
             catch (WebServiceException webEx)
@@ -240,7 +238,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var response = client.Send<List<AlwaysThrows>>(
                     new AlwaysThrowsValidation());
 
-                response.PrintDump();
                 Assert.Fail("Should throw HTTP errors");
             }
             catch (WebServiceException webEx)

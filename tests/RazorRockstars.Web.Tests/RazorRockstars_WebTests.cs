@@ -295,8 +295,6 @@ namespace RazorRockstars.Web.Tests
 	            Thread.Sleep(100);
 
 	        var errMsgs = errors.ConvertAll(x => x.Message);
-            errMsgs.PrintDump();
-	        
             Assert.That(errors.Count, Is.EqualTo(0));
 	    }
     }

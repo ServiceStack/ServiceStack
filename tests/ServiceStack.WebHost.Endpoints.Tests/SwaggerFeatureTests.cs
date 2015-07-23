@@ -351,8 +351,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Should_group_similar_services(IRestClient client)
         {
             var resources = client.Get<SwaggerResourcesResponse>("/resources");
-            resources.PrintDump();
-
             var swagger = resources.Apis.Where(t => t.Path.Contains("/resource/swg3"));
             Assert.That(swagger.Count(), Is.EqualTo(1));
         }
@@ -361,8 +359,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Should_distinct_base_path(IRestClient client)
         {
             var resources = client.Get<SwaggerResourcesResponse>("/resources");
-            resources.PrintDump();
-
             var swagger = resources.Apis.Where(t => t.Path.Contains("/resource/swgb3"));
             Assert.That(swagger.Count(), Is.EqualTo(1));
         }
@@ -389,8 +385,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 appHost.Config.WebHostUrl = webHostUrl;
 
                 var resources = client.Get<SwaggerResourcesResponse>("/resources");
-                resources.PrintDump();
-
                 Assert.That(resources.BasePath, Is.EqualTo(webHostUrl));
             }
             finally
@@ -408,8 +402,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 appHost.Config.WebHostUrl = webHostUrl;
 
                 var resource = client.Get<SwaggerApiDeclaration>("/resource/swagger");
-                resource.PrintDump();
-
                 Assert.That(resource.BasePath, Is.EqualTo(webHostUrl));
             }
             finally
@@ -426,8 +418,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 appHost.Config.UseHttpsLinks = true;
 
                 var resources = client.Get<SwaggerResourcesResponse>("/resources");
-                resources.PrintDump();
-
                 Assert.That(resources.BasePath.ToLowerInvariant(), Is.StringStarting("https"));
             }
             finally
@@ -462,8 +452,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(resource.ResourcePath, Is.EqualTo("/swagger"));
             Assert.That(resource.Apis, Is.Not.Empty);
 
-            resource.Apis.PrintDump();
-
             var operations = new List<SwaggerOperation>();
             foreach(var api in resource.Apis) operations.AddRange(api.Operations);
 
@@ -494,7 +482,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(resource.Apis, Is.Not.Empty);
 
             var postOperation = resource.Apis.SelectMany(api => api.Operations).Single(t => t.Method == "POST");
-            postOperation.PrintDump();
             Assert.That(postOperation.ResponseClass, Is.EqualTo(typeof(SwaggerFeatureResponse).Name));
         }
 
@@ -505,7 +492,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(resource.Apis, Is.Not.Empty);
 
             var operation = resource.Apis.SelectMany(api => api.Operations).Single(t => t.Method == "GET");
-            operation.PrintDump();
             Assert.That(operation.ResponseClass, Is.EqualTo("List[SwaggerFeatureResponse]"));
             Assert.That(resource.Models.ContainsKey("SwaggerFeatureResponse"));
         }
@@ -517,7 +503,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(resource.Apis, Is.Not.Empty);
 
             var operation = resource.Apis.SelectMany(api => api.Operations).Single(t => t.Method == "GET");
-            operation.PrintDump();
             Assert.That(operation.ResponseClass, Is.EqualTo("List[SwaggerFeatureResponse]"));
             Assert.That(resource.Models.ContainsKey("SwaggerFeatureResponse"));
         }
@@ -530,7 +515,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(resource.Models.ContainsKey(typeof(SwaggerFeatureResponse).Name), Is.True);
             var responseClassModel = resource.Models[typeof(SwaggerFeatureResponse).Name];
-            responseClassModel.PrintDump();
 
             Assert.That(responseClassModel.Id, Is.EqualTo(typeof(SwaggerFeatureResponse).Name));
             Assert.That(responseClassModel.Properties, Is.Not.Empty);
@@ -543,7 +527,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var resource = client.Get<SwaggerApiDeclaration>("/resource/swaggerModels");
             Assert.That(resource.Models, Is.Not.Empty);
-            resource.Models.PrintDump();
 
             var key = typeof(SwaggerModelsRequest).Name;
             Assert.That(resource.Models.ContainsKey(key), Is.True);
@@ -603,7 +586,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Should_retrieve_list_property_model(IRestClient client)
         {
             var resource = client.Get<SwaggerApiDeclaration>("/resource/swaggerModels");
-            resource.PrintDump();
 
             var key = typeof(SwaggerModelsRequest).Name;
             Assert.That(resource.Models.ContainsKey(key), Is.True);
@@ -638,8 +620,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public void Should_retrieve_valid_nullable_fields(IRestClient client)
 		{
             var resource = client.Get<SwaggerApiDeclaration>("/resource/swgnull");
-
-            resource.PrintDump();
 
             var key = typeof(NullableInRequest).Name;
             Assert.That(resource.Models.ContainsKey(key), Is.True);

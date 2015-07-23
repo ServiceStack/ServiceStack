@@ -556,8 +556,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     RememberMe = true,
                 });
 
-                authResponse.PrintDump();
-
                 var request = new Secured { Name = "test" };
                 var response = client.Send<SecureResponse>(request);
                 Assert.That(response.Result, Is.EqualTo(request.Name));
@@ -582,8 +580,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Password = "p@55word",
                     RememberMe = true,
                 });
-
-                authResponse.PrintDump();
 
                 var clientWithHeaders = (JsonServiceClient)GetClient();
                 clientWithHeaders.Headers["X-ss-pid"] = authResponse.SessionId;
@@ -613,8 +609,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Password = "p@55word",
                     RememberMe = true,
                 });
-
-            authResponse.PrintDump();
 
             var response = await client.SendAsync<SecureResponse>(request);
 

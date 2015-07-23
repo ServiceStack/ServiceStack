@@ -204,7 +204,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             try
             {
                 var json = PredefinedJsonUrl<ExceptionWithResponseStatus>().GetJsonFromUrl();
-				json.PrintDump();
                 Assert.Fail("Should throw");
             }
             catch (WebException webEx)
@@ -239,7 +238,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             try
             {
                 var json = PredefinedJsonUrl<ExceptionNoResponseDto>().GetJsonFromUrl();
-				json.PrintDump();
                 Assert.Fail("Should throw");
             }
             catch (WebException webEx)

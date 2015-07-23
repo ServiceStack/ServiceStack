@@ -170,8 +170,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var rockstars = service.Get(new FindRockstars { Aged = 27 });
 
-            rockstars.PrintDump(); //Print results to screen
-
             Assert.That(rockstars.Count, Is.EqualTo(SeedData.Count(x => x.Age == 27)));
 
             var status = service.Get(new GetStatus { LastName = "Vedder" });

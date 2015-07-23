@@ -67,8 +67,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
 
-            client.Get(new Sleep { ForMs = 100 }).PrintDump();
-            client.Get(new SpinWait { Iterations = 1000 }).PrintDump();
+            client.Get(new Sleep { ForMs = 100 });
+            client.Get(new SpinWait { Iterations = 1000 });
         }
 
         [Test]
@@ -78,9 +78,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var sleep = await client.GetAsync(new Sleep { ForMs = 100 });
             var spin = await client.GetAsync(new SpinWait { Iterations = 1000 });
-
-            sleep.PrintDump();
-            spin.PrintDump();
         }
     }
 }

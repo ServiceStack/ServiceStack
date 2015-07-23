@@ -49,13 +49,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
                     FromAddress = fromEmail
                 });
 
-                response.PrintDump();
-
                 Assert.That(response.FromAddress, Is.EqualTo(fromEmail));
             }
             catch (WebServiceException webEx)
             {
-                webEx.ResponseDto.PrintDump();
                 Assert.Fail(webEx.Message);
             }
         }
@@ -75,13 +72,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
                     FromAddress = fromEmail
                 });
 
-                response.PrintDump();
-
                 Assert.That(response.FromAddress, Is.EqualTo(fromEmail));
             }
             catch (WebServiceException webEx)
             {
-                webEx.ResponseDto.PrintDump();
                 Assert.Fail(webEx.Message);
             }
         }

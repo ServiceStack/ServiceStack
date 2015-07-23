@@ -187,8 +187,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var response = client.Put<InboxPostResponseRequestResponse>("inbox/123/responses", new InboxPostResponseRequest());
 
-                response.PrintDump();
-
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException webEx)
@@ -205,8 +203,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var response = client.Put<InboxPost>("inbox/123/responses", new InboxPost { Throw = true });
-
-                response.PrintDump();
 
                 Assert.Fail("Should throw");
             }

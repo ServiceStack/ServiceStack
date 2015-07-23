@@ -362,7 +362,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 try
                 {
                     var json = Config.AbsoluteBaseUri.CombineWith("/unknownroute").GetJsonFromUrl();
-                    json.PrintDump();
                     Assert.Fail("Should throw");
                 }
                 catch (WebException ex)

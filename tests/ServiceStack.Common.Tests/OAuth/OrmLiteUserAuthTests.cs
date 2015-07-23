@@ -41,8 +41,6 @@ namespace ServiceStack.Common.Tests.OAuth
 
 				var rows = db.Select<UserAuth>(q => q.UserName == "UserName");
 
-                rows[0].PrintDump();
-
 				Assert.That(rows[0].UserName, Is.EqualTo(userAuth.UserName));
 			}
         }

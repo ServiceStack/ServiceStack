@@ -223,7 +223,6 @@ namespace ServiceStack.Common.Tests.OAuth
                     Password = RegisterDto.Password,
                 });
 
-			loginResponse.PrintDump();
             oAuthUserSession = requestContext.ReloadSession();
 
             Assert.That(oAuthUserSession.TwitterUserId, Is.EqualTo(authInfo["user_id"]));

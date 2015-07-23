@@ -119,8 +119,6 @@ namespace ServiceStack.Common.Tests.Messaging
 
                     var msg = basicGetMsg.Body.FromUtf8Bytes().FromJson<HelloRabbit>();
 
-                    msg.PrintDump();
-
                     Thread.Sleep(1000);
 
                     channel.BasicAck(basicGetMsg.DeliveryTag, multiple: false);

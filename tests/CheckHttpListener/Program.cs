@@ -73,7 +73,6 @@ namespace CheckHttpListener
                 ex.StatusCode.ToString().Print();
                 ex.StatusDescription.Print();
                 ex.ResponseBody.Print();
-                ex.ResponseStatus.PrintDump();
             }
         }
     }

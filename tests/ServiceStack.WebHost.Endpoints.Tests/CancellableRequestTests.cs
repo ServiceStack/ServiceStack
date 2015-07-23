@@ -86,7 +86,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                ex.ResponseStatus.PrintDump();
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(OperationCanceledException).Name));
             }
         }

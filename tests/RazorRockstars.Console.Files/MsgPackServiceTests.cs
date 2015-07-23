@@ -112,13 +112,10 @@ namespace RazorRockstars.Console.Files
             {
                 var response = client.Send<MsgPackEmail>(request);
 
-                response.PrintDump();
-
                 Assert.That(response.Equals(request));
             }
             catch (WebServiceException webEx)
             {
-                webEx.ResponseDto.PrintDump();
                 Assert.Fail(webEx.Message);
             }
         }

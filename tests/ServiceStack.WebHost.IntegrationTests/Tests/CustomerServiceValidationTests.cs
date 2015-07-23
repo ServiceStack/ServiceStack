@@ -67,7 +67,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             try
             {
                 var response = client.Send(new Customers());
-                response.PrintDump();
                 Assert.Fail("Should throw Validation Exception");
             }
             catch (WebServiceException ex)
@@ -91,7 +90,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             try
             {
                 var response = client.Get(new Customers());
-                response.PrintDump();
                 Assert.Fail("Should throw Validation Exception");
             }
             catch (WebServiceException ex)

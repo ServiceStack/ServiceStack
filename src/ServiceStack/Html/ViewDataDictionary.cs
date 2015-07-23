@@ -136,7 +136,6 @@ namespace ServiceStack.Html
                     }
                     catch (Exception ex)
                     {
-                        ex.Message.PrintDump();
                         throw;
                     }
                 }

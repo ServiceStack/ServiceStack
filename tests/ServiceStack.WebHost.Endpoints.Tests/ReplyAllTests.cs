@@ -343,8 +343,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var responses = client.SendAll(requests);
-            responses.PrintDump();
-
             var results = responses.Map(x => x.Result);
 
             Assert.That(results, Is.EquivalentTo(new[] {
@@ -367,8 +365,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var responses = await client.SendAllAsync(requests);
-            responses.PrintDump();
-
             var results = responses.Map(x => x.Result);
 
             Assert.That(results, Is.EquivalentTo(new[] {
@@ -395,8 +391,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.Get(new HelloGet { Name = "aaa" });
 
             var responses = client.SendAll(requests);
-            responses.PrintDump();
-
             var results = responses.Map(x => x.Result);
 
             Assert.That(results, Is.EquivalentTo(new[] {
@@ -427,8 +421,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var responses = client.SendAll(requests);
-            responses.PrintDump();
-
             var results = responses.Map(x => x.Result);
 
             Assert.That(results, Is.EquivalentTo(new[] {
@@ -449,8 +441,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var responses = await client.SendAllAsync(requests);
-            responses.PrintDump();
-
             var results = responses.Map(x => x.Result);
 
             Assert.That(results, Is.EquivalentTo(new[] {
@@ -598,8 +588,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                ex.ResponseStatus.PrintDump();
-                
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(Exception).Name));
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Exception).Name));
                 Assert.That(ex.ResponseStatus.Message, Is.EqualTo("Batch Throws"));
@@ -627,8 +615,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                ex.ResponseStatus.PrintDump();
-
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(Exception).Name));
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Exception).Name));
                 Assert.That(ex.ResponseStatus.Message, Is.EqualTo("Batch Throws"));

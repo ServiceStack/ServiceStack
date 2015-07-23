@@ -355,7 +355,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
 
             var execOrderPriorities = execOrder.ToList().ConvertAll(x => x.Priority);
-            execOrderPriorities.PrintDump();
             Assert.That(execOrderPriorities, Is.EquivalentTo(new[] { int.MinValue, -100, -90, -80, 0, 0 }));
         }
     }

@@ -38,7 +38,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			catch (WebServiceException ex)
 			{
 				("Error while creating Admin User: " + ex.Message).Print();
-				ex.ResponseDto.PrintDump();
 			}
 			return registration;
 		}

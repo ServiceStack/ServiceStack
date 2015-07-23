@@ -81,7 +81,6 @@ namespace ServiceStack.Common.Tests
                 Assert.That(c.TryResolve<IDtoBValidator>(), Is.Not.Null);
 
                 var response = appHost.ExecuteService(new DtoA());
-                response.PrintDump();
             }
         }
     }

@@ -176,8 +176,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response1 = client.Get<IocScopeResponse>("iocscope");
             var response2 = client.Get<IocScopeResponse>("iocscope");
 
-            response1.PrintDump();
-
             Assert.That(response2.Results[typeof(FunqSingletonScope).Name], Is.EqualTo(1));
             Assert.That(response2.Results[typeof(FunqRequestScope).Name], Is.EqualTo(2));
             Assert.That(response2.Results[typeof(FunqNoneScope).Name], Is.EqualTo(4));
@@ -195,9 +193,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = CreateClient();
             var response1 = client.Get<IocScopeResponse>("iocscopeasync");
             var response2 = client.Get<IocScopeResponse>("iocscopeasync");
-
-            response1.PrintDump();
-            response2.PrintDump();
 
             Assert.That(response2.Results[typeof(FunqSingletonScope).Name], Is.EqualTo(1));
             Assert.That(response2.Results[typeof(FunqRequestScope).Name], Is.EqualTo(2));
@@ -269,8 +264,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					typeof(AltDepDisposableProperty).Name,
 				};
 
-                response.Results.PrintDump();
-
                 Assert.That(expected.EquivalentTo(response.Results));
 
             }
@@ -295,8 +288,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					typeof(AltDepProperty).Name,
 					typeof(AltDepDisposableProperty).Name,
 				};
-
-                response.Results.PrintDump();
 
                 Assert.That(expected.EquivalentTo(response.Results));
 

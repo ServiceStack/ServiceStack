@@ -521,7 +521,6 @@ namespace RazorRockstars.Console.Files
         public void Does_allow_sending_collections(IServiceClient client)
         {
             var results = client.Send<List<Reqstar>>(new ReqstarsByNames { "Foo", "Foo2" });
-            results.PrintDump();
         }
 
         [Test, TestCaseSource("RestClients")]
