@@ -155,9 +155,11 @@ namespace ServiceStack
 
             if (res.IsClosed)
                 return true;
-
             using (Profiler.Current.Step("Executing Response Filters"))
             {
+                if (response == null)
+                    return res.IsClosed;
+
                 if (!req.IsMultiRequest() || !(response is IEnumerable))
                     return ApplyResponseFiltersSingle(req, res, response);
 
