@@ -1,15 +1,49 @@
 using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
-using ServiceStack.Server.Tests.Caching;
 using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Shared
 {
+    public class Item
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        protected bool Equals(Item other)
+        {
+            return Id == other.Id && string.Equals(Name, other.Name);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Item)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (Id * 397) ^ (Name != null ? Name.GetHashCode() : 0);
+            }
+        }
+    }
+
+    public class CustomAuthSession : AuthUserSession
+    {
+        [DataMember]
+        public string Custom { get; set; }
+    }
+
     [TestFixture]
     public abstract class CacheClientTestsBase
     {
@@ -37,13 +71,13 @@ namespace ServiceStack.Server.Tests.Shared
         [Test]
         public void Does_flush_all()
         {
-            3.Times(i => 
+            3.Times(i =>
                 Cache.Set(i.ToUrn<Item>(), new Item { Id = i, Name = "Name" + i }));
 
             Assert.That(Cache.Get<Item>(1.ToUrn<Item>()), Is.Not.Null);
 
             Cache.FlushAll();
-            
+
             Assert.That(Cache.Get<Item>(1.ToUrn<Item>()), Is.Null);
         }
 
@@ -245,9 +279,10 @@ namespace ServiceStack.Server.Tests.Shared
             var sessionA = new SessionFactory(CreateClient()).CreateSession("a");
             var sessionB = new SessionFactory(CreateClient()).CreateSession("b");
 
-            3.Times(i => {
-                             sessionA.Set("key" + i, "value" + i);
-                             sessionB.Set("key" + i, "value" + i);
+            3.Times(i =>
+            {
+                sessionA.Set("key" + i, "value" + i);
+                sessionB.Set("key" + i, "value" + i);
             });
 
             var value1 = sessionA.Get<String>("key1");
