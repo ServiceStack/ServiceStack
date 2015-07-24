@@ -138,15 +138,10 @@ namespace ServiceStack.Host.Handlers
                     response = TypeAccessor.Create(taskResponse.GetType())[taskResponse, "Result"];
                 }
 
-                response = HostContext.AppHost.ApplyResponseConverters(httpReq, response);
-                if (response != null)
-                {
-                    var hasResponseFilters = HostContext.GlobalResponseFilters.Count > 0
-                        || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
+                response = appHost.ApplyResponseConverters(httpReq, response);
 
-                    if (hasResponseFilters && HostContext.ApplyResponseFilters(httpReq, httpRes, response))
-                        return EmptyResponse(requestMsg, requestType);
-                }
+                if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
+                    return EmptyResponse(requestMsg, requestType);
 
                 var httpResult = response as IHttpResult;
                 if (httpResult != null)
