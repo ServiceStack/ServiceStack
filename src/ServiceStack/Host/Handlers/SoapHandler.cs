@@ -139,12 +139,14 @@ namespace ServiceStack.Host.Handlers
                 }
 
                 response = HostContext.AppHost.ApplyResponseConverters(httpReq, response);
+                if (response != null)
+                {
+                    var hasResponseFilters = HostContext.GlobalResponseFilters.Count > 0
+                        || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
 
-                var hasResponseFilters = HostContext.GlobalResponseFilters.Count > 0
-                    || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
-
-                if (hasResponseFilters && HostContext.ApplyResponseFilters(httpReq, httpRes, response))
-                    return EmptyResponse(requestMsg, requestType);
+                    if (hasResponseFilters && HostContext.ApplyResponseFilters(httpReq, httpRes, response))
+                        return EmptyResponse(requestMsg, requestType);
+                }
 
                 var httpResult = response as IHttpResult;
                 if (httpResult != null)
