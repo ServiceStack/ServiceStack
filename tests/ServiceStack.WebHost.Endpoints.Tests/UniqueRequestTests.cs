@@ -43,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class UniqueRequestTests
     {
-        private const string BaseUri = "http://localhost:8000";
+        private const string BaseUri = "http://localhost:8001";
         private UniqueRequestAppHost appHost;
 
         [TestFixtureSetUp]
