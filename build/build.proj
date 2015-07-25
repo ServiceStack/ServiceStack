@@ -78,12 +78,17 @@
         <Find>key="servicestack:license".*</Find>
         <ReplaceWith>key="servicestack:license" value="$([System.IO.File]::ReadAllText($(MSBuildProjectDirectory)/appsettings.license.txt))" /&gt;</ReplaceWith>
       </RegexTransform>
+      <!--Manually revert NLog to non-conflicting version="4" -->
+      <RegexTransform Include="$(NuGetPackageDir)/**/ServiceStack.Logging.NLog.nuspec">
+        <Find>version="4\.0\.1"</Find>
+        <ReplaceWith>version="4"</ReplaceWith>
+      </RegexTransform>
       <!--Update Min Dependency Version -->
       <RegexTransform Include="$(NuGetPackageDir)/**/*.nuspec">
         <Find>version="4\.0(\.\d+)?"</Find>
         <ReplaceWith>version="$(PackageVersion)"</ReplaceWith>
       </RegexTransform>
-      <!--Manually restore conflict package versions-->
+      <!--Manually restore NLog 4.0.1 Version-->
       <RegexTransform Include="$(NuGetPackageDir)/**/ServiceStack.Logging.NLog.nuspec">
         <Find>version="4"</Find>
         <ReplaceWith>version="4.0.1"</ReplaceWith>
