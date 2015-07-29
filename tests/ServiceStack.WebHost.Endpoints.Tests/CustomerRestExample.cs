@@ -8,9 +8,9 @@ using ServiceStack.OrmLite;
 
 namespace NewApi.Customers
 {
-    public class CustomerAppHost : AppHostHttpListenerBase
+    public class AppHost : AppSelfHostBase
     {
-        public CustomerAppHost() : base("Customer REST Example", typeof(CustomerService).Assembly) {}
+        public AppHost() : base("Customer REST Example", typeof(CustomerService).Assembly) {}
 
         public override void Configure(Container container)
         {
@@ -114,7 +114,7 @@ namespace NewApi.Customers
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            appHost = new CustomerAppHost()
+            appHost = new AppHost()
                 .Init()
                 .Start(BaseUri);
         }

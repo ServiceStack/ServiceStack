@@ -16,10 +16,11 @@ namespace ServiceStack.Auth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
-        [Obsolete("Use AuthFeature.MaxLoginAttempts")]
+        [Obsolete("Moved to AuthFeature.MaxLoginAttempts")]
         public int? MaxLoginAttempts
         {
-            set { throw new NotImplementedException("Use AuthFeature.MaxLoginAttempts"); }
+            get { return null; }
+            private set { throw new NotImplementedException("Use AuthFeature.MaxLoginAttempts"); }
         }
 
         private readonly IDbConnectionFactory dbFactory;
