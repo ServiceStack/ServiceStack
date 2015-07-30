@@ -272,6 +272,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string FirstName { get; set; }
     }
 
+    [Route("/OrRockstarsFields")]
+    public class QueryOrRockstarsFields : QueryBase<Rockstar>
+    {
+        [QueryField(Term = QueryTerm.Or)]
+        public string FirstName { get; set; }
+
+        [QueryField(Term = QueryTerm.Or)]
+        public string LastName { get; set; }
+    }
+
     [Query(QueryTerm.Or)]
     public class QueryGetRockstars : QueryBase<Rockstar>
     {
@@ -798,6 +808,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
             Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_execute_OR_QueryFilters_Fields()
+        {
+            var response = client.Get(new QueryOrRockstarsFields
+            {
+                FirstName = "Jim",
+                LastName = "Vedder",
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = Config.ListeningOn.CombineWith("OrRockstarsFields")
+                .AddQueryParam("FirstName", "Kurt")
+                .AddQueryParam("LastName", "Hendrix")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
         }
 
         [Test]
