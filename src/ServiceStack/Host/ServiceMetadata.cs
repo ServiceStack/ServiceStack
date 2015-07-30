@@ -45,10 +45,15 @@ namespace ServiceStack.Host
             var restrictTo = requestType.FirstAttribute<RestrictAttribute>()
                           ?? serviceType.FirstAttribute<RestrictAttribute>();
 
-            var reqFilterAttrs = FilterAttributeCache.GetRequestFilterAttributes(requestType);
+            var reqFilterAttrs = new[] { requestType, serviceType }
+                .SelectMany(x => x.AllAttributes<IHasRequestFilter>()).ToList();
+            var resFilterAttrs = (responseType != null ? new[] { responseType, serviceType } : new[] { serviceType })
+                .SelectMany(x => x.AllAttributes<IHasResponseFilter>()).ToList();
+
             var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
 
-            var operation = new Operation {
+            var operation = new Operation
+            {
                 ServiceType = serviceType,
                 RequestType = requestType,
                 ResponseType = responseType,
@@ -56,7 +61,7 @@ namespace ServiceStack.Host
                 Actions = GetImplementedActions(serviceType, requestType),
                 Routes = new List<RestPath>(),
                 RequestFilterAttributes = reqFilterAttrs,
-                ResponseFilterAttributes = FilterAttributeCache.GetResponseFilterAttributes(responseType),
+                ResponseFilterAttributes = resFilterAttrs,
                 RequiresAuthentication = authAttrs.Count > 0,
                 RequiredRoles = authAttrs.OfType<RequiredRoleAttribute>().SelectMany(x => x.RequiredRoles).ToList(),
                 RequiresAnyRole = authAttrs.OfType<RequiresAnyRoleAttribute>().SelectMany(x => x.RequiredRoles).ToList(),
@@ -65,13 +70,13 @@ namespace ServiceStack.Host
             };
 
             this.OperationsMap[requestType] = operation;
-			this.OperationNamesMap[operation.Name.ToLower()] = operation;
-			//this.OperationNamesMap[requestType.Name.ToLower()] = operation;
-			if (responseType != null)
-			{
-				this.ResponseTypes.Add(responseType);
-				this.OperationsResponseMap[responseType] = operation;
-			}
+            this.OperationNamesMap[operation.Name.ToLower()] = operation;
+            //this.OperationNamesMap[requestType.Name.ToLower()] = operation;
+            if (responseType != null)
+            {
+                this.ResponseTypes.Add(responseType);
+                this.OperationsResponseMap[responseType] = operation;
+            }
 
             //Only count non-core ServiceStack Services, i.e. defined outside of ServiceStack.dll or Swagger
             var nonCoreServicesCount = OperationsMap.Values
@@ -458,13 +463,13 @@ namespace ServiceStack.Host
 
     public class Operation
     {
-    	public string Name
-    	{
-    		get 
-			{
-				return RequestType.GetOperationName(); 
-			}
-    	}
+        public string Name
+        {
+            get
+            {
+                return RequestType.GetOperationName();
+            }
+        }
 
         public Type RequestType { get; set; }
         public Type ServiceType { get; set; }
@@ -473,8 +478,8 @@ namespace ServiceStack.Host
         public List<string> Actions { get; set; }
         public List<RestPath> Routes { get; set; }
         public bool IsOneWay { get { return ResponseType == null; } }
-        public IHasRequestFilter[] RequestFilterAttributes { get; set; }
-        public IHasResponseFilter[] ResponseFilterAttributes { get; set; }
+        public List<IHasRequestFilter> RequestFilterAttributes { get; set; }
+        public List<IHasResponseFilter> ResponseFilterAttributes { get; set; }
         public bool RequiresAuthentication { get; set; }
         public List<string> RequiredRoles { get; set; }
         public List<string> RequiresAnyRole { get; set; }
@@ -553,14 +558,15 @@ namespace ServiceStack.Host
     {
         public static OperationDto ToOperationDto(this Operation operation)
         {
-            var to = new OperationDto {
+            var to = new OperationDto
+            {
                 Name = operation.Name,
                 ResponseName = operation.IsOneWay ? null : operation.ResponseType.GetOperationName(),
                 ServiceName = operation.ServiceType.GetOperationName(),
                 Actions = operation.Actions,
                 Routes = operation.Routes.Map(x => x.Path),
             };
-            
+
             if (operation.RestrictTo != null)
             {
                 to.RestrictTo = operation.RestrictTo.AccessibleToAny.ToList().ConvertAll(x => x.ToString());
@@ -624,7 +630,7 @@ namespace ServiceStack.Host
             return !isRequestType ? defaultType : GetRequestParamType(op, attr.Name, defaultType);
         }
 
-        private static string GetRequestParamType(Operation op, string name, string defaultType="body")
+        private static string GetRequestParamType(Operation op, string name, string defaultType = "body")
         {
             if (op.Routes.Any(x => x.IsVariable(name)))
                 return "path";

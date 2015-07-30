@@ -36,9 +36,6 @@ namespace ServiceStack.Support.WebHost
 
         public static IHasRequestFilter[] GetRequestFilterAttributes(Type requestDtoType)
         {
-            if (requestDtoType == null)
-                return new IHasRequestFilter[0];
-
             IHasRequestFilter[] attrs;
             if (requestFilterAttributes.TryGetValue(requestDtoType, out attrs)) return attrs.ShallowCopy();
 
@@ -68,9 +65,6 @@ namespace ServiceStack.Support.WebHost
 
         public static IHasResponseFilter[] GetResponseFilterAttributes(Type responseDtoType)
         {
-            if (responseDtoType == null)
-                return new IHasResponseFilter[0];
-
             IHasResponseFilter[] attrs;
             if (responseFilterAttributes.TryGetValue(responseDtoType, out attrs)) return attrs.ShallowCopy();
 
