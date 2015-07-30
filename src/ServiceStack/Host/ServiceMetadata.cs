@@ -45,12 +45,15 @@ namespace ServiceStack.Host
             var restrictTo = requestType.FirstAttribute<RestrictAttribute>()
                           ?? serviceType.FirstAttribute<RestrictAttribute>();
 
+
             var reqFilterAttrs = new[] { requestType, serviceType }
                 .SelectMany(x => x.AllAttributes<IHasRequestFilter>()).ToList();
             var resFilterAttrs = (responseType != null ? new[] { responseType, serviceType } : new[] { serviceType })
                 .SelectMany(x => x.AllAttributes<IHasResponseFilter>()).ToList();
 
             var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
+            var actions = GetImplementedActions(serviceType, requestType);
+            authAttrs.AddRange(actions.SelectMany(x => x.AllAttributes<AuthenticateAttribute>()));
 
             var operation = new Operation
             {
@@ -58,7 +61,7 @@ namespace ServiceStack.Host
                 RequestType = requestType,
                 ResponseType = responseType,
                 RestrictTo = restrictTo,
-                Actions = GetImplementedActions(serviceType, requestType),
+                Actions = actions.Map(x => x.Name.ToUpper()),
                 Routes = new List<RestPath>(),
                 RequestFilterAttributes = reqFilterAttrs,
                 ResponseFilterAttributes = resFilterAttrs,
@@ -71,7 +74,6 @@ namespace ServiceStack.Host
 
             this.OperationsMap[requestType] = operation;
             this.OperationNamesMap[operation.Name.ToLower()] = operation;
-            //this.OperationNamesMap[requestType.Name.ToLower()] = operation;
             if (responseType != null)
             {
                 this.ResponseTypes.Add(responseType);
@@ -133,14 +135,13 @@ namespace ServiceStack.Host
             return op;
         }
 
-        public List<string> GetImplementedActions(Type serviceType, Type requestType)
+        public List<MethodInfo> GetImplementedActions(Type serviceType, Type requestType)
         {
             if (!typeof(IService).IsAssignableFrom(serviceType))
                 throw new NotSupportedException("All Services must implement IService");
 
             return serviceType.GetActions()
                 .Where(x => x.GetParameters()[0].ParameterType == requestType)
-                .Select(x => x.Name.ToUpper())
                 .ToList();
         }
 

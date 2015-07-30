@@ -50,8 +50,18 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string Name { get; set; }
     }
 
+    public class RequiresAuthAction : IReturn<RequiresAuthAction>
+    {
+        public string Name { get; set; }
+    }
+
     [RequiredRole("TheRole")]
     public class RequiresRoleRequest : IReturn<RequiresRoleRequest>
+    {
+        public string Name { get; set; }
+    }
+
+    public class RequiresRoleAction : IReturn<RequiresRoleAction>
     {
         public string Name { get; set; }
     }
@@ -107,6 +117,18 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         }
 
         public object Any(RequiresAnyPermissionRequest request)
+        {
+            return request;
+        }
+
+        [RequiredRole("TheRole")]
+        public object Any(RequiresRoleAction request)
+        {
+            return request;
+        }
+
+        [Authenticate]
+        public object Any(RequiresAuthAction request)
         {
             return request;
         }
