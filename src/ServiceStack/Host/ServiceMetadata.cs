@@ -5,6 +5,7 @@ using System.Reflection;
 using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -51,6 +52,8 @@ namespace ServiceStack.Host
                 RestrictTo = restrictTo,
                 Actions = GetImplementedActions(serviceType, requestType),
                 Routes = new List<RestPath>(),
+                RequestFilterAttributes = FilterAttributeCache.GetRequestFilterAttributes(requestType),
+                ResponseFilterAttributes = FilterAttributeCache.GetResponseFilterAttributes(responseType),
             };
 
 			this.OperationsMap[requestType] = operation;
@@ -462,6 +465,8 @@ namespace ServiceStack.Host
         public List<string> Actions { get; set; }
         public List<RestPath> Routes { get; set; }
         public bool IsOneWay { get { return ResponseType == null; } }
+        public IHasRequestFilter[] RequestFilterAttributes { get; set; }
+        public IHasResponseFilter[] ResponseFilterAttributes { get; set; }
     }
 
     public class OperationDto

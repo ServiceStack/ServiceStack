@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Web.UI;
+using ServiceStack.Host;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Templates;
 using ServiceStack.Web;
 
@@ -8,26 +11,31 @@ namespace ServiceStack.Metadata
 {
     public class IndexOperationsControl : System.Web.UI.Control
     {
-        public IRequest HttpRequest { get; set; }
+        public IRequest Request { get; set; }
         public string Title { get; set; }
         public List<string> OperationNames { get; set; }
         public IDictionary<int, string> Xsds { get; set; }
         public int XsdServiceTypesIndex { get; set; }
         public MetadataPagesConfig MetadataConfig { get; set; }
 
-        public string RenderRow(string operation)
+        public string RenderRow(string operationName)
         {
             var show = HostContext.DebugMode //Show in DebugMode
-                && !MetadataConfig.AlwaysHideInMetadata(operation); //Hide When [Restrict(VisibilityTo = None)]
+                && !MetadataConfig.AlwaysHideInMetadata(operationName); //Hide When [Restrict(VisibilityTo = None)]
 
             // use a fully qualified path if WebHostUrl is set
-            string baseUrl = HttpRequest.ResolveAbsoluteUrl("~/");
+            string baseUrl = Request.ResolveAbsoluteUrl("~/");
 
-            var opTemplate = new StringBuilder("<tr><th>{0}</th>");
+            var opType = HostContext.Metadata.GetOperationType(operationName);
+            var op = HostContext.Metadata.GetOperation(opType);
+
+            var icons = CreateIcons(op);
+
+            var opTemplate = new StringBuilder("<tr><th>" + icons + "{0}</th>");
             foreach (var config in MetadataConfig.AvailableFormatConfigs)
             {
                 var uri = baseUrl.CombineWith(config.DefaultMetadataUri);
-                if (MetadataConfig.IsVisible(HttpRequest, config.Format.ToFormat(), operation))
+                if (MetadataConfig.IsVisible(Request, config.Format.ToFormat(), operationName))
                 {
                     show = true;
                     opTemplate.AppendFormat(@"<td><a href=""{0}?op={{0}}"">{1}</a></td>", uri, config.Name);
@@ -40,7 +48,93 @@ namespace ServiceStack.Metadata
 
             opTemplate.Append("</tr>");
 
-            return show ? string.Format(opTemplate.ToString(), operation) : "";
+            return show ? string.Format(opTemplate.ToString(), operationName) : "";
+        }
+
+        private static string CreateIcons(Operation op)
+        {
+            var sbIcons = new StringBuilder();
+            var authAttrs = op.RequestFilterAttributes.OfType<AuthenticateAttribute>().ToList();
+            if (authAttrs.Count > 0)
+            {
+                sbIcons.Append("<i class=\"auth\" title=\"");
+
+                var requiredRoleAttrs = authAttrs.OfType<RequiredRoleAttribute>().ToList();
+                var requiresAnyRoleAttrs = authAttrs.OfType<RequiresAnyRoleAttribute>().ToList();
+                var requiredPermAttrs = authAttrs.OfType<RequiredPermissionAttribute>().ToList();
+                var requiresAnyPermAttrs = authAttrs.OfType<RequiresAnyPermissionAttribute>().ToList();
+
+                var hasRoles = requiredRoleAttrs.Count + requiresAnyRoleAttrs.Count > 0;
+                if (hasRoles)
+                {
+                    sbIcons.Append("Requires Roles:");
+                    var sbRoles = new StringBuilder();
+                    foreach (var attr in requiredRoleAttrs)
+                    {
+                        if (sbRoles.Length > 0)
+                            sbRoles.Append(",");
+
+                        foreach (var role in attr.RequiredRoles)
+                        {
+                            sbRoles.Append(" " + role);
+                        }
+                    }
+
+                    foreach (var attr in requiresAnyRoleAttrs)
+                    {
+                        if (sbRoles.Length > 0)
+                            sbRoles.Append(", ");
+
+                        foreach (var role in attr.RequiredRoles)
+                        {
+                            sbRoles.Append(" " + role + "?");
+                        }
+                    }
+                    sbIcons.Append(sbRoles);
+                }
+
+                var hasPermissions = requiredPermAttrs.Count + requiresAnyPermAttrs.Count > 0;
+                if (hasPermissions)
+                {
+                    if (hasRoles)
+                        sbIcons.Append(". ");
+
+                    sbIcons.Append("Requires Permissions:");
+                    var sbPermission = new StringBuilder();
+                    foreach (var attr in requiredPermAttrs)
+                    {
+                        if (sbPermission.Length > 0)
+                            sbPermission.Append(",");
+
+                        foreach (var permission in attr.RequiredPermissions)
+                        {
+                            sbPermission.Append(" " + permission);
+                        }
+                    }
+
+                    foreach (var attr in requiresAnyPermAttrs)
+                    {
+                        if (sbPermission.Length > 0)
+                            sbPermission.Append(",");
+
+                        foreach (var permission in attr.RequiredPermissions)
+                        {
+                            sbPermission.Append(" " + permission + "?");
+                        }
+                    }
+                    sbIcons.Append(sbPermission);
+                }
+
+                if (!hasRoles && !hasPermissions)
+                    sbIcons.Append("Requires Authentication");
+
+                sbIcons.Append("\"></i>");
+            }
+
+            var icons = sbIcons.Length > 0
+                ? "<span class=\"icons\">" + sbIcons + "</span>"
+                : "";
+            return icons;
         }
 
         protected override void Render(HtmlTextWriter output)

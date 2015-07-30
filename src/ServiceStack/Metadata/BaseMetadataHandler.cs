@@ -191,7 +191,7 @@ namespace ServiceStack.Metadata
         {
             var defaultPage = new IndexOperationsControl
             {
-                HttpRequest = httpReq,
+                Request = httpReq,
                 MetadataConfig = HostContext.MetadataPagesConfig,
                 Title = HostContext.ServiceName,
                 Xsds = XsdTypes.Xsds,

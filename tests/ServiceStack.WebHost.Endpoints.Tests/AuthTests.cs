@@ -171,6 +171,73 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Authenticate]
+    public class RequiresAuthRequest : IReturn<RequiresAuthRequest>
+    {
+        public string Name { get; set; }
+    }
+
+    [RequiredRole("TheRole")]
+    public class RequiresRoleRequest : IReturn<RequiresRoleRequest>
+    {
+        public string Name { get; set; }
+    }
+
+    [RequiresAnyRole("TheRole", "TheRole2")]
+    public class RequiresAnyRoleRequest : IReturn<RequiresAnyRoleRequest>
+    {
+        public List<string> Roles { get; set; }
+
+        public RequiresAnyRoleRequest()
+        {
+            Roles = new List<string>();
+        }
+    }
+
+    [RequiredPermission("ThePermission")]
+    public class RequiresPermissionRequest : IReturn<RequiresPermissionRequest>
+    {
+        public string Name { get; set; }
+    }
+
+    [RequiresAnyPermission("ThePermission", "ThePermission2")]
+    public class RequiresAnyPermissionRequest : IReturn<RequiresAnyPermissionRequest>
+    {
+        public List<string> Permissions { get; set; }
+
+        public RequiresAnyPermissionRequest()
+        {
+            Permissions = new List<string>();
+        }
+    }
+
+    public class RequiresRolesAndPermissionsOnRequestService : Service
+    {
+        public object Any(RequiresAuthRequest request)
+        {
+            return request;
+        }
+
+        public object Any(RequiresRoleRequest request)
+        {
+            return request;
+        }
+
+        public object Any(RequiresAnyRoleRequest request)
+        {
+            return request;
+        }
+
+        public object Any(RequiresPermissionRequest request)
+        {
+            return request;
+        }
+
+        public object Any(RequiresAnyPermissionRequest request)
+        {
+            return request;
+        }
+    }
     public class CustomUserSession : WebSudoAuthUserSession
     {
         public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
