@@ -123,6 +123,9 @@
     <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.woff" />
     <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.woff2" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="swagger-ui\patch.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
