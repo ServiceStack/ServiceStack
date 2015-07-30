@@ -45,6 +45,9 @@ namespace ServiceStack.Host
             var restrictTo = requestType.FirstAttribute<RestrictAttribute>()
                           ?? serviceType.FirstAttribute<RestrictAttribute>();
 
+            var reqFilterAttrs = FilterAttributeCache.GetRequestFilterAttributes(requestType);
+            var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
+
             var operation = new Operation {
                 ServiceType = serviceType,
                 RequestType = requestType,
@@ -52,11 +55,16 @@ namespace ServiceStack.Host
                 RestrictTo = restrictTo,
                 Actions = GetImplementedActions(serviceType, requestType),
                 Routes = new List<RestPath>(),
-                RequestFilterAttributes = FilterAttributeCache.GetRequestFilterAttributes(requestType),
+                RequestFilterAttributes = reqFilterAttrs,
                 ResponseFilterAttributes = FilterAttributeCache.GetResponseFilterAttributes(responseType),
+                RequiresAuthentication = authAttrs.Count > 0,
+                RequiredRoles = authAttrs.OfType<RequiredRoleAttribute>().SelectMany(x => x.RequiredRoles).ToList(),
+                RequiresAnyRole = authAttrs.OfType<RequiresAnyRoleAttribute>().SelectMany(x => x.RequiredRoles).ToList(),
+                RequiredPermissions = authAttrs.OfType<RequiredPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
+                RequiresAnyPermission = authAttrs.OfType<RequiresAnyPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
             };
 
-			this.OperationsMap[requestType] = operation;
+            this.OperationsMap[requestType] = operation;
 			this.OperationNamesMap[operation.Name.ToLower()] = operation;
 			//this.OperationNamesMap[requestType.Name.ToLower()] = operation;
 			if (responseType != null)
@@ -467,6 +475,11 @@ namespace ServiceStack.Host
         public bool IsOneWay { get { return ResponseType == null; } }
         public IHasRequestFilter[] RequestFilterAttributes { get; set; }
         public IHasResponseFilter[] ResponseFilterAttributes { get; set; }
+        public bool RequiresAuthentication { get; set; }
+        public List<string> RequiredRoles { get; set; }
+        public List<string> RequiresAnyRole { get; set; }
+        public List<string> RequiredPermissions { get; set; }
+        public List<string> RequiresAnyPermission { get; set; }
     }
 
     public class OperationDto

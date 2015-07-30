@@ -54,46 +54,34 @@ namespace ServiceStack.Metadata
         private static string CreateIcons(Operation op)
         {
             var sbIcons = new StringBuilder();
-            var authAttrs = op.RequestFilterAttributes.OfType<AuthenticateAttribute>().ToList();
-            if (authAttrs.Count > 0)
+            if (op.RequiresAuthentication)
             {
                 sbIcons.Append("<i class=\"auth\" title=\"");
 
-                var requiredRoleAttrs = authAttrs.OfType<RequiredRoleAttribute>().ToList();
-                var requiresAnyRoleAttrs = authAttrs.OfType<RequiresAnyRoleAttribute>().ToList();
-                var requiredPermAttrs = authAttrs.OfType<RequiredPermissionAttribute>().ToList();
-                var requiresAnyPermAttrs = authAttrs.OfType<RequiresAnyPermissionAttribute>().ToList();
-
-                var hasRoles = requiredRoleAttrs.Count + requiresAnyRoleAttrs.Count > 0;
+                var hasRoles = op.RequiredRoles.Count + op.RequiresAnyRole.Count > 0;
                 if (hasRoles)
                 {
                     sbIcons.Append("Requires Roles:");
                     var sbRoles = new StringBuilder();
-                    foreach (var attr in requiredRoleAttrs)
+                    foreach (var role in op.RequiredRoles)
                     {
                         if (sbRoles.Length > 0)
                             sbRoles.Append(",");
 
-                        foreach (var role in attr.RequiredRoles)
-                        {
-                            sbRoles.Append(" " + role);
-                        }
+                        sbRoles.Append(" " + role);
                     }
 
-                    foreach (var attr in requiresAnyRoleAttrs)
+                    foreach (var role in op.RequiresAnyRole)
                     {
                         if (sbRoles.Length > 0)
                             sbRoles.Append(", ");
 
-                        foreach (var role in attr.RequiredRoles)
-                        {
-                            sbRoles.Append(" " + role + "?");
-                        }
+                        sbRoles.Append(" " + role + "?");
                     }
                     sbIcons.Append(sbRoles);
                 }
 
-                var hasPermissions = requiredPermAttrs.Count + requiresAnyPermAttrs.Count > 0;
+                var hasPermissions = op.RequiredPermissions.Count + op.RequiresAnyPermission.Count > 0;
                 if (hasPermissions)
                 {
                     if (hasRoles)
@@ -101,26 +89,20 @@ namespace ServiceStack.Metadata
 
                     sbIcons.Append("Requires Permissions:");
                     var sbPermission = new StringBuilder();
-                    foreach (var attr in requiredPermAttrs)
+                    foreach (var permission in op.RequiredPermissions)
                     {
                         if (sbPermission.Length > 0)
                             sbPermission.Append(",");
 
-                        foreach (var permission in attr.RequiredPermissions)
-                        {
-                            sbPermission.Append(" " + permission);
-                        }
+                        sbPermission.Append(" " + permission);
                     }
 
-                    foreach (var attr in requiresAnyPermAttrs)
+                    foreach (var permission in op.RequiresAnyPermission)
                     {
                         if (sbPermission.Length > 0)
                             sbPermission.Append(",");
 
-                        foreach (var permission in attr.RequiredPermissions)
-                        {
-                            sbPermission.Append(" " + permission + "?");
-                        }
+                        sbPermission.Append(" " + permission + "?");
                     }
                     sbIcons.Append(sbPermission);
                 }
