@@ -59,7 +59,6 @@ namespace ServiceStack
         public static void EndRequest(this IResponse httpRes, bool skipHeaders = false)
         {
             httpRes.EndHttpHandlerRequest(skipHeaders: skipHeaders);
-            HostContext.CompleteRequest(httpRes.Request);
         }
 
         /// <summary>

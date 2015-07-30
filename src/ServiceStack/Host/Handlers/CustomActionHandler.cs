@@ -23,6 +23,7 @@ namespace ServiceStack.Host.Handlers
                 return;
 
             Action(httpReq, httpRes);
+            httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
 
         public override void ProcessRequest(HttpContextBase context)

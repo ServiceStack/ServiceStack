@@ -30,6 +30,7 @@ namespace ServiceStack.Host.Handlers
                 response.StatusCode = (int)HttpStatusCode.Redirect;
                 response.AddHeader(HttpHeaders.Location, defaultUrl);
             }
+            response.EndHttpHandlerRequest(skipHeaders:true);
         }
 
         /// <summary>
@@ -52,7 +53,7 @@ namespace ServiceStack.Host.Handlers
             {
                 context.Response.Redirect(defaultUrl);
             }
-
+            context.EndHttpHandlerRequest(skipHeaders: true);
         }
 
         public override bool IsReusable

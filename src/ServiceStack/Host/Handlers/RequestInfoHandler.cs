@@ -224,6 +224,7 @@ namespace ServiceStack.Host.Handlers
             var json = JsonSerializer.SerializeToString(response);
             httpRes.ContentType = MimeTypes.Json;
             httpRes.Write(json);
+            httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
 
         public override void ProcessRequest(HttpContextBase context)
