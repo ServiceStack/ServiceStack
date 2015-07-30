@@ -89,6 +89,38 @@ namespace ServiceStack.Metadata
                     sb.AppendFormat("<h3 id='desc'>{0}</div>", ConvertToHtml(description));
                 }
 
+                if (op.RequiresAuthentication)
+                {
+                    sb.AppendLine("<table class='authentication'>" +
+                        "<caption><i class='auth' style='float:left'></i><b>&nbsp;Requires Authentication</b></caption>");
+                    sb.Append("<tr>");
+
+                    if (!op.RequiredRoles.IsEmpty())
+                    {
+                        var plural = op.RequiredRoles.Count > 1 ? "s" : "";
+                        sb.Append("<td>Required role{0}:</td><td>{1}</td>".Fmt(plural, string.Join(", ", op.RequiredRoles)));
+                    }
+                    if (!op.RequiresAnyRole.IsEmpty())
+                    {
+                        var plural = op.RequiresAnyRole.Count > 1 ? "Requires any of the roles" : "Requires the role";
+                        sb.Append("<td>{0}:</td><td>{1}</td>".Fmt(plural, string.Join(", ", op.RequiresAnyRole)));
+                    }
+
+                    if (!op.RequiredPermissions.IsEmpty())
+                    {
+                        var plural = op.RequiredPermissions.Count > 1 ? "s" : "";
+                        sb.Append("<td>Required permission{0}:</td><td>{1}</td>".Fmt(plural, string.Join(", ", op.RequiredPermissions)));
+                    }
+                    if (!op.RequiresAnyPermission.IsEmpty())
+                    {
+                        var plural = op.RequiresAnyPermission.Count > 1 ? "Requires any of the permissions" : "Requires the permission";
+                        sb.Append("<td>{0}:</td><td>{1}</td>".Fmt(plural, string.Join(", ", op.RequiresAnyPermission)));
+                    }
+
+                    sb.Append("</tr>");
+                    sb.Append("</table>");
+                }
+
                 if (op.Routes.Count > 0)
                 {
                     sb.Append("<table class='routes'>");

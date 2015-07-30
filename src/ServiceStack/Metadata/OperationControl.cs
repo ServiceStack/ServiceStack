@@ -1,7 +1,6 @@
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Templates;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
@@ -14,7 +13,7 @@ namespace ServiceStack.Metadata
         {
             set
             {
-                this.ContentType = ServiceStack.ContentFormat.ToContentType(value);
+                this.ContentType = value.ToContentType();
                 this.ContentFormat = ServiceStack.ContentFormat.GetContentFormat(value);
             }
         }
