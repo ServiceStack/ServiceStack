@@ -11,6 +11,7 @@ using ServiceStack.Formats;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -200,7 +201,14 @@ namespace ServiceStack
                             }
 
                             Log.DebugFormat("Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
-                            response.AddHeader(responseHeaders.Key, responseHeaders.Value);
+                            if (Env.IsMono && responseHeaders.Key.EqualsIgnoreCase(HttpHeaders.ContentType))
+                            {
+                                response.ContentType = responseHeaders.Value;
+                            }
+                            else
+                            {
+                                response.AddHeader(responseHeaders.Key, responseHeaders.Value);
+                            }
                         }
                     }
 
