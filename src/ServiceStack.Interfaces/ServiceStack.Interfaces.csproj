@@ -138,6 +138,7 @@
     <Compile Include="IO\IEndpoint.cs" />
     <Compile Include="IQuery.cs" />
     <Compile Include="IReceiver.cs" />
+    <Compile Include="IRequiresSchema.cs" />
     <Compile Include="IRestGateway.cs" />
     <Compile Include="IEncryptedClient.cs" />
     <Compile Include="Logging\DebugLogFactory.cs" />

@@ -9,15 +9,6 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Creates the required missing tables or DB schema 
         /// </summary>
-        public static void InitSchema(this IAuthRepository authRepo)
-        {
-            var requiresSchema = authRepo as IRequiresSchema;
-            if (requiresSchema != null)
-            {
-                requiresSchema.InitSchema();
-            }
-        }
-
         public static void AssignRoles(this IAuthRepository UserAuthRepo, IUserAuth userAuth,
             ICollection<string> roles = null, ICollection<string> permissions = null)
         {

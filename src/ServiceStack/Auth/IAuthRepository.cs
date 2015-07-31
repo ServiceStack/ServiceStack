@@ -38,12 +38,4 @@ namespace ServiceStack.Auth
         void UnAssignRoles(string userAuthId,
             ICollection<string> roles = null, ICollection<string> permissions = null);
     }
-
-    public interface IRequiresSchema
-    {
-        /// <summary>
-        /// Creates the required missing tables or DB schema 
-        /// </summary>
-        void InitSchema();
-    }
 }

@@ -447,17 +447,8 @@ namespace ServiceStack.Caching
         public DateTime ModifiedDate { get; set; }
     }
 
-    public static class CacheExtensions
+    public static class DbExtensions
     {
-        public static void InitSchema(this ICacheClient cache)
-        {
-            var requiresSchema = cache as IRequiresSchema;
-            if (requiresSchema != null)
-            {
-                requiresSchema.InitSchema();
-            }
-        }
-
         public static string Serialize<T>(this IDbConnection db, T value)
         {
             return db.GetDialectProvider().StringSerializer.SerializeToString(value);
