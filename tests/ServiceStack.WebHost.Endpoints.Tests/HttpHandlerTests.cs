@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Threading;
 using Funq;
@@ -8,6 +10,39 @@ using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    [Route("/customresult")]
+    public class CustomResult { }
+
+    public class CustomXmlResult : IStreamWriter, IHasOptions
+    {
+        public IDictionary<string, string> Options { get; set; }
+
+        public CustomXmlResult()
+        {
+            Options = new Dictionary<string, string>
+            {
+                { "Content-Type", "application/xml" },
+                { "Content-Disposition", "attachement; filename=\"file.xml\"" },
+            };
+        }
+
+        public void WriteTo(Stream stream)
+        {
+            stream.Write("<Foo bar=\"baz\">quz</Foo>");
+        }
+    }
+
+
+
+    public class CustomService : Service
+    {
+        public object Any(CustomResult request)
+        {
+            return new CustomXmlResult();
+        }
+    }
+
+
     public class HttpHandlerTests
     {
         private readonly ServiceStackHost appHost;
@@ -71,6 +106,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(BeginRequestCount, Is.EqualTo(1));
                 Assert.That(EndRequestCount, Is.EqualTo(1));
             }
+        }
+
+        [Test]
+        public void Can_set_Headers_with_Custom_Result()
+        {
+            var xml = Config.ListeningOn.CombineWith("customresult")
+                .GetStringFromUrl(responseFilter: res => {
+                    Assert.That(res.ContentType, Is.EqualTo("application/xml"));
+                    Assert.That(res.Headers["Content-Disposition"], Is.EqualTo("attachement; filename=\"file.xml\""));
+                });
+
+            Assert.That(xml, Is.EqualTo("<Foo bar=\"baz\">quz</Foo>"));
         }
 
     }
