@@ -29,7 +29,7 @@ namespace ServiceStack.RabbitMq
             {
                 var now = DateTime.UtcNow;
 
-                while (timeOut == null || (DateTime.Now - now) < timeOut.Value)
+                while (timeOut == null || (DateTime.UtcNow - now) < timeOut.Value)
                 {
                     var basicMsg = GetMessage(queueName, noAck: false);
                     if (basicMsg != null)
