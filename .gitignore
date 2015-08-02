@@ -38,6 +38,7 @@ build/*.dll
 *.user
 *.userprefs
 packages/
+.vs/
 
 release/latest/
 *.nupkg
