@@ -237,7 +237,7 @@ namespace ServiceStack
                 "Request with '{0}' is not allowed".Fmt(requestAttrs));
         }
 
-        public static string ResolveLocalizedString(string text, IRequest request=null)
+        public static string ResolveLocalizedString(string text, IRequest request = null)
         {
             return AssertAppHost().ResolveLocalizedString(text, request);
         }
@@ -326,7 +326,7 @@ namespace ServiceStack
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a ASP.NET HttpContext.
         /// </summary>
-        public static T ResolveService<T>(HttpContextBase httpCtx=null) where T : class, IRequiresRequest
+        public static T ResolveService<T>(HttpContextBase httpCtx = null) where T : class, IRequiresRequest
         {
             var httpReq = httpCtx != null ? httpCtx.ToRequest() : GetCurrentRequest();
             return ResolveService(httpReq, AssertAppHost().Container.Resolve<T>());

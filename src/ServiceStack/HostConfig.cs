@@ -57,14 +57,14 @@ namespace ServiceStack
                 UseHttpsLinks = false,
                 DebugMode = false,
                 DefaultDocuments = new List<string> {
-	                "default.htm",
-	                "default.html",
-	                "default.cshtml",
-	                "default.md",
-	                "index.htm",
-	                "index.html",
-	                "default.aspx",
-	                "default.ashx",
+                    "default.htm",
+                    "default.html",
+                    "default.cshtml",
+                    "default.md",
+                    "index.htm",
+                    "index.html",
+                    "default.aspx",
+                    "default.ashx",
                 },
                 GlobalResponseHeaders = new Dictionary<string, string> {
                     { "Vary", "Accept" },
@@ -73,9 +73,9 @@ namespace ServiceStack
                 IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
                 AllowFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    "js", "ts", "jsx", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", "pdf",  
+                    "js", "ts", "jsx", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", "pdf",
                     "jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg",
-                    "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
+                    "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv",
                     "flv", "swf", "xap", "xaml", "ogg", "mp4", "webm", "eot", "ttf", "woff", "woff2", "map"
                 },
                 DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
@@ -89,15 +89,15 @@ namespace ServiceStack
                 MarkdownGlobalHelpers = new Dictionary<string, Type>(),
                 HtmlReplaceTokens = new Dictionary<string, string>(),
                 AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
-		            { "image/gif", TimeSpan.FromHours(1) },
-		            { "image/png", TimeSpan.FromHours(1) },
-		            { "image/jpeg", TimeSpan.FromHours(1) },
-	            },
+                    { "image/gif", TimeSpan.FromHours(1) },
+                    { "image/png", TimeSpan.FromHours(1) },
+                    { "image/jpeg", TimeSpan.FromHours(1) },
+                },
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Json, },
                 RouteNamingConventions = new List<RouteNamingConventionDelegate> {
-		            RouteNamingConvention.WithRequestDtoName,
-		            RouteNamingConvention.WithMatchingAttributes,
-		            RouteNamingConvention.WithMatchingPropertyNames
+                    RouteNamingConvention.WithRequestDtoName,
+                    RouteNamingConvention.WithMatchingAttributes,
+                    RouteNamingConvention.WithMatchingPropertyNames
                 },
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
                 OnlySendSessionCookiesSecurely = false,
@@ -112,18 +112,18 @@ namespace ServiceStack
                 RedirectToDefaultDocuments = false,
                 StripApplicationVirtualPath = false,
                 ScanSkipPaths = new List<string> {
-                    "/obj/", 
+                    "/obj/",
                     "/bin/",
                     "/node_modules/",
                     "/bower_components/",
                 },
                 IgnoreWarningsOnPropertyNames = new List<string> {
-                    Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, 
+                    Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret,
                     Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version.ToPascalCase(),
                 },
                 XmlWriterSettings = new XmlWriterSettings
                 {
-                    Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier:false),
+                    Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
                 }
             };
 

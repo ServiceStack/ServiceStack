@@ -116,9 +116,10 @@ namespace ServiceStack
                     cacheClient.Set(cacheKeySerializedZip, compressedSerializedDto, expireCacheIn);
 
                     return (compressedSerializedDto != null)
-                        ? new CompressedResult(compressedSerializedDto, compressionType, request.ResponseContentType) {
-                                Status = request.Response.StatusCode
-                            }
+                        ? new CompressedResult(compressedSerializedDto, compressionType, request.ResponseContentType)
+                        {
+                            Status = request.Response.StatusCode
+                        }
                         : null;
                 }
 
@@ -137,8 +138,8 @@ namespace ServiceStack
         public static void ClearCaches(this ICacheClient cacheClient, params string[] cacheKeys)
         {
             var allContentTypes = new List<string>(HostContext.ContentTypes.ContentTypeFormats.Values) {
-			    MimeTypes.XmlText, MimeTypes.JsonText, MimeTypes.JsvText
-			};
+                MimeTypes.XmlText, MimeTypes.JsonText, MimeTypes.JsvText
+            };
 
             var allCacheKeys = new List<string>();
 

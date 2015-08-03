@@ -63,7 +63,7 @@ namespace ServiceStack
         {
             this.AtRestPath = "/requestlogs";
             this.Capacity = capacity;
-            this.RequiredRoles = new [] { RoleNames.Admin };
+            this.RequiredRoles = new[] { RoleNames.Admin };
             this.EnableErrorTracking = true;
             this.EnableRequestBodyTracking = false;
             this.ExcludeRequestDtoTypes = new[] { typeof(RequestLogs) };
@@ -89,7 +89,8 @@ namespace ServiceStack
 
             if (EnableRequestBodyTracking)
             {
-                appHost.PreRequestFilters.Insert(0, (httpReq, httpRes) => {
+                appHost.PreRequestFilters.Insert(0, (httpReq, httpRes) =>
+                {
                     httpReq.UseBufferedStream = EnableRequestBodyTracking;
                 });
             }

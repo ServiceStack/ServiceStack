@@ -179,7 +179,8 @@ namespace ServiceStack
 
         public static void WriteEncryptedError(IRequest req, byte[] cryptKey, byte[] authKey, byte[] iv, Exception ex, string description = null)
         {
-            var error = new ErrorResponse {
+            var error = new ErrorResponse
+            {
                 ResponseStatus = ex.ToResponseStatus()
             };
 
@@ -189,7 +190,7 @@ namespace ServiceStack
 
             var httpError = ex as IHttpError;
 
-            req.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+            req.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             req.Response.StatusDescription = description ?? (httpError != null ? httpError.ErrorCode : ex.GetType().Name);
 
             var errorResponse = new EncryptedMessageResponse

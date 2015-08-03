@@ -28,7 +28,8 @@ namespace ServiceStack
         public string HandlerPath { get; set; }
 
         protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices) { }
+            : base(serviceName, assembliesWithServices)
+        { }
 
         protected AppHostHttpListenerBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
@@ -38,7 +39,7 @@ namespace ServiceStack
 
         protected override Task ProcessRequestAsync(HttpListenerContext context)
         {
-            if (string.IsNullOrEmpty(context.Request.RawUrl)) 
+            if (string.IsNullOrEmpty(context.Request.RawUrl))
                 return ((object)null).AsTaskResult();
 
             var operationName = context.Request.GetOperationName().UrlDecode();
@@ -56,7 +57,7 @@ namespace ServiceStack
                     httpReq.OperationName = operationName = restHandler.RestPath.RequestType.GetOperationName();
                 }
 
-                var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);                
+                var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
                 task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
                 //Matches Exceptions handled in HttpListenerBase.InitTask()
 

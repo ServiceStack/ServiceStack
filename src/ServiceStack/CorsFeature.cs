@@ -34,7 +34,7 @@ namespace ServiceStack
         /// <summary>
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
         /// </summary>
-        public CorsFeature(string allowedOrigins = "*", string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false, 
+        public CorsFeature(string allowedOrigins = "*", string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false,
             string exposeHeaders = null, int? maxAge = null)
         {
             this.allowedOrigins = allowedOrigins;
@@ -80,7 +80,8 @@ namespace ServiceStack
 
             if (allowOriginWhitelist != null)
             {
-                allowOriginFilter = (httpReq, httpRes) => {
+                allowOriginFilter = (httpReq, httpRes) =>
+                {
                     var origin = httpReq.Headers.Get(HttpHeaders.Origin);
                     if (allowOriginWhitelist.Contains(origin))
                     {
@@ -95,14 +96,15 @@ namespace ServiceStack
             {
                 //Handles Request and closes Response after emitting global HTTP Headers
                 var emitGlobalHeadersHandler = new CustomActionHandler(
-                    (httpReq, httpRes) => {
+                    (httpReq, httpRes) =>
+                    {
                         httpRes.EndRequest(); //PreRequestFilters already written in CustomActionHandler
                     });
 
                 appHost.RawHttpHandlers.Add(httpReq =>
                     httpReq.HttpMethod == HttpMethods.Options
                         ? emitGlobalHeadersHandler
-                        : null);                
+                        : null);
             }
         }
     }

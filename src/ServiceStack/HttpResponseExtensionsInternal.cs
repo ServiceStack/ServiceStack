@@ -79,7 +79,7 @@ namespace ServiceStack
 
         public static Task<bool> WriteToResponse(this IResponse httpRes, object result, string contentType)
         {
-            var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType); 
+            var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
             return httpRes.WriteToResponse(result, serializer, new BasicRequest { ContentType = contentType });
         }
 
@@ -95,7 +95,7 @@ namespace ServiceStack
                 httpRes.EndRequestWithNoContent();
                 return TrueTask;
             }
-            
+
             var httpResult = result as IHttpResult;
             if (httpResult != null)
             {
@@ -243,7 +243,7 @@ namespace ServiceStack
 
                     var responseText = result as string;
                     if (responseText != null)
-                    {                        
+                    {
                         if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
                         WriteTextToResponse(response, responseText, defaultContentType);
                         if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
@@ -269,7 +269,7 @@ namespace ServiceStack
                 {
                     HostContext.RaiseAndHandleUncaughtException(request, response, request.OperationName, originalEx);
 
-                    if (!HostContext.Config.WriteErrorsToResponse) 
+                    if (!HostContext.Config.WriteErrorsToResponse)
                         return originalEx.AsTaskException<bool>();
 
                     var errorMessage = String.Format(
@@ -333,7 +333,7 @@ namespace ServiceStack
             string contentType, string operationName, string errorMessage, Exception ex, int statusCode)
         {
             var errorDto = ex.ToErrorResponse();
-            if (HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto)) 
+            if (HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto))
                 return EmptyTask;
 
             if (httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html)
@@ -355,7 +355,7 @@ namespace ServiceStack
             {
                 serializer(httpReq, errorDto, httpRes);
             }
-            
+
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
 
             return EmptyTask;
@@ -384,7 +384,7 @@ namespace ServiceStack
 
             // For some exception types, we'll need to extract additional information in debug mode
             // (for example, so people can fix errors in their pages).
-            if(HostContext.DebugMode)
+            if (HostContext.DebugMode)
             {
                 var compileEx = ex as HttpCompileException;
                 if (compileEx != null && compileEx.Results.Errors.HasErrors)
@@ -397,8 +397,10 @@ namespace ServiceStack
                 }
             }
 
-            var dto = new ErrorResponse {
-                ResponseStatus = new ResponseStatus {
+            var dto = new ErrorResponse
+            {
+                ResponseStatus = new ResponseStatus
+                {
                     ErrorCode = ex.ToErrorCode(),
                     Message = ex.Message,
                     StackTrace = HostContext.DebugMode ? ex.StackTrace : null,

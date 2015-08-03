@@ -118,7 +118,7 @@ namespace ServiceStack
                     ?? SessionFactory.GetOrCreateSession(Request, Response));
             }
         }
-        
+
         public virtual IAuthSession GetSession(bool reload = false)
         {
             var req = this.Request;

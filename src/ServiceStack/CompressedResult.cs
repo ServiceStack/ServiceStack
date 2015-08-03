@@ -47,10 +47,12 @@ namespace ServiceStack
         }
 
         public CompressedResult(byte[] contents)
-            : this(contents, CompressionTypes.Deflate) { }
+            : this(contents, CompressionTypes.Deflate)
+        { }
 
         public CompressedResult(byte[] contents, string compressionType)
-            : this(contents, compressionType, DefaultContentType) { }
+            : this(contents, compressionType, DefaultContentType)
+        { }
 
         public CompressedResult(byte[] contents, string compressionType, string contentMimeType)
         {

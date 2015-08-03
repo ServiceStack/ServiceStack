@@ -107,7 +107,7 @@ namespace ServiceStack
             };
 
             // force deterministic initialization of static constructor
-            using (JsConfig.BeginScope()) {}
+            using (JsConfig.BeginScope()) { }
         }
 
         public abstract void Configure(Container container);

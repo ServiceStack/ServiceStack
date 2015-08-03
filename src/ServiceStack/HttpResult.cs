@@ -36,7 +36,8 @@ namespace ServiceStack
         }
 
         public HttpResult(object response, HttpStatusCode statusCode)
-            : this(response, null, statusCode) { }
+            : this(response, null, statusCode)
+        { }
 
         public HttpResult(object response, string contentType, HttpStatusCode statusCode)
         {
@@ -49,9 +50,10 @@ namespace ServiceStack
         }
 
         public HttpResult(FileInfo fileResponse, bool asAttachment)
-            : this(fileResponse, MimeTypes.GetMimeType(fileResponse.Name), asAttachment) { }
+            : this(fileResponse, MimeTypes.GetMimeType(fileResponse.Name), asAttachment)
+        { }
 
-        public HttpResult(FileInfo fileResponse, string contentType=null, bool asAttachment=false)
+        public HttpResult(FileInfo fileResponse, string contentType = null, bool asAttachment = false)
             : this(null, contentType ?? MimeTypes.GetMimeType(fileResponse.Name), HttpStatusCode.OK)
         {
             this.FileInfo = fileResponse;
@@ -319,7 +321,7 @@ namespace ServiceStack
                 {
                     ResponseStream.WritePartialTo(outputStream, rangeStart, rangeEnd);
                 }
-                finally 
+                finally
                 {
                     DisposeStream();
                 }
@@ -389,7 +391,7 @@ namespace ServiceStack
         /// Decorate the response with an additional client-side event to instruct participating 
         /// smart clients (e.g. ajax) with hints to transparently invoke client-side functionality
         /// </summary>
-        public static HttpResult TriggerEvent(object response, string eventName, string value=null)
+        public static HttpResult TriggerEvent(object response, string eventName, string value = null)
         {
             return new HttpResult(response)
             {

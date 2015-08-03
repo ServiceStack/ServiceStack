@@ -14,7 +14,7 @@ namespace ServiceStack
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public Regex ValidUserNameRegEx = AuthFeatureExtensions.ValidUserNameRegEx;
 
-        public Func<string, bool> IsValidUsernameFn { get; set; } 
+        public Func<string, bool> IsValidUsernameFn { get; set; }
 
         public static bool AddUserIdHttpHeader = true;
 
@@ -75,14 +75,14 @@ namespace ServiceStack
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
 
-            Func<string,string> localize = s => HostContext.AppHost.ResolveLocalizedString(s, null);
+            Func<string, string> localize = s => HostContext.AppHost.ResolveLocalizedString(s, null);
 
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]
                     {
-                        "/" + localize(LocalizedStrings.Auth), 
-                        "/" + localize(LocalizedStrings.Auth) + "/{provider}", 
-                        "/" + localize(LocalizedStrings.Authenticate), 
+                        "/" + localize(LocalizedStrings.Auth),
+                        "/" + localize(LocalizedStrings.Auth) + "/{provider}",
+                        "/" + localize(LocalizedStrings.Authenticate),
                         "/" + localize(LocalizedStrings.Authenticate) + "/{provider}",
                     } },
                 { typeof(AssignRolesService), new[]{ "/" + localize(LocalizedStrings.AssignRoles) } },
@@ -90,7 +90,7 @@ namespace ServiceStack
             };
 
             RegisterPlugins = new List<IPlugin> {
-                new SessionFeature()        
+                new SessionFeature()
             };
 
             AuthEvents = new List<IAuthEvents>();

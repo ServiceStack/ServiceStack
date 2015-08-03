@@ -156,7 +156,7 @@ namespace ServiceStack
                 sessionOptions = sessionOptions.IsNullOrEmpty()
                     ? headerOptions
                     : headerOptions + "," + sessionOptions;
-            }                
+            }
             return sessionOptions.IsNullOrEmpty()
                 ? new HashSet<string>()
                 : sessionOptions.Split(',').ToHashSet();

@@ -478,7 +478,7 @@ namespace ServiceStack
 
         public virtual bool ExportSoapType(Type type)
         {
-            return !type.IsGenericTypeDefinition() && 
+            return !type.IsGenericTypeDefinition() &&
                    !type.AllAttributes<ExcludeAttribute>()
                         .Any(attr => attr.Feature.HasFlag(Feature.Soap));
         }

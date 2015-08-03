@@ -37,7 +37,7 @@ namespace ServiceStack
                 },
                 IgnoreTypesInNamespaces = new List<string>
                 {
-                    "ServiceStack",    
+                    "ServiceStack",
                     "ServiceStack.Auth",
                     "ServiceStack.Caching",
                     "ServiceStack.Configuration",
@@ -49,10 +49,10 @@ namespace ServiceStack
                     "ServiceStack.Redis",
                     "ServiceStack.Web",
                     "ServiceStack.Admin",
-                    "ServiceStack.NativeTypes",    
-                    "ServiceStack.Api.Swagger",    
+                    "ServiceStack.NativeTypes",
+                    "ServiceStack.Api.Swagger",
                 },
-                DefaultNamespaces = new List<string> 
+                DefaultNamespaces = new List<string>
                 {
                     "System",
                     "System.Collections",

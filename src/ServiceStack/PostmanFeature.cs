@@ -314,7 +314,7 @@ namespace ServiceStack
             }
             else if (type.IsGenericType())
             {
-                var args = type.GetGenericArguments().Map(x => 
+                var args = type.GetGenericArguments().Map(x =>
                     x.AsFriendlyName(feature));
                 suffix = "<{0}>".Fmt(string.Join(",", args.ToArray()));
             }

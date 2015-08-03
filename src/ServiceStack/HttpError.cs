@@ -8,16 +8,19 @@ namespace ServiceStack
 {
     public class HttpError : Exception, IHttpError, IResponseStatusConvertible
     {
-        public HttpError() : this(null) {}
+        public HttpError() : this(null) { }
 
         public HttpError(string message)
-            : this(HttpStatusCode.InternalServerError, message) {}
+            : this(HttpStatusCode.InternalServerError, message)
+        { }
 
         public HttpError(HttpStatusCode statusCode, string errorCode)
-            : this(statusCode, errorCode, null) { }
+            : this(statusCode, errorCode, null)
+        { }
 
         public HttpError(int statusCode, string errorCode)
-            : this(statusCode, errorCode, null) { }
+            : this(statusCode, errorCode, null)
+        { }
 
         public HttpError(object responseDto, HttpStatusCode statusCode, string errorCode, string errorMessage)
             : this(statusCode, errorCode, errorMessage)
@@ -25,14 +28,15 @@ namespace ServiceStack
             this.Response = responseDto;
         }
 
-        public HttpError(object responseDto, int statusCode, string errorCode, string errorMessage = null, Exception innerException=null)
+        public HttpError(object responseDto, int statusCode, string errorCode, string errorMessage = null, Exception innerException = null)
             : this(statusCode, errorCode, errorMessage, innerException)
         {
             this.Response = responseDto;
         }
 
         public HttpError(HttpStatusCode statusCode, string errorCode, string errorMessage)
-            : this((int)statusCode, errorCode, errorMessage){}
+            : this((int)statusCode, errorCode, errorMessage)
+        { }
 
         public HttpError(int statusCode, string errorCode, string errorMessage, Exception innerException = null)
             : base(errorMessage ?? errorCode ?? statusCode.ToString(), innerException)
@@ -55,7 +59,7 @@ namespace ServiceStack
             {
                 this.ErrorCode = innerException.GetType().Name;
             }
-            this.Headers = new Dictionary<string, string>();			
+            this.Headers = new Dictionary<string, string>();
         }
 
         public string ErrorCode { get; set; }
@@ -63,7 +67,7 @@ namespace ServiceStack
         public string ContentType { get; set; }
 
         public Dictionary<string, string> Headers { get; set; }
-        
+
         public int Status { get; set; }
 
         public HttpStatusCode StatusCode
@@ -77,7 +81,7 @@ namespace ServiceStack
         public object Response { get; set; }
 
         public IContentTypeWriter ResponseFilter { get; set; }
-        
+
         public IRequest RequestContext { get; set; }
 
         public int PaddingLength { get; set; }
@@ -100,7 +104,7 @@ namespace ServiceStack
             var responseStatus = ResponseStatus;
             if (responseStatus != null)
                 return responseStatus.Errors ?? new List<ResponseError>();
-            
+
             return new List<ResponseError>();
         }
 

@@ -14,7 +14,8 @@ namespace ServiceStack
         }
 
         public WebSudoRequiredAttribute()
-            : this(ApplyTo.All) {}
+            : this(ApplyTo.All)
+        { }
 
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
@@ -26,8 +27,8 @@ namespace ServiceStack
                 return;
 
             var session = req.GetSession();
-            if (session != null && session.HasRole("Admin") 
-                || (this.HasWebSudo(req, session as IWebSudoAuthSession) 
+            if (session != null && session.HasRole("Admin")
+                || (this.HasWebSudo(req, session as IWebSudoAuthSession)
                 || this.DoHtmlRedirectIfConfigured(req, res)))
                 return;
 

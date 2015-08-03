@@ -82,8 +82,8 @@ namespace ServiceStack
                     return new Soap12MetadataHandler();
 
                 case "operations":
-                    return new CustomResponseHandler((httpReq, httpRes) => 
-                        HostContext.AppHost.HasAccessToMetadata(httpReq, httpRes) 
+                    return new CustomResponseHandler((httpReq, httpRes) =>
+                        HostContext.AppHost.HasAccessToMetadata(httpReq, httpRes)
                             ? HostContext.Metadata.GetOperationDtos()
                             : null, "Operations");
 

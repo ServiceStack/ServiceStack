@@ -16,7 +16,8 @@ namespace ServiceStack
             var validationResult = new ValidationErrorResult();
             foreach (var error in result.Errors)
             {
-                validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage, error.AttemptedValue) {
+                validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage, error.AttemptedValue)
+                {
                     Meta = error.CustomState as Dictionary<string, string> ?? error.PlaceholderValues
                 });
             }

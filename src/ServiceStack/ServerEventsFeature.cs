@@ -180,11 +180,11 @@ namespace ServiceStack
             if (req.Response.IsClosed)
                 return EmptyTask; //Allow short-circuiting in OnCreated callback
 
-            var heartbeatUrl = feature.HeartbeatPath != null 
+            var heartbeatUrl = feature.HeartbeatPath != null
                 ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath)).AddQueryParam("id", subscriptionId)
                 : null;
 
-            var unRegisterUrl = feature.UnRegisterPath != null 
+            var unRegisterUrl = feature.UnRegisterPath != null
                 ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath)).AddQueryParam("id", subscriptionId)
                 : null;
 
@@ -655,7 +655,7 @@ namespace ServiceStack
         {
             var subInfos = new List<SubscriptionInfo>();
             if (userId == null) return subInfos;
-            
+
             IEventSubscription[] subs;
             if (!UserIdSubcriptions.TryGetValue(userId, out subs))
                 return subInfos;

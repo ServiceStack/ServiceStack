@@ -40,7 +40,7 @@ namespace ServiceStack
         /// <param name="res">The http response wrapper</param>
         /// <param name="requestDto">The response DTO</param>
         public abstract void Execute(IRequest req, IResponse res, object responseDto);
-        
+
         /// <summary>
         /// Create a ShallowCopy of this instance.
         /// </summary>

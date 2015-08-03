@@ -19,7 +19,7 @@ namespace ServiceStack
         protected AppSelfHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
-            threadPoolManager = new SmartThreadPool(IdleTimeout, 
+            threadPoolManager = new SmartThreadPool(IdleTimeout,
                 maxWorkerThreads: Math.Max(16, Environment.ProcessorCount * 2));
         }
 

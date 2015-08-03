@@ -12,8 +12,8 @@ namespace ServiceStack
 
         public HttpStatusCode Status
         {
-            get { return (HttpStatusCode) StatusCode.GetValueOrDefault(200); }
-            set { StatusCode = (int) value; }
+            get { return (HttpStatusCode)StatusCode.GetValueOrDefault(200); }
+            set { StatusCode = (int)value; }
         }
 
         public int? StatusCode { get; set; }
@@ -27,7 +27,7 @@ namespace ServiceStack
             Value = value;
         }
 
-        public AddHeaderAttribute(HttpStatusCode status, string statusDescription=null)
+        public AddHeaderAttribute(HttpStatusCode status, string statusDescription = null)
         {
             Status = status;
             StatusDescription = statusDescription;

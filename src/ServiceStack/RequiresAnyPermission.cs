@@ -25,7 +25,8 @@ namespace ServiceStack
         }
 
         public RequiresAnyPermissionAttribute(params string[] permissions)
-            : this(ApplyTo.All, permissions) { }
+            : this(ApplyTo.All, permissions)
+        { }
 
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
@@ -66,7 +67,7 @@ namespace ServiceStack
         {
             return this.RequiredPermissions
                 .Any(requiredPermission => session != null
-                    && session.UserAuthId != null 
+                    && session.UserAuthId != null
                     && session.HasPermission(requiredPermission));
         }
     }
