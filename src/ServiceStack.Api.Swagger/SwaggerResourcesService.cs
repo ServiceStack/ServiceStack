@@ -76,7 +76,11 @@ namespace ServiceStack.Api.Swagger
             {
                 BasePath = basePath,
                 Apis = new List<SwaggerResourceRef>(),
-                ApiVersion = HostContext.Config.ApiVersion
+                ApiVersion = HostContext.Config.ApiVersion,
+                Info = new SwaggerInfo
+                {
+                    Title = HostContext.ServiceName,
+                }
             };
             var operations = HostContext.Metadata;
             var allTypes = operations.GetAllOperationTypes();

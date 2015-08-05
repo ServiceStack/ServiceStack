@@ -116,6 +116,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                 //var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);
                 SetConfig(new HostConfig {
                     AdminAuthSecret = AuthTestsBase.AuthSecret,
+                    ApiVersion = "0.2.0",
                     //EnableFeatures = onlyEnableFeatures,
                     DebugMode = true, //Show StackTraces for easier debugging
                 });
