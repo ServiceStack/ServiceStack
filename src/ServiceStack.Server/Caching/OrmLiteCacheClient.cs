@@ -418,13 +418,13 @@ namespace ServiceStack.Caching
             if (result == null)
                 return null;
 
-            if (result.ExpiryDate != null && result.ExpiryDate.Value.Kind != DateTimeKind.Utc)
+            if (result.ExpiryDate != null && result.ExpiryDate.Value.Kind == DateTimeKind.Local)
                 result.ExpiryDate = result.ExpiryDate.Value.ToUniversalTime();
 
-            if (result.CreatedDate.Kind != DateTimeKind.Utc)
+            if (result.CreatedDate.Kind == DateTimeKind.Local)
                 result.CreatedDate = result.CreatedDate.ToUniversalTime();
 
-            if (result.ModifiedDate.Kind != DateTimeKind.Utc)
+            if (result.ModifiedDate.Kind == DateTimeKind.Local)
                 result.ModifiedDate = result.ModifiedDate.ToUniversalTime();
 
             return result;
