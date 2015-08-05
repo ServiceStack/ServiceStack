@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using ServiceStack.Configuration;
@@ -66,30 +67,30 @@ namespace ServiceStack.Shared.Tests
     public class FunqRequestScope
     {
         public static int Count = 0;
-        public FunqRequestScope() { Count++; }
+        public FunqRequestScope() { Interlocked.Increment(ref Count); }
     }
 
     public class FunqSingletonScope
     {
         public static int Count = 0;
-        public FunqSingletonScope() { Count++; }
+        public FunqSingletonScope() { Interlocked.Increment(ref Count); }
     }
 
     public class FunqNoneScope
     {
         public static int Count = 0;
-        public FunqNoneScope() { Count++; }
+        public FunqNoneScope() { Interlocked.Increment(ref Count); }
     }
 
     public class FunqRequestScopeDisposable : IDisposable
     {
         public static int Count = 0;
         public static int DisposeCount = 0;
-        public FunqRequestScopeDisposable() { Count++; }
+        public FunqRequestScopeDisposable() { Interlocked.Increment(ref Count); }
 
         public void Dispose()
         {
-            DisposeCount++;
+            Interlocked.Increment(ref DisposeCount);
         }
     }
 
@@ -97,11 +98,11 @@ namespace ServiceStack.Shared.Tests
     {
         public static int Count = 0;
         public static int DisposeCount = 0;
-        public FunqSingletonScopeDisposable() { Count++; }
+        public FunqSingletonScopeDisposable() { Interlocked.Increment(ref Count); }
 
         public void Dispose()
         {
-            DisposeCount++;
+            Interlocked.Increment(ref DisposeCount);
         }
     }
 
@@ -109,11 +110,11 @@ namespace ServiceStack.Shared.Tests
     {
         public static int Count = 0;
         public static int DisposeCount = 0;
-        public FunqNoneScopeDisposable() { Count++; }
+        public FunqNoneScopeDisposable() { Interlocked.Increment(ref Count); }
 
         public void Dispose()
         {
-            DisposeCount++;
+            Interlocked.Increment(ref DisposeCount);
         }
     }
 
@@ -121,16 +122,16 @@ namespace ServiceStack.Shared.Tests
     {
         public static int Count = 0;
         public static int DisposeCount = 0;
-        public FunqRequestScopeDepDisposableProperty() { Count++; }
-        public void Dispose() { DisposeCount++; }
+        public FunqRequestScopeDepDisposableProperty() { Interlocked.Increment(ref Count); }
+        public void Dispose() { Interlocked.Increment(ref DisposeCount); }
     }
 
     public class AltRequestScopeDepDisposableProperty : IDisposable
     {
         public static int Count = 0;
         public static int DisposeCount = 0;
-        public AltRequestScopeDepDisposableProperty() { Count++; }
-        public void Dispose() { DisposeCount++; }
+        public AltRequestScopeDepDisposableProperty() { Interlocked.Increment(ref Count); }
+        public void Dispose() { Interlocked.Increment(ref DisposeCount); }
     }
 
     public class FunqDepCtor { }
@@ -142,12 +143,12 @@ namespace ServiceStack.Shared.Tests
     public class FunqDepDisposableProperty : IDisposable
     {
         public static int DisposeCount = 0;
-        public void Dispose() { DisposeCount++; }
+        public void Dispose() { Interlocked.Increment(ref DisposeCount); }
     }
     public class AltDepDisposableProperty : IDisposable
     {
         public static int DisposeCount = 0;
-        public void Dispose() { DisposeCount++; }
+        public void Dispose() { Interlocked.Increment(ref DisposeCount); }
     }
 
     [Route("/ioc")]
@@ -321,7 +322,7 @@ namespace ServiceStack.Shared.Tests
 
         public void Dispose()
         {
-            DisposeCount++;
+            Interlocked.Increment(ref DisposeCount);
         }
     }
 
@@ -406,7 +407,7 @@ namespace ServiceStack.Shared.Tests
 
         public void Dispose()
         {
-            DisposedCount++;
+            Interlocked.Increment(ref DisposedCount);
         }    
     }
 
@@ -470,7 +471,7 @@ namespace ServiceStack.Shared.Tests
 
         public void Dispose()
         {
-            DisposeCount++;
+            Interlocked.Increment(ref DisposeCount);
         }
     }
 
