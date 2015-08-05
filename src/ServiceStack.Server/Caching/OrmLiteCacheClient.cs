@@ -392,11 +392,18 @@ namespace ServiceStack.Caching
                 db.Delete<CacheEntry>(q => DateTime.UtcNow > q.ExpiryDate);
             }
 
+            foreach (var result in results)
+            {
+                NormalizeDates(result);
+            }
+
             return results;
         }
 
         public CacheEntry Verify(IDbConnection db, CacheEntry entry)
         {
+            entry = NormalizeDates(entry);
+
             if (entry != null &&
                 entry.ExpiryDate != null && DateTime.UtcNow > entry.ExpiryDate)
             {
@@ -406,11 +413,28 @@ namespace ServiceStack.Caching
             return entry;
         }
 
+        private static CacheEntry NormalizeDates(CacheEntry result)
+        {
+            if (result == null)
+                return null;
+
+            if (result.ExpiryDate != null && result.ExpiryDate.Value.Kind != DateTimeKind.Utc)
+                result.ExpiryDate = result.ExpiryDate.Value.ToUniversalTime();
+
+            if (result.CreatedDate.Kind != DateTimeKind.Utc)
+                result.CreatedDate = result.CreatedDate.ToUniversalTime();
+
+            if (result.ModifiedDate.Kind != DateTimeKind.Utc)
+                result.ModifiedDate = result.ModifiedDate.ToUniversalTime();
+
+            return result;
+        }
+
         public TimeSpan? GetTimeToLive(string key)
         {
             return Exec(db =>
             {
-                var cache = db.SingleById<CacheEntry>(key);
+                var cache = NormalizeDates(db.SingleById<CacheEntry>(key));
                 if (cache == null)
                     return null;
 
