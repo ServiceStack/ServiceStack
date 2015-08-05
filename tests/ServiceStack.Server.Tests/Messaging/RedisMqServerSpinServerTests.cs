@@ -13,10 +13,10 @@ namespace ServiceStack.Server.Tests.Messaging
     {
         public class Counters
         {
-            public int Spin0 { get; set; }
-            public int Spin10 { get; set; }
-            public int Spin100 { get; set; }
-            public int Spin1000 { get; set; }
+            public int Spin0;
+            public int Spin10;
+            public int Spin100;
+            public int Spin1000;
         }
 
         class Spin0
@@ -44,22 +44,22 @@ namespace ServiceStack.Server.Tests.Messaging
                 redis.FlushAll();
 
             var mqServer = new RedisMqServer(TestConfig.BasicClientManger);
-            mqServer.RegisterHandler<Spin0>(m => new Spin0 { Id = counter.Spin0++ });
+            mqServer.RegisterHandler<Spin0>(m => new Spin0 { Id = Interlocked.Increment(ref counter.Spin0) });
 
             mqServer.RegisterHandler<Spin10>(m => {
                 var sw = Stopwatch.StartNew();
                 while (sw.ElapsedMilliseconds < 10) Thread.SpinWait(100000);
-                return new Spin10 { Id = counter.Spin10++ };
+                return new Spin10 { Id = Interlocked.Increment(ref counter.Spin10) };
             });
             mqServer.RegisterHandler<Spin100>(m => {
                 var sw = Stopwatch.StartNew();
                 while (sw.ElapsedMilliseconds < 100) Thread.SpinWait(100000);
-                return new Spin100 { Id = counter.Spin100++ };
+                return new Spin100 { Id = Interlocked.Increment(ref counter.Spin100) };
             });
             mqServer.RegisterHandler<Spin1000>(m => {
                 var sw = Stopwatch.StartNew();
                 while (sw.ElapsedMilliseconds < 1000) Thread.SpinWait(100000);
-                return new Spin1000 { Id = counter.Spin1000++ };
+                return new Spin1000 { Id = Interlocked.Increment(ref counter.Spin1000) };
             });
 
 

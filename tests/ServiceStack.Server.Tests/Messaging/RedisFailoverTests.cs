@@ -238,7 +238,7 @@ namespace ServiceStack.Server.Tests.Messaging
             mqHost.RegisterHandler<Msg>(c =>
             {
                 var dto = c.GetBody();
-                received++;
+                Interlocked.Increment(ref received);
                 int count;
                 map.TryGetValue(dto.Host, out count);
                 map[dto.Host] = count + 1;

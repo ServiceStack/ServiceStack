@@ -86,7 +86,7 @@ namespace ServiceStack.Server.Tests.Messaging
             var reverseCalled = 0;
 
             var mqHost = CreateMqServer();
-            mqHost.RegisterHandler<Reverse>(x => { reverseCalled++; return x.GetBody().Value.Reverse(); });
+            mqHost.RegisterHandler<Reverse>(x => { Interlocked.Increment(ref reverseCalled); return x.GetBody().Value.Reverse(); });
 
             var mqClient = mqHost.CreateMessageQueueClient();
             Publish_4_messages(mqClient);
@@ -108,8 +108,8 @@ namespace ServiceStack.Server.Tests.Messaging
             var reverseCalled = 0;
             var rot13Called = 0;
 
-            mqHost.RegisterHandler<Reverse>(x => { reverseCalled++; return x.GetBody().Value.Reverse(); });
-            mqHost.RegisterHandler<Rot13>(x => { rot13Called++; return x.GetBody().Value.ToRot13(); });
+            mqHost.RegisterHandler<Reverse>(x => { Interlocked.Increment(ref reverseCalled); return x.GetBody().Value.Reverse(); });
+            mqHost.RegisterHandler<Rot13>(x => { Interlocked.Increment(ref rot13Called); return x.GetBody().Value.ToRot13(); });
 
             var mqClient = mqHost.CreateMessageQueueClient();
             mqClient.Publish(new Reverse { Value = "Hello" });
@@ -224,8 +224,8 @@ namespace ServiceStack.Server.Tests.Messaging
             var reverseCalled = 0;
             var rot13Called = 0;
 
-            mqHost.RegisterHandler<Reverse>(x => { reverseCalled++; return x.GetBody().Value.Reverse(); });
-            mqHost.RegisterHandler<Rot13>(x => { rot13Called++; return x.GetBody().Value.ToRot13(); });
+            mqHost.RegisterHandler<Reverse>(x => { Interlocked.Increment(ref reverseCalled); return x.GetBody().Value.Reverse(); });
+            mqHost.RegisterHandler<Rot13>(x => { Interlocked.Increment(ref rot13Called); return x.GetBody().Value.ToRot13(); });
             mqHost.RegisterHandler<AlwaysThrows>(x => { throw new Exception("Always Throwing! " + x.GetBody().Value); });
             mqHost.Start();
 
@@ -269,7 +269,7 @@ namespace ServiceStack.Server.Tests.Messaging
 
             mqHost.RegisterHandler<Incr>(m => {
                 Debug.WriteLine("In Incr #" + m.GetBody().Value);
-                called++;
+                Interlocked.Increment(ref called);
                 return m.GetBody().Value > 0 ? new Incr { Value = m.GetBody().Value - 1 } : null;
             });
 
@@ -326,7 +326,7 @@ namespace ServiceStack.Server.Tests.Messaging
                 var client = RedisClient.New();
                 foreach (var queueName in queueNames)
                 {
-                    var msgName = "msg:" + i++;
+                    var msgName = "msg:" + Interlocked.Increment(ref i);
                     Debug.WriteLine("SEND " + msgName);
                     client.PrependItemToList(queueName, msgName);
                 }
@@ -368,7 +368,7 @@ namespace ServiceStack.Server.Tests.Messaging
             var timesCalled = 0;
             var mqHost = CreateMqServer();
             mqHost.RegisterHandler<Wait>(m => {
-                timesCalled++;
+                Interlocked.Increment(ref timesCalled);
                 Thread.Sleep(m.GetBody().ForMs);
                 return null;
             }, noOfThreads);
