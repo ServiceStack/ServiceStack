@@ -77,6 +77,7 @@ namespace ServiceStack
         public List<string> DefaultImports { get; set; }
         public List<string> IncludeTypes { get; set; }
         public List<string> ExcludeTypes { get; set; }
+        public List<string> TreatTypesAsStrings { get; set; }
 
         public string GlobalNamespace { get; set; }
 

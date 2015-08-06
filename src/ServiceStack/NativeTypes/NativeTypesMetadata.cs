@@ -50,6 +50,7 @@ namespace ServiceStack.NativeTypes
                 DefaultImports = req.DefaultImports ?? defaults.DefaultImports,
                 IncludeTypes = TrimArgs(req.IncludeTypes ?? defaults.IncludeTypes),
                 ExcludeTypes = TrimArgs(req.ExcludeTypes ?? defaults.ExcludeTypes),
+                TreatTypesAsStrings = TrimArgs(req.TreatTypesAsStrings ?? defaults.TreatTypesAsStrings),
                 ExportAttributes = defaults.ExportAttributes,
                 IgnoreTypes = defaults.IgnoreTypes,
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
