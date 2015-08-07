@@ -72,11 +72,27 @@ namespace ServiceStack.ServiceInterface
         }
 
         static readonly RandomNumberGenerator randgen = new RNGCryptoServiceProvider();
-        internal static string CreateRandomSessionId()
+        public static string CreateRandomSessionId()
         {
-            var data = new byte[15];
-            randgen.GetBytes(data);
-            return Convert.ToBase64String(data);
+            string base64Id;
+            do
+            {
+                base64Id = CreateRandomBase64Id();
+            } while( IsBase64UrlFriendly( base64Id ) );
+            return base64Id;
+        }
+
+        public static string CreateRandomBase64Id()
+        {
+            var data = new byte[ 15 ];
+            randgen.GetBytes( data );
+            return Convert.ToBase64String( data );
+        }
+
+        static readonly char[] UrlUnsafeBase64Chars = new[] { '+', '/' };
+        public static bool IsBase64UrlFriendly( string base64 )
+        {
+            return base64.IndexOfAny( UrlUnsafeBase64Chars ) >= 0;
         }
 
         public static string CreatePermanentSessionId(this IHttpResponse res, IHttpRequest req)
