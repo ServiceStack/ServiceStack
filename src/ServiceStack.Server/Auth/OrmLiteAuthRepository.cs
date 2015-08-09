@@ -71,7 +71,7 @@ namespace ServiceStack.Auth
                 throw new ArgumentException(ErrorMessages.IllegalUsername, "UserName");
         }
 
-        public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
+        public virtual IUserAuth CreateUserAuth(IUserAuth newUser, string password)
         {
             ValidateNewUser(newUser, password);
 
@@ -118,7 +118,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
+        public virtual IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
         {
             ValidateNewUser(newUser, password);
 
@@ -152,7 +152,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
+        public virtual IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
         {
             ValidateNewUser(newUser);
 
@@ -173,7 +173,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public IUserAuth GetUserAuthByUserName(string userNameOrEmail)
+        public virtual IUserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
             if (userNameOrEmail == null)
                 return null;
@@ -202,7 +202,7 @@ namespace ServiceStack.Auth
             return userAuth;
         }
         
-        public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
+        public virtual bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
             userAuth = GetUserAuthByUserName(userName);
             if (userAuth == null)
@@ -221,7 +221,7 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
+        public virtual bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
         {
             userAuth = GetUserAuthByUserName(digestHeaders["username"]);
             if (userAuth == null)
@@ -241,7 +241,7 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public void DeleteUserAuth(string userAuthId)
+        public virtual void DeleteUserAuth(string userAuthId)
         {
             using (var db = dbFactory.Open())
             using (var trans = db.OpenTransaction())
@@ -256,7 +256,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void LoadUserAuth(IAuthSession session, IAuthTokens tokens)
+        public virtual void LoadUserAuth(IAuthSession session, IAuthTokens tokens)
         {
             session.ThrowIfNull("session");
 
@@ -270,7 +270,7 @@ namespace ServiceStack.Auth
                 GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
         }
 
-        public IUserAuth GetUserAuth(string userAuthId)
+        public virtual IUserAuth GetUserAuth(string userAuthId)
         {
             using (var db = dbFactory.Open())
             {
@@ -278,7 +278,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void SaveUserAuth(IAuthSession authSession)
+        public virtual void SaveUserAuth(IAuthSession authSession)
         {
             if (authSession == null)
                 throw new ArgumentNullException("authSession");
@@ -304,7 +304,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void SaveUserAuth(IUserAuth userAuth)
+        public virtual void SaveUserAuth(IUserAuth userAuth)
         {
             if (userAuth == null)
                 throw new ArgumentNullException("userAuth");
@@ -321,7 +321,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
+        public virtual List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
             var id = int.Parse(userAuthId);
             using (var db = dbFactory.Open())
@@ -330,7 +330,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
+        public virtual IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
         {
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
@@ -369,7 +369,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
+        public virtual IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
             TUserAuth userAuth = (TUserAuth)GetUserAuth(authSession, tokens)
                 ?? typeof(TUserAuth).CreateInstance<TUserAuth>();
@@ -411,7 +411,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void Clear()
+        public virtual void Clear()
         {
             using (var db = dbFactory.Open())
             {
@@ -420,7 +420,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public ICollection<string> GetRoles(string userAuthId)
+        public virtual ICollection<string> GetRoles(string userAuthId)
         {
             if (!UseDistinctRoleTables)
             {
@@ -436,7 +436,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public ICollection<string> GetPermissions(string userAuthId)
+        public virtual ICollection<string> GetPermissions(string userAuthId)
         {
             if (!UseDistinctRoleTables)
             {
@@ -452,7 +452,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public bool HasRole(string userAuthId, string role)
+        public virtual bool HasRole(string userAuthId, string role)
         {
             if (role == null)
                 throw new ArgumentNullException("role");
@@ -475,7 +475,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public bool HasPermission(string userAuthId, string permission)
+        public virtual bool HasPermission(string userAuthId, string permission)
         {
             if (permission == null)
                 throw new ArgumentNullException("permission");
@@ -498,7 +498,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void AssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+        public virtual void AssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
         {
             var userAuth = GetUserAuth(userAuthId);
             if (!UseDistinctRoleTables)
@@ -567,7 +567,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void UnAssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+        public virtual void UnAssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
         {
             var userAuth = GetUserAuth(userAuthId);
             if (!UseDistinctRoleTables)
