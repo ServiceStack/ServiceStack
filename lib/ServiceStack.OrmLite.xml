@@ -24,14 +24,14 @@
             Quoted Value in SQL Statement
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.ToDbParamValue(System.Type,System.Object)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.ToDbValue(System.Type,System.Object)">
             <summary>
-            Used in Parameterized Value. Optional, Defaults to ToDbValue()
+            Parameterized value to Save in DB
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteConverter.ToDbValue(ServiceStack.OrmLite.FieldDefinition,System.Object)">
             <summary>
-            Value to Save in DB
+            Parameterized Value with FieldDefinition. Optional, Defaults to ToDbValue(Type,object)
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteConverter.FromDbValue(ServiceStack.OrmLite.FieldDefinition,System.Object)">
