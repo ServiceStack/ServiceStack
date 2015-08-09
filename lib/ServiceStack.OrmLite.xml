@@ -4,6 +4,46 @@
         <name>ServiceStack.OrmLite</name>
     </assembly>
     <members>
+        <member name="P:ServiceStack.OrmLite.OrmLiteConverter.DialectProvider">
+            <summary>
+            RDBMS Dialect this Converter is for. Injected at registration.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.OrmLiteConverter.ColumnDefinition">
+            <summary>
+            SQL Column Definiton used in CREATE Table. 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.OrmLiteConverter.DbType">
+            <summary>
+            Used in DB Params. Defaults to DbType.String
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.ToQuotedString(System.Type,System.Object)">
+            <summary>
+            Quoted Value in SQL Statement
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.ToDbParamValue(System.Type,System.Object)">
+            <summary>
+            Used in Parameterized Value. Optional, Defaults to ToDbValue()
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.ToDbValue(ServiceStack.OrmLite.FieldDefinition,System.Object)">
+            <summary>
+            Value to Save in DB
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.FromDbValue(ServiceStack.OrmLite.FieldDefinition,System.Object)">
+            <summary>
+            Value from DB to Populate on POCO Data Model
+            </summary>
+        </member>
+        <member name="T:ServiceStack.OrmLite.NativeValueOrmLiteConverter">
+            <summary>
+            For Types that are natively supported by RDBMS's and shouldn't be quoted
+            </summary>
+        </member>
         <member name="F:ServiceStack.OrmLite.OrmLiteContext.UseThreadStatic">
             <summary>
             Tell ServiceStack to use ThreadStatic Items Collection for Context Scoped items.
