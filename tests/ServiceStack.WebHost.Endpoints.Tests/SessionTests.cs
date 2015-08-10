@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Funq;
 using NUnit.Framework;
@@ -179,6 +180,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(client.Get(new SessionTypedIncr()).Tag, Is.EqualTo(3));
             Assert.That(altClient.Get(new SessionTypedIncr()).Tag, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_access_session_with_HTTP_Headers()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            Assert.That(Log(client.Get(new SessionTypedIncr())).Tag, Is.EqualTo(1));
+
+            var cookies = client.GetCookieValues();
+            var sessionId = cookies["ss-id"];
+            sessionId.Print();
+
+            var altClient = new JsonServiceClient(Config.AbsoluteBaseUri)
+            {
+                Headers = {
+                    { "X-ss-id", sessionId }
+                }
+            };
+
+            Assert.That(Log(altClient.Get(new SessionTypedIncr())).Tag, Is.EqualTo(2));
         }
     }
 }
