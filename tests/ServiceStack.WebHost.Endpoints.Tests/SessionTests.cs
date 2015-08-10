@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Runtime.CompilerServices;
 using Funq;
 using NUnit.Framework;
@@ -96,6 +97,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Container container)
             {
                 Plugins.Add(new SessionFeature());
+
+                SetConfig(new HostConfig {
+                    AllowSessionIdsInHttpParams = true,
+                });
 
                 const bool UseOrmLiteCache = false;
                 if (UseOrmLiteCache)
@@ -201,5 +206,49 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(Log(altClient.Get(new SessionTypedIncr())).Tag, Is.EqualTo(2));
         }
+
+        [Test]
+        public void Can_access_session_with_QueryString()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            Assert.That(Log(client.Get(new SessionTypedIncr())).Tag, Is.EqualTo(1));
+
+            var cookies = client.GetCookieValues();
+            var sessionId = cookies["ss-id"];
+
+            var response = Config.AbsoluteBaseUri
+                .CombineWith(new SessionTypedIncr().ToGetUrl())
+                .AddQueryParam("ss-id", sessionId)
+                .GetJsonFromUrl()
+                .FromJson<AuthUserSession>();
+
+            Assert.That(response.Tag, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Can_override_existing_session_with_QueryString()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            Assert.That(Log(client.Get(new SessionTypedIncr())).Tag, Is.EqualTo(1));
+
+            var cookies = client.GetCookieValues();
+            var sessionId = cookies["ss-id"];
+
+            var cookieContainer = new CookieContainer();
+            cookieContainer.Add(new Cookie {
+                Name = "ss-id",
+                Value = "some-other-id",
+                Domain = new Uri(Config.AbsoluteBaseUri).Host,
+            });
+
+            var response = Config.AbsoluteBaseUri
+                .CombineWith(new SessionTypedIncr().ToGetUrl())
+                .AddQueryParam("ss-id", sessionId)
+                .GetJsonFromUrl(req => req.CookieContainer = cookieContainer)
+                .FromJson<AuthUserSession>();
+
+            Assert.That(response.Tag, Is.EqualTo(2));
+        }
+
     }
 }

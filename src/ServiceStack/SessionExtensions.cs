@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Host;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -59,11 +60,12 @@ namespace ServiceStack
 
         public static string GetSessionParam(this IRequest httpReq, string sessionKey)
         {
-            return httpReq.GetItemOrCookie(sessionKey)
+            return httpReq.GetItem(sessionKey) as string
                 ?? httpReq.GetHeader("X-" + sessionKey)
                 ?? (HostContext.Config.AllowSessionIdsInHttpParams
                     ? (httpReq.QueryString[sessionKey] ?? httpReq.FormData[sessionKey])
-                    : null);
+                    : null)
+                ?? httpReq.GetCookieValue(sessionKey);
         }
 
         /// <summary>
