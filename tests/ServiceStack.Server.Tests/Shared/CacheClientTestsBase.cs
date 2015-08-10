@@ -229,8 +229,9 @@ namespace ServiceStack.Server.Tests.Shared
             var sessionExpiry = SessionFeature.DefaultSessionExpiry;
             Cache.Set(sessionKey, session, sessionExpiry);
             ttl = Cache.GetTimeToLive(sessionKey);
-            Assert.That(ttl.Value, Is.GreaterThan(TimeSpan.FromSeconds(0)));
-            Assert.That(ttl.Value, Is.LessThanOrEqualTo(sessionExpiry));
+            var roundedToSec = new TimeSpan(ttl.Value.Ticks - (ttl.Value.Ticks % 1000));
+            Assert.That(roundedToSec, Is.GreaterThan(TimeSpan.FromSeconds(0)));
+            Assert.That(roundedToSec, Is.LessThanOrEqualTo(sessionExpiry));
         }
 
         [Test]
