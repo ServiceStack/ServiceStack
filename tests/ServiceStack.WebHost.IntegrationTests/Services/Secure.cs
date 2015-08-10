@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
     [Authenticate]
     [Route("/requiresadmin")]
-    public class RequiresRole
+    public class RequiresRoleInService
     {
         public string Role { get; set; }
     }
@@ -141,7 +141,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             throw new UnauthorizedAccessException("You shouldn't be able to see this");
         }
 
-        public object Any(RequiresRole request)
+        public object Any(RequiresRoleInService request)
         {
             RequiredRoleAttribute.AssertRequiredRoles(Request, request.Role ?? RoleNames.Admin);
 
