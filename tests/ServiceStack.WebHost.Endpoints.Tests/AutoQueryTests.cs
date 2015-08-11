@@ -28,6 +28,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             //        SqlServerDialect.Provider));
 
             //container.Register<IDbConnectionFactory>(
+            //    new OrmLiteConnectionFactory("Server={0};Database=test;User Id=test;Password=test;".Fmt(Environment.GetEnvironmentVariable("CI_HOST")),
+            //        SqlServer2012Dialect.Provider));
+
+            //container.Register<IDbConnectionFactory>(
             //    new OrmLiteConnectionFactory("Server=localhost;Database=test;UID=root;Password=test",
             //        MySqlDialect.Provider));
 
@@ -319,6 +323,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string RockstarGenreName { get; set; }
     }
 
+    public class QueryCustomRockstarsSchema : QueryBase<Rockstar, CustomRockstarSchema>
+    {
+        public int? Age { get; set; }
+    }
+
+    [Schema("dbo")]
+    public class CustomRockstarSchema
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int? Age { get; set; }
+        public string RockstarAlbumName { get; set; }
+        public string RockstarGenreName { get; set; }
+    }
+
     [Route("/movies/search")]
     [Query(QueryTerm.And)] //Default
     public class SearchMovies : QueryBase<Movie> {}
@@ -598,6 +617,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(response.Total, Is.EqualTo(3));
             Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_execute_explicit_equality_condition_on_CustomRockstarSchema()
+        {
+            var response = client.Get(new QueryCustomRockstarsSchema { Age = 27 });
+
+            response.PrintDump();
+
+            Assert.That(response.Total, Is.EqualTo(3));
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            Assert.That(response.Results[0].FirstName, Is.Not.Null);
+            Assert.That(response.Results[0].LastName, Is.Not.Null);
+            Assert.That(response.Results[0].Age, Is.EqualTo(27));
         }
 
         [Test]
