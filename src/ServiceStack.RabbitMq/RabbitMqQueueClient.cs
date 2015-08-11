@@ -10,7 +10,7 @@ namespace ServiceStack.RabbitMq
         public RabbitMqQueueClient(RabbitMqMessageFactory msgFactory)
             : base(msgFactory) {}
 
-        public void Notify(string queueName, IMessage message)
+        public virtual void Notify(string queueName, IMessage message)
         {
             using (__requestAccess())
             {
@@ -23,7 +23,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
+        public virtual IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
             using (__requestAccess())
             {
@@ -43,7 +43,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public IMessage<T> GetAsync<T>(string queueName)
+        public virtual IMessage<T> GetAsync<T>(string queueName)
         {
             using (__requestAccess())
             {
@@ -52,13 +52,13 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public void Ack(IMessage message)
+        public virtual void Ack(IMessage message)
         {
             var deliveryTag = ulong.Parse(message.Tag);
             Channel.BasicAck(deliveryTag, multiple:false);
         }
 
-        public void Nak(IMessage message, bool requeue, Exception exception = null)
+        public virtual void Nak(IMessage message, bool requeue, Exception exception = null)
         {
             try
             {
@@ -80,7 +80,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public IMessage<T> CreateMessage<T>(object mqResponse)
+        public virtual IMessage<T> CreateMessage<T>(object mqResponse)
         {
             using (__requestAccess())
             {
@@ -94,7 +94,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public string GetTempQueueName()
+        public virtual string GetTempQueueName()
         {
             var anonMq = Channel.QueueDeclare(
                 queue: QueueNames.GetTempQueueName(),
