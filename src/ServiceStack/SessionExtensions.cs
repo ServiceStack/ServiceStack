@@ -151,14 +151,7 @@ namespace ServiceStack
 
         public static HashSet<string> GetSessionOptions(this IRequest httpReq)
         {
-            var sessionOptions = httpReq.GetItemOrCookie(SessionFeature.SessionOptionsKey);
-            var headerOptions = httpReq.GetHeader("X-" + SessionFeature.SessionOptionsKey);
-            if (headerOptions != null)
-            {
-                sessionOptions = sessionOptions.IsNullOrEmpty()
-                    ? headerOptions
-                    : headerOptions + "," + sessionOptions;
-            }
+            var sessionOptions = httpReq.GetSessionParam(SessionFeature.SessionOptionsKey);
             return sessionOptions.IsNullOrEmpty()
                 ? new HashSet<string>()
                 : sessionOptions.Split(',').ToHashSet();
