@@ -485,6 +485,8 @@ namespace ServiceStack.Host
             if (appHost.ApplyMessageResponseFilters(req, req.Response, response))
                 return req.Response.Dto;
 
+            req.Response.EndMqRequest();
+
             return response;
         }
 

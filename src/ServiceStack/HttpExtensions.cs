@@ -90,6 +90,15 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// End an MQ Request
+        /// </summary>
+        public static void EndMqRequest(this IResponse httpRes, bool skipClose = false)
+        {
+            if (!skipClose && !httpRes.IsClosed) httpRes.Close();
+            HostContext.CompleteRequest(httpRes.Request);
+        }
+
+        /// <summary>
         /// End a ServiceStack Request with no content
         /// </summary>
         public static void EndRequestWithNoContent(this IResponse httpRes)
