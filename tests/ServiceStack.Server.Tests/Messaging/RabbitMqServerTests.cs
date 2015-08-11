@@ -315,8 +315,18 @@ namespace ServiceStack.Server.Tests.Messaging
             Assert.That(called, Is.EqualTo(1 + incr.Value));
         }
 
-        public class Hello { public string Name { get; set; } }
-        public class HelloResponse { public string Result { get; set; } }
+        public class Hello : IReturn<HelloResponse>
+        {
+            public string Name { get; set; }
+        }
+        public class HelloNull : IReturn<HelloResponse>
+        {
+            public string Name { get; set; }
+        }
+        public class HelloResponse
+        {
+            public string Result { get; set; }
+        }
 
         [Test]
         public void Can_receive_and_process_standard_request_reply_combo()
@@ -480,7 +490,7 @@ namespace ServiceStack.Server.Tests.Messaging
         {
             int msgsReceived = 0;
             var mqServer = CreateMqServer();
-            mqServer.RegisterHandler<Hello>(m =>
+            mqServer.RegisterHandler<HelloNull>(m =>
             {
                 Interlocked.Increment(ref msgsReceived);
                 return null;
@@ -491,11 +501,12 @@ namespace ServiceStack.Server.Tests.Messaging
             using (mqServer)
             using (var mqClient = mqServer.CreateMessageQueueClient())
             {
-                mqClient.Publish(new Hello { Name = "Into the Void" });
+                mqClient.Publish(new HelloNull { Name = "Into the Void" });
 
-                var msg = mqClient.Get<Hello>(QueueNames<Hello>.Out);
+                var msg = mqClient.Get<HelloNull>(QueueNames<HelloNull>.Out, TimeSpan.FromSeconds(5));
+                Assert.That(msg, Is.Not.Null);
 
-                Hello response = msg.GetBody();
+                HelloNull response = msg.GetBody();
 
                 Thread.Sleep(100);
 
@@ -509,7 +520,7 @@ namespace ServiceStack.Server.Tests.Messaging
         {
             int msgsReceived = 0;
             var mqServer = CreateMqServer();
-            mqServer.RegisterHandler<Hello>(m =>
+            mqServer.RegisterHandler<HelloNull>(m =>
             {
                 Interlocked.Increment(ref msgsReceived);
                 return null;
@@ -521,13 +532,13 @@ namespace ServiceStack.Server.Tests.Messaging
             using (var mqClient = mqServer.CreateMessageQueueClient())
             {
                 var replyMq = mqClient.GetTempQueueName();
-                mqClient.Publish(new Message<Hello>(new Hello { Name = "Into the Void" }) {
+                mqClient.Publish(new Message<HelloNull>(new HelloNull { Name = "Into the Void" }) {
                     ReplyTo = replyMq
                 });
 
-                var msg = mqClient.Get<Hello>(replyMq);
+                var msg = mqClient.Get<HelloNull>(replyMq);
 
-                Hello response = msg.GetBody();
+                HelloNull response = msg.GetBody();
 
                 Thread.Sleep(100);
 
