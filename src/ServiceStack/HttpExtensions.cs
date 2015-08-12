@@ -73,6 +73,15 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// End an MQ Request
+        /// </summary>
+        public static void EndMqRequest(this IHttpResponse httpRes, bool skipClose = false)
+        {
+            if (!skipClose && !httpRes.IsClosed) httpRes.Close();
+            httpRes.EndRequest();
+        }
+
+        /// <summary>
         /// End a HttpHandler Request
         /// </summary>
         public static void EndHttpHandlerRequest(this IHttpResponse httpRes, bool skipHeaders = false, bool skipClose = false, Action<IHttpResponse> afterBody = null)

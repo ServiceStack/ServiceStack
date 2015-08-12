@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
@@ -463,13 +464,19 @@ namespace ServiceStack.ServiceHost
         //Execute MQ
         public object ExecuteMessage<T>(IMessage<T> mqMessage)
         {
-            return Execute(mqMessage.Body, new MqRequestContext(this.Resolver, mqMessage));
+            return ExecuteMessage(mqMessage, new MqRequestContext(this.Resolver, mqMessage));
         }
 
         //Execute MQ with requestContext
         public object ExecuteMessage<T>(IMessage<T> dto, IRequestContext requestContext)
         {
-            return Execute(dto.Body, requestContext);
+            var result = Execute(dto.Body, requestContext);
+            var response = requestContext.Get<IHttpResponse>();
+            if (response != null)
+            {
+                response.EndMqRequest();
+            }
+            return result;
         }
 
         public object Execute(object request)
