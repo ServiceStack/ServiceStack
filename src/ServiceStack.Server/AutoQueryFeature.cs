@@ -16,6 +16,7 @@ using ServiceStack.Reflection;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Data;
+using ServiceStack.Logging;
 using ServiceStack.OrmLite;
 
 namespace ServiceStack
@@ -713,6 +714,8 @@ namespace ServiceStack
 
     public class TypedQuery<QueryModel, From> : ITypedQuery
     {
+        private static ILog log = LogManager.GetLogger(typeof(AutoQueryFeature));
+
         static readonly Dictionary<string, Func<object, object>> PropertyGetters =
             new Dictionary<string, Func<object, object>>();
 
@@ -1071,7 +1074,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                throw new ArgumentException(ex.Message);
+                throw new ArgumentException(ex.Message, ex);
             }
         }
     }
