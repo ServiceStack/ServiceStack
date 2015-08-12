@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes
@@ -217,13 +218,16 @@ namespace ServiceStack.NativeTypes
                     }
                 }
 
-                if (!ignoreTypeFn(type.BaseType))
+                var genericBaseTypeDef = type.BaseType != null && type.BaseType.IsGenericType
+                    ? type.BaseType.GetGenericTypeDefinition()
+                    : null;
+
+                if (!ignoreTypeFn(type.BaseType) || genericBaseTypeDef == typeof(QueryBase<,>))
                 {
-                    if (type.BaseType.IsGenericType)
+                    if (genericBaseTypeDef != null)
                     {
-                        var genericDef = type.BaseType.GetGenericTypeDefinition();
-                        if (!ignoreTypeFn(genericDef))
-                            registerTypeFn(genericDef);
+                        if (!ignoreTypeFn(genericBaseTypeDef))
+                            registerTypeFn(genericBaseTypeDef);
 
                         foreach (var arg in type.BaseType.GetGenericArguments()
                             .Where(arg => !ignoreTypeFn(arg)))
