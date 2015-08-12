@@ -256,7 +256,7 @@ namespace ServiceStack.Server.Tests.Shared
             Assert.That(typedSession, Is.Not.Null);
             Assert.That(typedSession.Custom, Is.EqualTo("custom"));
 
-            JsConfig.ExcludeTypeInfo = false;
+            JsConfig.Reset();
         }
 
         [Test]
