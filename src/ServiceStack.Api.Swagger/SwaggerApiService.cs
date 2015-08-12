@@ -351,7 +351,7 @@ namespace ServiceStack.Api.Swagger
                     }).ToArray();
             }
 
-            var parseProperties = !modelType.IsGenericType;
+            var parseProperties = modelType.IsUserType();
             if (parseProperties)
             {
                 foreach (var prop in properties)
