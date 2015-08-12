@@ -212,15 +212,17 @@ namespace ServiceStack
 
             foreach (var requestType in misingRequestTypes)
             {
-                var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
-                    CallingConventions.Standard,
-                    returnType: typeof(object),
-                    parameterTypes: new[] { requestType });
-
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQuery<,>));
                 var hasExplicitInto = genericDef != null;
                 if (genericDef == null)
                     genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQuery<>));
+                if (genericDef == null)
+                    continue;
+
+                var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
+                    CallingConventions.Standard,
+                    returnType: typeof(object),
+                    parameterTypes: new[] { requestType });
 
                 var il = method.GetILGenerator();
 
