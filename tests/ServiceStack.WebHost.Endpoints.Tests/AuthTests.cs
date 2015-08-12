@@ -803,6 +803,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_generate_new_SessionCookies_when_Authenticating_multiple_times()
+        {
+            var client = GetClient();
+            string lastPermId = null;
+
+            3.Times(x =>
+            {
+                var authResponse = client.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "p@55word",
+                    RememberMe = true,
+                });
+
+                var permId = client.GetCookieValues()[SessionFeature.PermanentSessionId];
+                Assert.That(permId, Is.Not.EqualTo(lastPermId));
+
+                var ssOpt = client.GetCookieValues()[SessionFeature.SessionOptionsKey];
+                Assert.That(ssOpt, Is.Not.Null);
+
+                lastPermId = permId;
+            });
+        }
+
+        [Test]
         public void Exceptions_thrown_are_received_by_client_when_AlwaysSendBasicAuthHeader_is_false()
         {
             try

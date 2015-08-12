@@ -36,6 +36,8 @@ namespace ServiceStack
 
         public bool DeleteSessionCookiesOnLogout { get; set; }
 
+        public bool GenerateNewSessionCookiesOnAuthentication { get; set; }
+
         public TimeSpan? SessionExpiry { get; set; }
         public TimeSpan? PermanentSessionExpiry { get; set; }
 
@@ -99,6 +101,7 @@ namespace ServiceStack
             this.IncludeAuthMetadataProvider = true;
             this.ValidateUniqueEmails = true;
             this.DeleteSessionCookiesOnLogout = true;
+            this.GenerateNewSessionCookiesOnAuthentication = true;
         }
 
         public void Register(IAppHost appHost)

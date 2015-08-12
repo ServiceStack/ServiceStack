@@ -227,6 +227,9 @@ namespace ServiceStack.Auth
             object response = null;
             if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider), request))
             {
+                if (HostContext.GetPlugin<AuthFeature>().GenerateNewSessionCookiesOnAuthentication)
+                    this.Request.GenerateNewSessionCookies(session);
+
                 response = oAuthConfig.Authenticate(this, session, request);
             }
             return response;

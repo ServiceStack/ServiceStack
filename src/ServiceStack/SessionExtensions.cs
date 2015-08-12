@@ -122,8 +122,10 @@ namespace ServiceStack
 
             var httpRes = res as IHttpResponse;
             if (httpRes != null)
+            {
                 httpRes.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId,
                     (HostContext.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
+            }
 
             req.Items[SessionFeature.PermanentSessionId] = sessionId;
             return sessionId;
@@ -177,7 +179,8 @@ namespace ServiceStack
 
         public static HashSet<string> AddSessionOptions(this IRequest req, params string[] options)
         {
-            if (req == null || options.Length == 0) return new HashSet<string>();
+            if (req == null || options.Length == 0)
+                return new HashSet<string>();
 
             var existingOptions = req.GetSessionOptions();
             foreach (var option in options)
@@ -192,7 +195,7 @@ namespace ServiceStack
                 existingOptions.Add(option);
             }
 
-            var strOptions = String.Join(",", existingOptions.ToArray());
+            var strOptions = string.Join(",", existingOptions.ToArray());
 
             var httpRes = req.Response as IHttpResponse;
             if (httpRes != null)
@@ -267,6 +270,26 @@ namespace ServiceStack
             httpRes.Cookies.DeleteCookie(SessionFeature.SessionId);
             httpRes.Cookies.DeleteCookie(SessionFeature.PermanentSessionId);
             httpRes.Cookies.DeleteCookie(HttpHeaders.XUserAuthId);
+        }
+
+        public static void GenerateNewSessionCookies(this IRequest req, IAuthSession session)
+        {
+            var httpRes = req.Response as IHttpResponse;
+            if (httpRes == null)
+                return;
+
+            req.Response.ClearCookies();
+
+            var tempId = req.Response.CreateTemporarySessionId(req);
+            var permId = req.Response.CreatePermanentSessionId(req);
+
+            var isPerm = req.IsPermanentSession();
+            session.Id = isPerm
+                ? permId
+                : tempId;
+
+            if (isPerm)
+                req.AddSessionOptions(SessionOptions.Permanent);
         }
     }
 }
