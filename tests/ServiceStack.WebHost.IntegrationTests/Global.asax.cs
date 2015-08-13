@@ -1,5 +1,6 @@
 ﻿using System;
 using Funq;
+using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Authentication.OpenId;
 using ServiceStack.Caching;
@@ -112,6 +113,12 @@ namespace ServiceStack.WebHost.IntegrationTests
 
                 container.RegisterValidators(typeof(CustomersValidator).Assembly);
 
+                typeof(ResponseStatus)
+                    .AddAttributes(new ServiceStack.DataAnnotations.DescriptionAttribute("This is the Response Status!"));
+
+                typeof(ResponseStatus)
+                   .GetProperty("Message")
+                   .AddAttributes(new ServiceStack.DataAnnotations.DescriptionAttribute("A human friendly error message"));
 
                 //var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);
                 SetConfig(new HostConfig {

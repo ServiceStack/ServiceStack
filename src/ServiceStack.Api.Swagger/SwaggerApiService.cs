@@ -318,7 +318,7 @@ namespace ServiceStack.Api.Swagger
             var model = new SwaggerModel
             {
                 Id = modelId,
-                Description = modelTypeName,
+                Description = modelType.GetDescription() ?? modelTypeName,
                 Properties = new OrderedDictionary<string, SwaggerProperty>()
             };
             models[model.Id] = model;
@@ -381,6 +381,7 @@ namespace ServiceStack.Api.Swagger
                     var modelProp = new SwaggerProperty
                     {
                         Type = GetSwaggerTypeName(propertyType, route, verb),
+                        Description = prop.GetDescription(),
                     };
 
                     if ((propertyType.IsValueType && !IsNullable(propertyType)) || apiMembers.Any(x => x.IsRequired))
@@ -425,8 +426,6 @@ namespace ServiceStack.Api.Swagger
                         if (propAttr != null && propAttr.DataType != null)
                             modelProp.Type = propAttr.DataType;
                     }
-
-                    modelProp.Description = prop.GetDescription();
 
                     if (apiDoc != null && modelProp.Description == null)
                         modelProp.Description = apiDoc.Description;
