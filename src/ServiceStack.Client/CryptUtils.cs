@@ -79,6 +79,15 @@ namespace ServiceStack
             }
         }
 
+        public static string ToPrivateKeyXml(this RSAParameters privateKey)
+        {
+            using (var rsa = new RSACryptoServiceProvider())
+            {
+                rsa.ImportParameters(privateKey);
+                return rsa.ToXmlString(includePrivateParameters: true);
+            }
+        }
+
         public static string Encrypt(this string text)
         {
             if (DefaultKeyPair != null)
