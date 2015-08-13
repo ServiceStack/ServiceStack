@@ -14,18 +14,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
     public class EncryptedMessagesAppHost : AppSelfHostBase
     {
         public EncryptedMessagesAppHost()
-            : base(typeof(EncryptedMessagesAppHost).Name, typeof(SecureServices).Assembly) { }
+            : base(typeof(EncryptedMessagesAppHost).Name, typeof(SecureServices).Assembly)
+        { }
 
         public override void Configure(Container container)
         {
             Plugins.Add(new EncryptedMessagesFeature
             {
-                PrivateKeyXml = SecureConfig.PrivateKeyXml
+                PrivateKey = SecureConfig.PrivateKeyXml.ToPrivateRSAParameters(),
+                FallbackPrivateKeys = {
+                    SecureConfig.FallbackPrivateKeyXml.ToPrivateRSAParameters()
+                },
             });
 
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new IAuthProvider[] {
-                    new CredentialsAuthProvider(AppSettings), 
+                    new CredentialsAuthProvider(AppSettings),
                 }));
 
             container.Register<IUserAuthRepository>(c => new InMemoryAuthRepository());
@@ -231,8 +235,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var client = CreateClient();
             IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
 
-            var request = new LargeMessage {
-                Messages = 100.Times(i => new HelloSecure {Name = "Name" + i})
+            var request = new LargeMessage
+            {
+                Messages = 100.Times(i => new HelloSecure { Name = "Name" + i })
             };
 
             var response = encryptedClient.Send(request);
@@ -400,6 +405,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Assert.That(response.ResponseStatus.Message, Is.EqualTo("Nonce already seen"));
             }
         }
+
+        [Test]
+        public void Can_send_encrypted_messages_with_old_registered_PublicKey()
+        {
+            var client = CreateClient();
+            var encryptedClient = client.GetEncryptedClient(SecureConfig.FallbackPublicKeyXml);
+
+            var response = encryptedClient.Send(new HelloSecure { Name = "Fallback Key" });
+
+            Assert.That(response.Result, Is.EqualTo("Hello, Fallback Key!"));
+        }
+
+        [Test]
+        public void Fails_when_sending_invalid_KeyId()
+        {
+            var client = CreateClient();
+            var encryptedClient = (EncryptedServiceClient)client.GetEncryptedClient(SecureConfig.FallbackPublicKeyXml);
+            encryptedClient.KeyId = "AAAAAA";
+
+            try
+            {
+                var response = encryptedClient.Send(new HelloSecure { Name = "Fallback Key" });
+                Assert.Fail("Should Throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+                Assert.That(ex.StatusDescription, Is.EqualTo("KeyNotFoundException"));
+                Assert.That(ex.ResponseStatus.Message, Is.StringStarting(EncryptedMessagesFeature.ErrorKeyNotFound.Substring(0,10)));
+            }
+        }
     }
 
     public class CryptUtilsTests
@@ -462,7 +498,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
 
             var decryptedMsg = ValidateAndDecrypt(authRsaEncCryptAuthKeys, authEncryptedBytes);
-            
+
             var parts = decryptedMsg.SplitOnFirst(' ');
             Assert.That(long.Parse(parts[0]), Is.EqualTo(timestamp));
 

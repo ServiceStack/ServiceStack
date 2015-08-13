@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
@@ -41,10 +42,16 @@ namespace ServiceStack
         public static string ErrorInvalidMessage = "Invalid EncryptedMessage";
         public static string ErrorNonceSeen = "Nonce already seen";
         public static string ErrorRequestTooOld = "Request too old";
+        public static string ErrorKeyNotFound = "Key with Id '{0}' was not found. Ensure you're using the latest Public Key from '{1}'";
+
 
         private readonly ConcurrentDictionary<byte[], DateTime> nonceCache = new ConcurrentDictionary<byte[], DateTime>(ByteArrayComparer.Instance);
 
         public RSAParameters? PrivateKey { get; set; }
+
+        public List<RSAParameters> FallbackPrivateKeys { get; set; }
+
+        protected Dictionary<string, RSAParameters> PrivateKeyModulusMap { get; set; }
 
         public string PublicKeyPath { get; set; }
 
@@ -60,6 +67,7 @@ namespace ServiceStack
         {
             PublicKeyPath = "/publickey";
             MaxRequestAge = DefaultMaxMaxRequestAge;
+            FallbackPrivateKeys = new List<RSAParameters>();
         }
 
         public void Register(IAppHost appHost)
@@ -68,6 +76,15 @@ namespace ServiceStack
                 PrivateKey = RsaUtils.CreatePrivateKeyParams();
 
             appHost.RegisterService(typeof(EncryptedMessagesService), PublicKeyPath);
+
+            PrivateKeyModulusMap = new Dictionary<string, RSAParameters>
+            {
+                { Convert.ToBase64String(PrivateKey.Value.Modulus), PrivateKey.Value },
+            };
+            foreach (var fallbackKey in FallbackPrivateKeys)
+            {
+                PrivateKeyModulusMap[Convert.ToBase64String(fallbackKey.Modulus)] = fallbackKey;
+            }
 
             appHost.RequestConverters.Add((req, requestDto) =>
             {
@@ -88,7 +105,14 @@ namespace ServiceStack
                     Buffer.BlockCopy(authRsaEncCryptKey, 0, iv, 0, iv.Length);
                     Buffer.BlockCopy(authRsaEncCryptKey, iv.Length, rsaEncCryptAuthKeys, 0, rsaEncCryptAuthKeys.Length);
 
-                    var cryptAuthKeys = RsaUtils.Decrypt(rsaEncCryptAuthKeys, PrivateKey.Value);
+                    var privateKey = GetPrivateKey(encRequest.KeyId);
+                    if (Equals(privateKey, default(RSAParameters)))
+                    {
+                        WriteUnencryptedError(req, HttpError.NotFound(ErrorKeyNotFound.Fmt(encRequest.KeyId, PublicKeyPath)), "KeyNotFoundException");
+                        return null;
+                    }
+
+                    var cryptAuthKeys = RsaUtils.Decrypt(rsaEncCryptAuthKeys, privateKey);
 
                     Buffer.BlockCopy(cryptAuthKeys, 0, cryptKey, 0, cryptKey.Length);
                     Buffer.BlockCopy(cryptAuthKeys, cryptKey.Length, authKey, 0, authKey.Length);
@@ -175,6 +199,36 @@ namespace ServiceStack
                 };
                 return encResponse;
             });
+        }
+
+        private RSAParameters GetPrivateKey(string useKey)
+        {
+            if (useKey.IsEmpty())
+                return PrivateKey.Value;
+
+            foreach (var entry in PrivateKeyModulusMap)
+            {
+                if (entry.Key.StartsWith(useKey))
+                    return entry.Value;
+            }
+
+            return default(RSAParameters);
+        }
+
+        // Encrypted Messaging Errors before keys can be extracted have to be written unencrypted
+        private static void WriteUnencryptedError(IRequest req, Exception ex, string description = null)
+        {
+            var errorResponse = new ErrorResponse {
+                ResponseStatus = ex.ToResponseStatus()
+            };
+
+            var httpError = ex as IHttpError;
+            req.Response.StatusCode = ex.ToStatusCode();
+            req.Response.StatusDescription = description ?? (httpError != null ? httpError.ErrorCode : ex.GetType().Name);
+
+            req.Response.ContentType = MimeTypes.Json;
+            req.Response.Write(errorResponse.ToJson());
+            req.Response.EndRequest();
         }
 
         public static void WriteEncryptedError(IRequest req, byte[] cryptKey, byte[] authKey, byte[] iv, Exception ex, string description = null)

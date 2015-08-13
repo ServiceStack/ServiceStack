@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Text;
 
@@ -14,6 +15,7 @@ namespace ServiceStack
 
     public class EncryptedMessage : IReturn<EncryptedMessageResponse>
     {
+        public string KeyId { get; set; }
         public string EncryptedSymmetricKey { get; set; }
         public string EncryptedBody { get; set; }
     }
@@ -30,6 +32,7 @@ namespace ServiceStack
         public string SessionId { get; set; }
         public RSAParameters PublicKey { get; set; }
         public IJsonServiceClient Client { get; set; }
+        public string KeyId { get; set; }
 
         public EncryptedServiceClient(IJsonServiceClient client, string publicKeyXml)
             : this(client, publicKeyXml.ToPublicRSAParameters()) {}
@@ -40,6 +43,7 @@ namespace ServiceStack
             Client.ClearCookies();
             PublicKey = publicKey;
             ServerPublicKeyXml = publicKey.ToPublicKeyXml();
+            KeyId = Convert.ToBase64String(publicKey.Modulus).Substring(0, 7);
         }
 
         public TResponse Send<TResponse>(object request)
@@ -129,6 +133,7 @@ namespace ServiceStack
 
             var encryptedMessage = new EncryptedMessage
             {
+                KeyId = KeyId,
                 EncryptedSymmetricKey = Convert.ToBase64String(authRsaEncCryptAuthKeys),
                 EncryptedBody = Convert.ToBase64String(authEncryptedBytes),
             };
@@ -159,6 +164,15 @@ namespace ServiceStack
 
         public WebServiceException DecryptedException(WebServiceException ex, byte[] cryptKey, byte[] authKey)
         {
+            //Encrypted Messsage Exceptions are always written with 400 BadRequest
+            if (ex.StatusCode != (int) HttpStatusCode.BadRequest)
+            {
+                if (ex.ResponseStatus == null)
+                    ex.ResponseDto = JsonServiceClient.FromJson<ErrorResponse>(ex.ResponseBody);
+
+                return ex;
+            }
+
             var encResponse = ex.ResponseDto as EncryptedMessageResponse;
 
             if (encResponse != null)
