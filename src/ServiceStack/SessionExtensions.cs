@@ -284,12 +284,14 @@ namespace ServiceStack
             var permId = req.Response.CreatePermanentSessionId(req);
 
             var isPerm = req.IsPermanentSession();
+            if (isPerm)
+                req.AddSessionOptions(SessionOptions.Permanent);
+
             session.Id = isPerm
                 ? permId
                 : tempId;
 
-            if (isPerm)
-                req.AddSessionOptions(SessionOptions.Permanent);
+            req.SaveSessionInItems(session);
         }
     }
 }

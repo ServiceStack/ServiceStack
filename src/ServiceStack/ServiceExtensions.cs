@@ -171,12 +171,17 @@ namespace ServiceStack
                 var session = (sessionKey != null ? FilterSession(cache.Get<IAuthSession>(sessionKey), sessionId) : null)
                     ?? SessionFeature.CreateNewSession(httpReq, sessionId);
 
-                if (httpReq.Items.ContainsKey(SessionFeature.RequestItemsSessionKey))
-                    httpReq.Items.Remove(SessionFeature.RequestItemsSessionKey);
-
-                httpReq.Items.Add(SessionFeature.RequestItemsSessionKey, session);
+                httpReq.SaveSessionInItems(session);
                 return session;
             }
+        }
+
+        internal static void SaveSessionInItems(this IRequest httpReq, IAuthSession session)
+        {
+            if (httpReq.Items.ContainsKey(SessionFeature.RequestItemsSessionKey))
+                httpReq.Items.Remove(SessionFeature.RequestItemsSessionKey);
+
+            httpReq.Items.Add(SessionFeature.RequestItemsSessionKey, session);
         }
 
         public static TimeSpan? GetSessionTimeToLive(this ICacheClient cache, string sessionId)
