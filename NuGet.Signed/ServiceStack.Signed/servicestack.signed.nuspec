@@ -8,10 +8,11 @@
     <owners>Service Stack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
-      Binaries for the ServiceStack web framework.
-      Visit https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project
-      and https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice
-      for walk throughs and docs on creating your first web service.
+        Binaries for the ServiceStack web framework.
+        A simple, fast and cohesive alternative to WCF, MVC and Web API in one
+        framework for all your services and web apps that's intuitive and Easy-to-use.
+
+        To get started see: servicestack.net/getting-started
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
