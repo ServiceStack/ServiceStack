@@ -227,6 +227,8 @@ client.Delete(new DeleteCustomer { Id = customer.Id });
 all = client.Get(new GetCustomers());                             // Count = 0
 ```
 
+Same code also works with [PCL Clients in Xamarin iOS/Android, Windows Store Apps](https://github.com/ServiceStackApps/HelloMobile)
+
 > [F#](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference) and [VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference) can re-use same .NET Service Clients and DTO's
 
 ### [Calling from Java](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference#jsonserviceclient-usage)
