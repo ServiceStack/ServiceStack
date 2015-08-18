@@ -441,7 +441,7 @@ namespace ServiceStack
         {
             using (__requestAccess())
             {
-                SerializeToStream(requestContext, request, stream);
+                SerializeRequestToStream(requestContext, request, stream);
             }
         }
 
@@ -719,9 +719,24 @@ namespace ServiceStack
                 using (__requestAccess())
                 using (var requestStream = PclExport.Instance.GetRequestStream(client))
                 {
-                    SerializeToStream(null, request, requestStream);
+                    SerializeRequestToStream(null, request, requestStream);
                 }
             });
+        }
+
+        private void SerializeRequestToStream(IRequest requestContext, object request, Stream requestStream)
+        {
+            var str = request as string;
+            var bytes = request as byte[];
+            var stream = request as Stream;
+            if (str != null)
+                requestStream.Write(str);
+            else if (bytes != null)
+                requestStream.Write(bytes, 0, bytes.Length);
+            else if (stream != null)
+                stream.WriteTo(requestStream);
+            else
+                SerializeToStream(null, request, requestStream);
         }
 
         private WebRequest PrepareWebRequest(string httpMethod, string requestUri, object request, Action<HttpWebRequest> sendRequestAction)

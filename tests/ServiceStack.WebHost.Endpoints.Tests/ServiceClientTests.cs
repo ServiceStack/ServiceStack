@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -146,6 +147,50 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             using (client.Post<HttpWebResponse>(new ReturnsWebResponse { Message = "Bar" })) { }
             Assert.That(TestAsyncService.ReturnWebResponseMessage, Is.EqualTo("Bar"));
+        }
+
+        [Test]
+        public void Can_post_raw_response_as_raw_JSON()
+        {
+            var request = new GetCustomer { CustomerId = 5 };
+            var response = client.Post(request);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
+
+            var requestPath = request.ToGetUrl();
+
+            string json = request.ToJson();
+            response = client.Post<GetCustomerResponse>(requestPath, json);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
+
+            byte[] bytes = json.ToUtf8Bytes();
+            response = client.Post<GetCustomerResponse>(requestPath, bytes);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
+
+            Stream ms = new MemoryStream(bytes);
+            response = client.Post<GetCustomerResponse>(requestPath, ms);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
+        }
+
+        [Test]
+        public async Task Can_post_raw_response_as_raw_JSON_async()
+        {
+            var request = new GetCustomer { CustomerId = 5 };
+            var response = client.Post(request);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
+
+            var requestPath = request.ToGetUrl();
+
+            string json = request.ToJson();
+            response = await client.PostAsync<GetCustomerResponse>(requestPath, json);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
+
+            byte[] bytes = json.ToUtf8Bytes();
+            response = await client.PostAsync<GetCustomerResponse>(requestPath, bytes);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
+
+            Stream ms = new MemoryStream(bytes);
+            response = await client.PostAsync<GetCustomerResponse>(requestPath, ms);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
         }
 
         [Test]
