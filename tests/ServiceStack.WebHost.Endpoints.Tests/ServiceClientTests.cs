@@ -156,14 +156,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Post(request);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
 
-            var requestPath = request.ToGetUrl();
+            var requestPath = request.ToPostUrl();
 
             string json = request.ToJson();
             response = client.Post<GetCustomerResponse>(requestPath, json);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
 
             byte[] bytes = json.ToUtf8Bytes();
-            response = client.Post<GetCustomerResponse>(requestPath, bytes);
+            response = client.Put<GetCustomerResponse>(requestPath, bytes);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
 
             Stream ms = new MemoryStream(bytes);
@@ -178,18 +178,41 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Post(request);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
 
-            var requestPath = request.ToGetUrl();
+            var requestPath = request.ToPostUrl();
 
             string json = request.ToJson();
             response = await client.PostAsync<GetCustomerResponse>(requestPath, json);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
 
             byte[] bytes = json.ToUtf8Bytes();
-            response = await client.PostAsync<GetCustomerResponse>(requestPath, bytes);
+            response = await client.PutAsync<GetCustomerResponse>(requestPath, bytes);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
 
             Stream ms = new MemoryStream(bytes);
             response = await client.PostAsync<GetCustomerResponse>(requestPath, ms);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
+        }
+
+        [Test]
+        public async Task Can_post_raw_response_as_raw_JSON_HttpClient()
+        {
+            var httpClient = new JsonHttpClient(BaseUrl);
+            var request = new GetCustomer { CustomerId = 5 };
+            var response = httpClient.Post(request);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
+
+            var requestPath = request.ToPostUrl();
+
+            string json = request.ToJson();
+            response = await httpClient.PostAsync<GetCustomerResponse>(requestPath, json);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
+
+            byte[] bytes = json.ToUtf8Bytes();
+            response = await httpClient.PutAsync<GetCustomerResponse>(requestPath, bytes);
+            Assert.That(response.Customer.Id, Is.EqualTo(5));
+
+            Stream ms = new MemoryStream(bytes);
+            response = await httpClient.PostAsync<GetCustomerResponse>(requestPath, ms);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
         }
 

@@ -150,9 +150,21 @@ namespace ServiceStack
                 }
                 else
                 {
-                    using (__requestAccess())
+                    var str = request as string;
+                    var bytes = request as byte[];
+                    var stream = request as Stream;
+                    if (str != null)
+                        httpReq.Content = new StringContent(str);
+                    else if (bytes != null)
+                        httpReq.Content = new ByteArrayContent(bytes);
+                    else if (stream != null)
+                        httpReq.Content = new StreamContent(stream);
+                    else
                     {
-                        httpReq.Content = new StringContent(request.ToJson(), Encoding.UTF8, ContentType);
+                        using (__requestAccess())
+                        {
+                            httpReq.Content = new StringContent(request.ToJson(), Encoding.UTF8, ContentType);
+                        }
                     }
                 }
             }
@@ -231,11 +243,6 @@ namespace ServiceStack
             
             CancelTokenSource.Dispose();
             CancelTokenSource = null;
-        }
-
-        public virtual void SerializeToStream(IRequest requestContext, object request, Stream stream)
-        {
-            JsonDataContractSerializer.Instance.SerializeToStream(request, stream);
         }
 
         private class AccessToken
