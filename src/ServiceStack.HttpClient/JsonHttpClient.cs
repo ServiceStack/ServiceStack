@@ -225,12 +225,15 @@ namespace ServiceStack
                         ThrowIfError<TResponse>(task, httpRes, request, absoluteUrl, task.Result);
 
                         var body = task.Result;
-                        var response = body.FromJson<TResponse>();
+                        using (__requestAccess())
+                        {
+                            var response = body.FromJson<TResponse>();
 
-                        if (ResultsFilterResponse != null)
-                            ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
+                            if (ResultsFilterResponse != null)
+                                ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
 
-                        return response;
+                            return response;
+                        }
                     });
                 }).Unwrap();
         }
