@@ -189,6 +189,7 @@
     <Compile Include="HttpHandlerTests.cs" />
     <Compile Include="Issues\EmptyDtoIssue.cs" />
     <Compile Include="Issues\NetworkIssues.cs" />
+    <Compile Include="Issues\RequestScopeIssue.cs" />
     <Compile Include="Issues\XmlContentTypeIssue.cs" />
     <Compile Include="ReplyAllTests.cs" />
     <Compile Include="MultiTennantAppHostTests.cs" />
