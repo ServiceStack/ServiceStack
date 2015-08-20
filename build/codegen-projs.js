@@ -20,6 +20,7 @@ String.prototype.lines = function() {
     return this.replace(/\r/g, '').split('\n');
 };
 
+
 var SIGN_PROJS = [
     '../../ServiceStack.Text/src/ServiceStack.Text/ServiceStack.Text.csproj',
     '../../ServiceStack.Redis/src/ServiceStack.Redis/ServiceStack.Redis.csproj',
@@ -27,6 +28,7 @@ var SIGN_PROJS = [
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLiteV45/ServiceStack.OrmLiteV45.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.SqlServer/ServiceStack.OrmLite.SqlServer.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.SqlServerV45/ServiceStack.OrmLite.SqlServerV45.csproj',
+    '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.SqlServer.Converters/ServiceStack.OrmLite.SqlServer.Converters.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.Oracle/ServiceStack.OrmLite.Oracle.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.Sqlite.Windows/ServiceStack.OrmLite.Sqlite.Windows.csproj',
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.MySql/ServiceStack.OrmLite.MySql.csproj',
