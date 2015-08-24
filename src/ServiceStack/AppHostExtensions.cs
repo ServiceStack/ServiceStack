@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Funq;
+using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -100,6 +102,13 @@ namespace ServiceStack
         public static Exception ApplyResponseConverters(this Exception ex, IRequest httpReq)
         {
             return (HostContext.AppHost.ApplyResponseConverters(httpReq, ex) as Exception) ?? ex;
+        }
+
+        public static IAppHost Start(this IAppHost appHost, IEnumerable<string> urlBases)
+        {
+            var listener = (HttpListenerBase)appHost;
+            listener.Start(urlBases);
+            return appHost;
         }
     }
 

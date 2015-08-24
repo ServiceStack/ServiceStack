@@ -73,7 +73,7 @@ namespace ServiceStack.Host.HttpListener
             return this;
         }
 
-        public ServiceStackHost Start(IEnumerable<string> urlBases)
+        public virtual ServiceStackHost Start(IEnumerable<string> urlBases)
         {
             Start(urlBases, Listen);
             return this;
@@ -126,11 +126,17 @@ namespace ServiceStack.Host.HttpListener
             {
                 if (Config.AllowAclUrlReservation && ex.ErrorCode == 5 && registeredReservedUrl == null)
                 {
-                    registeredReservedUrl = AddUrlReservationToAcl(urlBase);
+                    foreach (var urlBase in urlBases)
+                    {
+                        registeredReservedUrl = AddUrlReservationToAcl(urlBase);
+                        if (registeredReservedUrl == null)
+                            break;
+                    }
+
                     if (registeredReservedUrl != null)
                     {
                         Listener = null;
-                        Start(urlBase, listenCallback);
+                        Start(urlBases, listenCallback);
                         return;
                     }
                 }
