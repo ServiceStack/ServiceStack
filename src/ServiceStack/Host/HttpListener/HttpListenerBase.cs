@@ -2,6 +2,7 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
@@ -72,6 +73,12 @@ namespace ServiceStack.Host.HttpListener
             return this;
         }
 
+        public ServiceStackHost Start(IEnumerable<string> urlBases)
+        {
+            Start(urlBases, Listen);
+            return this;
+        }
+
         public virtual ListenerRequest CreateRequest(HttpListenerContext httpContext, string operationName)
         {
             var req = new ListenerRequest(httpContext, operationName, RequestAttributes.None);
@@ -90,6 +97,11 @@ namespace ServiceStack.Host.HttpListener
         /// </param>
         protected void Start(string urlBase, WaitCallback listenCallback)
         {
+            Start(new[] {urlBase}, listenCallback);
+        }
+
+        protected void Start(IEnumerable<string> urlBases, WaitCallback listenCallback)
+        {
             // *** Already running - just leave it in place
             if (this.IsStarted)
                 return;
@@ -97,9 +109,13 @@ namespace ServiceStack.Host.HttpListener
             if (this.Listener == null)
                 Listener = new System.Net.HttpListener();
 
-            HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
+            foreach (var urlBase in urlBases)
+            {
+                if (HostContext.Config.HandlerFactoryPath == null)
+                    HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
 
-            Listener.Prefixes.Add(urlBase);
+                Listener.Prefixes.Add(urlBase);
+            }
 
             try
             {
