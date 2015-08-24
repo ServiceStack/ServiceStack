@@ -24,19 +24,24 @@
             Quoted Value in SQL Statement
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.InitDbParam(System.Data.IDbDataParameter,System.Type)">
+            <summary>
+            Customize how DB Param is initialized. Useful for supporting RDBMS-specific Types.
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteConverter.ToDbValue(System.Type,System.Object)">
             <summary>
-            Parameterized value to Save in DB
+            Parameterized value in parameterized queries
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.ToDbValue(ServiceStack.OrmLite.FieldDefinition,System.Object)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.FromDbValue(System.Type,System.Object)">
             <summary>
-            Parameterized Value with FieldDefinition. Optional, Defaults to ToDbValue(Type,object)
+            Value from DB to Populate on POCO Data Model with
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.FromDbValue(ServiceStack.OrmLite.FieldDefinition,System.Object)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.GetValue(System.Data.IDataReader,System.Int32)">
             <summary>
-            Value from DB to Populate on POCO Data Model
+            Retrieve Value from ADO.NET IDataReader. Defaults to reader.GetValue()
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.NativeValueOrmLiteConverter">

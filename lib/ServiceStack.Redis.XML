@@ -222,6 +222,11 @@
             Redis command that does not get queued
             </summary>
         </member>
+        <member name="M:ServiceStack.Redis.RedisConfig.Reset">
+            <summary>
+            Resets Redis Config and Redis Stats back to default values
+            </summary>
+        </member>
         <member name="M:ServiceStack.Redis.RedisSentinel.Start">
             <summary>
             Initialize Sentinel Subscription and Configure Redis ClientsManager
@@ -245,6 +250,77 @@
             <summary>
             Don't immediately kill connections of active clients after failover to give them a chance to dispose gracefully. 
             Deactivating clients are automatically cleared from the pool.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalCommandsSent">
+            <summary>
+            Total number of commands sent
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalFailovers">
+            <summary>
+            Number of times the Redis Client Managers have FailoverTo() either by sentinel or manually
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalDeactivatedClients">
+            <summary>
+            Number of times a Client was deactivated from the pool, either by FailoverTo() or exceptions on client
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalFailedSentinelWorkers">
+            <summary>
+            Number of times connecting to a Sentinel has failed
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalForcedMasterFailovers">
+            <summary>
+            Number of times we've forced Sentinel to failover to another master due to 
+            consecutive errors beyond sentinel.WaitBeforeForcingMasterFailover
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalInvalidMasters">
+            <summary>
+            Number of times a connecting to a reported Master wasn't actually a Master
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalNoMastersFound">
+            <summary>
+            Number of times no Masters could be found in any of the configured hosts
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalClientsCreated">
+            <summary>
+            Number of Redis Client instances created with RedisConfig.ClientFactory
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalClientsCreatedOutsidePool">
+            <summary>
+            Number of times a Redis Client was created outside of pool, either due to overflow or reserved slot was overridden
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalSubjectiveServersDown">
+            <summary>
+            Number of times Redis Sentinel reported a Subjective Down (sdown)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalObjectiveServersDown">
+            <summary>
+            Number of times Redis Sentinel reported an Objective Down (sdown)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalRetryCount">
+            <summary>
+            Number of times a Redis Request was retried due to Socket or Retryable exception
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalRetrySuccess">
+            <summary>
+            Number of times a Request succeeded after it was retried
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalRetryTimedout">
+            <summary>
+            Number of times a Retry Request failed after exceeding RetryTimeout
             </summary>
         </member>
         <member name="T:ServiceStack.Redis.ShardedConnectionPool">
@@ -1244,7 +1320,7 @@
             </summary>
             <returns>Number of results</returns>
         </member>
-        <member name="M:ServiceStack.Redis.RedisNativeClient.SendCommand(System.Byte[][])">
+        <member name="M:ServiceStack.Redis.RedisNativeClient.WriteCommandToSendBuffer(System.Byte[][])">
             <summary>
             Command to set multuple binary safe arguments
             </summary>
