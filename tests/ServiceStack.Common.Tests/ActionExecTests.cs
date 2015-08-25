@@ -31,7 +31,7 @@ namespace ServiceStack.Common.Tests
             actions.ExecAllAndWait(timeout:TimeSpan.FromSeconds(30));
 
             "Took {0}ms".Print(sw.ElapsedMilliseconds);
-            Assert.That(sw.ElapsedMilliseconds, Is.LessThan(2000));
+            Assert.That(sw.ElapsedMilliseconds, Is.LessThan(4000));
             Assert.That(i, Is.EqualTo(actions.Length));
         }
     }
