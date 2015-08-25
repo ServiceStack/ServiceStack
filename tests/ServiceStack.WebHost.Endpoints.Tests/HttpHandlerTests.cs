@@ -104,6 +104,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.Message, Is.StringContaining("(404) Not Found"));
 
                 Assert.That(BeginRequestCount, Is.EqualTo(1));
+                Thread.Sleep(1);
                 Assert.That(EndRequestCount, Is.EqualTo(1));
             }
         }
