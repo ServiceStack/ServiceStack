@@ -314,7 +314,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     }
                 };
 
-                var connectMsg = await taskConnect.WaitAsync();
+                var connectMsg = await taskConnect.WaitAsync(2000);
                 Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
 
                 await allJoinsReceived.Task;
