@@ -1025,7 +1025,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     class Conf
     {
-        public const string AbsoluteBaseUri = "http://macbook:10000/";
+        public const string AbsoluteBaseUri = "http://127.0.0.1:10000/";
     }
 
     [TestFixture]
