@@ -152,5 +152,15 @@ namespace ServiceStack
 
             return new List<ResponseError>();
         }
+
+        public bool IsAny400()
+        {
+            return StatusCode >= 400 && StatusCode < 500;
+        }
+
+        public bool IsAny500()
+        {
+            return StatusCode >= 500 && StatusCode < 600;
+        }
     }
 }

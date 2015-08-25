@@ -29,21 +29,6 @@
             <param name="assemblyName"></param>
             <returns>The type if it exists</returns>
         </member>
-        <member name="M:ServiceStack.AutoMappingUtils.PopulateWith(System.Object)">
-            <summary>
-            Populate an object with Example data.
-            </summary>
-            <param name="obj"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.AutoMappingUtils.PopulateObjectInternal(System.Object,System.Collections.Generic.Dictionary{System.Type,System.Int32})">
-            <summary>
-            Populates the object with example data.
-            </summary>
-            <param name="obj"></param>
-            <param name="recursionInfo">Tracks how deeply nested we are</param>
-            <returns></returns>
-        </member>
         <member name="M:ServiceStack.Text.Common.DateTimeSerializer.Prepare(System.DateTime,System.Boolean)">
             <summary>
             If AlwaysUseUtc is set to true then convert all DateTime to UTC.
@@ -194,6 +179,11 @@
             </summary>
             <remarks>Parameters have following meaning in order: deserialized entity, property name, parsed value, property type, caught exception.</remarks>
         </member>
+        <member name="P:ServiceStack.Text.JsConfig.PreferInterfaces">
+            <summary>
+            If set to true, Interface types will be prefered over concrete types when serializing.
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig.sIncludePublicFields">
             <summary>
             If set to true, Interface types will be prefered over concrete types when serializing.
@@ -217,11 +207,6 @@
             Return null if you don't know how to construct the type and the parameterless constructor will be used.
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.JsConfig.PreferInterfaces">
-            <summary>
-            If set to true, Interface types will be prefered over concrete types when serializing.
-            </summary>
-        </member>
         <member name="F:ServiceStack.Text.JsConfig`1.IncludeTypeInfo">
             <summary>
             Always emit type info for this type.  Takes precedence over ExcludeTypeInfo
@@ -243,6 +228,16 @@
         <member name="F:ServiceStack.Text.JsConfig`1.serializeFn">
             <summary>
             Define custom serialization fn for BCL Structs
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.JsConfig`1.TreatValueAsRefType">
+            <summary>
+            Opt-in flag to set some Value Types to be treated as a Ref Type
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.JsConfig`1.HasSerializeFn">
+            <summary>
+            Whether there is a fn (raw or otherwise)
             </summary>
         </member>
         <member name="F:ServiceStack.Text.JsConfig`1.rawSerializeFn">
@@ -275,16 +270,6 @@
             Exclude specific properties of this type from being serialized
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.JsConfig`1.TreatValueAsRefType">
-            <summary>
-            Opt-in flag to set some Value Types to be treated as a Ref Type
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Text.JsConfig`1.HasSerializeFn">
-            <summary>
-            Whether there is a fn (raw or otherwise)
-            </summary>
-        </member>
         <member name="F:ServiceStack.Text.PropertyConvention.Strict">
             <summary>
             The property names on target types must match property names in the JSON source
@@ -315,6 +300,11 @@
             Get JSON string value
             </summary>
         </member>
+        <member name="P:ServiceStack.Text.JsonObject.Item(System.String)">
+            <summary>
+            Get JSON string value
+            </summary>
+        </member>
         <member name="M:ServiceStack.Text.JsonObject.GetUnescaped(System.String)">
             <summary>
             Get unescaped string value
@@ -328,11 +318,6 @@
         <member name="M:ServiceStack.Text.JsonObject.WriteValue(System.IO.TextWriter,System.Object)">
             <summary>
             Write JSON Array, Object, bool or number values as raw string
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Text.JsonObject.Item(System.String)">
-            <summary>
-            Get JSON string value
             </summary>
         </member>
         <member name="T:ServiceStack.Text.JsonSerializer">
@@ -392,16 +377,6 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
-        <member name="T:ServiceStack.Licensing">
-            <summary>
-            Public Code API to register commercial license for ServiceStack.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.LicenseUtils">
-            <summary>
-            Internal Utilities to verify licensing
-            </summary>
-        </member>
         <member name="T:ServiceStack.Text.Marc.Link`2">
             <summary>
             Pretty Thread-Safe cache class from:
@@ -415,6 +390,16 @@
         <member name="T:ServiceStack.Text.FastMember.ObjectAccessor">
             <summary>
             Represents an individual object, allowing access to members by-name
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.FastMember.ObjectAccessor.Item(System.String)">
+            <summary>
+            Get or Set the value of a named member for the underlying object
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.FastMember.ObjectAccessor.Target">
+            <summary>
+            The object represented by this instance
             </summary>
         </member>
         <member name="M:ServiceStack.Text.FastMember.ObjectAccessor.Equals(System.Object)">
@@ -437,19 +422,14 @@
             Wraps an individual object, allowing by-name access to that instance
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.FastMember.ObjectAccessor.Item(System.String)">
-            <summary>
-            Get or Set the value of a named member for the underlying object
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Text.FastMember.ObjectAccessor.Target">
-            <summary>
-            The object represented by this instance
-            </summary>
-        </member>
         <member name="T:ServiceStack.Text.FastMember.TypeAccessor">
             <summary>
             Provides by-name member-access to objects of a given type
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.FastMember.TypeAccessor.CreateNewSupported">
+            <summary>
+            Does this type support new instances via a parameterless constructor?
             </summary>
         </member>
         <member name="M:ServiceStack.Text.FastMember.TypeAccessor.CreateNew">
@@ -463,46 +443,10 @@
             </summary>
             <remarks>The accessor is cached internally; a pre-existing accessor may be returned</remarks>
         </member>
-        <member name="P:ServiceStack.Text.FastMember.TypeAccessor.CreateNewSupported">
-            <summary>
-            Does this type support new instances via a parameterless constructor?
-            </summary>
-        </member>
         <member name="P:ServiceStack.Text.FastMember.TypeAccessor.Item(System.Object,System.String)">
             <summary>
             Get or set the value of a named member on the target instance
             </summary>
-        </member>
-        <member name="M:ServiceStack.PathUtils.MapProjectPath(System.String)">
-            <summary>
-            Maps the path of a file in the context of a VS project
-            </summary>
-            <param name="relativePath">the relative path</param>
-            <returns>the absolute path</returns>
-            <remarks>Assumes static content is two directories above the /bin/ directory,
-            eg. in a unit test scenario  the assembly would be in /bin/Debug/.</remarks>
-        </member>
-        <member name="M:ServiceStack.PathUtils.MapAbsolutePath(System.String)">
-            <summary>
-            Maps the path of a file in a self-hosted scenario
-            </summary>
-            <param name="relativePath">the relative path</param>
-            <returns>the absolute path</returns>
-            <remarks>Assumes static content is copied to /bin/ folder with the assemblies</remarks>
-        </member>
-        <member name="M:ServiceStack.PathUtils.MapHostAbsolutePath(System.String)">
-            <summary>
-            Maps the path of a file in an Asp.Net hosted scenario
-            </summary>
-            <param name="relativePath">the relative path</param>
-            <returns>the absolute path</returns>
-            <remarks>Assumes static content is in the parent folder of the /bin/ directory</remarks>
-        </member>
-        <member name="T:ServiceStack.QueryStringWriter`1">
-            <summary>
-            Implement the serializer using a more static approach
-            </summary>
-            <typeparam name="T"></typeparam>
         </member>
         <member name="T:ServiceStack.Text.RecyclableMemoryStreamManager">
             <summary>
@@ -516,6 +460,32 @@
             multiples of LargeBufferMultiple (1 MB by default). They are split by size to avoid overly-wasteful buffer
             usage. There should be far fewer 8 MB buffers than 1 MB buffers, for example.
             </remarks>
+        </member>
+        <member name="T:ServiceStack.Text.RecyclableMemoryStreamManager.EventHandler">
+            <summary>
+            Generic delegate for handling events without any arguments.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Text.RecyclableMemoryStreamManager.LargeBufferDiscardedEventHandler">
+            <summary>
+            Delegate for handling large buffer discard reports.
+            </summary>
+            <param name="reason">Reason the buffer was discarded.</param>
+        </member>
+        <member name="T:ServiceStack.Text.RecyclableMemoryStreamManager.StreamLengthReportHandler">
+            <summary>
+            Delegate for handling reports of stream size when streams are allocated
+            </summary>
+            <param name="bytes">Bytes allocated.</param>
+        </member>
+        <member name="T:ServiceStack.Text.RecyclableMemoryStreamManager.UsageReportEventHandler">
+            <summary>
+            Delegate for handling periodic reporting of memory use statistics.
+            </summary>
+            <param name="smallPoolInUseBytes">Bytes currently in use in the small pool.</param>
+            <param name="smallPoolFreeBytes">Bytes currently free in the small pool.</param>
+            <param name="largePoolInUseBytes">Bytes currently in use in the large pool.</param>
+            <param name="largePoolFreeBytes">Bytes currently free in the large pool.</param>
         </member>
         <member name="F:ServiceStack.Text.RecyclableMemoryStreamManager.largePools">
             <summary>
@@ -533,91 +503,11 @@
             <summary>
             Initializes the memory manager with the given block requiredSize.
             </summary>
-            <param name="blockSize">Size of each block that is pooled. Must be &gt; 0.</param>
+            <param name="blockSize">Size of each block that is pooled. Must be > 0.</param>
             <param name="largeBufferMultiple">Each large buffer will be a multiple of this value.</param>
             <param name="maximumBufferSize">Buffers larger than this are not pooled</param>
             <exception cref="T:System.ArgumentOutOfRangeException">blockSize is not a positive number, or largeBufferMultiple is not a positive number, or maximumBufferSize is less than blockSize.</exception>
             <exception cref="T:System.ArgumentException">maximumBufferSize is not a multiple of largeBufferMultiple</exception>
-        </member>
-        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetBlock">
-            <summary>
-            Removes and returns a single block from the pool.
-            </summary>
-            <returns>A byte[] array</returns>
-        </member>
-        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetLargeBuffer(System.Int32,System.String)">
-            <summary>
-            Returns a buffer of arbitrary size from the large buffer pool. This buffer
-            will be at least the requiredSize and always be a multiple of largeBufferMultiple.
-            </summary>
-            <param name="requiredSize">The minimum length of the buffer</param>
-            <param name="tag">The tag of the stream returning this buffer, for logging if necessary.</param>
-            <returns>A buffer of at least the required size.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.ReturnLargeBuffer(System.Byte[],System.String)">
-            <summary>
-            Returns the buffer to the large pool
-            </summary>
-            <param name="buffer">The buffer to return.</param>
-            <param name="tag">The tag of the stream returning this buffer, for logging if necessary.</param>
-            <exception cref="T:System.ArgumentNullException">buffer is null</exception>
-            <exception cref="T:System.ArgumentException">buffer.Length is not a multiple of LargeBufferMultiple (it did not originate from this pool)</exception>
-        </member>
-        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.ReturnBlocks(System.Collections.Generic.ICollection{System.Byte[]},System.String)">
-            <summary>
-            Returns the blocks to the pool
-            </summary>
-            <param name="blocks">Collection of blocks to return to the pool</param>
-            <param name="tag">The tag of the stream returning these blocks, for logging if necessary.</param>
-            <exception cref="T:System.ArgumentNullException">blocks is null</exception>
-            <exception cref="T:System.ArgumentException">blocks contains buffers that are the wrong size (or null) for this memory manager</exception>
-        </member>
-        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetStream">
-            <summary>
-            Retrieve a new MemoryStream object with no tag and a default initial capacity.
-            </summary>
-            <returns>A MemoryStream.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetStream(System.String)">
-            <summary>
-            Retrieve a new MemoryStream object with the given tag and a default initial capacity.
-            </summary>
-            <param name="tag">A tag which can be used to track the source of the stream.</param>
-            <returns>A MemoryStream.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetStream(System.String,System.Int32)">
-            <summary>
-            Retrieve a new MemoryStream object with the given tag and at least the given capacity.
-            </summary>
-            <param name="tag">A tag which can be used to track the source of the stream.</param>
-            <param name="requiredSize">The minimum desired capacity for the stream.</param>
-            <returns>A MemoryStream.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetStream(System.String,System.Int32,System.Boolean)">
-            <summary>
-            Retrieve a new MemoryStream object with the given tag and at least the given capacity, possibly using
-            a single continugous underlying buffer.
-            </summary>
-            <remarks>Retrieving a MemoryStream which provides a single contiguous buffer can be useful in situations
-            where the initial size is known and it is desirable to avoid copying data between the smaller underlying
-            buffers to a single large one. This is most helpful when you know that you will always call GetBuffer
-            on the underlying stream.</remarks>
-            <param name="tag">A tag which can be used to track the source of the stream.</param>
-            <param name="requiredSize">The minimum desired capacity for the stream.</param>
-            <param name="asContiguousBuffer">Whether to attempt to use a single contiguous buffer.</param>
-            <returns>A MemoryStream.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetStream(System.String,System.Byte[],System.Int32,System.Int32)">
-            <summary>
-            Retrieve a new MemoryStream object with the given tag and with contents copied from the provided
-            buffer. The provided buffer is not wrapped or used after construction.
-            </summary>
-            <remarks>The new stream's position is set to the beginning of the stream when returned.</remarks>
-            <param name="tag">A tag which can be used to track the source of the stream.</param>
-            <param name="buffer">The byte buffer to copy data from.</param>
-            <param name="offset">The offset from the start of the buffer to copy from.</param>
-            <param name="count">The number of bytes to copy from the buffer.</param>
-            <returns>A MemoryStream.</returns>
         </member>
         <member name="P:ServiceStack.Text.RecyclableMemoryStreamManager.BlockSize">
             <summary>
@@ -701,6 +591,86 @@
             be valid).
             </summary>
         </member>
+        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetBlock">
+            <summary>
+            Removes and returns a single block from the pool.
+            </summary>
+            <returns>A byte[] array</returns>
+        </member>
+        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetLargeBuffer(System.Int32,System.String)">
+            <summary>
+            Returns a buffer of arbitrary size from the large buffer pool. This buffer
+            will be at least the requiredSize and always be a multiple of largeBufferMultiple.
+            </summary>
+            <param name="requiredSize">The minimum length of the buffer</param>
+            <param name="tag">The tag of the stream returning this buffer, for logging if necessary.</param>
+            <returns>A buffer of at least the required size.</returns>
+        </member>
+        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.ReturnLargeBuffer(System.Byte[],System.String)">
+            <summary>
+            Returns the buffer to the large pool
+            </summary>
+            <param name="buffer">The buffer to return.</param>
+            <param name="tag">The tag of the stream returning this buffer, for logging if necessary.</param>
+            <exception cref="T:System.ArgumentNullException">buffer is null</exception>
+            <exception cref="T:System.ArgumentException">buffer.Length is not a multiple of LargeBufferMultiple (it did not originate from this pool)</exception>
+        </member>
+        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.ReturnBlocks(System.Collections.Generic.ICollection{System.Byte[]},System.String)">
+            <summary>
+            Returns the blocks to the pool
+            </summary>
+            <param name="blocks">Collection of blocks to return to the pool</param>
+            <param name="tag">The tag of the stream returning these blocks, for logging if necessary.</param>
+            <exception cref="T:System.ArgumentNullException">blocks is null</exception>
+            <exception cref="T:System.ArgumentException">blocks contains buffers that are the wrong size (or null) for this memory manager</exception>
+        </member>
+        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetStream">
+            <summary>
+            Retrieve a new MemoryStream object with no tag and a default initial capacity.
+            </summary>
+            <returns>A MemoryStream.</returns>
+        </member>
+        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetStream(System.String)">
+            <summary>
+            Retrieve a new MemoryStream object with the given tag and a default initial capacity.
+            </summary>
+            <param name="tag">A tag which can be used to track the source of the stream.</param>
+            <returns>A MemoryStream.</returns>
+        </member>
+        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetStream(System.String,System.Int32)">
+            <summary>
+            Retrieve a new MemoryStream object with the given tag and at least the given capacity.
+            </summary>
+            <param name="tag">A tag which can be used to track the source of the stream.</param>
+            <param name="requiredSize">The minimum desired capacity for the stream.</param>
+            <returns>A MemoryStream.</returns>
+        </member>
+        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetStream(System.String,System.Int32,System.Boolean)">
+            <summary>
+            Retrieve a new MemoryStream object with the given tag and at least the given capacity, possibly using
+            a single continugous underlying buffer.
+            </summary>
+            <remarks>Retrieving a MemoryStream which provides a single contiguous buffer can be useful in situations
+            where the initial size is known and it is desirable to avoid copying data between the smaller underlying
+            buffers to a single large one. This is most helpful when you know that you will always call GetBuffer
+            on the underlying stream.</remarks>
+            <param name="tag">A tag which can be used to track the source of the stream.</param>
+            <param name="requiredSize">The minimum desired capacity for the stream.</param>
+            <param name="asContiguousBuffer">Whether to attempt to use a single contiguous buffer.</param>
+            <returns>A MemoryStream.</returns>
+        </member>
+        <member name="M:ServiceStack.Text.RecyclableMemoryStreamManager.GetStream(System.String,System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Retrieve a new MemoryStream object with the given tag and with contents copied from the provided
+            buffer. The provided buffer is not wrapped or used after construction.
+            </summary>
+            <remarks>The new stream's position is set to the beginning of the stream when returned.</remarks>
+            <param name="tag">A tag which can be used to track the source of the stream.</param>
+            <param name="buffer">The byte buffer to copy data from.</param>
+            <param name="offset">The offset from the start of the buffer to copy from.</param>
+            <param name="count">The number of bytes to copy from the buffer.</param>
+            <returns>A MemoryStream.</returns>
+        </member>
         <member name="E:ServiceStack.Text.RecyclableMemoryStreamManager.BlockCreated">
             <summary>
             Triggered when a new block is created.
@@ -750,32 +720,6 @@
             <summary>
             Periodically triggered to report usage statistics.
             </summary>
-        </member>
-        <member name="T:ServiceStack.Text.RecyclableMemoryStreamManager.EventHandler">
-            <summary>
-            Generic delegate for handling events without any arguments.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.Text.RecyclableMemoryStreamManager.LargeBufferDiscardedEventHandler">
-            <summary>
-            Delegate for handling large buffer discard reports.
-            </summary>
-            <param name="reason">Reason the buffer was discarded.</param>
-        </member>
-        <member name="T:ServiceStack.Text.RecyclableMemoryStreamManager.StreamLengthReportHandler">
-            <summary>
-            Delegate for handling reports of stream size when streams are allocated
-            </summary>
-            <param name="bytes">Bytes allocated.</param>
-        </member>
-        <member name="T:ServiceStack.Text.RecyclableMemoryStreamManager.UsageReportEventHandler">
-            <summary>
-            Delegate for handling periodic reporting of memory use statistics.
-            </summary>
-            <param name="smallPoolInUseBytes">Bytes currently in use in the small pool.</param>
-            <param name="smallPoolFreeBytes">Bytes currently free in the small pool.</param>
-            <param name="largePoolInUseBytes">Bytes currently in use in the large pool.</param>
-            <param name="largePoolFreeBytes">Bytes currently free in the large pool.</param>
         </member>
         <member name="T:ServiceStack.Text.RecyclableMemoryStream">
             <summary>
@@ -829,6 +773,36 @@
             than they should and you want to prevent race conditions which could corrupt the data.
             </summary>
         </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.Id">
+            <summary>
+            Unique identifier for this stream across it's entire lifetime
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
+        </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.Tag">
+            <summary>
+            A temporary identifier for the current usage of this stream.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
+        </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.MemoryManager">
+            <summary>
+            Gets the memory manager being used by this stream.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
+        </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.AllocationStack">
+            <summary>
+            Callstack of the constructor. It is only set if MemoryManager.GenerateCallStacks is true,
+            which should only be in debugging situations.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.DisposeStack">
+            <summary>
+            Callstack of the Dispose call. It is only set if MemoryManager.GenerateCallStacks is true,
+            which should only be in debugging situations.
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.RecyclableMemoryStream.byteBuffer">
             <summary>
             This buffer exists so that WriteByte can forward all of its calls to Write
@@ -875,6 +849,50 @@
         <member name="M:ServiceStack.Text.RecyclableMemoryStream.Close">
             <summary>
             Equivalent to Dispose
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.Capacity">
+            <summary>
+            Gets or sets the capacity
+            </summary>
+            <remarks>Capacity is always in multiples of the memory manager's block size, unless
+            the large buffer is in use.  Capacity never decreases during a stream's lifetime. 
+            Explicitly setting the capacity to a lower value than the current value will have no effect. 
+            This is because the buffers are all pooled by chunks and there's little reason to 
+            allow stream truncation.
+            </remarks>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
+        </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.Length">
+            <summary>
+            Gets the number of bytes written to this stream.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
+        </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.Position">
+            <summary>
+            Gets the current position in the stream
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
+        </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.CanRead">
+            <summary>
+            Whether the stream can currently read
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.CanSeek">
+            <summary>
+            Whether the stream can currently seek
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.CanTimeout">
+            <summary>
+            Always false
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.RecyclableMemoryStream.CanWrite">
+            <summary>
+            Whether the stream can currently write
             </summary>
         </member>
         <member name="M:ServiceStack.Text.RecyclableMemoryStream.GetBuffer">
@@ -970,79 +988,167 @@
             Release the large buffer (either stores it for eventual release or returns it immediately).
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.Id">
+        <member name="T:ServiceStack.Text.Support.DoubleConverter">
             <summary>
-            Unique identifier for this stream across it's entire lifetime
-            </summary>
-            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
-        </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.Tag">
-            <summary>
-            A temporary identifier for the current usage of this stream.
-            </summary>
-            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
-        </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.MemoryManager">
-            <summary>
-            Gets the memory manager being used by this stream.
-            </summary>
-            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
-        </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.AllocationStack">
-            <summary>
-            Callstack of the constructor. It is only set if MemoryManager.GenerateCallStacks is true,
-            which should only be in debugging situations.
+            A class to allow the conversion of doubles to string representations of
+            their exact decimal values. The implementation aims for readability over
+            efficiency.
+            
+            Courtesy of @JonSkeet
+            http://www.yoda.arachsys.com/csharp/DoubleConverter.cs
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.DisposeStack">
-            <summary>
-            Callstack of the Dispose call. It is only set if MemoryManager.GenerateCallStacks is true,
-            which should only be in debugging situations.
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Text.Support.DoubleConverter.ToExactString(System.Double)" -->
+        <!-- Badly formed XML comment ignored for member "T:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal" -->
+        <!-- Badly formed XML comment ignored for member "F:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.digits" -->
+        <member name="F:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.decimalPoint">
+            <summary> 
+            How many digits are *after* the decimal point
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.Capacity">
-            <summary>
-            Gets or sets the capacity
-            </summary>
-            <remarks>Capacity is always in multiples of the memory manager's block size, unless
-            the large buffer is in use.  Capacity never decreases during a stream's lifetime. 
-            Explicitly setting the capacity to a lower value than the current value will have no effect. 
-            This is because the buffers are all pooled by chunks and there's little reason to 
-            allow stream truncation.
-            </remarks>
-            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
-        </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.Length">
-            <summary>
-            Gets the number of bytes written to this stream.
-            </summary>
-            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
-        </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.Position">
-            <summary>
-            Gets the current position in the stream
-            </summary>
-            <exception cref="T:System.ObjectDisposedException">Object has been disposed</exception>
-        </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.CanRead">
-            <summary>
-            Whether the stream can currently read
+        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.#ctor(System.Int64)">
+            <summary> 
+            Constructs an arbitrary decimal expansion from the given long.
+            The long must not be negative.
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.CanSeek">
+        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.MultiplyBy(System.Int32)">
             <summary>
-            Whether the stream can currently seek
+            Multiplies the current expansion by the given amount, which should
+            only be 2 or 5.
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.CanTimeout">
+        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.Shift(System.Int32)">
             <summary>
-            Always false
+            Shifts the decimal point; a negative value makes
+            the decimal expansion bigger (as fewer digits come after the
+            decimal place) and a positive value makes the decimal
+            expansion smaller.
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.RecyclableMemoryStream.CanWrite">
+        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.Normalize">
             <summary>
-            Whether the stream can currently write
+            Removes leading/trailing zeroes from the expansion.
             </summary>
+        </member>
+        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.ToString">
+            <summary>
+            Converts the value to a proper decimal string representation.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Text.TypeSerializer">
+            <summary>
+            Creates an instance of a Type from a string value
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.CanCreateFromString(System.Type)">
+            <summary>
+            Determines whether the specified type is convertible from string.
+            </summary>
+            <param name="type">The type.</param>
+            <returns>
+            	<c>true</c> if the specified type is convertible from string; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.DeserializeFromString``1(System.String)">
+            <summary>
+            Parses the specified value.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.DeserializeFromString(System.String,System.Type)">
+            <summary>
+            Parses the specified type.
+            </summary>
+            <param name="type">The type.</param>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.ToStringDictionary``1(``0)">
+            <summary>
+            Useful extension method to get the Dictionary[string,string] representation of any POCO type.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.Dump``1(``0)">
+            <summary>
+            Recursively prints the contents of any POCO object in a human-friendly, readable format
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.PrintDump``1(``0)">
+            <summary>
+            Print Dump to Console.WriteLine
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.Print(System.String,System.Object[])">
+            <summary>
+            Print string.Format to Console.WriteLine
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer`1.DeserializeFromString(System.String)">
+            <summary>
+            Parses the specified value.
+            </summary>
+            <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.AutoMappingUtils.PopulateWith(System.Object)">
+            <summary>
+            Populate an object with Example data.
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.AutoMappingUtils.PopulateObjectInternal(System.Object,System.Collections.Generic.Dictionary{System.Type,System.Int32})">
+            <summary>
+            Populates the object with example data.
+            </summary>
+            <param name="obj"></param>
+            <param name="recursionInfo">Tracks how deeply nested we are</param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Licensing">
+            <summary>
+            Public Code API to register commercial license for ServiceStack.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.LicenseUtils">
+            <summary>
+            Internal Utilities to verify licensing
+            </summary>
+        </member>
+        <member name="M:ServiceStack.PathUtils.MapProjectPath(System.String)">
+            <summary>
+            Maps the path of a file in the context of a VS project
+            </summary>
+            <param name="relativePath">the relative path</param>
+            <returns>the absolute path</returns>
+            <remarks>Assumes static content is two directories above the /bin/ directory,
+            eg. in a unit test scenario  the assembly would be in /bin/Debug/.</remarks>
+        </member>
+        <member name="M:ServiceStack.PathUtils.MapAbsolutePath(System.String)">
+            <summary>
+            Maps the path of a file in a self-hosted scenario
+            </summary>
+            <param name="relativePath">the relative path</param>
+            <returns>the absolute path</returns>
+            <remarks>Assumes static content is copied to /bin/ folder with the assemblies</remarks>
+        </member>
+        <member name="M:ServiceStack.PathUtils.MapHostAbsolutePath(System.String)">
+            <summary>
+            Maps the path of a file in an Asp.Net hosted scenario
+            </summary>
+            <param name="relativePath">the relative path</param>
+            <returns>the absolute path</returns>
+            <remarks>Assumes static content is in the parent folder of the /bin/ directory</remarks>
+        </member>
+        <member name="T:ServiceStack.QueryStringWriter`1">
+            <summary>
+            Implement the serializer using a more static approach
+            </summary>
+            <typeparam name="T"></typeparam>
         </member>
         <member name="M:ServiceStack.ReflectionExtensions.New``1(System.Type)">
             <summary>
@@ -1160,112 +1266,6 @@
             Skip the encoding process for 'safe strings' 
             </summary>
             <param name="strVal"></param>
-            <returns></returns>
-        </member>
-        <member name="T:ServiceStack.Text.Support.DoubleConverter">
-            <summary>
-            A class to allow the conversion of doubles to string representations of
-            their exact decimal values. The implementation aims for readability over
-            efficiency.
-            
-            Courtesy of @JonSkeet
-            http://www.yoda.arachsys.com/csharp/DoubleConverter.cs
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Text.Support.DoubleConverter.ToExactString(System.Double)" -->
-        <!-- Badly formed XML comment ignored for member "T:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal" -->
-        <!-- Badly formed XML comment ignored for member "F:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.digits" -->
-        <member name="F:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.decimalPoint">
-            <summary> 
-            How many digits are *after* the decimal point
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.#ctor(System.Int64)">
-            <summary> 
-            Constructs an arbitrary decimal expansion from the given long.
-            The long must not be negative.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.MultiplyBy(System.Int32)">
-            <summary>
-            Multiplies the current expansion by the given amount, which should
-            only be 2 or 5.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.Shift(System.Int32)">
-            <summary>
-            Shifts the decimal point; a negative value makes
-            the decimal expansion bigger (as fewer digits come after the
-            decimal place) and a positive value makes the decimal
-            expansion smaller.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.Normalize">
-            <summary>
-            Removes leading/trailing zeroes from the expansion.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Text.Support.DoubleConverter.ArbitraryDecimal.ToString">
-            <summary>
-            Converts the value to a proper decimal string representation.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.Text.TypeSerializer">
-            <summary>
-            Creates an instance of a Type from a string value
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Text.TypeSerializer.CanCreateFromString(System.Type)">
-            <summary>
-            Determines whether the specified type is convertible from string.
-            </summary>
-            <param name="type">The type.</param>
-            <returns>
-            	<c>true</c> if the specified type is convertible from string; otherwise, <c>false</c>.
-            </returns>
-        </member>
-        <member name="M:ServiceStack.Text.TypeSerializer.DeserializeFromString``1(System.String)">
-            <summary>
-            Parses the specified value.
-            </summary>
-            <param name="value">The value.</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Text.TypeSerializer.DeserializeFromString(System.String,System.Type)">
-            <summary>
-            Parses the specified type.
-            </summary>
-            <param name="type">The type.</param>
-            <param name="value">The value.</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Text.TypeSerializer.ToStringDictionary``1(``0)">
-            <summary>
-            Useful extension method to get the Dictionary[string,string] representation of any POCO type.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Text.TypeSerializer.Dump``1(``0)">
-            <summary>
-            Recursively prints the contents of any POCO object in a human-friendly, readable format
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Text.TypeSerializer.PrintDump``1(``0)">
-            <summary>
-            Print Dump to Console.WriteLine
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Text.TypeSerializer.Print(System.String,System.Object[])">
-            <summary>
-            Print string.Format to Console.WriteLine
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Text.TypeSerializer`1.DeserializeFromString(System.String)">
-            <summary>
-            Parses the specified value.
-            </summary>
-            <param name="value">The value.</param>
             <returns></returns>
         </member>
     </members>
