@@ -75,7 +75,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public abstract class IocServiceTests
     {
-        private const int WaitForRequestCleanup = 100;
+        private const int WaitForRequestCleanup = 200;
 
         public abstract IServiceClient CreateClient(ResetIoc request = null);
 
