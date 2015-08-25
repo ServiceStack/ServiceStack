@@ -135,9 +135,9 @@
 
     <!-- WinStore pcl provider --><!-- VS2015 doesn't support WinStore Apps yet-->
 
-    <!--<MSBuild Projects="../src/ServiceStack.Pcl.WinStore/ServiceStack.Pcl.WinStore.csproj" Properties="Configuration=$(Configuration);DefineConstants=NETFX_CORE;OutputPath=bin/$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Pcl.WinStore/ServiceStack.Pcl.WinStore.csproj" Properties="Configuration=$(Configuration);DefineConstants=NETFX_CORE;OutputPath=bin/$(Configuration)"/>
     <Copy SourceFiles="%(WinStoreFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-    <Copy SourceFiles="%(WinStoreFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/win" />-->
+    <Copy SourceFiles="%(WinStoreFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/win" />
 
     <!-- Android pcl provider -->
 
