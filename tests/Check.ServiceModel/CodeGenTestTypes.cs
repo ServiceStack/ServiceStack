@@ -480,6 +480,11 @@ namespace Check.ServiceModel.Types
         public string extension { get; set; }
     }
 
+    public class HelloDictionary : IReturn<Dictionary<string, string>>
+    {
+        public string Key { get; set; }
+        public string Value { get; set; }
+    }
 }
 
 

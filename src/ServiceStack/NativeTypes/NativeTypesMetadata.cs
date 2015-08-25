@@ -874,7 +874,7 @@ namespace ServiceStack.NativeTypes
 
         public static string SafeToken(this string token)
         {
-            if (token.ContainsAny("\"", " ", "-", "+", "\\", "*", "=", "!"))
+            if (token.ContainsAny("\"", "-", "+", "\\", "*", "=", "!"))
                 throw new InvalidDataException("MetaData is potentially malicious. Expected token, Received: {0}".Fmt(token));
 
             return token;

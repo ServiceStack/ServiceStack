@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Check.ServiceModel.Operations;
 using Check.ServiceModel.Types;
 using ServiceStack;
@@ -184,6 +185,11 @@ namespace Check.ServiceInterface
         public object Any(HelloReserved request)
         {
             return request;
+        }
+
+        public object Any(HelloDictionary request)
+        {
+            return new Dictionary<string,string> { { request.Key ?? "key", request.Value } };
         }
     }
 

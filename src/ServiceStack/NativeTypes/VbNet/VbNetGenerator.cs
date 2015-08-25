@@ -657,7 +657,7 @@ namespace ServiceStack.NativeTypes.VbNet
         public static string SafeToken(this string token)
         {
             var t = token.Replace("Of ", ""); // remove Of from token so [space] character will work 
-            if (t.ContainsAny("\"", " ", "-", "+", "\\", "*", "=", "!"))
+            if (t.ContainsAny("\"", "-", "+", "\\", "*", "=", "!"))
                 throw new InvalidDataException("MetaData is potentially malicious. Expected token, Received: {0}".Fmt(token));
 
             return token;
