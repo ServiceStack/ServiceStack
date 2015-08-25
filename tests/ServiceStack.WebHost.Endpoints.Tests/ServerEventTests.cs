@@ -549,13 +549,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     {
                         await client2.Connect();
 
-                        await Task.WhenAny(client1.Connect(), Task.Delay(1000));
+                        await Task.WhenAny(client1.Connect(), Task.Delay(2000));
 
                         client2.PostChat("msg2 from client2");
                     }
 
                     "Waiting for 30s...".Print();
-                    var msg2 = await msgTask.WaitAsync(2000);
+                    var msg2 = await msgTask.WaitAsync(3000);
 
                     var chatMsg2 = msg2.Json.FromJson<ChatMessage>();
 
