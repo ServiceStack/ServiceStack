@@ -64,6 +64,25 @@
             Logs the specified message.
             </summary>
         </member>
+        <member name="T:ServiceStack.IPAddressExtensions">
+            <summary>
+            Useful IPAddressExtensions from: 
+            http://blogs.msdn.com/knom/archive/2008/12/31/ip-address-calculations-with-c-subnetmasks-networks.aspx
+            
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses">
+            <summary>
+            Gets the ipv4 addresses from all Network Interfaces that have Subnet masks.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses">
+            <summary>
+            Gets the ipv6 addresses from all Network Interfaces.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:ServiceStack.Reflection.PropertyAccessor`1.TypedGetPropertyFn``1">
             <summary>
             Func to get the Strongly-typed field
@@ -113,25 +132,6 @@
             <summary>
             Required to cast the ValueType to an object for caching
             </summary>
-        </member>
-        <member name="T:ServiceStack.IPAddressExtensions">
-            <summary>
-            Useful IPAddressExtensions from: 
-            http://blogs.msdn.com/knom/archive/2008/12/31/ip-address-calculations-with-c-subnetmasks-networks.aspx
-            
-            </summary>
-        </member>
-        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses">
-            <summary>
-            Gets the ipv4 addresses from all Network Interfaces that have Subnet masks.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses">
-            <summary>
-            Gets the ipv6 addresses from all Network Interfaces.
-            </summary>
-            <returns></returns>
         </member>
         <member name="T:ServiceStack.Support.AdapterBase">
             <summary>
