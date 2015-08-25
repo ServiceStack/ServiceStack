@@ -1243,10 +1243,9 @@ namespace ServiceStack
                 return RSAalg.VerifySha1Data(DataToVerify, SignedData);
 
             }
-            catch (CryptographicException e)
+            catch (CryptographicException ex)
             {
-                Console.WriteLine(e.Message);
-
+                Tracer.Instance.WriteError(ex);
                 return false;
             }
         }

@@ -99,13 +99,6 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.PCL.csproj">
-      <Project>{135808a7-ce69-4c32-be30-25a8ffbf4a58}</Project>
-      <Name>ServiceStack.Client.PCL</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\ServiceStack.Client\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
@@ -122,6 +115,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.PCL.csproj">
+      <Project>{42e1c8c0-a163-44cc-92b1-8f416f2c0b01}</Project>
+      <Name>ServiceStack.Client.PCL</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '11.0' ">
     <VisualStudioVersion>11.0</VisualStudioVersion>
