@@ -232,12 +232,13 @@ namespace ServiceStack.Razor.Managers
             viewManager.EnsureCompiled(razorPage);
 
             //don't proceed any further, the background compiler found there was a problem compiling the page, so throw instead
-            if (razorPage.CompileException != null)
+            var pageCompileEx = razorPage.CompileException;
+            if (pageCompileEx != null)
             {
                 if (Text.Env.IsMono)
                 {
                     //Additional debug info Working around not displaying default exception in IHttpAsyncHandler
-                    var errors = razorPage.CompileException.Results.Errors;
+                    var errors = pageCompileEx.Results.Errors;
                     for (var i = 0; i < errors.Count; i++)
                     {
                         var error = errors[i];
@@ -245,7 +246,7 @@ namespace ServiceStack.Razor.Managers
                         Log.Debug("{0}: {1}".Fmt(error.ErrorNumber, error.ErrorText));
                     }
                 } 
-                throw razorPage.CompileException;
+                throw pageCompileEx;
             }
 
             //else, EnsureCompiled() ensures we have a page type to work with so, create an instance of the page
