@@ -23,6 +23,7 @@
     <dependencies>
         <dependency id="ServiceStack" version="4.0" />
         <dependency id="DotNetOpenAuth.Ultimate" version="4.3.4.13329" />
+        <dependency id="Microsoft.Net.Http" version="2.2.29" />
     </dependencies> 
   </metadata>
   <files>
