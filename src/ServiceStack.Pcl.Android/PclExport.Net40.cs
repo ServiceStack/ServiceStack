@@ -469,7 +469,7 @@ namespace ServiceStack
 
         public override ParseStringDelegate GetJsReaderParseMethod<TSerializer>(Type type)
         {
-#if !__IOS__
+#if !(PCL || __IOS__ || ANDROID)
             if (type.AssignableFrom(typeof(System.Dynamic.IDynamicMetaObjectProvider)) ||
                 type.HasInterface(typeof(System.Dynamic.IDynamicMetaObjectProvider)))
             {
