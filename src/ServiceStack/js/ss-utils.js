@@ -330,6 +330,15 @@
         hold.close();
         return $.ss.eventSource = es;
     };
+    $.ss.invokeReceiver = function (r, cmd, el, msg, e, name) {
+        if (r) {
+            if (typeof (r[cmd]) == "function") {
+                r[cmd].call(el || r[cmd], msg, e);
+            } else {
+                r[cmd] = msg;
+            }
+        }
+    };
     $.fn.handleServerEvents = function (opt) {
         $.ss.eventSource = this[0];
         opt = opt || {};
@@ -407,13 +416,7 @@
             }
             else {
                 var r = opt.receivers && opt.receivers[op] || $.ss.eventReceivers[op];
-                if (r) {
-                    if (typeof (r[cmd]) == "function") {
-                        r[cmd].call(el || r[cmd], msg, e);
-                    } else {
-                        r[cmd] = msg;
-                    }
-                }
+                $.ss.invokeReceiver(r, cmd, el, msg, e, op);
             }
 
             if (opt.success) {
