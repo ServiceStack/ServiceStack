@@ -17,7 +17,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Xml;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
 using ServiceStack.Text.Json;
@@ -411,23 +410,37 @@ namespace ServiceStack
 
         public override string ToXsdDateTimeString(DateTime dateTime)
         {
-            return XmlConvert.ToString(dateTime.ToStableUniversalTime(), XmlDateTimeSerializationMode.Utc);
+#if !(__IOS__ || ANDROID)
+            return System.Xml.XmlConvert.ToString(dateTime.ToStableUniversalTime(), System.Xml.XmlDateTimeSerializationMode.Utc);
+#else
+            return dateTime.ToStableUniversalTime().ToString(DateTimeSerializer.XsdDateTimeFormat);
+#endif
         }
 
         public override string ToLocalXsdDateTimeString(DateTime dateTime)
         {
-            return XmlConvert.ToString(dateTime, XmlDateTimeSerializationMode.Local);
+#if !(__IOS__ || ANDROID)
+            return System.Xml.XmlConvert.ToString(dateTime, System.Xml.XmlDateTimeSerializationMode.Local);
+#else
+            return dateTime.ToString(DateTimeSerializer.XsdDateTimeFormat);
+#endif
         }
 
         public override DateTime ParseXsdDateTime(string dateTimeStr)
         {
-            return XmlConvert.ToDateTime(dateTimeStr, XmlDateTimeSerializationMode.Utc);
+#if !(__IOS__ || ANDROID)
+            return System.Xml.XmlConvert.ToDateTime(dateTimeStr, System.Xml.XmlDateTimeSerializationMode.Utc);
+#else
+            return DateTime.ParseExact(dateTimeStr, DateTimeSerializer.XsdDateTimeFormat, CultureInfo.InvariantCulture);
+#endif
         }
 
+#if !(__IOS__ || ANDROID)
         public override DateTime ParseXsdDateTimeAsUtc(string dateTimeStr)
         {
-            return XmlConvert.ToDateTime(dateTimeStr, XmlDateTimeSerializationMode.Utc).Prepare(parsedAsUtc: true);
+            return System.Xml.XmlConvert.ToDateTime(dateTimeStr, System.Xml.XmlDateTimeSerializationMode.Utc).Prepare(parsedAsUtc: true);
         }
+#endif
 
         public override DateTime ToStableUniversalTime(DateTime dateTime)
         {
@@ -464,11 +477,6 @@ namespace ServiceStack
             }
 #endif
             return null;
-        }
-
-        public override XmlSerializer NewXmlSerializer()
-        {
-            return new XmlSerializer();
         }
 
         public override void InitHttpWebRequest(HttpWebRequest httpReq,
@@ -1214,7 +1222,7 @@ namespace ServiceStack
             throw new NotImplementedException("Compression is not supported on this platform");
 #else
             using (var deflateStream = new System.IO.Compression.DeflateStream(stream, System.IO.Compression.CompressionMode.Compress))
-            using (var xw = new XmlTextWriter(deflateStream, Encoding.UTF8))
+            using (var xw = new System.Xml.XmlTextWriter(deflateStream, Encoding.UTF8))
             {
                 var serializer = new DataContractSerializer(from.GetType());
                 serializer.WriteObject(xw, from);
