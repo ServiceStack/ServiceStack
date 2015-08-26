@@ -1,3 +1,4 @@
+#if !(NETFX_CORE || SL5 || __IOS__ || ANDROID || PCL)
 using System.IO;
 using System.Xml;
 using ServiceStack.Serialization;
@@ -59,3 +60,4 @@ namespace ServiceStack
         }
     }
 }
+#endif

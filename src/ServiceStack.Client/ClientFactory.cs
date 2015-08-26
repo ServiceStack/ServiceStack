@@ -13,13 +13,13 @@ namespace ServiceStack
              if (endpointUrl.IndexOf("format=") == -1 || endpointUrl.IndexOf("format=json") >= 0)
                  return new JsonServiceClient(endpointUrl);
 
-             if (endpointUrl.IndexOf("format=xml") >= 0)
-                 return new XmlServiceClient(endpointUrl);
-
              if (endpointUrl.IndexOf("format=jsv") >= 0)
                  return new JsvServiceClient(endpointUrl);
 
 #if !(SL5 || XBOX || ANDROID || __IOS__ || PCL)
+             if (endpointUrl.IndexOf("format=xml") >= 0)
+                 return new XmlServiceClient(endpointUrl);
+
              if (endpointUrl.IndexOf("format=soap11") >= 0)
                  return new Soap11ServiceClient(endpointUrl);
 
@@ -27,7 +27,7 @@ namespace ServiceStack
                  return new Soap12ServiceClient(endpointUrl);
 #endif
 
-             throw new NotImplementedException("could not find service client for " + endpointUrl);
+            throw new NotImplementedException("could not find service client for " + endpointUrl);
          }
     }
 }
