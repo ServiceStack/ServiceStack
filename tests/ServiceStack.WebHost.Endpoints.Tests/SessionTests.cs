@@ -11,7 +11,9 @@ using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Data;
+using ServiceStack.Host;
 using ServiceStack.OrmLite;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -33,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Qty { get; set; }
     }
 
-    public class SessionTypedIncr : IReturn<AuthUserSession> {}
+    public class SessionTypedIncr : IReturn<AuthUserSession> { }
 
     public class SessionService : Service
     {
@@ -92,13 +94,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public class SessionAppHost : AppHostHttpListenerBase
         {
-            public SessionAppHost() : base(typeof(SessionTests).Name, typeof(SessionTests).Assembly) {}
+            public SessionAppHost() : base(typeof(SessionTests).Name, typeof(SessionTests).Assembly) { }
 
             public override void Configure(Container container)
             {
                 Plugins.Add(new SessionFeature());
 
-                SetConfig(new HostConfig {
+                SetConfig(new HostConfig
+                {
                     AllowSessionIdsInHttpParams = true,
                 });
 
@@ -235,7 +238,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var sessionId = cookies["ss-id"];
 
             var cookieContainer = new CookieContainer();
-            cookieContainer.Add(new Cookie {
+            cookieContainer.Add(new Cookie
+            {
                 Name = "ss-id",
                 Value = "some-other-id",
                 Domain = new Uri(Config.AbsoluteBaseUri).Host,
@@ -250,5 +254,62 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Tag, Is.EqualTo(2));
         }
 
+        [Test]
+        public void Can_mock_IntegrationTest_Session_with_Request()
+        {
+            var mockRequest = new MockHttpRequest();
+            mockRequest.Items[SessionFeature.RequestItemsSessionKey] = new AuthUserSession
+            {
+                UserName = "Mocked",
+            };
+            using (var service = HostContext.ResolveService<SessionService>(mockRequest))
+            {
+                Assert.That(service.GetSession().UserName, Is.EqualTo("Mocked"));
+            }
+        }
+    }
+
+    public class MockSessionTests
+    {
+        [Test]
+        public void Can_mock_UnitTest_Session_with_IOC()
+        {
+            var appHost = new BasicAppHost
+            {
+                TestMode = true,
+                ConfigureContainer = container =>
+                {
+                    container.Register<IAuthSession>(c => new AuthUserSession
+                    {
+                        UserName = "Mocked",
+                    });
+                }
+            }.Init();
+
+            var service = new SessionService {
+                Request = new MockHttpRequest()
+            };
+            Assert.That(service.GetSession().UserName, Is.EqualTo("Mocked"));
+
+            appHost.Dispose();
+        }
+
+        [Test]
+        public void Can_mock_IntegrationTest_Session_with_Request()
+        {
+            using (new BasicAppHost(typeof(SessionService).Assembly).Init())
+            {
+                var req = new MockHttpRequest();
+                req.Items[SessionFeature.RequestItemsSessionKey] = 
+                    new AuthUserSession {
+                        UserName = "Mocked",
+                    };
+
+                using (var service = HostContext.ResolveService<SessionService>(req))
+                {
+                    Assert.That(service.GetSession().UserName, Is.EqualTo("Mocked"));
+                }
+            }
+        }
     }
 }
