@@ -16,7 +16,7 @@ namespace ServiceStack.Common.Tests
 
             int i = 0;
 
-            Action incrAndBlock = () => { i++; Thread.Sleep(1000); };
+            Action incrAndBlock = () => { Interlocked.Increment(ref i); Thread.Sleep(100); };
 
             var actions = new[]
             {
@@ -31,7 +31,7 @@ namespace ServiceStack.Common.Tests
             actions.ExecAllAndWait(timeout:TimeSpan.FromSeconds(30));
 
             "Took {0}ms".Print(sw.ElapsedMilliseconds);
-            Assert.That(sw.ElapsedMilliseconds, Is.LessThan(4000));
+            Assert.That(sw.ElapsedMilliseconds, Is.LessThan(400));
             Assert.That(i, Is.EqualTo(actions.Length));
         }
     }
