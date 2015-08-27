@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -166,13 +165,15 @@ namespace ServiceStack
             return webRequest.GetResponse();
         }
 
+#if !LITE
         public override bool IsDebugBuild(Assembly assembly)
         {
             return assembly.AllAttributes()
-                           .OfType<DebuggableAttribute>()
+                           .OfType<System.Diagnostics.DebuggableAttribute>()
                            .Select(attr => attr.IsJITTrackingEnabled)
                            .FirstOrDefault();
         }
+#endif
 
         public override string MapAbsolutePath(string relativePath, string appendPartialPathModifier)
         {
@@ -209,12 +210,12 @@ namespace ServiceStack
         {
             var binPath = AssemblyUtils.GetAssemblyBinPath(Assembly.GetExecutingAssembly());
             Assembly assembly = null;
-            var assemblyDllPath = binPath + String.Format("{0}.{1}", assemblyName, "dll");
+            var assemblyDllPath = binPath + string.Format("{0}.{1}", assemblyName, "dll");
             if (File.Exists(assemblyDllPath))
             {
                 assembly = AssemblyUtils.LoadAssembly(assemblyDllPath);
             }
-            var assemblyExePath = binPath + String.Format("{0}.{1}", assemblyName, "exe");
+            var assemblyExePath = binPath + string.Format("{0}.{1}", assemblyName, "exe");
             if (File.Exists(assemblyExePath))
             {
                 assembly = AssemblyUtils.LoadAssembly(assemblyExePath);
@@ -410,7 +411,7 @@ namespace ServiceStack
 
         public override string ToXsdDateTimeString(DateTime dateTime)
         {
-#if !(__IOS__ || ANDROID)
+#if !LITE
             return System.Xml.XmlConvert.ToString(dateTime.ToStableUniversalTime(), System.Xml.XmlDateTimeSerializationMode.Utc);
 #else
             return dateTime.ToStableUniversalTime().ToString(DateTimeSerializer.XsdDateTimeFormat);
@@ -419,7 +420,7 @@ namespace ServiceStack
 
         public override string ToLocalXsdDateTimeString(DateTime dateTime)
         {
-#if !(__IOS__ || ANDROID)
+#if !LITE
             return System.Xml.XmlConvert.ToString(dateTime, System.Xml.XmlDateTimeSerializationMode.Local);
 #else
             return dateTime.ToString(DateTimeSerializer.XsdDateTimeFormat);
@@ -428,14 +429,14 @@ namespace ServiceStack
 
         public override DateTime ParseXsdDateTime(string dateTimeStr)
         {
-#if !(__IOS__ || ANDROID)
+#if !LITE
             return System.Xml.XmlConvert.ToDateTime(dateTimeStr, System.Xml.XmlDateTimeSerializationMode.Utc);
 #else
             return DateTime.ParseExact(dateTimeStr, DateTimeSerializer.XsdDateTimeFormat, CultureInfo.InvariantCulture);
 #endif
         }
 
-#if !(__IOS__ || ANDROID)
+#if !LITE
         public override DateTime ParseXsdDateTimeAsUtc(string dateTimeStr)
         {
             return System.Xml.XmlConvert.ToDateTime(dateTimeStr, System.Xml.XmlDateTimeSerializationMode.Utc).Prepare(parsedAsUtc: true);
@@ -469,7 +470,7 @@ namespace ServiceStack
 
         public override ParseStringDelegate GetJsReaderParseMethod<TSerializer>(Type type)
         {
-#if !(PCL || __IOS__ || ANDROID)
+#if !(__IOS__ || LITE)
             if (type.AssignableFrom(typeof(System.Dynamic.IDynamicMetaObjectProvider)) ||
                 type.HasInterface(typeof(System.Dynamic.IDynamicMetaObjectProvider)))
             {
