@@ -64,24 +64,44 @@
             Logs the specified message.
             </summary>
         </member>
-        <member name="T:ServiceStack.IPAddressExtensions">
+        <member name="T:ServiceStack.Logging.DebugLogFactory">
             <summary>
-            Useful IPAddressExtensions from: 
-            http://blogs.msdn.com/knom/archive/2008/12/31/ip-address-calculations-with-c-subnetmasks-networks.aspx
+            Creates a Debug Logger, that logs all messages to: System.Diagnostics.Debug
             
+            Made public so its testable
             </summary>
         </member>
-        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses">
+        <member name="T:ServiceStack.Logging.DebugLogger">
             <summary>
-            Gets the ipv4 addresses from all Network Interfaces that have Subnet masks.
+            Default logger is to System.Diagnostics.Debug.WriteLine
+            
+            Made public so its testable
             </summary>
-            <returns></returns>
         </member>
-        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses">
+        <member name="M:ServiceStack.Logging.DebugLogger.#ctor(System.String)">
             <summary>
-            Gets the ipv6 addresses from all Network Interfaces.
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
             </summary>
-            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.#ctor(System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.Log(System.Object,System.Exception)">
+            <summary>
+            Logs the specified message.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.LogFormat(System.Object,System.Object[])">
+            <summary>
+            Logs the format.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.Log(System.Object)">
+            <summary>
+            Logs the specified message.
+            </summary>
         </member>
         <member name="M:ServiceStack.Reflection.PropertyAccessor`1.TypedGetPropertyFn``1">
             <summary>
@@ -132,6 +152,25 @@
             <summary>
             Required to cast the ValueType to an object for caching
             </summary>
+        </member>
+        <member name="T:ServiceStack.IPAddressExtensions">
+            <summary>
+            Useful IPAddressExtensions from: 
+            http://blogs.msdn.com/knom/archive/2008/12/31/ip-address-calculations-with-c-subnetmasks-networks.aspx
+            
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses">
+            <summary>
+            Gets the ipv4 addresses from all Network Interfaces that have Subnet masks.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses">
+            <summary>
+            Gets the ipv6 addresses from all Network Interfaces.
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:ServiceStack.Support.AdapterBase">
             <summary>
