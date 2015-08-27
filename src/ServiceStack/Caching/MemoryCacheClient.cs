@@ -180,12 +180,15 @@ namespace ServiceStack.Caching
 
         private int UpdateCounter(string key, int value)
         {
-            if (!this.counters.ContainsKey(key))
+            lock (counters)
             {
-                this.counters[key] = 0;
+                if (!this.counters.ContainsKey(key))
+                {
+                    this.counters[key] = 0;
+                }
+                this.counters[key] += value;
+                return this.counters[key];
             }
-            this.counters[key] += value;
-            return this.counters[key];
         }
 
         public long Increment(string key, uint amount)
