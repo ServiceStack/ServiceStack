@@ -32,9 +32,6 @@
     <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Pcl.Dynamic.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
     <Compile Include="PclExport.Net40.cs" />
     <Compile Include="PclExportClient.Ios.cs" />
