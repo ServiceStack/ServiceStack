@@ -593,21 +593,26 @@ namespace ServiceStack
             var expired = new List<IEventSubscription>();
             var now = DateTime.UtcNow;
 
-            foreach (var subscription in subs)
+            for (int i = 0; i < subs.Length; i++)
             {
-                if (subscription.HasChannel(channel))
+                var sub = subs[i];
+                Thread.MemoryBarrier();
+
+                if (sub.HasChannel(channel))
                 {
-                    if (now - subscription.LastPulseAt > IdleTimeout)
+                    if (now - sub.LastPulseAt > IdleTimeout)
                     {
                         if (Log.IsDebugEnabled)
-                            Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, subscription.SubscriptionId, string.Join(", ", subscription.Channels));
+                            Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
+                                string.Join(", ", sub.Channels));
 
-                        expired.Add(subscription);
+                        expired.Add(sub);
                     }
                     if (Log.IsDebugEnabled)
-                        Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, subscription.SubscriptionId, string.Join(", ", subscription.Channels));
+                        Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
+                            string.Join(", ", sub.Channels));
 
-                    subscription.Publish(selector, Serialize(message));
+                    sub.Publish(selector, Serialize(message));
                 }
             }
 
@@ -637,10 +642,13 @@ namespace ServiceStack
             if (!Subcriptions.TryGetValue(id, out subs))
                 return null;
 
-            foreach (var sub in subs)
+            lock (subs)
             {
-                if (sub != null)
-                    return sub;
+                foreach (var sub in subs)
+                {
+                    if (sub != null)
+                        return sub;
+                }
             }
 
             return null;
@@ -660,12 +668,16 @@ namespace ServiceStack
             if (!UserIdSubcriptions.TryGetValue(userId, out subs))
                 return subInfos;
 
-            foreach (var sub in subs)
+            lock (subs)
             {
-                var info = sub.GetInfo();
-                if (info != null)
-                    subInfos.Add(info);
+                foreach (var sub in subs)
+                {
+                    var info = sub.GetInfo();
+                    if (info != null)
+                        subInfos.Add(info);
+                }
             }
+
             return subInfos;
         }
 
@@ -687,15 +699,18 @@ namespace ServiceStack
                 if (!ChannelSubcriptions.TryGetValue(channel, out subs))
                     continue;
 
-                foreach (var sub in subs)
+                lock (subs)
                 {
-                    if (sub == null)
-                        continue;
-
-                    if (!alreadyAdded.Contains(sub.SubscriptionId))
+                    foreach (var sub in subs)
                     {
-                        ret.Add(sub.Meta);
-                        alreadyAdded.Add(sub.SubscriptionId);
+                        if (sub == null)
+                            continue;
+
+                        if (!alreadyAdded.Contains(sub.SubscriptionId))
+                        {
+                            ret.Add(sub.Meta);
+                            alreadyAdded.Add(sub.SubscriptionId);
+                        }
                     }
                 }
             }
@@ -743,13 +758,8 @@ namespace ServiceStack
                 return;
 
             IEventSubscription[] subs;
-            if (!map.TryGetValue(key, out subs))
-            {
-                subs = new IEventSubscription[DefaultArraySize];
-                subs[0] = subscription;
-                if (map.TryAdd(key, subs))
-                    return;
-            }
+            if (AddNewSubscription(subscription, key, map))
+                return;
 
             while (!map.TryGetValue(key, out subs)) ;
             if (!TryAdd(subs, subscription))
@@ -758,12 +768,34 @@ namespace ServiceStack
                 do
                 {
                     while (!map.TryGetValue(key, out snapshot)) ;
-                    newArray = new IEventSubscription[subs.Length * ReSizeMultiplier + ReSizeBuffer];
-                    Array.Copy(snapshot, 0, newArray, 0, snapshot.Length);
+
+                    newArray = ResizeSubscriptionsArray(subs, snapshot);
+
                     if (!TryAdd(newArray, subscription, startIndex: snapshot.Length))
                         snapshot = null;
                 } while (!map.TryUpdate(key, newArray, snapshot));
             }
+        }
+
+        private static IEventSubscription[] ResizeSubscriptionsArray(IEventSubscription[] subs, IEventSubscription[] snapshot)
+        {
+            var newArray = new IEventSubscription[subs.Length*ReSizeMultiplier + ReSizeBuffer];
+            Array.Copy(snapshot, 0, newArray, 0, snapshot.Length);
+            return newArray;
+        }
+
+        private static bool AddNewSubscription(IEventSubscription subscription, string key, 
+            ConcurrentDictionary<string, IEventSubscription[]> map)
+        {
+            IEventSubscription[] subs;
+            if (!map.TryGetValue(key, out subs))
+            {
+                subs = new IEventSubscription[DefaultArraySize];
+                subs[0] = subscription;
+                if (map.TryAdd(key, subs))
+                    return true;
+            }
+            return false;
         }
 
         private static bool TryAdd(IEventSubscription[] subs, IEventSubscription subscription, int startIndex = 0)
