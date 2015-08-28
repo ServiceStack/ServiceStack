@@ -1,4 +1,4 @@
-#if !(NETFX_CORE || SL5 || __IOS__ || ANDROID || PCL)
+#if !LITE
 using System.IO;
 using System.Xml;
 using ServiceStack.Serialization;
