@@ -23,6 +23,7 @@ namespace ServiceStack
 
         public TimeSpan IdleTimeout { get; set; }
         public TimeSpan HeartbeatInterval { get; set; }
+        public TimeSpan HouseKeepingInterval { get; set; }
 
         public Action<IRequest> OnInit { get; set; }
         public Action<IRequest> OnHeartbeatInit { get; set; }
@@ -44,6 +45,7 @@ namespace ServiceStack
 
             IdleTimeout = TimeSpan.FromSeconds(30);
             HeartbeatInterval = TimeSpan.FromSeconds(10);
+            HouseKeepingInterval = TimeSpan.FromSeconds(5);
 
             NotifyChannelOfSubscriptions = true;
             ValidateUserAddress = true;
@@ -54,6 +56,7 @@ namespace ServiceStack
             var broker = new MemoryServerEvents
             {
                 IdleTimeout = IdleTimeout,
+                HouseKeepingInterval = HouseKeepingInterval,
                 OnSubscribe = OnSubscribe,
                 OnUnsubscribe = OnUnsubscribe,
                 NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
@@ -248,6 +251,8 @@ namespace ServiceStack
             res.ApplyGlobalResponseHeaders();
 
             var serverEvents = req.TryResolve<IServerEvents>();
+
+            serverEvents.RemoveExpiredSubscriptions();
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
             if (feature.OnHeartbeatInit != null)
@@ -493,6 +498,7 @@ namespace ServiceStack
         public static int ReSizeBuffer = 20;
 
         public TimeSpan IdleTimeout { get; set; }
+        public TimeSpan HouseKeepingInterval { get; set; }
 
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
@@ -543,8 +549,11 @@ namespace ServiceStack
         {
             foreach (var entry in Subcriptions)
             {
-                foreach (var sub in entry.Value)
+                for (int i = 0; i < entry.Value.Length; i++)
                 {
+                    var sub = entry.Value[i];
+                    Thread.MemoryBarrier();
+
                     if (sub != null)
                         sub.Publish(selector, Serialize(message));
                 }
@@ -608,6 +617,7 @@ namespace ServiceStack
 
                         expired.Add(sub);
                     }
+
                     if (Log.IsDebugEnabled)
                         Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
                             string.Join(", ", sub.Channels));
@@ -686,6 +696,47 @@ namespace ServiceStack
         public long GetNextSequence(string sequenceId)
         {
             return SequenceCounters.AddOrUpdate(sequenceId, 1, (id, count) => count + 1);
+        }
+
+        private long lastCleanAtTicks = DateTime.UtcNow.Ticks;
+        private DateTime LastCleanAt
+        {
+            get { return new DateTime(Interlocked.Read(ref lastCleanAtTicks), DateTimeKind.Utc); }
+            set { Interlocked.Exchange(ref lastCleanAtTicks, value.Ticks); }
+        }
+
+        public int RemoveExpiredSubscriptions()
+        {
+            var now = DateTime.UtcNow;
+            if (now - LastCleanAt > HouseKeepingInterval)
+            {
+                LastCleanAt = now;
+                var expired = new List<IEventSubscription>();
+
+                foreach (var entry in Subcriptions)
+                {
+                    var subs = entry.Value;
+                    lock (subs)
+                    {
+                        foreach (var sub in subs)
+                        {
+                            if (now - sub.LastPulseAt > IdleTimeout)
+                            {
+                                expired.Add(sub);
+                            }
+                        }
+                    }
+                }
+
+                foreach (var sub in expired)
+                {
+                    sub.Unsubscribe();
+                }
+
+                return expired.Count;
+            }
+
+            return -1;
         }
 
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
@@ -906,6 +957,8 @@ namespace ServiceStack
         void UnRegister(string subscriptionId);
 
         long GetNextSequence(string sequenceId);
+
+        int RemoveExpiredSubscriptions();
 
         // Client API's
         List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels);

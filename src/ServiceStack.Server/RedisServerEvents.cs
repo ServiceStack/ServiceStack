@@ -19,6 +19,12 @@ namespace ServiceStack
             set { local.IdleTimeout = value; }
         }
 
+        public TimeSpan HouseKeepingInterval
+        {
+            get { return local.HouseKeepingInterval; }
+            set { local.HouseKeepingInterval = value; }
+        }
+
         public Action<IEventSubscription> OnSubscribe
         {
             get { return local.OnSubscribe; }
@@ -82,6 +88,7 @@ namespace ServiceStack
             if (feature != null)
             {
                 Timeout = feature.IdleTimeout;
+                HouseKeepingInterval = feature.HouseKeepingInterval;
                 OnSubscribe = feature.OnSubscribe;
                 OnUnsubscribe = feature.OnUnsubscribe;
                 NotifyChannelOfSubscriptions = feature.NotifyChannelOfSubscriptions;
@@ -287,6 +294,11 @@ namespace ServiceStack
             {
                 return redis.Increment("sse:seq:" + sequenceId, 1);
             }
+        }
+
+        public int RemoveExpiredSubscriptions()
+        {
+            return local.RemoveExpiredSubscriptions();
         }
 
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
