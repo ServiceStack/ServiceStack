@@ -374,9 +374,14 @@ namespace ServiceStack
     public class EventSubscription : SubscriptionInfo, IEventSubscription
     {
         private static ILog Log = LogManager.GetLogger(typeof(EventSubscription));
-        public static string[] UnknownChannel = new[] { "*" };
+        public static string[] UnknownChannel = { "*" };
 
-        public DateTime LastPulseAt { get; set; }
+        private long LastPulseAtTicks = DateTime.UtcNow.Ticks;
+        public DateTime LastPulseAt
+        {
+            get { return new DateTime(Interlocked.Read(ref LastPulseAtTicks), DateTimeKind.Utc); }
+            set { Interlocked.Exchange(ref LastPulseAtTicks, value.Ticks); }
+        }
 
         private readonly IResponse response;
         private long msgId;
