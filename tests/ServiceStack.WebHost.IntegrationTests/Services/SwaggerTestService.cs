@@ -71,7 +71,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [ApiAllowableValues("TestRange", 1, 10)]
         public int TestRange { get; set; }
     }
-    
+
     public enum MyEnum { A, B, C }
 
     [Route("/swaggertest2", "POST")]
@@ -141,6 +141,38 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public Dictionary<string, string> DictionaryString { get; set; }
     }
 
+    [Route("/swaggerpost/{Required1}", Verbs = "GET")]
+    [Route("/swaggerpost/{Required1}/{Optional1}", Verbs = "GET")]
+    [Route("/swaggerpost", Verbs = "POST")]
+    public class SwaggerPostTest : IReturn<HelloResponse>
+    {
+        [ApiMember(Verb = "POST")]
+        [ApiMember(Route = "/swaggerpost/{Required1}", Verb = "GET", ParameterType = "path")]
+        [ApiMember(Route = "/swaggerpost/{Required1}/{Optional1}", Verb = "GET", ParameterType = "path")]
+        public string Required1 { get; set; }
+
+        [ApiMember(Verb = "POST")]
+        [ApiMember(Route = "/swaggerpost/{Required1}/{Optional1}", Verb = "GET", ParameterType = "path")]
+        public string Optional1 { get; set; }
+    }
+
+    [Route("/swaggerpost2/{Required1}/{Required2}", Verbs = "GET")]
+    [Route("/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verbs = "GET")]
+    [Route("/swaggerpost2", Verbs = "POST")]
+    public class SwaggerPostTest2 : IReturn<HelloResponse>
+    {
+        [ApiMember(Route = "/swaggerpost2/{Required1}/{Required2}", Verb = "GET", ParameterType = "path")]
+        [ApiMember(Route = "/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb = "GET", ParameterType = "path")]
+        public string Required1 { get; set; }
+
+        [ApiMember(Route = "/swaggerpost2/{Required1}/{Required2}", Verb = "GET", ParameterType = "path")]
+        [ApiMember(Route = "/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb = "GET", ParameterType = "path")]
+        public string Required2 { get; set; }
+
+        [ApiMember(Route = "/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb = "GET", ParameterType = "path")]
+        public string Optional1 { get; set; }
+    }
+
     public class SwaggerTestService : Service
     {
         public object Any(SwaggerTest request)
@@ -156,6 +188,16 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public object Post(SwaggerComplex request)
         {
             return request.ConvertTo<SwaggerComplexResponse>();
+        }
+
+        public object Any(SwaggerPostTest request)
+        {
+            return new HelloResponse { Result = request.Required1 };
+        }
+
+        public object Any(SwaggerPostTest2 request)
+        {
+            return new HelloResponse { Result = request.Required1 };
         }
     }
 }

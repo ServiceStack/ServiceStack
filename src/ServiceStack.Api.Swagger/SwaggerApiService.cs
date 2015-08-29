@@ -194,8 +194,6 @@ namespace ServiceStack.Api.Swagger
         internal static Action<SwaggerModel> ModelFilter { get; set; }
         internal static Action<SwaggerProperty> ModelPropertyFilter { get; set; }
 
-        private readonly Regex nicknameCleanerRegex = new Regex(@"[\{\}\*\-_/]*", RegexOptions.Compiled);
-
         public object Get(SwaggerResource request)
         {
             var httpReq = Request;
@@ -361,18 +359,12 @@ namespace ServiceStack.Api.Swagger
 
                     var apiMembers = prop
                         .AllAttributes<ApiMemberAttribute>()
-                        //.Where(attr => prop.Name.Equals(attr.Name, StringComparison.InvariantCultureIgnoreCase))
                         .OrderByDescending(attr => attr.Route)
                         .ToList();
                     var apiDoc = apiMembers
                         .Where(attr => string.IsNullOrEmpty(verb) || string.IsNullOrEmpty(attr.Verb) || (verb ?? "").Equals(attr.Verb))
                         .Where(attr => string.IsNullOrEmpty(route) || string.IsNullOrEmpty(attr.Route) || (route ?? "").StartsWith(attr.Route))
                         .FirstOrDefault(attr => attr.ParameterType == "body" || attr.ParameterType == "model");
-
-                    if (apiMembers.Any(x => !string.IsNullOrEmpty(x.Verb)
-                        || !string.IsNullOrEmpty(x.Route))
-                        && apiDoc == null)
-                        continue;
 
                     if (apiMembers.Any(x => x.ExcludeInSchema))
                         continue;
@@ -602,7 +594,8 @@ namespace ServiceStack.Api.Swagger
                     {
                         if ((member.Verb == null || string.Compare(member.Verb, verb, StringComparison.InvariantCultureIgnoreCase) == 0)
                             && (member.Route == null || (route ?? "").StartsWith(member.Route))
-                            && !string.Equals(member.ParameterType, "model"))
+                            && !string.Equals(member.ParameterType, "model")
+                            && methodOperationParameters.All(x => x.Name != (member.Name ?? key)))
                         {
                             methodOperationParameters.Add(new SwaggerParameter
                             {
