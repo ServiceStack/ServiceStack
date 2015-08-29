@@ -92,7 +92,7 @@ namespace ServiceStack.Metadata
                 if (op.RequiresAuthentication)
                 {
                     sb.AppendLine("<table class='authentication'>" +
-                        "<caption><i class='auth' style='float:left'></i><b>&nbsp;Requires Authentication</b></caption>");
+                        "<caption><b>Requires Authentication</b><i class='auth' style='display:inline-block;margin:0 0 -4px 5px;'></i></caption>");
                     sb.Append("<tr>");
 
                     if (!op.RequiredRoles.IsEmpty())
