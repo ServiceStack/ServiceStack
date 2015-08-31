@@ -98,19 +98,19 @@ namespace ServiceStack
                 const int tagLength = HmacUtils.KeySizeBytes;
                 try
                 {
-                    var authRsaEncCryptKey = Convert.FromBase64String(encRequest.EncryptedSymmetricKey);
-
-                    var rsaEncCryptAuthKeys = new byte[authRsaEncCryptKey.Length - iv.Length - tagLength];
-
-                    Buffer.BlockCopy(authRsaEncCryptKey, 0, iv, 0, iv.Length);
-                    Buffer.BlockCopy(authRsaEncCryptKey, iv.Length, rsaEncCryptAuthKeys, 0, rsaEncCryptAuthKeys.Length);
-
                     var privateKey = GetPrivateKey(encRequest.KeyId);
                     if (Equals(privateKey, default(RSAParameters)))
                     {
                         WriteUnencryptedError(req, HttpError.NotFound(ErrorKeyNotFound.Fmt(encRequest.KeyId, PublicKeyPath)), "KeyNotFoundException");
                         return null;
                     }
+
+                    var authRsaEncCryptKey = Convert.FromBase64String(encRequest.EncryptedSymmetricKey);
+
+                    var rsaEncCryptAuthKeys = new byte[authRsaEncCryptKey.Length - iv.Length - tagLength];
+
+                    Buffer.BlockCopy(authRsaEncCryptKey, 0, iv, 0, iv.Length);
+                    Buffer.BlockCopy(authRsaEncCryptKey, iv.Length, rsaEncCryptAuthKeys, 0, rsaEncCryptAuthKeys.Length);
 
                     var cryptAuthKeys = RsaUtils.Decrypt(rsaEncCryptAuthKeys, privateKey);
 
