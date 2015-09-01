@@ -846,11 +846,11 @@ This information is also shown the metadata detail pages which will list which p
 
 ## [Java Native Types](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference)
 
-### [Functional Java Utils](https://github.com/mythz/java-linq-examples)
+### [Java Functional Utils](https://github.com/mythz/java-linq-examples)
 
-Core Functional Utils have been added to the **net.servicestack:client** Java package that includes all utils 
-required to run [C#'s 101 LINQ Samples in Java](https://github.com/mythz/java-linq-examples) which is
-compatible with Java 1.7 so it can be used on Android:
+The Core Java Functional Utils required to run 
+[C#'s 101 LINQ Samples in Java](https://github.com/mythz/java-linq-examples) 
+have been added to the **net.servicestack:client** Java package which is compatible from Java 1.7 including Android:
 
 [![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/wikis/java/linq-examples-screenshot.png)](https://github.com/mythz/java-linq-examples)
 
@@ -864,11 +864,13 @@ Due to the [unusual encoding of Guid bytes](http://stackoverflow.com/a/18085116/
 preferential to treat Guids as opaque strings so they are easier to compare back to their original C# Guids. 
 This can be enabled with the new `TreatTypesAsStrings` option:
 
+```
 /* Options:
 ...
 TreatTypesAsStrings: Guid
 
 */
+```
 
 Which will emit String data types for Guid properties that are deserialized back into .NET Guid's as strings.
 
