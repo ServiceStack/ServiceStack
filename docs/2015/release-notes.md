@@ -24,7 +24,7 @@ var sentinelHosts = new[]{ "sentinel1", "sentinel2:6390", "sentinel3" };
 var sentinel = new RedisSentinel(sentinelHosts, masterName: "mymaster");
 ```
 
-This shows a typical example of configuring a `RedisSentinel` with references 3 sentinel hosts - 
+This shows a typical example of configuring a `RedisSentinel` which references 3 sentinel hosts, i.e. 
 the minimum number for a highly available setup which can survive any node failing. 
 It's also configured to look at the `mymaster` configuration set (the default master group). 
 
@@ -222,7 +222,7 @@ with the defaults shown below:
 ```csharp
 class RedisConfig
 {
-    DefaultConnectTimeout = 0
+    DefaultConnectTimeout = -1
     DefaultSendTimeout = -1
     DefaultReceiveTimeout = -1
     DefaultRetryTimeout = 3 * 1000
@@ -374,8 +374,8 @@ field type in Sql Server.
 They also provide better encapsulation since everything relating to handling the field type is contained within 
 a single class definition. A Converter is any class implementing
 [IOrmLiteConverter](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite/IOrmLiteConverter.cs)
-although it's instead recommended to inherit from the `OrmLiteConverter` abstract class so allows
-the minimum API's to define a Column Data Type need to be overridden, namely the `ColumnDefinition` 
+although it's instead recommended to inherit from the `OrmLiteConverter` abstract class which allows
+only the minimum API's needing to be overridden, namely the `ColumnDefinition` 
 used when creating the Table definition and the ADO.NET `DbType` it should use in parameterized queries. 
 An example of this is in 
 [GuidConverter](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite/Converters/GuidConverter.cs):
@@ -429,8 +429,8 @@ base.RegisterConverter<Guid>(new SqlServerGuidConverter());
 
 Overriding the pre-registered `GuidConverter` to enable its extended functionality in SQL Server.
 
-The `RegisterConverter<T>()` API is also used to override this with a Custom GuidCoverter defined in your 
-application by registering it on the RDBMS provider you want it to apply to, e.g for SQL Server:
+The `RegisterConverter<T>()` API can also be used to register a Custom GuidCoverter defined in 
+your application on the RDBMS provider you wish it to apply to, e.g for SQL Server:
 
 ```csharp
 SqlServerDialect.Provider.RegisterConverter<Guid>(new MyCustomGuidConverter());
@@ -438,7 +438,7 @@ SqlServerDialect.Provider.RegisterConverter<Guid>(new MyCustomGuidConverter());
 
 ### Resolving Converters
 
-If needed it can be later retrieved with:
+If needed, it can be later retrieved with:
 
 ```csharp
 IOrmLiteConverter converter = SqlServerDialect.Provider.GetConverter<Guid>();
@@ -447,8 +447,8 @@ var myGuidConverter = (MyCustomGuidConverter)converter;
 
 ### Debugging Converters
 
-Custom Converters can also enable a better debugging story where if you want to see what type it's retrieved 
-from the database with you can override and add a breakpoint on the base method letting you inspect the value 
+Custom Converters can also enable a better debugging story where if you want to see what value gets retrieved 
+from the database, you can override and add a breakpoint on the base method letting you inspect the value 
 returned from the ADO.NET Data Reader:
 
 ```csharp
@@ -463,9 +463,9 @@ public class MyCustomGuidConverter : SqlServerGuidConverter
 
 ### Enhancing an existing Converter
 
-An example of when you would want to take advantage of this feature is if you want to use the `Guid` property
-in your POCO's on legacy tables which stored Guids in `VARCHAR` columns in which case you can add support for 
-converting the returned strings into Guid's with:
+An example of when you'd want to do this is if you wanted to use the `Guid` property in your POCO's on 
+legacy tables which stored Guids in `VARCHAR` columns in which case you can add support for converting the 
+returned strings into Guid's with:
 
 ```csharp
 public class MyCustomGuidConverter : SqlServerGuidConverter
@@ -483,7 +483,7 @@ public class MyCustomGuidConverter : SqlServerGuidConverter
 ### Override handling of existing Types
 
 Another popular Use Case now enabled with Converters is being able to override built-in functionality based
-on preference. E.g. By default TimeSpans are stored in the database as Ticks in a `BIGINT` column since it's  
+on preference. E.g. By default TimeSpans are stored in the database as Ticks in a `BIGINT` column since that's  
 the most reliable way to be able to retain the same TimeSpan value persisted across all RDBMS's. 
 
 E.g SQL Server's **TIME** data type can't store Times greater than 24 hours or with less precision than **3ms**. 
@@ -506,7 +506,7 @@ For RDBMS's that don't have a native `Guid` type like Oracle or Firebird you had
 you wanted to save them as text for better readability (default) or in a more efficient compact binary format. 
 Previously this preference was maintained in a boolean flag along with multiple Guid implementations hard-coded 
 at different entry points within each DialectProvider. This complexity has now been removed, now to store guids 
-in a compact binary format, you instead register the appropriate Converter implementation, e.g:
+in a compact binary format, you instead register the preferred Converter implementation, e.g:
 
 ```csharp
 FirebirdDialect.Provider.RegisterConverter<Guid>(
@@ -519,7 +519,7 @@ This is another area improved with Converters where previously any available fie
 maintaining state inside each provider. Now any customizations are encapsulated within each Converter and 
 can be modified directly on its concrete Type without unnecessarily polluting the surface area of the primary 
 [IOrmLiteDialectProvider](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite/IOrmLiteDialectProvider.cs)
-which used to provide API's for each available customization.
+which used to provide new API's for each new customization available.
 
 Now to customize the behavior of how strings are stored you can set them directly on the `StringConverter`, e.g:
 
@@ -564,7 +564,7 @@ This behavior is also available for Utc:
 converter.DateStyle = DateTimeKind.Utc;
 ```
 
-Default is `Unspecified` which doesn't do any conversions and uses the DateTime returned by the ADO.NET provider.
+Default is `Unspecified` which doesn't do any conversions and just uses the DateTime returned by the ADO.NET provider.
 Examples of the behavior of the different DateStyle's is available in
 [DateTimeTests](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/DateTimeTests.cs).
 
@@ -786,7 +786,7 @@ This is automatically sent by `IEncryptedClient` to tell the `EncryptedMessaging
 should be used to decrypt the Crypt and Auth Keys.
 
 By supporting multiple private keys, the Encrypted Messaging feature allows the seamless transition to a 
-new Private Key without affecting existing clients who have yet adopted the latest Public Key. 
+new Private Key without affecting existing clients who have yet to adopt the latest Public Key. 
 
 Transitioning to a new Private Key just involves taking the existing Private Key and adding it to the 
 `FallbackPrivateKeys` collection whilst introducing a new Private Key, e.g:
@@ -829,7 +829,7 @@ Plugins.Add(new AuthFeature(...,
       }));
 ```
 
-Alternatively users can login outside of Swagger to access protected Services in Swagger.
+Alternatively users can login outside of Swagger to access protected Services in Swagger UI.
   
 ## Auth Info displayed in [Metadata Pages](https://github.com/ServiceStack/ServiceStack/wiki/Metadata-page)
 
@@ -921,7 +921,7 @@ for instructions on how to Configure the Azure Directory OAuth Provider in `<app
 ### MaxLoginAttempts
 
 The `MaxLoginAttempts` feature has been moved out from `OrmLiteAuthRepository` into an option in the 
-`AuthFeature` plugin and now this feature has been added to all User Auth Repositories. 
+`AuthFeature` plugin where this feature has now been added to all User Auth Repositories. 
 
 E.g. you can lock a User Account after 5 invalid login attempts with:
  
@@ -966,7 +966,10 @@ you can also customize the HTTP Status Code by implementing `IHasStatusCode`:
 ```csharp
 public class Custom401Exception : Exception, IHasStatusCode
 {
-    public int StatusCode { get { return 401; } }
+    public int StatusCode 
+    { 
+        get { return 401; } 
+    }
 }
 ```
 
@@ -985,9 +988,9 @@ SetConfig(new HostConfig {
 
 The [IMeta](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.Interfaces/IMeta.cs)
 Dictionary has been added to `ResponseStatus` and `ResponseError` DTO's which provides a placeholder to 
-send additional metadata about errors. 
+be able to send additional context with errors. 
 
-This Meta dictionary will be automatically populated for any `CustomState` on `ValidationFailure` 
+This Meta dictionary will be automatically populated for any `CustomState` on FluentValidation `ValidationFailure` 
 that holds an `Dictionary<string, string>`.
 
 ## [Server Events](https://github.com/ServiceStack/ServiceStack/wiki/Server-Events)
@@ -995,7 +998,7 @@ that holds an `Dictionary<string, string>`.
 The new `ServerEventsFeature.HouseKeepingInterval` option controls the minimum interval for how often SSE 
 connections should be routinely scanned and expired subscriptions removed. The default is every 5 seconds.
 
-> As there's no background Thread managing SSE connections, this is done in periodic SSE heartbeat handlers
+> As there's no background Thread managing SSE connections, the cleanup happens in periodic SSE heartbeat handlers
 
 ## ServiceStack.Text
 
