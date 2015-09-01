@@ -912,9 +912,9 @@ Plugins.Add(new AuthFeature(...,
     });
 ```
 
-See also the 
-[Web.config appSettings](https://github.com/jfoshee/ServiceStack.Authentication.Aad/blob/master/ServiceStack.Authentication.Aad.SelfHostTest/App.config) 
-required to configure Azure Directory OAuth Provider.
+See the docs on the 
+[Projects Homepage](https://github.com/jfoshee/ServiceStack.Authentication.Aad)
+for instructions on how to Configure the Azure Directory OAuth Provider in `<appSettings/>`.
 
 ### MaxLoginAttempts
 
