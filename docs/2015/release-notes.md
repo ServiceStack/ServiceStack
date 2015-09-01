@@ -1,3 +1,1035 @@
+# v4.0.44 Release Notes
+
+## Highly Available Redis
+
+[Redis Sentinel](http://redis.io/topics/sentinel) is the official recommendation for running a highly 
+available Redis configuration by running a number of additional redis sentinel processes to actively monitor 
+existing redis master and slave instances ensuring they're each working as expected. If by consensus it's
+determined that the master is no longer available it will automatically failover and promote one of the 
+replicated slaves as the new master. The sentinels also maintain an authoritative list of available 
+redis instances providing clients a centeral repositorty to discover available instances they can connect to.
+
+Support for Redis Sentinel has been added with the `RedisSentinel` class which listens to the available 
+Sentinels to source its list of available master, slave and other sentinel redis instances which it uses
+to configure and maintain the Redis Client Managers, initiating any failovers as they're reported.
+
+### RedisSentinel Usage
+
+To use the new Sentinel support, instead of populating the Redis Client Managers with the connection string 
+of the master and slave instances you would create a single `RedisSentinel` instance configured with 
+the connection string of the running Redis Sentinels:
+
+```csharp
+var sentinelHosts = new[]{ "sentinel1", "sentinel2:6390", "sentinel3" };
+var sentinel = new RedisSentinel(sentinelHosts, masterName: "mymaster");
+```
+
+This shows a typical example of configuring a `RedisSentinel` with references 3 sentinel hosts - 
+the minimum number for a highly available setup which can survive any node failing. 
+It's also configured to look at the `mymaster` configuration set (the default master group). 
+
+> Redis Sentinels can monitor more than master / slave group, each with a different master group name. 
+
+The default port for sentinels is **26379**, which is what's used when a port isn't specified and since
+the RedisSentinel can auto-discover other sentinels the minimum configuration can be just: 
+
+```csharp
+var sentinel = new RedisSentinel("sentinel1");
+```
+
+The scanning and auto discovering of other Sentinels can be disabled with `RedisSentinel.ScanForOtherSentinels = false`
+
+### Start monitoring Sentinels
+
+Once configured you can start monitoring the Redis Sentinel servers and access the pre-populated client manager
+by calling `Start()`, e.g:
+
+```csharp
+IRedisClientsManager redisManager = sentinel.Start();
+```
+
+Which can be registered in your preferred IOC as a **singleton** instance:
+
+```csharp
+container.Register<IRedisClientsManager>(c => sentinel.Start());
+```
+
+### Advanced Sentinel Configuration
+
+RedisSentinel by default manages a configured `PooledRedisClientManager` instance which resolves both master 
+Redis clients for read/write `GetClient()` and slaves for readonly `GetReadOnlyClient()` API's. 
+
+This can be changed to use the newer `RedisManagerPool` instead with:
+
+```csharp
+sentinel.RedisManagerFactory = (master,slaves) => new RedisManagerPool(master);
+```
+
+### Custom Redis Connection String
+
+The host the RedisSentinel is configured with only applies to that Sentinel Host, you can still use the flexibility of 
+[Redis Connection Strings](https://github.com/ServiceStack/ServiceStack.Redis#redis-connection-strings)
+to configure the individual Redis Clients by specifying a custom `HostFilter`:
+
+```csharp
+sentinel.HostFilter = host => "{0}?db=1&RetryTimeout=5000".Fmt(host);
+```
+
+This will return clients that are configured to use Database 1 and a Retry Timeout of 5 seconds (for the new 
+auto retry feature).
+
+### Other RedisSentinel Configuration
+
+Whilst the above covers the popular Sentinel configuration that would typically be used, nearly every aspect
+of `RedisSentinel` behavior can be customized with the configuration below:
+
+<table>
+    <tr>
+        <td><b>OnSentinelMessageReceived</b></td><td>Fired when the Sentinel worker receives a message from the Sentinel Subscription</td>
+    </tr>
+    <tr>
+        <td><b>OnFailover</b></td><td>Fired when Sentinel fails over the Redis Client Manager to a new master</td>
+    </tr>
+    <tr>
+        <td><b>OnWorkerError</b></td><td>Fired when the Redis Sentinel Worker connection fails</td>
+    </tr>
+    <tr>
+        <td><b>IpAddressMap</b></td><td>Map internal redis host IP's returned by Sentinels to its external IP</td>
+    </tr>
+    <tr>
+        <td><b>ScanForOtherSentinels</b></td><td>Whether to routinely scan for other sentinel hosts (default true)</td>
+    </tr>
+    <tr>
+        <td><b>RefreshSentinelHostsAfter</b></td><td>What interval to scan for other sentinel hosts (default 10 mins)</td>
+    </tr>
+    <tr>
+        <td><b>WaitBetweenFailedHosts</b></td><td>How long to wait after failing before connecting to next redis instance (default 250ms)</td>
+    </tr>
+    <tr>
+        <td><b>MaxWaitBetweenFailedHosts</b></td><td>How long to retry connecting to hosts before throwing (default 60s)</td>
+    </tr>
+    <tr>
+        <td><b>WaitBeforeForcingMasterFailover</b></td><td>How long after consecutive failed attempts to force failover (default 60s)</td>
+    </tr>
+    <tr>
+        <td><b>ResetWhenSubjectivelyDown</b></td><td>Reset clients when Sentinel reports redis is subjectively down (default true)</td>
+    </tr>
+    <tr>
+        <td><b>ResetWhenObjectivelyDown</b></td><td>Reset clients when Sentinel reports redis is objectively down (default true)</td>
+    </tr>
+    <tr>
+        <td><b>SentinelWorkerConnectTimeoutMs</b></td><td>The Max Connection time for Sentinel Worker (default 100ms)</td>
+    </tr>
+    <tr>
+        <td><b>SentinelWorkerSendTimeoutMs</b></td><td>Max TCP Socket Send time for Sentinel Worker (default 100ms)</td>
+    </tr>
+    <tr>
+        <td><b>SentinelWorkerReceiveTimeoutMs</b></td><td>Max TCP Socket Receive time for Sentinel Worker (default 100ms)</td>
+    </tr>
+</table>
+
+## [Configure Redis Sentinel Servers](https://github.com/ServiceStack/redis-config)
+
+[![Instant Redis Setup](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/redis/instant-sentinel-setup.png)](https://github.com/ServiceStack/redis-config)
+
+To simplify setting up and running a highly-available multi-node Redis Sentinel configuration we've created
+the [redis config](https://github.com/ServiceStack/redis-config) repository containing the configuration and
+start/stop scripts for instantly setting up the minimal 
+[highly available Redis Sentinel configuration](https://github.com/ServiceStack/redis-config/blob/master/README.md#3x-sentinels-monitoring-1x-master-and-2x-slaves)
+on a single (or multiple) Windows, OSX or Linux servers. The single server multi-process is ideal for setting
+up a working sentinel configuration on a single dev workstation or remote server.
+
+The redis-config repository also includes the 
+[MS OpenTech Windows redis binaries](https://github.com/ServiceStack/redis-windows#running-microsofts-native-port-of-redis)
+and doesn't require any software installation. 
+
+### Windows Usage 
+
+To run the included Sentinel configuration, clone the redis-config repo on the server you want to run it on:
+
+    git clone https://github.com/ServiceStack/redis-config.git
+
+Then Start 1x Master, 2x Slaves and 3x Sentinel redis-servers with:
+
+    cd redis-config\sentinel3\windows
+    start-all.cmd
+
+Shutdown started instances:
+
+    stop-all.cmd
+
+If you're running the redis processes locally on your developer workstation the minimal configuration 
+to connect to the running instances is just:
+
+```csharp
+var sentinel = new RedisSentinel("127.0.0.1:26380");
+container.Register(c => sentinel.Start());
+```
+
+### Localhost vs Network IP's
+
+The sentinel configuration assumes all redis instances are running locally on **127.0.0.1**. 
+If you're instead running it on a remote server that you want all developers in your network to be 
+able to access, you'll need to either change the IP Address in the `*.conf` files to use the servers 
+Network IP or alternatively you can leave the defaults and use the `RedisSentinel` IP Address Map feature
+to transparently map the localhost IP's to the Network IP that each pc on the network can connect to.
+
+E.g. if this is running on a remote server with a **10.0.0.9** Network IP, it can be configured with:
+
+```csharp
+var sentinel = new RedisSentinel("10.0.0.9:26380") {
+    IpAddressMap = {
+        {"127.0.0.1", "10.0.0.9"},
+    }
+};
+container.Register(c => sentinel.Start());
+```
+
+### Google Cloud - [Click to Deploy Redis](https://github.com/ServiceStack/redis-config/blob/master/README.md#google-cloud---click-to-deploy-redis)
+
+The easiest Cloud Service we've found that can instantly set up a multi node-Redis Sentinel Configuration 
+is using Google Cloud's 
+[click to deploy Redis feature](https://cloud.google.com/solutions/redis/click-to-deploy) 
+available from the Google Cloud Console under **Deploy & Manage**:
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/redis/sentinel3-gcloud-01.png)
+
+Clicking **Deploy** button will let you configure the type, size and location where you want to deploy the 
+Redis VM's. See the 
+[full Click to Deploy Redis guide](https://github.com/ServiceStack/redis-config/blob/master/README.md#google-cloud---click-to-deploy-redis)
+for a walk-through on setting up and inspecting a highly-available redis configuration on Google Cloud.
+
+## Automatic Retries
+
+Another feature we've added to improve reliability is automatic retries where the RedisClient will transparently 
+retry Redis operations that failed due to Socket and I/O Exceptions in an exponential backoff starting from 
+**10ms** up until the `RetryTimeout` of **3000ms**, these defaults can be tweaked with:
+
+```csharp
+RedisConfig.DefaultRetryTimeout = 3000;
+RedisConfig.BackOffMultiplier = 10;
+```
+
+The `RetryTimeout` can also be configured on the connection string with `?RetryTimeout=3000`.
+
+## RedisConfig
+
+The `RedisConfig` static class has been expanded to provide an alternative to Redis Connection Strings to 
+configure the default RedisClient settings. Each config option is 
+[documented on the RedisConfig class](https://github.com/ServiceStack/ServiceStack.Redis/blob/master/src/ServiceStack.Redis/RedisConfig.cs)
+with the defaults shown below:
+
+```csharp
+class RedisConfig
+{
+    DefaultConnectTimeout = 0
+    DefaultSendTimeout = -1
+    DefaultReceiveTimeout = -1
+    DefaultRetryTimeout = 3 * 1000
+    DefaultIdleTimeOutSecs = 240
+    BackOffMultiplier = 10
+    BufferLength = 1450
+    BufferPoolMaxSize = 500000
+    VerifyMasterConnections = true
+    HostLookupTimeoutMs = 200
+    AssumeServerVersion = null
+    DeactivatedClientsExpiry = TimeSpan.FromMinutes(1)
+    DisableVerboseLogging = false
+}
+```
+
+One option you may want to set is `AssumeServerVersion` with the version of Redis Server version you're running, e.g:
+
+    2.8.12 => 2812
+    3.0.3  => 3030
+
+This is used to change the behavior of a few API's to use the most optimal redis command for their server version.
+Setting this will save an additional INFO lookup when establishing a new RedisClient Connection.
+
+## RedisStats
+
+The new 
+[RedisStats](https://github.com/ServiceStack/ServiceStack.Redis/blob/master/src/ServiceStack.Redis/RedisStats.cs) 
+class provides better visibility and introspection into your running instances:
+
+<table>
+    <tr>
+        <td><b>TotalCommandsSent</b></td> <td>Total number of commands sent</td>
+    </tr>
+    <tr>
+        <td><b>TotalFailovers</b></td> <td>Number of times the Redis Client Managers have FailoverTo() either by sentinel or manually</td>
+    </tr>
+    <tr>
+        <td><b>TotalDeactivatedClients</b></td> <td>Number of times a Client was deactivated from the pool, either by FailoverTo() or exceptions on client</td>
+    </tr>
+    <tr>
+        <td><b>TotalFailedSentinelWorkers</b></td> <td>Number of times connecting to a Sentinel has failed</td>
+    </tr>
+    <tr>
+        <td><b>TotalForcedMasterFailovers</b></td> <td>Number of times we've forced Sentinel to failover to another master due to consecutive errors</td>
+    </tr>
+    <tr>
+        <td><b>TotalInvalidMasters</b></td> <td>Number of times a connecting to a reported Master wasn't actually a Master</td>
+    </tr>
+    <tr>
+        <td><b>TotalNoMastersFound</b></td> <td>Number of times no Masters could be found in any of the configured hosts</td>
+    </tr>
+    <tr>
+        <td><b>TotalClientsCreated</b></td> <td>Number of Redis Client instances created with RedisConfig.ClientFactory</td>
+    </tr>
+    <tr>
+        <td><b>TotalClientsCreatedOutsidePool</b></td> <td>Number of times a Redis Client was created outside of pool, either due to overflow or reserved slot was overridden</td>
+    </tr>
+    <tr>
+        <td><b>TotalSubjectiveServersDown</b></td> <td>Number of times Redis Sentinel reported a Subjective Down (sdown)</td>
+    </tr>
+    <tr>
+        <td><b>TotalObjectiveServersDown</b></td> <td>Number of times Redis Sentinel reported an Objective Down (odown)</td>
+    </tr>
+    <tr>
+        <td><b>TotalRetryCount</b></td> <td>Number of times a Redis Request was retried due to Socket or Retryable exception</td>
+    </tr>
+    <tr>
+        <td><b>TotalRetrySuccess</b></td> <td>Number of times a Request succeeded after it was retried</td>
+    </tr>
+    <tr>
+        <td><b>TotalRetryTimedout</b></td> <td>Number of times a Retry Request failed after exceeding RetryTimeout</td>
+    </tr>
+    <tr>
+        <td><b>TotalPendingDeactivatedClients</b></td> <td>Total number of deactivated clients that are pending being disposed</td>
+    </tr>
+</table>
+
+You can get and print a dump of all the stats at anytime with:
+
+```csharp
+RedisStats.ToDictionary().PrintDump();
+```
+
+And Reset all Stats back to `0` with `RedisStats.Reset()`.
+
+### Injectable Resolver Strategy 
+
+To support the different host resolution behavior required for Redis Sentinel, we've decoupled the Redis 
+Host Resolution behavior into an injectable strategy which can be overridden by implementing 
+[IRedisResolver](https://github.com/ServiceStack/ServiceStack.Redis/blob/master/src/ServiceStack.Redis/IRedisResolver.cs)
+and injected into any of the Redis Client Managers with:
+
+```csharp
+redisManager.RedisResolver = new CustomHostResolver();
+```
+
+Whilst this an advanced customization option not expected to be used, it does allow using a custom strategy to 
+change which Redis hosts to connect to. See the
+[RedisResolverTests](https://github.com/ServiceStack/ServiceStack.Redis/blob/master/tests/ServiceStack.Redis.Tests.Sentinel/RedisResolverTests.cs)
+for more info.
+
+### New API's
+
+  - PopItemsFromSet()
+  - DebugSleep()
+  - GetServerRole()
+
+We've also added support in `RedisPubSubServer` to be able to listen to a pattern of multiple channels with:
+
+```csharp
+var redisPubSub = new RedisPubSubServer(redisManager) {
+    ChannelsMatching = new[] { "events.in.*", "events.out." }
+};
+redisPubSub.Start();
+```
+
+### Deprecated API's
+
+ - The `SetEntry*` API's have been deprecated in favor of the more appropriately named `SetValue*` API's
+
+  
+## OrmLite Converters!
+
+OrmLite has become a lot more customizable and extensible thanks to the internal redesign decoupling all 
+custom logic for handling different Field Types into individual Type Converters. 
+This redesign makes it possible to enhance or replace entirely how .NET Types are handled. OrmLite can now 
+be extended to support new Types it has no knowledge about, a feature taken advantage of by the new support 
+for SQL Server's `SqlGeography`, `SqlGeometry` and `SqlHierarchyId` Types!
+
+Despite the scope of this internal refactor, OrmLite's existing test suite (and a number of new tests) continue 
+to pass for each supported RDBMS. At the same time **Firebird** and **VistaDB** having been greatly improved 
+which also both pass the existing test suite (RowVersion's the only feature not implemented in VistaDB due 
+to its lack of triggers).
+
+![OrmLite Converters](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/ormlite-converters.png)
+
+### Improved encapsulation, reuse, customization and debugging
+
+Converters allows for greater re-use where the common functionality to support each type is maintained in the common
+[ServiceStack.OrmLite/Converters](https://github.com/ServiceStack/ServiceStack.OrmLite/tree/master/src/ServiceStack.OrmLite/Converters)
+whilst any RDBMS-specific functionality can inherit the common converters and provide any specialization 
+required to support that type. E.g. SQL Server specific converters are maintained in 
+[ServiceStack.OrmLite.SqlServer/Converters](https://github.com/ServiceStack/ServiceStack.OrmLite/tree/master/src/ServiceStack.OrmLite.SqlServer/Converters)
+with each converter inheriting shared functionality and only providing custom behavior required to support that
+field type in Sql Server. 
+
+### Creating Converters
+
+They also provide better encapsulation since everything relating to handling the field type is contained within 
+a single class definition. A Converter is any class implementing
+[IOrmLiteConverter](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite/IOrmLiteConverter.cs)
+although it's instead recommended to inherit from the `OrmLiteConverter` abstract class so allows
+the minimum API's to define a Column Data Type need to be overridden, namely the `ColumnDefinition` 
+used when creating the Table definition and the ADO.NET `DbType` it should use in parameterized queries. 
+An example of this is in 
+[GuidConverter](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite/Converters/GuidConverter.cs):
+
+```csharp
+public class GuidConverter : OrmLiteConverter
+{
+    public override string ColumnDefinition
+    {
+        get { return "GUID"; }
+    }
+
+    public override DbType DbType
+    {
+        get { return DbType.Guid; }
+    }
+}
+```
+
+But for this to work in SQL Server the `ColumnDefinition` should instead be **UniqueIdentifier**. Also to be 
+able to query Guid's in an SQL Statement it also needs to be casted into UniqueIdentifier. 
+So a custom 
+[SqlServerGuidConverter](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite.SqlServer/Converters/SqlServerGuidConverter.cs)
+is required to support Guids in SQL Server:
+
+```csharp
+public class SqlServerGuidConverter : GuidConverter
+{
+    public override string ColumnDefinition
+    {
+        get { return "UniqueIdentifier"; }
+    }
+
+    public override string ToQuotedString(Type fieldType, object value)
+    {
+        var guidValue = (Guid)value;
+        return string.Format("CAST('{0}' AS UNIQUEIDENTIFIER)", guidValue);
+    }
+}
+```
+
+### Registering Converters
+
+To get OrmLite to use this new Custom Converter for SQL Server the `SqlServerOrmLiteDialectProvider` just
+[registers it in its constructor](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/41226795fc12f1b65d6af70c177a5ff57fa70334/src/ServiceStack.OrmLite.SqlServer/SqlServerOrmLiteDialectProvider.cs#L41)
+with:
+
+```csharp
+base.RegisterConverter<Guid>(new SqlServerGuidConverter());
+```
+
+Overriding the pre-registered `GuidConverter` to enable its extended functionality in SQL Server.
+
+The `RegisterConverter<T>()` API is also used to override this with a Custom GuidCoverter defined in your 
+application by registering it on the RDBMS provider you want it to apply to, e.g for SQL Server:
+
+```csharp
+SqlServerDialect.Provider.RegisterConverter<Guid>(new MyCustomGuidConverter());
+```
+
+### Resolving Converters
+
+If needed it can be later retrieved with:
+
+```csharp
+IOrmLiteConverter converter = SqlServerDialect.Provider.GetConverter<Guid>();
+var myGuidConverter = (MyCustomGuidConverter)converter;
+```
+
+### Debugging Converters
+
+Custom Converters can also enable a better debugging story where if you want to see what type it's retrieved 
+from the database with you can override and add a breakpoint on the base method letting you inspect the value 
+returned from the ADO.NET Data Reader:
+
+```csharp
+public class MyCustomGuidConverter : SqlServerGuidConverter
+{
+    public overridde object FromDbValue(Type fieldType, object value)
+    {
+        return base.FromDbValue(fieldType, value); //add breakpoint
+    }
+}
+```
+
+### Enhancing an existing Converter
+
+An example of when you would want to take advantage of this feature is if you want to use the `Guid` property
+in your POCO's on legacy tables which stored Guids in `VARCHAR` columns in which case you can add support for 
+converting the returned strings into Guid's with:
+
+```csharp
+public class MyCustomGuidConverter : SqlServerGuidConverter
+{
+    public overridde object FromDbValue(Type fieldType, object value)
+    {
+        var strValue = value as string; 
+        return strValue != null
+            ? new Guid(strValue);
+            : base.FromDbValue(fieldType, value); 
+    }
+}
+```
+
+### Override handling of existing Types
+
+Another popular Use Case now enabled with Converters is being able to override built-in functionality based
+on preference. E.g. By default TimeSpans are stored in the database as Ticks in a `BIGINT` column since it's  
+the most reliable way to be able to retain the same TimeSpan value persisted across all RDBMS's. 
+
+E.g SQL Server's **TIME** data type can't store Times greater than 24 hours or with less precision than **3ms**. 
+But if using **TIME** was preferred it can now be enabled by registering the new
+[SqlServerTimeConverter](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite.SqlServer/Converters/SqlServerTimeConverter.cs) 
+instead:
+
+```csharp
+SqlServerDialect.Provider.RegisterConverter<TimeSpan>(new SqlServerTimeConverter { 
+   Precision = 7 
+});
+```
+
+### Customizable Field Definitions
+
+Another benefit is they allow for easy customization as seen with `Precision` property which will now 
+create tables using the `TIME(7)` Column definition for TimeSpan properties.
+
+For RDBMS's that don't have a native `Guid` type like Oracle or Firebird you had an option to choose whether
+you wanted to save them as text for better readability (default) or in a more efficient compact binary format. 
+Previously this preference was maintained in a boolean flag along with multiple Guid implementations hard-coded 
+at different entry points within each DialectProvider. This complexity has now been removed, now to store guids 
+in a compact binary format, you instead register the appropriate Converter implementation, e.g:
+
+```csharp
+FirebirdDialect.Provider.RegisterConverter<Guid>(
+    new FirebirdCompactGuidConverter());
+```
+
+### Changing String Column Behavior
+
+This is another area improved with Converters where previously any available field customizations required 
+maintaining state inside each provider. Now any customizations are encapsulated within each Converter and 
+can be modified directly on its concrete Type without unnecessarily polluting the surface area of the primary 
+[IOrmLiteDialectProvider](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite/IOrmLiteDialectProvider.cs)
+which used to provide API's for each available customization.
+
+Now to customize the behavior of how strings are stored you can set them directly on the `StringConverter`, e.g:
+
+```csharp
+StringConverter converter = OrmLiteConfig.DialectProvider.GetStringConverter();
+converter.UseUnicode = true;
+converter.StringLength = 100;
+```
+
+Which will change the default column definitions for strings to use `NVARCHAR(100)` for RDBMS's that support
+Unicode or `VARCHAR(100)` for those that don't. 
+
+The `GetStringConverter()` API is just an extension method wrapping the generic `GetConverter()` API to return
+a concrete type:
+
+```csharp
+public static StringConverter GetStringConverter(this IOrmLiteDialectProvider dialect)
+{
+    return (StringConverter)dialect.GetConverter(typeof(string));
+}
+```
+
+Typed extension methods are also provided for other popular types that offer additional customizations including
+`GetDecimalConverter()` and `GetDateTimeConverter()`.
+
+### Specify the DateKind in DateTimes
+
+It's now much simpler and requires less effort to implement new features that maintain the same behavior 
+across all supported RDBM's thanks to better cohesion, re-use and reduced internal state. One new feature
+we've added as a result is the new `DateStyle` customization on `DateTimeConverter` which lets you change how 
+Date's are persisted and populated, e.g: 
+
+```csharp
+DateTimeConverter converter = OrmLiteConfig.DialectProvider.GetDateTimeConverter();
+converter.DateStyle = DateTimeKind.Local;
+```
+
+Will save `DateTime` in the database and populate them back on data models as LocalTime. 
+This behavior is also available for Utc:
+
+```csharp
+converter.DateStyle = DateTimeKind.Utc;
+```
+
+Default is `Unspecified` which doesn't do any conversions and uses the DateTime returned by the ADO.NET provider.
+Examples of the behavior of the different DateStyle's is available in
+[DateTimeTests](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/tests/ServiceStack.OrmLite.Tests/DateTimeTests.cs).
+
+### SQL Server Special Type Converters!
+
+Just as the ground work for Converters were laid down, [@KevinHoward](https://github.com/KevinHoward) from the
+ServiceStack Community noticed OrmLite could now be extended to support new Types and promptly contributed
+Converters for SQL Server-specific 
+[SqlGeography](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite.SqlServer.Converters/SqlServerGeographyTypeConverter.cs), 
+[SqlGeometry](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite.SqlServer.Converters/SqlServerGeometryTypeConverter.cs) 
+and 
+[SqlHierarchyId](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite.SqlServer.Converters/SqlServerHierarchyIdTypeConverter.cs) 
+Types!
+
+Since these Types require an external dependency to the **Microsoft.SqlServer.Types** NuGet package they're
+contained in a separate NuGet package, installed with:
+
+    PM> Install-Package ServiceStack.OrmLite.SqlServer.Converters
+
+Alternative Strong-named version:
+
+    PM> Install-Package ServiceStack.OrmLite.SqlServer.Converters.Signed
+
+Once referenced all the SQL Server Types can be registered to your SQL Server Provider with:
+
+```csharp
+SqlServerConverters.Configure(SqlServer2012Dialect.Provider);
+```
+
+#### Example Usage
+
+After the Converters are registered they can treated like a normal .NET Type, e.g:
+
+**SqlHierarchyId** Example:
+
+```csharp
+public class Node {
+    [AutoIncrement]
+    public long Id { get; set; }
+    public SqlHierarchyId TreeId { get; set; }
+}
+
+db.DropAndCreateTable<Node>();
+
+var treeId = SqlHierarchyId.Parse("/1/1/3/"); // 0x5ADE is hex
+db.Insert(new Node { TreeId = treeId });
+
+var parent = db.Scalar<SqlHierarchyId>(db.From<Node>().Select("TreeId.GetAncestor(1)"));
+parent.ToString().Print(); //= /1/1/
+```
+
+**SqlGeography** and **SqlGeometry** Example:
+
+```csharp
+public class GeoTest {
+    public long Id { get; set; }
+    public SqlGeography Location { get; set; }
+    public SqlGeometry Shape { get; set; }
+}
+
+db.DropAndCreateTable<GeoTest>();
+
+var geo = SqlGeography.Point(40.6898329,-74.0452177, 4326); // Statue of Liberty
+
+// A simple line from (0,0) to (4,4)  Length = SQRT(2 * 4^2)
+var wkt = new System.Data.SqlTypes.SqlChars("LINESTRING(0 0, 4 4)".ToCharArray());
+var shape = SqlGeometry.STLineFromText(wkt, 0);
+
+db.Insert(new GeoTestTable { Id = 1, Location = geo, Shape = shape });
+var dbShape = db.SingleById<GeoTest>(1).Shape;
+
+new { dbShape.STEndPoint().STX, dbShape.STEndPoint().STY }.PrintDump();
+```
+
+Output:
+
+    {
+        STX: 4,
+        STY: 4
+    }
+    
+### New SQL Server 2012 Dialect Provider
+
+There's a new `SqlServer2012Dialect.Provider` to take advantage of optimizations available in recent versions 
+of SQL Server, now recommended for use with SQL Server 2012 and later.
+
+```csharp
+container.Register<IDbConnectionFactory>(c => 
+    new OrmLiteConnectionFactory(connString, SqlServer2012Dialect.Provider);
+```
+
+The new `SqlServer2012Dialect` takes advantage of SQL Server's new **OFFSET** and **FETCH** support to enable more 
+[optimal paged queries](http://dbadiaries.com/new-t-sql-features-in-sql-server-2012-offset-and-fetch) 
+which replaces the 
+[Windowing Function hack](http://stackoverflow.com/a/2135449/85785) 
+required to support earlier versions of SQL Server.
+
+### Nested Typed Sub SqlExpressions
+
+The `Sql.In()` API has been expanded by [Johann Klemmack](https://github.com/jklemmack) to support nesting
+and combining of multiple Typed SQL Expressions together in a single SQL Query, e.g:
+  
+```csharp
+var usaCustomers = db.From<Customer>(c => c.Country == "USA").Select(c => c.Id);
+var usaCustomerOrders = db.Select(db.From<Order>()
+    .Where(q => Sql.In(q.CustomerId, usaCustomers)));
+```
+ 
+### Descending Indexes
+
+Descending composite Indexes can be declared with:
+ 
+ ```csharp
+[CompositeIndex("Field1", "Field2 DESC")]
+public class Poco { ... }
+```
+
+### Dapper Updated
+
+The embedded version of Dapper in the `ServiceStack.OrmLite.Dapper` namespace has been upgraded to the 
+latest version of Dapper which also includes Dapper's Async API's in .NET 4.5 builds.
+
+#### CSV Support for dynamic Dapper results
+
+The CSV Serializer also added support for Dapper's dynamic results:
+
+```csharp
+IEnumerable<dynamic> results = db.Query("select * from Poco");
+string csv = CsvSerializer.SerializeToCsv(results);
+```
+
+#### OrmLite CSV Example
+
+OrmLite avoids `dynamic` and instead prefers the use of code-first POCO's, where the above example translates to:
+
+```csharp
+var results = db.Select<Poco>();
+var csv = results.ToCsv();
+```
+
+To query untyped results in OrmLite when no POCO's exist, you can read them into a generic Dictionary:
+
+```csharp 
+var results = db.Select<Dictionary<string,object>>("select * from Poco");
+var csv = results.ToCsv();
+```
+
+### Order By Random
+
+The new `OrderByRandom()` API abstracts the differences in each RDBMS to return rows in a random order:
+
+```csharp 
+var randomRows = db.Select<Poco>(q => q.OrderByRandom());
+```
+
+### Other OrmLite Features
+
+`CreateTableIfNotExists` returns `true` if a new table was created which is convenient for only populating
+non-existing tables with new data on your Application StartUp, e.g:
+ 
+ ```csharp
+if (db.CreateTableIfNotExists<Poco>()) {
+    AddSeedData(db);
+}
+ ```
+
+ - OrmLite Debug Logging includes DB Param names and values  
+ - Char fields now use CHAR(1)
+  
+## [Encrypted Messaging](https://github.com/ServiceStack/ServiceStack/wiki/Encrypted-Messaging)
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/encrypted-messaging.png)
+
+### Encrypted Messages verified with HMAC SHA-256
+
+The authenticity of Encrypted Messages are now being verified with HMAC SHA-256, essentially following an 
+[Encrypt-then-MAC strategy](http://crypto.stackexchange.com/a/205/25652). The change to the existing process
+is that a new AES 256 **Auth Key** is used to Authenticate the encrypted data which is then sent along
+with the **Crypt Key**, encrypted with the Server's Public Key. 
+
+An updated version of this process is now:
+
+  1. Client creates a new `IEncryptedClient` configured with the Server **Public Key**
+  2. Client uses the `IEncryptedClient` create a EncryptedMessage Request DTO:
+    1. Generates a new AES 256bit/CBC/PKCS7 Crypt Key **(Kc)**, Auth Key **(Ka)** and **IV**
+    2. Encrypts Crypt Key **(Kc)**, Auth Key **(Ka)** with Servers Public Key padded with OAEP = **(Kc+Ka+P)e**
+    3. Authenticates **(Kc+Ka+P)e** with **IV** using HMAC SHA-256 = **IV+(Kc+Ka+P)e+Tag**
+    4. Serializes Request DTO to JSON packed with current `Timestamp`, `Verb` and `Operation` = **(M)**
+    5. Encrypts **(M)** with Crypt Key **(Kc)** and **IV** = **(M)e**
+    6. Authenticates **(M)e** with Auth Key **(Ka)** and **IV** = **IV+(M)e+Tag**
+    7. Creates `EncryptedMessage` DTO with Servers `KeyId`, **IV+(Kc+Ka+P)e+Tag** and **IV+(M)e+Tag**
+  3. Client uses the `IEncryptedClient` to send the populated `EncryptedMessage` to the remote Server
+
+On the Server, the `EncryptedMessagingFeature` Request Converter processes the `EncryptedMessage` DTO:
+
+  4. Uses Private Key identified by **KeyId** or default Private Key if **KeyId** wasn't provided
+    1. The Request Converter Extracts **IV+(Kc+Ka+P)e+Tag** into **IV** and **(Kc+Ka+P)e+Tag**
+    2. Decrypts **(Kc+Ka+P)e+Tag** with Private Key into **(Kc)** and **(Ka)**
+    3. The **IV** is checked against the nonce Cache, verified it's never been used before, then cached
+    4. The **IV+(Kc+Ka+P)e+Tag** is verified it hasn't been tampered with using Auth Key **(Ka)**
+    5. The **IV+(M)e+Tag** is verified it hasn't been tampered with using Auth Key **(Ka)**
+    6. The **IV+(M)e+Tag** is decrypted using Crypt Key **(Kc)** = **(M)**
+    7. The **timestamp** is verified it's not older than `EncryptedMessagingFeature.MaxRequestAge`
+    8. Any expired nonces are removed. (The **timestamp** and **IV** are used to prevent replay attacks)
+    9. The JSON body is deserialized and resulting **Request DTO** returned from the Request Converter
+  5. The converted **Request DTO** is executed in ServiceStack's Request Pipeline as normal
+  6. The **Response DTO** is picked up by the EncryptedMessagingFeature **Response Converter**:
+    1. Any **Cookies** set during the Request are removed
+    2. The **Response DTO** is serialized with the **AES Key** and returned in an `EncryptedMessageResponse`
+  7. The `IEncryptedClient` decrypts the `EncryptedMessageResponse` with the **AES Key**
+    1. The **Response DTO** is extracted and returned to the caller
+
+### Support for versioning Private Keys with Key Rotations
+
+Another artifact introduced in the above process was the mention of a new `KeyId`. 
+This is a human readable string used to identify the Servers Public Key using the first 7 characters
+of the Public Key Modulus (visible when viewing the Private Key serialized as XML). 
+This is automatically sent by `IEncryptedClient` to tell the `EncryptedMessagingFeature` which Private Key 
+should be used to decrypt the Crypt and Auth Keys.
+
+By supporting multiple private keys, the Encrypted Messaging feature allows the seamless transition to a 
+new Private Key without affecting existing clients who have yet adopted the latest Public Key. 
+
+Transitioning to a new Private Key just involves taking the existing Private Key and adding it to the 
+`FallbackPrivateKeys` collection whilst introducing a new Private Key, e.g:
+
+```csharp
+Plugins.Add(new EncryptedMessagesFeature
+{
+    PrivateKey = NewPrivateKey,
+    FallbackPrivateKeys = {
+        PreviousKey2015,
+        PreviousKey2014,
+    },
+});
+```
+
+### Why Rotate Private Keys?
+
+Since anyone who has a copy of the Private Key can decrypt encrypted messages, rotating the private key clients
+use limits the amount of exposure an adversary who has managed to get a hold of a compromised private key has. 
+i.e. if the current Private Key was somehow compromised, an attacker with access to the encrypted 
+network packets will be able to read each message sent that was encrypted with the compromised private key 
+up until the Server introduces a new Private Key that the client switches over to.
+
+## [Swagger UI](https://github.com/ServiceStack/ServiceStack/wiki/Swagger-API)
+
+The Swagger Metadata backend has been upgraded to support the 
+[Swagger 1.2 Spec](https://github.com/swagger-api/swagger-spec/blob/master/versions/1.2.md)
+
+### Basic Auth added to Swagger UI
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/swagger-basicauth.png)
+
+Users can call protected Services using the Username and Password fields in Swagger UI. 
+Swagger sends these credentials with every API request using HTTP Basic Auth, which can be enabled with:
+
+```csharp
+Plugins.Add(new AuthFeature(...,
+      new IAuthProvider[] { 
+        new BasicAuthProvider(), //Allow Sign-ins with HTTP Basic Auth
+      }));
+```
+
+Alternatively users can login outside of Swagger to access protected Services in Swagger.
+  
+## Auth Info displayed in [Metadata Pages](https://github.com/ServiceStack/ServiceStack/wiki/Metadata-page)
+
+Metadata pages now label protected Services. On the metadata index page it displays a yellow key next to
+each Service requiring Authentication:
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/metadata-auth-summary.png)
+
+Hovering over the key will show which also permissions or roles the Service needs.
+
+This information is also shown the metadata detail pages which will list which permissions/roles are required (if any), e.g:
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/metadata-auth.png)
+
+## [Java Native Types](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference)
+
+### [Functional Java Utils](https://github.com/mythz/java-linq-examples)
+
+Core Functional Utils have been added to the **net.servicestack:client** Java package that includes all utils 
+required to run [C#'s 101 LINQ Samples in Java](https://github.com/mythz/java-linq-examples) which is
+compatible with Java 1.7 so it can be used on Android:
+
+[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/wikis/java/linq-examples-screenshot.png)](https://github.com/mythz/java-linq-examples)
+
+Whilst noticeably more verbose than most languages, it enables a functional style of programming that provides
+an alternative to imperative programming with mutating collections and eases porting efforts of functional code 
+which can be mapped to equivalent core functional utils.
+
+### New TreatTypesAsStrings option
+
+Due to the [unusual encoding of Guid bytes](http://stackoverflow.com/a/18085116/85785) it may be instead be 
+preferential to treat Guids as opaque strings so they are easier to compare back to their original C# Guids. 
+This can be enabled with the new `TreatTypesAsStrings` option:
+
+/* Options:
+...
+TreatTypesAsStrings: Guid
+
+*/
+
+Which will emit String data types for Guid properties that are deserialized back into .NET Guid's as strings.
+
+## [Swift Native Types](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference)
+
+All Swift reserved keywords are now escaped, allowing them to be used in DTO's.
+
+## [Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client)
+
+All .NET Service Clients (inc [JsonHttpClient](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client#jsonhttpclient)) 
+can now be used to send raw `string`, `byte[]` or `Stream` Request bodies in their custom Sync or Async API's, e.g:
+ 
+```csharp
+string json = "{\"Key\":1}";
+client.Post<SendRawResponse>("/sendraw", json);
+
+byte[] bytes = json.ToUtf8Bytes();
+client.Put<SendRawResponse>("/sendraw", bytes);
+
+Stream stream = new MemoryStream(bytes);
+await client.PostAsync<SendRawResponse>("/sendraw", stream);
+```
+ 
+## Authentication
+
+### [Community Azure Active Directory Auth Provider](https://github.com/jfoshee/ServiceStack.Authentication.Aad)
+
+[Jacob Foshee](https://github.com/jfoshee) from the ServiceStack Community has published a 
+[ServiceStack AuthProvider for Azure Active Directory](https://github.com/jfoshee/ServiceStack.Authentication.Aad).
+
+To get started, Install it from NuGet with:
+
+    PM> Install-Package ServiceStack.Authentication.Aad
+
+Then add the `AadAuthProvider` AuthProvider to your `AuthFeature` registration:
+
+```csharp
+Plugins.Add(new AuthFeature(..., 
+    new IAuthProvider[] { 
+        new AadAuthProvider(AppSettings) 
+    });
+```
+
+See also the 
+[Web.config appSettings](https://github.com/jfoshee/ServiceStack.Authentication.Aad/blob/master/ServiceStack.Authentication.Aad.SelfHostTest/App.config) 
+required to configure Azure Directory OAuth Provider.
+
+### MaxLoginAttempts
+
+The `MaxLoginAttempts` feature has been moved out from `OrmLiteAuthRepository` into an option in the 
+`AuthFeature` plugin and now this feature has been added to all User Auth Repositories. 
+
+E.g. you can lock a User Account after 5 invalid login attempts with:
+ 
+ ```csharp
+ Plugins.Add(new AuthFeature(...) {
+     MaxLoginAttempts = 5
+ });
+ ```
+ 
+### Generate New Session Cookies on Authentication 
+
+Previously the Authentication provider only removed Users Cookies after they explicitly log out. 
+It's now also regenerating new Session Cookies each time a user logs in. 
+If you were previously relying on the user maintaining the same cookies 
+(i.e. tracking anonymous user activity) this behavior can be disabled with:
+
+```csharp
+Plugins.Add(new AuthFeature(...) {
+    GenerateNewSessionCookiesOnAuthentication = false
+});
+```
+
+### ClientId and ClientSecret OAuth Config Aliases
+ 
+OAuth Providers can now use `ClientId` and `ClientSecret` aliases instead of `ConsumerKey` and `ConsumerSecret`, e.g:
+
+```xml 
+<appSettings>
+    <add key="oauth.twitter.ClientId" value="..." />
+    <add key="oauth.twitter.ClientSecret" value="..." />
+</appSettings>
+```
+
+## [Error Handling](https://github.com/ServiceStack/ServiceStack/wiki/Error-Handling)
+
+### Custom Response Error Codes
+
+In addition to customizing the HTTP Response Body of C# Exceptions with 
+[IResponseStatusConvertible](https://github.com/ServiceStack/ServiceStack/wiki/Error-Handling#implementing-iresponsestatusconvertible), 
+you can also customize the HTTP Status Code by implementing `IHasStatusCode`:
+
+```csharp
+public class Custom401Exception : Exception, IHasStatusCode
+{
+    public int StatusCode { get { return 401; } }
+}
+```
+
+Which is a more cohesive alternative that registering the equivalent 
+[StatusCode Mapping](https://github.com/ServiceStack/ServiceStack/wiki/Error-Handling#custom-mapping-of-c-exceptions-to-http-error-status):
+
+```csharp
+SetConfig(new HostConfig { 
+    MapExceptionToStatusCode = {
+        { typeof(Custom401Exception), 401 },
+    }
+});
+```
+
+### Meta Dictionary on ResponseStatus and ResponseError
+
+The [IMeta](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.Interfaces/IMeta.cs)
+Dictionary has been added to `ResponseStatus` and `ResponseError` DTO's which provides a placeholder to 
+send additional metadata about errors. 
+
+This Meta dictionary will be automatically populated for any `CustomState` on `ValidationFailure` 
+that holds an `Dictionary<string, string>`.
+
+## [Server Events](https://github.com/ServiceStack/ServiceStack/wiki/Server-Events)
+
+The new `ServerEventsFeature.HouseKeepingInterval` option controls the minimum interval for how often SSE 
+connections should be routinely scanned and expired subscriptions removed. The default is every 5 seconds.
+
+> As there's no background Thread managing SSE connections, this is done in periodic SSE heartbeat handlers
+
+## ServiceStack.Text
+
+There are new convenient extension methods for Converting any POCO to and from Object Dictionary, e.g:
+
+```csharp
+var dto = new User
+{
+    FirstName = "First",
+    LastName = "Last",
+    Car = new Car { Age = 10, Name = "ZCar" },
+};
+
+Dictionary<string,object> map = dtoUser.ToObjectDictionary();
+
+User user = (User)map.FromObjectDictionary(typeof(User));
+```
+
+Like most Reflection API's in ServiceStack this is fairly efficient as it uses cached compiled delegates.
+
+There's also an extension method for adding types to `List<Type>`, e.g:
+
+```csharp
+var types = new List<Type>()
+    .Add<User>()
+    .Add<Car>();
+```
+
+Which is a cleaner equivalent to:
+
+```csharp
+var types = new List<Type>();
+types.Add(typeof(User));
+types.Add(typeof(User));
+```
+
 # v4.0.42 Release Notes
 
 ## New JsonHttpClient!
