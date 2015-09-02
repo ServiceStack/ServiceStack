@@ -56,9 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class RuntimeAttributeAppHost : AppSelfHostBase
         {
             public RuntimeAttributeAppHost()
-                : base(typeof(RuntimeAttributeTests).Name, typeof(RuntimeAttributeAppHost).Assembly) {}
-
-            public override void Configure(Container container)
+                : base(typeof(RuntimeAttributeTests).Name, typeof (RuntimeAttributeAppHost).Assembly)
             {
                 typeof(RuntimeAttributes)
                     .AddAttributes(new RuntimeAttributeRequestFilter());
@@ -67,9 +65,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     .AddAttributes(new RouteAttribute("/custom-register"))
                     .AddAttributes(new RestrictAttribute(RequestAttributes.Json));
 
-                typeof (SwaggerResource)
+                typeof(SwaggerResource)
                     .AddAttributes(new ExcludeAttribute(Feature.Soap));
+            }
 
+            public override void Configure(Container container)
+            {
                 this.RegisterService<RegisterService>("/register");
 
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
