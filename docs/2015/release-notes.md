@@ -1003,6 +1003,9 @@ connections should be routinely scanned and expired subscriptions removed. The d
 
 > As there's no background Thread managing SSE connections, the cleanup happens in periodic SSE heartbeat handlers
 
+Update: An [issue with this feature](https://github.com/ServiceStack/Issues/issues/345) has been resolved 
+in the [v4.0.45 pre-release NuGet packages on MyGet](https://github.com/ServiceStack/ServiceStack/wiki/MyGet).
+
 ## ServiceStack.Text
 
 There are new convenient extension methods for Converting any POCO to and from Object Dictionary, e.g:
