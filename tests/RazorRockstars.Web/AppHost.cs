@@ -17,18 +17,19 @@ namespace RazorRockstars.Web
 {
     public class AppHost : AppHostBase
     {
-        public AppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
+        public AppHost() : base("Test Razor", typeof (AppHost).Assembly)
+        {
+            typeof(SwaggerResources)
+                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
+            typeof(SwaggerResource)
+                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
+        }
 
         public override void Configure(Container container)
         {
             Plugins.Add(new RazorFormat());
             Plugins.Add(new MsgPackFormat());
             Plugins.Add(new SwaggerFeature { UseBootstrapTheme = true });
-
-            typeof(SwaggerResources)
-                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
-            typeof(SwaggerResource)
-                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
 
             var metadata = (MetadataFeature)Plugins.First(x => x is MetadataFeature);
             metadata.IndexPageFilter = page => {
