@@ -430,10 +430,8 @@ base.RegisterConverter<Guid>(new SqlServerGuidConverter());
 
 Overriding the pre-registered `GuidConverter` to enable its extended functionality in SQL Server.
 
-You'll also use the `RegisterConverter<T>()` API to use to register your own Custom GuidCoverter 
-(i.e. defined in your application) on the RDBMS provider you want it to apply to. 
-
-E.g to register it for SQL Server:
+You'll also use the `RegisterConverter<T>()` API to register your own Custom GuidCoverter on the RDBMS 
+provider you want it to apply to, e.g for SQL Server:
 
 ```csharp
 SqlServerDialect.Provider.RegisterConverter<Guid>(new MyCustomGuidConverter());
@@ -486,11 +484,11 @@ public class MyCustomGuidConverter : SqlServerGuidConverter
 ### Override handling of existing Types
 
 Another popular Use Case now enabled with Converters is being able to override built-in functionality based
-on preference. E.g. By default TimeSpans are stored in the database as Ticks in a `BIGINT` column since that's  
-the most reliable way to be able to retain the same TimeSpan value persisted across all RDBMS's. 
+on preference. E.g. By default TimeSpans are stored in the database as Ticks in a `BIGINT` column since it's  
+the most reliable way to retain the same TimeSpan value uniformly across all RDBMS's. 
 
 E.g SQL Server's **TIME** data type can't store Times greater than 24 hours or with less precision than **3ms**. 
-But if using **TIME** was preferred it can now be enabled by registering the new
+But if using a **TIME** column was preferred it can now be enabled by registering to use the new
 [SqlServerTimeConverter](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite.SqlServer/Converters/SqlServerTimeConverter.cs) 
 instead:
 
@@ -505,11 +503,11 @@ SqlServerDialect.Provider.RegisterConverter<TimeSpan>(new SqlServerTimeConverter
 Another benefit is they allow for easy customization as seen with `Precision` property which will now 
 create tables using the `TIME(7)` Column definition for TimeSpan properties.
 
-For RDBMS's that don't have a native `Guid` type (like Oracle or Firebird) you had an option to choose whether
+For RDBMS's that don't have a native `Guid` type like Oracle or Firebird, you had an option to choose whether
 you wanted to save them as text for better readability (default) or in a more efficient compact binary format. 
 Previously this preference was maintained in a boolean flag along with multiple Guid implementations hard-coded 
 at different entry points within each DialectProvider. This complexity has now been removed, now to store guids 
-in a compact binary format, you'll instead register the preferred Converter implementation, e.g:
+in a compact binary format you'll instead register the preferred Converter implementation, e.g:
 
 ```csharp
 FirebirdDialect.Provider.RegisterConverter<Guid>(
@@ -561,7 +559,7 @@ converter.DateStyle = DateTimeKind.Local;
 ```
 
 Will save `DateTime` in the database and populate them back on data models as LocalTime. 
-This behavior is also available for Utc:
+This is also available for Utc:
 
 ```csharp
 converter.DateStyle = DateTimeKind.Utc;
@@ -583,7 +581,7 @@ and
 Types!
 
 Since these Types require an external dependency to the **Microsoft.SqlServer.Types** NuGet package they're
-contained in a separate NuGet package, installed with:
+contained in a separate NuGet package that can be installed with:
 
     PM> Install-Package ServiceStack.OrmLite.SqlServer.Converters
 
@@ -671,9 +669,9 @@ The `Sql.In()` API has been expanded by [Johann Klemmack](https://github.com/jkl
 and combining of multiple Typed SQL Expressions together in a single SQL Query, e.g:
   
 ```csharp
-var usaCustomers = db.From<Customer>(c => c.Country == "USA").Select(c => c.Id);
+var usaCustomerIds = db.From<Customer>(c => c.Country == "USA").Select(c => c.Id);
 var usaCustomerOrders = db.Select(db.From<Order>()
-    .Where(q => Sql.In(q.CustomerId, usaCustomers)));
+    .Where(q => Sql.In(q.CustomerId, usaCustomerIds)));
 ```
  
 ### Descending Indexes
@@ -751,7 +749,7 @@ with the **Crypt Key**, encrypted with the Server's Public Key.
 An updated version of this process is now:
 
   1. Client creates a new `IEncryptedClient` configured with the Server **Public Key**
-  2. Client uses the `IEncryptedClient` create a EncryptedMessage Request DTO:
+  2. Client uses the `IEncryptedClient` to create a EncryptedMessage Request DTO:
     1. Generates a new AES 256bit/CBC/PKCS7 Crypt Key **(Kc)**, Auth Key **(Ka)** and **IV**
     2. Encrypts Crypt Key **(Kc)**, Auth Key **(Ka)** with Servers Public Key padded with OAEP = **(Kc+Ka+P)e**
     3. Authenticates **(Kc+Ka+P)e** with **IV** using HMAC SHA-256 = **IV+(Kc+Ka+P)e+Tag**
@@ -763,7 +761,7 @@ An updated version of this process is now:
 
 On the Server, the `EncryptedMessagingFeature` Request Converter processes the `EncryptedMessage` DTO:
 
-  4. Uses Private Key identified by **KeyId** or default Private Key if **KeyId** wasn't provided
+  1. Uses Private Key identified by **KeyId** or the current Private Key if **KeyId** wasn't provided
     1. Request Converter Extracts **IV+(Kc+Ka+P)e+Tag** into **IV** and **(Kc+Ka+P)e+Tag**
     2. Decrypts **(Kc+Ka+P)e+Tag** with Private Key into **(Kc)** and **(Ka)**
     3. The **IV** is checked against the nonce Cache, verified it's never been used before, then cached
@@ -773,11 +771,11 @@ On the Server, the `EncryptedMessagingFeature` Request Converter processes the `
     7. The **timestamp** is verified it's not older than `EncryptedMessagingFeature.MaxRequestAge`
     8. Any expired nonces are removed. (The **timestamp** and **IV** are used to prevent replay attacks)
     9. The JSON body is deserialized and resulting **Request DTO** returned from the Request Converter
-  5. The converted **Request DTO** is executed in ServiceStack's Request Pipeline as normal
-  6. The **Response DTO** is picked up by the EncryptedMessagingFeature **Response Converter**:
+  2. The converted **Request DTO** is executed in ServiceStack's Request Pipeline as normal
+  3. The **Response DTO** is picked up by the EncryptedMessagingFeature **Response Converter**:
     1. Any **Cookies** set during the Request are removed
     2. The **Response DTO** is serialized with the **AES Key** and returned in an `EncryptedMessageResponse`
-  7. The `IEncryptedClient` decrypts the `EncryptedMessageResponse` with the **AES Key**
+  4. The `IEncryptedClient` decrypts the `EncryptedMessageResponse` with the **AES Key**
     1. The **Response DTO** is extracted and returned to the caller
 
 ### Support for versioning Private Keys with Key Rotations
