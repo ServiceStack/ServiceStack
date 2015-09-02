@@ -725,6 +725,9 @@ namespace ServiceStack
                     {
                         foreach (var sub in subs)
                         {
+                            if (sub == null)
+                                continue;
+
                             if (now - sub.LastPulseAt > IdleTimeout)
                             {
                                 expired.Add(sub);
