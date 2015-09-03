@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -57,6 +58,7 @@ namespace ServiceStack.Razor
         public ILiveReload LiveReload { get; set; }
         public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
         public RenderPartialDelegate RenderPartialFn { get; set; }
+        public Action<CompilerParameters> CompileFilter { get; set; }
 
         public Action<RenderingPage, string> OnWriteLiteral
         {

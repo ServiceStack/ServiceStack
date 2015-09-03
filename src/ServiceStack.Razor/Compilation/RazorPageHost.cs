@@ -206,7 +206,7 @@ namespace ServiceStack.Razor.Compilation
                 {
                     GenerateInMemory = true,
                     GenerateExecutable = false,
-                    IncludeDebugInformation = false,
+                    IncludeDebugInformation = HostContext.DebugMode,
                     CompilerOptions = "/target:library /optimize",
                     TempFiles = { KeepFiles = true }
                 };
@@ -237,6 +237,12 @@ namespace ServiceStack.Razor.Compilation
                 .ToArray(); 
             
             @params.ReferencedAssemblies.AddRange(assemblyNames);
+
+            var feature = HostContext.GetPlugin<RazorFormat>();
+            if (feature != null && feature.CompileFilter != null)
+            {
+                feature.CompileFilter(@params);
+            }
 
             //Compile the code
             var results = _codeDomProvider.CompileAssemblyFromDom(@params, razorResults.GeneratedCode);
