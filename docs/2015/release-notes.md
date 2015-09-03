@@ -928,11 +928,11 @@ The `MaxLoginAttempts` feature has been moved out from `OrmLiteAuthRepository` i
 
 E.g. you can lock a User Account after 5 invalid login attempts with:
  
- ```csharp
- Plugins.Add(new AuthFeature(...) {
-     MaxLoginAttempts = 5
- });
- ```
+```csharp
+Plugins.Add(new AuthFeature(...) {
+    MaxLoginAttempts = 5
+});
+```
  
 ### Generate New Session Cookies on Authentication 
 

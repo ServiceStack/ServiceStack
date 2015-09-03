@@ -139,7 +139,7 @@ namespace ServiceStack.Logging.NLogger
         }
 
         /// <summary>
-        /// Logs an Info message and exception.
+        /// Logs an Info message 
         /// </summary>
         /// <param name="message">The message.</param>
         public void Info(object message)
@@ -200,6 +200,11 @@ namespace ServiceStack.Logging.NLogger
         {
             if (IsWarnEnabled)
                 Log(LogLevel.Warn, format, args);
+        }
+
+        public void Log(NLog.LogLevel logLevel, string message, Exception ex)
+        {
+            log.Log(typeof(NLogLogger), new LogEventInfo(logLevel, log.Name, null, message, null, ex));
         }
 
         public void Log(NLog.LogLevel logLevel, string format, params object[] args)
