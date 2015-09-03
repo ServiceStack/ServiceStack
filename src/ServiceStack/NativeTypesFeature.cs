@@ -10,6 +10,8 @@ namespace ServiceStack
     {
         public MetadataTypesConfig MetadataTypesConfig { get; set; }
 
+        public static bool DisableTokenVerification { get; set; }
+
         public NativeTypesFeature()
         {
             MetadataTypesConfig = new MetadataTypesConfig

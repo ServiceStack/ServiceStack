@@ -874,7 +874,7 @@ namespace ServiceStack.NativeTypes
 
         public static string SafeToken(this string token)
         {
-            if (token.ContainsAny("\"", "-", "+", "\\", "*", "=", "!"))
+            if (!NativeTypesFeature.DisableTokenVerification && token.ContainsAny("\"", "-", "+", "\\", "*", "=", "!"))
                 throw new InvalidDataException("MetaData is potentially malicious. Expected token, Received: {0}".Fmt(token));
 
             return token;
@@ -882,7 +882,7 @@ namespace ServiceStack.NativeTypes
 
         public static string SafeValue(this string value)
         {
-            if (value.Contains('"'))
+            if (!NativeTypesFeature.DisableTokenVerification && value.Contains('"'))
                 throw new InvalidDataException("MetaData is potentially malicious. Expected scalar value, Received: {0}".Fmt(value));
 
             return value;
