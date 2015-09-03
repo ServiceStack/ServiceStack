@@ -46,6 +46,8 @@ namespace ServiceStack.Razor.Compilation
         
         public IVirtualPathProvider PathProvider { get; protected set; }
         public IVirtualFile File { get; protected set; }
+        public bool IncludeDebugInformation { get; set; }
+        public Action<CompilerParameters> CompileFilter { get; set; }
 
         public RazorPageHost(IVirtualPathProvider pathProvider,
                               IVirtualFile file,
@@ -206,7 +208,7 @@ namespace ServiceStack.Razor.Compilation
                 {
                     GenerateInMemory = true,
                     GenerateExecutable = false,
-                    IncludeDebugInformation = HostContext.DebugMode,
+                    IncludeDebugInformation = IncludeDebugInformation,
                     CompilerOptions = "/target:library /optimize",
                     TempFiles = { KeepFiles = true }
                 };
@@ -238,11 +240,8 @@ namespace ServiceStack.Razor.Compilation
             
             @params.ReferencedAssemblies.AddRange(assemblyNames);
 
-            var feature = HostContext.GetPlugin<RazorFormat>();
-            if (feature != null && feature.CompileFilter != null)
-            {
-                feature.CompileFilter(@params);
-            }
+            if (CompileFilter != null)
+                CompileFilter(@params);
 
             //Compile the code
             var results = _codeDomProvider.CompileAssemblyFromDom(@params, razorResults.GeneratedCode);

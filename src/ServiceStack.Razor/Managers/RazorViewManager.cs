@@ -31,6 +31,9 @@ namespace ServiceStack.Razor.Managers
 
         protected IRazorConfig Config { get; set; }
 
+        public bool IncludeDebugInformation { get; set; }
+        public Action<CompilerParameters> CompileFilter { get; set; }
+
         protected IVirtualPathProvider PathProvider = null;
 
         public RazorViewManager(IRazorConfig viewConfig, IVirtualPathProvider virtualPathProvider)
@@ -137,7 +140,7 @@ namespace ServiceStack.Razor.Managers
             //create a RazorPage
             var page = new RazorPage
             {
-                PageHost = new RazorPageHost(PathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>()),
+                PageHost = CreatePageHost(file, transformer),
                 IsValid = false,
                 File = file,
                 VirtualPath = file.VirtualPath,
@@ -162,7 +165,7 @@ namespace ServiceStack.Razor.Managers
             
             var page = new RazorPage
             {
-                PageHost = file != null ? new RazorPageHost(PathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>()) : null,
+                PageHost = file != null ? CreatePageHost(file, transformer) : null,
                 PageType = pageType,
                 IsValid = true,
                 File = file,
@@ -171,6 +174,15 @@ namespace ServiceStack.Razor.Managers
 
             AddPage(page, pagePath);
             return page;
+        }
+
+        private RazorPageHost CreatePageHost(IVirtualFile file, RazorViewPageTransformer transformer)
+        {
+            return new RazorPageHost(PathProvider, file, transformer, new CSharpCodeProvider(), new Dictionary<string, string>())
+            {
+                IncludeDebugInformation = IncludeDebugInformation,
+                CompileFilter = CompileFilter,
+            };
         }
 
         protected virtual RazorPage AddPage(RazorPage page, string pagePath = null)

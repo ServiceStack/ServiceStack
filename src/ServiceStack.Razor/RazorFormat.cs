@@ -203,7 +203,11 @@ namespace ServiceStack.Razor
 
         public virtual RazorViewManager CreateViewManager()
         {
-            return new RazorViewManager(this, VirtualPathProvider);
+            return new RazorViewManager(this, VirtualPathProvider)
+            {
+                IncludeDebugInformation = HostContext.DebugMode,
+                CompileFilter = CompileFilter,
+            };
         }
 
         static ILiveReload CreateLiveReload(RazorViewManager viewManager)
