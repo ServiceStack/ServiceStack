@@ -209,7 +209,7 @@ namespace ServiceStack.Razor.Compilation
                     GenerateInMemory = true,
                     GenerateExecutable = false,
                     IncludeDebugInformation = IncludeDebugInformation,
-                    CompilerOptions = "/target:library /optimize",
+                    CompilerOptions = "/target:library" + (IncludeDebugInformation ? "" : " /optimize"),
                     TempFiles = { KeepFiles = true }
                 };
 
