@@ -28,7 +28,7 @@ namespace ServiceStack.Razor
 
         public TModel Model { get; set; }
 
-        public Type ModelType { get; }
+        public Type ModelType { get; set; }
 
         public virtual T Get<T>()
         {
