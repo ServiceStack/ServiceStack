@@ -113,6 +113,7 @@ namespace ServiceStack.Redis
 
         string Type(string key);
         RedisKeyType GetEntryType(string key);
+        long GetStringCount(string key);
         string GetRandomKey();
         bool ExpireEntryIn(string key, TimeSpan expireIn);
         bool ExpireEntryAt(string key, DateTime expireAt);
