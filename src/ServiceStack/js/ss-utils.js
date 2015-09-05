@@ -48,6 +48,13 @@
         }
         return map;
     };
+    $.ss.bindAll = function(o) {
+        for (var k in o) {
+            if (typeof o[k] == 'function')
+                o[k] = o[k].bind(o);
+        }
+        return o;
+    };
     $.ss.createUrl = function(route, args) {
         if (!args) args = {};
         var argKeys = {};
