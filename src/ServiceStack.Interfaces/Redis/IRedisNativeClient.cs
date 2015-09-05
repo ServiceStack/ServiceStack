@@ -59,6 +59,7 @@ namespace ServiceStack.Redis
 
         //Common key-value Redis operations
         byte[][] Keys(string pattern);
+        string Type(string key);
         long Exists(string key);
         long StrLen(string key);
         void Set(string key, byte[] value);

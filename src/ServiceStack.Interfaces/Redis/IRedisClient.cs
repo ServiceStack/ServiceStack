@@ -111,6 +111,7 @@ namespace ServiceStack.Redis
         long DecrementValueBy(string key, int count);
         List<string> SearchKeys(string pattern);
 
+        string Type(string key);
         RedisKeyType GetEntryType(string key);
         string GetRandomKey();
         bool ExpireEntryIn(string key, TimeSpan expireIn);
