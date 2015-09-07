@@ -72,6 +72,11 @@ namespace ServiceStack
 
     public class PostmanRequest
     {
+        public PostmanRequest()
+        {
+            responses = new List<string>();
+        }
+        
         public string collectionId { get; set; }
         public string id { get; set; }
         public string name { get; set; }
