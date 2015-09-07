@@ -205,57 +205,68 @@
             var f = $(this);
             f.submit(function (e) {
                 e.preventDefault();
-                f.clearErrors();
-                try {
-                    if (orig.validate && orig.validate.call(f) === false)
-                        return false;
-                } catch (e) { return false; }
-                f.addClass("loading");
-                var $disable = $(orig.onSubmitDisable || $.ss.onSubmitDisable, f);
-                $disable.attr("disabled", "disabled");
-                var opt = $.extend({}, orig, {
-                    type: f.attr('method') || "POST",
-                    url: f.attr('action'),
-                    data: f.serialize(),
-                    accept: "application/json",
-                    error: function (jq, jqStatus, statusText) {
-                        var err, errMsg = "The request failed with " + statusText;
-                        try {
-                            err = JSON.parse(jq.responseText);
-                        } catch (e) { }
-                        if (!err) {
-                            f.addClass("has-errors");
-                            f.find(".error-summary").html(errMsg);
-                        } else {
-                            f.applyErrors(err.ResponseStatus || err.responseStatus);
-                        }
-                        if (orig.error) {
-                            orig.error.apply(this, arguments);
-                        }
-                    },
-                    complete: function (jq) {
-                        f.removeClass("loading");
-                        $disable.removeAttr("disabled");
-                        if (orig.complete) {
-                            orig.complete.apply(this, arguments);
-                        }
-                        var loc = jq.getResponseHeader("X-Location");
-                        if (loc) {
-                            location.href = loc;
-                        }
-                        var evt = jq.getResponseHeader("X-Trigger");
-                        if (evt) {
-                            var pos = attr.indexOf(':');
-                            var cmd = pos >= 0 ? evt.substring(0, pos) : evt;
-                            var data = pos >= 0 ? evt.substring(pos + 1) : null;
-                            f.trigger(cmd, data ? [data] : []);
-                        }
-                    },
-                    dataType: "json",
-                });
-                $.ajax(opt);
-                return false;
+                return $(f).ajaxSubmit(orig);
             });
+        });
+    };
+
+    $.fn.ajaxSubmit = function (orig) {
+        return this.each(function () {
+            orig = orig || {};
+            var f = $(this);
+            f.clearErrors();
+            try {
+                if (orig.validate && orig.validate.call(f) === false)
+                    return false;
+            } catch (e) {
+                return false;
+            }
+            f.addClass("loading");
+            var $disable = $(orig.onSubmitDisable || $.ss.onSubmitDisable, f);
+            $disable.attr("disabled", "disabled");
+            var opt = $.extend({}, orig, {
+                type: f.attr('method') || "POST",
+                url: f.attr('action'),
+                data: f.serialize(),
+                accept: "application/json",
+                error: function (jq, jqStatus, statusText) {
+                    var err, errMsg = "The request failed with " + statusText;
+                    try {
+                        err = JSON.parse(jq.responseText);
+                    } catch (e) {
+                    }
+                    if (!err) {
+                        f.addClass("has-errors");
+                        f.find(".error-summary").html(errMsg);
+                    } else {
+                        f.applyErrors(err.ResponseStatus || err.responseStatus);
+                    }
+                    if (orig.error) {
+                        orig.error.apply(this, arguments);
+                    }
+                },
+                complete: function (jq) {
+                    f.removeClass("loading");
+                    $disable.removeAttr("disabled");
+                    if (orig.complete) {
+                        orig.complete.apply(this, arguments);
+                    }
+                    var loc = jq.getResponseHeader("X-Location");
+                    if (loc) {
+                        location.href = loc;
+                    }
+                    var evt = jq.getResponseHeader("X-Trigger");
+                    if (evt) {
+                        var pos = attr.indexOf(':');
+                        var cmd = pos >= 0 ? evt.substring(0, pos) : evt;
+                        var data = pos >= 0 ? evt.substring(pos + 1) : null;
+                        f.trigger(cmd, data ? [data] : []);
+                    }
+                },
+                dataType: "json",
+            });
+            $.ajax(opt);
+            return false;
         });
     };
 
