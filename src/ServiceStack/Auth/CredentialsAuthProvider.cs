@@ -136,7 +136,7 @@ namespace ServiceStack.Auth
             throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword);
         }
 
-        protected object AuthenticatePrivateRequest(
+        protected virtual object AuthenticatePrivateRequest(
             IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
         {
             var authRepo = authService.TryResolve<IAuthRepository>().AsUserAuthRepository(authService.GetResolver());
