@@ -197,11 +197,6 @@
     
     $.fn.bindForm = function (orig) {
         return this.each(function () {
-            orig = orig || {};
-            if (orig.validation) {
-                $.extend($.ss.validation, orig.validation);
-            }
-            
             var f = $(this);
             f.submit(function (e) {
                 e.preventDefault();
@@ -211,8 +206,12 @@
     };
 
     $.fn.ajaxSubmit = function (orig) {
+        orig = orig || {};
+        if (orig.validation) {
+            $.extend($.ss.validation, orig.validation);
+        }
+
         return this.each(function () {
-            orig = orig || {};
             var f = $(this);
             f.clearErrors();
             try {
