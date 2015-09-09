@@ -95,7 +95,7 @@ namespace ServiceStack.Server.Tests.Caching
     {
         public override ICacheClient CreateClient()
         {
-            return new RedisManagerPool(Environment.GetEnvironmentVariable("CI_HOST")).GetCacheClient();
+            return new RedisManagerPool(Environment.GetEnvironmentVariable("CI_HOST") ?? "127.0.0.1").GetCacheClient();
         }
     }
 }
