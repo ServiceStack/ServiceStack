@@ -318,8 +318,8 @@ namespace ServiceStack.Server.Tests.Shared
                 Cache.Set("otherkey" + i, i);
             });
 
-            var sessionPattern = IdUtils.CreateUrn<IAuthSession>("*");
-            Assert.That(sessionPattern, Is.EqualTo("urn:iauthsession:*"));
+            var sessionPattern = IdUtils.CreateUrn<IAuthSession>("");
+            Assert.That(sessionPattern, Is.EqualTo("urn:iauthsession:"));
             var sessionKeys = Cache.GetKeysStartingWith(sessionPattern).ToList();
 
             Assert.That(sessionKeys.Count, Is.EqualTo(5));
