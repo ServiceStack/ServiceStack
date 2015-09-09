@@ -296,5 +296,42 @@ namespace ServiceStack.Server.Tests.Shared
             value1 = sessionB.Get<String>("key1");
             Assert.That(value1, Is.EqualTo("value1"));
         }
+
+        [Test]
+        public void Can_GetKeysByPattern()
+        {
+            if (!(Cache is ICacheClientExtended))
+                return;
+
+            JsConfig.ExcludeTypeInfo = true;
+
+            5.Times(i => {
+                IAuthSession session = new CustomAuthSession
+                {
+                    Id = "sess-" + i,
+                    UserAuthId = i.ToString(),
+                    Custom = "custom" + i
+                };
+
+                var sessionKey = SessionFeature.GetSessionKey(session.Id);
+                Cache.Set(sessionKey, session, SessionFeature.DefaultSessionExpiry);
+                Cache.Set("otherkey" + i, i);
+            });
+
+            var sessionPattern = IdUtils.CreateUrn<IAuthSession>("*");
+            Assert.That(sessionPattern, Is.EqualTo("urn:iauthsession:*"));
+            var sessionKeys = Cache.GetKeysStartingWith(sessionPattern).ToList();
+
+            Assert.That(sessionKeys.Count, Is.EqualTo(5));
+            Assert.That(sessionKeys.All(x => x.StartsWith("urn:iauthsession:")));
+
+            var allSesssions = Cache.GetAll<IAuthSession>(sessionKeys);
+            Assert.That(allSesssions.Values.Count(x => x != null), Is.EqualTo(sessionKeys.Count));
+
+            var allKeys = Cache.GetAllKeys().ToList();
+            Assert.That(allKeys.Count, Is.EqualTo(10));
+
+            JsConfig.Reset();
+        }
     }
 }

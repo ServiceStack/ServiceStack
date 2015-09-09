@@ -312,9 +312,14 @@ namespace ServiceStack.Caching
             }
         }
 
+        private static string ConvertToRegex(string pattern)
+        {
+            return pattern.Replace("*", ".*").Replace("?", ".+");
+        }
+
         public void RemoveByPattern(string pattern)
         {
-            RemoveByRegex(pattern.Replace("*", ".*").Replace("?", ".+"));
+            RemoveByRegex(ConvertToRegex(pattern));
         }
 
         public void RemoveByRegex(string pattern)
@@ -340,7 +345,14 @@ namespace ServiceStack.Caching
             }
         }
 
-        public List<string> GetKeysByPattern(string pattern)
+        public IEnumerable<string> GetKeysByPattern(string pattern)
+        {
+            return pattern == "*" 
+                ? memory.Keys 
+                : GetKeysByRegex(ConvertToRegex(pattern));
+        }
+
+        public List<string> GetKeysByRegex(string pattern)
         {
             var regex = new Regex(pattern);
             var enumerator = this.memory.GetEnumerator();

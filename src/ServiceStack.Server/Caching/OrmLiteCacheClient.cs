@@ -429,6 +429,22 @@ namespace ServiceStack.Caching
             });
         }
 
+        public IEnumerable<string> GetKeysByPattern(string pattern)
+        {
+            return Exec(db =>
+            {
+                if (pattern == "*")
+                    return db.Column<string>(db.From<CacheEntry>().Select(x => x.Id));
+
+                var dbPattern = pattern.Replace('*', '%');
+                var dialect = db.GetDialectProvider();
+                var id = dialect.GetQuotedColumnName("Id");
+
+                return db.Column<string>(db.From<CacheEntry>()
+                    .Where(id + " LIKE {0}", dbPattern));
+            });
+        }
+
         public void RemoveByRegex(string regex)
         {
             throw new NotImplementedException();

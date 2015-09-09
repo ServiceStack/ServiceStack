@@ -199,6 +199,25 @@ namespace ServiceStack
             canRemoveByPattern.RemoveByRegex(regex);
         }
 
+        public static IEnumerable<string> GetKeysByPattern(this ICacheClient cache, string pattern)
+        {
+            var extendedCache = cache as ICacheClientExtended;
+            if (extendedCache == null)
+                throw new NotImplementedException("ICacheClientExtended is not implemented by: " + cache.GetType().FullName);
+
+            return extendedCache.GetKeysByPattern(pattern);
+        }
+
+        public static IEnumerable<string> GetAllKeys(this ICacheClient cache)
+        {
+            return cache.GetKeysByPattern("*");
+        }
+
+        public static IEnumerable<string> GetKeysStartingWith(this ICacheClient cache, string prefix)
+        {
+            return cache.GetKeysByPattern(prefix + "*");
+        }
+
         public static T GetOrCreate<T>(this ICacheClient cache,
             string key, Func<T> createFn)
         {
