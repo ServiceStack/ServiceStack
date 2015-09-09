@@ -104,6 +104,18 @@
         return to;
     }
 
+    $.ss.parseResponseStatus = function(json, defaultMsg) {
+        try {
+            var err = JSON.parse(json);
+            return sanitize(err.ResponseStatus || err.responseStatus);
+        } catch (e) {
+            return {
+                message: defaultMsg,
+                __error: { error: e, json: json }
+            };
+        }
+    };
+
     $.fn.setFieldError = function(name, msg) {
         $(this).applyErrors({
             errors: [{
