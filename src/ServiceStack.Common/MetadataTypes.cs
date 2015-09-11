@@ -82,6 +82,7 @@ namespace ServiceStack
         public string GlobalNamespace { get; set; }
 
         public HashSet<Type> IgnoreTypes { get; set; }
+        public HashSet<Type> ExportTypes { get; set; }
         public HashSet<Type> ExportAttributes { get; set; }
         public List<string> IgnoreTypesInNamespaces { get; set; }
     }
@@ -115,6 +116,7 @@ namespace ServiceStack
         public string Namespace { get; set; }
         public string[] GenericArgs { get; set; }
         public MetadataTypeName Inherits { get; set; }
+        public MetadataTypeName[] Implements { get; set; }
         public string DisplayType { get; set; }
         public string Description { get; set; }
         public bool ReturnVoidMarker { get; set; }

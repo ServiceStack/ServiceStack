@@ -34,6 +34,14 @@ namespace ServiceStack
                     typeof(AutoQueryViewerAttribute),
                     typeof(AutoQueryViewerFieldAttribute),
                 },
+                ExportTypes = new HashSet<Type>
+                {
+                    typeof(IGet),                    
+                    typeof(IPost),                    
+                    typeof(IPut),                    
+                    typeof(IDelete),                    
+                    typeof(IPatch),
+                },
                 IgnoreTypes = new HashSet<Type>
                 {
                 },

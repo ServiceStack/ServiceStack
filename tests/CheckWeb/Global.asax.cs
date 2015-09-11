@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Check.ServiceInterface;
 using Check.ServiceModel;
+using Check.ServiceModel.Types;
 using Funq;
 using ServiceStack;
 using ServiceStack.Api.Swagger;

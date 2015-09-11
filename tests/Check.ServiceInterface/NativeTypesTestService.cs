@@ -196,6 +196,31 @@ namespace Check.ServiceInterface
         {
             return request;
         }
+
+        public object Any(HelloGet request)
+        {
+            return new HelloVerbResponse { Result = HttpMethods.Get };
+        }
+
+        public object Any(HelloPost request)
+        {
+            return new HelloVerbResponse { Result = HttpMethods.Post };
+        }
+
+        public object Any(HelloPut request)
+        {
+            return new HelloVerbResponse { Result = HttpMethods.Put };
+        }
+
+        public object Any(HelloDelete request)
+        {
+            return new HelloVerbResponse { Result = HttpMethods.Delete };
+        }
+
+        public object Any(HelloPatch request)
+        {
+            return new HelloVerbResponse { Result = HttpMethods.Patch };
+        }
     }
 
     public class GetUserSession : IReturn<CustomUserSession>

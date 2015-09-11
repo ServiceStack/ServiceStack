@@ -327,17 +327,15 @@ namespace ServiceStack.NativeTypes.Java
                 if (type.Inherits != null)
                     extends.Add(Type(type.Inherits).InheritedType());
 
-                var extendsModifier = " extends ";
-
                 string responseTypeExpression = null;
 
+                var interfaces = new List<string>();
                 if (options.ImplementsFn != null)
                 {
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
                     {
-                        extends.Add(implStr);
-                        extendsModifier = " implements ";
+                        interfaces.Add(implStr);
 
                         if (implStr.StartsWith("IReturn<"))
                         {
@@ -350,13 +348,21 @@ namespace ServiceStack.NativeTypes.Java
                                 : "{0}.class".Fmt(returnType);
                         }
                     }
+                    if (!type.Implements.IsEmpty())
+                    {
+                        foreach (var interfaceRef in type.Implements)
+                        {
+                            interfaces.Add(Type(interfaceRef));
+                        }
+                    }
                 }
 
-                var extend = extends.Count == 1 ?
-                      extendsModifier + extends[0]
-                    : extends.Count > 1 ? 
-                      " extends " + extends[0] + " implements " + string.Join(", ", extends.Skip(1)) : 
-                      "";
+                var extend = extends.Count > 0 
+                    ? " extends " + extends[0]
+                    : "";
+
+                if (interfaces.Count > 0)
+                    extend += " implements " + string.Join(", ", interfaces.ToArray());
 
                 var addPropertyAccessors = Config.AddPropertyAccessors && !type.IsInterface();
                 var settersReturnType = addPropertyAccessors && Config.SettersReturnThis ? typeName : null;
@@ -824,11 +830,6 @@ namespace ServiceStack.NativeTypes.Java
                     : name;
 
             return fieldName;
-
-            //var propName = name.ToCamelCase(); //Always use Java conventions for now
-            //return JavaKeyWords.Contains(propName)
-            //    ? propName.ToPascalCase()
-            //    : propName;
         }
 
         public static MetadataAttribute ToMetadataAttribute(this MetadataRoute route)

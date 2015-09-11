@@ -294,9 +294,8 @@ namespace ServiceStack.NativeTypes
             {
                 Name = type.GetOperationName(),
                 Namespace = type.Namespace,
-                GenericArgs = type.IsGenericType
-                    ? type.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
-                    : null,
+                GenericArgs = type.IsGenericType ? GetGenericArgs(type) : null,
+                Implements = ToInterfaces(type),
                 Attributes = ToAttributes(type),
                 Properties = ToProperties(type),
                 IsNested = type.IsNested ? true : (bool?)null,
@@ -390,6 +389,21 @@ namespace ServiceStack.NativeTypes
             }
 
             return metaType;
+        }
+
+        private static string[] GetGenericArgs(Type type)
+        {
+            return type.GetGenericArguments().Select(x => x.GetOperationName()).ToArray();
+        }
+
+        private MetadataTypeName[] ToInterfaces(Type type)
+        {
+            return type.GetInterfaces().Where(x => config.ExportTypes.Contains(x)).Map(x =>
+                new MetadataTypeName {
+                    Name = x.Name,
+                    Namespace = x.Namespace,
+                    GenericArgs = GetGenericArgs(x),
+                }).ToArray();
         }
 
         public List<MetadataAttribute> ToAttributes(Type type)
@@ -839,6 +853,13 @@ namespace ServiceStack.NativeTypes
             }
 
             return to;
+        }
+
+        public static void RemoveIgnoredTypesForNet(this MetadataTypes metadata, MetadataTypesConfig config)
+        {
+            metadata.RemoveIgnoredTypes(config);
+            //Don't include Exported Types in System 
+            metadata.Types.RemoveAll(x => x.IgnoreSystemType()); 
         }
 
         public static void RemoveIgnoredTypes(this MetadataTypes metadata, MetadataTypesConfig config)
