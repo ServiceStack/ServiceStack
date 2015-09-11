@@ -442,7 +442,9 @@ namespace ServiceStack.Host
 
         static MetadataType FindMetadataType(MetadataTypes metadataTypes, string name, string @namespace = null)
         {
-            if (@namespace != null && @namespace.StartsWith("System"))
+            if (@namespace != null 
+                && @namespace.StartsWith("System") 
+                && metadataTypes.Config.ExportTypes.All(x => x.Name != name))
                 return null;
 
             var reqType = metadataTypes.Operations.FirstOrDefault(x => x.Request.Name == name);

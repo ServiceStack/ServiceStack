@@ -33,6 +33,9 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         public override void Configure(Container container)
         {
+            var nativeTypes = this.GetPlugin<NativeTypesFeature>();
+            nativeTypes.MetadataTypesConfig.ExportTypes.Add(typeof(DayOfWeek));
+
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
             {

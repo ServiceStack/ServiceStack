@@ -191,6 +191,11 @@ namespace Check.ServiceInterface
         {
             return new Dictionary<string,string> { { request.Key ?? "key", request.Value } };
         }
+
+        public object Any(HelloBuiltin request)
+        {
+            return request;
+        }
     }
 
     public class GetUserSession : IReturn<CustomUserSession>

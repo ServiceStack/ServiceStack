@@ -485,6 +485,11 @@ namespace Check.ServiceModel.Types
         public string Key { get; set; }
         public string Value { get; set; }
     }
+
+    public class HelloBuiltin
+    {
+        public DayOfWeek DayOfWeek { get; set; }
+    }
 }
 
 

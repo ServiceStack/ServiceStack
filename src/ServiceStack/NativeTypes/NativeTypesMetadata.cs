@@ -53,6 +53,7 @@ namespace ServiceStack.NativeTypes
                 ExcludeTypes = TrimArgs(req.ExcludeTypes ?? defaults.ExcludeTypes),
                 TreatTypesAsStrings = TrimArgs(req.TreatTypesAsStrings ?? defaults.TreatTypesAsStrings),
                 ExportAttributes = defaults.ExportAttributes,
+                ExportTypes = defaults.ExportTypes,
                 IgnoreTypes = defaults.IgnoreTypes,
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
                 GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace,
@@ -100,6 +101,7 @@ namespace ServiceStack.NativeTypes
             var skipTypes = config.IgnoreTypes ?? new HashSet<Type>();
             var opTypes = new HashSet<Type>();
             var ignoreNamespaces = config.IgnoreTypesInNamespaces ?? new List<string>();
+            var exportTypes = config.ExportTypes ?? new HashSet<Type>();
 
             foreach (var operation in meta.Operations)
             {
@@ -144,9 +146,10 @@ namespace ServiceStack.NativeTypes
             Func<Type, bool> ignoreTypeFn = t =>
                 t == null
                 || t.IsGenericParameter
+                || t == typeof(Enum)
                 || considered.Contains(t)
                 || skipTypes.Contains(t)
-                || ignoreNamespaces.Contains(t.Namespace);
+                || (ignoreNamespaces.Contains(t.Namespace) && !exportTypes.Contains(t));
 
             Action<Type> registerTypeFn = null;
             registerTypeFn = t =>
@@ -157,9 +160,10 @@ namespace ServiceStack.NativeTypes
                 considered.Add(t);
                 queue.Enqueue(t);
 
-                if (!t.IsSystemType()
-                    && (t.IsClass || t.IsEnum || t.IsInterface)
-                    && !(t.IsGenericParameter))
+                if ((!t.IsSystemType()
+                        && (t.IsClass || t.IsEnum || t.IsInterface)
+                        && !(t.IsGenericParameter))
+                    || exportTypes.Contains(t))
                 {
                     metadata.Types.Add(ToType(t));
 
@@ -192,7 +196,8 @@ namespace ServiceStack.NativeTypes
                 if (type.HasInterface(typeof(IService)) && type.GetNestedTypes().IsEmpty())
                     continue;
 
-                if (!type.IsUserType() && !type.IsInterface)
+                if (!type.IsUserType() && !type.IsInterface
+                    && !exportTypes.Contains(type))
                     continue;
 
                 if (!type.HasInterface(typeof(IService)))
@@ -850,7 +855,7 @@ namespace ServiceStack.NativeTypes
 
         public static bool IgnoreType(this MetadataType type, MetadataTypesConfig config)
         {
-            if (type.IgnoreSystemType())
+            if (type.IgnoreSystemType() && config.ExportTypes.All(x => x.Name != type.Name))
                 return true;
 
             if (config.IncludeTypes != null && !config.IncludeTypes.Contains(type.Name))
