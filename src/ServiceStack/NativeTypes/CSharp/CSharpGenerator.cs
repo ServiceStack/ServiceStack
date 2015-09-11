@@ -38,7 +38,7 @@ namespace ServiceStack.NativeTypes.CSharp
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
 
-            metadata.RemoveIgnoredTypes(Config);
+            metadata.RemoveIgnoredTypesForNet(Config);
 
             if (Config.GlobalNamespace == null)
             {
@@ -252,6 +252,8 @@ namespace ServiceStack.NativeTypes.CSharp
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
                         inheritsList.Add(implStr);
+                    if (!type.Implements.IsEmpty())
+                        type.Implements.Each(x => inheritsList.Add(Type(x)));
                 }
 
                 var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;

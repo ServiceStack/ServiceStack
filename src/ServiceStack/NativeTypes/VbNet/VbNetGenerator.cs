@@ -71,7 +71,7 @@ namespace ServiceStack.NativeTypes.VbNet
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
 
-            metadata.RemoveIgnoredTypes(Config);
+            metadata.RemoveIgnoredTypesForNet(Config);
 
             if (Config.GlobalNamespace == null)
             {
@@ -290,6 +290,8 @@ namespace ServiceStack.NativeTypes.VbNet
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
                         implements.Add(implStr);
+                    if (!type.Implements.IsEmpty())
+                        type.Implements.Each(x => implements.Add(Type(x)));
                 }
 
                 var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;

@@ -26,7 +26,7 @@ namespace ServiceStack.NativeTypes.FSharp
             var namespaces = Config.GetDefaultNamespaces(metadata);
 
             var typeNamespaces = new HashSet<string>();
-            metadata.RemoveIgnoredTypes(Config);
+            metadata.RemoveIgnoredTypesForNet(Config);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
