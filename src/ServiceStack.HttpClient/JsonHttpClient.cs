@@ -32,7 +32,7 @@ namespace ServiceStack
         public ResultsFilterHttpDelegate ResultsFilter { get; set; }
         public ResultsFilterHttpResponseDelegate ResultsFilterResponse { get; set; }
 
-        public const string DefaultHttpMethod = "POST";
+        public const string DefaultHttpMethod = HttpMethods.Post;
         public static string DefaultUserAgent = "ServiceStack .NET HttpClient " + Env.ServiceStackVersion;
 
         public string BaseUri { get; set; }
@@ -116,6 +116,15 @@ namespace ServiceStack
 
         public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request)
         {
+            if (!httpMethod.HasRequestBody() && request != null)
+            {
+                var queryString = QueryStringSerializer.SerializeToString(request);
+                if (!string.IsNullOrEmpty(queryString))
+                {
+                    absoluteUrl += "?" + queryString;
+                }
+            }
+
             if (ResultsFilter != null)
             {
                 var response = ResultsFilter(typeof(TResponse), httpMethod, absoluteUrl, request);
@@ -450,10 +459,11 @@ namespace ServiceStack
             return SendAsync<TResponse>((object)requestDto);
         }
 
-        public virtual Task<TResponse> SendAsync<TResponse>(object requestDto)
+        public virtual Task<TResponse> SendAsync<TResponse>(object request)
         {
-            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
-            return SendAsync<TResponse>(HttpMethods.Post, requestUri, requestDto);
+            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
+            return SendAsync<TResponse>(httpMethod, requestUri, request);
         }
 
         public virtual Task<HttpResponseMessage> SendAsync(IReturnVoid requestDto)
@@ -596,10 +606,11 @@ namespace ServiceStack
         }
 
 
-        public void SendOneWay(object requestDto)
+        public void SendOneWay(object request)
         {
-            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
-            SendOneWay(HttpMethods.Post, requestUri, requestDto);
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
+            SendOneWay(httpMethod, requestUri, request);
         }
 
         public void SendOneWay(string relativeOrAbsoluteUri, object request)

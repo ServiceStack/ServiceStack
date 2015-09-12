@@ -80,7 +80,7 @@ namespace ServiceStack
         /// </summary>
         public INameValueCollection Headers { get; private set; }
 
-        public const string DefaultHttpMethod = "POST";
+        public const string DefaultHttpMethod = HttpMethods.Post;
         public static string DefaultUserAgent = "ServiceStack .NET Client " + Env.ServiceStackVersion;
 
         readonly AsyncServiceClient asyncClient;
@@ -471,7 +471,7 @@ namespace ServiceStack
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
-            var client = SendRequest(requestUri, requests);
+            var client = SendRequest(HttpMethods.Post, requestUri, requests);
 
             try
             {
@@ -509,15 +509,16 @@ namespace ServiceStack
         public virtual TResponse Send<TResponse>(object request)
         {
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
 
             if (ResultsFilter != null)
             {
-                var response = ResultsFilter(typeof(TResponse), HttpMethod ?? DefaultHttpMethod, requestUri, request);
+                var response = ResultsFilter(typeof(TResponse), httpMethod, requestUri, request);
                 if (response is TResponse)
                     return (TResponse)response;
             }
 
-            var client = SendRequest(requestUri, request);
+            var client = SendRequest(httpMethod, requestUri, request);
 
             try
             {
@@ -526,7 +527,7 @@ namespace ServiceStack
 
                 if (ResultsFilterResponse != null)
                 {
-                    ResultsFilterResponse(webResponse, response, HttpMethod ?? DefaultHttpMethod, requestUri, request);
+                    ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
                 }
                 
                 return response;
@@ -706,11 +707,6 @@ namespace ServiceStack
             }
         }
 
-        private WebRequest SendRequest(string requestUri, object request)
-        {
-            return SendRequest(HttpMethod ?? DefaultHttpMethod, requestUri, request);
-        }
-
         private WebRequest SendRequest(string httpMethod, string requestUri, object request)
         {
             return PrepareWebRequest(httpMethod, requestUri, request, client =>
@@ -880,15 +876,32 @@ namespace ServiceStack
             Post(requestDto);
         }
 
-        public virtual void SendOneWay(object requestDto)
+        public static string GetExplicitMethod(object request)
         {
-            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
-            SendOneWay(HttpMethods.Post, requestUri, requestDto);
+            return request is IGet ?
+                  HttpMethods.Get
+                : request is IPost ?
+                  HttpMethods.Post
+                : request is IPut ?
+                  HttpMethods.Put
+                : request is IDelete ?
+                  HttpMethods.Delete
+                : request is IPatch ? 
+                  HttpMethods.Patch : 
+                  null;
+        }
+
+        public virtual void SendOneWay(object request)
+        {
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
+            SendOneWay(httpMethod, requestUri, request);
         }
 
         public virtual void SendOneWay(string relativeOrAbsoluteUrl, object request)
         {
-            SendOneWay(HttpMethods.Post, relativeOrAbsoluteUrl, request);
+            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
+            SendOneWay(httpMethod, relativeOrAbsoluteUrl, request);
         }
 
         public virtual void SendAllOneWay(IEnumerable<object> requests)
@@ -929,10 +942,12 @@ namespace ServiceStack
             return SendAsync<TResponse>((object)requestDto);
         }
 
-        public virtual Task<TResponse> SendAsync<TResponse>(object requestDto)
+        public virtual Task<TResponse> SendAsync<TResponse>(object request)
         {
-            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
-            return asyncClient.SendAsync<TResponse>(HttpMethods.Post, requestUri, requestDto);
+            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
+
+            return asyncClient.SendAsync<TResponse>(httpMethod, requestUri, request);
         }
 
         public virtual Task<HttpWebResponse> SendAsync(IReturnVoid requestDto)

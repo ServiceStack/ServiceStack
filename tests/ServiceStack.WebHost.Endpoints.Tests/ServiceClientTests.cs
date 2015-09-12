@@ -222,12 +222,106 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var called = 0;
 
             PclExportClient.Instance.WaitAsync(100)
-                .ContinueWith(_ => {
+                .ContinueWith(_ =>
+                {
                     called++;
                 });
 
             Thread.Sleep(200);
             Assert.That(called, Is.EqualTo(1));
+        }
+    }
+
+    public class JsonServiceClientSendInterfaceTests : SendInterfaceTests
+    {
+        protected override IServiceClient CreateClient()
+        {
+            return new JsonServiceClient(BaseUrl);
+        }
+    }
+
+    public class JsonHttpClientSendInterfaceTests : SendInterfaceTests
+    {
+        protected override IServiceClient CreateClient()
+        {
+            return new JsonHttpClient(BaseUrl);
+        }
+    }
+
+    public abstract class SendInterfaceTests
+        : ServiceClientTestBase
+    {
+        /// <summary>
+        /// These tests require admin privillages
+        /// </summary>
+        /// <returns></returns>
+        public override AppHostHttpListenerBase CreateListener()
+        {
+            return new TestAppHostHttpListener();
+        }
+
+        private IServiceClient client;
+
+        protected abstract IServiceClient CreateClient();
+
+        [SetUp]
+        public void SetUp()
+        {
+            client = CreateClient();
+        }
+
+        [Test]
+        public void Does_SendDefault_as_POST()
+        {
+            var response = client.Send(new SendDefault { Id = 1 });
+            Assert.That(response.Id, Is.EqualTo(1));
+            Assert.That(response.RequestMethod, Is.EqualTo(HttpMethods.Post));
+            Assert.That(response.PathInfo, Is.EqualTo("/json/reply/SendDefault"));
+        }
+
+        [Test]
+        public void Does_SendRestGet_as_GET_using_Predefined_Route()
+        {
+            var response = client.Send(new SendRestGet { Id = 1 });
+            Assert.That(response.Id, Is.EqualTo(1));
+            Assert.That(response.RequestMethod, Is.EqualTo(HttpMethods.Get));
+            Assert.That(response.PathInfo, Is.EqualTo("/json/reply/SendRestGet"));
+        }
+
+        [Test]
+        public async Task Does_SendRestGet_as_GET_using_Predefined_Route_Async()
+        {
+            var response = await client.SendAsync(new SendRestGet { Id = 1 });
+            Assert.That(response.Id, Is.EqualTo(1));
+            Assert.That(response.RequestMethod, Is.EqualTo(HttpMethods.Get));
+            Assert.That(response.PathInfo, Is.EqualTo("/json/reply/SendRestGet"));
+        }
+
+        [Test]
+        public void Does_SendGet_as_GET()
+        {
+            var response = client.Send(new SendGet { Id = 1 });
+            Assert.That(response.Id, Is.EqualTo(1));
+            Assert.That(response.RequestMethod, Is.EqualTo(HttpMethods.Get));
+            Assert.That(response.PathInfo, Is.EqualTo("/json/reply/SendGet"));
+        }
+
+        [Test]
+        public void Does_SendPost_as_POST()
+        {
+            var response = client.Send(new SendPost { Id = 1 });
+            Assert.That(response.Id, Is.EqualTo(1));
+            Assert.That(response.RequestMethod, Is.EqualTo(HttpMethods.Post));
+            Assert.That(response.PathInfo, Is.EqualTo("/json/reply/SendPost"));
+        }
+
+        [Test]
+        public void Does_SendPut_as_PUT()
+        {
+            var response = client.Send(new SendPut { Id = 1 });
+            Assert.That(response.Id, Is.EqualTo(1));
+            Assert.That(response.RequestMethod, Is.EqualTo(HttpMethods.Put));
+            Assert.That(response.PathInfo, Is.EqualTo("/json/reply/SendPut"));
         }
     }
 
