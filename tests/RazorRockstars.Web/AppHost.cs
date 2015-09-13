@@ -174,4 +174,28 @@ namespace RazorRockstars.Web
             return Get(new Rockstars());
         }
     }
+
+    [Route("/routeinfo/{Path*}")]
+    public class GetRouteInfo
+    {
+        public string Path { get; set; }
+    }
+
+    public class GetRouteInfoResponse
+    {
+        public string BaseUrl { get; set; }
+        public string ResolvedUrl { get; set; }
+    }
+
+    public class RouteInfoService : Service
+    {
+        public object Any(GetRouteInfo request)
+        {
+            return new GetRouteInfoResponse
+            {
+                BaseUrl = base.Request.GetBaseUrl(),
+                ResolvedUrl = base.Request.ResolveAbsoluteUrl("~/resolved")
+            };
+        }
+   }
 }

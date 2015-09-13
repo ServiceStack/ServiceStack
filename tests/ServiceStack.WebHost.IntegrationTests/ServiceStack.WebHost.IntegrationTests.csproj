@@ -25,6 +25,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\src\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <TargetFrameworkProfile />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -230,7 +231,7 @@
     <Compile Include="Services\CustomFormDataService.cs" />
     <Compile Include="Services\GeoInfoService.cs" />
     <Compile Include="Services\ProfilerService.cs" />
-    <Compile Include="Services\RouteInfoService.cs" />
+    <Compile Include="Services\RouteTokenInfoService.cs" />
     <Compile Include="Services\UserAuths.cs" />
     <Compile Include="Tests\AppHostBaseTests.cs" />
     <Compile Include="Tests\CachedServiceTests.cs" />
@@ -270,6 +271,7 @@
     <Compile Include="Tests\RestPathResolutionUnitTests.cs" />
     <Compile Include="Tests\RestsTestBase.cs" />
     <Compile Include="Tests\RestWebServiceTests.cs" />
+    <Compile Include="Tests\RouteTests.cs" />
     <Compile Include="Tests\SessionTests.cs" />
     <Compile Include="Tests\SoapTests.cs" />
     <Compile Include="Tests\UniqueRequestTests.cs" />

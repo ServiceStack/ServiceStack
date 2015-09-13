@@ -719,9 +719,15 @@ namespace ServiceStack
         public static string InferBaseUrl(this string absoluteUri, string fromPathInfo = null)
         {
             if (string.IsNullOrEmpty(fromPathInfo))
+            {
                 fromPathInfo = "/" + (HostContext.Config.HandlerFactoryPath ?? "");
+            }
             else
+            {
                 fromPathInfo = fromPathInfo.TrimEnd('/');
+                if (fromPathInfo.Length == 0)
+                    return null;
+            }
 
             if (string.IsNullOrEmpty(absoluteUri))
                 return null;

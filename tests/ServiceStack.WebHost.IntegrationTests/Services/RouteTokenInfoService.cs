@@ -8,11 +8,11 @@ using ServiceStack;
 namespace DeliveryService.Model.Operations
 {
 	[Description("POST the route information based on the Application Token associated to a route and Associate ID")]
-	[Route("/RouteInfo", "POST")]
-	[Route("/RouteInfo/{AppToken}")]
-	[Route("/RouteInfo/{AppToken}/{HasProduct}")]
+	[Route("/RouteTokenInfo", "POST")]
+	[Route("/RouteTokenInfo/{AppToken}")]
+	[Route("/RouteTokenInfo/{AppToken}/{HasProduct}")]
 	[DataContract]
-	public class RouteInfo
+	public class RouteTokenInfo
 	{
 		[DataMember]
 		public string AppToken { get; set; }
@@ -49,9 +49,9 @@ namespace DeliveryService.Model.Operations
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class RouteInfoService : Service
+	public class RouteTokenInfoService : Service
 	{
-        public object Any(RouteInfo request)
+        public object Any(RouteTokenInfo request)
 		{
 			throw new NotImplementedException();
 		}
