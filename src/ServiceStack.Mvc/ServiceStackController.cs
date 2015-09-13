@@ -237,8 +237,14 @@ namespace ServiceStack.Mvc
         {
             ServiceStackProvider.PublishMessage(message);
         }
+
+        private bool hasDisposed = false;
         protected override void Dispose(bool disposing)
         {
+            if (hasDisposed)
+                return;
+
+            hasDisposed = true;
             base.Dispose(disposing);
 
             if (serviceStackProvider != null)
@@ -246,7 +252,9 @@ namespace ServiceStack.Mvc
                 serviceStackProvider.Dispose();
                 serviceStackProvider = null;
             }
-        }    
+
+            HostContext.AppHost.OnEndRequest(ServiceStackRequest);
+        }
     }
 
     public class ServiceStackJsonResult : JsonResult
