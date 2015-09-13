@@ -97,7 +97,7 @@ namespace ServiceStack.RabbitMq
             using (__requestAccess())
             {
                 var props = Channel.CreateBasicProperties();
-                props.SetPersistent(true);
+                props.Persistent = true;
                 props.PopulateFromMessage(message);
 
                 if (PublishMessageFilter != null)
