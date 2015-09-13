@@ -154,8 +154,14 @@ namespace ServiceStack.AspNet
         {
             ServiceStackProvider.PublishMessage(message);
         }
+
+        private bool hasDisposed = false;
         public override void Dispose()
         {
+            if (hasDisposed)
+                return;
+
+            hasDisposed = true;
             base.Dispose();
 
             if (serviceStackProvider != null)
@@ -163,6 +169,8 @@ namespace ServiceStack.AspNet
                 serviceStackProvider.Dispose();
                 serviceStackProvider = null;
             }
+
+            HostContext.AppHost.OnEndRequest(ServiceStackRequest);
         }
     }
 }
