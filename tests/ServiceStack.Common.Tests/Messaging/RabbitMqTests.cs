@@ -88,7 +88,7 @@ namespace ServiceStack.Common.Tests.Messaging
                 5.Times(i => {
                     byte[] payload = new HelloRabbit { Name = "World! #{0}".Fmt(i) }.ToJson().ToUtf8Bytes();
                     var props = channel.CreateBasicProperties();
-                    props.SetPersistent(true);
+                    props.Persistent = true;
 
                     channel.BasicPublish(exchange: Exchange,
                         routingKey: QueueNames<HelloRabbit>.In, basicProperties: props, body: payload);
@@ -190,7 +190,7 @@ namespace ServiceStack.Common.Tests.Messaging
         {
             byte[] payload = new HelloRabbit {Name = text}.ToJson().ToUtf8Bytes();
             var props = channel.CreateBasicProperties();
-            props.SetPersistent(true);
+            props.Persistent = true;
             channel.BasicPublish(Exchange, QueueNames<HelloRabbit>.In, props, payload);
         }
 
@@ -207,7 +207,7 @@ namespace ServiceStack.Common.Tests.Messaging
 
                 byte[] payload = new HelloRabbit { Name = "World!" }.ToJson().ToUtf8Bytes();
                 var props = channel.CreateBasicProperties();
-                props.SetPersistent(true);
+                props.Persistent = true;
 
                 channel.BasicPublish(ExchangeFanout, QueueNames<HelloRabbit>.In, props, payload);
 
