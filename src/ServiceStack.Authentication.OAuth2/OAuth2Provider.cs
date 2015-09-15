@@ -65,6 +65,7 @@ namespace ServiceStack.Authentication.OAuth2
             var authServer = new AuthorizationServerDescription { AuthorizationEndpoint = new Uri(this.AuthorizeUrl), TokenEndpoint = new Uri(this.AccessTokenUrl) };
             var authClient = new WebServerClient(authServer, this.ConsumerKey) {
                 ClientCredentialApplicator = ClientCredentialApplicator.PostParameter(this.ConsumerSecret),
+                AuthorizationTracker = new DotNetOpenAuthTokenManager(),
             };
 
             var authState = ProcessUserAuthorization(authClient, authServer, authService);
@@ -211,6 +212,19 @@ namespace ServiceStack.Authentication.OAuth2
             }
 
             return tokens;
+        }
+
+        //Workaround to fix "Unexpected OAuth authorization response..." 
+        //From http://stackoverflow.com/a/23693111/85785
+        class DotNetOpenAuthTokenManager : IClientAuthorizationTracker
+        {
+            public IAuthorizationState GetAuthorizationState(Uri callbackUrl, string clientState)
+            {
+                return new AuthorizationState
+                {
+                    Callback = callbackUrl
+                };
+            }
         }
     }
 }
