@@ -71,6 +71,7 @@ namespace Check.ServiceModel.Operations
     public class HelloWithEnum
     {
         public EnumType EnumProp { get; set; }
+        public EnumWithValues EnumWithValues { get; set; }
         public EnumType? NullableEnumProp { get; set; }
 
         public EnumFlags EnumFlags { get; set; }
@@ -80,6 +81,12 @@ namespace Check.ServiceModel.Operations
     {
         Value1,
         Value2
+    }
+
+    public enum EnumWithValues
+    {
+        Value1 = 1,
+        Value2 = 2
     }
 
     [Flags]

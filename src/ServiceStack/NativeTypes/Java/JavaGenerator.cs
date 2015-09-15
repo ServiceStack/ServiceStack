@@ -296,10 +296,13 @@ namespace ServiceStack.NativeTypes.Java
                         var value = type.EnumValues != null ? type.EnumValues[i] : null;
 
                         var delim = i == type.EnumNames.Count - 1 ? ";" : ",";
+                        var serializeAs = JsConfig.TreatEnumAsInteger || (type.Attributes.Safe().Any(x => x.Name == "Flags"))
+                            ? "@SerializedName(\"{0}\") ".Fmt(value)
+                            : "";
 
                         sb.AppendLine(value == null
                             ? "{0}{1}".Fmt(name.ToPascalCase(), delim)
-                            : "@SerializedName(\"{1}\") {0}({1}){2}".Fmt(name.ToPascalCase(), value, delim));
+                            : serializeAs + "{0}({1}){2}".Fmt(name.ToPascalCase(), value, delim));
 
                         hasIntValue = hasIntValue || value != null;
                     }
