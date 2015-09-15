@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
@@ -80,6 +81,9 @@ namespace ServiceStack.Host.Handlers
 
         [DataMember]
         public string VirtualAppRelativePathRoot { get; set; }
+
+        [DataMember]
+        public string CurrentDirectory { get; set; }
 
         [DataMember]
         public string HandlerFactoryArgs { get; set; }
@@ -268,6 +272,7 @@ namespace ServiceStack.Host.Handlers
                 ApplicationBaseUrl = httpReq.GetBaseUrl(),
                 ResolveAbsoluteUrl = HostContext.AppHost.ResolveAbsoluteUrl("~/resolve", httpReq),
                 StripApplicationVirtualPath = HostContext.Config.StripApplicationVirtualPath,
+                CurrentDirectory = Directory.GetCurrentDirectory(),
                 RawUrl = httpReq.RawUrl,
                 ResolvedPathInfo = httpReq.PathInfo,
                 ContentType = httpReq.ContentType,
