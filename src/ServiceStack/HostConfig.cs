@@ -116,6 +116,8 @@ namespace ServiceStack
                     "/bin/",
                     "/node_modules/",
                     "/bower_components/",
+                    "/wwwroot/",
+                    "/wwwroot_build/",
                 },
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret,
