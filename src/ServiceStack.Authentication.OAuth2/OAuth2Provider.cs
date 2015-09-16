@@ -50,6 +50,10 @@ namespace ServiceStack.Authentication.OAuth2
 
         protected string[] Scopes { get; set; }
 
+        public Action<AuthorizationServerDescription> AuthServerFilter { get; set; }
+
+        public Action<WebServerClient> AuthClientFilter { get; set; }
+
         public virtual IAuthorizationState ProcessUserAuthorization(
             WebServerClient authClient, AuthorizationServerDescription authServer, IServiceBase authService)
         {
@@ -63,10 +67,17 @@ namespace ServiceStack.Authentication.OAuth2
             var tokens = this.Init(authService, ref session, request);
 
             var authServer = new AuthorizationServerDescription { AuthorizationEndpoint = new Uri(this.AuthorizeUrl), TokenEndpoint = new Uri(this.AccessTokenUrl) };
+
+            if (AuthServerFilter != null)
+                AuthServerFilter(authServer);
+
             var authClient = new WebServerClient(authServer, this.ConsumerKey) {
                 ClientCredentialApplicator = ClientCredentialApplicator.PostParameter(this.ConsumerSecret),
                 AuthorizationTracker = new DotNetOpenAuthTokenManager(),
             };
+
+            if (AuthClientFilter != null)
+                AuthClientFilter(authClient);
 
             var authState = ProcessUserAuthorization(authClient, authServer, authService);
             if (authState == null)
