@@ -79,6 +79,7 @@ namespace ServiceStack.Redis
 
         void SetAll(IEnumerable<string> keys, IEnumerable<string> values);
         void SetAll(Dictionary<string, string> map);
+        void SetValues(Dictionary<string, string> map);
 
         void SetValue(string key, string value);
         void SetValue(string key, string value, TimeSpan expireIn);
