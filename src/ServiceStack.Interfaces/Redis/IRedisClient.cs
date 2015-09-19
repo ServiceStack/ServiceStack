@@ -308,6 +308,8 @@ namespace ServiceStack.Redis
 
         #region Eval/Lua operations
 
+        T ExecCachedLua<T>(string scriptBody, Func<string, T> scriptSha1);
+
         RedisText ExecLua(string body, params string[] args);
         RedisText ExecLua(string luaBody, string[] keys, string[] args);
         RedisText ExecLuaSha(string sha1, params string[] args);
