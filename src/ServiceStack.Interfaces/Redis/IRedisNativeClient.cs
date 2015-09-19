@@ -214,12 +214,16 @@ namespace ServiceStack.Redis
         IRedisSubscription CreateSubscription();
 
         //Redis LUA support
+        RedisData EvalCommand(string luaBody, int numberKeysInArgs, params byte[][] keys);
+        RedisData EvalShaCommand(string sha1, int numberKeysInArgs, params byte[][] keys);
+
+        byte[][] Eval(string luaBody, int numberOfKeys, params byte[][] keysAndArgs);
+        byte[][] EvalSha(string sha1, int numberOfKeys, params byte[][] keysAndArgs);
+
         long EvalInt(string luaBody, int numberOfKeys, params byte[][] keysAndArgs);
         long EvalShaInt(string sha1, int numberOfKeys, params byte[][] keysAndArgs);
         string EvalStr(string luaBody, int numberOfKeys, params byte[][] keysAndArgs);
         string EvalShaStr(string sha1, int numberOfKeys, params byte[][] keysAndArgs);
-        byte[][] Eval(string luaBody, int numberOfKeys, params byte[][] keysAndArgs);
-        byte[][] EvalSha(string sha1, int numberOfKeys, params byte[][] keysAndArgs);
 
         string CalculateSha1(string luaBody);
         byte[][] ScriptExists(params byte[][] sha1Refs);
