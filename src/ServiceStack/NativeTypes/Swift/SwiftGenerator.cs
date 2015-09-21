@@ -52,7 +52,7 @@ namespace ServiceStack.NativeTypes.Swift
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
             var typeNamespaces = new HashSet<string>();
-            metadata.RemoveIgnoredTypes(Config);
+            RemoveIgnoredTypes(metadata);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
@@ -97,9 +97,9 @@ namespace ServiceStack.NativeTypes.Swift
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            AllTypes.AddRange(types);
-            AllTypes.AddRange(responseTypes);
             AllTypes.AddRange(requestTypes);
+            AllTypes.AddRange(responseTypes);
+            AllTypes.AddRange(types);
 
             //Swift doesn't support reusing same type name with different generic airity
             var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
@@ -183,6 +183,20 @@ namespace ServiceStack.NativeTypes.Swift
             }
 
             return sb.ToString();
+        }
+
+        //Use built-in types already in net.servicestack.client package
+        public static HashSet<string> IgnoreTypeNames = new HashSet<string>
+        {
+            typeof(ResponseStatus).Name,
+            typeof(ResponseError).Name,
+            typeof(ErrorResponse).Name,
+        };
+
+        private void RemoveIgnoredTypes(MetadataTypes metadata)
+        {
+            metadata.RemoveIgnoredTypes(Config);
+            metadata.Types.RemoveAll(x => IgnoreTypeNames.Contains(x.Name));
         }
 
         private string AppendType(ref StringBuilderWrapper sb, ref StringBuilderWrapper sbExt, MetadataType type, string lastNS,

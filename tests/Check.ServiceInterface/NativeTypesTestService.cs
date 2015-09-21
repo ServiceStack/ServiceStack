@@ -82,6 +82,11 @@ namespace Check.ServiceInterface
             };
         }
 
+        public object Any(AllTypes request)
+        {
+            return request;
+        }
+
         public object Any(HelloString request)
         {
             return request.Name;

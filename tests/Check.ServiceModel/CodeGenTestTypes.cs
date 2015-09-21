@@ -292,7 +292,7 @@ namespace Check.ServiceModel.Operations
 
 namespace Check.ServiceModel.Types
 {
-    public class AllTypes
+    public class AllTypes : IReturn<AllTypes>
     {
         public int Id { get; set; }
         public int? NullableId { get; set; }

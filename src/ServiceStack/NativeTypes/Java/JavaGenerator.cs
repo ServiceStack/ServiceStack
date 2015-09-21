@@ -11,11 +11,13 @@ namespace ServiceStack.NativeTypes.Java
     public class JavaGenerator
     {
         readonly MetadataTypesConfig Config;
+        readonly List<MetadataType> AllTypes;
         List<string> conflictTypeNames = new List<string>();
 
         public JavaGenerator(MetadataTypesConfig config)
         {
             Config = config;
+            AllTypes = new List<MetadataType>();
         }
 
         public static string DefaultGlobalNamespace = "dto";
@@ -143,20 +145,18 @@ namespace ServiceStack.NativeTypes.Java
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            var allTypes = new List<MetadataType>();
-            allTypes.AddRange(types);
-            allTypes.AddRange(responseTypes);
-            allTypes.AddRange(requestTypes);
-            allTypes.RemoveAll(x => x.IgnoreType(Config));
+            AllTypes.AddRange(requestTypes);
+            AllTypes.AddRange(responseTypes);
+            AllTypes.AddRange(types);
 
             //TypeScript doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
+            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.SplitOnFirst('`')[0])
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
 
-            this.conflictTypeNames = allTypes
+            this.conflictTypeNames = AllTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
@@ -167,7 +167,7 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("{");
 
             //ServiceStack core interfaces
-            foreach (var type in allTypes)
+            foreach (var type in AllTypes)
             {
                 var fullTypeName = type.GetFullName();
                 if (requestTypes.Contains(type))
