@@ -882,7 +882,8 @@ namespace ServiceStack.NativeTypes
             if (config.IncludeTypes != null && !config.IncludeTypes.Contains(type.Name))
                 return true;
 
-            if (config.ExcludeTypes != null && config.ExcludeTypes.Contains(type.Name))
+            if (config.ExcludeTypes != null && 
+                config.ExcludeTypes.Any(x => type.Name == x || type.Name.StartsWith(x + "`")))
                 return true;
 
             return false;
