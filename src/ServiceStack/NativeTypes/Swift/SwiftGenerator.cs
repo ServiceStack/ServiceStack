@@ -67,6 +67,7 @@ namespace ServiceStack.NativeTypes.Swift
             var sbExt = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
+            sb.AppendLine("SwiftVersion: 2.0");
             sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
@@ -263,6 +264,9 @@ namespace ServiceStack.NativeTypes.Swift
                     //Swift doesn't support Generic Interfaces like IReturn<T> 
                     //Converting them into protocols with typealiases instead 
                     ExtractTypeAliases(options, typeAliases, extends, ref sbExt);
+
+                    if (!type.Implements.IsEmpty())
+                        type.Implements.Each(x => extends.Add(Type(x)));
                 }
 
                 if (type.IsInterface())
@@ -275,7 +279,7 @@ namespace ServiceStack.NativeTypes.Swift
                         typeName = Type(type.Name, null);
                         foreach (var arg in type.GenericArgs)
                         {
-                            typeAliases.Add("typealias {0} = {0}".Fmt(arg));
+                            typeAliases.Add("public typealias {0} = {0}".Fmt(arg));
                         }
                     }
                 }
@@ -336,8 +340,6 @@ namespace ServiceStack.NativeTypes.Swift
             return lastNS;
         }
 
-        private bool emittedNSStringExtension = false;
-
         private void ExtractTypeAliases(CreateTypeOptions options, List<string> typeAliases, List<string> extends, ref StringBuilderWrapper sbExt)
         {
             var implStr = options.ImplementsFn();
@@ -354,55 +356,7 @@ namespace ServiceStack.NativeTypes.Swift
                         : implStr;
 
                     var genericType = interfaceParts[1].Substring(0, interfaceParts[1].Length - 1);
-
-
-                    //Workaround segfault for adding JsonSerializable extension to String and
-                    //segfault when NSString extension is not declared in same file as DTO's  
-                    if (alias == "Return" && genericType == "String")
-                    {
-                        typeAliases.Add("typealias {0} = {1}".Fmt(alias, "NSString"));
-                        if (!emittedNSStringExtension)
-                        {
-                            emittedNSStringExtension = true;
-                            sbExt.AppendLine(@"
-extension NSString : JsonSerializable
-{
-    public static var typeName:String { return ""NSString"" }
-    
-    public static func reflect() -> Type<NSString> {
-        return Type<NSString>(properties:[])
-    }
-    
-    public func toString() -> String {
-        return self as String
-    }
-    
-    public func toJson() -> String {
-        return jsonString(self as String)
-    }
-    
-    public static func fromJson(json:String) -> NSString? {
-        return parseJson(json) as? NSString
-    }
-    
-    public static func fromString(string: String) -> NSString? {
-        return string
-    }
-    
-    public static func fromObject(any:AnyObject) -> NSString?
-    {
-        switch any {
-        case let s as NSString: return s
-        default:return nil
-        }
-    }
-}");
-                        }
-                    }
-                    else
-                    {
-                        typeAliases.Add("typealias {0} = {1}".Fmt(alias, genericType));
-                    }
+                    typeAliases.Add("public typealias {0} = {1}".Fmt(alias, genericType));
                 }
 
                 extends.Add(implStr);
@@ -446,13 +400,21 @@ extension NSString : JsonSerializable
             sbExt.AppendLine("public static var typeName:String {{ return \"{0}\" }}".Fmt(typeName));
 
             //func typeConfig()
-            sbExt.AppendLine("public static func reflect() -> Type<{0}> {{".Fmt(typeName));
-            sbExt = sbExt.Indent();
-            sbExt.AppendLine(
-                "return TypeConfig.config() ?? TypeConfig.configure(Type<{0}>(".Fmt(typeName));
-            sbExt = sbExt.Indent();
 
-            sbExt.AppendLine("properties: [".Fmt(typeName));
+            var isGenericType = !type.GenericArgs.IsEmpty();
+            if (!isGenericType)
+            {
+                sbExt.AppendLine("public static var metadata = Metadata.create([");
+                sbExt = sbExt.Indent();
+            }
+            else
+            {
+                //Swift 2.0 doesn't allow stored static properties on generic types yet
+                sbExt.AppendLine("public static var metadata:Metadata {");
+                sbExt = sbExt.Indent();
+                sbExt.AppendLine("return Metadata.create([");
+            }
+
             sbExt = sbExt.Indent();
 
             foreach (var prop in GetPropertes(type))
@@ -492,47 +454,13 @@ extension NSString : JsonSerializable
                         typeName, fnName, prop.Name.SafeToken().PropertyStyle()));
             }
             sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("]))");
-
+            sbExt.AppendLine("])");
             sbExt = sbExt.UnIndent();
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
 
-
-            //toJson()
-            sbExt.AppendLine("public func toJson() -> String {");
-            sbExt = sbExt.Indent();
-            sbExt.AppendLine("return {0}.reflect().toJson(self)".Fmt(typeName));
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
-
-            //fromJson()
-            sbExt.AppendLine("public static func fromJson(json:String) -> {0}? {{".Fmt(typeName));
-            sbExt = sbExt.Indent();
-            sbExt.AppendLine("return {0}.reflect().fromJson({0}(), json: json)".Fmt(typeName));
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
-
-            //fromObject()
-            sbExt.AppendLine("public static func fromObject(any:AnyObject) -> {0}? {{".Fmt(typeName));
-            sbExt = sbExt.Indent();
-            sbExt.AppendLine("return {0}.reflect().fromObject({0}(), any:any)".Fmt(typeName));
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
-
-            //toString()
-            sbExt.AppendLine("public func toString() -> String {");
-            sbExt = sbExt.Indent();
-            sbExt.AppendLine("return {0}.reflect().toString(self)".Fmt(typeName));
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
-
-            //fromString()
-            sbExt.AppendLine("public static func fromString(string:String) -> {0}? {{".Fmt(typeName));
-            sbExt = sbExt.Indent();
-            sbExt.AppendLine("return {0}.reflect().fromString({0}(), string: string)".Fmt(typeName));
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
+            if (isGenericType)
+            {
+                sbExt.AppendLine("}");
+            }
 
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("}");
