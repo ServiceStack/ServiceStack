@@ -3603,6 +3603,11 @@
             Sets the login password as a string.
             </summary>
         </member>
+        <member name="P:Npgsql.NpgsqlConnectionStringBuilder.Krbsrvname">
+            <summary>
+            Gets or sets the krbsrvname.
+            </summary>
+        </member>
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.SSL">
             <summary>
             Gets or sets a value indicating whether to attempt to use SSL.
