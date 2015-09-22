@@ -325,8 +325,8 @@ namespace ServiceStack.Server.Tests.Shared
             Assert.That(sessionKeys.Count, Is.EqualTo(5));
             Assert.That(sessionKeys.All(x => x.StartsWith("urn:iauthsession:")));
 
-            var allSesssions = Cache.GetAll<IAuthSession>(sessionKeys);
-            Assert.That(allSesssions.Values.Count(x => x != null), Is.EqualTo(sessionKeys.Count));
+            var allSessions = Cache.GetAll<IAuthSession>(sessionKeys);
+            Assert.That(allSessions.Values.Count(x => x != null), Is.EqualTo(sessionKeys.Count));
 
             var allKeys = Cache.GetAllKeys().ToList();
             Assert.That(allKeys.Count, Is.EqualTo(10));
