@@ -611,7 +611,7 @@ the Response class you want returned, e.g:
 byte[] response = client.get("/hello?Name=World", byte[].class);
 ```
 
-### Swift HTTP Marker Interfaces
+### Java HTTP Marker Interfaces
 
 Like the .NET and Swift Service Clients, the HTTP Interface markers are also annotated on Java DTO's and let you use the same
 `send` API to send Requests via different HTTP Verbs, e.g:  
@@ -772,7 +772,7 @@ Razor Views are now debuggable for
 [Debug builds](https://github.com/ServiceStack/ServiceStack/wiki/Debugging#debugmode) by default, it can also be explicitly specified on:
 
 ```csharp
-Plugins.Add(new RazorFeature {
+Plugins.Add(new RazorFormat {
     IncludeDebugInformation = true,
     CompileFilter = compileParams => ...
 })
