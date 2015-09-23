@@ -170,6 +170,11 @@ namespace ServiceStack.AspNet
                 serviceStackProvider = null;
             }
 
+            EndServiceStackRequest();
+        }
+
+        public virtual void EndServiceStackRequest()
+        {
             HostContext.AppHost.OnEndRequest(ServiceStackRequest);
         }
     }

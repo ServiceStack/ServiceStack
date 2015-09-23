@@ -253,6 +253,11 @@ namespace ServiceStack.Mvc
                 serviceStackProvider = null;
             }
 
+            EndServiceStackRequest();
+        }
+
+        public virtual void EndServiceStackRequest()
+        {
             HostContext.AppHost.OnEndRequest(ServiceStackRequest);
         }
     }
