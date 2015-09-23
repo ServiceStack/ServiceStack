@@ -595,17 +595,24 @@ namespace ServiceStack
 
         public virtual void OnEndRequest(IRequest request = null)
         {
-            var disposables = RequestContext.Instance.Items.Values;
-            foreach (var item in disposables)
+            try
             {
-                Release(item);
+                var disposables = RequestContext.Instance.Items.Values;
+                foreach (var item in disposables)
+                {
+                    Release(item);
+                }
+
+                RequestContext.Instance.EndRequest();
+
+                foreach (var fn in OnEndRequestCallbacks)
+                {
+                    fn(request);
+                }
             }
-
-            RequestContext.Instance.EndRequest();
-
-            foreach (var fn in OnEndRequestCallbacks)
+            catch (Exception ex)
             {
-                fn(request);
+                Log.Error("Error when Disposing Request Context", ex);
             }
         }
 
