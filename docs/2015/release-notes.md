@@ -180,8 +180,19 @@ to create highly-interactive Desktop Applications for every major Operating Syst
 React Chat shows the features and interactivity possible when you have all of ServiceStack available in a Desktop App. React Chat uses 
 [Server Events](https://github.com/ServiceStack/ServiceStack/wiki/Server-Events) for its real-time notifications allowing ServiceStack 
 Services to notify the client of events instantly. In React Chat each command is sent by Ajax to a normal ServiceStack Service which
-effectively just relays it back to the client via a Server Event, so if you had multiple clients subscribed to the same ServiceStack 
-Service, each Desktop App could control every other Desktop App.
+effectively just relays it back to the client via a Server Event. 
+
+### Controlling multiple Windows with Server Events
+
+A nice benefit for using Server Events for real-time communication with JavaScript is that you can you're able 
+to control multiple window clients naturally by having each Windows Application subscribe to the same event 
+stream url which you can do in React Chat just by opening up multiple windows. 
+
+The `/windows.dance` chat message provides a nice demonstration of this in action :)
+
+#### [YouTube Live Demo](https://youtu.be/-9kVqdPbqOM)
+
+[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/react-desktop-apps/dancing-windows.png)](https://youtu.be/-9kVqdPbqOM)
 
 After the Server Event reaches the client it calls the registered JavaScript handler, which in the case of `/cmd.toggleFormBorder` calls 
 [nativeHost.toggleFormBorder()](https://github.com/ServiceStackApps/ReactChatApps/blob/master/src/ReactChat/ReactChat/js/components/ChatApp.jsx#L65).
@@ -370,11 +381,11 @@ let request = ThrowValidation()
 request.email = "invalidemail"
 
 client.postAsync(request)
-    .error({ responseError in
+    .error { responseError in
         let status:ResponseStatus = responseError.convertUserInfo()!
         status.errors.count //= 3
         //...
-    })
+    }
 
 ```
 
@@ -398,7 +409,7 @@ client.getAsync(AppOverview())
     }
 ```
 
-When if preferred you can continue marking it up with additional Type Information and optional syntax as preferred, e.g: 
+If preferred you can continue marking it up with as much additional Type information or optional syntax as you'd like, e.g: 
 
 ```swift
 client.getAsync(AppOverview())
