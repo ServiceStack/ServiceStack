@@ -311,7 +311,9 @@ namespace ServiceStack
             if (request.Channels != null)
                 channels.AddRange(request.Channels);
 
-            return ServerEvents.GetSubscriptionsDetails(channels.ToArray());
+            return channels.Count > 0
+                ? ServerEvents.GetSubscriptionsDetails(channels.ToArray())
+                : ServerEvents.GetAllSubscriptionsDetails();
         }
     }
 
@@ -777,6 +779,31 @@ namespace ServiceStack
             return ret;
         }
 
+        public List<Dictionary<string, string>> GetAllSubscriptionsDetails()
+        {
+            var ret = new List<Dictionary<string, string>>();
+            var alreadyAdded = new HashSet<string>();
+            foreach (var entry in ChannelSubcriptions)
+            {
+                var subs = entry.Value;
+                lock (subs)
+                {
+                    foreach (var sub in subs)
+                    {
+                        if (sub == null)
+                            continue;
+
+                        if (!alreadyAdded.Contains(sub.SubscriptionId))
+                        {
+                            ret.Add(sub.Meta);
+                            alreadyAdded.Add(sub.SubscriptionId);
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
+
         public void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null)
         {
             try
@@ -970,6 +997,8 @@ namespace ServiceStack
 
         // Client API's
         List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels);
+
+        List<Dictionary<string, string>> GetAllSubscriptionsDetails();
 
         bool Pulse(string subscriptionId);
 

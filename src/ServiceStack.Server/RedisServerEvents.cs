@@ -323,6 +323,30 @@ namespace ServiceStack
             }
         }
 
+        public List<Dictionary<string, string>> GetAllSubscriptionsDetails()
+        {
+            using (var redis = clientsManager.GetClient())
+            {
+                var ids = new HashSet<string>();
+
+                var channelSetKeys = redis.ScanAllKeys(pattern: RedisIndex.ChannelSet.Fmt("*"));
+                foreach (var channelSetKey in channelSetKeys)
+                {
+                    var channelIds = redis.GetAllItemsFromSet(RedisIndex.ChannelSet.Fmt(channelSetKey));
+                    foreach (var channelId in channelIds)
+                    {
+                        ids.Add(channelId);
+                    }
+                }
+
+                var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
+                var infos = redis.GetValues<SubscriptionInfo>(keys);
+
+                var metas = infos.Map(x => x.Meta);
+                return metas;
+            }
+        }
+
         public bool Pulse(string subscriptionId)
         {
             using (var redis = clientsManager.GetClient())
