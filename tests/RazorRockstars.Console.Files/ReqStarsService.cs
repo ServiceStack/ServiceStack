@@ -538,13 +538,13 @@ namespace RazorRockstars.Console.Files
         {
             var webReq = (HttpWebRequest)WebRequest.Create(Host + "/reqstars");
             webReq.Method = "OPTIONS";
-            using (var webRes = webReq.GetResponse())
+            using (var r = webReq.GetResponse())
             {
-                Assert.That(webRes.Headers["Access-Control-Allow-Origin"], Is.EqualTo("*"));
-                Assert.That(webRes.Headers["Access-Control-Allow-Methods"], Is.EqualTo("GET, POST, PUT, DELETE, OPTIONS"));
-                Assert.That(webRes.Headers["Access-Control-Allow-Headers"], Is.EqualTo("Content-Type"));
+                Assert.That(r.Headers[HttpHeaders.AllowOrigin], Is.EqualTo(CorsFeature.DefaultOrigin));
+                Assert.That(r.Headers[HttpHeaders.AllowMethods], Is.EqualTo(CorsFeature.DefaultMethods));
+                Assert.That(r.Headers[HttpHeaders.AllowHeaders], Is.EqualTo(CorsFeature.DefaultHeaders));
 
-                var response = webRes.GetResponseStream().ReadFully();
+                var response = r.GetResponseStream().ReadFully();
                 Assert.That(response.Length, Is.EqualTo(0));
             }
         }
