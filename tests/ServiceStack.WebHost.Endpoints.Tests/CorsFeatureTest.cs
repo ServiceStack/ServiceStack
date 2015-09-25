@@ -98,10 +98,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.LoadPlugin(new CorsFeature { AutoHandleOptionsRequests = false });
 
             var response = RequestContextTests.GetResponseHeaders(Config.ServiceStackBaseUri + "/globalcorsfeature");
-            Assert.That(response[HttpHeaders.AllowOrigin], Is.EqualTo("*"));
-            Assert.That(response[HttpHeaders.AllowMethods], Is.EqualTo("GET, POST, PUT, DELETE, OPTIONS"));
+            Assert.That(response[HttpHeaders.AllowOrigin], Is.EqualTo(CorsFeature.DefaultOrigin));
+            Assert.That(response[HttpHeaders.AllowMethods], Is.EqualTo(CorsFeature.DefaultMethods));
             Assert.False(response.ContainsKey(HttpHeaders.AllowCredentials));
-            Assert.That(response[HttpHeaders.AllowHeaders], Is.EqualTo("Content-Type"));
+            Assert.That(response[HttpHeaders.AllowHeaders], Is.EqualTo(CorsFeature.DefaultHeaders));
         }
     }
 }
