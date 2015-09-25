@@ -11,7 +11,7 @@ namespace ServiceStack
     /// </summary>
     public class CorsFeature : IPlugin
     {
-        internal const string DefaultMethods = "GET, POST, PUT, DELETE, OPTIONS";
+        internal const string DefaultMethods = "GET, POST, PUT, DELETE, PATCH, OPTIONS";
         internal const string DefaultHeaders = "Content-Type";
 
         private readonly string allowedOrigins;
