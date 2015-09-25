@@ -26,6 +26,7 @@ namespace ServiceStack
         private static readonly ILog Log = LogManager.GetLogger(typeof(AsyncServiceClient));
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
         //private HttpWebRequest webRequest = null;
+        private AuthenticationInfo authInfo = null;
 
         /// <summary>
         /// The request filter is called before any request.
@@ -214,38 +215,41 @@ namespace ServiceStack
         }
 
         private void SendWebRequestAsync<TResponse>(string httpMethod, object request,
-            AsyncState<TResponse> state, HttpWebRequest webRequest)
+            AsyncState<TResponse> state, HttpWebRequest client)
         {
-            webRequest.Accept = string.Format("{0}, */*", ContentType);
+            client.Accept = string.Format("{0}, */*", ContentType);
 
             if (this.EmulateHttpViaPost)
             {
-                webRequest.Method = "POST";
-                webRequest.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
+                client.Method = "POST";
+                client.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
             }
             else
             {
-                webRequest.Method = httpMethod;
+                client.Method = httpMethod;
             }
 
-            PclExportClient.Instance.AddHeader(webRequest, Headers);
+            PclExportClient.Instance.AddHeader(client, Headers);
 
             //EmulateHttpViaPost is also forced for SL5 clients sending non GET/POST requests
-            PclExport.Instance.Config(webRequest, userAgent: UserAgent);
+            PclExport.Instance.Config(client, userAgent: UserAgent);
 
             if (this.Credentials != null) 
-                webRequest.Credentials = this.Credentials;
-            if (this.AlwaysSendBasicAuthHeader) 
-                webRequest.AddBasicAuth(this.UserName, this.Password);
+                client.Credentials = this.Credentials;
 
-            ApplyWebRequestFilters(webRequest);
+            if (this.authInfo != null)
+                client.AddAuthInfo(this.UserName, this.Password, authInfo);
+            else if (this.AlwaysSendBasicAuthHeader)
+                client.AddBasicAuth(this.UserName, this.Password);
+
+            ApplyWebRequestFilters(client);
 
             try
             {
-                if (webRequest.Method.HasRequestBody())
+                if (client.Method.HasRequestBody())
                 {
-                    webRequest.ContentType = ContentType;
-                    webRequest.BeginGetRequestStream(RequestCallback<TResponse>, state);
+                    client.ContentType = ContentType;
+                    client.BeginGetRequestStream(RequestCallback<TResponse>, state);
                 }
                 else
                 {
@@ -327,16 +331,12 @@ namespace ServiceStack
                         requestState.WebRequest = (HttpWebRequest)WebRequest.Create(requestState.Url);
 
                         if (StoreCookies)
-                        {
                             requestState.WebRequest.CookieContainer = CookieContainer;
-                        }
 
-                        requestState.WebRequest.AddBasicAuth(this.UserName, this.Password);
+                        HandleAuthException(ex, requestState.WebRequest);
 
                         if (OnAuthenticationRequired != null)
-                        {
                             OnAuthenticationRequired(requestState.WebRequest);
-                        }
 
                         SendWebRequestAsync(
                             requestState.HttpMethod, requestState.Request,
@@ -350,6 +350,27 @@ namespace ServiceStack
                 }
 
                 HandleResponseError(ex, requestState);
+            }
+        }
+
+        private void HandleAuthException(Exception ex, WebRequest client)
+        {
+            var webEx = ex as WebException;
+            if (webEx != null && webEx.Response != null)
+            {
+                var headers = ((HttpWebResponse)webEx.Response).Headers;
+                var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
+                    HttpHeaders.WwwAuthenticate, x => x.Contains("realm"));
+
+                if (doAuthHeader == null)
+                {
+                    client.AddBasicAuth(this.UserName, this.Password);
+                }
+                else
+                {
+                    this.authInfo = new AuthenticationInfo(doAuthHeader);
+                    client.AddAuthInfo(this.UserName, this.Password, authInfo);
+                }
             }
         }
 

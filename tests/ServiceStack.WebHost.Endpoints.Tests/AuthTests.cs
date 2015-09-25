@@ -277,97 +277,102 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class AuthAppHost
+        : AppSelfHostBase
+    {
+        private readonly string webHostUrl;
+        private readonly Action<Container> configureFn;
+
+        public AuthAppHost(string webHostUrl, Action<Container> configureFn = null)
+            : base("Validation Tests", typeof(CustomerService).Assembly)
+        {
+            this.webHostUrl = webHostUrl;
+            this.configureFn = configureFn;
+        }
+
+        private InMemoryAuthRepository userRep;
+
+        public override void Configure(Container container)
+        {
+            SetConfig(new HostConfig { WebHostUrl = webHostUrl, DebugMode = true });
+
+            Plugins.Add(new AuthFeature(() => new CustomUserSession(),
+                GetAuthProviders(), "~/" + AuthTests.LoginUrl)
+            { RegisterPlugins = { new WebSudoFeature() } });
+
+            container.Register(new MemoryCacheClient());
+            userRep = new InMemoryAuthRepository();
+            container.Register<IAuthRepository>(userRep);
+
+            if (configureFn != null)
+            {
+                configureFn(container);
+            }
+
+            CreateUser(1, AuthTests.UserName, null, AuthTests.Password, new List<string> { "TheRole" }, new List<string> { "ThePermission" });
+            CreateUser(2, AuthTests.UserNameWithSessionRedirect, null, AuthTests.PasswordForSessionRedirect);
+            CreateUser(3, null, AuthTests.EmailBasedUsername, AuthTests.PasswordForEmailBasedAccount);
+        }
+
+        public virtual IAuthProvider[] GetAuthProviders()
+        {
+            return new IAuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first
+                    new BasicAuthProvider(), //Sign-in with Basic Auth
+                    new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
+                    new CustomAuthProvider()
+                };
+        }
+
+        private void CreateUser(int id, string username, string email, string password, List<string> roles = null, List<string> permissions = null)
+        {
+            string hash;
+            string salt;
+            new SaltedHash().GetHashAndSaltString(password, out hash, out salt);
+
+            userRep.CreateUserAuth(new UserAuth
+            {
+                Id = id,
+                DisplayName = "DisplayName",
+                Email = email ?? "as@if{0}.com".Fmt(id),
+                UserName = username,
+                FirstName = "FirstName",
+                LastName = "LastName",
+                PasswordHash = hash,
+                Salt = salt,
+                Roles = roles,
+                Permissions = permissions
+            }, password);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            // Needed so that when the derived class tests run the same users can be added again.
+            userRep.Clear();
+            base.Dispose(disposing);
+        }
+    }
+
     public class AuthTests
     {
         protected virtual string VirtualDirectory { get { return ""; } }
         protected virtual string ListeningOn { get { return "http://localhost:1337/"; } }
         protected virtual string WebHostUrl { get { return "http://mydomain.com"; } }
 
-
-        private const string UserName = "user";
-        private const string Password = "p@55word";
+        public const string UserName = "user";
+        public const string Password = "p@55word";
         public const string UserNameWithSessionRedirect = "user2";
         public const string PasswordForSessionRedirect = "p@55word2";
         public const string SessionRedirectUrl = "specialLandingPage.html";
         public const string LoginUrl = "specialLoginPage.html";
-        private const string EmailBasedUsername = "user@email.com";
-        private const string PasswordForEmailBasedAccount = "p@55word3";
+        public const string EmailBasedUsername = "user@email.com";
+        public const string PasswordForEmailBasedAccount = "p@55word3";
 
-        public class AuthAppHostHttpListener
-            : AppHostHttpListenerBase
-        {
-            private readonly string webHostUrl;
-            private Action<Container> configureFn;
-
-            public AuthAppHostHttpListener(string webHostUrl, Action<Container> configureFn=null)
-                : base("Validation Tests", typeof(CustomerService).Assembly)
-            {
-                this.webHostUrl = webHostUrl;
-                this.configureFn = configureFn;
-            }
-
-            private InMemoryAuthRepository userRep;
-
-            public override void Configure(Container container)
-            {
-                SetConfig(new HostConfig { WebHostUrl = webHostUrl, DebugMode = true });
-
-                Plugins.Add(new AuthFeature(() => new CustomUserSession(),
-                    new IAuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first
-                        new BasicAuthProvider(), //Sign-in with Basic Auth
-						new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
-                        new CustomAuthProvider()
-					}, "~/" + LoginUrl) { RegisterPlugins = { new WebSudoFeature() } });
-
-                container.Register(new MemoryCacheClient());
-                userRep = new InMemoryAuthRepository();
-                container.Register<IAuthRepository>(userRep);
-
-                if (configureFn != null)
-                {
-                    configureFn(container);
-                }
-
-                CreateUser(1, UserName, null, Password, new List<string> { "TheRole" }, new List<string> { "ThePermission" });
-                CreateUser(2, UserNameWithSessionRedirect, null, PasswordForSessionRedirect);
-                CreateUser(3, null, EmailBasedUsername, PasswordForEmailBasedAccount);
-            }
-
-            private void CreateUser(int id, string username, string email, string password, List<string> roles = null, List<string> permissions = null)
-            {
-                string hash;
-                string salt;
-                new SaltedHash().GetHashAndSaltString(password, out hash, out salt);
-
-                userRep.CreateUserAuth(new UserAuth
-                {
-                    Id = id,
-                    DisplayName = "DisplayName",
-                    Email = email ?? "as@if{0}.com".Fmt(id),
-                    UserName = username,
-                    FirstName = "FirstName",
-                    LastName = "LastName",
-                    PasswordHash = hash,
-                    Salt = salt,
-                    Roles = roles,
-                    Permissions = permissions
-                }, password);
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                // Needed so that when the derived class tests run the same users can be added again.
-                userRep.Clear();
-                base.Dispose(disposing);
-            }
-        }
-
-        AuthAppHostHttpListener appHost;
+        ServiceStackHost appHost;
 
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            appHost = new AuthAppHostHttpListener(WebHostUrl, Configure);
+            appHost = new AuthAppHost(WebHostUrl, Configure);
             appHost.Init();
             appHost.Start(ListeningOn);
         }
@@ -505,6 +510,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var client = GetClientWithUserPassword();
                 var request = new Secured { Name = "test" };
                 var response = client.Send<SecureResponse>(request);
+                Assert.That(response.Result, Is.EqualTo(request.Name));
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.Fail(webEx.Message);
+            }
+        }
+
+        [Test]
+        public async Task Does_work_with_BasicAuth_Async()
+        {
+            try
+            {
+                var client = GetClientWithUserPassword();
+                var request = new Secured { Name = "test" };
+                var response = await client.SendAsync<SecureResponse>(request);
                 Assert.That(response.Result, Is.EqualTo(request.Name));
             }
             catch (WebServiceException webEx)

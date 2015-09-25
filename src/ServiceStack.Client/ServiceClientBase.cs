@@ -571,29 +571,10 @@ namespace ServiceStack
 
                     var client = createWebRequest();
 
-                    var webEx = ex as WebException;
-                    if (webEx != null && webEx.Response != null)
-                    {
-                        var headers = ((HttpWebResponse)webEx.Response).Headers;
-                        var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
-                            HttpHeaders.WwwAuthenticate, x => x.Contains("realm"));
-
-                        if (doAuthHeader == null)
-                        {
-                            client.AddBasicAuth(this.UserName, this.Password);
-                        }
-                        else
-                        {
-                            this.authInfo = new AuthenticationInfo(doAuthHeader);
-                            client.AddAuthInfo(this.UserName, this.Password, authInfo);
-                        }
-                    }
-
+                    HandleAuthException(ex, client);
 
                     if (OnAuthenticationRequired != null)
-                    {
                         OnAuthenticationRequired(client);
-                    }
 
                     var webResponse = getResponse(client);
                     response = HandleResponse<TResponse>(webResponse);
@@ -619,6 +600,27 @@ namespace ServiceStack
 
             response = default(TResponse);
             return false;
+        }
+
+        private void HandleAuthException(Exception ex, WebRequest client)
+        {
+            var webEx = ex as WebException;
+            if (webEx != null && webEx.Response != null)
+            {
+                var headers = ((HttpWebResponse) webEx.Response).Headers;
+                var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
+                    HttpHeaders.WwwAuthenticate, x => x.Contains("realm"));
+
+                if (doAuthHeader == null)
+                {
+                    client.AddBasicAuth(this.UserName, this.Password);
+                }
+                else
+                {
+                    this.authInfo = new AuthenticationInfo(doAuthHeader);
+                    client.AddAuthInfo(this.UserName, this.Password, authInfo);
+                }
+            }
         }
 
         readonly ConcurrentDictionary<Type, Action<Exception, string>> ResponseHandlers
@@ -768,17 +770,13 @@ namespace ServiceStack
                     readWriteTimeout: ReadWriteTimeout,
                     userAgent: UserAgent);
 
-                if (this.credentials != null) client.Credentials = this.credentials;
+                if (this.credentials != null)
+                    client.Credentials = this.credentials;
 
-                if (null != this.authInfo)
-                {
+                if (this.authInfo != null)
                     client.AddAuthInfo(this.UserName, this.Password, authInfo);
-                }
-                else
-                {
-                    if (this.AlwaysSendBasicAuthHeader) 
-                        client.AddBasicAuth(this.UserName, this.Password);
-                }
+                else if (this.AlwaysSendBasicAuthHeader)
+                    client.AddBasicAuth(this.UserName, this.Password);
 
                 if (!DisableAutoCompression)
                 {

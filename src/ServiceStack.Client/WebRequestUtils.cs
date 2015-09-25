@@ -143,8 +143,8 @@ namespace ServiceStack
             return (webEx != null
                     && webEx.Response != null
                     && ((HttpWebResponse)webEx.Response).StatusCode == HttpStatusCode.Unauthorized
-                    && !String.IsNullOrEmpty(userName)
-                    && !String.IsNullOrEmpty(password));
+                    && !string.IsNullOrEmpty(userName)
+                    && !string.IsNullOrEmpty(password));
         }
 
         internal static void AddBasicAuth(this WebRequest client, string userName, string password)
