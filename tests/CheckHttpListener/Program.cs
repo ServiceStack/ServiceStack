@@ -9,6 +9,38 @@ using ServiceStack.Text;
 
 namespace CheckHttpListener
 {
+    [Route("/request")]
+    public class Request : IReturn<Response> { }
+    public class Response { }
+
+    public class MyServices : Service
+    {
+        public object Any(Request request)
+        {
+            return new Response();
+        }
+    }
+
+    public interface IDependency
+    {
+        Guid GetInstanceId();
+    }
+
+    public class SomeDependency : IDependency//, IDisposable
+    {
+        private readonly Guid _id = Guid.NewGuid();
+
+        public Guid GetInstanceId()
+        {
+            return _id;
+        }
+
+        public void Dispose()
+        {
+            Console.WriteLine("Disposing: " + _id);
+        }
+    }
+
     public class AppHost : AppHostHttpListenerBase
     {
         public AppHost() : base("Check HttpListener Tests", 
@@ -32,6 +64,16 @@ namespace CheckHttpListener
             });
 
             //Plugins.Add(new NativeTypesFeature());
+
+            container.RegisterAs<SomeDependency, IDependency>().ReusedWithin(ReuseScope.Request);
+
+            if (container.TryResolve<IDependency>() != default(IDependency)) {}
+
+            GlobalRequestFilters.Add((req, res, requestDto) =>
+            {
+                var thatDependency = container.Resolve<IDependency>();
+                Console.WriteLine("Filter received: " + thatDependency.GetInstanceId());
+            });
         }
     }
 

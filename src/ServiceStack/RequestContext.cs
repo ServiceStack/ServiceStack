@@ -49,6 +49,10 @@ namespace ServiceStack
                 if (UseThreadStatic)
                     return RequestItems;
 
+                //Don't init CallContext on Main Thread which inits copies in Request threads
+                if (!ServiceStackHost.IsReady())
+                    return new Dictionary<object, object>();
+
                 return CallContext.LogicalGetData(_key) as IDictionary;
             }
             catch (NotImplementedException)
