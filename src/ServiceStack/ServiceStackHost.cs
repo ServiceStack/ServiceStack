@@ -48,6 +48,11 @@ namespace ServiceStack
             get { return ReadyAt != null; }
         }
 
+        public static bool IsReady()
+        {
+            return Instance != null && Instance.ReadyAt != null;
+        }
+
         protected ServiceStackHost(string serviceName, params Assembly[] assembliesWithServices)
         {
             this.StartedAt = DateTime.UtcNow;

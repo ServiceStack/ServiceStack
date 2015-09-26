@@ -101,7 +101,7 @@ namespace ServiceStack
         /// <param name="instance"></param>
         public void TrackDisposable(IDisposable instance)
         {
-            if (ServiceStackHost.Instance == null || ServiceStackHost.Instance.ReadyAt == null) return;
+            if (!ServiceStackHost.IsReady()) return;
             if (instance == null) return;
             if (instance is IService) return; //IService's are already disposed right after they've been executed
 
@@ -119,7 +119,7 @@ namespace ServiceStack
         /// <returns>true if any dependencies were released</returns>
         public bool ReleaseDisposables()
         {
-            if (ServiceStackHost.Instance == null || ServiceStackHost.Instance.ReadyAt == null) return false;
+            if (!ServiceStackHost.IsReady()) return false;
             if (!ServiceStackHost.Instance.Config.DisposeDependenciesAfterUse) return false;
 
             var ctxItems = Instance.Items;
