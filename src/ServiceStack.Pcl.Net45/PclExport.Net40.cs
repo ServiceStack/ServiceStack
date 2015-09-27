@@ -119,6 +119,8 @@ namespace ServiceStack
         }
 
         public const string AppSettingsKey = "servicestack:license";
+        public const string EnvironmentKey = "SERVICESTACK_LICENSE";
+
         public override void RegisterLicenseFromConfig()
         {
 #if ANDROID
@@ -126,6 +128,14 @@ namespace ServiceStack
 #else
             //Automatically register license key stored in <appSettings/>
             var licenceKeyText = System.Configuration.ConfigurationManager.AppSettings[AppSettingsKey];
+            if (!string.IsNullOrEmpty(licenceKeyText))
+            {
+                LicenseUtils.RegisterLicense(licenceKeyText);
+                return;
+            }
+
+            //or SERVICESTACK_LICENSE Environment variable
+            licenceKeyText = Environment.GetEnvironmentVariable(EnvironmentKey);
             if (!string.IsNullOrEmpty(licenceKeyText))
             {
                 LicenseUtils.RegisterLicense(licenceKeyText);
@@ -1092,7 +1102,7 @@ namespace ServiceStack
 
         public static Hashtable ParseHashtable(string value)
         {
-            if (value == null) 
+            if (value == null)
                 return null;
 
             var index = VerifyAndGetStartIndex(value, typeof(Hashtable));
