@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
+using Autofac;
 using Check.ServiceInterface;
 using Funq;
 using ServiceStack;
+using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 
@@ -21,23 +24,30 @@ namespace CheckHttpListener
         }
     }
 
-    public interface IDependency
+    public class AutofacIocAdapter : IContainerAdapter
     {
-        Guid GetInstanceId();
-    }
+        private readonly IContainer _container;
 
-    public class SomeDependency : IDependency//, IDisposable
-    {
-        private readonly Guid _id = Guid.NewGuid();
-
-        public Guid GetInstanceId()
+        public AutofacIocAdapter(IContainer container)
         {
-            return _id;
+            _container = container;
         }
 
-        public void Dispose()
+        public T Resolve<T>()
         {
-            Console.WriteLine("Disposing: " + _id);
+            return _container.Resolve<T>();
+        }
+
+        public T TryResolve<T>()
+        {
+            T result;
+
+            if (_container.TryResolve<T>(out result))
+            {
+                return result;
+            }
+
+            return default(T);
         }
     }
 
@@ -65,15 +75,24 @@ namespace CheckHttpListener
 
             //Plugins.Add(new NativeTypesFeature());
 
-            container.RegisterAs<SomeDependency, IDependency>().ReusedWithin(ReuseScope.Request);
+            var builder = new ContainerBuilder();
+            var autofac = builder.Build();
+            container.Adapter = new AutofacIocAdapter(autofac);
 
-            if (container.TryResolve<IDependency>() != default(IDependency)) {}
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+                new IAuthProvider[] {
+                    new BasicAuthProvider(AppSettings), 
+                }));
+        }
 
-            GlobalRequestFilters.Add((req, res, requestDto) =>
+        public override void OnAfterInit()
+        {
+            base.OnAfterInit();
+
+            using (var authService = Container.Resolve<AuthenticateService>())
             {
-                var thatDependency = container.Resolve<IDependency>();
-                Console.WriteLine("Filter received: " + thatDependency.GetInstanceId());
-            });
+                authService.Authenticate(new Authenticate());
+            }
         }
     }
 
