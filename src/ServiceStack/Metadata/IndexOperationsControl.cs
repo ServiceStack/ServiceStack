@@ -5,6 +5,7 @@ using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Templates;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
@@ -184,7 +185,8 @@ namespace ServiceStack.Metadata
                 xsdsPart,
                 wsdlTemplate,
                 pluginLinks,
-                debugOnlyInfo);
+                debugOnlyInfo,
+                Env.VersionString);
 
             output.Write(renderedTemplate);
         }
