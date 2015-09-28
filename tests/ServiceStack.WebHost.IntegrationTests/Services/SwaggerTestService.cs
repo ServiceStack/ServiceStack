@@ -173,6 +173,36 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string Optional1 { get; set; }
     }
 
+    [Api("Api GET All")]
+    [Route("/swaggerexamples", "GET")]
+    public class GetSwaggerExamples : IReturn<GetSwaggerExamples>
+    {
+        public string Get { get; set; }
+    }
+
+    [Api("Api POST")]
+    [Route("/swaggerexamples", "POST")]
+    public class PostSwaggerExamples : IReturn<PostSwaggerExamples>
+    {
+        public string Post { get; set; }
+    }
+
+    [Api("Api GET Id")]
+    [Route("/swaggerexamples/{Id}", "GET")]
+    public class GetSwaggerExample : IReturn<GetSwaggerExample>
+    {
+        public int Id { get; set; }
+        public string Get { get; set; }
+    }
+
+    [Api("Api PUT Id")]
+    [Route("/swaggerexamples/{Id}", "PUT")]
+    public class PutSwaggerExample : IReturn<PutSwaggerExample>
+    {
+        public int Id { get; set; }
+        public string Get { get; set; }
+    }
+
     public class SwaggerTestService : Service
     {
         public object Any(SwaggerTest request)
@@ -198,6 +228,26 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public object Any(SwaggerPostTest2 request)
         {
             return new HelloResponse { Result = request.Required1 };
+        }
+
+        public object Any(GetSwaggerExamples request)
+        {
+            return request;
+        }
+
+        public object Any(GetSwaggerExample request)
+        {
+            return request;
+        }
+
+        public object Any(PostSwaggerExamples request)
+        {
+            return request;
+        }
+
+        public object Any(PutSwaggerExample request)
+        {
+            return request;
         }
     }
 }

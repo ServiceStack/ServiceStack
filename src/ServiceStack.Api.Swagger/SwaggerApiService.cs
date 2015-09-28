@@ -498,7 +498,7 @@ namespace ServiceStack.Api.Swagger
         private SwaggerApi FormatMethodDescription(RestPath restPath, Dictionary<string, SwaggerModel> models)
         {
             var verbs = new List<string>();
-            var summary = restPath.Summary;
+            var summary = restPath.Summary ?? restPath.RequestType.GetDescription();
             var notes = restPath.Notes;
 
             verbs.AddRange(restPath.AllowsAllVerbs
@@ -506,21 +506,22 @@ namespace ServiceStack.Api.Swagger
                 : restPath.AllowedVerbs.Split(new[] {',', ' '}, StringSplitOptions.RemoveEmptyEntries));
 
             var routePath = restPath.Path.Replace("*","");
+            var requestType = restPath.RequestType;
+
             var md = new SwaggerApi
             {
                 Path = routePath,
                 Description = summary,
-                Operations = verbs.Select(verb =>
-                    new SwaggerOperation
-                    {
-                        Method = verb,
-                        Nickname = restPath.RequestType.Name,
-                        Summary = summary,
-                        Notes = notes,
-                        Parameters = ParseParameters(verb, restPath.RequestType, models, routePath),
-                        ResponseClass = GetResponseClass(restPath, models),
-                        ErrorResponses = GetMethodResponseCodes(restPath.RequestType)
-                    }).ToList()
+                Operations = verbs.Map(verb => new SwaggerOperation
+                {
+                    Method = verb,
+                    Nickname = requestType.Name,
+                    Summary = summary,
+                    Notes = notes,
+                    Parameters = ParseParameters(verb, requestType, models, routePath),
+                    ResponseClass = GetResponseClass(restPath, models),
+                    ErrorResponses = GetMethodResponseCodes(requestType)
+                })
             };
             return md;
         }
