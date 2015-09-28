@@ -102,30 +102,39 @@ namespace ServiceStack.Api.Swagger
             return result;
         }
 
-        protected void CreateRestPaths(List<SwaggerResourceRef> apis, Type operationType, String operationName)
+        protected void CreateRestPaths(List<SwaggerResourceRef> apis, Type operationType, string operationName)
         {
             var map = HostContext.ServiceController.RestPathMap;
+            var feature = HostContext.GetPlugin<SwaggerFeature>();
+
             var paths = new List<string>();
+
             foreach (var key in map.Keys)
             {
                 paths.AddRange(map[key].Where(x => x.RequestType == operationType).Select(t => resourcePathCleanerRegex.Match(t.Path).Value));
             }
 
-            if (paths.Count == 0) return;
+            if (paths.Count == 0)
+                return;
 
             var basePaths = paths.Select(t => string.IsNullOrEmpty(t) ? null : t.Split('/'))
                 .Where(t => t != null && t.Length > 1)
                 .Select(t => t[1]);
 
-            foreach (var bp in basePaths)
+            foreach (var basePath in basePaths)
             {
-                if (string.IsNullOrEmpty(bp)) continue;
-                if (apis.All(a => a.Path != string.Concat(RESOURCE_PATH, "/" + bp)))
+                if (string.IsNullOrEmpty(basePath))
+                    continue;
+
+                if (apis.All(a => a.Path != string.Concat(RESOURCE_PATH, "/" + basePath)))
                 {
+                    string summary;
+                    feature.RouteSummary.TryGetValue("/" + basePath, out summary);
+
                     apis.Add(new SwaggerResourceRef
                     {
-                        Path = string.Concat(RESOURCE_PATH, "/" + bp),
-                        Description = operationType.GetDescription()
+                        Path = string.Concat(RESOURCE_PATH, "/" + basePath),
+                        Description = summary ?? operationType.GetDescription()
                     });
                 }
             }

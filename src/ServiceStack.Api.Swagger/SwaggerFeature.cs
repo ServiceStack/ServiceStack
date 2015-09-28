@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
@@ -26,9 +27,12 @@ namespace ServiceStack.Api.Swagger
 
         public Action<SwaggerProperty> ModelPropertyFilter { get; set; }
 
+        public Dictionary<string, string> RouteSummary { get; set; }
+
         public SwaggerFeature()
         {
             LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-24.png";
+            RouteSummary = new Dictionary<string, string>();
         }
 
         public void Configure(IAppHost appHost)

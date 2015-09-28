@@ -106,6 +106,10 @@ namespace ServiceStack.WebHost.IntegrationTests
                 });
                 Plugins.Add(new SwaggerFeature {
                     //UseBootstrapTheme = true
+                    RouteSummary =
+                    {
+                        { "/swaggerexamples", "Swagger Examples Summary" }
+                    }
                 });
                 Plugins.Add(new PostmanFeature());
                 Plugins.Add(new CorsFeature());
