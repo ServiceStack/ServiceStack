@@ -917,6 +917,7 @@ namespace ServiceStack.NativeTypes
 
         public static string QuotedSafeValue(this string value)
         {
+            value = value.Replace("\r", "").Replace("\n", "");
             return "\"{0}\"".Fmt(value.SafeValue());
         }
 

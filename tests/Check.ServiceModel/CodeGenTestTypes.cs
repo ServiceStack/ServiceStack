@@ -130,7 +130,8 @@ namespace Check.ServiceModel.Operations
 
     [DataContract]
     [Route("/allowed-attributes","GET")]
-    [Api("AllowedAttributes Description")]
+    [Api(@"AllowedAttributes 
+Description")]
     [ApiResponse(HttpStatusCode.BadRequest, "Your request was not understood")]
     [Description("Description on AllowedAttributes")]
     public class AllowedAttributes
