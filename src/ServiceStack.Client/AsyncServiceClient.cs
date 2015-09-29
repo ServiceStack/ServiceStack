@@ -217,7 +217,7 @@ namespace ServiceStack
         private void SendWebRequestAsync<TResponse>(string httpMethod, object request,
             AsyncState<TResponse> state, HttpWebRequest client)
         {
-            client.Accept = string.Format("{0}, */*", ContentType);
+            client.Accept = ContentType;
 
             if (this.EmulateHttpViaPost)
             {
