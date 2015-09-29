@@ -12,6 +12,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    [Route("/protobufemail")]
 	[DataContract]
 	public class ProtoBufEmail
 	{
@@ -89,7 +90,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			appHost = new ExampleAppHostHttpListener();
 			appHost.Plugins.Add(new ProtoBufFormat());
-			appHost.Init();
+            appHost.Init();
 			appHost.Start(ListeningOn);
 		}
 
@@ -152,14 +153,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_return_ProtoBuf_when_using_ProtoBuf_Content_Type_and_Wildcard()
         {
-            var bytes = ListeningOn.CombineWith("x-protobuf/reply/ProtoBufEmail")
+            var bytes = ListeningOn.CombineWith("protobufemail")
                 .PostBytesToUrl(accept: "{0}, */*".Fmt(MimeTypes.ProtoBuf),
+                    contentType:MimeTypes.ProtoBuf,
                     requestBody: CreateProtoBufEmail().ToProtoBuf(),
                     responseFilter: res => Assert.That(res.ContentType, Is.EqualTo(MimeTypes.ProtoBuf)));
 
             Assert.That(bytes.Length, Is.GreaterThan(0));
 
-            bytes = ListeningOn.CombineWith("x-protobuf/reply/ProtoBufEmail")
+            bytes = ListeningOn.CombineWith("protobufemail")
                 .GetBytesFromUrl(accept: "{0}, */*".Fmt(MimeTypes.ProtoBuf),
                     responseFilter: res => Assert.That(res.ContentType, Is.EqualTo(MimeTypes.ProtoBuf)));
         }
