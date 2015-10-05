@@ -323,7 +323,8 @@ namespace ServiceStack.Caching.Memcached
             {
                 T result = action();
                 TimeSpan timeTaken = DateTime.Now - before;
-                Log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
+                if (Log.IsDebugEnabled)
+                    Log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
                 return result;
             }
             catch (Exception ex)
@@ -346,7 +347,8 @@ namespace ServiceStack.Caching.Memcached
             {
                 action();
                 TimeSpan timeTaken = DateTime.Now - before;
-                Log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
+                if (Log.IsDebugEnabled)
+                    Log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
             }
             catch (Exception ex)
             {
