@@ -1248,7 +1248,7 @@
         </member>
         <member name="P:ServiceStack.OrmLite.OrmLiteConfig.UseParameterizeSqlExpressions">
             <summary>
-            Only supported in Oracle DialectProvider
+            Only used in Oracle or SqlServer DialectProvider
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.OrmLiteConnection">
