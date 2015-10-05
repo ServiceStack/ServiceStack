@@ -124,6 +124,9 @@ namespace ServiceStack
                     }
                     else
                     {
+                        if (cmd.Name == null)
+                            cmd.Name = commandsString.Substring(pos, i - pos).Trim();
+
                         to.Add(cmd);
                         cmd = new Command();
                         pos = i + 1;

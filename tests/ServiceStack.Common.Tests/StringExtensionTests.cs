@@ -176,6 +176,8 @@ namespace ServiceStack.Common.Tests
                 new[] { "[Count:*]", "[Min:Age]", "[Max:Age]", "[Sum:Id]" }));
             Assert.That("Count(*,\",\"), Min(Age,')'), Max(Age,1), Sum(Id,Foo,2.0)".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(
                 new[] { "[Count:*|\",\"]", "[Min:Age|')']", "[Max:Age|1]", "[Sum:Id|Foo|2.0]" }));
+
+            Assert.That("Field1,Field2".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] { "[Field1:]", "[Field2:]" }));
         }
 
         [Test]
