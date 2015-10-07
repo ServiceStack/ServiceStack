@@ -26,7 +26,10 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"String", "string"},
             {"Boolean", "boolean"},
             {"DateTime", "string"},
+            {"DateTimeOffset", "string"},
             {"TimeSpan", "string"},
+            {"Guid", "string"},
+            {"Char", "string"},
             {"Byte", "number"},
             {"Int16", "number"},
             {"Int32", "number"},
@@ -67,6 +70,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
+            sb.AppendLine("{0}ExportAsTypes: {1}".Fmt(defaultValue("ExportAsTypes"), Config.ExportAsTypes));
             sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
@@ -196,7 +200,11 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             if (type.IsEnum.GetValueOrDefault())
             {
-                sb.AppendLine("enum {0}".Fmt(Type(type.Name, type.GenericArgs)));
+                var typeDeclaration = !Config.ExportAsTypes
+                    ? "enum"
+                    : "export const enum";
+
+                sb.AppendLine("{0} {1}".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs)));
                 sb.AppendLine("{");
                 sb = sb.Indent();
 
@@ -223,18 +231,27 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (type.Inherits != null)
                     extends.Add(Type(type.Inherits).InheritedType());
 
+                var interfaces = new List<string>();
                 if (options.ImplementsFn != null)
                 {
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
-                        extends.Add(implStr);
+                        interfaces.Add(implStr);
                 }
 
+                var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
                 var extend = extends.Count > 0
-                    ? " extends " + (string.Join(", ", extends.ToArray()))
+                    ? " extends " + extends[0]
                     : "";
 
-                sb.AppendLine("interface {0}{1}".Fmt(Type(type.Name, type.GenericArgs), extend));
+                if (interfaces.Count > 0)
+                    extend += " implements " + string.Join(", ", interfaces.ToArray());
+
+                var typeDeclaration = !Config.ExportAsTypes
+                    ? "interface"
+                    : "export {0}".Fmt(isClass ? "class" : "interface"); 
+
+                sb.AppendLine("{0} {1}{2}".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs), extend));
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
@@ -242,7 +259,8 @@ namespace ServiceStack.NativeTypes.TypeScript
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine("{0}?: number; //{1}".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
+                    sb.AppendLine("{0}{1}: number; //{2}".Fmt(
+                        "Version".PropertyStyle(), isClass ? "" : "?", Config.AddImplicitVersion));
                 }
 
                 AddProperties(sb, type,
@@ -276,15 +294,15 @@ namespace ServiceStack.NativeTypes.TypeScript
                         propType = propType.Substring(0, propType.Length - 1);
                         optional = "?";
                     }
+
                     if (Config.MakePropertiesOptional)
-                    {
                         optional = "?";
-                    }
 
                     if (prop.Attributes.Safe().FirstOrDefault(x => x.Name == "Required") != null)
-                    {
                         optional = "";
-                    }
+
+                    if (Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault())
+                        optional = "";
 
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
@@ -297,7 +315,8 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("{0}?: ResponseStatus;".Fmt(typeof(ResponseStatus).Name.PropertyStyle()));
+                sb.AppendLine("{0}{1}: ResponseStatus;".Fmt(
+                    typeof(ResponseStatus).Name.PropertyStyle(), Config.ExportAsTypes ? "" : "?"));
             }
         }
 

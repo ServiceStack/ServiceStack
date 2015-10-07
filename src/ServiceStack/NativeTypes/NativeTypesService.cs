@@ -58,6 +58,7 @@ namespace ServiceStack.NativeTypes
         public bool? ExcludeGenericBaseTypes { get; set; }
         public bool? SettersReturnThis { get; set; }
         public bool? MakePropertiesOptional { get; set; }
+        public bool? ExportAsTypes { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public string GlobalNamespace { get; set; }
         public string BaseClass { get; set; }

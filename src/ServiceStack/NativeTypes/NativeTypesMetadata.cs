@@ -46,6 +46,7 @@ namespace ServiceStack.NativeTypes
                 ExcludeGenericBaseTypes = req.ExcludeGenericBaseTypes ?? defaults.ExcludeGenericBaseTypes,
                 SettersReturnThis = req.SettersReturnThis ?? defaults.SettersReturnThis,
                 MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
+                ExportAsTypes = req.ExportAsTypes ?? defaults.ExportAsTypes,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
                 DefaultImports = req.DefaultImports ?? defaults.DefaultImports,
