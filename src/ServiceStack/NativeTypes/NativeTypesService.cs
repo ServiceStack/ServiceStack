@@ -11,6 +11,22 @@ using ServiceStack.Web;
 namespace ServiceStack.NativeTypes
 {
     [Exclude(Feature.Soap)]
+    [Route("/types")]
+    public class TypeLinks : NativeTypesBase, IReturn<TypeLinksResponse> { }
+
+    public class TypeLinksResponse
+    {
+        public string Metadata { get; set; }
+        public string Csharp { get; set; }
+        public string Fsharp { get; set; }
+        public string VbNet { get; set; }
+        public string TypeScript { get; set; }
+        public string TypeScriptDefinition { get; set; }
+        public string Java { get; set; }
+        public string Swift { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
     [Route("/types/metadata")]
     public class TypesMetadata : NativeTypesBase { }
 
@@ -27,8 +43,12 @@ namespace ServiceStack.NativeTypes
     public class TypesVbNet : NativeTypesBase { }
 
     [Exclude(Feature.Soap)]
-    [Route("/types/typescript.d")]
+    [Route("/types/typescript")]
     public class TypesTypeScript : NativeTypesBase { }
+
+    [Exclude(Feature.Soap)]
+    [Route("/types/typescript.d")]
+    public class TypesTypeScriptDefinition : NativeTypesBase { }
 
     [Exclude(Feature.Soap)]
     [Route("/types/swift")]
@@ -83,6 +103,22 @@ namespace ServiceStack.NativeTypes
     {
         public INativeTypesMetadata NativeTypesMetadata { get; set; }
 
+        public object Any(TypeLinks request)
+        {
+            var response = new TypeLinksResponse
+            {
+                Metadata = new TypesMetadata().ToAbsoluteUri(),
+                Csharp = new TypesCSharp().ToAbsoluteUri(),
+                Fsharp = new TypesFSharp().ToAbsoluteUri(),
+                VbNet = new TypesVbNet().ToAbsoluteUri(),
+                TypeScript = new TypesTypeScript().ToAbsoluteUri(),
+                TypeScriptDefinition = new TypesTypeScriptDefinition().ToAbsoluteUri(),
+                Swift = new TypesSwift().ToAbsoluteUri(),
+                Java = new TypesJava().ToAbsoluteUri(),
+            };
+            return response;
+        }
+
         public MetadataTypes Any(TypesMetadata request)
         {
             if (request.BaseUrl == null)
@@ -132,11 +168,23 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesTypeScript request)
         {
+            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            typesConfig.ExportAsTypes = true;
+
+            return GenerateTypeScript(request, typesConfig);
+        }
+
+        [AddHeader(ContentType = MimeTypes.PlainText)]
+        public object Any(TypesTypeScriptDefinition request)
+        {
+            return GenerateTypeScript(request, NativeTypesMetadata.GetConfig(request));
+        }
+
+        public string GenerateTypeScript(NativeTypesBase request, MetadataTypesConfig typesConfig)
+        {
             if (request.BaseUrl == null)
                 request.BaseUrl = Request.GetBaseUrl();
 
-            var typesConfig = NativeTypesMetadata.GetConfig(request);
-    
             //Include SS types by removing ServiceStack namespaces
             if (typesConfig.AddServiceStackTypes)
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
@@ -152,10 +200,11 @@ namespace ServiceStack.NativeTypes
                 metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturn<>)));
                 metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturnVoid)));
             }
- 
+
             var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return typeScript;
         }
+
 
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesSwift request)
