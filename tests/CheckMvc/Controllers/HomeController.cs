@@ -1,4 +1,5 @@
 ﻿using System.Web.Mvc;
+using ServiceStack;
 using ServiceStack.Mvc;
 
 namespace CheckMvc.Controllers

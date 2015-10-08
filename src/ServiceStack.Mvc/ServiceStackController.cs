@@ -229,6 +229,10 @@ namespace ServiceStack.Mvc
         {
             return ServiceStackProvider.SessionAs<TUserSession>();
         }
+        protected virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null)
+        {
+            ServiceStackProvider.Request.SaveSession(session, expiresIn);
+        }
         protected virtual void ClearSession()
         {
             ServiceStackProvider.ClearSession();
