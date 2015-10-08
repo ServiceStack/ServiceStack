@@ -910,9 +910,14 @@ namespace ServiceStack
             return ((HttpListenerBase)ServiceStackHost.Instance).CreateRequest(httpCtxReq, operationName);
         }
 
-        public static IHttpResponse ToResponse(this HttpRequestBase httpCtx)
+        public static IHttpResponse ToResponse(this HttpContext httpCtx)
         {
             return httpCtx.ToRequest().HttpResponse;
+        }
+
+        public static IHttpResponse ToResponse(this HttpRequestBase aspReq)
+        {
+            return aspReq.ToRequest().HttpResponse;
         }
 
         public static IHttpResponse ToResponse(this HttpListenerContext httpCtx)
