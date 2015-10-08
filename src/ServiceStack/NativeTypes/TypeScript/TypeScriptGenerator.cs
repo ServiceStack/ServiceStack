@@ -113,7 +113,8 @@ namespace ServiceStack.NativeTypes.TypeScript
             defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
             sb.AppendLine();
 
-            sb.AppendLine("declare module {0}".Fmt(globalNamespace.SafeToken()));
+            var moduleDef = Config.ExportAsTypes ? "" : "declare ";
+            sb.AppendLine("{0}module {1}".Fmt(moduleDef, globalNamespace.SafeToken()));
             sb.AppendLine("{");
 
             //ServiceStack core interfaces
