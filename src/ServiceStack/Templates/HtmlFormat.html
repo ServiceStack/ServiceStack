@@ -45,7 +45,7 @@ H1 I {
   color: #0E8F13;
 }
 A {
-  color: #00C;
+  color: #337ab7;
   text-decoration: none;
 }
 A:hover {
@@ -284,8 +284,9 @@ function val(m) {
 }
 function num(m) { return m; }
 var sdfmt = location.hash.indexOf('show=') >=0 && location.hash.indexOf('fulldates') >= 0 ? dmft : dmfthm;
-function str(m){ return m.substr(0,6) == '/Date(' ? sdfmt(date(m)) : m; }
+function str(m){ return m.substr(0,6) == '/Date(' ? sdfmt(date(m)) : m.substr(0,4) == 'http' ? shref(m) : m; }
 function sfmt(s) { return humanize ? splitCase(s) : s; }
+function shref(s) { return humanize ? '<a href="' + s + '">' + s + '</a>' : s; }
 function date(s) { return new Date(parseFloat(/Date\(([^)]+)\)/.exec(s)[1])); }
 function pad(d) { return d < 10 ? '0'+d : d; }
 function dmft(d) { return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); }
