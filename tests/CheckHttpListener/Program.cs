@@ -75,25 +75,28 @@ namespace CheckHttpListener
 
             //Plugins.Add(new NativeTypesFeature());
 
-            var builder = new ContainerBuilder();
-            var autofac = builder.Build();
-            container.Adapter = new AutofacIocAdapter(autofac);
+            //var builder = new ContainerBuilder();
+            //var autofac = builder.Build();
+            //container.Adapter = new AutofacIocAdapter(autofac);
 
-            Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
-                new IAuthProvider[] {
-                    new BasicAuthProvider(AppSettings), 
-                }));
+            //Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+            //    new IAuthProvider[] {
+            //        new BasicAuthProvider(AppSettings), 
+            //    }));
+
+            container.Register<IConnectionString>(c => 
+                new FoundationConnectionString("My Connection"));
         }
 
-        public override void OnAfterInit()
-        {
-            base.OnAfterInit();
+        //public override void OnAfterInit()
+        //{
+        //    base.OnAfterInit();
 
-            using (var authService = Container.Resolve<AuthenticateService>())
-            {
-                authService.Authenticate(new Authenticate());
-            }
-        }
+        //    using (var authService = Container.Resolve<AuthenticateService>())
+        //    {
+        //        authService.Authenticate(new Authenticate());
+        //    }
+        //}
     }
 
     class Program
@@ -190,6 +193,34 @@ namespace CheckHttpListener
         {
             int filesCount = Request.Files.Length;
             Console.WriteLine(filesCount); // Always 0
+        }
+    }
+
+    public interface IConnectionString
+    {
+        string ConnectionString { get; }
+    }
+
+    class FoundationConnectionString : IConnectionString
+    {
+        public FoundationConnectionString(string connectionString)
+        {
+            ConnectionString = connectionString;
+        }
+
+        public string ConnectionString { get; set; }
+    }
+
+    [Route("/test")]
+    public class Test : IReturn<string> { }
+
+    public class TestService : Service
+    {
+        public IConnectionString Config { get; set; }
+
+        public object Any(Test request)
+        {
+            return Config.ConnectionString;
         }
     }
 }
