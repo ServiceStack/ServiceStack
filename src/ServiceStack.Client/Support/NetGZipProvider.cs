@@ -32,6 +32,11 @@ namespace ServiceStack.Support
                 return Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
             }
         }
+
+        public Stream GetGZipCompressionStream(Stream outputStream)
+        {
+            return new GZipStream(outputStream, CompressionMode.Compress);
+        }
     }
 }
 #endif
