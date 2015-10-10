@@ -8,6 +8,6 @@ namespace ServiceStack.Caching
 
         string GUnzip(byte[] gzBuffer);
 
-        Stream GetGZipCompressionStream(Stream outputStream);
+        Stream GZipStream(Stream outputStream);
     }
 }

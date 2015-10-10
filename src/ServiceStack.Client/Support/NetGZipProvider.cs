@@ -33,7 +33,7 @@ namespace ServiceStack.Support
             }
         }
 
-        public Stream GetGZipCompressionStream(Stream outputStream)
+        public Stream GZipStream(Stream outputStream)
         {
             return new GZipStream(outputStream, CompressionMode.Compress);
         }

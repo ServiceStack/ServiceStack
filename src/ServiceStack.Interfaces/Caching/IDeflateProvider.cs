@@ -8,6 +8,6 @@ namespace ServiceStack.Caching
 
         string Inflate(byte[] gzBuffer);
 
-        Stream GetDeflateStream(Stream outputStream);
+        Stream DeflateStream(Stream outputStream);
     }
 }

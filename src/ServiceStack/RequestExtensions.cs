@@ -71,9 +71,9 @@ namespace ServiceStack
         private static Stream GetCompressionStream(Stream outputStream, string compressionType)
         {
             if (compressionType == CompressionTypes.Deflate)
-                return StreamExt.DeflateProvider.GetDeflateStream(outputStream);
+                return StreamExt.DeflateProvider.DeflateStream(outputStream);
             if (compressionType == CompressionTypes.GZip)
-                return StreamExt.GZipProvider.GetGZipCompressionStream(outputStream);
+                return StreamExt.GZipProvider.GZipStream(outputStream);
 
             throw new NotSupportedException(compressionType);
         }
