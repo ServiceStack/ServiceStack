@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace ServiceStack.Caching
 {
     public interface IDeflateProvider
@@ -5,5 +7,7 @@ namespace ServiceStack.Caching
         byte[] Deflate(string text);
 
         string Inflate(byte[] gzBuffer);
+
+        Stream GetDeflateStream(Stream outputStream);
     }
 }

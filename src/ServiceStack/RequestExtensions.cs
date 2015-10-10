@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using ServiceStack.Caching;
 using ServiceStack.Host;
 using ServiceStack.Web;
@@ -49,16 +50,32 @@ namespace ServiceStack
         {
             request.Response.Dto = dto;
 
-            string serializedDto = HostContext.ContentTypes.SerializeToString(request, dto);
             var compressionType = request.GetCompressionType();
             if (compressionType == null)
-                return (object)serializedDto;
+                return (object)HostContext.ContentTypes.SerializeToString(request, dto);
 
-            byte[] compressedBytes = serializedDto.Compress(compressionType);
-            return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
+            using (var ms = new MemoryStream())
+            using (var compressionStream = GetCompressionStream(ms, compressionType))
             {
-                Status = request.Response.StatusCode
-            };
+                HostContext.ContentTypes.SerializeToStream(request, dto, compressionStream);
+                compressionStream.Close();
+
+                var compressedBytes = ms.ToArray();
+                return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
+                {
+                    Status = request.Response.StatusCode
+                };
+            }
+        }
+
+        private static Stream GetCompressionStream(Stream outputStream, string compressionType)
+        {
+            if (compressionType == CompressionTypes.Deflate)
+                return StreamExt.DeflateProvider.GetDeflateStream(outputStream);
+            if (compressionType == CompressionTypes.GZip)
+                return StreamExt.GZipProvider.GetGZipCompressionStream(outputStream);
+
+            throw new NotSupportedException(compressionType);
         }
 
         /// <summary>

@@ -34,6 +34,10 @@ namespace ServiceStack.Support
             }
         }
 
+        public Stream GetDeflateStream(Stream outputStream)
+        {
+            return new DeflateStream(outputStream, CompressionMode.Compress);
+        }
     }
 }
 #endif
