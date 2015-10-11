@@ -85,6 +85,7 @@
     <Compile Include="DataAnnotations\PreCreateTableAttribute.cs" />
     <Compile Include="DataAnnotations\PreDropTableAttribute.cs" />
     <Compile Include="DataAnnotations\RangeAttribute.cs" />
+    <Compile Include="DataAnnotations\HashKeyAttribute.cs" />
     <Compile Include="DataAnnotations\RangeKeyAttribute.cs" />
     <Compile Include="DataAnnotations\ReferenceAttribute.cs" />
     <Compile Include="DataAnnotations\DecimalLengthAttribute.cs" />
