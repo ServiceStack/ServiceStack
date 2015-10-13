@@ -103,18 +103,14 @@ namespace ServiceStack.Auth
                 var existingUser = GetUserAuthByUserName(db, newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                {
                     throw new ArgumentException("User {0} already exists".Fmt(newUser.UserName));
-                }
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(db, newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                {
                     throw new ArgumentException("Email {0} already exists".Fmt(newUser.Email));
-                }
             }
         }
 
@@ -129,16 +125,13 @@ namespace ServiceStack.Auth
                 var hash = existingUser.PasswordHash;
                 var salt = existingUser.Salt;
                 if (password != null)
-                {
                     HostContext.Resolve<IHashProvider>().GetHashAndSaltString(password, out hash, out salt);
-                }
+
                 // If either one changes the digest hash has to be recalculated
                 var digestHash = existingUser.DigestHa1Hash;
                 if (password != null || existingUser.UserName != newUser.UserName)
-                {
-                    var digestHelper = new DigestAuthFunctions();
-                    digestHash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-                }
+                    digestHash = new DigestAuthFunctions().CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
+
                 newUser.Id = existingUser.Id;
                 newUser.PasswordHash = hash;
                 newUser.Salt = salt;
@@ -184,7 +177,8 @@ namespace ServiceStack.Auth
                 {
                     hasInitSchema = db.TableExists<TUserAuth>();
                 }
-                if (!hasInitSchema) throw new Exception("OrmLiteAuthRepository Db tables have not been initialized. Try calling 'InitSchema()' in your AppHost Configure method.");
+                if (!hasInitSchema)
+                    throw new Exception("OrmLiteAuthRepository Db tables have not been initialized. Try calling 'InitSchema()' in your AppHost Configure method.");
             }
             using (var db = dbFactory.Open())
             {
@@ -211,7 +205,6 @@ namespace ServiceStack.Auth
             if (HostContext.Resolve<IHashProvider>().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
                 this.RecordSuccessfulLogin(userAuth);
-
                 return true;
             }
 
@@ -231,7 +224,6 @@ namespace ServiceStack.Auth
             if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
             {
                 this.RecordSuccessfulLogin(userAuth);
-
                 return true;
             }
 
@@ -290,15 +282,11 @@ namespace ServiceStack.Auth
                     : authSession.ConvertTo<TUserAuth>();
 
                 if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
-                {
                     userAuth.Id = int.Parse(authSession.UserAuthId);
-                }
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
                 if (userAuth.CreatedDate == default(DateTime))
-                {
                     userAuth.CreatedDate = userAuth.ModifiedDate;
-                }
 
                 db.Save(userAuth);
             }
@@ -311,9 +299,7 @@ namespace ServiceStack.Auth
 
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default(DateTime))
-            {
                 userAuth.CreatedDate = userAuth.ModifiedDate;
-            }
 
             using (var db = dbFactory.Open())
             {
@@ -336,29 +322,22 @@ namespace ServiceStack.Auth
             {
                 var userAuth = GetUserAuth(authSession.UserAuthId);
                 if (userAuth != null)
-                {
                     return userAuth;
-                }
             }
             if (!authSession.UserAuthName.IsNullOrEmpty())
             {
                 var userAuth = GetUserAuthByUserName(authSession.UserAuthName);
                 if (userAuth != null)
-                {
                     return userAuth;
-                }
             }
 
             if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
-            {
                 return null;
-            }
 
             using (var db = dbFactory.Open())
             {
-                var oAuthProvider = db.Select<TUserAuthDetails>(
-                    q =>
-                        q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
+                var oAuthProvider = db.Select<TUserAuthDetails>(q =>
+                    q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
                 if (oAuthProvider != null)
                 {
@@ -391,19 +370,15 @@ namespace ServiceStack.Auth
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
                 if (userAuth.CreatedDate == default(DateTime))
-                {
                     userAuth.CreatedDate = userAuth.ModifiedDate;
-                }
 
                 db.Save(userAuth);
 
                 authDetails.UserAuthId = userAuth.Id;
 
-                if (authDetails.CreatedDate == default(DateTime))
-                {
-                    authDetails.CreatedDate = userAuth.ModifiedDate;
-                }
                 authDetails.ModifiedDate = userAuth.ModifiedDate;
+                if (authDetails.CreatedDate == default(DateTime))
+                    authDetails.CreatedDate = userAuth.ModifiedDate;
 
                 db.Save(authDetails);
 

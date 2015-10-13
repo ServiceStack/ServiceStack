@@ -42,16 +42,12 @@ namespace ServiceStack.Auth
             password.ThrowIfNullOrEmpty("password");
 
             if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
-            {
                 throw new ArgumentNullException("UserName or Email is required");
-            }
 
             if (!newUser.UserName.IsNullOrEmpty())
             {
                 if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
-                {
                     throw new ArgumentException("UserName contains invalid characters", "UserName");
-                }
             }
         }
 
@@ -62,18 +58,14 @@ namespace ServiceStack.Auth
                 var existingUser = GetUserAuthByUserName(redis, newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                {
                     throw new ArgumentException("User {0} already exists".Fmt(newUser.UserName));
-                }
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(redis, newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                {
                     throw new ArgumentException("Email {0} already exists".Fmt(newUser.Email));
-                }
             }
         }
 
@@ -138,17 +130,16 @@ namespace ServiceStack.Auth
                     var saltedHash = HostContext.Resolve<IHashProvider>();
                     saltedHash.GetHashAndSaltString(password, out hash, out salt);
                 }
+
                 // If either one changes the digest hash has to be recalculated
                 var digestHash = existingUser.DigestHa1Hash;
                 if (password != null || existingUser.UserName != newUser.UserName)
-                {
-                    var digestHelper = new DigestAuthFunctions();
-                    digestHash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-                }
+                    digestHash = new DigestAuthFunctions().CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
 
                 newUser.Id = existingUser.Id;
                 newUser.PasswordHash = hash;
                 newUser.Salt = salt;
+                newUser.DigestHa1Hash = digestHash;
                 newUser.CreatedDate = existingUser.CreatedDate;
                 newUser.ModifiedDate = DateTime.UtcNow;
 
@@ -197,15 +188,12 @@ namespace ServiceStack.Auth
             //userId = null;
             userAuth = GetUserAuthByUserName(userName);
             if (userAuth == null)
-            {
                 return false;
-            }
 
             var saltedHash = HostContext.Resolve<IHashProvider>();
             if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
                 this.RecordSuccessfulLogin(userAuth);
-
                 return true;
             }
 
@@ -219,15 +207,11 @@ namespace ServiceStack.Auth
         {
             userAuth = GetUserAuthByUserName(digestHeaders["username"]);
             if (userAuth == null)
-            {
                 return false;
-            }
 
-            var digestHelper = new DigestAuthFunctions();
-            if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
+            if (new DigestAuthFunctions().ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
             {
                 this.RecordSuccessfulLogin(userAuth);
-
                 return true;
             }
 
@@ -304,15 +288,11 @@ namespace ServiceStack.Auth
                     : authSession.ConvertTo<TUserAuth>();
 
                 if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
-                {
                     userAuth.Id = int.Parse(authSession.UserAuthId);
-                }
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
                 if (userAuth.CreatedDate == default(DateTime))
-                {
                     userAuth.CreatedDate = userAuth.ModifiedDate;
-                }
 
                 redis.Store(userAuth);
             }
@@ -368,32 +348,24 @@ namespace ServiceStack.Auth
             {
                 var userAuth = GetUserAuth(redis, authSession.UserAuthId);
                 if (userAuth != null)
-                {
                     return userAuth;
-                }
             }
             if (!authSession.UserAuthName.IsNullOrEmpty())
             {
                 var userAuth = GetUserAuthByUserName(authSession.UserAuthName);
                 if (userAuth != null)
-                {
                     return userAuth;
-                }
             }
 
             if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
-            {
                 return null;
-            }
 
             var oAuthProviderId = GetAuthProviderByUserId(redis, tokens.Provider, tokens.UserId);
             if (!oAuthProviderId.IsNullOrEmpty())
             {
                 var oauthProvider = redis.As<TUserAuthDetails>().GetById(oAuthProviderId);
                 if (oauthProvider != null)
-                {
                     return redis.As<IUserAuth>().GetById(oauthProvider.UserAuthId);
-                }
             }
             return null;
         }
@@ -406,9 +378,7 @@ namespace ServiceStack.Auth
 
                 var oAuthProviderId = GetAuthProviderByUserId(redis, tokens.Provider, tokens.UserId);
                 if (!oAuthProviderId.IsNullOrEmpty())
-                {
                     authDetails = redis.As<TUserAuthDetails>().GetById(oAuthProviderId);
-                }
 
                 var userAuth = GetUserAuth(redis, authSession, tokens);
                 if (userAuth == null)
@@ -433,9 +403,8 @@ namespace ServiceStack.Auth
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
                 if (authDetails.CreatedDate == default(DateTime))
-                {
                     authDetails.CreatedDate = userAuth.ModifiedDate;
-                }
+
                 authDetails.ModifiedDate = userAuth.ModifiedDate;
 
                 redis.Store(userAuth);
