@@ -96,5 +96,50 @@ namespace ServiceStack.Auth
             session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
             session.ProviderOAuthAccess = authTokens;
         }
+
+        public static List<IUserAuthDetails> GetUserAuthDetails(this IAuthRepository authRepo, int userAuthId)
+        {
+            return authRepo.GetUserAuthDetails(userAuthId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static IUserAuth GetUserAuth(this IUserAuthRepository authRepo, int userAuthId)
+        {
+            return authRepo.GetUserAuth(userAuthId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static void DeleteUserAuth(this IUserAuthRepository authRepo, int userAuthId)
+        {
+            authRepo.DeleteUserAuth(userAuthId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static ICollection<string> GetRoles(this IManageRoles manageRoles, int userAuthId)
+        {
+            return manageRoles.GetRoles(userAuthId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static ICollection<string> GetPermissions(this IManageRoles manageRoles, int userAuthId)
+        {
+            return manageRoles.GetPermissions(userAuthId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static bool HasRole(this IManageRoles manageRoles, int userAuthId, string role)
+        {
+            return manageRoles.HasRole(userAuthId.ToString(CultureInfo.InvariantCulture), role);
+        }
+
+        public static bool HasPermission(this IManageRoles manageRoles, int userAuthId, string permission)
+        {
+            return manageRoles.HasPermission(userAuthId.ToString(CultureInfo.InvariantCulture), permission);
+        }
+
+        public static void AssignRoles(this IManageRoles manageRoles, int userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+        {
+            manageRoles.AssignRoles(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions);
+        }
+
+        public static void UnAssignRoles(this IManageRoles manageRoles, int userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+        {
+            manageRoles.UnAssignRoles(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions);
+        }
     }
 }
