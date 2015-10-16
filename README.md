@@ -244,7 +244,7 @@ GetCustomersResponse all = client.get(new GetCustomers());
 ```java
 var client = JsonServiceClient(baseUrl: BaseUri)
 
-var response = client.get(GetCustomers())
+let response = client.get(GetCustomers())
 ```
 
 ### [Calling from jQuery using TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference)
