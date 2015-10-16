@@ -1,6 +1,7 @@
 //Copyright (c) Service Stack LLC. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 
@@ -52,5 +53,10 @@ namespace ServiceStack.Web
         /// The padding length written with the body, to be added to ContentLength of body
         /// </summary>
         int PaddingLength { get; set; }
-	}
+
+        /// <summary>
+        /// Serialize the Response within the specified scope
+        /// </summary>
+        Func<IDisposable> ResultScope { get; set; }
+    }
 }

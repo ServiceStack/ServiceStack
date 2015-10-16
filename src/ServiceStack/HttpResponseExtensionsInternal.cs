@@ -144,13 +144,16 @@ namespace ServiceStack
 
                     ApplyGlobalResponseHeaders(response);
 
+                    IDisposable resultScope = null;
+
                     var httpResult = result as IHttpResult;
                     if (httpResult != null)
                     {
+                        if (httpResult.ResultScope != null)
+                            resultScope = httpResult.ResultScope();
+
                         if (httpResult.RequestContext == null)
-                        {
                             httpResult.RequestContext = request;
-                        }
 
                         var paddingLength = bodyPrefix != null ? bodyPrefix.Length : 0;
                         if (bodySuffix != null)
@@ -228,40 +231,47 @@ namespace ServiceStack
                         response.ContentType += ContentFormat.Utf8Suffix;
                     }
 
-                    var disposableResult = result as IDisposable;
-                    if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
+                    using (resultScope)
                     {
-                        response.Flush(); //required for Compression
-                        if (disposableResult != null) disposableResult.Dispose();
-                        return TrueTask;
+                        var disposableResult = result as IDisposable;
+                        if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
+                        {
+                            response.Flush(); //required for Compression
+                            if (disposableResult != null) disposableResult.Dispose();
+                            return TrueTask;
+                        }
+
+                        if (httpResult != null)
+                            result = httpResult.Response;
+
+                        var responseText = result as string;
+                        if (responseText != null)
+                        {
+                            if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+                            WriteTextToResponse(response, responseText, defaultContentType);
+                            if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+                            return TrueTask;
+                        }
+
+                        if (defaultAction == null)
+                        {
+                            throw new ArgumentNullException("defaultAction", String.Format(
+                                "As result '{0}' is not a supported responseType, a defaultAction must be supplied",
+                                (result != null ? result.GetType().GetOperationName() : "")));
+                        }
+
+                        if (bodyPrefix != null)
+                            response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+
+                        if (result != null)
+                            defaultAction(request, result, response);
+
+                        if (bodySuffix != null)
+                            response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+
+                        if (disposableResult != null)
+                            disposableResult.Dispose();
                     }
-
-                    if (httpResult != null)
-                    {
-                        result = httpResult.Response;
-                    }
-
-                    var responseText = result as string;
-                    if (responseText != null)
-                    {
-                        if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
-                        WriteTextToResponse(response, responseText, defaultContentType);
-                        if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
-                        return TrueTask;
-                    }
-
-                    if (defaultAction == null)
-                    {
-                        throw new ArgumentNullException("defaultAction", String.Format(
-                        "As result '{0}' is not a supported responseType, a defaultAction must be supplied",
-                        (result != null ? result.GetType().GetOperationName() : "")));
-                    }
-
-                    if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
-                    if (result != null) defaultAction(request, result, response);
-                    if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
-
-                    if (disposableResult != null) disposableResult.Dispose();
 
                     return FalseTask;
                 }

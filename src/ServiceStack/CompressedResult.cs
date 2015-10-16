@@ -41,6 +41,8 @@ namespace ServiceStack
 
         public int PaddingLength { get; set; }
 
+        public Func<IDisposable> ResultScope { get; set; }
+
         public IDictionary<string, string> Options
         {
             get { return this.Headers; }

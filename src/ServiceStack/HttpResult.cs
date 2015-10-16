@@ -107,6 +107,8 @@ namespace ServiceStack
 
         public Dictionary<string, string> Headers { get; private set; }
 
+        public Func<IDisposable> ResultScope { get; set; } 
+
         private bool allowsPartialResponse;
         public bool AllowsPartialResponse
         {
