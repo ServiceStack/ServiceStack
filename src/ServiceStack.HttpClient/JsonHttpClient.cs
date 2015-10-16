@@ -150,13 +150,14 @@ namespace ServiceStack
 
             var httpReq = new HttpRequestMessage(new HttpMethod(httpMethod), absoluteUrl);
 
+            foreach (var name in Headers.AllKeys)
+            {
+                httpReq.Headers.Add(name, Headers[name]);
+            }
+            httpReq.Headers.Add(HttpHeaders.Accept, ContentType);
+
             if (httpMethod.HasRequestBody() && request != null)
             {
-                foreach (var name in Headers.AllKeys)
-                {
-                    httpReq.Headers.Add(name, Headers[name]);
-                }
-
                 var httpContent = request as HttpContent;
                 if (httpContent != null)
                 {
@@ -182,8 +183,6 @@ namespace ServiceStack
                     }
                 }
             }
-
-            httpReq.Headers.Add(HttpHeaders.Accept, ContentType);
 
             ApplyWebRequestFilters(httpReq);
 

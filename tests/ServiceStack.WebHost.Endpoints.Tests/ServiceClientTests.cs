@@ -14,49 +14,18 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Types;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [TestFixture]
-    public class ServiceClientTests
-        : ServiceClientTestBase
+    public class JsonServiceClientTests : ServiceClientTests
     {
-        /// <summary>
-        /// These tests require admin privillages
-        /// </summary>
-        /// <returns></returns>
-        public override AppHostHttpListenerBase CreateListener()
+        public override IServiceClient GetClient()
         {
-            return new TestAppHostHttpListener();
-        }
-
-        private JsonServiceClient client;
-
-        [SetUp]
-        public void SetUp()
-        {
-            client = new JsonServiceClient(BaseUrl);
-        }
-
-        [Test]
-        public void Can_GetCustomers()
-        {
-            var request = new GetCustomer { CustomerId = 5 };
-
-            Send<GetCustomerResponse>(request,
-                response => Assert.That(response.Customer.Id, Is.EqualTo(request.CustomerId)));
-        }
-
-        [Test]
-        public void Does_add_HttpHeaders_for_Get_Sync()
-        {
-            client.Headers.Add("Foo", "Bar");
-
-            var response = client.Get(new EchoRequestInfo());
-
-            Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
+            return new JsonServiceClient(BaseUrl);
         }
 
         [Test]
         public void Does_allow_sending_Cached_Response()
         {
             var cache = new Dictionary<string, object>();
+            var client = (JsonServiceClient)GetClient();
 
             client.ResultsFilter = (type, method, uri, request) =>
             {
@@ -82,6 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Does_allow_sending_Cached_Response_Async()
         {
             var cache = new Dictionary<string, object>();
+            var client = (JsonServiceClient)GetClient();
 
             client.ResultsFilter = (type, method, uri, request) =>
             {
@@ -104,9 +74,133 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async Task Does_add_HttpHeaders_in_RequestFilter_for_Get_Async()
+        {
+            var client = (JsonServiceClient)GetClient();
+            client.RequestFilter = req => req.Headers.Add("Foo", "Bar");
+
+            var response = await client.GetAsync(new EchoRequestInfo());
+
+            Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
+        }
+    }
+
+    [TestFixture]
+    public class JsonHttpClientTests : ServiceClientTests
+    {
+        public override IServiceClient GetClient()
+        {
+            return new JsonHttpClient(BaseUrl);
+        }
+
+        [Test]
+        public void Does_allow_sending_Cached_Response()
+        {
+            var cache = new Dictionary<string, object>();
+            var client = (JsonHttpClient)GetClient();
+
+            client.ResultsFilter = (type, method, uri, request) =>
+            {
+                var cacheKey = "{0} {1}".Fmt(method, uri);
+                Assert.That(cacheKey, Is.EqualTo("GET {0}json/reply/GetCustomer?customerId=5".Fmt(client.BaseUri)));
+                object entry;
+                cache.TryGetValue(cacheKey, out entry);
+                return entry;
+            };
+            client.ResultsFilterResponse = (webRes, res, method, uri, request) =>
+            {
+                Assert.That(webRes, Is.Not.Null);
+                var cacheKey = "{0} {1}".Fmt(method, uri);
+                cache[cacheKey] = res;
+            };
+
+            var response1 = client.Get(new GetCustomer { CustomerId = 5 });
+            var response2 = client.Get(new GetCustomer { CustomerId = 5 });
+            Assert.That(response1.Created, Is.EqualTo(response2.Created));
+        }
+
+        [Test]
+        public async Task Does_allow_sending_Cached_Response_Async()
+        {
+            var cache = new Dictionary<string, object>();
+            var client = (JsonHttpClient)GetClient();
+
+            client.ResultsFilter = (type, method, uri, request) =>
+            {
+                var cacheKey = "{0} {1}".Fmt(method, uri);
+                Assert.That(cacheKey, Is.EqualTo("GET {0}json/reply/GetCustomer?customerId=5".Fmt(client.BaseUri)));
+                object entry;
+                cache.TryGetValue(cacheKey, out entry);
+                return entry;
+            };
+            client.ResultsFilterResponse = (webRes, res, method, uri, request) =>
+            {
+                Assert.That(webRes, Is.Not.Null);
+                var cacheKey = "{0} {1}".Fmt(method, uri);
+                cache[cacheKey] = res;
+            };
+
+            var response1 = await client.GetAsync(new GetCustomer { CustomerId = 5 });
+            var response2 = await client.GetAsync(new GetCustomer { CustomerId = 5 });
+            Assert.That(response1.Created, Is.EqualTo(response2.Created));
+        }
+
+        [Test]
+        public async Task Does_add_HttpHeaders_in_RequestFilter_for_Get_Async()
+        {
+            var client = (JsonHttpClient)GetClient();
+            client.RequestFilter = req => req.Headers.Add("Foo", "Bar");
+
+            var response = await client.GetAsync(new EchoRequestInfo());
+
+            Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
+        }
+    }
+
+    public abstract class ServiceClientTests
+        : ServiceClientTestBase
+    {
+        /// <summary>
+        /// These tests require admin privillages
+        /// </summary>
+        /// <returns></returns>
+        public override AppHostHttpListenerBase CreateListener()
+        {
+            return new TestAppHostHttpListener();
+        }
+
+        private IServiceClient client;
+
+        public abstract IServiceClient GetClient();
+        [SetUp]
+        public void SetUp()
+        {
+            client = GetClient();
+        }
+
+        [Test]
+        public void Can_GetCustomers()
+        {
+            var request = new GetCustomer { CustomerId = 5 };
+
+            Send<GetCustomerResponse>(request,
+                response => Assert.That(response.Customer.Id, Is.EqualTo(request.CustomerId)));
+        }
+
+        [Test]
+        public void Does_add_HttpHeaders_for_Get_Sync()
+        {
+            client.AddHeader("Foo", "Bar");
+
+            var response = client.Get(new EchoRequestInfo());
+
+            Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
+        }
+
+        [Test]
         public async Task Does_add_HttpHeaders_for_Get_Async()
         {
-            client.Headers.Add("Foo", "Bar");
+            client.AddHeader("Foo", "Bar");
 
             var response = await client.GetAsync(new EchoRequestInfo());
 
@@ -114,11 +208,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async Task Does_add_HttpHeaders_in_RequestFilter_for_Get_Async()
+        public async Task Does_add_HttpHeaders_for_Post_Async()
         {
-            client.RequestFilter = req => req.Headers.Add("Foo", "Bar");
+            client.AddHeader("Foo", "Bar");
 
-            var response = await client.GetAsync(new EchoRequestInfo());
+            var response = await client.PostAsync(new EchoRequestInfo());
 
             Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
         }
