@@ -112,6 +112,11 @@ namespace ServiceStack
                     };
         }
 
+        public void AddHeader(string name, string value)
+        {
+            Headers[name] = value;
+        }
+
         private int activeAsyncRequests = 0;
 
         public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request)

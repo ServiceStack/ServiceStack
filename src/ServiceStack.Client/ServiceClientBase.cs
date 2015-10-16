@@ -1144,6 +1144,11 @@ namespace ServiceStack
             }
         }
 
+        public void AddHeader(string name, string value)
+        {
+            Headers[name] = value;
+        }
+
         public void ClearCookies()
         {
             CookieContainer = new CookieContainer();

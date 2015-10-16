@@ -348,6 +348,11 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public void AddHeader(string name, string value)
+        {
+            throw new NotImplementedException();
+        }
+
         public void ClearCookies()
         {
             throw new NotImplementedException();
