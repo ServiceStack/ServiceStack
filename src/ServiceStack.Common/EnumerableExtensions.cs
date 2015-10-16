@@ -97,7 +97,8 @@ namespace ServiceStack
 
         public static bool EquivalentTo<T>(this IEnumerable<T> thisList, IEnumerable<T> otherList)
         {
-            if (thisList == null || otherList == null) return thisList == otherList;
+            if (thisList == null || otherList == null)
+                return thisList == otherList;
 
             var otherEnum = otherList.GetEnumerator();
             foreach (var item in thisList)
@@ -115,6 +116,32 @@ namespace ServiceStack
             }
             var hasNoMoreLeftAsWell = !otherEnum.MoveNext();
             return hasNoMoreLeftAsWell;
+        }
+
+        public static bool EquivalentTo<K, V>(this IDictionary<K, V> a, IDictionary<K, V> b)
+        {
+            if (a == null || b == null)
+                return a == b;
+
+            if (a.Count != b.Count)
+                return false;
+
+            foreach (var entry in a)
+            {
+                V value;
+                if (!b.TryGetValue(entry.Key, out value))
+                    return false;
+                if (entry.Value == null || value == null)
+                {
+                    if (entry.Value == null && value == null)
+                        continue;
+
+                    return false;
+                }
+                if (!entry.Value.Equals(value))
+                    return false;
+            }
+            return true;
         }
 
         public static IEnumerable<T[]> BatchesOf<T>(this IEnumerable<T> sequence, int batchSize)

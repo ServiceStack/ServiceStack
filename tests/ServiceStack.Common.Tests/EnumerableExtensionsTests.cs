@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Common;
 using System.Linq;
@@ -84,5 +86,40 @@ namespace ServiceStack.Common.Tests
 			Assert.That(new string[] { null }.EquivalentTo(StringValues), Is.False);
 		}
 
-	}
+	    [Test]
+	    public void EquivalentTo_Dictionary_Ordered()
+	    {
+            var a = new Dictionary<string, int>
+            {
+                {"A",1},
+                {"B",2},
+                {"C",3},
+            };
+	        var b = new ConcurrentDictionary<string, int>();
+	        b["A"] = 1;
+	        b["B"] = 2;
+	        b["C"] = 3;
+
+            Assert.That(a.EquivalentTo(b));
+	    }
+
+	    [Test]
+        public void EquivalentTo_Dictionary_Unordered()
+        {
+            var a = new Dictionary<string, int>
+            {
+                {"A",1},
+                {"B",2},
+                {"C",3},
+            };
+            var b = new Dictionary<string, int>
+            {
+                {"C",3},
+                {"A",1},
+                {"B",2},
+            };
+
+            Assert.That(a.EquivalentTo(b));
+        }
+    }
 }
