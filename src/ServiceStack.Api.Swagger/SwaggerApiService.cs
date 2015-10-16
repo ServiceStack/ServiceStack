@@ -223,13 +223,18 @@ namespace ServiceStack.Api.Swagger
             var apis = paths.Select(p => FormatMethodDescription(p, models))
                 .ToArray().OrderBy(md => md.Path).ToList();
 
-            return new SwaggerApiDeclaration
+            var result = new SwaggerApiDeclaration
             {
                 ApiVersion = HostContext.Config.ApiVersion,
                 ResourcePath = path,
                 BasePath = basePath,
                 Apis = apis,
                 Models = models
+            };
+
+            return new HttpResult(result)
+            {
+                ResultScope = () => JsConfig.With(includeNullValues: false)
             };
         }
 

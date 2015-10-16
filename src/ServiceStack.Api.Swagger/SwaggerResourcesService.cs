@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
+using ServiceStack.Text;
 
 namespace ServiceStack.Api.Swagger
 {
@@ -99,7 +100,10 @@ namespace ServiceStack.Api.Swagger
             }
 
             result.Apis = result.Apis.OrderBy(a => a.Path).ToList();
-            return result;
+
+            return new HttpResult(result) {
+                ResultScope = () => JsConfig.With(includeNullValues:false)
+            };
         }
 
         protected void CreateRestPaths(List<SwaggerResourceRef> apis, Type operationType, string operationName)
