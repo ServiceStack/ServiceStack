@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using Check.ServiceModel;
 using ServiceStack;
 using ServiceStack.Data;
@@ -16,6 +17,16 @@ namespace Check.ServiceInterface
         public object Any(Throw404 request)
         {
             throw HttpError.NotFound(request.Message ?? "Custom Status Description");
+        }
+
+        public object Any(Return404 request)
+        {
+            return HttpError.NotFound("Custom Status Description");
+        }
+
+        public object Any(Return404Result request)
+        {
+            return new HttpResult(HttpStatusCode.NotFound, "Custom Status Description");
         }
 
         public object Any(ThrowType request)
@@ -45,7 +56,7 @@ namespace Check.ServiceInterface
                 case "RawResponse":
                     Response.StatusCode = 418;
                     Response.StatusDescription = request.Message ?? "On a tea break";
-                    Response.Close();
+                    Response.EndRequest();
                     break;
             }
 

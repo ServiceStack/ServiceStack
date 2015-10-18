@@ -53,13 +53,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Route("/throw404")]
+    public class Throw404 {}
+
+    [Route("/return404")]
+    public class Return404 { }
+
+    [Route("/return404result")]
+    public class Return404Result { }
+
+
     public class HttpErrorService : Service
     {
         public object Any(ThrowHttpError request)
         {
             if (request.Type.IsNullOrEmpty())
                 throw new ArgumentNullException("Type");
-
+            
             var ex = new Exception(request.Message);
             switch (request.Type)
             {
@@ -72,7 +82,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
                 throw ex;
 
             var httpStatus = (HttpStatusCode)request.StatusCode.Value;
-            throw new ServiceStack.HttpError(httpStatus, ex);
+            throw new HttpError(httpStatus, ex);
+        }
+
+        public object Any(Throw404 request)
+        {
+            throw HttpError.NotFound("Custom Status Description");
+        }
+
+        public object Any(Return404 request)
+        {
+            return HttpError.NotFound("Custom Status Description");
+        }
+
+        public object Any(Return404Result request)
+        {
+            return new HttpResult(HttpStatusCode.NotFound, "Custom Status Description");
         }
     }
 

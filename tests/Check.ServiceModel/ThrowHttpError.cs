@@ -16,6 +16,12 @@ namespace Check.ServiceModel
         public string Message { get; set; }
     }
 
+    [Route("/return404")]
+    public class Return404 { }
+
+    [Route("/return404result")]
+    public class Return404Result { }
+
     [Route("/throw/{Type}")]
     public class ThrowType : IReturn<ThrowTypeResponse>
     {
