@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
+using ServiceStack.Model;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
@@ -54,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     }
 
     [Route("/throw404")]
-    public class Throw404 {}
+    public class Throw404 { }
 
     [Route("/return404")]
     public class Return404 { }
@@ -62,14 +64,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     [Route("/return404result")]
     public class Return404Result { }
 
-
     public class HttpErrorService : Service
     {
         public object Any(ThrowHttpError request)
         {
             if (request.Type.IsNullOrEmpty())
                 throw new ArgumentNullException("Type");
-            
+
             var ex = new Exception(request.Message);
             switch (request.Type)
             {
