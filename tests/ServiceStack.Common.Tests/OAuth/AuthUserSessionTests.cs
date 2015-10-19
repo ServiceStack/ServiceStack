@@ -39,12 +39,7 @@ namespace ServiceStack.Common.Tests.OAuth
     {
         public override IUserAuthRepository CreateAuthRepo()
         {
-            var dynamoClient = new AmazonDynamoDBClient("keyId", "key", new AmazonDynamoDBConfig
-            {
-                ServiceURL = ConfigUtils.GetAppSetting("DynamoDbUrl", "http://localhost:8000"),
-            });
-            var db = new PocoDynamo(dynamoClient);
-
+            var db = new PocoDynamo(DynamoConfig.CreateDynamoDBClient());
             var dynamoDbRepo = new DynamoDbAuthRepository(db);
             InitTest(dynamoDbRepo);
             dynamoDbRepo.InitSchema();
