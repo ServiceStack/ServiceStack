@@ -54,8 +54,8 @@ namespace ServiceStack.Common.Tests.OAuth
             var connStr = @"Server=localhost;Database=test;User Id=test;Password=test;";
             var sqlServerFactory = new OrmLiteConnectionFactory(connStr, SqlServerDialect.Provider);
             var sqlServerRepo = new OrmLiteAuthRepository(sqlServerFactory);
+            sqlServerRepo.InitSchema();
             InitTest(sqlServerRepo);
-            sqlServerRepo.DropAndReCreateTables();
             return sqlServerRepo;
         }
     }
