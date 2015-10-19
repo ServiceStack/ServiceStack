@@ -286,6 +286,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class ReplyAllXmlServiceClientTests : ReplyAllTests
+    {
+        public override IServiceClient CreateClient(string baseUri)
+        {
+            return new XmlServiceClient(baseUri);
+        }
+
+        public override IServiceClientAsync CreateClientAsync(string baseUri)
+        {
+            return new XmlServiceClient(baseUri);
+        }
+    }
+
     [TestFixture]
     public abstract class ReplyAllTests
     {
@@ -559,7 +572,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_not_repeat()
         {
-            //var client = new JsonServiceClient("http://localhost:55799/");
             var client = CreateClient(Config.AbsoluteBaseUri);
             var batch = new[] { new NoRepeat { Id = Guid.NewGuid() }, new NoRepeat { Id = Guid.NewGuid() } };
 
@@ -572,7 +584,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_throw_WebServiceException_on_Error()
         {
             var client = CreateClient(Config.AbsoluteBaseUri);
-            //var client = new JsonServiceClient("http://localhost:55799/");
 
             var requests = new[]
             {
@@ -599,7 +610,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Does_throw_WebServiceException_on_Error_Async()
         {
             var client = CreateClient(Config.AbsoluteBaseUri);
-            //var client = new JsonServiceClient("http://localhost:55799/");
 
             var requests = new[]
             {

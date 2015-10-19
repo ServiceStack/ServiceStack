@@ -582,9 +582,8 @@ namespace ServiceStack.Host
             return (req, dtos) => 
             {
                 var dtosList = ((IEnumerable) dtos).Map(x => x);
-                var ret = new object[dtosList.Count];
-                if (ret.Length == 0)
-                    return ret;
+                if (dtosList.Count == 0)
+                    return new object[0];
 
                 var firstDto = dtosList[0];
 
@@ -600,6 +599,8 @@ namespace ServiceStack.Host
                 //sync
                 if (asyncResponse == null) 
                 {
+                    var ret = (object[])Array.CreateInstance(firstResponse.GetType(), dtosList.Count);
+
                     ret[0] = firstResponse; //don't re-execute first request
                     for (var i = 1; i < dtosList.Count; i++)
                     {
