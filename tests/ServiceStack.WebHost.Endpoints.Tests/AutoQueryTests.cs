@@ -876,6 +876,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(3));
             response = baseUrl.AddQueryParam("GreaterThanAge", 42).AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = baseUrl.AddQueryParam("AgeNotEqualTo", 27).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
 
             response = baseUrl.AddQueryParam(">Age", 42).AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(4));
@@ -884,6 +886,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = baseUrl.AddQueryParam("<Age", 42).AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(3));
             response = baseUrl.AddQueryParam("Age<", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+            response = baseUrl.AddQueryParam("Age!", "27").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(4));
 
             response = baseUrl.AddQueryParam("FirstNameStartsWith", "jim").AsJsonInto<Rockstar>();

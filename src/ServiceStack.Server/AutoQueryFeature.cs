@@ -52,7 +52,8 @@ namespace ServiceStack
         public const string GreaterThanFormat =        "{Field} > {Value}";
         public const string LessThanFormat =           "{Field} < {Value}";
         public const string LessThanOrEqualFormat =    "{Field} <= {Value}";
-        
+        public const string NotEqualFormat =           "{Field} <> {Value}";
+
         public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
         {
             {"%Above%",         GreaterThanFormat},
@@ -68,11 +69,13 @@ namespace ServiceStack
             {"%Higher%",        GreaterThanOrEqualFormat},
             {">%",              GreaterThanOrEqualFormat},
             {"%>",              GreaterThanFormat},
+            {"%!",              NotEqualFormat},
 
             {"%GreaterThanOrEqualTo%", GreaterThanOrEqualFormat},
             {"%GreaterThan%",          GreaterThanFormat},
             {"%LessThan%",             LessThanFormat},
             {"%LessThanOrEqualTo%",    LessThanOrEqualFormat},
+            {"%NotEqualTo",            NotEqualFormat},
 
             {"Behind%",         LessThanFormat},
             {"%Below%",         LessThanFormat},
@@ -122,6 +125,7 @@ namespace ServiceStack
                 ImplicitConventions = new List<Property>
                 {
                     new Property { Name = "=", Value = "%"},
+                    new Property { Name = "!=", Value = "%!"},
                     new Property { Name = ">=", Value = ">%"},
                     new Property { Name = ">", Value = "%>"},
                     new Property { Name = "<=", Value = "%<"},
