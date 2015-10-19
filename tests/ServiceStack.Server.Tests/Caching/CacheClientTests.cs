@@ -16,7 +16,7 @@ namespace ServiceStack.Server.Tests.Caching
         public const string AbsoluteBaseUri = ServiceStackBaseUri + "/";
         public const string ListeningOn = ServiceStackBaseUri + "/";
 
-        public static string SqlServerBuildDb = "Server={0};Database=test;User Id=test;Password=test;".Fmt(Environment.GetEnvironmentVariable("CI_HOST"));
+        public static string SqlServerBuildDb = "Server=localhost;Database=test;User Id=test;Password=test;";
     }
 
     public class SqlServerOrmLiteCacheClientTests : CacheClientTestsBase
@@ -95,7 +95,7 @@ namespace ServiceStack.Server.Tests.Caching
     {
         public override ICacheClient CreateClient()
         {
-            return new RedisManagerPool(Environment.GetEnvironmentVariable("CI_HOST") ?? "127.0.0.1").GetCacheClient();
+            return new RedisManagerPool("127.0.0.1").GetCacheClient();
         }
     }
 }

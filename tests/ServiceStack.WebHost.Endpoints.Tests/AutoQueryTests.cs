@@ -24,11 +24,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
             //container.Register<IDbConnectionFactory>(
-            //    new OrmLiteConnectionFactory("Server={0};Database=test;User Id=test;Password=test;".Fmt(Environment.GetEnvironmentVariable("CI_HOST")),
+            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;"),
             //        SqlServerDialect.Provider));
 
             //container.Register<IDbConnectionFactory>(
-            //    new OrmLiteConnectionFactory("Server={0};Database=test;User Id=test;Password=test;".Fmt(Environment.GetEnvironmentVariable("CI_HOST")),
+            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;"),
             //        SqlServer2012Dialect.Provider));
 
             //container.Register<IDbConnectionFactory>(

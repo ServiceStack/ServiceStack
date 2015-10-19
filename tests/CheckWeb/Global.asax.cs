@@ -92,7 +92,7 @@ namespace CheckWeb
 
             dbFactory.RegisterConnection("SqlServer", 
                 new OrmLiteConnectionFactory(
-                    "Server={0};Database=test;User Id=test;Password=test;".Fmt(Environment.GetEnvironmentVariable("CI_HOST")),
+                    "Server=localhost;Database=test;User Id=test;Password=test;",
                     SqlServerDialect.Provider) {
                         ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
                     });
