@@ -58,11 +58,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     [Route("/throw404")]
     public class Throw404 { }
 
+    [Route("/throwcustom404")]
+    public class ThrowCustom404 { }
+
     [Route("/return404")]
     public class Return404 { }
 
     [Route("/return404result")]
     public class Return404Result { }
+
+    public class Custom404Exception : Exception, IResponseStatusConvertible, IHasStatusCode
+    {
+        public Custom404Exception(string message) : base(message) {}
+
+        public ResponseStatus ToResponseStatus()
+        {
+            return new ResponseStatus
+            {
+                ErrorCode = GetType().Name,
+                Message = this.Message,
+                Errors = new List<ResponseError>
+                {
+                    new ResponseError
+                    {
+                        ErrorCode = "FieldErrorCode",
+                        Message = "FieldMessage",
+                        FieldName = "FieldName",
+                    }
+                }
+            };
+        }
+
+        public int StatusCode
+        {
+            get { return (int)HttpStatusCode.NotFound; }
+        }
+    }
 
     public class HttpErrorService : Service
     {
@@ -89,6 +120,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public object Any(Throw404 request)
         {
             throw HttpError.NotFound("Custom Status Description");
+        }
+
+        public object Any(ThrowCustom404 request)
+        {
+            throw new Custom404Exception("Custom Status Description");
         }
 
         public object Any(Return404 request)

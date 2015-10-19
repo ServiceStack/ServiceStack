@@ -157,6 +157,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(HttpStatusCode.NotFound.ToString()));
             Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("Custom Status Description"));
         }
+
+        [Test]
+        public void ThrowCustom404_does_return_404()
+        {
+            var client = CreateClient(ListeningOn);
+
+            try
+            {
+                var response = client.Get<string>(new ThrowCustom404());
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo(404));
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Custom404Exception).Name));
+                Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("Custom Status Description"));
+                Assert.That(webEx.ResponseStatus.Errors[0].ErrorCode, Is.EqualTo("FieldErrorCode"));
+                Assert.That(webEx.ResponseStatus.Errors[0].Message, Is.EqualTo("FieldMessage"));
+                Assert.That(webEx.ResponseStatus.Errors[0].FieldName, Is.EqualTo("FieldName"));
+            }
+        }
     }
 
     public class Custom400Exception : Exception { }
