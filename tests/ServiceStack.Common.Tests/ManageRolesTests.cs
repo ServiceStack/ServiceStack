@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Amazon.DynamoDBv2;
 using NUnit.Framework;
 using ServiceStack.Auth;
+using ServiceStack.Aws.DynamoDb;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Host;
@@ -139,5 +141,59 @@ namespace ServiceStack.Common.Tests
                 }
             }
         }
+
+        [Test]
+        public void Can_assign_roles_that_persist_to_UserAuthRole_table_in_DynamoDb()
+        {
+            using (var appHost = new BasicAppHost
+            {
+                ConfigureContainer = container =>
+                {
+                    container.Register<IPocoDynamo>(c => new PocoDynamo(DynamoConfig.CreateDynamoDBClient()));
+                    //DynamoMetadata.Reset();
+                    container.Resolve<IPocoDynamo>().DeleteAllTables(TimeSpan.FromMinutes(1));
+
+                    container.Register<IAuthRepository>(c => new DynamoDbAuthRepository(c.Resolve<IPocoDynamo>()));
+                    container.Resolve<IAuthRepository>().InitSchema();
+                }
+            }.Init())
+            {
+                var db = appHost.Container.Resolve<IPocoDynamo>();
+
+                var register = CreateNewUserRegistration();
+                var req = new BasicRequest(register);
+                req.QueryString["authSecret"] = appHost.Config.AdminAuthSecret = "allow";
+
+                var response = (RegisterResponse)appHost.ExecuteService(register, req);
+                var userAuth = db.GetItem<UserAuth>(response.UserId);
+
+                var assignResponse = (AssignRolesResponse)appHost.ExecuteService(new AssignRoles
+                {
+                    UserName = userAuth.UserName,
+                    Roles = { "TestRole" },
+                    Permissions = { "TestPermission" },
+                }, req);
+                Assert.That(assignResponse.AllRoles[0], Is.EqualTo("TestRole"));
+                Assert.That(assignResponse.AllPermissions[0], Is.EqualTo("TestPermission"));
+
+                Assert.That(userAuth.Roles.Count, Is.EqualTo(0));
+                Assert.That(userAuth.Permissions.Count, Is.EqualTo(0));
+
+                var manageRoles = (IManageRoles)appHost.Container.Resolve<IAuthRepository>();
+                Assert.That(manageRoles.HasRole(userAuth.Id.ToString(), "TestRole"));
+                Assert.That(manageRoles.HasPermission(userAuth.Id.ToString(), "TestPermission"));
+
+                appHost.ExecuteService(new UnAssignRoles
+                {
+                    UserName = userAuth.UserName,
+                    Roles = { "TestRole" },
+                    Permissions = { "TestPermission" },
+                }, req);
+
+                Assert.That(!manageRoles.HasRole(userAuth.Id.ToString(), "TestRole"));
+                Assert.That(!manageRoles.HasPermission(userAuth.Id.ToString(), "TestPermission"));
+            }
+        }
+
     }
 }
