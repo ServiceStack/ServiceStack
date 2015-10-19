@@ -256,6 +256,10 @@ namespace ServiceStack
 
         public static Type GetErrorResponseDtoType<TResponse>(object request)
         {
+            var batchRequest = request as object[];
+            if (batchRequest != null && batchRequest.Length > 0)
+                request = batchRequest[0]; 
+
             var hasResponseStatus = typeof(TResponse) is IHasResponseStatus
                 || typeof(TResponse).GetPropertyInfo("ResponseStatus") != null;
 
