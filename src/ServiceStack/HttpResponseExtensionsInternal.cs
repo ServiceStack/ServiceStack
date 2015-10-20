@@ -376,7 +376,8 @@ namespace ServiceStack
         {
             if (httpReq != null && MimeTypes.Html.MatchesContentType(contentType))
             {
-                var errorHandler = HostContext.AppHost.GetCustomErrorHandler(statusCode);
+                var errorHandler = HostContext.AppHost.GetCustomErrorHandler(statusCode)
+                    ?? HostContext.AppHost.GlobalHtmlErrorHttpHandler;
                 if (errorHandler != null)
                 {
                     httpReq.Items["Model"] = errorDto;
