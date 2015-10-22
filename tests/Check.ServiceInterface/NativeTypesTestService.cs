@@ -72,6 +72,11 @@ namespace Check.ServiceInterface
             return request;
         }
 
+        public object Any(HelloMultiline request)
+        {
+            return request;
+        }
+
         public object Any(HelloAllTypes request)
         {
             return new HelloAllTypesResponse

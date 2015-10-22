@@ -130,8 +130,7 @@ namespace Check.ServiceModel.Operations
 
     [DataContract]
     [Route("/allowed-attributes", "GET")]
-    [Api(@"AllowedAttributes 
-Description")]
+    [Api(@"AllowedAttributes Description")]
     [ApiResponse(HttpStatusCode.BadRequest, "Your request was not understood")]
     [Description("Description on AllowedAttributes")]
     public class AllowedAttributes
@@ -151,12 +150,16 @@ Description")]
         [References(typeof(Hello))]
         [Meta("Foo", "Bar")]
         public string Name { get; set; }
+    }
 
-        [ApiMember(Description = @"This is a 
-Multi 
+    [Api(@"Multi 
 Line 
-String")]
-        [DataMember]
+Class")]
+    public class HelloMultiline
+    {
+        [ApiMember(Description = @"Multi 
+Line 
+Property")]
         public string Overflow { get; set; }
     }
 
