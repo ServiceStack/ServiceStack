@@ -182,9 +182,12 @@ namespace ServiceStack
                         }
                         response.ContentType = httpResult.ContentType;
 
-                        foreach (var cookie in httpResult.Cookies)
+                        if (httpResult.Cookies != null)
                         {
-                            response.SetCookie(cookie);
+                            foreach (var cookie in httpResult.Cookies)
+                            {
+                                response.SetCookie(cookie);
+                            }
                         }
                     }
                     else

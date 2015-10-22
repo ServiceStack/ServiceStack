@@ -62,6 +62,7 @@ namespace ServiceStack
                 this.ErrorCode = innerException.GetType().Name;
             }
             this.Headers = new Dictionary<string, string>();
+            this.Cookies = new List<Cookie>();
         }
 
         public string ErrorCode { get; set; }
