@@ -53,17 +53,11 @@ namespace ServiceStack.Mvc
             get
             {
                 var returnUrl = HttpContext.Request.GetPathAndQuery();
-
-                var encoded = returnUrl.UrlEncode();
-                var unauthorizedRedirectUrl = UnauthorizedRedirectUrl;
-
-                if (string.IsNullOrEmpty(unauthorizedRedirectUrl))
-                {
+                var unauthorizedUrl = UnauthorizedRedirectUrl;
+                if (unauthorizedUrl.IsNullOrEmpty() )
                     throw new HttpException(401, "Unauthorized");
-                }
 
-                var formatted = unauthorizedRedirectUrl.Fmt(encoded);
-                return new RedirectResult(formatted);
+                return new RedirectResult(unauthorizedUrl + "?redirect={0}#f=Unauthorized".Fmt(returnUrl.UrlEncode()));
             }
         }
 
@@ -84,18 +78,11 @@ namespace ServiceStack.Mvc
             get
             {
                 var returnUrl = HttpContext.Request.GetPathAndQuery();
-
-                var encoded = returnUrl.UrlEncode();
-                var forbiddenRedirectUrl = ForbiddenRedirectUrl;
-
-                if (string.IsNullOrEmpty(forbiddenRedirectUrl))
-                {
+                var forbiddenUrl = ForbiddenRedirectUrl;
+                if (forbiddenUrl.IsNullOrEmpty())
                     throw new HttpException(403, "Forbidden");
-                }
 
-                var formatted = forbiddenRedirectUrl.Fmt(encoded);
-
-                return new RedirectResult(formatted);
+                return new RedirectResult(forbiddenUrl + "?redirect={0}#f=Forbidden".Fmt(returnUrl.UrlEncode()));
             }
         }
 
@@ -250,6 +237,10 @@ namespace ServiceStack.Mvc
         {
             return ServiceStackProvider.SessionAs<TUserSession>();
         }
+        protected virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null)
+        {
+            ServiceStackProvider.Request.SaveSession(session, expiresIn);
+        }
         protected virtual void ClearSession()
         {
             ServiceStackProvider.ClearSession();
@@ -274,6 +265,11 @@ namespace ServiceStack.Mvc
                 serviceStackProvider = null;
             }
 
+            EndServiceStackRequest();
+        }
+
+        public virtual void EndServiceStackRequest()
+        {
             HostContext.AppHost.OnEndRequest(ServiceStackRequest);
         }
     }

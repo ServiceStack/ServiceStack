@@ -44,9 +44,17 @@ namespace ServiceStack.AspNet
             {
                 var authError = authAttr != null && authAttr.HtmlRedirect != null
                     ? authAttr.HtmlRedirect.AddQueryParam("redirect", Request.Url.PathAndQuery)
-                    : UnauthorizedRedirectUrl.Fmt(Request.Url.PathAndQuery.UrlEncode());
+                    : UnauthorizedRedirectUrl != null ? UnauthorizedRedirectUrl + "?redirect={0}#f=Unauthorized".Fmt(Request.Url.PathAndQuery.UrlEncode()) : null;
 
-                base.Response.Redirect(authError);
+                if (authError != null)
+                {
+                    base.Response.Redirect(authError);
+                }
+                else
+                {
+                    base.Response.StatusCode = 401;
+                    base.Response.StatusDescription = "Unauthorized";
+                }
                 return;
             }
 
@@ -58,9 +66,17 @@ namespace ServiceStack.AspNet
             {
                 var authError = authAttr != null && authAttr.HtmlRedirect != null
                     ? authAttr.HtmlRedirect.AddQueryParam("redirect", Request.Url.PathAndQuery)
-                    : ForbiddenRedirectUrl.Fmt(Request.Url.PathAndQuery.UrlEncode());
+                    : ForbiddenRedirectUrl != null ? ForbiddenRedirectUrl + "?redirect={0}#f=Forbidden".Fmt(Request.Url.PathAndQuery.UrlEncode()) : null;
 
-                base.Response.Redirect(authError);
+                if (authError != null)
+                {
+                    base.Response.Redirect(authError);
+                }
+                else
+                {
+                    base.Response.StatusCode = 403;
+                    base.Response.StatusDescription = "Forbidden";
+                }
                 return;
             }
         }
@@ -146,6 +162,10 @@ namespace ServiceStack.AspNet
         {
             return ServiceStackProvider.SessionAs<TUserSession>();
         }
+        protected virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null)
+        {
+            ServiceStackProvider.Request.SaveSession(session, expiresIn);
+        }
         public virtual void ClearSession()
         {
             ServiceStackProvider.ClearSession();
@@ -170,6 +190,11 @@ namespace ServiceStack.AspNet
                 serviceStackProvider = null;
             }
 
+            EndServiceStackRequest();
+        }
+
+        public virtual void EndServiceStackRequest()
+        {
             HostContext.AppHost.OnEndRequest(ServiceStackRequest);
         }
     }
