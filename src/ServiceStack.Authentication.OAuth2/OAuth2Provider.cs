@@ -73,7 +73,6 @@ namespace ServiceStack.Authentication.OAuth2
 
             var authClient = new WebServerClient(authServer, this.ConsumerKey) {
                 ClientCredentialApplicator = ClientCredentialApplicator.PostParameter(this.ConsumerSecret),
-                AuthorizationTracker = new DotNetOpenAuthTokenManager(),
             };
 
             if (AuthClientFilter != null)
@@ -97,7 +96,7 @@ namespace ServiceStack.Authentication.OAuth2
                         var cookie = authReq.Cookies[name];
                         if (cookie != null)
                         {
-                            httpResult.SetCookie(name, cookie.Value, cookie.Expires, cookie.Path, cookie.Secure, cookie.HttpOnly);
+                            httpResult.Cookies.Add(cookie.ToCookie());
                         }
                     }
 

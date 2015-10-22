@@ -181,6 +181,11 @@ namespace ServiceStack
                             httpResult.ContentType = defaultContentType;
                         }
                         response.ContentType = httpResult.ContentType;
+
+                        foreach (var cookie in httpResult.Cookies)
+                        {
+                            response.SetCookie(cookie);
+                        }
                     }
                     else
                     {
@@ -203,7 +208,9 @@ namespace ServiceStack
                                 continue;
                             }
 
-                            Log.DebugFormat("Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
+                            if (Log.IsDebugEnabled)
+                                Log.DebugFormat("Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
+
                             if (Env.IsMono && responseHeaders.Key.EqualsIgnoreCase(HttpHeaders.ContentType))
                             {
                                 response.ContentType = responseHeaders.Value;

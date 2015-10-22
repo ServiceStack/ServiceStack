@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Web;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -42,6 +43,7 @@ namespace ServiceStack
         public HttpResult(object response, string contentType, HttpStatusCode statusCode)
         {
             this.Headers = new Dictionary<string, string>();
+            this.Cookies = new List<Cookie>();
             this.ResponseFilter = ContentTypes.Instance;
 
             this.Response = response;
@@ -106,6 +108,8 @@ namespace ServiceStack
         public string ContentType { get; set; }
 
         public Dictionary<string, string> Headers { get; private set; }
+
+        public List<Cookie> Cookies { get; private set; }
 
         public Func<IDisposable> ResultScope { get; set; } 
 
@@ -419,6 +423,24 @@ namespace ServiceStack
                 }
             }
             catch { /*ignore*/ }
+        }
+    }
+
+    public static class HttpResultExtensions
+    {
+        public static System.Net.Cookie ToCookie(this HttpCookie httpCookie)
+        {
+            var to = new System.Net.Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path)
+            {
+                Expires = httpCookie.Expires,
+                Secure = httpCookie.Secure,
+                HttpOnly = httpCookie.HttpOnly,                
+            };
+
+            if (httpCookie.Domain != null)
+                to.Domain = httpCookie.Domain;
+
+            return to;
         }
     }
 }

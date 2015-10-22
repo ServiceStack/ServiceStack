@@ -45,6 +45,8 @@ namespace ServiceStack
             this.Status = statusCode;
             this.Headers = new Dictionary<string, string>();
             this.StatusDescription = errorCode;
+            this.Headers = new Dictionary<string, string>();
+            this.Cookies = new List<Cookie>();
         }
 
         public HttpError(HttpStatusCode statusCode, Exception innerException)
@@ -66,7 +68,8 @@ namespace ServiceStack
 
         public string ContentType { get; set; }
 
-        public Dictionary<string, string> Headers { get; set; }
+        public Dictionary<string, string> Headers { get; private set; }
+        public List<Cookie> Cookies { get; private set; }
 
         public int Status { get; set; }
 

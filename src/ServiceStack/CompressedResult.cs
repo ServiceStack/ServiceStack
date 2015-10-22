@@ -18,6 +18,7 @@ namespace ServiceStack
         public string ContentType { get; set; }
 
         public Dictionary<string, string> Headers { get; private set; }
+        public List<Cookie> Cookies { get; private set; }
 
         public int Status { get; set; }
 
@@ -70,6 +71,7 @@ namespace ServiceStack
             this.Headers = new Dictionary<string, string> {
                 { HttpHeaders.ContentEncoding, compressionType },
             };
+            this.Cookies = new List<Cookie>();
         }
 
         public void WriteTo(Stream responseStream)

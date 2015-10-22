@@ -34,10 +34,15 @@ namespace ServiceStack.Web
 		/// </summary>
 		Dictionary<string, string> Headers { get; }
 
-		/// <summary>
-		/// Response DTO
-		/// </summary>
-		object Response { get; set; }
+        /// <summary>
+        /// Additional HTTP Cookies
+        /// </summary>
+        List<System.Net.Cookie> Cookies { get; }
+
+        /// <summary>
+        /// Response DTO
+        /// </summary>
+        object Response { get; set; }
 
 		/// <summary>
 		/// if not provided, get's injected by ServiceStack
