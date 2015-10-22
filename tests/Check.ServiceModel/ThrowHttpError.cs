@@ -9,6 +9,8 @@ namespace Check.ServiceModel
         public string Message { get; set; }
     }
 
+    public class ThrowHttpErrorResponse { }
+
     [Route("/throw404")]
     [Route("/throw404/{Message}")]
     public class Throw404

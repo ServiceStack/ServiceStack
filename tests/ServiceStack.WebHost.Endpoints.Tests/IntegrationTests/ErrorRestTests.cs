@@ -97,7 +97,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
     {
         public object Get(Error request)
         {
-            if (request != null && !String.IsNullOrEmpty(request.Id))
+            if (request != null && !string.IsNullOrEmpty(request.Id))
                 return new ErrorResponse(new Error { Id = "Test" });
 
             return new ErrorCollectionResponse(new List<Error> { new Error { Id = "TestCollection" } });

@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="CustomMethodRoutesTests.cs" />
     <Compile Include="EmbeddedResourceVirtualPathDirectoryTests.cs" />
+    <Compile Include="ErrorTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1172,7 +1172,7 @@ namespace ServiceStack
 
         public virtual HttpWebResponse Get(object requestDto)
         {
-            return Get<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
+            return Get<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Get, Format), requestDto);
         }
 
         public virtual HttpWebResponse Get(string relativeOrAbsoluteUrl)
@@ -1182,17 +1182,22 @@ namespace ServiceStack
 
         public virtual TResponse Get<TResponse>(IReturn<TResponse> requestDto)
         {
-            return Get<TResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
+            return Get<TResponse>(requestDto.ToUrl(HttpMethods.Get, Format), requestDto);
         }
 
         public virtual TResponse Get<TResponse>(object requestDto)
         {
-            return Get<TResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
+            return Get<TResponse>(requestDto.ToUrl(HttpMethods.Get, Format), requestDto);
         }
 
         public virtual TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
         {
             return Send<TResponse>(HttpMethods.Get, relativeOrAbsoluteUrl, null);
+        }
+
+        public virtual TResponse Get<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
+        {
+            return Send<TResponse>(HttpMethods.Get, relativeOrAbsoluteUrl, requestDto);
         }
 
         public virtual IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
