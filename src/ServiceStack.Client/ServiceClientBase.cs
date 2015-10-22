@@ -529,7 +529,7 @@ namespace ServiceStack
                 {
                     ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
                 }
-                
+
                 return response;
             }
             catch (Exception ex)
@@ -607,7 +607,7 @@ namespace ServiceStack
             var webEx = ex as WebException;
             if (webEx != null && webEx.Response != null)
             {
-                var headers = ((HttpWebResponse) webEx.Response).Headers;
+                var headers = ((HttpWebResponse)webEx.Response).Headers;
                 var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
                     HttpHeaders.WwwAuthenticate, x => x.Contains("realm"));
 
@@ -794,7 +794,7 @@ namespace ServiceStack
                 {
                     client.ContentType = ContentType;
 
-                    if (sendRequestAction != null) 
+                    if (sendRequestAction != null)
                         sendRequestAction(client);
                 }
             }
@@ -884,8 +884,8 @@ namespace ServiceStack
                   HttpMethods.Put
                 : request is IDelete ?
                   HttpMethods.Delete
-                : request is IPatch ? 
-                  HttpMethods.Patch : 
+                : request is IPatch ?
+                  HttpMethods.Patch :
                   null;
         }
 
@@ -931,7 +931,7 @@ namespace ServiceStack
                     throw;
                 }
 
-                using(response){} //auto dispose
+                using (response) { } //auto dispose
             }
         }
 
@@ -1172,7 +1172,7 @@ namespace ServiceStack
 
         public virtual HttpWebResponse Get(object requestDto)
         {
-            return Get<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Get, Format), requestDto);
+            return Get<HttpWebResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
         }
 
         public virtual HttpWebResponse Get(string relativeOrAbsoluteUrl)
@@ -1182,22 +1182,17 @@ namespace ServiceStack
 
         public virtual TResponse Get<TResponse>(IReturn<TResponse> requestDto)
         {
-            return Get<TResponse>(requestDto.ToUrl(HttpMethods.Get, Format), requestDto);
+            return Get<TResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
         }
 
         public virtual TResponse Get<TResponse>(object requestDto)
         {
-            return Get<TResponse>(requestDto.ToUrl(HttpMethods.Get, Format), requestDto);
+            return Get<TResponse>(requestDto.ToUrl(HttpMethods.Get, Format));
         }
 
         public virtual TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
         {
             return Send<TResponse>(HttpMethods.Get, relativeOrAbsoluteUrl, null);
-        }
-
-        public virtual TResponse Get<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
-        {
-            return Send<TResponse>(HttpMethods.Get, relativeOrAbsoluteUrl, requestDto);
         }
 
         public virtual IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
@@ -1505,7 +1500,7 @@ namespace ServiceStack
             {
                 return (TResponse)Convert.ChangeType(webResponse, typeof(TResponse), null);
             }
-            if (typeof(TResponse) == typeof(Stream)) 
+            if (typeof(TResponse) == typeof(Stream))
             {
                 return (TResponse)(object)webResponse.GetResponseStream();
             }
@@ -1540,7 +1535,7 @@ namespace ServiceStack
     {
 #if !(NETFX_CORE || SL5 || PCL)
         public static TResponse PostFile<TResponse>(this IRestClient client,
-            string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType) 
+            string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
             using (FileStream fileStream = fileToUpload.OpenRead())
             {
@@ -1548,7 +1543,7 @@ namespace ServiceStack
             }
         }
 
-        public static TResponse PostFileWithRequest<TResponse>(this IRestClient client, 
+        public static TResponse PostFileWithRequest<TResponse>(this IRestClient client,
             FileInfo fileToUpload, object request, string fieldName = "upload")
         {
             return client.PostFileWithRequest<TResponse>(request.ToPostUrl(), fileToUpload, request, fieldName);
@@ -1560,7 +1555,7 @@ namespace ServiceStack
             using (FileStream fileStream = fileToUpload.OpenRead())
             {
                 return client.PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName);
-            }            
+            }
         }
 #endif
 
@@ -1581,7 +1576,7 @@ namespace ServiceStack
             }
         }
 
-        public static Dictionary<string,string> ToDictionary(this CookieContainer cookies, string baseUri)
+        public static Dictionary<string, string> ToDictionary(this CookieContainer cookies, string baseUri)
         {
             var to = new Dictionary<string, string>();
             if (cookies == null)
@@ -1667,7 +1662,7 @@ namespace ServiceStack
         }
 
         public static void SetCookie(this IServiceClient client, Uri baseUri, string name, string value,
-            DateTime? expiresAt = null, string path = "/",  
+            DateTime? expiresAt = null, string path = "/",
             bool? httpOnly = null, bool? secure = null)
         {
             var hasCookies = client as IHasCookieContainer;
