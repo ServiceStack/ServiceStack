@@ -169,10 +169,15 @@ namespace ServiceStack
             SetCookie(name, value, expiresAt, path);
         }
 
-        public void SetCookie(string name, string value, DateTime expiresAt, string path)
+        public void SetCookie(string name, string value, DateTime expiresAt, string path, bool secure = false, bool httpOnly = false)
         {
             path = path ?? "/";
             var cookie = string.Format("{0}={1};expires={2};path={3}", name, value, expiresAt.ToString("R"), path);
+            if (secure)
+                cookie += ";Secure";
+            if (httpOnly)
+                cookie += ";HttpOnly";
+
             this.Headers[HttpHeaders.SetCookie] = cookie;
         }
 

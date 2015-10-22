@@ -95,10 +95,9 @@ namespace ServiceStack.Authentication.OAuth2
                     foreach (string name in authReq.Cookies)
                     {
                         var cookie = authReq.Cookies[name];
-
                         if (cookie != null)
                         {
-                            httpResult.SetSessionCookie(name, cookie.Value, cookie.Path);
+                            httpResult.SetCookie(name, cookie.Value, cookie.Expires, cookie.Path, cookie.Secure, cookie.HttpOnly);
                         }
                     }
 
@@ -212,8 +211,8 @@ namespace ServiceStack.Authentication.OAuth2
             if (session.ReferrerUrl.IsNullOrEmpty() || session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 session.ReferrerUrl = this.RedirectUrl
-                                      ?? HttpHandlerFactory.GetBaseUrl()
-                                      ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1, StringComparison.Ordinal));
+                    ?? HttpHandlerFactory.GetBaseUrl()
+                    ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1, StringComparison.Ordinal));
             }
 
             var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == this.Provider);
