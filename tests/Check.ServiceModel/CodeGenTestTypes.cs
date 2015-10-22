@@ -129,7 +129,7 @@ namespace Check.ServiceModel.Operations
     }
 
     [DataContract]
-    [Route("/allowed-attributes","GET")]
+    [Route("/allowed-attributes", "GET")]
     [Api(@"AllowedAttributes 
 Description")]
     [ApiResponse(HttpStatusCode.BadRequest, "Your request was not understood")]
@@ -149,8 +149,15 @@ Description")]
 
         [StringLength(20)]
         [References(typeof(Hello))]
-        [Meta("Foo","Bar")]
+        [Meta("Foo", "Bar")]
         public string Name { get; set; }
+
+        [ApiMember(Description = @"This is a 
+Multi 
+Line 
+String")]
+        [DataMember]
+        public string Overflow { get; set; }
     }
 
     [System.ComponentModel.Description("Description on HelloAllResponse type")]
