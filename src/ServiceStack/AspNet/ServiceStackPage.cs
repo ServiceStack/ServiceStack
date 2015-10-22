@@ -24,7 +24,7 @@ namespace ServiceStack.AspNet
         /// </summary>
         public virtual string UnauthorizedRedirectUrl
         {
-            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect() + "?redirect={0}#f=Unauthorized"; }
+            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect(); }
         }
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace ServiceStack.AspNet
         /// </summary>
         public virtual string ForbiddenRedirectUrl
         {
-            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect() + "?redirect={0}#f=Forbidden"; }
+            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect(); }
         }
 
         protected virtual void ServiceStack_PreLoad(object sender, EventArgs e)
@@ -146,10 +146,6 @@ namespace ServiceStack.AspNet
         {
             return ServiceStackProvider.SessionAs<TUserSession>();
         }
-        protected virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null)
-        {
-            ServiceStackProvider.Request.SaveSession(session, expiresIn);
-        }
         public virtual void ClearSession()
         {
             ServiceStackProvider.ClearSession();
@@ -174,11 +170,6 @@ namespace ServiceStack.AspNet
                 serviceStackProvider = null;
             }
 
-            EndServiceStackRequest();
-        }
-
-        public virtual void EndServiceStackRequest()
-        {
             HostContext.AppHost.OnEndRequest(ServiceStackRequest);
         }
     }
