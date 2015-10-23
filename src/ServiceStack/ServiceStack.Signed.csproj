@@ -473,6 +473,7 @@
     <Compile Include="VirtualPath\FileSystemVirtualFile.cs" />
     <Compile Include="VirtualPath\FileSystemVirtualPathProvider.cs" />
     <Compile Include="VirtualPath\InMemoryVirtualPathProvider.cs" />
+    <Compile Include="VirtualPath\IWriteableVirtualPathProvider.cs" />
     <Compile Include="VirtualPath\MultiVirtualPathProvider.cs" />
     <Compile Include="VirtualPath\ResourceVirtualDirectory.cs" />
     <Compile Include="VirtualPath\ResourceVirtualFile.cs" />
