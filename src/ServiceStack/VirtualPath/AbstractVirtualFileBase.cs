@@ -59,6 +59,14 @@ namespace ServiceStack.VirtualPath
             }
         }
 
+        public virtual byte[] ReadAllBytes()
+        {
+            using (var stream = OpenRead())
+            {
+                return stream.ReadFully();
+            }
+        }
+
         public abstract Stream OpenRead();
 
         protected virtual String GetVirtualPathToRoot()

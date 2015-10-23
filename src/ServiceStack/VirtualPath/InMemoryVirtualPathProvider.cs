@@ -7,11 +7,6 @@ using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
-    public interface IWriteableVirtualPathProvider
-    {
-        void AddFile(string filePath, string contents);
-    }
-
     /// <summary>
     /// In Memory repository for files. Useful for testing.
     /// </summary>
@@ -44,15 +39,20 @@ namespace ServiceStack.VirtualPath
         {
         }
 
-        public void AddFile(string filePath, string contents)
-        {
-            rootDirectory.AddFile(filePath, contents);
-        }
-
         public override IVirtualFile GetFile(string virtualPath)
         {
             return rootDirectory.GetFile(virtualPath)
                 ?? base.GetFile(virtualPath);
+        }
+
+        public void AddFile(string filePath, string textContents)
+        {
+            rootDirectory.AddFile(filePath, textContents);
+        }
+
+        public void AddFile(string filePath, Stream stream)
+        {
+            rootDirectory.AddFile(filePath, stream);
         }
     }
 
@@ -134,20 +134,32 @@ namespace ServiceStack.VirtualPath
             return null;
         }
 
-        static readonly char[] DirSeps = new[] { '\\', '/' };
         public void AddFile(string filePath, string contents)
         {
             filePath = StripBeginningDirectorySeparator(filePath);
-            this.files.Add(new InMemoryVirtualFile(VirtualPathProvider, this) {
+            this.files.Add(new InMemoryVirtualFile(VirtualPathProvider, this)
+            {
                 FilePath = filePath,
                 FileName = filePath.Split(DirSeps).Last(),
                 TextContents = contents,
             });
         }
 
+        public void AddFile(string filePath, Stream stream)
+        {
+            filePath = StripBeginningDirectorySeparator(filePath);
+            this.files.Add(new InMemoryVirtualFile(VirtualPathProvider, this)
+            {
+                FilePath = filePath,
+                FileName = filePath.Split(DirSeps).Last(),
+                ByteContents = stream.ReadFully(),
+            });
+        }
+
+        static readonly char[] DirSeps = new[] { '\\', '/' };
         private static string StripBeginningDirectorySeparator(string filePath)
         {
-            if (String.IsNullOrEmpty(filePath))
+            if (string.IsNullOrEmpty(filePath))
                 return filePath;
 
             if (DirSeps.Any(d => filePath[0] == d))
