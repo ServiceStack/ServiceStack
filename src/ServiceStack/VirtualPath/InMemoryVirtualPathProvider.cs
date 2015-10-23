@@ -15,10 +15,15 @@ namespace ServiceStack.VirtualPath
         public InMemoryVirtualPathProvider(IAppHost appHost)
             : base(appHost)
         {
-            this.rootDirectory = new InMemoryVirtualDirectory(this);
+            this.files = new List<InMemoryVirtualFile>();
+            this.rootDirectory = new InMemoryVirtualDirectory(this, null);
         }
 
+        public List<InMemoryVirtualFile> files;
+
         public InMemoryVirtualDirectory rootDirectory;
+
+        public static readonly char DirSep = '/';
 
         public override IVirtualDirectory RootDirectory
         {
@@ -41,64 +46,119 @@ namespace ServiceStack.VirtualPath
 
         public override IVirtualFile GetFile(string virtualPath)
         {
-            return rootDirectory.GetFile(virtualPath)
-                ?? base.GetFile(virtualPath);
+            return files.FirstOrDefault(x => x.FilePath == virtualPath);
+        }
+
+        public IVirtualDirectory GetDirectory(string dirPath)
+        {
+            return new InMemoryVirtualDirectory(this, dirPath);
         }
 
         public void AddFile(string filePath, string textContents)
         {
-            rootDirectory.AddFile(filePath, textContents);
+            this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
+            {
+                FilePath = filePath,
+                FileName = filePath.Split(DirSep).Last(),
+                TextContents = textContents,
+            });
         }
 
         public void AddFile(string filePath, Stream stream)
         {
-            rootDirectory.AddFile(filePath, stream);
+            this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
+            {
+                FilePath = filePath,
+                FileName = filePath.Split(DirSep).Last(),
+                ByteContents = stream.ReadFully(),
+            });
+        }
+
+        public IEnumerable<InMemoryVirtualDirectory> GetImmediateDirectories(string fromDirPath)
+        {
+            var dirPaths = files
+                .Map(x => x.DirPath)
+                .Distinct()
+                .Map(x => GetSubDirPath(fromDirPath, x))
+                .Where(x => x != null)
+                .Distinct();
+
+            return dirPaths.Map(x => new InMemoryVirtualDirectory(this, x));
+        }
+
+        public IEnumerable<InMemoryVirtualFile> GetImmediateFiles(string fromDirPath)
+        {
+            return files.Where(x => x.DirPath == fromDirPath);
+        }
+
+        public string GetDirPath(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+                return null;
+
+            var lastDirPos = filePath.LastIndexOf(DirSep);
+            return lastDirPos >= 0
+                ? filePath.Substring(0, lastDirPos)
+                : null;
+        }
+
+        public string GetSubDirPath(string fromDirPath, string subDirPath)
+        {
+            if (string.IsNullOrEmpty(subDirPath))
+                return null;
+
+            if (fromDirPath == null)
+            {
+                return subDirPath.CountOccurrencesOf(DirSep) == 0 
+                    ? subDirPath
+                    : null;
+            }
+
+            if (!subDirPath.StartsWith(fromDirPath))
+                return null;
+
+            return fromDirPath.CountOccurrencesOf(DirSep) == subDirPath.CountOccurrencesOf(DirSep) - 1 
+                ? subDirPath
+                : null;
         }
     }
 
     public class InMemoryVirtualDirectory : AbstractVirtualDirectoryBase
     {
-        public InMemoryVirtualDirectory(IVirtualPathProvider owningProvider) 
-            : base(owningProvider)
+        private readonly InMemoryVirtualPathProvider pathProvider;
+
+        public InMemoryVirtualDirectory(InMemoryVirtualPathProvider pathProvider, string dirPath) 
+            : base(pathProvider)
         {
-            this.files = new List<InMemoryVirtualFile>();
-            this.dirs = new List<InMemoryVirtualDirectory>();
-            this.DirLastModified = DateTime.MinValue;
+            this.pathProvider = pathProvider;
+            this.DirPath = dirPath;
         }
         
-        public InMemoryVirtualDirectory(IVirtualPathProvider owningProvider, IVirtualDirectory parentDirectory) 
-            : base(owningProvider, parentDirectory) {}
-
         public DateTime DirLastModified { get; set; }
         public override DateTime LastModified
         {
             get { return DirLastModified; }
         }
 
-        public List<InMemoryVirtualFile> files;
-
         public override IEnumerable<IVirtualFile> Files
         {
-            get { return files; }
+            get { return pathProvider.GetImmediateFiles(DirPath); }
         }
-
-        public List<InMemoryVirtualDirectory> dirs;
 
         public override IEnumerable<IVirtualDirectory> Directories
         {
-            get { return dirs; }
+            get { return pathProvider.GetImmediateDirectories(DirPath); }
         }
 
-        public string DirName { get; set; }
+        public string DirPath { get; set; }
         public override string Name
         {
-            get { return DirName; }
+            get { return DirPath; }
         }
 
         public override IVirtualFile GetFile(string virtualPath)
         {
-            virtualPath = StripBeginningDirectorySeparator(virtualPath);
-            return files.FirstOrDefault(x => x.FilePath == virtualPath);
+            return pathProvider.GetFile(DirPath.CombineWith(virtualPath));
         }
 
         public override IEnumerator<IVirtualNode> GetEnumerator()
@@ -119,11 +179,7 @@ namespace ServiceStack.VirtualPath
 
         public IEnumerable<InMemoryVirtualFile> EnumerateFiles(string pattern)
         {
-            foreach (var file in files.Where(f => f.Name.Glob(pattern)))
-            {
-                yield return file;
-            }
-            foreach (var file in dirs.SelectMany(d => d.EnumerateFiles(pattern)))
+            foreach (var file in pathProvider.GetImmediateFiles(DirPath).Where(f => f.Name.Glob(pattern)))
             {
                 yield return file;
             }
@@ -131,44 +187,21 @@ namespace ServiceStack.VirtualPath
 
         protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName)
         {
-            return null;
+            var subDir = DirPath.CombineWith(directoryName);
+            return new InMemoryVirtualDirectory(pathProvider, subDir);
         }
 
         public void AddFile(string filePath, string contents)
         {
-            filePath = StripBeginningDirectorySeparator(filePath);
-            this.files.Add(new InMemoryVirtualFile(VirtualPathProvider, this)
-            {
-                FilePath = filePath,
-                FileName = filePath.Split(DirSeps).Last(),
-                TextContents = contents,
-            });
+            pathProvider.AddFile(DirPath.CombineWith(filePath), contents);
         }
 
         public void AddFile(string filePath, Stream stream)
         {
-            filePath = StripBeginningDirectorySeparator(filePath);
-            this.files.Add(new InMemoryVirtualFile(VirtualPathProvider, this)
-            {
-                FilePath = filePath,
-                FileName = filePath.Split(DirSeps).Last(),
-                ByteContents = stream.ReadFully(),
-            });
-        }
-
-        static readonly char[] DirSeps = new[] { '\\', '/' };
-        private static string StripBeginningDirectorySeparator(string filePath)
-        {
-            if (string.IsNullOrEmpty(filePath))
-                return filePath;
-
-            if (DirSeps.Any(d => filePath[0] == d))
-                    return filePath.Substring(1);
-
-            return filePath;
+            pathProvider.AddFile(DirPath.CombineWith(filePath), stream);
         }
     }
-    
+
     public class InMemoryVirtualFile : AbstractVirtualFileBase
     {
         public InMemoryVirtualFile(IVirtualPathProvider owningProvider, IVirtualDirectory directory) 
@@ -177,9 +210,15 @@ namespace ServiceStack.VirtualPath
             this.FileLastModified = DateTime.MinValue;            
         }
 
+        public string DirPath
+        {
+            get { return base.Directory.Name; }
+        }
+
         public string FilePath { get; set; }
 
         public string FileName { get; set; }
+
         public override string Name
         {
             get { return FilePath; }

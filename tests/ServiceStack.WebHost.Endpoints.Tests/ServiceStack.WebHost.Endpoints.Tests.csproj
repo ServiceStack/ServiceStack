@@ -304,6 +304,7 @@
     <Compile Include="Support\Host\TestAppHost.cs" />
     <Compile Include="Support\Services\TestService.cs" />
     <Compile Include="BuiltinRouteTests.cs" />
+    <Compile Include="VirtualPathProviderTests.cs" />
     <Compile Include="WebServiceExceptionTests.cs" />
     <Compile Include="WsdlMetadataTests.cs" />
     <Compile Include="OperationTests.cs" />
