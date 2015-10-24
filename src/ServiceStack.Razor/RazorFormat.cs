@@ -254,7 +254,7 @@ namespace ServiceStack.Razor
                 throw new InvalidOperationException("VirtualPathProvider is not IWriteableVirtualPathProvider");
 
             var tmpPath = "/__tmp/{0}.cshtml".Fmt(Guid.NewGuid().ToString("N"));
-            writableFileProvider.AddFile(tmpPath, razorContents);
+            writableFileProvider.WriteFile(tmpPath, razorContents);
 
             return ViewManager.AddPage(tmpPath);
         }

@@ -23,7 +23,7 @@ namespace ServiceStack.VirtualPath
 
         public InMemoryVirtualDirectory rootDirectory;
 
-        public static readonly char DirSep = '/';
+        public const char DirSep = '/';
 
         public override IVirtualDirectory RootDirectory
         {
@@ -46,7 +46,8 @@ namespace ServiceStack.VirtualPath
 
         public override IVirtualFile GetFile(string virtualPath)
         {
-            return files.FirstOrDefault(x => x.FilePath == virtualPath);
+            var filePath = SanitizePath(virtualPath);
+            return files.FirstOrDefault(x => x.FilePath == filePath);
         }
 
         public IVirtualDirectory GetDirectory(string dirPath)
@@ -54,8 +55,10 @@ namespace ServiceStack.VirtualPath
             return new InMemoryVirtualDirectory(this, dirPath);
         }
 
-        public void AddFile(string filePath, string textContents)
+        public void WriteFile(string filePath, string textContents)
         {
+            filePath = SanitizePath(filePath);
+            this.files.RemoveAll(x => x.FilePath == filePath);
             this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
@@ -64,8 +67,10 @@ namespace ServiceStack.VirtualPath
             });
         }
 
-        public void AddFile(string filePath, Stream stream)
+        public void WriteFile(string filePath, Stream stream)
         {
+            filePath = SanitizePath(filePath);
+            this.files.RemoveAll(x => x.FilePath == filePath);
             this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
@@ -119,6 +124,17 @@ namespace ServiceStack.VirtualPath
 
             return fromDirPath.CountOccurrencesOf(DirSep) == subDirPath.CountOccurrencesOf(DirSep) - 1 
                 ? subDirPath
+                : null;
+        }
+
+        public string SanitizePath(string filePath)
+        {
+            var sanitizedPath = string.IsNullOrEmpty(filePath)
+                ? null
+                : (filePath[0] == DirSep ? filePath.Substring(1) : filePath);
+
+            return sanitizedPath != null
+                ? sanitizedPath.Replace('\\', DirSep)
                 : null;
         }
     }
@@ -193,12 +209,12 @@ namespace ServiceStack.VirtualPath
 
         public void AddFile(string filePath, string contents)
         {
-            pathProvider.AddFile(DirPath.CombineWith(filePath), contents);
+            pathProvider.WriteFile(DirPath.CombineWith(filePath), contents);
         }
 
         public void AddFile(string filePath, Stream stream)
         {
-            pathProvider.AddFile(DirPath.CombineWith(filePath), stream);
+            pathProvider.WriteFile(DirPath.CombineWith(filePath), stream);
         }
     }
 

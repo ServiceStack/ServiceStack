@@ -18,9 +18,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         {
             base.InitializeFileSystem(fileSystem);
 
-            fileSystem.AddFile("/views/v1.cshtml", View1Html);
-            fileSystem.AddFile("/views/v2.cshtml", View2Html);
-            fileSystem.AddFile("/views/v3.cshtml", View3Html);
+            fileSystem.WriteFile("/views/v1.cshtml", View1Html);
+            fileSystem.WriteFile("/views/v2.cshtml", View2Html);
+            fileSystem.WriteFile("/views/v3.cshtml", View3Html);
         }
 
         [Test]

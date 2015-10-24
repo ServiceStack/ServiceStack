@@ -192,7 +192,7 @@ namespace CheckWeb
             foreach (var file in fs.GetAllMatchingFiles("*.html"))
             {
                 var contents = Minifiers.HtmlAdvanced.Compress(file.ReadAllText());
-                memFs.AddFile(file.VirtualPath, contents);
+                memFs.WriteFile(file.VirtualPath, contents);
             }
 
             //Process all .css files:
@@ -200,7 +200,7 @@ namespace CheckWeb
                 .Where(file => !file.VirtualPath.EndsWith(".min.css")))
             {
                 var contents = Minifiers.Css.Compress(file.ReadAllText());
-                memFs.AddFile(file.VirtualPath, contents);
+                memFs.WriteFile(file.VirtualPath, contents);
             }
 
             //Process all .js files
@@ -211,7 +211,7 @@ namespace CheckWeb
                 {
                     var js = file.ReadAllText();
                     var contents = Minifiers.JavaScript.Compress(js);
-                    memFs.AddFile(file.VirtualPath, contents);
+                    memFs.WriteFile(file.VirtualPath, contents);
                 }
                 catch (Exception ex)
                 {
