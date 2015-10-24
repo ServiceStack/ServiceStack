@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using ServiceStack.IO;
 using ServiceStack.Testing;
@@ -8,9 +9,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class FileSystemVirtualPathProviderTests : VirtualPathProviderTests
     {
+        private static string RootDir = "~/App_Data".MapProjectPath();
+
+        public FileSystemVirtualPathProviderTests()
+        {
+            if (!Directory.Exists(RootDir))
+                Directory.CreateDirectory(RootDir);
+        }
+
         public override IVirtualPathProvider GetPathProvider()
         {
-            return new FileSystemVirtualPathProvider(appHost, "~/App_Data".MapProjectPath());
+            return new FileSystemVirtualPathProvider(appHost, RootDir);
         }
     }
 
