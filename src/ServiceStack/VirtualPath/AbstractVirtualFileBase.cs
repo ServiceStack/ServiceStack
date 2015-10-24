@@ -69,7 +69,7 @@ namespace ServiceStack.VirtualPath
 
         public abstract Stream OpenRead();
 
-        protected virtual String GetVirtualPathToRoot()
+        protected virtual string GetVirtualPathToRoot()
         {
             return GetPathToRoot(VirtualPathProvider.VirtualPathSeparator, p => p.VirtualPath);
         }
@@ -85,7 +85,9 @@ namespace ServiceStack.VirtualPath
             if (parentPath == separator)
                 parentPath = string.Empty;
 
-            return string.Concat(parentPath, separator, Name);
+            return parentPath == null
+                ? Name
+                : string.Concat(parentPath, separator, Name);
         }
 
         public override bool Equals(object obj)

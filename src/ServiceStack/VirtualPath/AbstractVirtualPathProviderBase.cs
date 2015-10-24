@@ -22,7 +22,7 @@ namespace ServiceStack.VirtualPath
 
         public virtual string CombineVirtualPath(string basePath, string relativePath)
         {
-            return String.Concat(basePath, VirtualPathSeparator, relativePath);
+            return string.Concat(basePath, VirtualPathSeparator, relativePath);
         }
 
         public virtual bool FileExists(string virtualPath)

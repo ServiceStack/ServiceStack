@@ -8,7 +8,7 @@ using ServiceStack.Text;
 namespace ServiceStack.VirtualPath
 {
     /// <summary>
-    /// In Memory repository for files. Useful for testing.
+    /// In Memory Virtual Path Provider.
     /// </summary>
     public class InMemoryVirtualPathProvider : AbstractVirtualPathProviderBase, IWriteableVirtualPathProvider
     {
@@ -40,9 +40,7 @@ namespace ServiceStack.VirtualPath
             get { return "/"; }
         }
 
-        protected override void Initialize()
-        {
-        }
+        protected override void Initialize() {}
 
         public override IVirtualFile GetFile(string virtualPath)
         {
@@ -58,11 +56,10 @@ namespace ServiceStack.VirtualPath
         public void WriteFile(string filePath, string textContents)
         {
             filePath = SanitizePath(filePath);
-            this.files.RemoveAll(x => x.FilePath == filePath);
+            DeleteFile(filePath);
             this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
-                FileName = filePath.Split(DirSep).Last(),
                 TextContents = textContents,
             });
         }
@@ -70,13 +67,29 @@ namespace ServiceStack.VirtualPath
         public void WriteFile(string filePath, Stream stream)
         {
             filePath = SanitizePath(filePath);
-            this.files.RemoveAll(x => x.FilePath == filePath);
+            DeleteFile(filePath);
             this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
-                FileName = filePath.Split(DirSep).Last(),
                 ByteContents = stream.ReadFully(),
             });
+        }
+
+        public void DeleteFile(string filePath)
+        {
+            filePath = SanitizePath(filePath);
+            this.files.RemoveAll(x => x.FilePath == filePath);
+        }
+
+        public void DeleteFiles(IEnumerable<string> filePaths)
+        {
+            filePaths.Each(DeleteFile);
+        }
+
+        public void DeleteFolder(string dirPath)
+        {
+            var subFiles = files.Where(x => x.DirPath.StartsWith(dirPath));
+            DeleteFiles(subFiles.Map(x => x.VirtualPath));            
         }
 
         public IEnumerable<InMemoryVirtualDirectory> GetImmediateDirectories(string fromDirPath)
@@ -84,7 +97,7 @@ namespace ServiceStack.VirtualPath
             var dirPaths = files
                 .Map(x => x.DirPath)
                 .Distinct()
-                .Map(x => GetSubDirPath(fromDirPath, x))
+                .Map(x => GetImmediateSubDirPath(fromDirPath, x))
                 .Where(x => x != null)
                 .Distinct();
 
@@ -107,7 +120,7 @@ namespace ServiceStack.VirtualPath
                 : null;
         }
 
-        public string GetSubDirPath(string fromDirPath, string subDirPath)
+        public string GetImmediateSubDirPath(string fromDirPath, string subDirPath)
         {
             if (string.IsNullOrEmpty(subDirPath))
                 return null;
@@ -167,9 +180,15 @@ namespace ServiceStack.VirtualPath
         }
 
         public string DirPath { get; set; }
-        public override string Name
+
+        public override string VirtualPath
         {
             get { return DirPath; }
+        }
+
+        public override string Name
+        {
+            get { return DirPath != null ? DirPath.SplitOnLast(InMemoryVirtualPathProvider.DirSep).Last() : null; }
         }
 
         public override IVirtualFile GetFile(string virtualPath)
@@ -228,14 +247,17 @@ namespace ServiceStack.VirtualPath
 
         public string DirPath
         {
-            get { return base.Directory.Name; }
+            get { return base.Directory.VirtualPath; }
         }
 
         public string FilePath { get; set; }
 
-        public string FileName { get; set; }
-
         public override string Name
+        {
+            get { return FilePath.SplitOnLast(InMemoryVirtualPathProvider.DirSep).Last(); }
+        }
+
+        public override string VirtualPath
         {
             get { return FilePath; }
         }
