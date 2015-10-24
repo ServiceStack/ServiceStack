@@ -1,10 +1,19 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using NUnit.Framework;
 using ServiceStack.IO;
 using ServiceStack.Testing;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    public class FileSystemVirtualPathProviderTests : VirtualPathProviderTests
+    {
+        public override IVirtualPathProvider GetPathProvider()
+        {
+            return new FileSystemVirtualPathProvider(appHost, "~/App_Data".MapProjectPath());
+        }
+    }
+
     public class InMemoryVirtualPathProviderTests : VirtualPathProviderTests
     {
         public override IVirtualPathProvider GetPathProvider()
@@ -44,10 +53,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var file = pathProvider.GetFile(filePath);
 
             Assert.That(file.ReadAllText(), Is.EqualTo("file"));
-            Assert.That(file.Name, Is.EqualTo(filePath));
+            Assert.That(file.VirtualPath, Is.EqualTo(filePath));
+            Assert.That(file.Name, Is.EqualTo("file.txt"));
+            Assert.That(file.Directory.Name, Is.EqualTo("dir"));
+            Assert.That(file.Directory.VirtualPath, Is.EqualTo("dir"));
             Assert.That(file.Extension, Is.EqualTo("txt"));
 
             Assert.That(file.Directory.Name, Is.EqualTo("dir"));
+
+            pathProvider.DeleteFolder("dir");
         }
 
         [Test]
@@ -64,7 +78,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(file.Name, Is.EqualTo(filePath));
             Assert.That(file.Extension, Is.EqualTo("txt"));
 
-            Assert.That(file.Directory.Name, Is.Null);
+            Assert.That(file.Directory.VirtualPath, Is.Null);
+            Assert.That(file.Directory.Name, Is.Null.Or.EqualTo("App_Data"));
+
+            pathProvider.DeleteFiles(new[] { "file.txt" });
         }
 
         [Test]
@@ -79,6 +96,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             pathProvider.WriteFile("/a/file.txt", "original");
             pathProvider.WriteFile("/a/file.txt", "updated");
             Assert.That(pathProvider.GetFile("/a/file.txt").ReadAllText(), Is.EqualTo("updated"));
+
+            pathProvider.DeleteFiles(new[] { "file.txt", "/a/file.txt" });
+            pathProvider.DeleteFolder("a");
         }
 
         [Test]
@@ -96,9 +116,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             testdirFileNames.Each(x => pathProvider.WriteFile(x, "textfile"));
 
             var testdir = pathProvider.GetDirectory("testdir");
-            var fileNames = testdir.Files.Map(x => x.Name);
+            var filePaths = testdir.Files.Map(x => x.VirtualPath);
 
-            Assert.That(fileNames, Is.EquivalentTo(testdirFileNames));
+            Assert.That(filePaths, Is.EquivalentTo(testdirFileNames));
+
+            var fileNames = testdir.Files.Map(x => x.Name);
+            Assert.That(fileNames, Is.EquivalentTo(testdirFileNames.Map(x =>
+                x.SplitOnLast('/').Last())));
+
+            pathProvider.DeleteFolder("testdir");
         }
 
         [Test]
@@ -162,16 +188,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(pathProvider.GetDirectory("a").GetFile("b/c/testfile-abc1.txt").ReadAllText(), Is.EqualTo("testfile-abc1"));
             Assert.That(pathProvider.GetDirectory("a/b").GetFile("c/testfile-abc1.txt").ReadAllText(), Is.EqualTo("testfile-abc1"));
             Assert.That(pathProvider.GetDirectory("a").GetDirectory("b").GetDirectory("c").GetFile("testfile-abc1.txt").ReadAllText(), Is.EqualTo("testfile-abc1"));
+
+            pathProvider.DeleteFile("testfile.txt");
+            pathProvider.DeleteFolder("a");
+            pathProvider.DeleteFolder("e");
         }
 
         public void AssertContents(IVirtualDirectory dir, 
-            string[] expectedFileNames, string[] expectedDirNames)
+            string[] expectedFilePaths, string[] expectedDirPaths)
         {
+            var filePaths = dir.Files.Map(x => x.VirtualPath);
+            Assert.That(filePaths, Is.EquivalentTo(expectedFilePaths));
+
             var fileNames = dir.Files.Map(x => x.Name);
-            Assert.That(fileNames, Is.EquivalentTo(expectedFileNames));
+            Assert.That(fileNames, Is.EquivalentTo(expectedFilePaths.Map(x =>
+                x.SplitOnLast('/').Last())));
+
+            var dirPaths = dir.Directories.Map(x => x.VirtualPath);
+            Assert.That(dirPaths, Is.EquivalentTo(expectedDirPaths));
 
             var dirNames = dir.Directories.Map(x => x.Name);
-            Assert.That(dirNames, Is.EquivalentTo(expectedDirNames));
+            Assert.That(dirNames, Is.EquivalentTo(expectedDirPaths.Map(x =>
+                x.SplitOnLast('/').Last())));
         }
     }
 }
