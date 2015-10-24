@@ -10,8 +10,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
     {
         public static RazorPage AddFileAndPage(this RazorFormat razorFormat, string filePath, string contents)
         {
-            var pathProvider = (IWriteableVirtualPathProvider)razorFormat.VirtualPathProvider;
-            pathProvider.WriteFile(filePath, contents);
+            razorFormat.VirtualPathProvider.WriteFile(filePath, contents);
             return razorFormat.AddPage(filePath);
         }
     }

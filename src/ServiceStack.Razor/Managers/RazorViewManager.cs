@@ -194,7 +194,7 @@ namespace ServiceStack.Razor.Managers
             Pages[pagePath] = page;
 
             //Views should be uniquely named and stored in any deep folder structure
-            if (pagePath.StartsWithIgnoreCase("/views/") && !pagePath.EndsWithIgnoreCase(DefaultLayoutFile))
+            if (pagePath.StartsWithIgnoreCase("views/") && !pagePath.EndsWithIgnoreCase(DefaultLayoutFile))
             {
                 var viewName = pagePath.SplitOnLast('.').First().SplitOnLast('/').Last();
                 ViewNamesMap[viewName] = pagePath;
@@ -218,8 +218,8 @@ namespace ServiceStack.Razor.Managers
         private static string CombinePaths(params string[] paths)
         {
             var combinedPath = PathUtils.CombinePaths(paths);
-            if (!combinedPath.StartsWith("/"))
-                combinedPath = "/" + combinedPath;
+            if (combinedPath.StartsWith("/"))
+                combinedPath = combinedPath.Substring(1);
             return combinedPath;
         }
 
@@ -254,7 +254,7 @@ namespace ServiceStack.Razor.Managers
                 if (layoutPage != null)
                     return layoutPage;
 
-            } while (!string.IsNullOrEmpty(contextParentDir));
+            } while (!string.IsNullOrEmpty(contextParentDir) && contextParentDir.Contains('/'));
 
             if (layoutName != RazorPageResolver.DefaultLayoutName)
                 return GetViewPage(layoutName);
@@ -282,7 +282,10 @@ namespace ServiceStack.Razor.Managers
 
         public virtual string GetDictionaryPagePath(string relativePath)
         {
-            return relativePath.ToLowerInvariant();
+            var path = relativePath.ToLower();
+            return path[0] == '/'
+                ? path.Substring(1)
+                : path;
         }
 
         public virtual string GetDictionaryPagePath(IVirtualFile file)

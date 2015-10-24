@@ -25,13 +25,13 @@ namespace ServiceStack.Formats
         private const string ErrorPageNotFound = "Could not find Markdown page '{0}'";
 
         public static string DefaultTemplateName = "_Layout.shtml";
-        public static string DefaultTemplate = "/Views/Shared/_Layout.shtml";
+        public static string DefaultTemplate = "Views/Shared/_Layout.shtml";
         public static string DefaultPage = "default";
         public static string TemplatePlaceHolder = "<!--@Body-->";
         public static string WebHostUrlPlaceHolder = "~/";
         public static string MarkdownExt = "md";
         public static string TemplateExt = "shtml";
-        public static string SharedDir = "/Views/Shared";
+        public static string SharedDir = "Views/Shared";
         public static string[] PageExts = new[] { MarkdownExt, TemplateExt };
 
         private static MarkdownFormat instance;
