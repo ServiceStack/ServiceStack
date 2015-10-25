@@ -40,12 +40,22 @@ namespace Check.ServiceModel.Operations
         public string Result { get; set; }
     }
 
+    public class OnlyInReturnListArg
+    {
+        public string Result { get; set; }
+    }
+
     public class ArrayResult
     {
         public string Result { get; set; }
     }
 
     public class HelloList : IReturn<List<ListResult>>
+    {
+        public List<string> Names { get; set; }
+    }
+
+    public class HelloReturnList : IReturn<List<OnlyInReturnListArg>>
     {
         public List<string> Names { get; set; }
     }

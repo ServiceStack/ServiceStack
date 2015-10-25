@@ -38,6 +38,11 @@ namespace Check.ServiceInterface
             return request.Names.Map(name => new ListResult { Result = name });
         }
 
+        public object Any(HelloReturnList request)
+        {
+            return request.Names.Map(name => new OnlyInReturnListArg { Result = name });
+        }
+
         public object Any(HelloArray request)
         {
             return request.Names.Map(name => new ArrayResult { Result = name });
