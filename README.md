@@ -201,6 +201,8 @@ public class CustomerService : Service
 
 ### [Calling the above REST Service from any C#/.NET Client](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client)
 
+> No code-gen required, can re-use above Server DTOs:
+
 ```csharp
 var client = new JsonServiceClient(BaseUri);
 
@@ -229,7 +231,9 @@ all = client.Get(new GetCustomers());                             // Count = 0
 
 Same code also works with [PCL Clients in Xamarin iOS/Android, Windows Store Apps](https://github.com/ServiceStackApps/HelloMobile)
 
-> [F#](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference) and [VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference) can re-use same .NET Service Clients and DTO's
+> [F#](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference) and 
+[VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference) can re-use same 
+[.NET Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) and DTO's
 
 ### [Calling from Java](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference#jsonserviceclient-usage)
 
@@ -272,7 +276,7 @@ client.customers()
 	.then((r) => alert(r.Results.length == 1)); 
 ```
 
-That's all the application code required to create a simple database-enabled REST Web Service!
+That's all the application code required to create and consume a simple database-enabled REST Web Service!
 
 ## Getting Started
 
@@ -288,32 +292,14 @@ If you have [NuGet](http://nuget.org) installed, the easiest way to get started 
 
 ### [Install ServiceStack via NuGet](https://servicestack.net/download).
 
-_Latest v4+ on NuGet is a commercial release with [free quotas](https://servicestack.net/download#free-quotas)._
+_Latest v4+ on NuGet is a [commercial release](https://servicestack.net/pricing) with [free quotas](https://servicestack.net/download#free-quotas)._
 
 ### [Docs and Downloads for older v3 BSD releases](https://github.com/ServiceStackV3/ServiceStackV3)
 
-### Examples
+### [Live Demos](https://github.com/ServiceStackApps/LiveDemos)
 
-**The [Definitive list of Example Projects, Use-Cases, Demos, Starter Templates](http://stackoverflow.com/a/15869816)**
+**The [Definitive list of Example Projects, Use-Cases, Demos, Starter Templates](https://github.com/ServiceStackApps/LiveDemos)**
     
-## Download published NuGet binaries without NuGet
-
-GitHub has disabled its download feature so currently NuGet is the best way to get ServiceStack published releases.
-For environments that don't have NuGet installed (e.g. OSX/Linux) you can still download the published binaries by 
-extracting them from the published NuGet packages. The url to download a nuget package is: 
-
-    http://packages.nuget.org/api/v1/package/{PackageName}/{Version}
-    
- So to get the core ServiceStack and ServiceStack.Text libs in OSX/Linux (or using gnu tools for Windows) you can just do:
-
-    wget -O ServiceStack http://packages.nuget.org/api/v1/package/ServiceStack/3.9.71
-    unzip ServiceStack 'lib/*'
-    
-    wget -O ServiceStack.Text http://packages.nuget.org/api/v1/package/ServiceStack.Text/3.9.71
-    unzip ServiceStack.Text 'lib/*'
-
-which will download and extract the dlls into your local local `lib/` folder.
-
 ## Copying
 
 Since September 2013, ServiceStack source code is available under GNU Affero General Public License/FOSS License Exception, see license.txt in the source. 
