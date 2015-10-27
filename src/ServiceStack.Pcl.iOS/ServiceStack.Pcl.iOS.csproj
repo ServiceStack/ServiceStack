@@ -39,7 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.PCL.csproj">
-      <Project>{135808A7-CE69-4C32-BE30-25A8FFBF4A58}</Project>
+      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Client.PCL</Name>
     </ProjectReference>
   </ItemGroup>
