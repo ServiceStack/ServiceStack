@@ -1,7 +1,7 @@
 ﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if __IOS__
+#if __MAC__
 using System;
 using System.Collections.Specialized;
 using System.Threading;
@@ -9,9 +9,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class IosPclExportClient : PclExportClient
+    public class MacPclExportClient : PclExportClient
     {
-        public static IosPclExportClient Provider = new IosPclExportClient();
+		public static MacPclExportClient Provider = new MacPclExportClient();
 
         public override INameValueCollection NewNameValueCollection()
         {
@@ -25,8 +25,8 @@ namespace ServiceStack
 
         public static PclExportClient Configure()
         {
-            Configure(Provider ?? (Provider = new IosPclExportClient()));
-            IosPclExport.Configure();
+            Configure(Provider ?? (Provider = new MacPclExportClient()));
+            MacPclExport.Configure();
             return Provider;
         }
     }

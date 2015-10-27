@@ -4,11 +4,11 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectTypeGuids>{A3F8F2AB-B479-4A4A-A458-A89E7DC349F1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <ProjectGuid>{01D6ED7F-21C5-4B82-81E2-9D8AC5428134}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>ServiceStack.Pcl.Mac20</RootNamespace>
+    <ProjectGuid>{D1958FF3-797B-4C17-AC42-6E0336176A6A}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PclTest.Mac</RootNamespace>
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
-    <AssemblyName>ServiceStack.Pcl.Mac20</AssemblyName>
+    <AssemblyName>PclTest.Mac</AssemblyName>
     <TargetFrameworkIdentifier>Xamarin.Mac</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>
@@ -17,30 +17,33 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;__MAC__;__UNIFIED__</DefineConstants>
+    <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <UseRefCounting>false</UseRefCounting>
-    <UseSGen>false</UseSGen>
+    <UseRefCounting>true</UseRefCounting>
+    <UseSGen>true</UseSGen>
     <IncludeMonoRuntime>false</IncludeMonoRuntime>
-    <CreatePackage>false</CreatePackage>
-    <EnableCodeSigning>false</EnableCodeSigning>
     <EnablePackageSigning>false</EnablePackageSigning>
+    <CodeSigningKey>Mac Developer</CodeSigningKey>
+    <EnableCodeSigning>false</EnableCodeSigning>
+    <CreatePackage>false</CreatePackage>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <UseRefCounting>false</UseRefCounting>
-    <UseSGen>false</UseSGen>
-    <IncludeMonoRuntime>false</IncludeMonoRuntime>
-    <CreatePackage>false</CreatePackage>
-    <EnableCodeSigning>false</EnableCodeSigning>
+    <LinkMode>SdkOnly</LinkMode>
+    <UseRefCounting>true</UseRefCounting>
+    <UseSGen>true</UseSGen>
+    <IncludeMonoRuntime>true</IncludeMonoRuntime>
+    <CreatePackage>true</CreatePackage>
+    <CodeSigningKey>Developer ID Application</CodeSigningKey>
+    <EnableCodeSigning>true</EnableCodeSigning>
     <EnablePackageSigning>false</EnablePackageSigning>
-    <DefineConstants>__MAC__;__UNIFIED__</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -50,28 +53,54 @@
       <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
-    <Compile Include="PclExport.Net40.cs" />
-    <Compile Include="PclExportClient.Mac.cs" />
-    <Compile Include="Pcl.Dynamic.cs" />
+    <Compile Include="MainWindow.cs" />
+    <Compile Include="MainWindow.designer.cs">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainWindowController.cs" />
+    <Compile Include="MainWindowController.designer.cs">
+      <DependentUpon>MainWindowController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Main.cs" />
+    <Compile Include="AppDelegate.cs" />
+    <Compile Include="AppDelegate.designer.cs">
+      <DependentUpon>AppDelegate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TechStacks.dtos.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterfaceDefinition Include="MainWindow.xib" />
+    <InterfaceDefinition Include="MainMenu.xib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Info.plist" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
   <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.Pcl.Mac20\ServiceStack.Pcl.Mac20.csproj">
+      <Project>{01D6ED7F-21C5-4B82-81E2-9D8AC5428134}</Project>
+      <Name>ServiceStack.Pcl.Mac20</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.PCL.csproj">
       <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
       <Name>ServiceStack.Text.PCL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.PCL.csproj">
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.PCL.csproj">
       <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Client.PCL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PclTest.SharedLogic\PclTest.SharedLogic.csproj">
+      <Project>{1BD4BBF9-FDD7-4B2D-9AC3-9A1003205DC3}</Project>
+      <Name>PclTest.SharedLogic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PclTest.ServiceModel\PclTest.ServiceModel.csproj">
+      <Project>{891D214F-C5B2-46B7-B648-FB735612C1C9}</Project>
+      <Name>PclTest.ServiceModel</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

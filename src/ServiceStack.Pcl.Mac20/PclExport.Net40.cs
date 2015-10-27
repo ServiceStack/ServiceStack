@@ -23,9 +23,11 @@ using ServiceStack.Text.Json;
 #if !__IOS__
 using System.Reflection.Emit;
 using FastMember = ServiceStack.Text.FastMember;
-#elif __UNIFIED__
+#endif
+
+#if __UNIFIED__
 using Preserve = Foundation.PreserveAttribute;
-#else
+#elif __IOS__
 using Preserve = MonoTouch.Foundation.PreserveAttribute;
 #endif
 
@@ -119,13 +121,24 @@ namespace ServiceStack
         }
 
         public const string AppSettingsKey = "servicestack:license";
+        public const string EnvironmentKey = "SERVICESTACK_LICENSE";
+
         public override void RegisterLicenseFromConfig()
         {
 #if ANDROID
 #elif __IOS__
+#elif __MAC__
 #else
             //Automatically register license key stored in <appSettings/>
             var licenceKeyText = System.Configuration.ConfigurationManager.AppSettings[AppSettingsKey];
+            if (!string.IsNullOrEmpty(licenceKeyText))
+            {
+                LicenseUtils.RegisterLicense(licenceKeyText);
+                return;
+            }
+
+            //or SERVICESTACK_LICENSE Environment variable
+            licenceKeyText = Environment.GetEnvironmentVariable(EnvironmentKey);
             if (!string.IsNullOrEmpty(licenceKeyText))
             {
                 LicenseUtils.RegisterLicense(licenceKeyText);
@@ -660,7 +673,25 @@ namespace ServiceStack
 #endif
     }
 
-#if __IOS__
+#if __MAC__
+	public class MacPclExport : IosPclExport 
+	{
+		public static new MacPclExport Provider = new MacPclExport();
+
+		public MacPclExport()
+		{
+			PlatformName = "MAC";
+			SupportsEmit = SupportsExpression = true;
+		}
+		
+		public new static void Configure()
+		{
+			Configure(Provider);
+		}
+	}
+#endif
+
+#if __IOS__ || __MAC__
     [Preserve(AllMembers = true)]
     internal class Poco
     {
@@ -1092,7 +1123,7 @@ namespace ServiceStack
 
         public static Hashtable ParseHashtable(string value)
         {
-            if (value == null) 
+            if (value == null)
                 return null;
 
             var index = VerifyAndGetStartIndex(value, typeof(Hashtable));
