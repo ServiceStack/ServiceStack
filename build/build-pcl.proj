@@ -91,6 +91,8 @@
       <AndroidFiles Include="$(SrcDir)/ServiceStack.Pcl.Android/bin/$(Configuration)/ServiceStack.Pcl.Android.*"></AndroidFiles>
       <IosFiles Include="$(SrcDir)/ServiceStack.Pcl.iOS/bin/iPhone/$(Configuration)/ServiceStack.Pcl.iOS.*"></IosFiles>
       <Ios10Files Include="$(SrcDir)/ServiceStack.Pcl.iOS10/bin/iPhone/$(Configuration)/ServiceStack.Pcl.iOS.*"></Ios10Files>
+      
+      <MacFiles Include="$(BuildSolutionDir)/lib/pcl/ServiceStack.Pcl.Mac20.*"></MacFiles><!-- pre-built using Xamarin Studio on OSX -->
     </ItemGroup>
 
     <!-- ServiceStack.Interfaces -->
@@ -156,7 +158,10 @@
     <MSBuild Projects="../src/ServiceStack.Pcl.iOS10/ServiceStack.Pcl.iOS10.csproj" Properties="Configuration=$(Configuration);DefineConstants=__IOS__;__UNIFIED__;OutputPath=bin/iPhone/$(Configuration)" />
     <Copy SourceFiles="%(Ios10Files.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
     <Copy SourceFiles="%(Ios10Files.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.iOS10" />
-    <Copy SourceFiles="%(Ios10Files.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.Mac20" />
+
+    <!-- Mac20 pcl provider -->
+
+    <Copy SourceFiles="%(MacFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.Mac20" />
 
       <!-- Silverlight -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.SL5.csproj"
