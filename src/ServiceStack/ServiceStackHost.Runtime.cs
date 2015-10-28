@@ -157,14 +157,11 @@ namespace ServiceStack
                 return true;
             using (Profiler.Current.Step("Executing Response Filters"))
             {
-                if (response == null)
-                    return res.IsClosed;
-
-                if (!req.IsMultiRequest() || !(response is IEnumerable))
+                var batchResponse = req.IsMultiRequest() ? response as IEnumerable : null;
+                if (batchResponse == null)
                     return ApplyResponseFiltersSingle(req, res, response);
 
-                var dtos = (IEnumerable)response;
-                foreach (var dto in dtos)
+                foreach (var dto in batchResponse)
                 {
                     if (ApplyResponseFiltersSingle(req, res, dto))
                         return true;
@@ -194,8 +191,11 @@ namespace ServiceStack
                 }
             }
 
-            ExecTypedFilters(GlobalTypedResponseFilters, req, res, response);
-            if (res.IsClosed) return res.IsClosed;
+            if (response != null)
+            {
+                ExecTypedFilters(GlobalTypedResponseFilters, req, res, response);
+                if (res.IsClosed) return res.IsClosed;
+            }
 
             //Exec global filters
             foreach (var responseFilter in GlobalResponseFilters)
