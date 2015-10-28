@@ -69,6 +69,11 @@ namespace ServiceStack.VirtualPath
             File.WriteAllBytes(realFilePath, stream.ReadFully());
         }
 
+        public void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null)
+        {
+            this.CopyFrom(files, toPath);
+        }
+
         public void DeleteFile(string filePath)
         {
             var realFilePath = RootDir.RealPath.CombineWith(filePath);

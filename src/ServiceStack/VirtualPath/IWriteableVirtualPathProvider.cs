@@ -5,11 +5,13 @@ using ServiceStack.IO;
 
 namespace ServiceStack.VirtualPath
 {
-    public interface IWriteableVirtualPathProvider
+    public interface IWriteableVirtualPathProvider : IVirtualPathProvider
     {
         void WriteFile(string filePath, string textContents);
 
         void WriteFile(string filePath, Stream stream);
+
+        void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null);
 
         void DeleteFile(string filePath);
 
@@ -71,6 +73,30 @@ namespace ServiceStack.VirtualPath
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
             writableFs.DeleteFolder(dirPath);
+        }
+
+        public static void WriteFiles(this IVirtualPathProvider pathProvider, IEnumerable<IVirtualFile> srcFiles, Func<IVirtualFile, string> toPath = null)
+        {
+            var writableFs = pathProvider as IWriteableVirtualPathProvider;
+            if (writableFs == null)
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.WriteFiles(srcFiles);
+        }
+
+        public static void CopyFrom(this IVirtualPathProvider pathProvider, IEnumerable<IVirtualFile> srcFiles, Func<IVirtualFile, string> toPath=null)
+        {
+            foreach (var file in srcFiles)
+            {
+                using (var stream = file.OpenRead())
+                {
+                    var dstPath = toPath != null ? toPath(file) : file.VirtualPath;
+                    if (dstPath == null)
+                        continue;
+
+                    pathProvider.WriteFile(dstPath, stream);
+                }
+            }
         }
     }
 }

@@ -75,6 +75,11 @@ namespace ServiceStack.VirtualPath
             });
         }
 
+        public void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null)
+        {
+            this.CopyFrom(files, toPath);
+        }
+
         public void DeleteFile(string filePath)
         {
             filePath = SanitizePath(filePath);
