@@ -8,7 +8,7 @@ namespace PclTest.Mac
 	{
 		static void Main(string[] args)
 		{
-			ServiceStack.MacPclExportClient.Configure();
+			//ServiceStack.MacPclExportClient.Configure(); //Inferred
 
 			NSApplication.Init();
 			NSApplication.Main(args);
