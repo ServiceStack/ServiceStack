@@ -55,6 +55,11 @@ namespace ServiceStack.Razor.BuildTask.Support
             throw new NotImplementedException();
         }
 
+        public IEnumerable<IVirtualFile> GetAllFiles()
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<IVirtualFile> GetRootFiles()
         {
             throw new NotImplementedException();
@@ -77,7 +82,7 @@ namespace ServiceStack.Razor.BuildTask.Support
 
         public IVirtualDirectory RootDirectory { get; private set; }
 
-        public String VirtualPathSeparator
+        public string VirtualPathSeparator
         {
             get
             {

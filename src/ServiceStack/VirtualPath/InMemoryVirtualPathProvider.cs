@@ -109,6 +109,11 @@ namespace ServiceStack.VirtualPath
             return files.Where(x => x.DirPath == fromDirPath);
         }
 
+        public override IEnumerable<IVirtualFile> GetAllFiles()
+        {
+            return files;
+        }
+
         public string GetDirPath(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))
@@ -208,7 +213,7 @@ namespace ServiceStack.VirtualPath
 
         protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(string globPattern)
         {
-            var matchingFilesInBackingDir = EnumerateFiles(globPattern).Cast<IVirtualFile>();
+            var matchingFilesInBackingDir = EnumerateFiles(globPattern);
             return matchingFilesInBackingDir;
         }
 
