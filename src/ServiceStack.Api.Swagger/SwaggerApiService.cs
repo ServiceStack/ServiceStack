@@ -196,18 +196,12 @@ namespace ServiceStack.Api.Swagger
 
         public object Get(SwaggerResource request)
         {
-            var httpReq = Request;
             var path = "/" + request.Name;
             var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
-            var basePath = HostContext.Config.WebHostUrl 
-                ?? httpReq.GetParentPathUrl().NormalizeScheme();
+            var basePath = base.Request.ResolveBaseUrl();
 
-            if (basePath.EndsWith(SwaggerResourcesService.RESOURCE_PATH, StringComparison.OrdinalIgnoreCase))
-            {
-                basePath = basePath.Substring(0, basePath.LastIndexOf(SwaggerResourcesService.RESOURCE_PATH, StringComparison.OrdinalIgnoreCase));
-            }
             var meta = HostContext.Metadata;
             foreach (var key in map.Keys)
             {
