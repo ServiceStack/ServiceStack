@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using ServiceStack.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
@@ -46,6 +47,18 @@ namespace ServiceStack.VirtualPath
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
             writableFs.WriteFile(filePath, stream);
+        }
+
+        public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, byte[] bytes)
+        {
+            var writableFs = pathProvider as IWriteableVirtualPathProvider;
+            if (writableFs == null)
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            using (var ms = MemoryStreamFactory.GetStream(bytes))
+            {
+                writableFs.WriteFile(filePath, ms);
+            }
         }
 
         public static void DeleteFile(this IVirtualPathProvider pathProvider, string filePath)
