@@ -12,6 +12,7 @@ using ServiceStack.Host.HttpListener;
 using ServiceStack.IO;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
+using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -160,9 +161,20 @@ namespace ServiceStack
             return AssertAppHost().ApplyResponseFilters(httpReq, httpRes, response);
         }
 
+        /// <summary>
+        /// Cascading number of file sources, inc. Embedded Resources, File System, In Memory, S3
+        /// </summary>
         public static IVirtualPathProvider VirtualPathProvider
         {
             get { return AssertAppHost().VirtualPathProvider; }
+        }
+
+        /// <summary>
+        /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
+        /// </summary>
+        public static IVirtualFileSystem VirtualFileSystem
+        {
+            get { return AssertAppHost().VirtualFileSystem; }
         }
 
         /// <summary>
