@@ -154,11 +154,17 @@ namespace ServiceStack
 
             if (VirtualPathProvider == null)
             {
-                var pathProviders = GetVirtualPathProviders();
+                var pathProviders = GetVirtualPathProviders().Where(x => x != null).ToList();
 
                 VirtualPathProvider = pathProviders.Count > 1
                     ? new MultiVirtualPathProvider(this, pathProviders.ToArray())
                     : pathProviders.First();
+            }
+
+            if (VirtualFileSystem == null)
+            {
+                var fs = GetVirtualPathProviders().FirstOrDefault(x => x is FileSystemVirtualPathProvider);
+                VirtualFileSystem = fs as IVirtualFileSystem;
             }
 
             OnAfterInit();
@@ -311,7 +317,15 @@ namespace ServiceStack
 
         public List<IPlugin> Plugins { get; set; }
 
+        /// <summary>
+        /// Cascading number of file sources, inc. Embedded Resources, File System, In Memory, S3
+        /// </summary>
         public IVirtualPathProvider VirtualPathProvider { get; set; }
+
+        /// <summary>
+        /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
+        /// </summary>
+        public IVirtualFileSystem VirtualFileSystem { get; set; }
 
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
