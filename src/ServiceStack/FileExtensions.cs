@@ -1,4 +1,5 @@
 using System.IO;
+using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -12,6 +13,11 @@ namespace ServiceStack
             {
                 httpFile.InputStream.WriteTo(sw.BaseStream);
             }
+        }
+
+        public static void SaveTo(this IHttpFile httpFile, IVirtualFileSystem vfs, string filePath)
+        {
+            vfs.WriteFile(filePath, httpFile.InputStream);
         }
 
         public static void WriteTo(this IHttpFile httpFile, Stream stream)

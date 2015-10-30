@@ -43,7 +43,8 @@ namespace ServiceStack.AuthWeb.Tests
         public static ILog Log = LogManager.GetLogger(typeof(AppHost));
 
         public AppHost()
-            : base("Test Auth", typeof(AppHost).Assembly) { }
+            : base("Test Auth", typeof(AppHost).Assembly)
+        { }
 
         public override void Configure(Container container)
         {
@@ -57,15 +58,17 @@ namespace ServiceStack.AuthWeb.Tests
             {
                 container.Register<IDbConnectionFactory>(
                     new OrmLiteConnectionFactory(
-                        "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200", 
-                        PostgreSqlDialect.Provider) {
-                            ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
-                        });
+                        "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+                        PostgreSqlDialect.Provider)
+                    {
+                        ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+                    });
             }
             else
             {
                 container.Register<IDbConnectionFactory>(
-                    new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider) {
+                    new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider)
+                    {
                         ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
                     });
             }
@@ -88,7 +91,8 @@ namespace ServiceStack.AuthWeb.Tests
             using (var db = container.Resolve<IDbConnectionFactory>().Open())
                 db.DropAndCreateTable<UserTable>();
 
-            SetConfig(new HostConfig {
+            SetConfig(new HostConfig
+            {
                 DebugMode = true,
                 AddRedirectParamsToQueryString = true,
             });
@@ -119,7 +123,7 @@ namespace ServiceStack.AuthWeb.Tests
                         //    authCtx.Request.UserHostAddress.StartsWith("175.45.17")
                         //        ? HttpResult.Redirect("https://youtu.be/dQw4w9WgXcQ")
                         //        : null
-                    },        
+                    },
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
                     new DigestAuthProvider(appSettings),        //Sign-in with Digest Auth
@@ -174,9 +178,20 @@ namespace ServiceStack.AuthWeb.Tests
                     UserName = "mythz",
                 }, "test");
             }
-            catch (Exception) {}
+            catch (Exception) { }
 
             Plugins.Add(new RequestLogsFeature());
+
+            this.GlobalResponseFilters.Add((req, res, responseDto) =>
+            {
+                var authResponse = responseDto as AuthenticateResponse;
+                if (authResponse != null)
+                {
+                    authResponse.Meta = new Dictionary<string, string> {
+                        {"foo", "bar"}
+                    };
+                }
+            });
         }
 
         private static IUserAuthRepository CreateRavenDbAuthRepo(Container container, AppSettings appSettings)
@@ -206,7 +221,7 @@ namespace ServiceStack.AuthWeb.Tests
 
             var authRepo = (IUserAuthRepository)container.Resolve<IAuthRepository>();
             authRepo.InitSchema(); //unnecessary, but staying consistent
-            
+
             return authRepo;
         }
 
@@ -215,10 +230,10 @@ namespace ServiceStack.AuthWeb.Tests
             //Store User Data into the referenced SqlServer database
             container.Register<IAuthRepository>(c =>
                 new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
-            
+
             //Use OrmLite DB Connection to persist the UserAuth and AuthProvider info
-            var authRepo = (OrmLiteAuthRepository) container.Resolve<IAuthRepository>();
-                //If using and RDBMS to persist UserAuth, we must create required tables
+            var authRepo = (OrmLiteAuthRepository)container.Resolve<IAuthRepository>();
+            //If using and RDBMS to persist UserAuth, we must create required tables
             if (appSettings.Get("RecreateAuthTables", false))
                 authRepo.DropAndReCreateTables(); //Drop and re-create all Auth and registration tables
             else
@@ -312,7 +327,8 @@ namespace ServiceStack.AuthWeb.Tests
         {
             using (var service = base.ResolveService<AuthenticateService>())
             {
-                return service.Post(new Authenticate {
+                return service.Post(new Authenticate
+                {
                     provider = AuthenticateService.CredentialsProvider,
                     UserName = request.UserName,
                 });
