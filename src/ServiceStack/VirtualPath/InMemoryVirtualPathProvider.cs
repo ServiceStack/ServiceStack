@@ -56,6 +56,11 @@ namespace ServiceStack.VirtualPath
             return new InMemoryVirtualDirectory(this, dirPath);
         }
 
+        public override bool DirectoryExists(string virtualPath)
+        {
+            return GetDirectory(virtualPath).Files.Any();
+        }
+
         public void WriteFile(string filePath, string textContents)
         {
             filePath = SanitizePath(filePath);
@@ -287,7 +292,7 @@ namespace ServiceStack.VirtualPath
             {
                 return TextContents != null ? 
                     TextContents.Length 
-                      : ByteContents != null ? 
+                  : ByteContents != null ? 
                     ByteContents.Length : 
                     0;
             }

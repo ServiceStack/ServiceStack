@@ -156,6 +156,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             allFilePaths.Each(x => pathProvider.WriteFile(x, x.SplitOnLast('.').First().SplitOnLast('/').Last()));
 
+            Assert.That(allFilePaths.All(x => pathProvider.IsFile(x)));
+            Assert.That(new[] { "a", "a/b", "a/b/c", "a/d", "e" }.All(x => pathProvider.IsDirectory(x)));
+
+            Assert.That(!pathProvider.IsFile("notfound.txt"));
+            Assert.That(!pathProvider.IsFile("a/notfound.txt"));
+            Assert.That(!pathProvider.IsDirectory("f"));
+            Assert.That(!pathProvider.IsDirectory("a/f"));
+
             AssertContents(pathProvider.RootDirectory, new[] {
                     "testfile.txt",
                 }, new[] {
