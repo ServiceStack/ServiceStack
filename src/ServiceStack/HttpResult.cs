@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Web;
 using ServiceStack.Host;
+using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -73,8 +74,33 @@ namespace ServiceStack
                 "modification-date=" + fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "") + "; " +
                 "read-date=" + fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "");
 
-            this.Headers = new Dictionary<string, string> {
-                { HttpHeaders.ContentDisposition, headerValue },
+            this.Headers = new Dictionary<string, string>
+            {
+                {HttpHeaders.ContentDisposition, headerValue},
+            };
+        }
+
+        public HttpResult(IVirtualFile fileResponse, bool asAttachment)
+            : this(fileResponse, MimeTypes.GetMimeType(fileResponse.Name), asAttachment)
+        { }
+
+        public HttpResult(IVirtualFile fileResponse, string contentType = null, bool asAttachment = false)
+            : this(null, contentType ?? MimeTypes.GetMimeType(fileResponse.Name), HttpStatusCode.OK)
+        {
+            this.AllowsPartialResponse = true;
+            this.ResponseStream = fileResponse.OpenRead();
+
+            if (!asAttachment) return;
+
+            var headerValue =
+                "attachment; " +
+                "filename=\"" + fileResponse.Name + "\"; " +
+                "size=" + fileResponse.Length + "; " +
+                "modification-date=" + fileResponse.LastModified.ToString("R").Replace(",", "");
+
+            this.Headers = new Dictionary<string, string>
+            {
+                { HttpHeaders.ContentDisposition, headerValue},
             };
         }
 
@@ -111,7 +137,7 @@ namespace ServiceStack
 
         public List<Cookie> Cookies { get; private set; }
 
-        public Func<IDisposable> ResultScope { get; set; } 
+        public Func<IDisposable> ResultScope { get; set; }
 
         private bool allowsPartialResponse;
         public bool AllowsPartialResponse
@@ -434,7 +460,7 @@ namespace ServiceStack
             {
                 Expires = httpCookie.Expires,
                 Secure = httpCookie.Secure,
-                HttpOnly = httpCookie.HttpOnly,                
+                HttpOnly = httpCookie.HttpOnly,
             };
 
             if (httpCookie.Domain != null)
