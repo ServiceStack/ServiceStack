@@ -180,9 +180,9 @@ namespace CheckWeb
             //Plugins.Add(new CorsFeature()); // Uncomment if the services to be available from external sites
         }
 
-        public override List<IVirtualPathProvider> GetVirtualPathProviders()
+        public override List<IVirtualPathProvider> GetVirtualFileSources()
         {
-            var existingProviders = base.GetVirtualPathProviders();
+            var existingProviders = base.GetVirtualFileSources();
             var memFs = new InMemoryVirtualPathProvider(this);
 
             //Get FileSystem Provider

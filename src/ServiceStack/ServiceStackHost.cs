@@ -157,7 +157,7 @@ namespace ServiceStack
 
             if (VirtualFileSources == null)
             {
-                var pathProviders = GetVirtualPathProviders().Where(x => x != null).ToList();
+                var pathProviders = GetVirtualFileSources().Where(x => x != null).ToList();
 
                 VirtualFileSources = pathProviders.Count > 1
                     ? new MultiVirtualPathProvider(this, pathProviders.ToArray())
@@ -194,7 +194,13 @@ namespace ServiceStack
             }
         }
 
+        [Obsolete("Renamed to GetVirtualFileSources")]
         public virtual List<IVirtualPathProvider> GetVirtualPathProviders()
+        {
+            return GetVirtualFileSources();
+        }
+
+        public virtual List<IVirtualPathProvider> GetVirtualFileSources()
         {
             var pathProviders = new List<IVirtualPathProvider> {
                 new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath)
@@ -211,7 +217,7 @@ namespace ServiceStack
 
         public virtual IVirtualFiles GetFileSystemProvider()
         {
-            var fs = GetVirtualPathProviders().FirstOrDefault(x => x is FileSystemVirtualPathProvider);
+            var fs = GetVirtualFileSources().FirstOrDefault(x => x is FileSystemVirtualPathProvider);
             return fs as IVirtualFiles;
         }
 
