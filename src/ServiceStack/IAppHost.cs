@@ -162,10 +162,18 @@ namespace ServiceStack
         /// </summary>
         void LoadPlugin(params IPlugin[] plugins);
 
-        /// <summary>
-        /// Virtual access to file resources
-        /// </summary>
+        [Obsolete("Renamed to VirtualFileSources")]
         IVirtualPathProvider VirtualPathProvider { get; set; }
+
+        /// <summary>
+        /// Cascading number of file sources, inc. Embedded Resources, File System, In Memory, S3
+        /// </summary>
+        IVirtualPathProvider VirtualFileSources { get; set; }
+
+        /// <summary>
+        /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
+        /// </summary>
+        IVirtualFiles VirtualFiles { get; set; }
 
         /// <summary>
         /// Create a service runner for IService actions

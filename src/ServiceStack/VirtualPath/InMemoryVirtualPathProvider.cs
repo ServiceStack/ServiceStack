@@ -7,13 +7,13 @@ using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
-    [Obsolete("Renamed to IVirtualFileSystem")]
-    public interface IWriteableVirtualPathProvider : IVirtualFileSystem {}
+    [Obsolete("Renamed to IVirtualFiles")]
+    public interface IWriteableVirtualPathProvider : IVirtualFiles { }
 
     /// <summary>
     /// In Memory Virtual Path Provider.
     /// </summary>
-    public class InMemoryVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFileSystem, IWriteableVirtualPathProvider
+    public class InMemoryVirtualPathProvider : AbstractVirtualPathProviderBase, IWriteableVirtualPathProvider
     {
         public InMemoryVirtualPathProvider(IAppHost appHost)
             : base(appHost)

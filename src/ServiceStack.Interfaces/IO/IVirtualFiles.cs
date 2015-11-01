@@ -4,7 +4,7 @@ using System.IO;
 
 namespace ServiceStack.IO
 {
-    public interface IVirtualFileSystem : IVirtualPathProvider
+    public interface IVirtualFiles : IVirtualPathProvider
     {
         void WriteFile(string filePath, string textContents);
 

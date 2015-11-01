@@ -32,6 +32,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+
     [TestFixture]
     public abstract class VirtualPathProviderTests
     {
@@ -163,6 +164,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(!pathProvider.IsFile("a/notfound.txt"));
             Assert.That(!pathProvider.IsDirectory("f"));
             Assert.That(!pathProvider.IsDirectory("a/f"));
+            Assert.That(!pathProvider.IsDirectory("testfile.txt"));
+            Assert.That(!pathProvider.IsDirectory("a/testfile-a1.txt"));
 
             AssertContents(pathProvider.RootDirectory, new[] {
                     "testfile.txt",

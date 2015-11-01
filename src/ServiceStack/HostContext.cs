@@ -162,19 +162,25 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Cascading number of file sources, inc. Embedded Resources, File System, In Memory, S3
+        /// Cascading collection of virtual file sources, inc. Embedded Resources, File System, In Memory, S3
         /// </summary>
+        public static IVirtualPathProvider VirtualFileSources
+        {
+            get { return AssertAppHost().VirtualFileSources; }
+        }
+
+        [Obsolete("Renamed to VirtualFileSources")]
         public static IVirtualPathProvider VirtualPathProvider
         {
-            get { return AssertAppHost().VirtualPathProvider; }
+            get { return AssertAppHost().VirtualFileSources; }
         }
 
         /// <summary>
         /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
         /// </summary>
-        public static IVirtualFileSystem VirtualFileSystem
+        public static IVirtualFiles VirtualFiles
         {
-            get { return AssertAppHost().VirtualFileSystem; }
+            get { return AssertAppHost().VirtualFiles; }
         }
 
         /// <summary>

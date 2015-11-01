@@ -249,9 +249,9 @@ namespace ServiceStack.Razor
             if (this.VirtualPathProvider == null)
                 throw new ArgumentNullException("VirtualPathProvider");
 
-            var writableFileProvider = this.VirtualPathProvider as IVirtualFileSystem;
+            var writableFileProvider = this.VirtualPathProvider as IVirtualFiles;
             if (writableFileProvider == null)
-                throw new InvalidOperationException("VirtualPathProvider is not IVirtualFileSystem");
+                throw new InvalidOperationException("VirtualPathProvider is not IVirtualFiles");
 
             var tmpPath = "/__tmp/{0}.cshtml".Fmt(Guid.NewGuid().ToString("N"));
             writableFileProvider.WriteFile(tmpPath, razorContents);

@@ -8,7 +8,7 @@ namespace ServiceStack.VirtualPath
 {
     public static class VirtualPathProviderExtensions
     {
-        private const string ErrorNotWritable = "{0} does not implement IVirtualFileSystem";
+        private const string ErrorNotWritable = "{0} does not implement IVirtualFiles";
 
         public static bool IsFile(this IVirtualPathProvider pathProvider, string filePath)
         {
@@ -28,7 +28,7 @@ namespace ServiceStack.VirtualPath
 
         public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, string textContents)
         {
-            var writableFs = pathProvider as IVirtualFileSystem;
+            var writableFs = pathProvider as IVirtualFiles;
             if (writableFs == null)
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
@@ -37,7 +37,7 @@ namespace ServiceStack.VirtualPath
 
         public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, Stream stream)
         {
-            var writableFs = pathProvider as IVirtualFileSystem;
+            var writableFs = pathProvider as IVirtualFiles;
             if (writableFs == null)
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
@@ -46,7 +46,7 @@ namespace ServiceStack.VirtualPath
 
         public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, byte[] bytes)
         {
-            var writableFs = pathProvider as IVirtualFileSystem;
+            var writableFs = pathProvider as IVirtualFiles;
             if (writableFs == null)
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
@@ -58,7 +58,7 @@ namespace ServiceStack.VirtualPath
 
         public static void WriteFile(this IVirtualPathProvider pathProvider, IVirtualFile file, string filePath = null)
         {
-            var writableFs = pathProvider as IVirtualFileSystem;
+            var writableFs = pathProvider as IVirtualFiles;
             if (writableFs == null)
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
@@ -70,7 +70,7 @@ namespace ServiceStack.VirtualPath
 
         public static void DeleteFile(this IVirtualPathProvider pathProvider, string filePath)
         {
-            var writableFs = pathProvider as IVirtualFileSystem;
+            var writableFs = pathProvider as IVirtualFiles;
             if (writableFs == null)
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
@@ -84,7 +84,7 @@ namespace ServiceStack.VirtualPath
 
         public static void DeleteFiles(this IVirtualPathProvider pathProvider, IEnumerable<string> filePaths)
         {
-            var writableFs = pathProvider as IVirtualFileSystem;
+            var writableFs = pathProvider as IVirtualFiles;
             if (writableFs == null)
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
@@ -93,7 +93,7 @@ namespace ServiceStack.VirtualPath
 
         public static void DeleteFiles(this IVirtualPathProvider pathProvider, IEnumerable<IVirtualFile> files)
         {
-            var writableFs = pathProvider as IVirtualFileSystem;
+            var writableFs = pathProvider as IVirtualFiles;
             if (writableFs == null)
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
@@ -102,7 +102,7 @@ namespace ServiceStack.VirtualPath
 
         public static void DeleteFolder(this IVirtualPathProvider pathProvider, string dirPath)
         {
-            var writableFs = pathProvider as IVirtualFileSystem;
+            var writableFs = pathProvider as IVirtualFiles;
             if (writableFs == null)
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
@@ -111,7 +111,7 @@ namespace ServiceStack.VirtualPath
 
         public static void WriteFiles(this IVirtualPathProvider pathProvider, IEnumerable<IVirtualFile> srcFiles, Func<IVirtualFile, string> toPath = null)
         {
-            var writableFs = pathProvider as IVirtualFileSystem;
+            var writableFs = pathProvider as IVirtualFiles;
             if (writableFs == null)
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 

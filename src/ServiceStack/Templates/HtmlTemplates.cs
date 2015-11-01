@@ -29,7 +29,7 @@ namespace ServiceStack.Templates
         private static string LoadTemplate(string templateName)
         {
             var templatePath = "/Templates/" + templateName;
-            var file = HostContext.VirtualPathProvider.GetFile(templatePath);
+            var file = HostContext.VirtualFileSources.GetFile(templatePath);
             if (file == null)
                 throw new FileNotFoundException("Could not load HTML template embedded resource: " + templatePath, templateName);
 

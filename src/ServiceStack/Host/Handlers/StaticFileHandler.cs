@@ -113,13 +113,13 @@ namespace ServiceStack.Host.Handlers
                         {
                             //Create a case-insensitive file index of all host files
                             if (allFiles == null)
-                                allFiles = CreateFileIndex(HostContext.VirtualPathProvider.RootDirectory.RealPath);
+                                allFiles = CreateFileIndex(HostContext.VirtualFileSources.RootDirectory.RealPath);
                             if (allDirs == null)
-                                allDirs = CreateDirIndex(HostContext.VirtualPathProvider.RootDirectory.RealPath);
+                                allDirs = CreateDirIndex(HostContext.VirtualFileSources.RootDirectory.RealPath);
 
                             if (allFiles.TryGetValue(fileName.ToLower(), out fileName))
                             {
-                                file = HostContext.VirtualPathProvider.GetFile(fileName);
+                                file = HostContext.VirtualFileSources.GetFile(fileName);
                             }
                         }
 

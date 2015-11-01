@@ -15,7 +15,7 @@ namespace ServiceStack
             }
         }
 
-        public static void SaveTo(this IHttpFile httpFile, IVirtualFileSystem vfs, string filePath)
+        public static void SaveTo(this IHttpFile httpFile, IVirtualFiles vfs, string filePath)
         {
             vfs.WriteFile(filePath, httpFile.InputStream);
         }

@@ -152,20 +152,17 @@ namespace ServiceStack
 
             ConfigurePlugins();
 
-            if (VirtualPathProvider == null)
+            if (VirtualFileSources == null)
             {
                 var pathProviders = GetVirtualPathProviders().Where(x => x != null).ToList();
 
-                VirtualPathProvider = pathProviders.Count > 1
+                VirtualFileSources = pathProviders.Count > 1
                     ? new MultiVirtualPathProvider(this, pathProviders.ToArray())
                     : pathProviders.First();
             }
 
-            if (VirtualFileSystem == null)
-            {
-                var fs = GetVirtualPathProviders().FirstOrDefault(x => x is FileSystemVirtualPathProvider);
-                VirtualFileSystem = fs as IVirtualFileSystem;
-            }
+            if (VirtualFiles == null)
+                VirtualFiles = GetFileSystemProvider();
 
             OnAfterInit();
 
@@ -210,6 +207,12 @@ namespace ServiceStack
                 .Map(x => new ResourceVirtualPathProvider(this, x)));
 
             return pathProviders;
+        }
+
+        public virtual IVirtualFiles GetFileSystemProvider()
+        {
+            var fs = GetVirtualPathProviders().FirstOrDefault(x => x is FileSystemVirtualPathProvider);
+            return fs as IVirtualFiles;
         }
 
         public virtual ServiceStackHost Start(string urlBase)
@@ -317,15 +320,16 @@ namespace ServiceStack
 
         public List<IPlugin> Plugins { get; set; }
 
-        /// <summary>
-        /// Cascading number of file sources, inc. Embedded Resources, File System, In Memory, S3
-        /// </summary>
-        public IVirtualPathProvider VirtualPathProvider { get; set; }
+        public IVirtualPathProvider VirtualFileSources { get; set; }
 
-        /// <summary>
-        /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
-        /// </summary>
-        public IVirtualFileSystem VirtualFileSystem { get; set; }
+        [Obsolete("Renamed to VirtualFileSources")]
+        public IVirtualPathProvider VirtualPathProvider
+        {
+            get { return VirtualFileSources; }
+            set { VirtualFileSources = value; }
+        }
+
+        public IVirtualFiles VirtualFiles { get; set; }
 
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
