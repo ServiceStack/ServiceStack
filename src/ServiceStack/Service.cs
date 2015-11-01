@@ -4,6 +4,7 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
+using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
 using ServiceStack.Web;
@@ -104,6 +105,22 @@ namespace ServiceStack
         public virtual ISessionFactory SessionFactory
         {
             get { return sessionFactory ?? (sessionFactory = TryResolve<ISessionFactory>()) ?? new SessionFactory(Cache); }
+        }
+
+        /// <summary>
+        /// Cascading collection of virtual file sources, inc. Embedded Resources, File System, In Memory, S3
+        /// </summary>
+        public IVirtualPathProvider VirtualFileSources
+        {
+            get { return HostContext.VirtualFileSources; }
+        }
+
+        /// <summary>
+        /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
+        /// </summary>
+        public IVirtualFiles VirtualFiles
+        {
+            get { return HostContext.VirtualFiles; }
         }
 
         /// <summary>
