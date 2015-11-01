@@ -90,6 +90,19 @@ namespace ServiceStack.Razor.Managers
             return AddPage(newFile);
         }
 
+        public virtual RazorPage RefreshPage(string filePath)
+        {
+            var file = GetVirtualFile(filePath);
+            var page = GetPage(file);
+            if (page != null)
+            {
+                InvalidatePage(page, compile:true);
+                return page;
+            }
+
+            return AddPage(file);
+        }
+
         public virtual void InvalidatePage(RazorPage page, bool compile = true)
         {
             if (page.IsValid || page.IsCompiling)
@@ -348,7 +361,9 @@ namespace ServiceStack.Razor.Managers
                     page.IsValid = true;
 
                     compileTimer.Stop();
-                    Log.DebugFormat("Compiled Razor page '{0}' in {1}ms.", page.File.Name, compileTimer.ElapsedMilliseconds);
+
+                    if (Log.IsDebugEnabled)
+                        Log.DebugFormat("Compiled Razor page '{0}' in {1}ms.", page.File.Name, compileTimer.ElapsedMilliseconds);
                 }
                 catch (HttpCompileException ex)
                 {

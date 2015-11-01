@@ -234,6 +234,11 @@ namespace ServiceStack.Razor
             return ViewManager.AddPage(filePath);
         }
 
+        public RazorPage RefreshPage(string filePath)
+        {
+            return ViewManager.RefreshPage(filePath);
+        }
+
         public RazorPage GetViewPage(string pageName)
         {
             return ViewManager.GetViewPage(pageName);
