@@ -62,6 +62,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             pathProvider.WriteFile(filePath, "file");
 
             var file = pathProvider.GetFile(filePath);
+            Assert.That(file.ReadAllText(), Is.EqualTo("file")); //can read twice
 
             Assert.That(file.ReadAllText(), Is.EqualTo("file"));
             Assert.That(file.VirtualPath, Is.EqualTo(filePath));
