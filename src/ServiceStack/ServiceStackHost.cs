@@ -152,6 +152,9 @@ namespace ServiceStack
 
             ConfigurePlugins();
 
+            if (VirtualFiles == null)
+                VirtualFiles = GetFileSystemProvider();
+
             if (VirtualFileSources == null)
             {
                 var pathProviders = GetVirtualPathProviders().Where(x => x != null).ToList();
@@ -160,9 +163,6 @@ namespace ServiceStack
                     ? new MultiVirtualPathProvider(this, pathProviders.ToArray())
                     : pathProviders.First();
             }
-
-            if (VirtualFiles == null)
-                VirtualFiles = GetFileSystemProvider();
 
             OnAfterInit();
 
@@ -320,6 +320,8 @@ namespace ServiceStack
 
         public List<IPlugin> Plugins { get; set; }
 
+        public IVirtualFiles VirtualFiles { get; set; }
+
         public IVirtualPathProvider VirtualFileSources { get; set; }
 
         [Obsolete("Renamed to VirtualFileSources")]
@@ -328,8 +330,6 @@ namespace ServiceStack
             get { return VirtualFileSources; }
             set { VirtualFileSources = value; }
         }
-
-        public IVirtualFiles VirtualFiles { get; set; }
 
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.

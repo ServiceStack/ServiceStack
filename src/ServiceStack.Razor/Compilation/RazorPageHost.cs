@@ -177,7 +177,7 @@ namespace ServiceStack.Razor.Compilation
                 }
                 catch (Exception e)
                 {
-                    throw new HttpParseException(e.Message, e, this.File.VirtualPath, null, 1);
+                    throw new HttpParseException(e.Message, e, GetAbsoluteErrorPath(this.File.VirtualPath), null, 1);
                 }
 
                 //Throw the first parser message to generate the YSOD
@@ -185,11 +185,19 @@ namespace ServiceStack.Razor.Compilation
                 if  (results.ParserErrors.Count > 0)
                 {
                     var error = results.ParserErrors[0];
-                    throw new HttpParseException(error.Message, null, this.File.VirtualPath, null, error.Location.LineIndex + 1);
+                    throw new HttpParseException(error.Message, null, GetAbsoluteErrorPath(this.File.VirtualPath), null, error.Location.LineIndex + 1);
                 }
 
                 return results;
             }
+        }
+
+        public string GetAbsoluteErrorPath(string path)
+        {
+            //HttpParseException throws if given a virtual path
+            return string.IsNullOrEmpty(path)
+                ? path
+                : (path.StartsWith("/") || path.Contains(":")) ? path : ("/" + path);
         }
 
         public Dictionary<string, string> DebugSourceFiles = new Dictionary<string, string>();

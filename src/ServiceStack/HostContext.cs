@@ -12,7 +12,6 @@ using ServiceStack.Host.HttpListener;
 using ServiceStack.IO;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
-using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -162,6 +161,14 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
+        /// </summary>
+        public static IVirtualFiles VirtualFiles
+        {
+            get { return AssertAppHost().VirtualFiles; }
+        }
+
+        /// <summary>
         /// Cascading collection of virtual file sources, inc. Embedded Resources, File System, In Memory, S3
         /// </summary>
         public static IVirtualPathProvider VirtualFileSources
@@ -173,14 +180,6 @@ namespace ServiceStack
         public static IVirtualPathProvider VirtualPathProvider
         {
             get { return AssertAppHost().VirtualFileSources; }
-        }
-
-        /// <summary>
-        /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
-        /// </summary>
-        public static IVirtualFiles VirtualFiles
-        {
-            get { return AssertAppHost().VirtualFiles; }
         }
 
         /// <summary>
