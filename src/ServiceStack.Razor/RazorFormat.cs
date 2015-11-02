@@ -49,6 +49,7 @@ namespace ServiceStack.Razor
         public List<Assembly> LoadFromAssemblies { get; set; }
         public List<Predicate<string>> Deny { get; set; }
         public bool? EnableLiveReload { get; set; }
+        public bool? CheckLastModifiedForChanges { get; set; }
         public bool? PrecompilePages { get; set; }
         public bool? WaitForPrecompilationOnStartup { get; set; }
         public bool MinifyHtml { get; set; }
@@ -104,6 +105,9 @@ namespace ServiceStack.Razor
             this.VirtualPathProvider = VirtualPathProvider ?? appHost.VirtualPathProvider;
             this.WebHostUrl = WebHostUrl ?? appHost.Config.WebHostUrl;
             this.EnableLiveReload = this.EnableLiveReload ?? appHost.Config.DebugMode;
+            if (CheckLastModifiedForChanges == true)
+                EnableLiveReload = false; //Don't enable both File Watcher + LastModified checks
+
             this.PrecompilePages = this.PrecompilePages ?? !this.EnableLiveReload;
             this.WaitForPrecompilationOnStartup = this.WaitForPrecompilationOnStartup ?? !this.EnableLiveReload;
 

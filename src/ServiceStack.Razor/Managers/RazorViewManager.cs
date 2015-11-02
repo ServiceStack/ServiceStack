@@ -33,6 +33,7 @@ namespace ServiceStack.Razor.Managers
 
         public bool IncludeDebugInformation { get; set; }
         public Action<CompilerParameters> CompileFilter { get; set; }
+        public bool CheckLastModifiedForChanges { get; set; }
 
         protected IVirtualPathProvider PathProvider = null;
 
@@ -94,13 +95,11 @@ namespace ServiceStack.Razor.Managers
         {
             var file = GetVirtualFile(filePath);
             var page = GetPage(file);
-            if (page != null)
-            {
-                InvalidatePage(page, compile:true);
-                return page;
-            }
+            if (page == null)
+                throw new ArgumentException("No RazorPage found at: " + filePath);
 
-            return AddPage(file);
+            InvalidatePage(page, compile: true);
+            return page;
         }
 
         public virtual void InvalidatePage(RazorPage page, bool compile = true)
@@ -337,6 +336,16 @@ namespace ServiceStack.Razor.Managers
         public virtual void EnsureCompiled(RazorPage page)
         {
             if (page == null) return;
+            if (CheckLastModifiedForChanges && page.IsValid)
+            {
+                lock (page.SyncRoot)
+                {
+                    var prevLastModified = page.File.LastModified;
+                    page.File.Refresh();
+                    page.IsValid = prevLastModified == page.File.LastModified;
+                }
+            }
+
             if (page.IsValid) return;
             if (page.PageHost == null)
             {
