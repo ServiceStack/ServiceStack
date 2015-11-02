@@ -665,6 +665,16 @@ namespace ServiceStack
             return this.Container.Resolve<T>();
         }
 
+        public T GetPlugin<T>() where T : class, IPlugin
+        {
+            return Plugins.FirstOrDefault(x => x is T) as T;
+        }
+
+        public bool HasPlugin<T>() where T : class, IPlugin
+        {
+            return Plugins.FirstOrDefault(x => x is T) != null;
+        }
+
         public virtual IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
         {
             //cached per service action
