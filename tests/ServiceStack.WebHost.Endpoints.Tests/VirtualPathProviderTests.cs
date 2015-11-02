@@ -95,7 +95,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             pathProvider.WriteFile(filePath, "file2");
             file.Refresh();
 
-            if (file.GetType().Name == "S3VirtualFile" && file.LastModified == prevLastModified)
+            //Can be too quick and share same modifieddate sometimes, try again with a delay
+            if (file.LastModified == prevLastModified)
             {
                 Thread.Sleep(1000);
                 pathProvider.WriteFile(filePath, "file3");
