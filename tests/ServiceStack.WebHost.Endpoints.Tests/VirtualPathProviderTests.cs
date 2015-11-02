@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Threading;
 using NUnit.Framework;
 using ServiceStack.IO;
 using ServiceStack.Testing;
@@ -62,9 +63,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             pathProvider.WriteFile(filePath, "file");
 
             var file = pathProvider.GetFile(filePath);
-            Assert.That(file.ReadAllText(), Is.EqualTo("file")); //can read twice
 
             Assert.That(file.ReadAllText(), Is.EqualTo("file"));
+            Assert.That(file.ReadAllText(), Is.EqualTo("file")); //can read twice
+
             Assert.That(file.VirtualPath, Is.EqualTo(filePath));
             Assert.That(file.Name, Is.EqualTo("file.txt"));
             Assert.That(file.Directory.Name, Is.EqualTo("dir"));
@@ -72,6 +74,35 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(file.Extension, Is.EqualTo("txt"));
 
             Assert.That(file.Directory.Name, Is.EqualTo("dir"));
+
+            pathProvider.DeleteFolder("dir");
+        }
+
+        [Test]
+        public void Does_refresh_LastModified()
+        {
+            var pathProvider = GetPathProvider();
+
+            var filePath = "dir/file.txt";
+            pathProvider.WriteFile(filePath, "file1");
+
+            var file = pathProvider.GetFile(filePath);
+            var prevLastModified = file.LastModified;
+
+            file.Refresh();
+            Assert.That(file.LastModified, Is.EqualTo(prevLastModified));
+
+            pathProvider.WriteFile(filePath, "file2");
+            file.Refresh();
+
+            if (file.GetType().Name == "S3VirtualFile" && file.LastModified == prevLastModified)
+            {
+                Thread.Sleep(1000);
+                pathProvider.WriteFile(filePath, "file3");
+                file.Refresh();
+            }
+
+            Assert.That(file.LastModified, Is.Not.EqualTo(prevLastModified));
 
             pathProvider.DeleteFolder("dir");
         }

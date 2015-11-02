@@ -69,6 +69,7 @@ namespace ServiceStack.VirtualPath
             {
                 FilePath = filePath,
                 TextContents = textContents,
+                FileLastModified = DateTime.UtcNow,
             });
         }
 
@@ -80,6 +81,7 @@ namespace ServiceStack.VirtualPath
             {
                 FilePath = filePath,
                 ByteContents = stream.ReadFully(),
+                FileLastModified = DateTime.UtcNow,
             });
         }
 
@@ -305,6 +307,18 @@ namespace ServiceStack.VirtualPath
         public override Stream OpenRead()
         {
             return MemoryStreamFactory.GetStream(ByteContents ?? (TextContents ?? "").ToUtf8Bytes());
+        }
+
+        public override void Refresh()
+        {
+            var file = base.VirtualPathProvider.GetFile(VirtualPath) as InMemoryVirtualFile;
+            if (file != null)
+            {
+                this.FilePath = file.FilePath;
+                this.FileLastModified = file.FileLastModified;
+                this.TextContents = file.TextContents;
+                this.ByteContents = file.ByteContents;
+            }
         }
     }
 }
