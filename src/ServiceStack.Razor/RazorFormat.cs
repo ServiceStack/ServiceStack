@@ -10,7 +10,6 @@ using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Compilation;
 using ServiceStack.Razor.Managers;
-using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
 namespace ServiceStack.Razor
@@ -55,7 +54,15 @@ namespace ServiceStack.Razor
         public bool MinifyHtml { get; set; }
         public bool UseAdvancedCompression { get; set; }
         public bool LoadUnloadedAssemblies { get; set; }
-        public IVirtualPathProvider VirtualPathProvider { get; set; }
+        public IVirtualPathProvider VirtualFileSources { get; set; }
+
+        [Obsolete("Renamed to VirtualFileSources")]
+        public IVirtualPathProvider VirtualPathProvider
+        {
+            get { return VirtualFileSources; }
+            set { VirtualFileSources = value; }
+        }
+
         public ILiveReload LiveReload { get; set; }
         public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
         public RenderPartialDelegate RenderPartialFn { get; set; }
@@ -102,7 +109,7 @@ namespace ServiceStack.Razor
         public void Register(IAppHost appHost)
         {
             this.ScanRootPath = this.ScanRootPath ?? appHost.Config.WebHostPhysicalPath;
-            this.VirtualPathProvider = VirtualPathProvider ?? appHost.VirtualPathProvider;
+            this.VirtualFileSources = VirtualFileSources ?? appHost.VirtualFileSources;
             this.WebHostUrl = WebHostUrl ?? appHost.Config.WebHostUrl;
             this.EnableLiveReload = this.EnableLiveReload ?? appHost.Config.DebugMode;
             if (CheckLastModifiedForChanges == true)
@@ -207,10 +214,11 @@ namespace ServiceStack.Razor
 
         public virtual RazorViewManager CreateViewManager()
         {
-            return new RazorViewManager(this, VirtualPathProvider)
+            return new RazorViewManager(this, VirtualFileSources)
             {
                 IncludeDebugInformation = HostContext.DebugMode,
                 CompileFilter = CompileFilter,
+                CheckLastModifiedForChanges = CheckLastModifiedForChanges.GetValueOrDefault(),
             };
         }
 
@@ -255,10 +263,10 @@ namespace ServiceStack.Razor
 
         public RazorPage CreatePage(string razorContents)
         {
-            if (this.VirtualPathProvider == null)
+            if (this.VirtualFileSources == null)
                 throw new ArgumentNullException("VirtualPathProvider");
 
-            var writableFileProvider = this.VirtualPathProvider as IVirtualFiles;
+            var writableFileProvider = this.VirtualFileSources as IVirtualFiles;
             if (writableFileProvider == null)
                 throw new InvalidOperationException("VirtualPathProvider is not IVirtualFiles");
 

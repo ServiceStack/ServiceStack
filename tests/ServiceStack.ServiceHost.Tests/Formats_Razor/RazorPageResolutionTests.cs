@@ -44,7 +44,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             RazorFormat = new RazorFormat
             {
-                VirtualPathProvider = fileSystem,
+                VirtualFileSources = fileSystem,
                 EnableLiveReload = false,
             }.Init();
         }

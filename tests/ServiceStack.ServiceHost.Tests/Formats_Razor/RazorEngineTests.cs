@@ -43,7 +43,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             RazorFormat = new RazorFormat
             {
-                VirtualPathProvider = fileSystem,
+                VirtualFileSources = fileSystem,
                 PageBaseType = typeof(CustomRazorBasePage<>),
                 EnableLiveReload = false,
                 PrecompilePages = PrecompileEnabled,

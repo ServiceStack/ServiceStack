@@ -67,7 +67,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             RazorFormat.Instance = null;
             base.RazorFormat = new RazorFormat
             {
-                VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
+                VirtualFileSources = new InMemoryVirtualPathProvider(new BasicAppHost()),
             }.Init();
         }
 
