@@ -98,6 +98,10 @@
       <InterfacesFilesSL5 Include="$(SrcDir)/ServiceStack.Interfaces.SL5/bin/$(Configuration)/ServiceStack.Interfaces.*"></InterfacesFilesSL5>
 
       <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
+
+      <MvcFiles Include="$(SrcDir)/ServiceStack.Mvc/bin/$(Configuration)/ServiceStack.Mvc.*"></MvcFiles>
+
+      <OAuth2Files Include="$(SrcDir)/ServiceStack.Authentication.OAuth2/bin/$(Configuration)/ServiceStack.Authentication.OAuth2.*"></OAuth2Files>
     </ItemGroup>
 
     <!-- ServiceStack.Interfaces -->
@@ -192,6 +196,30 @@
     <Copy SourceFiles="%(ProtoBufFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net40" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/servicestack.protobuf.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Mvc -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Mvc/ServiceStack.Mvc.Signed.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net40')" />
+    <Copy SourceFiles="%(MvcFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Mvc.Signed/servicestack.mvc.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Authentication.OAuth2 -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Authentication.OAuth2/ServiceStack.Authentication.OAuth2.Signed.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net40')" />
+    <Copy SourceFiles="%(OAuth2Files.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/servicestack.authentication.oauth2.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
   </Target>
