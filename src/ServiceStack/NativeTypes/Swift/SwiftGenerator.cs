@@ -81,10 +81,16 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
+            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
+
+            foreach (var typeName in Config.TreatTypesAsStrings.Safe())
+            {
+                TypeAliases[typeName] = "String";
+            }
 
             string lastNS = null;
 
@@ -204,7 +210,8 @@ namespace ServiceStack.NativeTypes.Swift
         {
             //sb = sb.Indent();
 
-            if (Config.ExcludeGenericBaseTypes && type.Inherits != null && !type.Inherits.GenericArgs.IsEmpty())
+            var hasGenericBaseType = type.Inherits != null && !type.Inherits.GenericArgs.IsEmpty();
+            if (Config.ExcludeGenericBaseTypes && hasGenericBaseType)
             {
                 sb.AppendLine("//Excluded {0} : {1}<{2}>".Fmt(type.Name, type.Inherits.Name.SplitOnFirst('`')[0], string.Join(",", type.Inherits.GenericArgs)));
                 return lastNS;
