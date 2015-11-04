@@ -15,10 +15,12 @@ namespace ServiceStack.Auth
         public const string Name = "facebook";
         public static string Realm = "https://graph.facebook.com/v2.0/";
         public static string PreAuthUrl = "https://www.facebook.com/dialog/oauth";
+        public static string[] DefaultFields = new [] { "id", "name", "first_name", "last_name", "email" };
 
         public string AppId { get; set; }
         public string AppSecret { get; set; }
         public string[] Permissions { get; set; }
+        public string[] Fields { get; set; }
 
         public FacebookAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name, "AppId", "AppSecret")
@@ -26,6 +28,7 @@ namespace ServiceStack.Auth
             this.AppId = appSettings.GetString("oauth.facebook.AppId");
             this.AppSecret = appSettings.GetString("oauth.facebook.AppSecret");
             this.Permissions = appSettings.Get("oauth.facebook.Permissions", new string[0]);
+            this.Fields = appSettings.Get("oauth.facebook.Fields", DefaultFields);
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
@@ -87,7 +90,7 @@ namespace ServiceStack.Auth
         {
             try
             {
-                var json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret);
+                var json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, Fields);
                 var obj = JsonObject.Parse(json);
                 tokens.UserId = obj.Get("id");
                 tokens.UserName = obj.Get("username");
