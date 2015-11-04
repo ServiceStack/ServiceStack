@@ -11,8 +11,11 @@ namespace ServiceStack.DataAnnotations
         public Type DefaultType { get; set; }
         public string DefaultValue { get; set; }
 
+        public bool UseOnUpdate { get; set; }
+
         public DefaultAttribute(int intValue)
         {
+            this.UseOnUpdate = false;
             this.IntValue = intValue;
             this.DefaultType = typeof(int);
             this.DefaultValue = this.IntValue.ToString();
@@ -20,6 +23,7 @@ namespace ServiceStack.DataAnnotations
 
         public DefaultAttribute(double doubleValue)
         {
+            this.UseOnUpdate = false;
             this.DoubleValue = doubleValue;
             this.DefaultType = typeof(double);
             this.DefaultValue = doubleValue.ToString();
@@ -27,12 +31,14 @@ namespace ServiceStack.DataAnnotations
 
         public DefaultAttribute(string defaultValue)
         {
+            this.UseOnUpdate = false;
             this.DefaultType = typeof(string);
             this.DefaultValue = defaultValue;
         }
 
         public DefaultAttribute(Type defaultType, string defaultValue)
         {
+            this.UseOnUpdate = false;
             this.DefaultValue = defaultValue;
             this.DefaultType = defaultType;
         }
