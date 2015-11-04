@@ -141,5 +141,25 @@ namespace ServiceStack.Auth
         {
             manageRoles.UnAssignRoles(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions);
         }
+
+        public static IUserAuth CreateUserAuth(this IAuthRepository authRepo, IUserAuth newUser, string password)
+        {
+            return ((IUserAuthRepository)authRepo).CreateUserAuth(newUser, password);
+        }
+
+        public static IUserAuth UpdateUserAuth(this IAuthRepository authRepo, IUserAuth existingUser, IUserAuth newUser, string password)
+        {
+            return ((IUserAuthRepository)authRepo).UpdateUserAuth(existingUser, newUser, password);
+        }
+
+        public static IUserAuth GetUserAuth(this IAuthRepository authRepo, string userAuthId)
+        {
+            return ((IUserAuthRepository)authRepo).GetUserAuth(userAuthId);
+        }
+
+        public static void DeleteUserAuth(this IAuthRepository authRepo, string userAuthId)
+        {
+            ((IUserAuthRepository)authRepo).DeleteUserAuth(userAuthId);
+        }
     }
 }
