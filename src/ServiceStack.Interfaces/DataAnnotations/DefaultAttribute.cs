@@ -11,6 +11,8 @@ namespace ServiceStack.DataAnnotations
         public Type DefaultType { get; set; }
         public string DefaultValue { get; set; }
 
+        public bool OnUpdate { get; set; }
+
         public DefaultAttribute(int intValue)
         {
             this.IntValue = intValue;
