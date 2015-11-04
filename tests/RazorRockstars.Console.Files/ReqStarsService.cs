@@ -65,6 +65,12 @@ namespace RazorRockstars.Console.Files
         public int Id { get; set; }
     }
 
+    [Route("/cached/reqstars/{Id}", "GET")]
+    public class GetCachedReqstar : IReturn<Reqstar>
+    {
+        public int Id { get; set; }
+    }
+
     [Route("/reqstars/{Id}/delete")]
     public class DeleteReqstar : IReturnVoid
     {
@@ -191,6 +197,12 @@ namespace RazorRockstars.Console.Files
         public Reqstar Get(GetReqstar request)
         {
             return Db.SingleById<Reqstar>(request.Id);
+        }
+
+        public object Get(GetCachedReqstar request)
+        {
+            return Request.ToOptimizedResultUsingCache(Cache, request.GetType().Name, () =>
+                Db.SingleById<Reqstar>(request.Id));
         }
 
         public object Post(Reqstar request)
@@ -960,6 +972,24 @@ namespace RazorRockstars.Console.Files
             Assert.That(html, Is.StringContaining("<!--view:GetReqstar.cshtml-->"));
             Assert.That(html, Is.StringContaining("<!--view:CustomReqstar.cshtml-->"));
         }
+
+        [Test]
+        public void Does_render_cached_response()
+        {
+            var html1 = "{0}/cached/reqstars/1".Fmt(Host)
+                .GetStringFromUrl();
+
+            Assert.That(html1, Is.StringContaining("<!--view:GetCachedReqstar.cshtml-->"));
+
+            var html2 = "{0}/cached/reqstars/1".Fmt(Host)
+                .GetStringFromUrl();
+
+            Assert.That(html2, Is.StringContaining("<!--view:GetCachedReqstar.cshtml-->"));
+
+            Assert.That(html1, Is.EqualTo(html2));
+
+            html2.Print();
+        }
     }
-    
+
 }
