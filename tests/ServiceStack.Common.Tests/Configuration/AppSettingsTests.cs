@@ -105,15 +105,11 @@ namespace ServiceStack.Common.Tests
         public void Can_preload_AppSettings()
         {
             GetAppSettings();
-            using (var db = settings.DbFactory.Open())
-            {
-                var allSettings = db.Dictionary<string,string>(
-                    db.From<ConfigSetting>().Select(x => new { x.Id, x.Value}));
 
-                var cachedSettings = new DictionarySettings(allSettings);
+            var allSettings = settings.GetAll();
+            var cachedSettings = new DictionarySettings(allSettings);
 
-                Assert.That(cachedSettings.Get("RealKey"), Is.EqualTo("This is a real value"));
-            }
+            Assert.That(cachedSettings.Get("RealKey"), Is.EqualTo("This is a real value"));
         }
 
         [Test]

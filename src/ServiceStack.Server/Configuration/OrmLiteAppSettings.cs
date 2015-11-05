@@ -53,6 +53,15 @@ namespace ServiceStack.Configuration
                 }
             }
 
+            public Dictionary<string, string> GetAll()
+            {
+                using (var db = DbFactory.Open())
+                {
+                    return db.Dictionary<string, string>(
+                        db.From<ConfigSetting>().Select(x => new { x.Id, x.Value }));
+                }
+            }
+
             public void Set<T>(string key, T value)
             {
                 var textValue = value is string
@@ -94,6 +103,11 @@ namespace ServiceStack.Configuration
         public void Set<T>(string key, T value)
         {
             DbSettings.Set(key, value);
+        }
+
+        public override Dictionary<string, string> GetAll()
+        {
+            return DbSettings.GetAll();
         }
 
         public void InitSchema()

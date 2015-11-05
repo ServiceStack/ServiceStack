@@ -43,7 +43,7 @@ namespace ServiceStack.Configuration
             instance = (DictionaryWrapper)settings;
         }
 
-        public virtual Dictionary<string, string> GetAll()
+        public override Dictionary<string, string> GetAll()
         {
             return instance.Map;
         }
