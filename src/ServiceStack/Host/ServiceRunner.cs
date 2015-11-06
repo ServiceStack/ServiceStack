@@ -192,8 +192,8 @@ namespace ServiceStack.Host
 
         public virtual object HandleException(IRequest request, TRequest requestDto, Exception ex)
         {
-            var errorResponse = HostContext.RaiseServiceException(request, requestDto, ex) 
-                                ?? DtoUtils.CreateErrorResponse(requestDto, ex);
+            var errorResponse = HostContext.RaiseServiceException(request, requestDto, ex)
+                ?? DtoUtils.CreateErrorResponse(requestDto, ex);
 
             AfterEachRequest(request, requestDto, errorResponse ?? ex);
             

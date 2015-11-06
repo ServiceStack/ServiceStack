@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using ServiceStack;
 
@@ -57,4 +58,13 @@ public static class DictionaryExtensions
         return new KeyValuePair<TKey, TValue>(key, value);
     }
 
+    public static ConcurrentDictionary<TKey, TValue> ToConcurrentDictionary<TKey, TValue>(this IDictionary<TKey, TValue> from)
+    {
+        var to = new ConcurrentDictionary<TKey, TValue>();
+        foreach (var entry in from)
+        {
+            to[entry.Key] = entry.Value;
+        }
+        return to;
+    } 
 }

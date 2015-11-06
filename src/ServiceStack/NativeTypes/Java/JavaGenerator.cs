@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -52,7 +53,7 @@ namespace ServiceStack.NativeTypes.Java
         }
 
         //http://java.interoperabilitybridges.com/articles/data-types-interoperability-between-net-and-java#h4Section2
-        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
+        public static ConcurrentDictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"String", "String"},
             {"Boolean", "Boolean"},
@@ -75,7 +76,7 @@ namespace ServiceStack.NativeTypes.Java
             {"Type", "Class"},
             {"List", "ArrayList"},
             {"Dictionary", "HashMap"},
-        };
+        }.ToConcurrentDictionary();
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {

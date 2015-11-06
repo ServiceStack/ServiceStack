@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,10 +23,10 @@ namespace ServiceStack.NativeTypes.Swift
 
         public static List<string> DefaultImports = new List<string>
         {
-            "Foundation",    
+            "Foundation",
         };
 
-        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
+        public static ConcurrentDictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"Boolean", "Bool"},
             {"DateTime", "NSDate"},
@@ -43,7 +44,7 @@ namespace ServiceStack.NativeTypes.Swift
             {"Single", "Float"},
             {"Double", "Double"},
             {"Decimal", "Double"},
-        };
+        }.ToConcurrentDictionary();
 
         public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
             "NSObject"
@@ -441,7 +442,7 @@ namespace ServiceStack.NativeTypes.Swift
             foreach (var prop in GetPropertes(type))
             {
                 var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
-                if (propType.IsInterface() 
+                if (propType.IsInterface()
                     || IgnorePropertyTypeNames.Contains(prop.Type)
                     || IgnorePropertyNames.Contains(prop.Name))
                     continue;
@@ -548,7 +549,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("}");
         }
 
-        public void AddProperties(StringBuilderWrapper sb, MetadataType type, 
+        public void AddProperties(StringBuilderWrapper sb, MetadataType type,
             bool initCollections, bool includeResponseStatus)
         {
             var wasAdded = false;
@@ -698,11 +699,11 @@ namespace ServiceStack.NativeTypes.Swift
         public MetadataType FindType(string typeName, string typeNamespace, params string[] genericArgs)
         {
             return FindType(new MetadataTypeName
-                {
-                    Name = typeName, 
-                    Namespace = typeNamespace,
-                    GenericArgs = genericArgs,
-                });
+            {
+                Name = typeName,
+                Namespace = typeNamespace,
+                GenericArgs = genericArgs,
+            });
         }
 
         public MetadataType FindType(MetadataTypeName typeName)
@@ -1052,7 +1053,7 @@ namespace ServiceStack.NativeTypes.Swift
                 return "Description";
 
             return SwiftKeyWords.Contains(propName)
-                ? "`{0}`".Fmt(propName) 
+                ? "`{0}`".Fmt(propName)
                 : propName;
         }
 
