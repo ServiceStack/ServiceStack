@@ -236,6 +236,15 @@ namespace Check.ServiceInterface
         {
             return new HelloVerbResponse { Result = HttpMethods.Patch };
         }
+
+        public void Any(HelloReturnVoid request)
+        {
+        }
+
+        public object Any(EnumRequest request)
+        {
+            return new EnumResponse { Operator = request.Operator };
+        }
     }
 
     public class GetUserSession : IReturn<CustomUserSession>

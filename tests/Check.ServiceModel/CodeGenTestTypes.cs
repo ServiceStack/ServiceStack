@@ -544,6 +544,29 @@ namespace Check.ServiceModel.Types
         public int Id { get; set; }
     }
 
+    public class HelloReturnVoid : IReturnVoid
+    {
+        public int Id { get; set; }
+    }
+
+    public class EnumRequest : IReturn<EnumResponse>, IPut
+    {
+        public ScopeType Operator { get; set; }
+    }
+
+    public class EnumResponse
+    {
+        public ScopeType Operator { get; set; }
+    }
+
+    [DataContract]
+    public enum ScopeType
+    {
+        [EnumMember]
+        Global = 1,
+        [EnumMember]
+        Sale = 2,
+    }
 }
 
 

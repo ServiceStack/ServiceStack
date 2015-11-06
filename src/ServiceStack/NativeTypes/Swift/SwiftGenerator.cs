@@ -472,8 +472,10 @@ namespace ServiceStack.NativeTypes.Swift
                     }
                 }
 
-                sbExt.AppendLine("Type<{0}>.{1}(\"{2}\", get: {{ $0.{2} }}, set: {{ $0.{2} = $1 }}),".Fmt(
-                        typeName, fnName, prop.Name.SafeToken().PropertyStyle()));
+                var propName = prop.Name.SafeToken().PropertyStyle();
+                var unescapedName = propName.UnescapeReserved();
+                sbExt.AppendLine("Type<{0}>.{1}(\"{2}\", get: {{ $0.{3} }}, set: {{ $0.{3} = $1 }}),".Fmt(
+                        typeName, fnName, unescapedName, propName));
             }
             sbExt = sbExt.UnIndent();
             sbExt.AppendLine("])");
@@ -1055,6 +1057,13 @@ namespace ServiceStack.NativeTypes.Swift
             return SwiftKeyWords.Contains(propName)
                 ? "`{0}`".Fmt(propName)
                 : propName;
+        }
+
+        public static string UnescapeReserved(this string name)
+        {
+            return string.IsNullOrEmpty(name)
+                ? name
+                : name.TrimStart('`').TrimEnd('`');
         }
 
         public static string AddGenericConstraints(this string typeDef)
