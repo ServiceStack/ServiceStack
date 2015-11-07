@@ -3,6 +3,7 @@ using System.Linq;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.CSharp;
@@ -325,7 +326,7 @@ namespace ServiceStack.Razor.Managers
                     Log.ErrorFormat("Precompilation of Razor page '{0}' failed: {1}", page.File.Name, ex.Message);
                 }
                 return page;
-            });
+            }, default(CancellationToken), TaskCreationOptions.None, TaskScheduler.Default);
 
             if (startupPrecompilationTasks != null)
                 startupPrecompilationTasks.Add(task);
