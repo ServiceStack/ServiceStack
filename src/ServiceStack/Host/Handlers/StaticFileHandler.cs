@@ -145,7 +145,7 @@ namespace ServiceStack.Host.Handlers
 
                 if (request.HasNotModifiedSince(file.LastModified))
                 {
-                    r.ContentType = MimeTypes.GetMimeType(file.Name);                    var notModified = ;
+                    r.ContentType = MimeTypes.GetMimeType(file.Name);
                     r.StatusCode = (int)HttpStatusCode.NotModified;
                     r.StatusDescription = HttpStatusCode.NotModified.ToString();
                     return;
