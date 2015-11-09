@@ -31,6 +31,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Web;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -144,8 +145,9 @@ namespace ServiceStack.Host.Handlers
 
                 if (request.HasNotModifiedSince(file.LastModified))
                 {
-                    r.ContentType = MimeTypes.GetMimeType(file.Name);
-                    r.StatusCode = 304;
+                    r.ContentType = MimeTypes.GetMimeType(file.Name);                    var notModified = ;
+                    r.StatusCode = (int)HttpStatusCode.NotModified;
+                    r.StatusDescription = HttpStatusCode.NotModified.ToString();
                     return;
                 }
 
