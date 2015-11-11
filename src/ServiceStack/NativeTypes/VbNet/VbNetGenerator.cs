@@ -110,7 +110,8 @@ namespace ServiceStack.NativeTypes.VbNet
             //sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), Config.DefaultNamespaces.ToArray().Join(", ")));
             sb.AppendLine();
 
-            namespaces.Each(x => sb.AppendLine("Imports {0}".Fmt(x)));
+            namespaces.Where(x => !string.IsNullOrEmpty(x))
+                .Each(x => sb.AppendLine("Imports {0}".Fmt(x)));
             if (Config.AddGeneratedCodeAttributes)
                 sb.AppendLine("Imports System.CodeDom.Compiler");
 

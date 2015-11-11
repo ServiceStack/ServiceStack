@@ -82,7 +82,7 @@ namespace ServiceStack.NativeTypes.FSharp
 
             sb.AppendLine("namespace {0}".Fmt(globalNamespace.SafeToken()));
             sb.AppendLine();
-            foreach (var ns in namespaces)
+            foreach (var ns in namespaces.Where(x => !string.IsNullOrEmpty(x)))
             {
                 sb.AppendLine("open " + ns);
             }

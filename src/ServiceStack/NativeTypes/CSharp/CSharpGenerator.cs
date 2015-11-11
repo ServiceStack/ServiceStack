@@ -80,7 +80,8 @@ namespace ServiceStack.NativeTypes.CSharp
             sb.AppendLine("*/");
             sb.AppendLine();
 
-            namespaces.Each(x => sb.AppendLine("using {0};".Fmt(x)));
+            namespaces.Where(x => !string.IsNullOrEmpty(x))
+                .Each(x => sb.AppendLine("using {0};".Fmt(x)));
             if (Config.AddGeneratedCodeAttributes)
                 sb.AppendLine("using System.CodeDom.Compiler;");
 
