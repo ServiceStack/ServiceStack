@@ -5,13 +5,13 @@ using System.Web.Mvc;
 
 namespace ServiceStack.Mvc
 {
-	public class ExecuteServiceStackFiltersAttribute : ActionFilterAttribute
-	{
-		public override void OnActionExecuting(ActionExecutingContext filterContext)
-		{
-			var ssController = filterContext.Controller as ServiceStackController;
-			if (ssController == null) return;
-            
+    public class ExecuteServiceStackFiltersAttribute : ActionFilterAttribute
+    {
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            var ssController = filterContext.Controller as ServiceStackController;
+            if (ssController == null) return;
+
             var authAttr = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext)
                 .FirstOrDefault();
 
@@ -24,10 +24,10 @@ namespace ServiceStack.Mvc
                 filterContext.Result = authError;
             }
 
-			var roleAttrs = GetActionAndControllerAttributes<RequiredRoleAttribute>(filterContext);
-			var anyRoleAttrs = GetActionAndControllerAttributes<RequiresAnyRoleAttribute>(filterContext);
-			var permAttrs = GetActionAndControllerAttributes<RequiredPermissionAttribute>(filterContext);
-			var anyPermAttrs = GetActionAndControllerAttributes<RequiresAnyPermissionAttribute>(filterContext);
+            var roleAttrs = GetActionAndControllerAttributes<RequiredRoleAttribute>(filterContext);
+            var anyRoleAttrs = GetActionAndControllerAttributes<RequiresAnyRoleAttribute>(filterContext);
+            var permAttrs = GetActionAndControllerAttributes<RequiredPermissionAttribute>(filterContext);
+            var anyPermAttrs = GetActionAndControllerAttributes<RequiresAnyPermissionAttribute>(filterContext);
 
             if (!ssController.HasAccess(roleAttrs, anyRoleAttrs, permAttrs, anyPermAttrs))
             {
@@ -37,28 +37,28 @@ namespace ServiceStack.Mvc
 
                 filterContext.Result = authError;
             }
-		}
+        }
 
-		private static List<T> GetActionAndControllerAttributes<T>(ActionExecutingContext filterContext)
-			where T : Attribute
-		{
-			var attrs = new List<T>();
+        private static List<T> GetActionAndControllerAttributes<T>(ActionExecutingContext filterContext)
+            where T : Attribute
+        {
+            var attrs = new List<T>();
 
-			var attr = filterContext.ActionDescriptor
-				.GetCustomAttributes(typeof(T), true)
-				.FirstOrDefault() as T;
+            var attr = filterContext.ActionDescriptor
+                .GetCustomAttributes(typeof(T), true)
+                .FirstOrDefault() as T;
 
-			if (attr != null)
-				attrs.Add(attr);
+            if (attr != null)
+                attrs.Add(attr);
 
-			attr = filterContext.Controller.GetType()
-				.GetCustomAttributes(typeof(T), true)
-				.FirstOrDefault() as T;
+            attr = filterContext.Controller.GetType()
+                .GetCustomAttributes(typeof(T), true)
+                .FirstOrDefault() as T;
 
-			if (attr != null)
-				attrs.Add(attr);
+            if (attr != null)
+                attrs.Add(attr);
 
-			return attrs;
-		}
-	}
+            return attrs;
+        }
+    }
 }
