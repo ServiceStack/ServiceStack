@@ -61,7 +61,7 @@
       <HintPath>..\..\lib\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="MsgPack, Version=0.6.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\MsgPack.Cli.0.6.2\lib\net45\MsgPack.dll</HintPath>
+      <HintPath>..\..\src\packages\MsgPack.Cli.0.6.5\lib\net45\MsgPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
@@ -352,10 +352,6 @@
     <ProjectReference Include="..\..\src\ServiceStack.MsgPack\ServiceStack.MsgPack.csproj">
       <Project>{6b751a07-75d4-4a9d-b3a0-eea27808e64c}</Project>
       <Name>ServiceStack.MsgPack</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.NetSerializer\ServiceStack.NetSerializer.csproj">
-      <Project>{23202156-C4C7-4D03-8D92-E380C8B66EC8}</Project>
-      <Name>ServiceStack.NetSerializer</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{D73274AE-006B-4CEE-BA60-0ECF5873048D}</Project>

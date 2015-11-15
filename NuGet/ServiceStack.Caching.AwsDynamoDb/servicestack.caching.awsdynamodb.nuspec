@@ -6,8 +6,9 @@
     <authors>ServiceStack contributors</authors> 
     <owners>ServiceStack contributors</owners>
     <description>
-        An Amazon Web Services In-Memory DynamoDb DataCache implementing ServiceStack's ICacheClient:
-        https://github.com/ServiceStack/ServiceStack/wiki/Caching
+        Deprecated use new ServiceStack.Aws package.
+        
+        An Amazon Web Services In-Memory DynamoDb DataCache implementing ServiceStack's ICacheClient.
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>

@@ -47,11 +47,11 @@
       <HintPath>..\packages\Microsoft.CompilerServices.AsyncTargetingPack.1.0.1\lib\net40\Microsoft.CompilerServices.AsyncTargetingPack.Net4.dll</HintPath>
     </Reference>
     <Reference Include="Raven.Abstractions, Version=2.5.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
-      <HintPath>..\packages\RavenDB.Client.2.5.2962\lib\net40\Raven.Abstractions.dll</HintPath>
+      <HintPath>..\packages\RavenDB.Client.2.5.2982\lib\net40\Raven.Abstractions.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Raven.Client.Lightweight, Version=2.5.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
-      <HintPath>..\packages\RavenDB.Client.2.5.2962\lib\net40\Raven.Client.Lightweight.dll</HintPath>
+      <HintPath>..\packages\RavenDB.Client.2.5.2982\lib\net40\Raven.Client.Lightweight.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
