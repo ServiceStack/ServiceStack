@@ -28,6 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{64877404
 		..\build\build-pcl.proj = ..\build\build-pcl.proj
 		..\build\build.bat = ..\build\build.bat
 		..\build\copy-pcl.bat = ..\build\copy-pcl.bat
+		..\build\copy-mac.sh = ..\build\copy-mac.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clients", "Clients", "{F75A4378-431C-4AC1-A61A-FE3362B78590}"
