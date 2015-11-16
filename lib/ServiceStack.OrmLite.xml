@@ -963,10 +963,16 @@
             Returns the scalar result as a long.
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.LoadSingleById``1(System.Data.IDbConnection,System.Object)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.LoadSingleById``1(System.Data.IDbConnection,System.Object,System.String[])">
             <summary>
             Returns the first result with all its references loaded, using a primary key id. E.g:
-            <para>db.LoadSingleById&lt;Person&gt;(1)</para>
+            <para>db.LoadSingleById&lt;Person&gt;(1, include = new[]{ "Address" })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.LoadSingleById``1(System.Data.IDbConnection,System.Object,System.Func{``0,System.Object})">
+            <summary>
+            Returns the first result with all its references loaded, using a primary key id. E.g:
+            <para>db.LoadSingleById&lt;Person&gt;(1, include = x => new{ x.Address })</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.LoadReferences``1(System.Data.IDbConnection,``0)">

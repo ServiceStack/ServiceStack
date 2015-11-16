@@ -96,6 +96,12 @@
             Creates a new instance of the Redis Client from NewFactoryFn. 
             </summary>
         </member>
+        <member name="M:ServiceStack.Redis.RedisClient.StoreAsHash``1(``0)">
+            <summary>
+            Store object fields as a dictionary of values in a Hash value.
+            Conversion to Dictionary can be customized with RedisClient.ConvertToHashFn
+            </summary>
+        </member>
         <member name="M:ServiceStack.Redis.RedisClient.UrnKey``1(``0)">
             <summary>
             Returns key with automatic object id detection in provided value with <typeparam name="T">generic type</typeparam>.
