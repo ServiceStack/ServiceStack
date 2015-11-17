@@ -191,7 +191,7 @@ Plugins.Add(new RazorFormat { CheckLastModifiedForChanges = true });
 When this is enabled the View Engines checks the ETag of the source file to find out if it's changed, if it did,
 it will rebuild and replace it with the new view before rendering it. 
 Given [S3 supports object versioning](http://docs.aws.amazon.com/AmazonS3/latest/dev/Versioning.html) this feature
-should enable a new class use-cases for developing Content Heavy management sites with ServiceStack.
+should enable a new class of use-cases for developing Content Heavy management sites with ServiceStack.
 
 #### Explicit RefreshPage
 
@@ -509,7 +509,7 @@ reliability with automatic retries of temporary errors, using an exponential bac
 
 PocoDynamo API's are a lightweight layer modeled after DynamoDB API's making it predictable the DynamoDB operations 
 each API calls under the hood, retaining your existing knowledge investment in DynamoDB. 
-When more flexibility is needed you can access the low-level `AmazonDynamoDBclient from the `IPocoDynamo.DynamoDb` 
+When more flexibility is needed you can access the low-level `AmazonDynamoDBclient` from the `IPocoDynamo.DynamoDb` 
 property and talk with it directly.
 
 Whilst PocoDynamo doesn't save you for needing to learn DynamoDB, its deep integration with .NET and rich support for 
