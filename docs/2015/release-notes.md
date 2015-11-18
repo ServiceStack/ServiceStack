@@ -798,8 +798,9 @@ To provide clear and predictable naming. some of the existing APIs were deprecat
  - `IAppHost.GetVirtualPathProviders()` deprecated, renamed to `IAppHost.GetVirtualFileSources()`
  - `IWriteableVirtualPathProvider` deprecated, renamed to `IVirtualFiles`
  - `IWriteableVirtualPathProvider.AddFile()` deprecated, renamed to `WriteFile()`
- - `VirtualPath` no longer returns paths prefixed with `/` and VirtualPath of a Root directory is `null`
-  
+ - `VirtualPath` no longer returns paths prefixed with `/` and VirtualPath of a Root directory is `null` 
+    This affects `Config.ScanSkipPaths` which should no longer start with `/`, e.g: "node_modules/", "bin/", "obj/" 
+
 These old API's have been marked `[Obsolete]` and will be removed in a future version. 
 If you're using them, please upgrade to the newer APIs.
 
@@ -1022,6 +1023,19 @@ var users = JsonObject.Parse(json)
 - New `IAppSettings.GetAll()` added on all [AppSetting](https://github.com/ServiceStack/ServiceStack/wiki/AppSettings) sources fetches all App config in a single call
 - [ServiceStackVS](https://github.com/ServiceStack/ServiceStackVS) updated with ATS exception for React Desktop OSX Apps
 - External NuGet packages updated to their latest stable version
+
+## New Signed Packages
+
+ - ServiceStack.Mvc.Signed
+ - ServiceStack.Authentication.OAuth2.Signed
+
+## v4.0.48 Issues
+
+The **ServiceStack.Mvc** project had a invalid dependency on **ServiceStack.Signed** which has been resolved 
+[from this commit](https://github.com/ServiceStack/ServiceStack/commit/2f0946e8cb755103082de24949e35fc70f9f72ae) that's now
+available in our [pre-release v4.0.49 MyGet packages](https://github.com/ServiceStack/ServiceStack/wiki/MyGet).
+
+You can workaround this by manually removing the **ServiceStack.Signed** packages and adding the **ServiceStack** packages instead.
 
 # v4.0.46 Release Notes
 
