@@ -126,7 +126,7 @@ namespace ServiceStack
             {
                 foreach (var skipPath in appHost.Config.ScanSkipPaths)
                 {
-                    if (node.VirtualPath.StartsWith(skipPath, StringComparison.InvariantCultureIgnoreCase))
+                    if (node.VirtualPath.StartsWith(skipPath.TrimStart('/'), StringComparison.InvariantCultureIgnoreCase))
                         return true;
                 }
             }

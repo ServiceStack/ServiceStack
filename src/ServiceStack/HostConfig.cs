@@ -112,12 +112,12 @@ namespace ServiceStack
                 RedirectToDefaultDocuments = false,
                 StripApplicationVirtualPath = false,
                 ScanSkipPaths = new List<string> {
-                    "/obj/",
-                    "/bin/",
-                    "/node_modules/",
-                    "/bower_components/",
-                    "/wwwroot/",
-                    "/wwwroot_build/",
+                    "obj/",
+                    "bin/",
+                    "node_modules/",
+                    "bower_components/",
+                    "wwwroot/",
+                    "wwwroot_build/",
                 },
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret,
