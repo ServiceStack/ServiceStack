@@ -127,22 +127,6 @@ namespace ServiceStack
         [Obsolete("Use SessionFeature.RequestItemsSessionKey")]
         public const string RequestItemsSessionKey = SessionFeature.RequestItemsSessionKey;
 
-        private static IAuthSession FilterSession(IAuthSession session, string withSessionId)
-        {
-            if (session == null || !SessionFeature.VerifyCachedSessionId)
-                return session;
-
-            if (session.Id == withSessionId)
-                return session;
-
-            if (Log.IsDebugEnabled)
-            {
-                Log.Debug("ignoring cached sessionId '{0}' which is different to request '{1}'"
-                    .Fmt(session.Id, withSessionId));
-            }
-            return null;
-        }
-
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
             if (httpReq == null) return null;
@@ -159,7 +143,7 @@ namespace ServiceStack
                 httpReq.Items.TryGetValue(SessionFeature.RequestItemsSessionKey, out oSession);
 
             var sessionId = httpReq.GetSessionId();
-            var cachedSession = FilterSession(oSession as IAuthSession, sessionId);
+            var cachedSession = HostContext.AppHost.OnSessionFilter(oSession as IAuthSession, sessionId);
             if (cachedSession != null)
             {
                 return cachedSession;
@@ -168,7 +152,7 @@ namespace ServiceStack
             using (var cache = httpReq.GetCacheClient())
             {
                 var sessionKey = SessionFeature.GetSessionKey(sessionId);
-                var session = (sessionKey != null ? FilterSession(cache.Get<IAuthSession>(sessionKey), sessionId) : null)
+                var session = (sessionKey != null ? HostContext.AppHost.OnSessionFilter(cache.Get<IAuthSession>(sessionKey), sessionId) : null)
                     ?? SessionFeature.CreateNewSession(httpReq, sessionId);
 
                 httpReq.SaveSessionInItems(session);

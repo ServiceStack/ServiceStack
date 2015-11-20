@@ -447,6 +447,22 @@ namespace ServiceStack
             httpReq.Items[SessionFeature.RequestItemsSessionKey] = session;
         }
 
+        public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId)
+        {
+            if (session == null || !SessionFeature.VerifyCachedSessionId)
+                return session;
+
+            if (session.Id == withSessionId)
+                return session;
+
+            if (Log.IsDebugEnabled)
+            {
+                Log.Debug("ignoring cached sessionId '{0}' which is different to request '{1}'"
+                    .Fmt(session.Id, withSessionId));
+            }
+            return null;
+        }
+
         public virtual IRequest TryGetCurrentRequest()
         {
             return null;
