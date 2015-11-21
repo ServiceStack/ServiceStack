@@ -79,7 +79,7 @@ namespace ServiceStack
             {
                 var session = (cache ?? httpReq.GetCacheClient()).Get<T>(sessionKey);
                 if (!Equals(session, default(T)))
-                    return session;
+                    return (T)HostContext.AppHost.OnSessionFilter((IAuthSession)session, sessionId);
             }
 
             return (T)CreateNewSession(httpReq, sessionId);
