@@ -164,10 +164,7 @@ namespace ServiceStack
         private ICacheClient cache;
         public virtual ICacheClient Cache
         {
-            get
-            {
-                return cache ?? (cache = HostContext.AppHost.GetCacheClient());
-            }
+            get { return cache ?? (cache = HostContext.AppHost.GetCacheClient()); }
         }
 
         private IDbConnection db;

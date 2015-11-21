@@ -110,11 +110,8 @@ namespace ServiceStack
             if (sessionId == null)
                 throw new ArgumentNullException("sessionId");
 
-            using (var cache = httpReq.GetCacheClient())
-            {
-                var sessionKey = SessionFeature.GetSessionKey(sessionId);
-                cache.Remove(sessionKey);
-            }
+            var sessionKey = SessionFeature.GetSessionKey(sessionId);
+            httpReq.GetCacheClient().Remove(sessionKey);
 
             httpReq.Items.Remove(SessionFeature.RequestItemsSessionKey);
         }
@@ -149,15 +146,12 @@ namespace ServiceStack
                 return cachedSession;
             }
 
-            using (var cache = httpReq.GetCacheClient())
-            {
-                var sessionKey = SessionFeature.GetSessionKey(sessionId);
-                var session = (sessionKey != null ? HostContext.AppHost.OnSessionFilter(cache.Get<IAuthSession>(sessionKey), sessionId) : null)
-                    ?? SessionFeature.CreateNewSession(httpReq, sessionId);
+            var sessionKey = SessionFeature.GetSessionKey(sessionId);
+            var session = (sessionKey != null ? HostContext.AppHost.OnSessionFilter(httpReq.GetCacheClient().Get<IAuthSession>(sessionKey), sessionId) : null)
+                ?? SessionFeature.CreateNewSession(httpReq, sessionId);
 
-                httpReq.SaveSessionInItems(session);
-                return session;
-            }
+            httpReq.SaveSessionInItems(session);
+            return session;
         }
 
         internal static void SaveSessionInItems(this IRequest httpReq, IAuthSession session)
@@ -176,10 +170,7 @@ namespace ServiceStack
 
         public static TimeSpan? GetSessionTimeToLive(this IRequest httpReq)
         {
-            using (var cache = httpReq.GetCacheClient())
-            {
-                return cache.GetSessionTimeToLive(httpReq.GetSessionId());
-            }
+            return httpReq.GetCacheClient().GetSessionTimeToLive(httpReq.GetSessionId());
         }
 
         public static object RunAction<TService, TRequest>(
