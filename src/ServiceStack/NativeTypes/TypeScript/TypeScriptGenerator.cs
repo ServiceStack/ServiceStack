@@ -145,9 +145,9 @@ namespace ServiceStack.NativeTypes.TypeScript
                                     if (type.ReturnVoidMarker)
                                         return "IReturnVoid";
                                     if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName).InDeclarationType() });
                                     return response != null
-                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
+                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs).InDeclarationType() })
                                         : null;
                                 },
                                 IsRequest = true,
@@ -230,7 +230,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 //: BaseClass, Interfaces
                 if (type.Inherits != null)
-                    extends.Add(Type(type.Inherits).InheritedType());
+                    extends.Add(Type(type.Inherits).InDeclarationType());
 
                 var interfaces = new List<string>();
                 if (options.ImplementsFn != null)
@@ -246,7 +246,21 @@ namespace ServiceStack.NativeTypes.TypeScript
                     : "";
 
                 if (interfaces.Count > 0)
-                    extend += " implements " + string.Join(", ", interfaces.ToArray());
+                {
+                    if (isClass)
+                    {
+                        extend += " implements " + string.Join(", ", interfaces.ToArray());
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(extend))
+                            extend = " extends ";
+                        else
+                            extend += ", ";
+
+                        extend += string.Join(", ", interfaces.ToArray());
+                    }
+                }
 
                 var typeDeclaration = !Config.ExportAsTypes
                     ? "interface"
@@ -599,9 +613,13 @@ namespace ServiceStack.NativeTypes.TypeScript
 
     public static class TypeScriptGeneratorExtensions
     {
-        //TypeScript doesn't support short-hand T[] notation in extension list
-        public static string InheritedType(this string type)
+        public static string InDeclarationType(this string type)
         {
+            //TypeScript doesn't support short-hand Dictionary notation or has a Generic Dictionary Type
+            if (type.StartsWith("{"))
+                return "any";
+
+            //TypeScript doesn't support short-hand T[] notation in extension list
             var arrParts = type.SplitOnFirst('[');
             return arrParts.Length > 1 
                 ? "Array<{0}>".Fmt(arrParts[0]) 
