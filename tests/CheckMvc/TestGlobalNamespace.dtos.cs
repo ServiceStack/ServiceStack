@@ -1,5 +1,5 @@
 /* Options:
-Date: 2015-09-23 22:21:51
+Date: 2015-11-23 18:41:03
 Version: 4.00
 BaseUrl: http://test.servicestack.net
 
@@ -342,6 +342,17 @@ namespace testdtos
         Value3 = 4,
     }
 
+    public partial class EnumRequest
+        : IReturn<EnumResponse>, IPut
+    {
+        public virtual ScopeType Operator { get; set; }
+    }
+
+    public partial class EnumResponse
+    {
+        public virtual ScopeType Operator { get; set; }
+    }
+
     public enum EnumType
     {
         Value1,
@@ -436,6 +447,12 @@ namespace testdtos
     public partial class HelloBuiltin
     {
         public virtual DayOfWeek DayOfWeek { get; set; }
+    }
+
+    public partial class HelloDateTime
+        : IReturn<HelloDateTime>
+    {
+        public virtual DateTime DateTime { get; set; }
     }
 
     public partial class HelloDelete
@@ -600,11 +617,6 @@ namespace testdtos
         public virtual string Result { get; set; }
     }
 
-    public partial class HelloWithListInheritance
-        : List<InheritedItem>
-    {
-    }
-
     public partial class HelloWithNestedClass
         : IReturn<HelloResponse>
     {
@@ -658,11 +670,6 @@ namespace testdtos
 
     public partial interface IEmptyInterface
     {
-    }
-
-    public partial class InheritedItem
-    {
-        public virtual string Name { get; set; }
     }
 
     public partial interface IPoco
@@ -796,9 +803,34 @@ namespace testdtos
         public virtual int? Age { get; set; }
     }
 
+    [DataContract]
+    public enum ScopeType
+    {
+        Global = 1,
+        Sale = 2,
+    }
+
     [Route("/throw404")]
     [Route("/throw404/{Message}")]
     public partial class Throw404
+    {
+        public virtual string Message { get; set; }
+    }
+
+    [Route("/throwbusinesserror")]
+    public partial class ThrowBusinessError
+        : IReturn<ThrowBusinessErrorResponse>
+    {
+    }
+
+    public partial class ThrowBusinessErrorResponse
+    {
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Route("/throwcustom400")]
+    [Route("/throwcustom400/{Message}")]
+    public partial class ThrowCustom400
     {
         public virtual string Message { get; set; }
     }
@@ -882,7 +914,6 @@ namespace testdtos
     }
 
     public partial class AllTypes
-        : IReturn<AllTypes>
     {
         public AllTypes()
         {

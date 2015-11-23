@@ -1,6 +1,6 @@
 /* Options:
-Date: 2015-07-04 04:59:52
-Version: 1
+Date: 2015-11-23 10:41:20
+Version: 4.00
 BaseUrl: http://localhost:55799
 
 //GlobalNamespace: 
@@ -41,8 +41,8 @@ namespace Check.ServiceInterface
         : IReturn<acsprofileResponse>
     {
         public virtual string profileId { get; set; }
-        [StringLength(20)]
         [Required]
+        [StringLength(20)]
         public virtual string shortName { get; set; }
 
         [StringLength(60)]
@@ -567,6 +567,46 @@ namespace Check.ServiceModel
         public virtual List<MetadataTestChild> Results { get; set; }
     }
 
+    public partial class OnlyDefinedInGenericType
+    {
+        public virtual int Id { get; set; }
+        public virtual string Name { get; set; }
+    }
+
+    public partial class OnlyDefinedInGenericTypeFrom
+    {
+        public virtual int Id { get; set; }
+        public virtual string Name { get; set; }
+    }
+
+    public partial class OnlyDefinedInGenericTypeInto
+    {
+        public virtual int Id { get; set; }
+        public virtual string Name { get; set; }
+    }
+
+    public partial class QueryPocoBase
+        : QueryBase<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class QueryPocoIntoBase
+        : QueryBase<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>
+    {
+        public virtual int Id { get; set; }
+    }
+
+    [Route("/return404")]
+    public partial class Return404
+    {
+    }
+
+    [Route("/return404result")]
+    public partial class Return404Result
+    {
+    }
+
     public partial class Rockstar
     {
         public virtual int Id { get; set; }
@@ -584,9 +624,14 @@ namespace Check.ServiceModel
 
     [Route("/throwhttperror/{Status}")]
     public partial class ThrowHttpError
+        : IReturn<ThrowHttpErrorResponse>
     {
         public virtual int Status { get; set; }
         public virtual string Message { get; set; }
+    }
+
+    public partial class ThrowHttpErrorResponse
+    {
     }
 
     [Route("/throw/{Type}")]
@@ -639,8 +684,14 @@ namespace Check.ServiceModel.Operations
         Value2,
     }
 
-    [Route("/hello/{Name}")]
+    public enum EnumWithValues
+    {
+        Value1 = 1,
+        Value2 = 2,
+    }
+
     [Route("/hello")]
+    [Route("/hello/{Name}")]
     public partial class Hello
         : IReturn<HelloResponse>
     {
@@ -745,9 +796,30 @@ namespace Check.ServiceModel.Operations
         public virtual List<string> Names { get; set; }
     }
 
+    ///<summary>
+    ///Multi Line Class
+    ///</summary>
+    [Api("Multi Line Class")]
+    public partial class HelloMultiline
+    {
+        [ApiMember(Description="Multi Line Property")]
+        public virtual string Overflow { get; set; }
+    }
+
     public partial class HelloResponse
     {
         public virtual string Result { get; set; }
+    }
+
+    public partial class HelloReturnList
+        : IReturn<List<OnlyInReturnListArg>>
+    {
+        public HelloReturnList()
+        {
+            Names = new List<string>{};
+        }
+
+        public virtual List<string> Names { get; set; }
     }
 
     public partial class HelloString
@@ -806,6 +878,7 @@ namespace Check.ServiceModel.Operations
     public partial class HelloWithEnum
     {
         public virtual EnumType EnumProp { get; set; }
+        public virtual EnumWithValues EnumWithValues { get; set; }
         public virtual EnumType? NullableEnumProp { get; set; }
         public virtual EnumFlags EnumFlags { get; set; }
     }
@@ -900,6 +973,11 @@ namespace Check.ServiceModel.Operations
         public virtual string Result { get; set; }
     }
 
+    public partial class OnlyInReturnListArg
+    {
+        public virtual string Result { get; set; }
+    }
+
     public partial class RestrictedAttributes
     {
         public virtual int Id { get; set; }
@@ -936,6 +1014,7 @@ namespace Check.ServiceModel.Types
     }
 
     public partial class AllTypes
+        : IReturn<AllTypes>
     {
         public AllTypes()
         {
@@ -978,7 +1057,58 @@ namespace Check.ServiceModel.Types
     {
     }
 
+    public partial class EnumRequest
+        : IReturn<EnumResponse>, IPut
+    {
+        public virtual ScopeType Operator { get; set; }
+    }
+
+    public partial class EnumResponse
+    {
+        public virtual ScopeType Operator { get; set; }
+    }
+
+    public partial class ExcludeTest1
+        : IReturn<ExcludeTestNested>
+    {
+    }
+
+    public partial class ExcludeTest2
+        : IReturn<string>
+    {
+        public virtual ExcludeTestNested ExcludeTestNested { get; set; }
+    }
+
+    public partial class ExcludeTestNested
+    {
+        public virtual int Id { get; set; }
+    }
+
     public partial class HelloBase
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class HelloBuiltin
+    {
+        public virtual DayOfWeek DayOfWeek { get; set; }
+    }
+
+    public partial class HelloDelete
+        : IReturn<HelloVerbResponse>, IDelete
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class HelloDictionary
+        : IReturn<Dictionary<string, string>>
+    {
+        public virtual string Key { get; set; }
+        public virtual string Value { get; set; }
+    }
+
+    public partial class HelloGet
+        : IReturn<HelloVerbResponse>, IGet
     {
         public virtual int Id { get; set; }
     }
@@ -1002,9 +1132,39 @@ namespace Check.ServiceModel.Types
         public virtual string Value { get; set; }
     }
 
+    public partial class HelloPatch
+        : IReturn<HelloVerbResponse>, IPatch
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class HelloPost
+        : HelloBase, IReturn<HelloVerbResponse>, IPost
+    {
+    }
+
+    public partial class HelloPut
+        : IReturn<HelloVerbResponse>, IPut
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class HelloReserved
+    {
+        public virtual string Class { get; set; }
+        public virtual string Type { get; set; }
+        public virtual string extension { get; set; }
+    }
+
     public partial class HelloResponseBase
     {
         public virtual int RefId { get; set; }
+    }
+
+    public partial class HelloReturnVoid
+        : IReturnVoid
+    {
+        public virtual int Id { get; set; }
     }
 
     public partial class HelloSession
@@ -1018,6 +1178,11 @@ namespace Check.ServiceModel.Types
     }
 
     public partial class HelloType
+    {
+        public virtual string Result { get; set; }
+    }
+
+    public partial class HelloVerbResponse
     {
         public virtual string Result { get; set; }
     }
@@ -1091,6 +1256,13 @@ namespace Check.ServiceModel.Types
     public partial class Request2Response
     {
         public virtual TypeA Test { get; set; }
+    }
+
+    [DataContract]
+    public enum ScopeType
+    {
+        Global = 1,
+        Sale = 2,
     }
 
     public partial class SubType
