@@ -168,6 +168,9 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesTypeScript request)
         {
+            if (request.BaseUrl == null)
+                request.BaseUrl = Request.GetBaseUrl();
+
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             typesConfig.ExportAsTypes = true;
 
@@ -177,14 +180,14 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesTypeScriptDefinition request)
         {
+            if (request.BaseUrl == null)
+                request.BaseUrl = Request.GetBaseUrl();
+
             return GenerateTypeScript(request, NativeTypesMetadata.GetConfig(request));
         }
 
         public string GenerateTypeScript(NativeTypesBase request, MetadataTypesConfig typesConfig)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
-
             //Include SS types by removing ServiceStack namespaces
             if (typesConfig.AddServiceStackTypes)
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
