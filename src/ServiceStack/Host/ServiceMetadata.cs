@@ -5,8 +5,6 @@ using System.Reflection;
 using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
-using ServiceStack.Support.WebHost;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host

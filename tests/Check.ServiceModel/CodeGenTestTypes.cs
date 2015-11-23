@@ -567,6 +567,20 @@ namespace Check.ServiceModel.Types
         [EnumMember]
         Sale = 2,
     }
+
+    public class ExcludeTest1 : IReturn<ExcludeTestNested>
+    {
+    }
+
+    public class ExcludeTest2 : IReturn<string>
+    {
+        public ExcludeTestNested ExcludeTestNested { get; set; }
+    }
+
+    public class ExcludeTestNested
+    {
+        public int Id { get; set; }
+    }
 }
 
 

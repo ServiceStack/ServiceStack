@@ -245,6 +245,16 @@ namespace Check.ServiceInterface
         {
             return new EnumResponse { Operator = request.Operator };
         }
+
+        public object Any(ExcludeTest1 request)
+        {
+            return new ExcludeTestNested { Id = 1 };
+        }
+
+        public object Any(ExcludeTest2 request)
+        {
+            return request.GetType().Name;
+        }
     }
 
     public class GetUserSession : IReturn<CustomUserSession>
