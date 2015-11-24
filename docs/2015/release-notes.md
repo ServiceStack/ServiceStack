@@ -1033,6 +1033,10 @@ var users = JsonObject.Parse(json)
 
 ## v4.0.48 Issues
 
+The TypeScript Add ServiceStack Reference feature was missing the BaseUrl in header comments preventing updates. It's now been resolved 
+[from this commit](https://github.com/ServiceStack/ServiceStack/commit/10728d1e746b0bf2f84e081eb6319d88ae974677) that's now
+available in our [pre-release v4.0.49 MyGet packages](https://github.com/ServiceStack/ServiceStack/wiki/MyGet).
+
 The **ServiceStack.Mvc** project had a invalid dependency on **ServiceStack.Signed** which has been resolved 
 [from this commit](https://github.com/ServiceStack/ServiceStack/commit/2f0946e8cb755103082de24949e35fc70f9f72ae) that's now
 available in our [pre-release v4.0.49 MyGet packages](https://github.com/ServiceStack/ServiceStack/wiki/MyGet).
