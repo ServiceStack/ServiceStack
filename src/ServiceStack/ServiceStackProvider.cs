@@ -143,7 +143,12 @@ namespace ServiceStack
 
         public object Execute(object requestDto)
         {
-            return HostContext.ServiceController.Execute(requestDto, Request);
+            var response = HostContext.ServiceController.Execute(requestDto, Request);
+            var ex = response as Exception;
+            if (ex != null)
+                throw ex;
+
+            return response;
         }
 
         public TResponse Execute<TResponse>(IReturn<TResponse> requestDto)
@@ -153,12 +158,17 @@ namespace ServiceStack
 
         public object Execute(IRequest request)
         {
-            return HostContext.ServiceController.Execute(request);
+            var response = HostContext.ServiceController.Execute(request);
+            var ex = response as Exception;
+            if (ex != null)
+                throw ex;
+
+            return response;
         }
 
         public object ForwardRequest()
         {
-            return HostContext.ServiceController.Execute(Request);
+            return Execute(Request);
         }
 
         private ICacheClient cache;
