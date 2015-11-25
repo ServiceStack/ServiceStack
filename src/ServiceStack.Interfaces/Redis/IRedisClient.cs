@@ -66,6 +66,11 @@ namespace ServiceStack.Redis
 
         List<string> GetAllKeys();
 
+        //Fetch fully qualified key for specific Type and Id
+        string UrnKey<T>(T value);
+        string UrnKey<T>(object id);
+        string UrnKey(Type type, object id);
+
         [Obsolete("Use SetValue()")]
         void SetEntry(string key, string value);
         [Obsolete("Use SetValue()")]

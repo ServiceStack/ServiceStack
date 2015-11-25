@@ -39,6 +39,8 @@ namespace ServiceStack.Redis.Generic
 
         T this[string key] { get; set; }
 
+        string UrnKey(T value);
+
         string SequenceKey { get; set; }
         void SetSequence(int value);
         long GetNextSequence();
@@ -46,9 +48,20 @@ namespace ServiceStack.Redis.Generic
         RedisKeyType GetEntryType(string key);
         string GetRandomKey();
 
+        [Obsolete("Use SetValue()")]
         void SetEntry(string key, T value);
+        [Obsolete("Use SetValue()")]
         void SetEntry(string key, T value, TimeSpan expireIn);
+        [Obsolete("Use SetValueIfNotExists()")]
         bool SetEntryIfNotExists(string key, T value);
+
+        void SetValue(string key, T entity);
+        void SetValue(string key, T entity, TimeSpan expireIn);
+        bool SetValueIfNotExists(string key, T entity);
+        bool SetValueIfExists(string key, T entity);
+
+        T Store(T entity, TimeSpan expireIn);
+
         T GetValue(string key);
         T GetAndSetValue(string key, T value);
         bool ContainsKey(string key);
