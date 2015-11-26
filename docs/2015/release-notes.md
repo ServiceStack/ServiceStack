@@ -1045,6 +1045,8 @@ The **ServiceStack.Mvc** project had a invalid dependency on **ServiceStack.Sign
 [from this commit](https://github.com/ServiceStack/ServiceStack/commit/2f0946e8cb755103082de24949e35fc70f9f72ae) that's now
 available in our [pre-release v4.0.49 MyGet packages](https://github.com/ServiceStack/ServiceStack/wiki/MyGet).
 
+You can workaround this by manually removing the **ServiceStack.Signed** packages and adding the **ServiceStack** packages instead.
+
 ### Config.ScanSkipPaths not ignoring folders
 
 The change of removing `/` prefixes from Virtual Paths meant folders ignored in `Config.ScanSkipPaths` were no
@@ -1063,8 +1065,6 @@ for (int i = 0; i < Config.ScanSkipPaths.Count; i++)
     Config.ScanSkipPaths[i] = Config.ScanSkipPaths[i].TrimStart('/');
 }
 ```
-
-You can workaround this by manually removing the **ServiceStack.Signed** packages and adding the **ServiceStack** packages instead.
 
 # v4.0.46 Release Notes
 
