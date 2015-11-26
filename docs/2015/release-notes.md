@@ -1033,13 +1033,36 @@ var users = JsonObject.Parse(json)
 
 ## v4.0.48 Issues
 
+### TypeScript missing BaseUrl
+
 The TypeScript Add ServiceStack Reference feature was missing the BaseUrl in header comments preventing updates. It's now been resolved 
 [from this commit](https://github.com/ServiceStack/ServiceStack/commit/10728d1e746b0bf2f84e081eb6319d88ae974677) that's now
 available in our [pre-release v4.0.49 MyGet packages](https://github.com/ServiceStack/ServiceStack/wiki/MyGet).
 
+### ServiceStack.Mvc incorrectly references ServiceStack.Signed
+
 The **ServiceStack.Mvc** project had a invalid dependency on **ServiceStack.Signed** which has been resolved 
 [from this commit](https://github.com/ServiceStack/ServiceStack/commit/2f0946e8cb755103082de24949e35fc70f9f72ae) that's now
 available in our [pre-release v4.0.49 MyGet packages](https://github.com/ServiceStack/ServiceStack/wiki/MyGet).
+
+### Config.ScanSkipPaths not ignoring folders
+
+The change of removing `/` prefixes from Virtual Paths meant folders ignored in `Config.ScanSkipPaths` were no
+longer being ignored. It's important node.js-based Single Page App templates ignore `node_modules/` since trying
+to scan it throws an error on StartUp when it reaches paths greater than Windows **260 char limit**. This is
+fixed in the [pre-release v4.0.49 MyGet packages](https://github.com/ServiceStack/ServiceStack/wiki/MyGet).
+
+You can also work around this issue in v4.0.48 by removing the prefix from `Config.ScanSkipPaths` folders 
+in `AppHost.Configure()` manually with:
+
+```csharp
+SetConfig(new HostConfig { ... });
+
+for (int i = 0; i < Config.ScanSkipPaths.Count; i++)
+{
+    Config.ScanSkipPaths[i] = Config.ScanSkipPaths[i].TrimStart('/');
+}
+```
 
 You can workaround this by manually removing the **ServiceStack.Signed** packages and adding the **ServiceStack** packages instead.
 
