@@ -39,7 +39,7 @@
             Value from DB to Populate on POCO Data Model with
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.GetValue(System.Data.IDataReader,System.Int32)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteConverter.GetValue(System.Data.IDataReader,System.Int32,System.Object[])">
             <summary>
             Retrieve Value from ADO.NET IDataReader. Defaults to reader.GetValue()
             </summary>
@@ -1293,6 +1293,16 @@
             Allow for code-sharing between OrmLite, IPersistenceProvider and ICacheClient
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.IOrmLiteDialectProvider.GetConverter(System.Type)">
+            <summary>
+            Gets the explicit Converter registered for a specific type
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.IOrmLiteDialectProvider.GetConverterBestMatch(System.Type)">
+            <summary>
+            Return best matching converter, falling back to Enum, Value or Ref Type Converters
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.IOrmLiteDialectProvider.GetQuotedValue(System.String)">
             <summary>
             Quote the string so that it can be used inside an SQL-expression
@@ -1300,11 +1310,6 @@
             </summary>
             <param name="paramValue"></param>
             <returns></returns>
-        </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteDialectProviderBase`1.SetDbValue(ServiceStack.OrmLite.FieldDefinition,System.Data.IDataReader,System.Int32,System.Object)">
-            <summary>
-            Populates row fields during re-hydration of results.
-            </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteDialectProviderBase`1.ToInsertRowStatement(System.Data.IDbCommand,System.Object,System.Collections.Generic.ICollection{System.String})">
             Fmt
