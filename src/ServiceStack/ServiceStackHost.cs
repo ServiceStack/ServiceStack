@@ -111,8 +111,7 @@ namespace ServiceStack
                 typeof(PostmanService),
             };
 
-            // force deterministic initialization of static constructor
-            using (JsConfig.BeginScope()) { }
+            JsConfig.InitStatics();
         }
 
         public abstract void Configure(Container container);
