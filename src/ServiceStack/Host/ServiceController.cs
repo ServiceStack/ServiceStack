@@ -599,7 +599,9 @@ namespace ServiceStack.Host
                 //sync
                 if (asyncResponse == null) 
                 {
-                    var ret = (object[])Array.CreateInstance(firstResponse.GetType(), dtosList.Count);
+                    var ret = firstResponse != null
+                        ? (object[])Array.CreateInstance(firstResponse.GetType(), dtosList.Count)
+                        : new object[dtosList.Count];
 
                     ret[0] = firstResponse; //don't re-execute first request
                     for (var i = 1; i < dtosList.Count; i++)
