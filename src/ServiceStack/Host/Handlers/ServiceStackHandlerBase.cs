@@ -84,7 +84,9 @@ namespace ServiceStack.Host.Handlers
                                     return callback(new object[0]);
 
                                 var firstResponse = taskResults[0].GetResult();
-                                var batchedResponses = (object[])Array.CreateInstance(firstResponse.GetType(), taskResults.Length);
+                                var batchedResponses = firstResponse != null 
+                                    ? (object[])Array.CreateInstance(firstResponse.GetType(), taskResults.Length)
+                                    : new object[taskResults.Length];
                                 batchedResponses[0] = firstResponse;
                                 for (var i = 1; i < taskResults.Length; i++)
                                 {

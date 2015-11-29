@@ -43,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static void AssertSingleDto(object dto)
         {
-            if (!(dto is BatchThrows || dto is BatchThrowsAsync || dto is NoRepeat || dto is HelloAll || dto is HelloAllAsync || dto is HelloAllVoid || dto is HelloGet || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
+            if (!(dto is BatchThrows || dto is BatchThrowsAsync || dto is NoRepeat || dto is HelloAll || dto is HelloAllAsync || dto is HelloAllVoid || dto is HelloAllVoidAsync || dto is HelloGet || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
                 throw new Exception("Invalid " + dto.GetType().Name);
         }
     }
@@ -93,6 +93,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     public class HelloAllVoid : IReturnVoid
+    {
+        public static int Counter;
+
+        public string Name { get; set; }
+    }
+
+    public class HelloAllVoidAsync : IReturnVoid
     {
         public static int Counter;
 
@@ -162,6 +169,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Any(HelloAllVoid request)
         {
             HelloAllVoid.Counter++;
+        }
+
+        public async Task Any(HelloAllVoidAsync request)
+        {
+            HelloAllVoidAsync.Counter++;
+            await Task.FromResult(0);
         }
 
         [ReplyAllRequest]
@@ -434,6 +447,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 new HelloAllVoid { Name = "Foo" },
                 new HelloAllVoid { Name = "Bar" },
                 new HelloAllVoid { Name = "Baz" },
+            };
+
+            client.SendAllOneWay(requests);
+        }
+
+        [Test]
+        public void Can_send_multi_HelloAllVoidAsync()
+        {
+            var client = CreateClient(Config.AbsoluteBaseUri);
+
+            var requests = new[]
+            {
+                new HelloAllVoidAsync { Name = "Foo" },
+                new HelloAllVoidAsync { Name = "Bar" },
+                new HelloAllVoidAsync { Name = "Baz" },
             };
 
             client.SendAllOneWay(requests);
