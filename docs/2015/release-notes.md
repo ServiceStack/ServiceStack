@@ -6,7 +6,9 @@ that we wanted to get out before the holidays. This release also contains a numb
 added in OrmLite to speed up your Data Access and 
 [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) results. 
 
-### New OnSessionFilter
+Other changes in this release include:
+
+#### New OnSessionFilter
 
 You can intercept sessions after they've been resolved from the cache and modify them before they're used in
 ServiceStack or other application code by overriding `OnSessionFilter()` in your AppHost, e.g:
@@ -21,7 +23,7 @@ public override IAuthSession OnSessionFilter(IAuthSession session, string withSe
 
 This comes in useful when migrating existing sessions and populating properties with custom values.
 
-### Registered Type Filters on IAppHost
+#### Registered Type Filters on IAppHost
 
 To make it easier for plugins to register 
 [Typed Filters](https://github.com/ServiceStack/ServiceStack/wiki/Request-and-response-filters#typed-request-filters)
@@ -52,22 +54,26 @@ public interface IAppHost
 }
 ```
 
-## [RedisReact November Update](https://github.com/ServiceStackApps/RedisReact)
+## [RedisReact](https://github.com/ServiceStackApps/RedisReact)
 
-### Connections with Authentication
+New Windows, OSX, Linux binaries published and 
+[http://redisreact.servicestack.net](http://redisreact.servicestack.net) 
+Live Demo updated with this November Release:
+
+#### Connections with Authentication
 
 Added support for password authentication when establishing connections with redis.
 
 ![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/redis-react/updates/add-authentication.png)
 
-### Custom key console links
+#### Custom key console links
 
 The **console** link now populates the console with the most appropriate command for each key type, e.g. clicking **console**
 ok a Sorted Set Key (ZSET) populates the Web Console with `ZRANGE key 0 -1 WITHSCORES`.
 
 ## ServiceStack.Redis
 
-### RedisConfig.DefaultMaxPoolSize
+#### RedisConfig.DefaultMaxPoolSize
 
 You can easily configure the default pool size for `RedisManagerPool` and `PooledRedisClientManager` with
 a global static configuration, e.g:
@@ -76,7 +82,7 @@ a global static configuration, e.g:
 RedisConfig.DefaultMaxPoolSize = 200;
 ```
 
-#### Changes
+**Changes:**
 
 The `RedisManagerPool.MaxPoolSize` property is now read-only to reflect proper usage where it needs to be 
 specified in the constructor otherwise it's ignored.
