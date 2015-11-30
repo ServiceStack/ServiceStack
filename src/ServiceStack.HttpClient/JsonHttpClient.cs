@@ -74,6 +74,8 @@ namespace ServiceStack
         {
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
             this.CookieContainer = new CookieContainer();
+
+            JsConfig.InitStatics();
         }
 
         public void SetCredentials(string userName, string password)

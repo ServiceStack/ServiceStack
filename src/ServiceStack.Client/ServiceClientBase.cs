@@ -108,6 +108,8 @@ namespace ServiceStack
 
             asyncClient.HandleCallbackOnUiThread = this.HandleCallbackOnUiThread = true;
             asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
+
+            JsConfig.InitStatics();
         }
 
         protected ServiceClientBase(string syncReplyBaseUri, string asyncOneWayBaseUri)
