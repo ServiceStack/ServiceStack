@@ -1,3 +1,141 @@
+# v4.0.50 Release Notes
+
+This is primarily a bug fix release to 
+[resolve issues from the last release](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2015/release-notes.md#v4048-issues)
+that we wanted to get out before the holidays. This release also contains a number of performance improvements 
+added in OrmLite to speed up your Data Access and 
+[AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) results. 
+
+### New OnSessionFilter
+
+You can intercept sessions after they've been resolved from the cache and modify them before they're used in
+ServiceStack or other application code by overriding `OnSessionFilter()` in your AppHost, e.g:
+
+```csharp
+public override IAuthSession OnSessionFilter(IAuthSession session, string withSessionId)
+{
+    // Update User Session
+    return base.OnSessionFilter(session, withSessionId);
+}
+```
+
+This comes in useful when migrating existing sessions and populating properties with custom values.
+
+### Registered Type Filters on IAppHost
+
+To make it easier for plugins to register 
+[Typed Filters](https://github.com/ServiceStack/ServiceStack/wiki/Request-and-response-filters#typed-request-filters)
+, their Registration APIs are now available on IAppHost as well, e.g:
+
+```csharp
+public interface IAppHost
+{    
+    /// <summary>
+    /// Add Request Filter for a specific Request DTO Type
+    /// </summary>
+    void RegisterTypedRequestFilter<T>(Action<IRequest, IResponse, T> filterFn);
+
+    /// <summary>
+    /// Add Request Filter for a specific Response DTO Type
+    /// </summary>
+    void RegisterTypedResponseFilter<T>(Action<IRequest, IResponse, T> filterFn);
+
+    /// <summary>
+    /// Add Request Filter for a specific MQ Request DTO Type
+    /// </summary>
+    void RegisterTypedMessageRequestFilter<T>(Action<IRequest, IResponse, T> filterFn);
+
+    /// <summary>
+    /// Add Request Filter for a specific MQ Response DTO Type
+    /// </summary>
+    void RegisterTypedMessageResponseFilter<T>(Action<IRequest, IResponse, T> filterFn);
+}
+```
+
+## ServiceStack.Redis
+
+### RedisConfig.DefaultMaxPoolSize
+
+You can easily configure the default pool size for `RedisManagerPool` and `PooledRedisClientManager` with
+a global static configuration, e.g:
+
+```csharp
+RedisConfig.DefaultMaxPoolSize = 200;
+```
+
+#### Changes
+
+The `RedisManagerPool.MaxPoolSize` property is now read-only to reflect proper usage where it needs to be 
+specified in the constructor otherwise it's ignored.
+
+### New Redis APIs
+
+New API's added to typed Redis Client to make available API's to resolve cache key for specific types, 
+deprecate `SetEntry*` API's and replace them with more appropriately named `SetValue*`, allow typed API
+to store and expire typed POCO's in 1 operation:
+
+```csharp
+public interface IRedisClient
+{
+    //Resolve cache key for specific Type and Id
+    string UrnKey<T>(T value);
+    string UrnKey<T>(object id);
+    string UrnKey(Type type, object id);
+}
+
+public interface IRedisTypedClient
+{
+    //resolve cache key used for a typed instance
+    string UrnKey(T value);
+    
+    //Deprecate SetEntry* API's 
+    [Obsolete("Use SetValue()")]
+    void SetEntry(string key, T value);
+    [Obsolete("Use SetValue()")]
+    void SetEntry(string key, T value, TimeSpan expireIn);
+    [Obsolete("Use SetValueIfNotExists()")]
+    bool SetEntryIfNotExists(string key, T value);
+
+    //Replaces above SetEntry* API's
+    void SetValue(string key, T entity);
+    void SetValue(string key, T entity, TimeSpan expireIn);
+    bool SetValueIfNotExists(string key, T entity);
+    bool SetValueIfExists(string key, T entity);
+
+    //Save and expire an entity in 1 operation
+    T Store(T entity, TimeSpan expireIn);
+}
+```
+
+### ServiceStack.Text
+
+To improve the usefulness of mocking HTTP Requests, the request body is now passed in the Results Filter
+so the Request Body can be inspected, e.g:
+
+```csharp
+using (new HttpResultsFilter
+{
+    StringResultFn = (webReq, reqBody) =>
+    {
+        if (reqBody != null && reqBody.Contains("{\"a\":1}")) 
+            return "mocked-by-body";
+
+        return webReq.RequestUri.ToString().Contains("google")
+            ? "mocked-google"
+            : "mocked-yahoo";
+    }
+})
+{
+    "http://yahoo.com".PostJsonToUrl(json: "{\"a\":1}") //= mocked-by-body
+    
+    "http://google.com".GetJsonFromUrl() //= mocked-google
+    "http://yahoo.com".GetJsonFromUrl()  //= mocked-yahoo
+}
+```
+
+Previously [inspecting the Request Body was not possible](http://stackoverflow.com/a/31631039/85785). 
+Thanks to [@georgehemmings](https://github.com/georgehemmings) for adding this feature.
+
 # v4.0.48 Release Notes
 
 ![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/aws/servicestack-aws-banner-420.png)
