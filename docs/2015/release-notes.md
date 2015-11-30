@@ -52,6 +52,19 @@ public interface IAppHost
 }
 ```
 
+## [RedisReact November Update](https://github.com/ServiceStackApps/RedisReact)
+
+### Connections with Authentication
+
+Added support for password authentication when establishing connections with redis.
+
+![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/redis-react/updates/add-authentication.png)
+
+### Custom key console links
+
+The **console** link now populates the console with the most appropriate command for each key type, e.g. clicking **console**
+ok a Sorted Set Key (ZSET) populates the Web Console with `ZRANGE key 0 -1 WITHSCORES`.
+
 ## ServiceStack.Redis
 
 ### RedisConfig.DefaultMaxPoolSize
