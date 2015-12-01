@@ -17,6 +17,7 @@ namespace ServiceStack
         public Action<IndexOperationsControl> IndexPageFilter { get; set; }
         public Action<OperationControl> DetailPageFilter { get; set; }
 
+        public bool ShowResponseStatusInSchema { get; set; }
 
         public MetadataFeature()
         {

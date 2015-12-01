@@ -337,6 +337,12 @@ namespace ServiceStack.Host
 
             var typesConfig = HostContext.AppHost.GetTypesConfigForMetadata(httpReq);
 
+            if (HostContext.GetPlugin<MetadataFeature>().ShowResponseStatusInSchema)
+            {
+                typesConfig.IgnoreTypes.Remove(typeof(ResponseStatus));
+                typesConfig.IgnoreTypes.Remove(typeof(ResponseError));
+            }
+
             var metadataTypes = typeMetadata != null
                 ? typeMetadata.GetMetadataTypes(httpReq, typesConfig)
                 : new MetadataTypesGenerator(this, typesConfig)
