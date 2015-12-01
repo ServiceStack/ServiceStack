@@ -8,6 +8,7 @@ using ServiceStack.Host;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ServiceStack.Metadata
 {
@@ -52,8 +53,8 @@ namespace ServiceStack.Metadata
                 return "(Stream)";
             if (type == typeof(HttpWebResponse))
                 return "(HttpWebResponse)";
-            if (type.IsGenericType)
-                type = type.GetGenericArguments()[0]; //e.g. Task<T> => T
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+                type = type.GetGenericArguments()[0]; 
 
             return CreateMessage(type);
         }
