@@ -52,7 +52,7 @@ namespace ServiceStack.AuthWeb.Tests
             Plugins.Add(new RazorFormat());
             Plugins.Add(new ServerEventsFeature
             {
-                WriteFn = (res, frame) =>
+                WriteEvent = (res, frame) =>
                 {
                     var aspRes = (HttpResponseBase)res.OriginalResponse;
                     var bytes = frame.ToUtf8Bytes();
