@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
 using System.Net;
 using System.Threading;
+using System.Web;
 using Funq;
 using Raven.Client;
 using Raven.Client.Document;
@@ -49,7 +50,16 @@ namespace ServiceStack.AuthWeb.Tests
         public override void Configure(Container container)
         {
             Plugins.Add(new RazorFormat());
-            Plugins.Add(new ServerEventsFeature());
+            Plugins.Add(new ServerEventsFeature
+            {
+                WriteFn = (res, frame) =>
+                {
+                    var aspRes = (HttpResponseBase)res.OriginalResponse;
+                    var bytes = frame.ToUtf8Bytes();
+                    aspRes.OutputStream.WriteAsync(bytes, 0, bytes.Length)
+                        .Then(_ => aspRes.OutputStream.FlushAsync());
+                }
+            });
 
             container.Register(new DataSource());
 

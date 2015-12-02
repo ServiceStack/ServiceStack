@@ -32,6 +32,7 @@ namespace ServiceStack
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IResponse, string> OnPublish { get; set; }
+        public Action<IResponse, string> WriteEvent { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
         public bool LimitToAuthenticatedUsers { get; set; }
         public bool ValidateUserAddress { get; set; }
@@ -42,6 +43,11 @@ namespace ServiceStack
             HeartbeatPath = "/event-heartbeat";
             UnRegisterPath = "/event-unregister";
             SubscribersPath = "/event-subscribers";
+
+            WriteEvent = (res, frame) => {
+                res.OutputStream.Write(frame);
+                res.Flush();
+            };
 
             IdleTimeout = TimeSpan.FromSeconds(30);
             HeartbeatInterval = TimeSpan.FromSeconds(10);
@@ -392,11 +398,13 @@ namespace ServiceStack
         {
             this.response = response;
             this.Meta = new Dictionary<string, string>();
+            this.WriteEvent = HostContext.GetPlugin<ServerEventsFeature>().WriteEvent;
         }
 
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription> OnDispose { get; set; }
         public Action<IResponse, string> OnPublish { get; set; }
+        public Action<IResponse, string> WriteEvent { get; set; }
 
         public void Publish(string selector)
         {
@@ -413,8 +421,7 @@ namespace ServiceStack
 
                 lock (response)
                 {
-                    response.OutputStream.Write(frame);
-                    response.Flush();
+                    WriteEvent(response, frame);
 
                     if (OnPublish != null)
                         OnPublish(response, frame);
