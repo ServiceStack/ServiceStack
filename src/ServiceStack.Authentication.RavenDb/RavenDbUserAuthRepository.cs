@@ -85,30 +85,9 @@ namespace ServiceStack.Authentication.RavenDb
                 CreateOrUpdateUserAuthIndex(documentStore);
         }
 
-        private void ValidateNewUser(IUserAuth newUser, string password)
-        {
-            password.ThrowIfNullOrEmpty("password");
-
-            ValidateNewUserWithoutPassword(newUser);
-        }
-
-        private void ValidateNewUserWithoutPassword(IUserAuth newUser)
-        {
-            newUser.ThrowIfNull("newUser");
-
-            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
-                throw new ArgumentNullException("UserName or Email is required");
-
-            if (!newUser.UserName.IsNullOrEmpty())
-            {
-                if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
-                    throw new ArgumentException("UserName contains invalid characters", "UserName");
-            }
-        }
-
         public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
         {
-            ValidateNewUser(newUser, password);
+            newUser.ValidateNewUser(password);
 
             AssertNoExistingUser(newUser);
 
@@ -122,6 +101,28 @@ namespace ServiceStack.Authentication.RavenDb
             newUser.Salt = salt;
             newUser.CreatedDate = DateTime.UtcNow;
             newUser.ModifiedDate = newUser.CreatedDate;
+
+            using (var session = documentStore.OpenSession())
+            {
+                session.Store(newUser);
+                session.SaveChanges();
+            }
+
+            return newUser;
+        }
+
+        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
+        {
+            newUser.ValidateNewUser();
+
+            AssertNoExistingUser(newUser);
+
+            newUser.Id = existingUser.Id;
+            newUser.PasswordHash = existingUser.PasswordHash;
+            newUser.Salt = existingUser.Salt;
+            newUser.DigestHa1Hash = existingUser.DigestHa1Hash;
+            newUser.CreatedDate = existingUser.CreatedDate;
+            newUser.ModifiedDate = DateTime.UtcNow;
 
             using (var session = documentStore.OpenSession())
             {
@@ -150,26 +151,22 @@ namespace ServiceStack.Authentication.RavenDb
             }
         }
 
-        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password = null)
+        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
         {
-            ValidateNewUserWithoutPassword(newUser);
+            newUser.ValidateNewUser(password);
 
             AssertNoExistingUser(newUser, existingUser);
 
             var hash = existingUser.PasswordHash;
             var salt = existingUser.Salt;
             if (password != null)
-            {
-                var saltedHash = HostContext.Resolve<IHashProvider>();
-                saltedHash.GetHashAndSaltString(password, out hash, out salt);
-            }
+                HostContext.Resolve<IHashProvider>().GetHashAndSaltString(password, out hash, out salt);
+
             // If either one changes the digest hash has to be recalculated
             var digestHash = existingUser.DigestHa1Hash;
             if (password != null || existingUser.UserName != newUser.UserName)
-            {
-                var digestHelper = new DigestAuthFunctions();
-                digestHash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-            }
+                digestHash = new DigestAuthFunctions().CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
+
             newUser.Id = existingUser.Id;
             newUser.PasswordHash = hash;
             newUser.Salt = salt;

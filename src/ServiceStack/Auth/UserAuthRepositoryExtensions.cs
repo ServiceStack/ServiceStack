@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
@@ -160,6 +161,30 @@ namespace ServiceStack.Auth
         public static void DeleteUserAuth(this IAuthRepository authRepo, string userAuthId)
         {
             ((IUserAuthRepository)authRepo).DeleteUserAuth(userAuthId);
+        }
+
+        public static void ValidateNewUser(this IUserAuth newUser)
+        {
+            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
+                throw new ArgumentNullException(ErrorMessages.UsernameOrEmailRequired);
+
+            if (!newUser.UserName.IsNullOrEmpty() && !HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
+                throw new ArgumentException(ErrorMessages.IllegalUsername, "UserName");
+        }
+
+        public static void ValidateNewUser(this IUserAuth newUser, string password)
+        {
+            newUser.ThrowIfNull("newUser");
+            password.ThrowIfNullOrEmpty("password");
+
+            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
+                throw new ArgumentNullException(ErrorMessages.UsernameOrEmailRequired);
+
+            if (!newUser.UserName.IsNullOrEmpty())
+            {
+                if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
+                    throw new ArgumentException(ErrorMessages.IllegalUsername, "UserName");
+            }
         }
     }
 }

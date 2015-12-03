@@ -36,21 +36,6 @@ namespace ServiceStack.Auth
 
         private string IndexEmailToUserId { get { return UsePrefix + "hash:UserAuth:Email>UserId"; } }
 
-        private void ValidateNewUser(IUserAuth newUser, string password)
-        {
-            newUser.ThrowIfNull("newUser");
-            password.ThrowIfNullOrEmpty("password");
-
-            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
-                throw new ArgumentNullException("UserName or Email is required");
-
-            if (!newUser.UserName.IsNullOrEmpty())
-            {
-                if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
-                    throw new ArgumentException("UserName contains invalid characters", "UserName");
-            }
-        }
-
         private void AssertNoExistingUser(IRedisClientFacade redis, IUserAuth newUser, IUserAuth exceptForExistingUser = null)
         {
             if (newUser.UserName != null)
@@ -71,7 +56,7 @@ namespace ServiceStack.Auth
 
         public virtual IUserAuth CreateUserAuth(IUserAuth newUser, string password)
         {
-            ValidateNewUser(newUser, password);
+            newUser.ValidateNewUser(password);
 
             using (var redis = factory.GetClient())
             {
@@ -108,7 +93,7 @@ namespace ServiceStack.Auth
 
         public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
         {
-            ValidateNewUser(newUser, password);
+            newUser.ValidateNewUser(password);
 
             using (var redis = factory.GetClient())
             {
@@ -152,6 +137,27 @@ namespace ServiceStack.Auth
                 {
                     redis.SetEntryInHash(IndexEmailToUserId, newUser.Email, userId);
                 }
+
+                redis.Store(newUser);
+
+                return newUser;
+            }
+        }
+
+        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
+        {
+            newUser.ValidateNewUser();
+
+            using (var redis = factory.GetClient())
+            {
+                AssertNoExistingUser(redis, newUser, existingUser);
+
+                newUser.Id = existingUser.Id;
+                newUser.PasswordHash = existingUser.PasswordHash;
+                newUser.Salt = existingUser.Salt;
+                newUser.DigestHa1Hash = existingUser.DigestHa1Hash;
+                newUser.CreatedDate = existingUser.CreatedDate;
+                newUser.ModifiedDate = DateTime.UtcNow;
 
                 redis.Store(newUser);
 

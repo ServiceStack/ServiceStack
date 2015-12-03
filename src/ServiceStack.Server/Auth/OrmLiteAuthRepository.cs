@@ -54,26 +54,9 @@ namespace ServiceStack.Auth
             }
         }
 
-        private void ValidateNewUser(IUserAuth newUser, string password)
-        {
-            newUser.ThrowIfNull("newUser");
-            password.ThrowIfNullOrEmpty("password");
-
-            ValidateNewUser(newUser);
-        }
-
-        private void ValidateNewUser(IUserAuth newUser)
-        {
-            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
-                throw new ArgumentNullException(ErrorMessages.UsernameOrEmailRequired);
-
-            if (!newUser.UserName.IsNullOrEmpty() && !HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
-                throw new ArgumentException(ErrorMessages.IllegalUsername, "UserName");
-        }
-
         public virtual IUserAuth CreateUserAuth(IUserAuth newUser, string password)
         {
-            ValidateNewUser(newUser, password);
+            newUser.ValidateNewUser(password);
 
             using (var db = dbFactory.Open())
             {
@@ -116,7 +99,7 @@ namespace ServiceStack.Auth
 
         public virtual IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
         {
-            ValidateNewUser(newUser, password);
+            newUser.ValidateNewUser(password);
 
             using (var db = dbFactory.Open())
             {
@@ -147,7 +130,7 @@ namespace ServiceStack.Auth
 
         public virtual IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
         {
-            ValidateNewUser(newUser);
+            newUser.ValidateNewUser();
 
             using (var db = dbFactory.Open())
             {

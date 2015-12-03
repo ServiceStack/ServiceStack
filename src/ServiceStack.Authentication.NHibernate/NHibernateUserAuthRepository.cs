@@ -209,7 +209,7 @@ namespace ServiceStack.Authentication.NHibernate
 
         public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
         {
-            ValidateNewUser(newUser, password);
+            newUser.ValidateNewUser(password);
 
             AssertNoExistingUser(newUser);
 
@@ -227,21 +227,6 @@ namespace ServiceStack.Authentication.NHibernate
             nhSession.Save(new UserAuthNHibernate(newUser));
 
             return newUser;
-        }
-
-        private void ValidateNewUser(IUserAuth newUser, string password)
-        {
-            newUser.ThrowIfNull("newUser");
-            password.ThrowIfNullOrEmpty("password");
-
-            if (string.IsNullOrEmpty(newUser.UserName) && string.IsNullOrEmpty(newUser.Email))
-                throw new ArgumentNullException("UserName or Email is required");
-
-            if (!string.IsNullOrEmpty(newUser.UserName))
-            {
-                if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
-                    throw new ArgumentException("UserName contains invalid characters", "UserName");
-            }
         }
 
         private void AssertNoExistingUser(IUserAuth newUser, IUserAuth exceptForExistingUser = null)
@@ -292,7 +277,7 @@ namespace ServiceStack.Authentication.NHibernate
 
         public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
         {
-            ValidateNewUser(newUser, password);
+            newUser.ValidateNewUser(password);
 
             AssertNoExistingUser(newUser, existingUser);
 
@@ -307,6 +292,24 @@ namespace ServiceStack.Authentication.NHibernate
             newUser.Id = existingUser.Id;
             newUser.PasswordHash = hash;
             newUser.Salt = salt;
+            newUser.CreatedDate = existingUser.CreatedDate;
+            newUser.ModifiedDate = DateTime.UtcNow;
+
+            var nhSession = GetCurrentSessionFn(sessionFactory);
+            nhSession.Save(new UserAuthNHibernate(newUser));
+
+            return newUser;
+        }
+
+        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
+        {
+            newUser.ValidateNewUser();
+
+            AssertNoExistingUser(newUser, existingUser);
+
+            newUser.Id = existingUser.Id;
+            newUser.PasswordHash = existingUser.PasswordHash;
+            newUser.Salt = existingUser.Salt;
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
 
