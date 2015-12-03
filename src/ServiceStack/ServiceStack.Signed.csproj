@@ -103,6 +103,7 @@
     <Compile Include="AspNet\ServiceStackPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="NativeTypes\Kotlin\KotlinGenerator.cs" />
     <Compile Include="RequiresSchemaProviders.cs" />
     <Compile Include="CancellableRequestsFeature.cs" />
     <Compile Include="Configuration\EnvironmentVariableSettings.cs" />
