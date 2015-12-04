@@ -65,4 +65,10 @@
         public static string ConstructorNotFoundForType = "Constructor not found for Type '{0}'";
         public static string ServiceNotFoundForType = "Service not found for Type '{0}'";
     }
+
+    public static class HelpMessages
+    {
+        public static string NativeTypesDtoOptionsTip =
+            "To override a DTO option, remove \"{0}\" prefix before updating.";
+    }
 }
