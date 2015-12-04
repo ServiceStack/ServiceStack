@@ -69,6 +69,6 @@
     public static class HelpMessages
     {
         public static string NativeTypesDtoOptionsTip =
-            "To override a DTO option, remove \"{0}\" prefix before updating.";
+            "To override a DTO option, remove \"{0}\" prefix before updating";
     }
 }

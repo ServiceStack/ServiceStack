@@ -118,7 +118,7 @@ namespace CheckWeb
         private void ConfigureSerialization(Container container)
         {
             // Set JSON web services to return idiomatic JSON camelCase properties
-            JsConfig.EmitCamelCaseNames = true;
+            //JsConfig.EmitCamelCaseNames = true;
             //JsConfig.EmitLowercaseUnderscoreNames = true;
 
             // Set JSON web services to return ISO8601 date format

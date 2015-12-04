@@ -373,7 +373,7 @@ namespace ServiceStack.NativeTypes.Kotlin
 
                 if (responseTypeExpression != null)
                 {
-                    sb.AppendLine("private val responseType = {0}".Fmt(responseTypeExpression));
+                    sb.AppendLine("companion object {{ private val responseType = {0} }}".Fmt(responseTypeExpression));
                     sb.AppendLine("override fun getResponseType(): Any? = responseType");
                 }
 
