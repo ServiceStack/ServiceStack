@@ -21,7 +21,7 @@ namespace ServiceStack.NativeTypes.Java
             AllTypes = new List<MetadataType>();
         }
 
-        public static string DefaultGlobalNamespace = "dto";
+        public static string DefaultGlobalNamespace = "dtos";
 
         public static List<string> DefaultImports = new List<string>
         {
