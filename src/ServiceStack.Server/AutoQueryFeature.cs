@@ -91,7 +91,7 @@ namespace ServiceStack
             {"%<",              LessThanOrEqualFormat},
             {"<%",              LessThanFormat},
 
-            {"Like%",           "UPPER({Field}) LIKE UPPER({Value})"},
+            {"%Like%",          "UPPER({Field}) LIKE UPPER({Value})"},
             {"%In",             "{Field} IN ({Values})"},
             {"%Ids",            "{Field} IN ({Values})"},
             {"%Between%",       "{Field} BETWEEN {Value1} AND {Value2}"},
@@ -903,7 +903,7 @@ namespace ServiceStack
             if (value is string)
                 seq = null;
             var format = seq == null 
-                ? quotedColumn + " = {0}"
+                ? (value != null ? quotedColumn + " = {0}" : quotedColumn + " IS NULL")
                 : quotedColumn + " IN ({0})";
             if (implicitQuery != null)
             {
@@ -977,13 +977,17 @@ namespace ServiceStack
                 var implicitQuery = match.ImplicitQuery;
                 var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
 
-                var strValue = entry.Value;
+                var strValue = !string.IsNullOrEmpty(entry.Value)
+                    ? entry.Value
+                    : null;
                 var fieldType = match.FieldDef.FieldType;
                 var isMultiple = (implicitQuery != null && (implicitQuery.ValueStyle > ValueStyle.Single))
                     || string.Compare(name, match.FieldDef.Name + Pluralized, StringComparison.OrdinalIgnoreCase) == 0;
                 
-                var value = isMultiple ? 
-                    TypeSerializer.DeserializeFromString(strValue, Array.CreateInstance(fieldType, 0).GetType())
+                var value = strValue == null ? 
+                      null 
+                    : isMultiple ? 
+                      TypeSerializer.DeserializeFromString(strValue, Array.CreateInstance(fieldType, 0).GetType())
                     : fieldType == typeof(string) ? 
                       strValue
                     : fieldType.IsValueType && !fieldType.IsEnum ? 

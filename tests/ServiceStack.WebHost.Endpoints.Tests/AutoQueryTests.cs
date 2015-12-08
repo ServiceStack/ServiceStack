@@ -648,6 +648,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_execute_implicit_IsNull_condition()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars?DateDied=")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            Assert.That(response.Total, Is.EqualTo(2));
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+        }
+
+        [Test]
         public void Can_execute_query_with_JOIN_on_RockstarAlbums()
         {
             var response = client.Get(new QueryRockstarAlbums());
