@@ -112,6 +112,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
 
@@ -368,6 +369,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 }
 
                 AddProperties(sb, type,
+                    initCollections: !type.IsInterface() && Config.InitializeCollections,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
 
@@ -384,7 +386,8 @@ namespace ServiceStack.NativeTypes.Kotlin
             return lastNS;
         }
 
-        public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)
+        public void AddProperties(StringBuilderWrapper sb, MetadataType type,
+            bool initCollections, bool includeResponseStatus)
         {
             var wasAdded = false;
 
@@ -404,15 +407,23 @@ namespace ServiceStack.NativeTypes.Kotlin
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
+                    var initProp = initCollections && !prop.GenericArgs.IsEmpty() &&
+                                   (ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type));
+
                     if (!fieldName.IsKeyWord())
                     {
-                        sb.AppendLine("var {0}:{1}?{2}".Fmt(fieldName, propType, defaultValue));
+                        sb.AppendLine(!initProp
+                            ? "var {0}:{1}?{2}".Fmt(fieldName, propType, defaultValue)
+                            : "var {0}:{1} = {1}()".Fmt(fieldName, propType, defaultValue));
                     }
                     else
                     {
                         var originalName = fieldName;
                         fieldName = char.ToUpper(fieldName[0]) + fieldName.SafeSubstring(1);
-                        sb.AppendLine("@SerializedName(\"{0}\") var {1}:{2}?{3}".Fmt(originalName, fieldName, propType, defaultValue));
+                        sb.AppendLine(!initProp
+                            ? "@SerializedName(\"{0}\") var {1}:{2}?{3}".Fmt(originalName, fieldName, propType,
+                                defaultValue)
+                            : "@SerializedName(\"{0}\") var {1}:{2} = {2}()".Fmt(originalName, fieldName, propType));
                     }
                 }
             }
