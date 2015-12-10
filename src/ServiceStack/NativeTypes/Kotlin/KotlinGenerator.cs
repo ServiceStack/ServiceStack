@@ -433,7 +433,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("var {0}:ResponseStatus{1}".Fmt(typeof(ResponseStatus).Name.PropertyStyle(), defaultValue));
+                sb.AppendLine("var {0}:ResponseStatus?{1}".Fmt(typeof(ResponseStatus).Name.PropertyStyle(), defaultValue));
             }
         }
         
