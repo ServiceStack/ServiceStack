@@ -142,6 +142,7 @@ namespace ServiceStack
         public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null)
         {
             httpMethod = httpMethod.ToUpper();
+            var urlFilter = requestDto as IUrlFilter;
 
             var requestType = requestDto.GetType();
             var requestRoutes = routesCache.GetOrAdd(requestType, GetRoutesForType);
@@ -159,7 +160,7 @@ namespace ServiceStack
                     predefinedRoute += "?" + RestRoute.GetQueryString(requestDto, queryProperties);
                 }
 
-                return predefinedRoute;
+                return urlFilter == null ? predefinedRoute : urlFilter.ToUrl(predefinedRoute);
             }
 
             var routesApplied = requestRoutes.Select(route => route.Apply(requestDto, httpMethod)).ToList();
@@ -199,7 +200,7 @@ namespace ServiceStack
                 }
             }
 
-            return url;
+            return urlFilter == null ? url : urlFilter.ToUrl(url);
         }
 
         public static bool HasRequestBody(this string httpMethod)
