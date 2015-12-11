@@ -441,7 +441,7 @@ namespace ServiceStack
                 if (value == null)
                     continue;
 
-                var qsName = ServiceStack.Text.JsConfig.EmitLowercaseUnderscoreNames
+                var qsName = Text.JsConfig.EmitLowercaseUnderscoreNames
                     ? queryProperty.Key.ToLowercaseUnderscore()
                     : queryProperty.Key;
 
