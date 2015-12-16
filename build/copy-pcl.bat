@@ -27,7 +27,6 @@ COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\Service
 COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\ServiceStack.Pcl.Mac20
 COPY ..\src\ServiceStack.Client\PclExportClient.iOS.cs ..\src\ServiceStack.Pcl.iOS
 COPY ..\src\ServiceStack.Client\PclExportClient.iOS.cs ..\src\ServiceStack.Pcl.iOS10
-COPY ..\src\ServiceStack.Client\PclExportClient.iOS.cs ..\src\ServiceStack.Pcl.Mac20
 COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\ServiceStack.Pcl.Net45
 COPY ..\src\ServiceStack.Client\PclExportClient.Net40.cs ..\src\ServiceStack.Pcl.Net45
 REM COPY ..\src\ServiceStack.Client\Pcl.NameValueCollectionWrapper.cs ..\src\ServiceStack.Pcl.WinStore //Not Required

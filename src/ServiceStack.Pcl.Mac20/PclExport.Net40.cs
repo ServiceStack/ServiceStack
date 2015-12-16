@@ -691,6 +691,29 @@ namespace ServiceStack
 	}
 #endif
 
+#if NET45 || NETFX_CORE
+    public class Net45PclExport : Net40PclExport
+    {
+        public static new Net45PclExport Provider = new IosPclExport();
+
+        public Net45PclExport()
+        {
+            PlatformName = "NET45 " + Environment.OSVersion.Platform.ToString();
+        }
+
+        public new static void Configure()
+        {
+            Configure(Provider);
+        }
+
+        public override Task WriteAndFlushAsync(Stream stream, byte[] bytes)
+        {
+            return stream.WriteAsync(bytes, 0, bytes.Length)
+                .ContinueWith(t => stream.FlushAsync());
+        }
+    }
+#endif
+
 #if __IOS__ || __MAC__
     [Preserve(AllMembers = true)]
     internal class Poco

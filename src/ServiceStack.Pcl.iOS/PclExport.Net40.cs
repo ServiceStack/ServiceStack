@@ -23,9 +23,11 @@ using ServiceStack.Text.Json;
 #if !__IOS__
 using System.Reflection.Emit;
 using FastMember = ServiceStack.Text.FastMember;
-#elif __UNIFIED__
+#endif
+
+#if __UNIFIED__
 using Preserve = Foundation.PreserveAttribute;
-#else
+#elif __IOS__
 using Preserve = MonoTouch.Foundation.PreserveAttribute;
 #endif
 
@@ -125,6 +127,7 @@ namespace ServiceStack
         {
 #if ANDROID
 #elif __IOS__
+#elif __MAC__
 #else
             //Automatically register license key stored in <appSettings/>
             var licenceKeyText = System.Configuration.ConfigurationManager.AppSettings[AppSettingsKey];
@@ -670,7 +673,48 @@ namespace ServiceStack
 #endif
     }
 
-#if __IOS__
+#if __MAC__
+	public class MacPclExport : IosPclExport 
+	{
+		public static new MacPclExport Provider = new MacPclExport();
+
+		public MacPclExport()
+		{
+			PlatformName = "MAC";
+			SupportsEmit = SupportsExpression = true;
+		}
+		
+		public new static void Configure()
+		{
+			Configure(Provider);
+		}
+	}
+#endif
+
+#if NET45 || NETFX_CORE
+    public class Net45PclExport : Net40PclExport
+    {
+        public static new Net45PclExport Provider = new IosPclExport();
+
+        public Net45PclExport()
+        {
+            PlatformName = "NET45 " + Environment.OSVersion.Platform.ToString();
+        }
+
+        public new static void Configure()
+        {
+            Configure(Provider);
+        }
+
+        public override Task WriteAndFlushAsync(Stream stream, byte[] bytes)
+        {
+            return stream.WriteAsync(bytes, 0, bytes.Length)
+                .ContinueWith(t => stream.FlushAsync());
+        }
+    }
+#endif
+
+#if __IOS__ || __MAC__
     [Preserve(AllMembers = true)]
     internal class Poco
     {
