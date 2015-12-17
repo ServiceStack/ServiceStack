@@ -294,7 +294,7 @@ namespace ServiceStack.Auth
             }
             else
             {
-                if (!userName.EqualsIgnoreCase(session.UserName))
+                if (!userName.EqualsIgnoreCase(session.UserAuthName))
                     return false;
             }
             return true;
