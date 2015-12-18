@@ -175,8 +175,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
         {
-            if (session.UserName == AuthTests.UserNameWithSessionRedirect)
+            if (session.UserAuthName == AuthTests.UserNameWithSessionRedirect)
                 session.ReferrerUrl = AuthTests.SessionRedirectUrl;
+        }
+
+        public int Counter { get; set; }
+    }
+
+    public class IncrSession : IReturn<CustomUserSession>
+    {
+        public int? By { get; set; }
+    }
+
+    public class CustomUserSessionService : Service
+    {
+        public object Any(IncrSession request)
+        {
+            var session = SessionAs<CustomUserSession>();
+            session.Counter += request.By.GetValueOrDefault(1);
+            Request.SaveSession(session);
+            return session;
         }
     }
 
@@ -809,7 +827,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 Console.WriteLine(authResponse.Dump());
 
-                for (int i = 0; i < 500; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     var request = new Secured { Name = "test" };
                     var response = client.Send<SecureResponse>(request);
@@ -847,6 +865,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 lastPermId = permId;
             });
+        }
+
+        [Test]
+        public void Does_retain_Session_after_authenticating_multiple_times()
+        {
+            var client = GetClient();
+            CustomUserSession lastSession = null;
+            3.Times(x =>
+            {
+                var authResponse = client.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "p@55word",
+                    RememberMe = true,
+                });
+
+                var customSession = client.Send(new IncrSession { By = 1 });
+                Assert.That(customSession.Counter,
+                    lastSession == null ? Is.EqualTo(1) : Is.EqualTo(lastSession.Counter + 1));
+
+                lastSession = customSession;
+            });
+
+            Assert.That(lastSession.Counter, Is.EqualTo(3));
         }
 
         [Test]
@@ -1308,10 +1351,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
                 Console.WriteLine(webEx.ResponseDto.Dump());
             }
-            
+
             // Should still be authenticated, but not elevated
-            try 
-            { 
+            try
+            {
                 client.Send<RequiresWebSudoResponse>(request);
                 Assert.Fail("Shouldn't be allowed");
             }
