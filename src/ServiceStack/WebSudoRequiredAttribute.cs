@@ -14,8 +14,7 @@ namespace ServiceStack
         }
 
         public WebSudoRequiredAttribute()
-            : this(ApplyTo.All)
-        { }
+            : this(ApplyTo.All) {}
 
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
@@ -40,19 +39,14 @@ namespace ServiceStack
         public bool HasWebSudo(IRequest req, IWebSudoAuthSession session)
         {
             if (session == null)
-            {
                 return false;
-            }
+
             if (!session.AuthenticatedWebSudoUntil.HasValue)
-            {
                 return false;
-            }
 
             var now = DateTime.UtcNow;
             if (now < session.AuthenticatedWebSudoUntil.Value.ToUniversalTime())
-            {
                 return true;
-            }
 
             session.AuthenticatedWebSudoUntil = null;
             req.SaveSession(session);

@@ -224,14 +224,21 @@ namespace ServiceStack.Auth
             if (request.provider == null && request.UserName == null)
                 return null; //Just return sessionInfo if no provider or username is given
 
+            var authFeature = HostContext.GetPlugin<AuthFeature>();
+            var generateNewCookies = authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication;
+
             object response = null;
             if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider), request))
             {
-                var authFeature = HostContext.GetPlugin<AuthFeature>();
-                if (authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication)
+                if (generateNewCookies)
                     this.Request.GenerateNewSessionCookies(session);
 
                 response = oAuthConfig.Authenticate(this, session, request);
+            }
+            else
+            {
+                if (generateNewCookies)
+                    this.Request.GenerateNewSessionCookies(session);
             }
             return response;
         }
