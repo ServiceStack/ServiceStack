@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using ServiceStack;
@@ -8,6 +9,11 @@ public static class DictionaryExtensions
     public static TValue GetValueOrDefault<TValue, TKey>(this Dictionary<TKey, TValue> dictionary, TKey key)
     {
         return dictionary.ContainsKey(key) ? dictionary[key] : default(TValue);
+    }
+
+    public static bool IsNullOrEmpty(this IDictionary dictionary)
+    {
+        return dictionary == null || dictionary.Count == 0;
     }
 
     public static void ForEach<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, Action<TKey, TValue> onEachFn)
