@@ -506,11 +506,7 @@ namespace ServiceStack
     public class MemoryServerEvents : IServerEvents
     {
         private static ILog Log = LogManager.GetLogger(typeof(MemoryServerEvents));
-
-        public static int DefaultArraySize = 2;
-        public static int ReSizeMultiplier = 2;
-        public static int ReSizeBuffer = 20;
-
+        
         public TimeSpan IdleTimeout { get; set; }
         public TimeSpan HouseKeepingInterval { get; set; }
 
@@ -525,11 +521,11 @@ namespace ServiceStack
 
         public bool NotifyChannelOfSubscriptions { get; set; }
 
-        public ConcurrentDictionary<string, IEventSubscription[]> Subcriptions;
-        public ConcurrentDictionary<string, IEventSubscription[]> ChannelSubcriptions;
-        public ConcurrentDictionary<string, IEventSubscription[]> UserIdSubcriptions;
-        public ConcurrentDictionary<string, IEventSubscription[]> UserNameSubcriptions;
-        public ConcurrentDictionary<string, IEventSubscription[]> SessionSubcriptions;
+        public ConcurrentDictionary<string, IEventSubscription> Subcriptions;
+        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> ChannelSubcriptions;
+        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> UserIdSubcriptions;
+        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> UserNameSubcriptions;
+        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> SessionSubcriptions;
 
         public MemoryServerEvents()
         {
@@ -543,11 +539,11 @@ namespace ServiceStack
 
         public void Reset()
         {
-            Subcriptions = new ConcurrentDictionary<string, IEventSubscription[]>();
-            ChannelSubcriptions = new ConcurrentDictionary<string, IEventSubscription[]>();
-            UserIdSubcriptions = new ConcurrentDictionary<string, IEventSubscription[]>();
-            UserNameSubcriptions = new ConcurrentDictionary<string, IEventSubscription[]>();
-            SessionSubcriptions = new ConcurrentDictionary<string, IEventSubscription[]>();
+            Subcriptions = new ConcurrentDictionary<string, IEventSubscription>();
+            ChannelSubcriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
+            UserIdSubcriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
+            UserNameSubcriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
+            SessionSubcriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
         }
 
         public void Start()
@@ -558,19 +554,11 @@ namespace ServiceStack
         {
             Reset();
         }
-
+        
         public void NotifyAll(string selector, object message)
         {
-            foreach (var entry in Subcriptions)
-            {
-                for (int i = 0; i < entry.Value.Length; i++)
-                {
-                    var sub = entry.Value[i];
-                    Thread.MemoryBarrier();
-
-                    if (sub != null)
-                        sub.Publish(selector, Serialize(message));
-                }
+            foreach (var sub in Subcriptions.ValuesWithoutLock().Where(sub => sub != null)) {
+                sub.Publish(selector, Serialize(message));
             }
         }
 
@@ -607,43 +595,62 @@ namespace ServiceStack
             Notify(SessionSubcriptions, sspid, selector, message, channel);
         }
 
-        protected void Notify(ConcurrentDictionary<string, IEventSubscription[]> map, string key,
-            string selector, object message, string channel = null)
+        protected void Notify(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map,
+            string key, string selector, object message, string channel = null)
         {
-            IEventSubscription[] subs;
-            if (!map.TryGetValue(key, out subs)) return;
+            var subs = map.TryGet(key);
+            if (subs == null) {
+                return;
+            }
 
             var expired = new List<IEventSubscription>();
             var now = DateTime.UtcNow;
 
-            for (int i = 0; i < subs.Length; i++)
-            {
-                var sub = subs[i];
-                Thread.MemoryBarrier();
-
-                if (sub.HasChannel(channel))
-                {
-                    if (now - sub.LastPulseAt > IdleTimeout)
-                    {
-                        if (Log.IsDebugEnabled)
-                            Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
-                                string.Join(", ", sub.Channels));
-
-                        expired.Add(sub);
-                    }
-
+            foreach(var sub in subs.KeysWithoutLock().Where(sub => sub != null && sub.HasChannel(channel))) {
+                if (now - sub.LastPulseAt > IdleTimeout) {
                     if (Log.IsDebugEnabled)
-                        Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
+                        Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
                             string.Join(", ", sub.Channels));
 
-                    sub.Publish(selector, Serialize(message));
+                    expired.Add(sub);
                 }
-            }
 
+                if (Log.IsDebugEnabled)
+                    Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
+                        string.Join(", ", sub.Channels));
+
+                sub.Publish(selector, Serialize(message));
+            }
+            
             foreach (var sub in expired)
             {
                 sub.Unsubscribe();
             }
+        }
+
+        protected void Notify(ConcurrentDictionary<string, IEventSubscription> map, string key, string selector,
+            object message, string channel = null)
+        {
+            var sub = map.TryGet(key);
+            if (sub == null || !sub.HasChannel(channel)) {
+                return;
+            }
+
+            var now = DateTime.UtcNow;
+            if (now - sub.LastPulseAt > IdleTimeout) {
+                if (Log.IsDebugEnabled)
+                    Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
+                        string.Join(", ", sub.Channels));
+
+                sub.Unsubscribe();
+                return;
+            }
+
+            if (Log.IsDebugEnabled)
+                Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
+                    string.Join(", ", sub.Channels));
+
+            sub.Publish(selector, Serialize(message));
         }
 
         public bool Pulse(string id)
@@ -662,20 +669,9 @@ namespace ServiceStack
         public IEventSubscription GetSubscription(string id)
         {
             if (id == null) return null;
-            IEventSubscription[] subs;
-            if (!Subcriptions.TryGetValue(id, out subs))
-                return null;
+            IEventSubscription sub = Subcriptions.TryGet(id);
 
-            lock (subs)
-            {
-                foreach (var sub in subs)
-                {
-                    if (sub != null)
-                        return sub;
-                }
-            }
-
-            return null;
+            return sub;
         }
 
         public SubscriptionInfo GetSubscriptionInfo(string id)
@@ -688,20 +684,13 @@ namespace ServiceStack
             var subInfos = new List<SubscriptionInfo>();
             if (userId == null) return subInfos;
 
-            IEventSubscription[] subs;
-            if (!UserIdSubcriptions.TryGetValue(userId, out subs))
+            var subs = UserIdSubcriptions.TryGet(userId);
+            if (subs == null) {
                 return subInfos;
-
-            lock (subs)
-            {
-                foreach (var sub in subs)
-                {
-                    var info = sub.GetInfo();
-                    if (info != null)
-                        subInfos.Add(info);
-                }
             }
 
+            subInfos.AddRange(subs.KeysWithoutLock().Select(sub => sub.GetInfo()).Where(sub => sub != null));
+            
             return subInfos;
         }
 
@@ -722,38 +711,20 @@ namespace ServiceStack
         public int RemoveExpiredSubscriptions()
         {
             var now = DateTime.UtcNow;
-            if (now - LastCleanAt > HouseKeepingInterval)
-            {
-                LastCleanAt = now;
-                var expired = new List<IEventSubscription>();
+            if (now - LastCleanAt <= HouseKeepingInterval)
+                return -1;
 
-                foreach (var entry in Subcriptions)
-                {
-                    var subs = entry.Value;
-                    lock (subs)
-                    {
-                        foreach (var sub in subs)
-                        {
-                            if (sub == null)
-                                continue;
+            LastCleanAt = now;
+            var expired =
+                Subcriptions.ValuesWithoutLock()
+                    .Where(sub => sub != null && (now - sub.LastPulseAt > IdleTimeout))
+                    .ToList();
 
-                            if (now - sub.LastPulseAt > IdleTimeout)
-                            {
-                                expired.Add(sub);
-                            }
-                        }
-                    }
-                }
-
-                foreach (var sub in expired)
-                {
-                    sub.Unsubscribe();
-                }
-
-                return expired.Count;
+            foreach (var sub in expired) {
+                sub.Unsubscribe();
             }
 
-            return -1;
+            return expired.Count;
         }
 
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
@@ -761,25 +732,13 @@ namespace ServiceStack
             var ret = new List<Dictionary<string, string>>();
             var alreadyAdded = new HashSet<string>();
 
-            foreach (var channel in channels)
-            {
-                IEventSubscription[] subs;
-                if (!ChannelSubcriptions.TryGetValue(channel, out subs))
-                    continue;
-
-                lock (subs)
-                {
-                    foreach (var sub in subs)
-                    {
-                        if (sub == null)
-                            continue;
-
-                        if (!alreadyAdded.Contains(sub.SubscriptionId))
-                        {
-                            ret.Add(sub.Meta);
-                            alreadyAdded.Add(sub.SubscriptionId);
-                        }
-                    }
+            foreach (
+                var subs in channels.Select(channel => ChannelSubcriptions.TryGet(channel)).Where(subs => subs != null)) {
+                foreach (
+                    IEventSubscription sub in
+                        subs.KeysWithoutLock().Where(sub => !alreadyAdded.Contains(sub.SubscriptionId))) {
+                    ret.Add(sub.Meta);
+                    alreadyAdded.Add(sub.SubscriptionId);
                 }
             }
 
@@ -788,46 +747,23 @@ namespace ServiceStack
 
         public List<Dictionary<string, string>> GetAllSubscriptionsDetails()
         {
-            var ret = new List<Dictionary<string, string>>();
-            var alreadyAdded = new HashSet<string>();
-            foreach (var entry in ChannelSubcriptions)
-            {
-                var subs = entry.Value;
-                lock (subs)
-                {
-                    foreach (var sub in subs)
-                    {
-                        if (sub == null)
-                            continue;
-
-                        if (!alreadyAdded.Contains(sub.SubscriptionId))
-                        {
-                            ret.Add(sub.Meta);
-                            alreadyAdded.Add(sub.SubscriptionId);
-                        }
-                    }
-                }
-            }
+            var ret = Subcriptions.ValuesWithoutLock().Where(sub => sub != null).Select(sub => sub.Meta).ToList();
             return ret;
         }
 
         public void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null)
         {
-            try
-            {
-                lock (subscription)
-                {
+            try {
+                lock (subscription) {
                     if (connectArgs != null)
                         subscription.Publish("cmd.onConnect", connectArgs.ToJson());
 
                     subscription.OnUnsubscribe = HandleUnsubscription;
-                    foreach (var channel in subscription.Channels ?? EventSubscription.UnknownChannel)
-                    {
+                    foreach (string channel in subscription.Channels ?? EventSubscription.UnknownChannel) {
                         RegisterSubscription(subscription, channel, ChannelSubcriptions);
                     }
                     RegisterSubscription(subscription, subscription.SubscriptionId, Subcriptions);
                     RegisterSubscription(subscription, subscription.UserId, UserIdSubcriptions);
-                    RegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
                     RegisterSubscription(subscription, subscription.SessionId, SessionSubcriptions);
 
                     if (OnSubscribe != null)
@@ -837,75 +773,35 @@ namespace ServiceStack
                 if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyJoin != null)
                     NotifyJoin(subscription);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 Log.Error("Register: " + ex.Message, ex);
                 throw;
             }
         }
 
         void RegisterSubscription(IEventSubscription subscription, string key,
-            ConcurrentDictionary<string, IEventSubscription[]> map)
+            ConcurrentDictionary<string, IEventSubscription> map)
         {
-            if (key == null)
+            if (key == null || subscription == null) {
                 return;
+            }
 
-            IEventSubscription[] subs;
-            if (AddNewSubscription(subscription, key, map))
+            map.TryAdd(key, subscription);
+        }
+
+        void RegisterSubscription(IEventSubscription subscription, string key,
+            ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map)
+        {
+            if (key == null || subscription == null) {
                 return;
-
-            while (!map.TryGetValue(key, out subs)) ;
-            if (!TryAdd(subs, subscription))
-            {
-                IEventSubscription[] snapshot, newArray;
-                do
-                {
-                    while (!map.TryGetValue(key, out snapshot)) ;
-
-                    newArray = ResizeSubscriptionsArray(subs, snapshot);
-
-                    if (!TryAdd(newArray, subscription, startIndex: snapshot.Length))
-                        snapshot = null;
-                } while (!map.TryUpdate(key, newArray, snapshot));
             }
-        }
 
-        private static IEventSubscription[] ResizeSubscriptionsArray(IEventSubscription[] subs, IEventSubscription[] snapshot)
-        {
-            var newArray = new IEventSubscription[subs.Length*ReSizeMultiplier + ReSizeBuffer];
-            Array.Copy(snapshot, 0, newArray, 0, snapshot.Length);
-            return newArray;
-        }
+            ConcurrentDictionary<IEventSubscription, bool> subs = map.GetOrAdd(key,
+                k => new ConcurrentDictionary<IEventSubscription, bool>());
 
-        private static bool AddNewSubscription(IEventSubscription subscription, string key, 
-            ConcurrentDictionary<string, IEventSubscription[]> map)
-        {
-            IEventSubscription[] subs;
-            if (!map.TryGetValue(key, out subs))
-            {
-                subs = new IEventSubscription[DefaultArraySize];
-                subs[0] = subscription;
-                if (map.TryAdd(key, subs))
-                    return true;
-            }
-            return false;
+            subs.TryAdd(subscription, true);
         }
-
-        private static bool TryAdd(IEventSubscription[] subs, IEventSubscription subscription, int startIndex = 0)
-        {
-            for (int i = startIndex; i < subs.Length; i++)
-            {
-                if (subs[i] != null) continue;
-                lock (subs)
-                {
-                    if (subs[i] != null) continue;
-                    subs[i] = subscription;
-                    return true;
-                }
-            }
-            return false;
-        }
-
+        
         public void UnRegister(string subscriptionId)
         {
             var subscription = GetSubscription(subscriptionId);
@@ -916,33 +812,35 @@ namespace ServiceStack
         }
 
         void UnRegisterSubscription(IEventSubscription subscription, string key,
-            ConcurrentDictionary<string, IEventSubscription[]> map)
+            ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map)
         {
-            if (key == null)
+            if (key == null || subscription == null)
                 return;
 
-            try
-            {
-                IEventSubscription[] subs;
-                if (!map.TryGetValue(key, out subs)) return;
+            try {
+                ConcurrentDictionary<IEventSubscription, bool> subs = map.TryGet(key);
 
-                for (int i = 0; i < subs.Length; i++)
-                {
-                    if (subs[i] != subscription) continue;
-                    lock (subs)
-                    {
-                        if (subs[i] == subscription)
-                        {
-                            subs[i] = null;
-                        }
-                    }
+                if (subs == null) {
+                    return;
                 }
+
+                bool flag;
+                subs.TryRemove(subscription, out flag);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 Log.Error("UnRegister: " + ex.Message, ex);
                 throw;
             }
+        }
+
+        void UnRegisterSubscription(IEventSubscription subscription, string key,
+            ConcurrentDictionary<string, IEventSubscription> map)
+        {
+            if (key == null || subscription == null)
+                return;
+
+            IEventSubscription inMap;
+            map.TryRemove(key, out inMap);
         }
 
         void HandleUnsubscription(IEventSubscription subscription)
@@ -1097,6 +995,26 @@ namespace ServiceStack
         public static void NotifySession(this IServerEvents server, string sspid, object message, string channel = null)
         {
             server.NotifySession(sspid, Selector.Id(message.GetType()), message, channel);
+        }
+
+        internal static TElement TryGet<TKey, TElement>(this ConcurrentDictionary<TKey, TElement> dic, TKey key)
+        {
+            if (dic == null || key == null)
+                return default(TElement);
+
+            TElement res;
+            dic.TryGetValue(key, out res);
+            return res;
+        }
+
+        internal static IEnumerable<TElement> ValuesWithoutLock<TKey, TElement>(this ConcurrentDictionary<TKey, TElement> source)
+        {
+            return source.Skip(0).Select(item => item.Value);
+        }
+
+        internal static IEnumerable<TKey> KeysWithoutLock<TKey, TElement>(this ConcurrentDictionary<TKey, TElement> source)
+        {
+            return source.Skip(0).Select(item => item.Key);
         }
     }
 }
