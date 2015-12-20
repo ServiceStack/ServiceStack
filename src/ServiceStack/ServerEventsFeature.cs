@@ -764,6 +764,7 @@ namespace ServiceStack
                     }
                     RegisterSubscription(subscription, subscription.SubscriptionId, Subcriptions);
                     RegisterSubscription(subscription, subscription.UserId, UserIdSubcriptions);
+                    RegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
                     RegisterSubscription(subscription, subscription.SessionId, SessionSubcriptions);
 
                     if (OnSubscribe != null)
