@@ -2,6 +2,7 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
@@ -31,7 +32,10 @@ namespace ServiceStack.Host.HttpListener
 
         private readonly AutoResetEvent ListenForNextRequest = new AutoResetEvent(false);
 
+        [Obsolete("Use OnBeforeRequestFn")]
         public event DelReceiveWebRequest ReceiveWebRequest;
+
+        public Action<HttpListenerContext> BeforeRequest { get; set; }
 
         protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
@@ -69,6 +73,12 @@ namespace ServiceStack.Host.HttpListener
             return this;
         }
 
+        public virtual ServiceStackHost Start(IEnumerable<string> urlBases)
+        {
+            Start(urlBases, Listen);
+            return this;
+        }
+
         public virtual ListenerRequest CreateRequest(HttpListenerContext httpContext, string operationName)
         {
             var req = new ListenerRequest(httpContext, operationName, RequestAttributes.None);
@@ -87,6 +97,11 @@ namespace ServiceStack.Host.HttpListener
         /// </param>
         protected void Start(string urlBase, WaitCallback listenCallback)
         {
+            Start(new[] {urlBase}, listenCallback);
+        }
+
+        protected void Start(IEnumerable<string> urlBases, WaitCallback listenCallback)
+        {
             // *** Already running - just leave it in place
             if (this.IsStarted)
                 return;
@@ -94,9 +109,13 @@ namespace ServiceStack.Host.HttpListener
             if (this.Listener == null)
                 Listener = new System.Net.HttpListener();
 
-            HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
+            foreach (var urlBase in urlBases)
+            {
+                if (HostContext.Config.HandlerFactoryPath == null)
+                    HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
 
-            Listener.Prefixes.Add(urlBase);
+                Listener.Prefixes.Add(urlBase);
+            }
 
             try
             {
@@ -107,11 +126,17 @@ namespace ServiceStack.Host.HttpListener
             {
                 if (Config.AllowAclUrlReservation && ex.ErrorCode == 5 && registeredReservedUrl == null)
                 {
-                    registeredReservedUrl = AddUrlReservationToAcl(urlBase);
+                    foreach (var urlBase in urlBases)
+                    {
+                        registeredReservedUrl = AddUrlReservationToAcl(urlBase);
+                        if (registeredReservedUrl == null)
+                            break;
+                    }
+
                     if (registeredReservedUrl != null)
                     {
                         Listener = null;
-                        Start(urlBase, listenCallback);
+                        Start(urlBases, listenCallback);
                         return;
                     }
                 }
@@ -196,14 +221,14 @@ namespace ServiceStack.Host.HttpListener
 
             //if (request.HasEntityBody)
 
-            RaiseReceiveWebRequest(context);
+            OnBeginRequest(context);
 
-            InitTask(context);
+            ProcessRequestContext(context);
 
             //System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.UtcNow);
         }
 
-        public virtual void InitTask(HttpListenerContext context)
+        public virtual void ProcessRequestContext(HttpListenerContext context)
         {
             try
             {
@@ -286,10 +311,13 @@ namespace ServiceStack.Host.HttpListener
             return httpReq;
         }
 
-        protected void RaiseReceiveWebRequest(HttpListenerContext context)
+        protected virtual void OnBeginRequest(HttpListenerContext context)
         {
             if (this.ReceiveWebRequest != null)
                 this.ReceiveWebRequest(context);
+
+            if (BeforeRequest != null)
+                BeforeRequest(context);
         }
 
 

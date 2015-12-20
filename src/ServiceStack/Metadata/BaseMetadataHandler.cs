@@ -8,6 +8,7 @@ using ServiceStack.Host;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ServiceStack.Metadata
 {
@@ -52,8 +53,8 @@ namespace ServiceStack.Metadata
                 return "(Stream)";
             if (type == typeof(HttpWebResponse))
                 return "(HttpWebResponse)";
-            if (type.IsGenericType)
-                type = type.GetGenericArguments()[0]; //e.g. Task<T> => T
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+                type = type.GetGenericArguments()[0]; 
 
             return CreateMessage(type);
         }
@@ -87,6 +88,38 @@ namespace ServiceStack.Metadata
                 if (!description.IsNullOrEmpty())
                 {
                     sb.AppendFormat("<h3 id='desc'>{0}</div>", ConvertToHtml(description));
+                }
+
+                if (op.RequiresAuthentication)
+                {
+                    sb.AppendLine("<table class='authentication'>" +
+                        "<caption><b>Requires Authentication</b><i class='auth' style='display:inline-block;margin:0 0 -4px 5px;'></i></caption>");
+                    sb.Append("<tr>");
+
+                    if (!op.RequiredRoles.IsEmpty())
+                    {
+                        var plural = op.RequiredRoles.Count > 1 ? "s" : "";
+                        sb.Append("<td>Required role{0}:</td><td>{1}</td>".Fmt(plural, string.Join(", ", op.RequiredRoles)));
+                    }
+                    if (!op.RequiresAnyRole.IsEmpty())
+                    {
+                        var plural = op.RequiresAnyRole.Count > 1 ? "Requires any of the roles" : "Requires the role";
+                        sb.Append("<td>{0}:</td><td>{1}</td>".Fmt(plural, string.Join(", ", op.RequiresAnyRole)));
+                    }
+
+                    if (!op.RequiredPermissions.IsEmpty())
+                    {
+                        var plural = op.RequiredPermissions.Count > 1 ? "s" : "";
+                        sb.Append("<td>Required permission{0}:</td><td>{1}</td>".Fmt(plural, string.Join(", ", op.RequiredPermissions)));
+                    }
+                    if (!op.RequiresAnyPermission.IsEmpty())
+                    {
+                        var plural = op.RequiresAnyPermission.Count > 1 ? "Requires any of the permissions" : "Requires the permission";
+                        sb.Append("<td>{0}:</td><td>{1}</td>".Fmt(plural, string.Join(", ", op.RequiresAnyPermission)));
+                    }
+
+                    sb.Append("</tr>");
+                    sb.Append("</table>");
                 }
 
                 if (op.Routes.Count > 0)
@@ -191,7 +224,7 @@ namespace ServiceStack.Metadata
         {
             var defaultPage = new IndexOperationsControl
             {
-                HttpRequest = httpReq,
+                Request = httpReq,
                 MetadataConfig = HostContext.MetadataPagesConfig,
                 Title = HostContext.ServiceName,
                 Xsds = XsdTypes.Xsds,

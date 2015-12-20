@@ -102,7 +102,7 @@ namespace ServiceStack.VirtualPath
         protected virtual string GetVirtualPathToRoot()
         {
             if (IsRoot)
-                return VirtualPathProvider.VirtualPathSeparator;
+                return null;
 
             return GetPathToRoot(VirtualPathProvider.VirtualPathSeparator, p => p.VirtualPath);
         }
@@ -118,7 +118,9 @@ namespace ServiceStack.VirtualPath
             if (parentPath == separator)
                 parentPath = string.Empty;
 
-            return string.Concat(parentPath, separator, Name);
+            return parentPath == null 
+                ? Name 
+                : string.Concat(parentPath, separator, Name);
         }
 
         public override bool Equals(object obj)

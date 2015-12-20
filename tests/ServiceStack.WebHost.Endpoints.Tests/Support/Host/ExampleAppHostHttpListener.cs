@@ -464,6 +464,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				WsdlServiceNamespace = "http://www.servicestack.net/types",
 				LogFactory = new ConsoleLogFactory(),
 				DebugMode = true,
+                PreferredContentTypes = { MimeTypes.ProtoBuf },
 			});
 
 			this.RegisterRequestBinder<CustomRequestBinder>(

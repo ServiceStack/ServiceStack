@@ -15,6 +15,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         private readonly MockHttpRequest httpReq;
         private readonly MockHttpResponse httpRes;
 
+        public int Version { get; set; }
+        public string SessionId { get; set; }
+
         public DirectServiceClient(ServiceController serviceController)
         {
             this.ServiceController = serviceController;
@@ -88,6 +91,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
             if (ApplyRequestFilters<TResponse>(request)) return default(TResponse);
 
+            this.PopulateRequestMetadata(request);
+
             httpReq.HttpMethod = HttpMethods.Post;
             var response = ServiceController.Execute(request, httpReq);
 
@@ -153,6 +158,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         }
 
         public TResponse Get<TResponse>(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddHeader(string name, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ClearCookies()
+        {
+        }
+
+        public Dictionary<string, string> GetCookieValues()
+        {
+            return new Dictionary<string, string>();
+        }
+
+        public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
         {
             throw new NotImplementedException();
         }

@@ -176,6 +176,25 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
+            public void AddHeader(string name, string value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void ClearCookies()
+            {
+            }
+
+            public Dictionary<string, string> GetCookieValues()
+            {
+                return new Dictionary<string, string>();
+            }
+
+            public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Get(IReturnVoid request)
             {
                 throw new NotImplementedException();
@@ -523,6 +542,9 @@ namespace ServiceStack.Common.Tests
             {
                 throw new NotImplementedException();
             }
+
+            public int Version { get; set; }
+            public string SessionId { get; set; }
         }
 
         public object ExecutePath(string pathInfo)

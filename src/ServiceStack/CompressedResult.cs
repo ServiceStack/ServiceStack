@@ -18,6 +18,7 @@ namespace ServiceStack
         public string ContentType { get; set; }
 
         public Dictionary<string, string> Headers { get; private set; }
+        public List<Cookie> Cookies { get; private set; }
 
         public int Status { get; set; }
 
@@ -41,16 +42,20 @@ namespace ServiceStack
 
         public int PaddingLength { get; set; }
 
+        public Func<IDisposable> ResultScope { get; set; }
+
         public IDictionary<string, string> Options
         {
             get { return this.Headers; }
         }
 
         public CompressedResult(byte[] contents)
-            : this(contents, CompressionTypes.Deflate) { }
+            : this(contents, CompressionTypes.Deflate)
+        { }
 
         public CompressedResult(byte[] contents, string compressionType)
-            : this(contents, compressionType, DefaultContentType) { }
+            : this(contents, compressionType, DefaultContentType)
+        { }
 
         public CompressedResult(byte[] contents, string compressionType, string contentMimeType)
         {
@@ -66,6 +71,7 @@ namespace ServiceStack
             this.Headers = new Dictionary<string, string> {
                 { HttpHeaders.ContentEncoding, compressionType },
             };
+            this.Cookies = new List<Cookie>();
         }
 
         public void WriteTo(Stream responseStream)

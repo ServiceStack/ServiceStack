@@ -19,6 +19,7 @@ namespace ServiceStack.Auth
     public interface IUserAuthRepository : IAuthRepository
     {
         IUserAuth CreateUserAuth(IUserAuth newUser, string password);
+        IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser);
         IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password);
         IUserAuth GetUserAuth(string userAuthId);
         void DeleteUserAuth(string userAuthId);
@@ -37,13 +38,5 @@ namespace ServiceStack.Auth
 
         void UnAssignRoles(string userAuthId,
             ICollection<string> roles = null, ICollection<string> permissions = null);
-    }
-
-    public interface IRequiresSchema
-    {
-        /// <summary>
-        /// Creates the required missing tables or DB schema 
-        /// </summary>
-        void InitSchema();
     }
 }

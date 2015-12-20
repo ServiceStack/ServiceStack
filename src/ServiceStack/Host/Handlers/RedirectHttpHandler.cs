@@ -84,7 +84,7 @@ namespace ServiceStack.Host.Handlers
                 response.AddHeader(HttpHeaders.Location, absoluteUrl);
             }
 
-            response.EndHttpHandlerRequest(closeOutputStream: true);
+            context.EndHttpHandlerRequest(closeOutputStream: true);
         }
     }
 }

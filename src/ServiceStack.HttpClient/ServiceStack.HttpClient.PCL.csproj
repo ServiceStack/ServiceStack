@@ -36,6 +36,10 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.PCL.csproj">
+      <Project>{135808a7-ce69-4c32-be30-25a8ffbf4a58}</Project>
+      <Name>ServiceStack.Client.PCL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
       <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
       <Name>ServiceStack.Interfaces</Name>
@@ -46,9 +50,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="ServiceStack.Client">
-      <HintPath>..\..\lib\pcl\ServiceStack.Client.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
     </Reference>

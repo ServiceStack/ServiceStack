@@ -26,10 +26,12 @@ namespace ServiceStack
         }
 
         public CompressedFileResult(string filePath)
-            : this(filePath, CompressionTypes.Deflate) { }
+            : this(filePath, CompressionTypes.Deflate)
+        { }
 
         public CompressedFileResult(string filePath, string compressionType)
-            : this(filePath, compressionType, DefaultContentType) { }
+            : this(filePath, compressionType, DefaultContentType)
+        { }
 
         public CompressedFileResult(string filePath, string compressionType, string contentMimeType)
         {

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using ServiceStack.Auth;
 
 namespace ServiceStack
 {
@@ -29,7 +30,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class AuthenticateResponse : IMeta
+    public class AuthenticateResponse : IMeta, IHasSessionId
     {
         public AuthenticateResponse()
         {

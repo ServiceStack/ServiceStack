@@ -7,7 +7,7 @@ namespace ServiceStack
 {
     public static class MqExtensions
     {
-        public static Dictionary<string,string> ToHeaders(this IMessage message)
+        public static Dictionary<string, string> ToHeaders(this IMessage message)
         {
             var map = new Dictionary<string, string>
                 {

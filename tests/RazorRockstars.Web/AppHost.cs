@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using Funq;
+using RazorRockstars.Web.Tests;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Data;
@@ -16,18 +17,19 @@ namespace RazorRockstars.Web
 {
     public class AppHost : AppHostBase
     {
-        public AppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
+        public AppHost() : base("Test Razor", typeof (AppHost).Assembly)
+        {
+            typeof(SwaggerResources)
+                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
+            typeof(SwaggerResource)
+                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
+        }
 
         public override void Configure(Container container)
         {
             Plugins.Add(new RazorFormat());
             Plugins.Add(new MsgPackFormat());
             Plugins.Add(new SwaggerFeature { UseBootstrapTheme = true });
-
-            typeof(Resources)
-                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
-            typeof(ResourceRequest)
-                .AddAttributes(new RestrictAttribute { VisibilityTo = RequestAttributes.None });
 
             var metadata = (MetadataFeature)Plugins.First(x => x is MetadataFeature);
             metadata.IndexPageFilter = page => {
@@ -54,7 +56,7 @@ namespace RazorRockstars.Web
                 db.Insert(Rockstar.SeedData); //Populate with seed data
 
                 db.DropAndCreateTable<Reqstar>();
-                db.Insert(ReqstarsService.SeedData);
+                db.Insert(SeedData.Reqstars);
             }
         }
     }
@@ -172,4 +174,28 @@ namespace RazorRockstars.Web
             return Get(new Rockstars());
         }
     }
+
+    [Route("/routeinfo/{Path*}")]
+    public class GetRouteInfo
+    {
+        public string Path { get; set; }
+    }
+
+    public class GetRouteInfoResponse
+    {
+        public string BaseUrl { get; set; }
+        public string ResolvedUrl { get; set; }
+    }
+
+    public class RouteInfoService : Service
+    {
+        public object Any(GetRouteInfo request)
+        {
+            return new GetRouteInfoResponse
+            {
+                BaseUrl = base.Request.GetBaseUrl(),
+                ResolvedUrl = base.Request.ResolveAbsoluteUrl("~/resolved")
+            };
+        }
+   }
 }

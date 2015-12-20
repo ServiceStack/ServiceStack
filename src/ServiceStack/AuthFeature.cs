@@ -14,7 +14,7 @@ namespace ServiceStack
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public Regex ValidUserNameRegEx = AuthFeatureExtensions.ValidUserNameRegEx;
 
-        public Func<string, bool> IsValidUsernameFn { get; set; } 
+        public Func<string, bool> IsValidUsernameFn { get; set; }
 
         public static bool AddUserIdHttpHeader = true;
 
@@ -36,8 +36,12 @@ namespace ServiceStack
 
         public bool DeleteSessionCookiesOnLogout { get; set; }
 
+        public bool GenerateNewSessionCookiesOnAuthentication { get; set; }
+
         public TimeSpan? SessionExpiry { get; set; }
         public TimeSpan? PermanentSessionExpiry { get; set; }
+
+        public int? MaxLoginAttempts { get; set; }
 
         public bool IncludeAssignRoleServices
         {
@@ -73,14 +77,14 @@ namespace ServiceStack
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
 
-            Func<string,string> localize = s => HostContext.AppHost.ResolveLocalizedString(s, null);
+            Func<string, string> localize = s => HostContext.AppHost.ResolveLocalizedString(s, null);
 
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]
                     {
-                        "/" + localize(LocalizedStrings.Auth), 
-                        "/" + localize(LocalizedStrings.Auth) + "/{provider}", 
-                        "/" + localize(LocalizedStrings.Authenticate), 
+                        "/" + localize(LocalizedStrings.Auth),
+                        "/" + localize(LocalizedStrings.Auth) + "/{provider}",
+                        "/" + localize(LocalizedStrings.Authenticate),
                         "/" + localize(LocalizedStrings.Authenticate) + "/{provider}",
                     } },
                 { typeof(AssignRolesService), new[]{ "/" + localize(LocalizedStrings.AssignRoles) } },
@@ -88,7 +92,7 @@ namespace ServiceStack
             };
 
             RegisterPlugins = new List<IPlugin> {
-                new SessionFeature()        
+                new SessionFeature()
             };
 
             AuthEvents = new List<IAuthEvents>();
@@ -97,6 +101,7 @@ namespace ServiceStack
             this.IncludeAuthMetadataProvider = true;
             this.ValidateUniqueEmails = true;
             this.DeleteSessionCookiesOnLogout = true;
+            this.GenerateNewSessionCookiesOnAuthentication = true;
         }
 
         public void Register(IAppHost appHost)
@@ -162,7 +167,7 @@ namespace ServiceStack
 
             return feature.IsValidUsernameFn != null
                 ? feature.IsValidUsernameFn(userName)
-                : ValidUserNameRegEx.IsMatch(userName);
+                : feature.ValidUserNameRegEx.IsMatch(userName);
         }
     }
 }

@@ -1,4 +1,4 @@
-See [servicestack.net/features](http://servicestack.net/features) for an overview.
+See [servicestack.net/features](http://servicestack.net/features) for an overview and the [Release Notes](https://servicestack.net/release-notes) for latest features.
 
 Join the [ServiceStack Google+ Community](https://plus.google.com/u/0/communities/112445368900682590445) or
 follow [@ServiceStack](http://twitter.com/servicestack) for project updates. 
@@ -30,14 +30,14 @@ ServiceStack Services also maximize productivity for consumers providing an
 [instant end-to-end typed API without code-gen](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) enabling
 the most productive development experience for developing .NET to .NET Web Services.
 
-### [Generate Instant Typed API's from a Remote Url!](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
+### [Generate Instant Typed APIs from within all Major IDEs!](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
 
 ServiceStack now integrates with all Major IDE's used for creating the best native experiences on the most popular platforms 
 to enable a highly productive dev workflow for consuming Web Services, making ServiceStack the ideal back-end choice for powering 
 rich, native iPhone and iPad Apps on iOS with Swift, Mobile and Tablet Apps on the Android platform with Java, OSX Desktop Appications 
 as well as targetting the most popular .NET PCL platforms including Xamarin.iOS, Xamarin.Android, Windows Store, WPF, WinForms and Silverlight: 
 
-<img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/add-ss-reference-ides.png" align="right" />
+<img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/wikis/ide-ss-plugin-logos.png" align="right" />
 
 #### [VS.NET integration with ServiceStackVS](https://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7)
 
@@ -70,107 +70,213 @@ native iOS and OSX Applications - directly from within Xcode!
 #### [Android Studio integration with ServiceStackIDEA](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference)
 
 Providing [an instant Native Typed API in Java](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference) 
-including idiomatic Java Generic Service Clients supporting Sync and Async Requests by levaraging Android's AsyncTasks to enable the
-creation of services-rich and responsive native Java Mobile Apps on the Android platform - directly from within Android Studio!
+including idiomatic Java Generic Service Clients supporting Sync and Async Requests by levaraging Android's AsyncTasks to enable the creation of services-rich and responsive native Java Mobile Apps on the Android platform - directly from within Android Studio!
 
-## Simple REST service example
+#### [IntelliJ integration with ServiceStackIDEA](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference#install-servicestack-idea-from-the-plugin-repository)
 
-This example is also available as a [stand-alone integration test](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/NewApiTodos.cs):
+The ServiceStack IDEA plugin is installable directly from IntelliJ's Plugin repository and enables seamless integration with IntelliJ Java Maven projects for genearting a Typed API to quickly and effortlessly consume remote ServiceStack Web Services from pure cross-platform Java Clients.
+
+#### [Eclipse integration with ServiceStackEclipse](https://github.com/ServiceStack/ServiceStack.Java/tree/master/src/ServiceStackEclipse#eclipse-integration-with-servicestack)
+
+The unmatched productivity offered by [Java Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference) is also available in the 
+[ServiceStackEclipse IDE Plugin](https://github.com/ServiceStack/ServiceStack.Java/tree/master/src/ServiceStackEclipse#eclipse-integration-with-servicestack) that's installable 
+from the [Eclipse MarketPlace](https://marketplace.eclipse.org/content/servicestackeclipse) to provide deep integration of Add ServiceStack Reference with Eclipse Java Maven Projects
+enabling Java Developers to effortlessly Add and Update the references of their evolving remote ServiceStack Web Services.
+
+#### [ssutil.exe - Command line ServiceStack Reference tool](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference#ssutilexe---command-line-servicestack-reference-tool)
+
+In addition to our growing list of supported IDE's, the
+[ssutil.exe](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference#ssutilexe---command-line-servicestack-reference-tool)
+cross-platform command-line .NET .exe makes it easy for build servers, automated tasks and command-line runners of your 
+favorite text editors to easily Add and Update ServiceStack References!
+
+## Simple Customer Database REST Services Example
+
+This example is also available as a [stand-alone integration test](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/CustomerRestExample.cs):
 
 ```csharp
 //Web Service Host Configuration
 public class AppHost : AppSelfHostBase
 {
-    public AppHost() : base("TODOs Tests", typeof(Todo).Assembly) {}
+    public AppHost() 
+        : base("Customer REST Example", typeof(CustomerService).Assembly) {}
 
     public override void Configure(Container container)
     {
-        container.Register(new TodoRepository());
+        //Register which RDBMS provider to use
+        container.Register<IDbConnectionFactory>(c => 
+            new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+
+        using (var db = container.Resolve<IDbConnectionFactory>().Open())
+        {
+            //Create the Customer POCO table if it doesn't already exist
+            db.CreateTableIfNotExists<Customer>();
+        }
     }
 }
 
-//REST Resource DTO
-[Route("/todos")]
-[Route("/todos/{Ids}")]
-public class Todos : IReturn<List<Todo>>
+//Web Service DTO's
+[Route("/customers", "GET")]
+public class GetCustomers : IReturn<GetCustomersResponse> {}
+
+public class GetCustomersResponse
 {
-    public long[] Ids { get; set; }
-    public Todos(params long[] ids)
-    {
-        this.Ids = ids;
-    }
+    public List<Customer> Results { get; set; } 
 }
 
-[Route("/todos", "POST")]
-[Route("/todos/{Id}", "PUT")]
-public class Todo : IReturn<Todo>
+[Route("/customers/{Id}", "GET")]
+public class GetCustomer : IReturn<Customer>
 {
-    public long Id { get; set; }
-    public string Content { get; set; }
-    public int Order { get; set; }
-    public bool Done { get; set; }
+    public int Id { get; set; }
 }
 
-public class TodosService : Service
+[Route("/customers", "POST")]
+public class CreateCustomer : IReturn<Customer>
 {
-    public TodoRepository Repository { get; set; }  //Injected by IOC
+    public string Name { get; set; }
+}
 
-    public object Get(Todos request)
+[Route("/customers/{Id}", "PUT")]
+public class UpdateCustomer : IReturn<Customer>
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+}
+
+[Route("/customers/{Id}", "DELETE")]
+public class DeleteCustomer : IReturnVoid
+{
+    public int Id { get; set; }
+}
+
+// POCO DB Model
+public class Customer
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+}
+
+//Web Services Implementation
+public class CustomerService : Service
+{
+    public object Get(GetCustomers request)
     {
-        return request.Ids.IsEmpty()
-            ? Repository.GetAll()
-            : Repository.GetByIds(request.Ids);
+        return new GetCustomersResponse { Results = Db.Select<Customer>() };
     }
 
-    public object Post(Todo todo)
+    public object Get(GetCustomer request)
     {
-        return Repository.Store(todo);
+        return Db.SingleById<Customer>(request.Id);
     }
 
-    public object Put(Todo todo)
+    public object Post(CreateCustomer request)
     {
-        return Repository.Store(todo);
+        var customer = new Customer { Name = request.Name };
+        Db.Save(customer);
+        return customer;
     }
 
-    public void Delete(Todos request)
+    public object Put(UpdateCustomer request)
     {
-        Repository.DeleteByIds(request.Ids);
+        var customer = Db.SingleById<Customer>(request.Id);
+        if (customer == null)
+            throw HttpError.NotFound("Customer '{0}' does not exist".Fmt(request.Id));
+
+        customer.Name = request.Name;
+        Db.Update(customer);
+
+        return customer;
+    }
+
+    public void Delete(DeleteCustomer request)
+    {
+        Db.DeleteById<Customer>(request.Id);
     }
 }
+
 ```
 
-### [Calling the above TODO REST service from any C#/.NET Client](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client)
+### [Calling the above REST Service from any C#/.NET Client](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client)
+
+> No code-gen required, can re-use above Server DTOs:
 
 ```csharp
-//no code-gen required, can re-use above DTO's
-
 var client = new JsonServiceClient(BaseUri);
-List<Todo> all = client.Get(new Todos());     		// Count = 0
 
-var todo = client.Post(
-    new Todo { Content = "New TODO", Order = 1 }); 	// todo.Id = 1
-all = client.Get(new Todos());						// Count = 1
+//GET /customers
+var all = client.Get(new GetCustomers());                         // Count = 0
 
-todo.Content = "Updated TODO";
-todo = client.Put(todo);							// todo.Content = Updated TODO
+//POST /customers
+var customer = client.Post(new CreateCustomer { Name = "Foo" });
 
-client.Delete(new Todos(todo.Id));
-all = client.Get(new Todos());						// Count = 0
+//GET /customer/1
+customer = client.Get(new GetCustomer { Id = customer.Id });      // Name = Foo
+
+//GET /customers
+all = client.Get(new GetCustomers());                             // Count = 1
+
+//PUT /customers/1
+customer = client.Put(
+    new UpdateCustomer { Id = customer.Id, Name = "Bar" });       // Name = Bar
+
+//DELETE /customers/1
+client.Delete(new DeleteCustomer { Id = customer.Id });
+
+//GET /customers
+all = client.Get(new GetCustomers());                             // Count = 0
 ```
 
-### Calling the TODO REST service from jQuery
+Same code also works with [PCL Clients in Xamarin iOS/Android, Windows Store Apps](https://github.com/ServiceStackApps/HelloMobile)
 
-    $.getJSON(baseUri + "/todos", function(todos) {
-    	alert(todos.length == 1);
+> [F#](https://github.com/ServiceStack/ServiceStack/wiki/FSharp-Add-ServiceStack-Reference) and 
+[VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference) can re-use same 
+[.NET Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) and DTO's
+
+### [Calling from Java](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference#jsonserviceclient-usage)
+
+```java
+JsonServiceClient client = new JsonServiceClient(BaseUri);
+
+GetCustomersResponse all = client.get(new GetCustomers());
+```
+
+### [Calling from Swift](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference#jsonserviceclientswift)
+
+```java
+var client = JsonServiceClient(baseUrl: BaseUri)
+
+let response = client.get(GetCustomers())
+```
+
+### [Calling from jQuery using TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference)
+
+```js
+$.getJSON($.ss.createUrl("/customers", request), request, 
+    function (r: dtos.GetCustomersResponse) {
+    	alert(r.Results.length == 1);
     });
+```
 
-### Calling the TODO REST service from [Dart JsonClient](https://github.com/mythz/DartJsonClient)
+### Calling from jQuery
 
-    var client = new JsonClient(baseUri);
-    client.todos()
-    	.then((todos) => alert(todos.length == 1)); 
+```js
+$.getJSON(baseUri + "/customers", function(r) {
+	alert(r.Results.length == 1);
+});
+```
 
-That's all the application code required to create a simple REST web service.
+### Calling the from [Dart JsonClient](https://github.com/mythz/DartJsonClient)
+
+```dart
+var client = new JsonClient(baseUri);
+client.customers()
+	.then((r) => alert(r.Results.length == 1)); 
+```
+
+That's all the application code required to create and consume a simple database-enabled REST Web Service!
 
 ## Getting Started
 
@@ -186,32 +292,14 @@ If you have [NuGet](http://nuget.org) installed, the easiest way to get started 
 
 ### [Install ServiceStack via NuGet](https://servicestack.net/download).
 
-_Latest v4+ on NuGet is a commercial release with [free quotas](https://servicestack.net/download#free-quotas)._
+_Latest v4+ on NuGet is a [commercial release](https://servicestack.net/pricing) with [free quotas](https://servicestack.net/download#free-quotas)._
 
 ### [Docs and Downloads for older v3 BSD releases](https://github.com/ServiceStackV3/ServiceStackV3)
 
-### Examples
+### [Live Demos](https://github.com/ServiceStackApps/LiveDemos)
 
-**The [Definitive list of Example Projects, Use-Cases, Demos, Starter Templates](http://stackoverflow.com/a/15869816)**
+**The [Definitive list of Example Projects, Use-Cases, Demos, Starter Templates](https://github.com/ServiceStackApps/LiveDemos)**
     
-## Download published NuGet binaries without NuGet
-
-GitHub has disabled its download feature so currently NuGet is the best way to get ServiceStack published releases.
-For environments that don't have NuGet installed (e.g. OSX/Linux) you can still download the published binaries by 
-extracting them from the published NuGet packages. The url to download a nuget package is: 
-
-    http://packages.nuget.org/api/v1/package/{PackageName}/{Version}
-    
- So to get the core ServiceStack and ServiceStack.Text libs in OSX/Linux (or using gnu tools for Windows) you can just do:
-
-    wget -O ServiceStack http://packages.nuget.org/api/v1/package/ServiceStack/3.9.71
-    unzip ServiceStack 'lib/*'
-    
-    wget -O ServiceStack.Text http://packages.nuget.org/api/v1/package/ServiceStack.Text/3.9.71
-    unzip ServiceStack.Text 'lib/*'
-
-which will download and extract the dlls into your local local `lib/` folder.
-
 ## Copying
 
 Since September 2013, ServiceStack source code is available under GNU Affero General Public License/FOSS License Exception, see license.txt in the source. 

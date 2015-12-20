@@ -36,7 +36,7 @@ namespace ServiceStack
 
         private static string GetErrorMessage(string errorCode, string errorMessage)
         {
-            return errorMessage ?? (errorCode != null ? errorCode.ToEnglish() : null); 
+            return errorMessage ?? (errorCode != null ? errorCode.ToEnglish() : null);
         }
 
         public string ErrorCode { get; set; }

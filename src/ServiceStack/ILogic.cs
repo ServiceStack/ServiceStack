@@ -88,7 +88,7 @@ namespace ServiceStack
 
             MessageProducer.Publish(message);
         }
-        
+
         public override void Dispose()
         {
             base.Dispose();

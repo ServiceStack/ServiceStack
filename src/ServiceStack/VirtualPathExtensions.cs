@@ -28,7 +28,7 @@ namespace ServiceStack
             var tokens = str.Split(new[] { virtualPathSeparator }, StringSplitOptions.RemoveEmptyEntries);
             return new Stack<string>(tokens.Reverse());
         }
-        
+
         public static Stack<string> TokenizeResourcePath(this string str, char pathSeparator = '.')
         {
             if (string.IsNullOrEmpty(str))
@@ -72,7 +72,7 @@ namespace ServiceStack
 
         public static IVirtualNode GetVirtualNode(this IVirtualPathProvider pathProvider, string virtualPath)
         {
-            return (IVirtualNode)pathProvider.GetFile(virtualPath) 
+            return (IVirtualNode)pathProvider.GetFile(virtualPath)
                 ?? pathProvider.GetDirectory(virtualPath);
         }
 

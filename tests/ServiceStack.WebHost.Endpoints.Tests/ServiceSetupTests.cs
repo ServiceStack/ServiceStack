@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class ServiceSetupTests
     {
-        private const string BaseUri = "http://localhost:8000/";
+        private const string BaseUri = "http://localhost:8001/";
         JsonServiceClient client = new JsonServiceClient(BaseUri);
         private ServiceSetupAppHost appHost;
 

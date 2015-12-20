@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
@@ -23,8 +24,12 @@ namespace ServiceStack.Host
             this.AppHost = appHost;
             this.ActionContext = actionContext;
             this.ServiceAction = actionContext.ServiceAction;
-            this.RequestFilters = actionContext.RequestFilters;
-            this.ResponseFilters = actionContext.ResponseFilters;
+
+            if (actionContext.RequestFilters != null)
+                this.RequestFilters = actionContext.RequestFilters.OrderBy(x => x.Priority).ToArray();
+
+            if (actionContext.ResponseFilters != null)
+                this.ResponseFilters = actionContext.ResponseFilters.OrderBy(x => x.Priority).ToArray();
         }
 
         public T ResolveService<T>(IRequest requestContext)
@@ -187,8 +192,8 @@ namespace ServiceStack.Host
 
         public virtual object HandleException(IRequest request, TRequest requestDto, Exception ex)
         {
-            var errorResponse = HostContext.RaiseServiceException(request, requestDto, ex) 
-                                ?? DtoUtils.CreateErrorResponse(requestDto, ex);
+            var errorResponse = HostContext.RaiseServiceException(request, requestDto, ex)
+                ?? DtoUtils.CreateErrorResponse(requestDto, ex);
 
             AfterEachRequest(request, requestDto, errorResponse ?? ex);
             

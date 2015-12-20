@@ -159,22 +159,22 @@ namespace ServiceStack.RabbitMq
         }
 
 
-        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn)
+        public virtual void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn)
         {
             RegisterHandler(processMessageFn, null, noOfThreads: 1);
         }
 
-        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, int noOfThreads)
+        public virtual void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, int noOfThreads)
         {
             RegisterHandler(processMessageFn, null, noOfThreads);
         }
 
-        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
+        public virtual void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
         {
             RegisterHandler(processMessageFn, processExceptionEx, noOfThreads: 1);
         }
 
-        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads)
+        public virtual void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads)
         {
             if (handlerMap.ContainsKey(typeof(T)))
             {
@@ -214,7 +214,7 @@ namespace ServiceStack.RabbitMq
             get { return Interlocked.CompareExchange(ref bgThreadCount, 0, 0); }
         }
 
-        public IMessageHandlerStats GetStats()
+        public virtual IMessageHandlerStats GetStats()
         {
             lock (workers)
             {
@@ -224,7 +224,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public string GetStatus()
+        public virtual string GetStatus()
         {
             switch (Interlocked.CompareExchange(ref status, 0, 0))
             {
@@ -242,7 +242,7 @@ namespace ServiceStack.RabbitMq
             return null;
         }
 
-        public string GetStatsDescription()
+        public virtual string GetStatsDescription()
         {
             lock (workers)
             {
@@ -264,7 +264,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public void Init()
+        public virtual void Init()
         {
             if (workers != null) return;
 
@@ -325,7 +325,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public void Start()
+        public virtual void Start()
         {
             if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started)
             {
@@ -448,7 +448,7 @@ namespace ServiceStack.RabbitMq
             Log.Debug("Exiting RunLoop()...");
         }
 
-        public void Stop()
+        public virtual void Stop()
         {
             if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
                 throw new ObjectDisposedException("MQ Host has been disposed");
@@ -463,7 +463,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public void Restart()
+        public virtual void Restart()
         {
             if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
                 throw new ObjectDisposedException("MQ Host has been disposed");
@@ -478,7 +478,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public void StartWorkerThreads()
+        public virtual void StartWorkerThreads()
         {
             Log.Debug("Starting all Rabbit MQ Server worker threads...");
             foreach (var worker in workers)
@@ -495,7 +495,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public void StopWorkerThreads()
+        public virtual void StopWorkerThreads()
         {
             Log.Debug("Stopping all Rabbit MQ Server worker threads...");
             foreach (var worker in workers)
@@ -555,7 +555,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
                 return;

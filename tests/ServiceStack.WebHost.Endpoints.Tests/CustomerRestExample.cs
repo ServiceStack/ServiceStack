@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
@@ -9,32 +8,29 @@ using ServiceStack.OrmLite;
 
 namespace NewApi.Customers
 {
-    public class CustomerAppHost : AppHostHttpListenerBase
+    public class AppHost : AppSelfHostBase
     {
-        public CustomerAppHost() : base("Customer REST Example", typeof(CustomerService).Assembly) {}
+        public AppHost() : base("Customer REST Example", typeof(CustomerService).Assembly) {}
 
         public override void Configure(Container container)
         {
             container.Register<IDbConnectionFactory>(c => 
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
-            using (var db = container.Resolve<IDbConnectionFactory>().OpenDbConnection())
+            using (var db = container.Resolve<IDbConnectionFactory>().Open())
             {
-                db.DropAndCreateTable<Customer>();
+                db.CreateTableIfNotExists<Customer>();
             }
         }
     }
 
-    public class Customer
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-
-        public string Name { get; set; }
-    }
-
     [Route("/customers", "GET")]
-    public class GetCustomers : IReturn<List<Customer>> { }
+    public class GetCustomers : IReturn<GetCustomersResponse> {}
+
+    public class GetCustomersResponse
+    {
+        public List<Customer> Results { get; set; } 
+    }
 
     [Route("/customers/{Id}", "GET")]
     public class GetCustomer : IReturn<Customer>
@@ -62,11 +58,19 @@ namespace NewApi.Customers
         public int Id { get; set; }
     }
 
+    public class Customer
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+    }
+
     public class CustomerService : Service
     {
         public object Get(GetCustomers request)
         {
-            return Db.Select<Customer>();
+            return new GetCustomersResponse { Results = Db.Select<Customer>() };
         }
 
         public object Get(GetCustomer request)
@@ -110,7 +114,7 @@ namespace NewApi.Customers
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            appHost = new CustomerAppHost()
+            appHost = new AppHost()
                 .Init()
                 .Start(BaseUri);
         }
@@ -127,8 +131,8 @@ namespace NewApi.Customers
             var client = new JsonServiceClient(BaseUri);
 
             //GET /customers
-            List<Customer> all = client.Get(new GetCustomers());
-            Assert.That(all.Count, Is.EqualTo(0));
+            var all = client.Get(new GetCustomers());
+            Assert.That(all.Results.Count, Is.EqualTo(0));
 
             //POST /customers
             var customer = client.Post(new CreateCustomer { Name = "Foo" });
@@ -139,17 +143,17 @@ namespace NewApi.Customers
 
             //GET /customers
             all = client.Get(new GetCustomers());
-            Assert.That(all.Count, Is.EqualTo(1));
+            Assert.That(all.Results.Count, Is.EqualTo(1));
 
             //PUT /customers/1
-            customer = client.Put(new UpdateCustomer { Id = customer.Id, Name = "Updated Foo" });
-            Assert.That(customer.Name, Is.EqualTo("Updated Foo"));
+            customer = client.Put(new UpdateCustomer { Id = customer.Id, Name = "Bar" });
+            Assert.That(customer.Name, Is.EqualTo("Bar"));
 
             //DELETE /customers/1
             client.Delete(new DeleteCustomer { Id = customer.Id });
             //GET /customers
             all = client.Get(new GetCustomers());
-            Assert.That(all.Count, Is.EqualTo(0));
+            Assert.That(all.Results.Count, Is.EqualTo(0));
         }
 
     }

@@ -16,6 +16,7 @@ using ServiceStack.Reflection;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Data;
+using ServiceStack.Logging;
 using ServiceStack.OrmLite;
 
 namespace ServiceStack
@@ -31,8 +32,6 @@ namespace ServiceStack
         public IQueryResponse Response { get; set; }
     }
 
-    public delegate void QueryResponseFilterDelegate(QueryFilterContext ctx);
-
     public class AutoQueryFeature : IPlugin, IPostInitPlugin
     {
         public HashSet<string> IgnoreProperties { get; set; }
@@ -47,13 +46,14 @@ namespace ServiceStack
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
-        public List<QueryResponseFilterDelegate> ResponseFilters { get; set; }
+        public List<Action<QueryFilterContext>> ResponseFilters { get; set; }
 
         public const string GreaterThanOrEqualFormat = "{Field} >= {Value}";
         public const string GreaterThanFormat =        "{Field} > {Value}";
         public const string LessThanFormat =           "{Field} < {Value}";
         public const string LessThanOrEqualFormat =    "{Field} <= {Value}";
-        
+        public const string NotEqualFormat =           "{Field} <> {Value}";
+
         public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
         {
             {"%Above%",         GreaterThanFormat},
@@ -69,11 +69,13 @@ namespace ServiceStack
             {"%Higher%",        GreaterThanOrEqualFormat},
             {">%",              GreaterThanOrEqualFormat},
             {"%>",              GreaterThanFormat},
+            {"%!",              NotEqualFormat},
 
             {"%GreaterThanOrEqualTo%", GreaterThanOrEqualFormat},
             {"%GreaterThan%",          GreaterThanFormat},
             {"%LessThan%",             LessThanFormat},
             {"%LessThanOrEqualTo%",    LessThanOrEqualFormat},
+            {"%NotEqualTo",            NotEqualFormat},
 
             {"Behind%",         LessThanFormat},
             {"%Below%",         LessThanFormat},
@@ -89,7 +91,7 @@ namespace ServiceStack
             {"%<",              LessThanOrEqualFormat},
             {"<%",              LessThanFormat},
 
-            {"Like%",           "UPPER({Field}) LIKE UPPER({Value})"},
+            {"%Like%",          "UPPER({Field}) LIKE UPPER({Value})"},
             {"%In",             "{Field} IN ({Values})"},
             {"%Ids",            "{Field} IN ({Values})"},
             {"%Between%",       "{Field} BETWEEN {Value1} AND {Value2}"},
@@ -112,7 +114,7 @@ namespace ServiceStack
             IllegalSqlFragmentTokens = new HashSet<string>();
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
-            ResponseFilters = new List<QueryResponseFilterDelegate> { IncludeAggregates };
+            ResponseFilters = new List<Action<QueryFilterContext>> { IncludeAggregates };
             EnableUntypedQueries = true;
             EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
@@ -123,6 +125,7 @@ namespace ServiceStack
                 ImplicitConventions = new List<Property>
                 {
                     new Property { Name = "=", Value = "%"},
+                    new Property { Name = "!=", Value = "%!"},
                     new Property { Name = ">=", Value = ">%"},
                     new Property { Name = ">", Value = "%>"},
                     new Property { Name = "<=", Value = "%<"},
@@ -213,15 +216,17 @@ namespace ServiceStack
 
             foreach (var requestType in misingRequestTypes)
             {
-                var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
-                    CallingConventions.Standard,
-                    returnType: typeof(object),
-                    parameterTypes: new[] { requestType });
-
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQuery<,>));
                 var hasExplicitInto = genericDef != null;
                 if (genericDef == null)
                     genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQuery<>));
+                if (genericDef == null)
+                    continue;
+
+                var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
+                    CallingConventions.Standard,
+                    returnType: typeof(object),
+                    parameterTypes: new[] { requestType });
 
                 var il = method.GetILGenerator();
 
@@ -321,6 +326,10 @@ namespace ServiceStack
                         alias = alias.Substring("as ".Length);
 
                     cmd.Suffix = " " + alias.SafeVarName();
+                }
+                else
+                {
+                    cmd.Suffix = " " + q.DialectProvider.GetQuotedName(cmd.ToString());
                 }
             }
 
@@ -576,7 +585,7 @@ namespace ServiceStack
 
         public virtual IDbConnection Db { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
-        public List<QueryResponseFilterDelegate> ResponseFilters { get; set; }
+        public List<Action<QueryFilterContext>> ResponseFilters { get; set; }
 
         public virtual void Dispose()
         {
@@ -711,6 +720,8 @@ namespace ServiceStack
 
     public class TypedQuery<QueryModel, From> : ITypedQuery
     {
+        private static ILog log = LogManager.GetLogger(typeof(AutoQueryFeature));
+
         static readonly Dictionary<string, Func<object, object>> PropertyGetters =
             new Dictionary<string, Func<object, object>>();
 
@@ -892,7 +903,7 @@ namespace ServiceStack
             if (value is string)
                 seq = null;
             var format = seq == null 
-                ? quotedColumn + " = {0}"
+                ? (value != null ? quotedColumn + " = {0}" : quotedColumn + " IS NULL")
                 : quotedColumn + " IN ({0})";
             if (implicitQuery != null)
             {
@@ -966,13 +977,17 @@ namespace ServiceStack
                 var implicitQuery = match.ImplicitQuery;
                 var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
 
-                var strValue = entry.Value;
+                var strValue = !string.IsNullOrEmpty(entry.Value)
+                    ? entry.Value
+                    : null;
                 var fieldType = match.FieldDef.FieldType;
                 var isMultiple = (implicitQuery != null && (implicitQuery.ValueStyle > ValueStyle.Single))
                     || string.Compare(name, match.FieldDef.Name + Pluralized, StringComparison.OrdinalIgnoreCase) == 0;
                 
-                var value = isMultiple ? 
-                    TypeSerializer.DeserializeFromString(strValue, Array.CreateInstance(fieldType, 0).GetType())
+                var value = strValue == null ? 
+                      null 
+                    : isMultiple ? 
+                      TypeSerializer.DeserializeFromString(strValue, Array.CreateInstance(fieldType, 0).GetType())
                     : fieldType == typeof(string) ? 
                       strValue
                     : fieldType.IsValueType && !fieldType.IsEnum ? 
@@ -1069,7 +1084,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                throw new ArgumentException(ex.Message);
+                throw new ArgumentException(ex.Message, ex);
             }
         }
     }

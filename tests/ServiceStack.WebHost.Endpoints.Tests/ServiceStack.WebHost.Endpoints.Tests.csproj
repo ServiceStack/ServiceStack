@@ -101,9 +101,9 @@
     <Reference Include="Npgsql">
       <HintPath>..\..\lib\Npgsql.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\src\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\..\src\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="protobuf-net">
       <HintPath>..\..\src\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
@@ -175,6 +175,7 @@
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="AsyncTaskTests.cs" />
     <Compile Include="AttributeFiltersTest.cs" />
+    <Compile Include="AuthDigestTests.cs" />
     <Compile Include="AuthTests.cs" />
     <Compile Include="AutoQueryTests.cs" />
     <Compile Include="BufferedRequestTests.cs" />
@@ -186,8 +187,10 @@
     <Compile Include="CustomerRestExample.cs" />
     <Compile Include="CustomFormatTests.cs" />
     <Compile Include="HttpErrorSyncTests.cs" />
+    <Compile Include="HttpHandlerTests.cs" />
     <Compile Include="Issues\EmptyDtoIssue.cs" />
     <Compile Include="Issues\NetworkIssues.cs" />
+    <Compile Include="Issues\RequestScopeIssue.cs" />
     <Compile Include="Issues\XmlContentTypeIssue.cs" />
     <Compile Include="ReplyAllTests.cs" />
     <Compile Include="MultiTennantAppHostTests.cs" />
@@ -210,6 +213,7 @@
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
     <Compile Include="SessionTests.cs" />
     <Compile Include="Support\Services\EchoService.cs" />
+    <Compile Include="Support\Services\SendVerbService.cs" />
     <Compile Include="Support\Services\TestRestService.cs" />
     <Compile Include="Support\Types\KeyAttribute.cs" />
     <Compile Include="PartialContentResultTests.cs" />
@@ -300,6 +304,7 @@
     <Compile Include="Support\Host\TestAppHost.cs" />
     <Compile Include="Support\Services\TestService.cs" />
     <Compile Include="BuiltinRouteTests.cs" />
+    <Compile Include="VirtualPathProviderTests.cs" />
     <Compile Include="WebServiceExceptionTests.cs" />
     <Compile Include="WsdlMetadataTests.cs" />
     <Compile Include="OperationTests.cs" />

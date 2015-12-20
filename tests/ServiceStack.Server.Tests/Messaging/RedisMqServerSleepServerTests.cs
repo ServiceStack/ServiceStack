@@ -13,10 +13,10 @@ namespace ServiceStack.Server.Tests.Messaging
     {
         public class Counters
         {
-            public int Sleep0 { get; set; }
-            public int Sleep10 { get; set; }
-            public int Sleep100 { get; set; }
-            public int Sleep1000 { get; set; }
+            public int Sleep0;
+            public int Sleep10;
+            public int Sleep100;
+            public int Sleep1000;
         }
 
         class Sleep0
@@ -44,19 +44,19 @@ namespace ServiceStack.Server.Tests.Messaging
                 redis.FlushAll();
 
             var mqServer = new RedisMqServer(TestConfig.BasicClientManger);
-            mqServer.RegisterHandler<Sleep0>(m => new Sleep0 { Id = counter.Sleep0++ });
+            mqServer.RegisterHandler<Sleep0>(m => new Sleep0 { Id = Interlocked.Increment(ref counter.Sleep0) });
 
             mqServer.RegisterHandler<Sleep10>(m => {
                 Thread.Sleep(10);
-                return new Sleep10 { Id = counter.Sleep10++ };
+                return new Sleep10 { Id = Interlocked.Increment(ref counter.Sleep10) };
             });
             mqServer.RegisterHandler<Sleep100>(m => {
                 Thread.Sleep(100);
-                return new Sleep100 { Id = counter.Sleep100++ };
+                return new Sleep100 { Id = Interlocked.Increment(ref counter.Sleep100) };
             });
             mqServer.RegisterHandler<Sleep1000>(m => {
                 Thread.Sleep(1000);
-                return new Sleep1000 { Id = counter.Sleep1000++ };
+                return new Sleep1000 { Id = Interlocked.Increment(ref counter.Sleep1000) };
             });
 
 

@@ -54,8 +54,10 @@ namespace ServiceStack
             var errorDto = httpError.GetDto();
             if (errorDto != null) return errorDto;
 
-            return new ErrorResponse {
-                ResponseStatus = new ResponseStatus {
+            return new ErrorResponse
+            {
+                ResponseStatus = new ResponseStatus
+                {
                     ErrorCode = httpError.ErrorCode,
                     Message = httpError.Message,
                     StackTrace = httpError.StackTrace,
@@ -94,7 +96,8 @@ namespace ServiceStack
         }
 
         public static int PartialBufferSize = 32 * 1024;
-        [ThreadStatic] private static byte[] PartialBuffer;
+        [ThreadStatic]
+        private static byte[] PartialBuffer;
 
         /// <summary>
         /// Writes partial range as specified by start-end, from fromStream to toStream.
@@ -136,7 +139,7 @@ namespace ServiceStack
 
                     if (httpException.Message == "An error occurred while communicating with the remote host. The error code is 0x80070057.")
                         return;
-                    
+
                     throw;
                 }
             }

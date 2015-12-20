@@ -1,3 +1,4 @@
+#if !LITE
 using System;
 using System.IO;
 using System.Runtime.Serialization;
@@ -32,3 +33,4 @@ namespace ServiceStack.Serialization
         }
     }
 }
+#endif

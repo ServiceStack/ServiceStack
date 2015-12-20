@@ -14,9 +14,11 @@ namespace ServiceStack.Authentication.OAuth2
         protected OAuth2Provider(IAppSettings appSettings, string realm, string provider)
             : base(appSettings, realm, provider)
         {
-            this.ConsumerKey = appSettings.GetString("oauth.{0}.ConsumerKey".Fmt(provider))
+            this.ConsumerKey = appSettings.GetString("oauth.{0}.ClientId".Fmt(provider))
+                ?? appSettings.GetString("oauth.{0}.ConsumerKey".Fmt(provider))
                 ?? FallbackConfig(appSettings.GetString("oauth.ConsumerKey"));
-            this.ConsumerSecret = appSettings.GetString("oauth.{0}.ConsumerSecret".Fmt(provider))
+            this.ConsumerSecret = appSettings.GetString("oauth.{0}.ClientSecret".Fmt(provider))
+                ?? appSettings.GetString("oauth.{0}.ConsumerSecret".Fmt(provider))
                 ?? FallbackConfig(appSettings.GetString("oauth.ConsumerSecret"));
             var scopes = appSettings.GetString("oauth.{0}.Scopes".Fmt(provider))
                 ?? FallbackConfig(appSettings.GetString("oauth.Scopes")) ?? "";
@@ -48,6 +50,10 @@ namespace ServiceStack.Authentication.OAuth2
 
         protected string[] Scopes { get; set; }
 
+        public Action<AuthorizationServerDescription> AuthServerFilter { get; set; }
+
+        public Action<WebServerClient> AuthClientFilter { get; set; }
+
         public virtual IAuthorizationState ProcessUserAuthorization(
             WebServerClient authClient, AuthorizationServerDescription authServer, IServiceBase authService)
         {
@@ -61,9 +67,16 @@ namespace ServiceStack.Authentication.OAuth2
             var tokens = this.Init(authService, ref session, request);
 
             var authServer = new AuthorizationServerDescription { AuthorizationEndpoint = new Uri(this.AuthorizeUrl), TokenEndpoint = new Uri(this.AccessTokenUrl) };
+
+            if (AuthServerFilter != null)
+                AuthServerFilter(authServer);
+
             var authClient = new WebServerClient(authServer, this.ConsumerKey) {
                 ClientCredentialApplicator = ClientCredentialApplicator.PostParameter(this.ConsumerSecret),
             };
+
+            if (AuthClientFilter != null)
+                AuthClientFilter(authClient);
 
             var authState = ProcessUserAuthorization(authClient, authServer, authService);
             if (authState == null)
@@ -81,10 +94,9 @@ namespace ServiceStack.Authentication.OAuth2
                     foreach (string name in authReq.Cookies)
                     {
                         var cookie = authReq.Cookies[name];
-
                         if (cookie != null)
                         {
-                            httpResult.SetSessionCookie(name, cookie.Value, cookie.Path);
+                            httpResult.Cookies.Add(cookie.ToCookie());
                         }
                     }
 
@@ -198,8 +210,8 @@ namespace ServiceStack.Authentication.OAuth2
             if (session.ReferrerUrl.IsNullOrEmpty() || session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 session.ReferrerUrl = this.RedirectUrl
-                                      ?? HttpHandlerFactory.GetBaseUrl()
-                                      ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1, StringComparison.Ordinal));
+                    ?? HttpHandlerFactory.GetBaseUrl()
+                    ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1, StringComparison.Ordinal));
             }
 
             var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == this.Provider);
@@ -209,6 +221,19 @@ namespace ServiceStack.Authentication.OAuth2
             }
 
             return tokens;
+        }
+
+        //Workaround to fix "Unexpected OAuth authorization response..." 
+        //From http://stackoverflow.com/a/23693111/85785
+        class DotNetOpenAuthTokenManager : IClientAuthorizationTracker
+        {
+            public IAuthorizationState GetAuthorizationState(Uri callbackUrl, string clientState)
+            {
+                return new AuthorizationState
+                {
+                    Callback = callbackUrl
+                };
+            }
         }
     }
 }

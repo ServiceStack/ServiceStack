@@ -26,7 +26,7 @@ namespace ServiceStack.NativeTypes.FSharp
             var namespaces = Config.GetDefaultNamespaces(metadata);
 
             var typeNamespaces = new HashSet<string>();
-            metadata.RemoveIgnoredTypes(Config);
+            metadata.RemoveIgnoredTypesForNet(Config);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
@@ -42,7 +42,8 @@ namespace ServiceStack.NativeTypes.FSharp
             var sb = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("(* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(metadata.Version));
+            sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
+            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
@@ -82,7 +83,7 @@ namespace ServiceStack.NativeTypes.FSharp
 
             sb.AppendLine("namespace {0}".Fmt(globalNamespace.SafeToken()));
             sb.AppendLine();
-            foreach (var ns in namespaces)
+            foreach (var ns in namespaces.Where(x => !string.IsNullOrEmpty(x)))
             {
                 sb.AppendLine("open " + ns);
             }

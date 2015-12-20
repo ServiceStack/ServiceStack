@@ -1,3 +1,4 @@
+#if !LITE
 using System;
 using System.IO;
 using System.Runtime.Serialization;
@@ -113,3 +114,4 @@ XmlDictionaryReaderQuotas quotas = null
 
     }
 }
+#endif

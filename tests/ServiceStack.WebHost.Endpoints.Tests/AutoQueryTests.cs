@@ -24,8 +24,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
             //container.Register<IDbConnectionFactory>(
-            //    new OrmLiteConnectionFactory("Server={0};Database=test;User Id=test;Password=test;".Fmt(Environment.GetEnvironmentVariable("CI_HOST")),
+            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;"),
             //        SqlServerDialect.Provider));
+
+            //container.Register<IDbConnectionFactory>(
+            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;"),
+            //        SqlServer2012Dialect.Provider));
 
             //container.Register<IDbConnectionFactory>(
             //    new OrmLiteConnectionFactory("Server=localhost;Database=test;UID=root;Password=test",
@@ -78,6 +82,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 {
                     MaxLimit = 100,
                     EnableRawSqlFilters = true,
+                    ResponseFilters = {
+                        ctx => {
+                            var executedCmds = new List<Command>();
+                            var supportedFns = new Dictionary<string, Func<int, int, int>>(StringComparer.OrdinalIgnoreCase)
+                            {
+                                {"ADD",      (a,b) => a + b },
+                                {"MULTIPLY", (a,b) => a * b },
+                                {"DIVIDE",   (a,b) => a / b },
+                                {"SUBTRACT", (a,b) => a - b },
+                            };
+                            foreach (var cmd in ctx.Commands)
+                            {
+                                Func<int, int, int> fn;
+                                if (!supportedFns.TryGetValue(cmd.Name, out fn)) continue;
+                                var label = !string.IsNullOrWhiteSpace(cmd.Suffix) ? cmd.Suffix.Trim() : cmd.ToString();
+                                ctx.Response.Meta[label] = fn(int.Parse(cmd.Args[0]), int.Parse(cmd.Args[1])).ToString();
+                                executedCmds.Add(cmd);
+                            }
+                            ctx.Commands.RemoveAll(executedCmds.Contains);
+                        }        
+                    }
                 }
                 .RegisterQueryFilter<QueryRockstarsFilter, Rockstar>((req, q, dto) =>
                     q.And(x => x.LastName.EndsWith("son"))
@@ -251,6 +276,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string FirstName { get; set; }
     }
 
+    [Route("/OrRockstarsFields")]
+    public class QueryOrRockstarsFields : QueryBase<Rockstar>
+    {
+        [QueryField(Term = QueryTerm.Or)]
+        public string FirstName { get; set; }
+
+        [QueryField(Term = QueryTerm.Or)]
+        public string LastName { get; set; }
+    }
+
     [Query(QueryTerm.Or)]
     public class QueryGetRockstars : QueryBase<Rockstar>
     {
@@ -280,6 +315,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     public class CustomRockstar
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int? Age { get; set; }
+        public string RockstarAlbumName { get; set; }
+        public string RockstarGenreName { get; set; }
+    }
+
+    public class QueryCustomRockstarsSchema : QueryBase<Rockstar, CustomRockstarSchema>
+    {
+        public int? Age { get; set; }
+    }
+
+    [Schema("dbo")]
+    public class CustomRockstarSchema
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -570,6 +620,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_execute_explicit_equality_condition_on_CustomRockstarSchema()
+        {
+            var response = client.Get(new QueryCustomRockstarsSchema { Age = 27 });
+
+            response.PrintDump();
+
+            Assert.That(response.Total, Is.EqualTo(3));
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            Assert.That(response.Results[0].FirstName, Is.Not.Null);
+            Assert.That(response.Results[0].LastName, Is.Not.Null);
+            Assert.That(response.Results[0].Age, Is.EqualTo(27));
+        }
+
+        [Test]
         public void Can_execute_implicit_equality_condition()
         {
             var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
@@ -581,6 +645,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Results[0].LastName, Is.EqualTo("Morrison"));
+        }
+
+        [Test]
+        public void Can_execute_implicit_IsNull_condition()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars?DateDied=")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            Assert.That(response.Total, Is.EqualTo(2));
+            Assert.That(response.Results.Count, Is.EqualTo(2));
         }
 
         [Test]
@@ -666,7 +741,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_execute_query_with_LEFTJOIN_on_RockstarAlbums()
         {
             var response = client.Get(new QueryRockstarAlbumsLeftJoin());
-            response.PrintDump();
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
             var albumNames = response.Results.Where(x => x.RockstarAlbumName != null).Select(x => x.RockstarAlbumName);
@@ -781,6 +855,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_execute_OR_QueryFilters_Fields()
+        {
+            var response = client.Get(new QueryOrRockstarsFields
+            {
+                FirstName = "Jim",
+                LastName = "Vedder",
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = Config.ListeningOn.CombineWith("OrRockstarsFields")
+                .AddQueryParam("FirstName", "Kurt")
+                .AddQueryParam("LastName", "Hendrix")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+        }
+
+        [Test]
         public void Can_execute_implicit_conventions()
         {
             var baseUrl = Config.ListeningOn.CombineWith("json/reply/QueryRockstars");
@@ -795,6 +887,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(3));
             response = baseUrl.AddQueryParam("GreaterThanAge", 42).AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = baseUrl.AddQueryParam("AgeNotEqualTo", 27).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
 
             response = baseUrl.AddQueryParam(">Age", 42).AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(4));
@@ -803,6 +897,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = baseUrl.AddQueryParam("<Age", 42).AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(3));
             response = baseUrl.AddQueryParam("Age<", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+            response = baseUrl.AddQueryParam("Age!", "27").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(4));
 
             response = baseUrl.AddQueryParam("FirstNameStartsWith", "jim").AsJsonInto<Rockstar>();
@@ -910,7 +1006,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(2));
 
             response = client.Get(new QueryGetRockstars { IdsBetween = new[] { 1, 3 } });
-            response.Results.PrintDump();
             Assert.That(response.Results.Count, Is.EqualTo(3));
         }
 
@@ -930,7 +1025,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(2));
 
             response = baseUrl.AddQueryParam("IdsBetween", "1,3").AsJsonInto<Rockstar>();
-            response.Results.PrintDump();
             Assert.That(response.Results.Count, Is.EqualTo(3));
         }
 
@@ -1072,8 +1166,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Age = 27
             });
          
-            response.PrintDump();
-
             Assert.That(response.Results.Count, Is.EqualTo(3));
 
             var jimi = response.Results.First(x => x.FirstName == "Jimi");
@@ -1095,8 +1187,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Get(new QueryAllFields {
                 Guid = guid
             });
-
-            response.PrintDump();
 
             Assert.That(response.Results.Count, Is.EqualTo(1));
 
@@ -1175,6 +1265,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Meta["min"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
             Assert.That(response.Meta["max"], Is.EqualTo(response.Results.Map(x => x.Age).Max().ToString()));
             Assert.That(response.Meta["sum"], Is.EqualTo(response.Results.Map(x => x.Id).Sum().ToString()));
+        }
+
+        [Test]
+        public void Can_execute_custom_aggregate_functions()
+        {
+            var response = client.Get(new QueryRockstars {
+                Include = "ADD(6,2), Multiply(6,2) SixTimesTwo, Subtract(6,2), divide(6,2) TheDivide"
+            });
+            Assert.That(response.Meta["ADD(6,2)"], Is.EqualTo("8"));
+            Assert.That(response.Meta["SixTimesTwo"], Is.EqualTo("12"));
+            Assert.That(response.Meta["Subtract(6,2)"], Is.EqualTo("4"));
+            Assert.That(response.Meta["TheDivide"], Is.EqualTo("3"));
         }
     }
 

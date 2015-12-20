@@ -1,6 +1,6 @@
 /* Options:
-Date: 2015-01-20 21:51:30
-Version: 1
+Date: 2015-11-23 18:41:03
+Version: 4.00
 BaseUrl: http://test.servicestack.net
 
 GlobalNamespace: testdtos
@@ -11,9 +11,12 @@ GlobalNamespace: testdtos
 //AddDescriptionAsComments: True
 //AddDataContractAttributes: False
 //AddIndexesToDataMembers: False
+//AddGeneratedCodeAttributes: False
 //AddResponseStatus: False
 //AddImplicitVersion: 
 //InitializeCollections: True
+//IncludeTypes: 
+//ExcludeTypes: 
 //AddDefaultXmlNamespace: http://schemas.servicestack.net/types
 */
 
@@ -23,9 +26,6 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
-using System.Net;
-using System.IO;
-using System.Data;
 using testdtos;
 
 
@@ -73,7 +73,7 @@ namespace testdtos
     }
 
     public partial class ExternalOperation3
-        : IReturn<ExternalOperation3>
+        : IReturn<ExternalReturnTypeResponse>
     {
         public virtual int Id { get; set; }
     }
@@ -98,140 +98,6 @@ namespace testdtos
         public virtual ExternalEnum2 ExternalEnum2 { get; set; }
     }
 
-    public partial interface ICacheClient
-    {
-    }
-
-    public partial interface ISession
-    {
-    }
-
-    public partial interface ISessionFactory
-    {
-    }
-
-    public partial interface IDbConnectionFactory
-    {
-    }
-
-    public partial interface IMessageFactory
-    {
-    }
-
-    public partial interface IMessageProducer
-    {
-    }
-
-    public partial interface IHasNamed<IRedisList>
-    {
-    }
-
-    public partial interface IRedisClient
-    {
-        long Db { get; set; }
-        long DbSize { get; set; }
-        Dictionary<string, string> Info { get; set; }
-        DateTime LastSave { get; set; }
-        string Host { get; set; }
-        int Port { get; set; }
-        int ConnectTimeout { get; set; }
-        int RetryTimeout { get; set; }
-        int RetryCount { get; set; }
-        int SendTimeout { get; set; }
-        string Password { get; set; }
-        bool HadExceptions { get; set; }
-        IHasNamed<IRedisList> Lists { get; set; }
-        IHasNamed<IRedisSet> Sets { get; set; }
-        IHasNamed<IRedisSortedSet> SortedSets { get; set; }
-        IHasNamed<IRedisHash> Hashes { get; set; }
-    }
-
-    public partial interface IRedisClientsManager
-    {
-    }
-
-    public partial interface IRedisHash
-    {
-    }
-
-    public partial interface IRedisList
-    {
-    }
-
-    public partial interface IRedisSet
-    {
-    }
-
-    public partial interface IRedisSortedSet
-    {
-    }
-
-    public partial interface IHttpFile
-    {
-        string FileName { get; set; }
-        long ContentLength { get; set; }
-        string ContentType { get; set; }
-        Stream InputStream { get; set; }
-    }
-
-    public partial interface INameValueCollection
-    {
-        Object Original { get; set; }
-        string[] AllKeys { get; set; }
-    }
-
-    public partial interface IRequest
-    {
-        Object OriginalRequest { get; set; }
-        IResponse Response { get; set; }
-        string OperationName { get; set; }
-        string Verb { get; set; }
-        RequestAttributes RequestAttributes { get; set; }
-        IRequestPreferences RequestPreferences { get; set; }
-        Object Dto { get; set; }
-        string ContentType { get; set; }
-        bool IsLocal { get; set; }
-        string UserAgent { get; set; }
-        IDictionary<string, Cookie> Cookies { get; set; }
-        string ResponseContentType { get; set; }
-        bool HasExplicitResponseContentType { get; set; }
-        Dictionary<string, Object> Items { get; set; }
-        INameValueCollection Headers { get; set; }
-        INameValueCollection QueryString { get; set; }
-        INameValueCollection FormData { get; set; }
-        bool UseBufferedStream { get; set; }
-        string RawUrl { get; set; }
-        string AbsoluteUri { get; set; }
-        string UserHostAddress { get; set; }
-        string RemoteIp { get; set; }
-        bool IsSecureConnection { get; set; }
-        string[] AcceptTypes { get; set; }
-        string PathInfo { get; set; }
-        Stream InputStream { get; set; }
-        long ContentLength { get; set; }
-        IHttpFile[] Files { get; set; }
-        Uri UrlReferrer { get; set; }
-    }
-
-    public partial interface IRequestPreferences
-    {
-        bool AcceptsGzip { get; set; }
-        bool AcceptsDeflate { get; set; }
-    }
-
-    public partial interface IResponse
-    {
-        Object OriginalResponse { get; set; }
-        int StatusCode { get; set; }
-        string StatusDescription { get; set; }
-        string ContentType { get; set; }
-        Stream OutputStream { get; set; }
-        Object Dto { get; set; }
-        bool UseBufferedStream { get; set; }
-        bool IsClosed { get; set; }
-        bool KeepAlive { get; set; }
-    }
-
     public partial class Account
     {
         public virtual string Name { get; set; }
@@ -249,7 +115,6 @@ namespace testdtos
 
     [Route("/image-draw/{Name}")]
     public partial class DrawImage
-        : IReturn<DrawImage>
     {
         public virtual string Name { get; set; }
         public virtual string Format { get; set; }
@@ -324,7 +189,7 @@ namespace testdtos
 
     [Route("/ping")]
     public partial class Ping
-        : IReturn<Ping>
+        : IReturn<PingResponse>
     {
     }
 
@@ -340,7 +205,6 @@ namespace testdtos
     }
 
     public partial class PingService
-        : Service
     {
 
         [Route("/reset-connections")]
@@ -361,6 +225,54 @@ namespace testdtos
         public virtual string Path { get; set; }
     }
 
+    public partial class SendDefault
+        : IReturn<SendVerbResponse>
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class SendGet
+        : IReturn<SendVerbResponse>, IGet
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class SendPost
+        : IReturn<SendVerbResponse>, IPost
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class SendPut
+        : IReturn<SendVerbResponse>, IPut
+    {
+        public virtual int Id { get; set; }
+    }
+
+    [Route("/sendrestget/{Id}", "GET")]
+    public partial class SendRestGet
+        : IReturn<SendVerbResponse>, IGet
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class SendVerbResponse
+    {
+        public virtual int Id { get; set; }
+        public virtual string PathInfo { get; set; }
+        public virtual string RequestMethod { get; set; }
+    }
+
+    [Route("/null-response")]
+    public partial class TestNullResponse
+    {
+    }
+
+    [Route("/void-response")]
+    public partial class TestVoidResponse
+    {
+    }
+
     [Route("/textfile-test")]
     public partial class TextFileTest
     {
@@ -379,27 +291,25 @@ namespace testdtos
         public virtual string CustomName { get; set; }
     }
 
+    [Route("/wait/{ForMs}")]
+    public partial class Wait
+        : IReturn<Wait>
+    {
+        public virtual int ForMs { get; set; }
+    }
+
     ///<summary>
     ///AllowedAttributes Description
     ///</summary>
     [Route("/allowed-attributes", "GET")]
-    [ApiResponse(400, "Your request was not understood")]
     [Api("AllowedAttributes Description")]
+    [ApiResponse(400, "Your request was not understood")]
     [DataContract]
     public partial class AllowedAttributes
     {
-        [Default(5)]
-        [Required]
-        public virtual int Id { get; set; }
-
         [DataMember(Name="Aliased")]
         [ApiMember(ParameterType="path", Description="Range Description", DataType="double", IsRequired=true)]
         public virtual double Range { get; set; }
-
-        [StringLength(20)]
-        [Meta("Foo", "Bar")]
-        [References(typeof(Test.ServiceModel.Hello))]
-        public virtual string Name { get; set; }
     }
 
     public partial class ArrayResult
@@ -408,7 +318,7 @@ namespace testdtos
     }
 
     public partial class CustomHttpError
-        : IReturn<CustomHttpError>
+        : IReturn<CustomHttpErrorResponse>
     {
         public virtual int StatusCode { get; set; }
         public virtual string StatusDescription { get; set; }
@@ -430,6 +340,17 @@ namespace testdtos
         Value1 = 1,
         Value2 = 2,
         Value3 = 4,
+    }
+
+    public partial class EnumRequest
+        : IReturn<EnumResponse>, IPut
+    {
+        public virtual ScopeType Operator { get; set; }
+    }
+
+    public partial class EnumResponse
+    {
+        public virtual ScopeType Operator { get; set; }
     }
 
     public enum EnumType
@@ -458,7 +379,7 @@ namespace testdtos
 
     [Route("/randomids")]
     public partial class GetRandomIds
-        : IReturn<GetRandomIds>
+        : IReturn<GetRandomIdsResponse>
     {
         public virtual int? Take { get; set; }
     }
@@ -473,8 +394,8 @@ namespace testdtos
         public virtual List<string> Results { get; set; }
     }
 
-    [Route("/hello/{Name}")]
     [Route("/hello")]
+    [Route("/hello/{Name}")]
     public partial class Hello
         : IReturn<HelloResponse>
     {
@@ -484,8 +405,9 @@ namespace testdtos
         public virtual string Title { get; set; }
     }
 
+    [Route("/all-types")]
     public partial class HelloAllTypes
-        : IReturn<HelloAllTypes>
+        : IReturn<HelloAllTypesResponse>
     {
         public virtual string Name { get; set; }
         public virtual AllTypes AllTypes { get; set; }
@@ -522,9 +444,32 @@ namespace testdtos
         public virtual List<int> Counts { get; set; }
     }
 
+    public partial class HelloBuiltin
+    {
+        public virtual DayOfWeek DayOfWeek { get; set; }
+    }
+
+    public partial class HelloDateTime
+        : IReturn<HelloDateTime>
+    {
+        public virtual DateTime DateTime { get; set; }
+    }
+
+    public partial class HelloDelete
+        : IReturn<HelloVerbResponse>, IDelete
+    {
+        public virtual int Id { get; set; }
+    }
+
     public partial class HelloExternal
     {
         public virtual string Name { get; set; }
+    }
+
+    public partial class HelloGet
+        : IReturn<HelloVerbResponse>, IGet
+    {
+        public virtual int Id { get; set; }
     }
 
     public partial class HelloInnerTypes
@@ -556,14 +501,43 @@ namespace testdtos
         public virtual List<string> Names { get; set; }
     }
 
+    public partial class HelloPatch
+        : IReturn<HelloVerbResponse>, IPatch
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class HelloPost
+        : HelloBase, IReturn<HelloVerbResponse>, IPost
+    {
+    }
+
+    public partial class HelloPut
+        : IReturn<HelloVerbResponse>, IPut
+    {
+        public virtual int Id { get; set; }
+    }
+
     public partial class HelloResponse
     {
         public virtual string Result { get; set; }
     }
 
+    public partial class HelloReturnVoid
+        : IReturnVoid
+    {
+        public virtual int Id { get; set; }
+    }
+
     public partial class HelloString
+        : IReturn<string>
     {
         public virtual string Name { get; set; }
+    }
+
+    public partial class HelloVerbResponse
+    {
+        public virtual string Result { get; set; }
     }
 
     public partial class HelloVoid
@@ -579,7 +553,7 @@ namespace testdtos
 
     [DataContract]
     public partial class HelloWithDataContract
-        : IReturn<HelloWithDataContract>
+        : IReturn<HelloWithDataContractResponse>
     {
         [DataMember(Name="name", Order=1, IsRequired=true, EmitDefaultValue=false)]
         public virtual string Name { get; set; }
@@ -599,7 +573,7 @@ namespace testdtos
     ///Description on HelloWithDescription type
     ///</summary>
     public partial class HelloWithDescription
-        : IReturn<HelloWithDescription>
+        : IReturn<HelloWithDescriptionResponse>
     {
         public virtual string Name { get; set; }
     }
@@ -632,7 +606,7 @@ namespace testdtos
     }
 
     public partial class HelloWithInheritance
-        : HelloBase, IReturn<HelloWithInheritance>
+        : HelloBase, IReturn<HelloWithInheritanceResponse>
     {
         public virtual string Name { get; set; }
     }
@@ -641,11 +615,6 @@ namespace testdtos
         : HelloResponseBase
     {
         public virtual string Result { get; set; }
-    }
-
-    public partial class HelloWithListInheritance
-        : List<InheritedItem>
-    {
     }
 
     public partial class HelloWithNestedClass
@@ -678,7 +647,7 @@ namespace testdtos
 
     [Route("/helloroute")]
     public partial class HelloWithRoute
-        : IReturn<HelloWithRoute>
+        : IReturn<HelloWithRouteResponse>
     {
         public virtual string Name { get; set; }
     }
@@ -689,7 +658,7 @@ namespace testdtos
     }
 
     public partial class HelloWithType
-        : IReturn<HelloWithType>
+        : IReturn<HelloWithTypeResponse>
     {
         public virtual string Name { get; set; }
     }
@@ -701,11 +670,6 @@ namespace testdtos
 
     public partial interface IEmptyInterface
     {
-    }
-
-    public partial class InheritedItem
-    {
-        public virtual string Name { get; set; }
     }
 
     public partial interface IPoco
@@ -783,15 +747,128 @@ namespace testdtos
         public virtual List<MetadataTestChild> Results { get; set; }
     }
 
+    public partial class OnlyDefinedInGenericType
+    {
+        public virtual int Id { get; set; }
+        public virtual string Name { get; set; }
+    }
+
+    public partial class OnlyDefinedInGenericTypeFrom
+    {
+        public virtual int Id { get; set; }
+        public virtual string Name { get; set; }
+    }
+
+    public partial class OnlyDefinedInGenericTypeInto
+    {
+        public virtual int Id { get; set; }
+        public virtual string Name { get; set; }
+    }
+
+    public partial class QueryPocoBase
+        : QueryBase<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class QueryPocoIntoBase
+        : QueryBase<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>
+    {
+        public virtual int Id { get; set; }
+    }
+
+    [Route("/rockstars")]
+    public partial class QueryRockstars
+        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+    }
+
     [Route("/requires-role")]
     public partial class RequiresRole
-        : IReturn<RequiresRole>
+        : IReturn<RequiresRoleResponse>
     {
     }
 
     public partial class RequiresRoleResponse
     {
         public virtual string Result { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public partial class Rockstar
+    {
+        public virtual int Id { get; set; }
+        public virtual string FirstName { get; set; }
+        public virtual string LastName { get; set; }
+        public virtual int? Age { get; set; }
+    }
+
+    [DataContract]
+    public enum ScopeType
+    {
+        Global = 1,
+        Sale = 2,
+    }
+
+    [Route("/throw404")]
+    [Route("/throw404/{Message}")]
+    public partial class Throw404
+    {
+        public virtual string Message { get; set; }
+    }
+
+    [Route("/throwbusinesserror")]
+    public partial class ThrowBusinessError
+        : IReturn<ThrowBusinessErrorResponse>
+    {
+    }
+
+    public partial class ThrowBusinessErrorResponse
+    {
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Route("/throwcustom400")]
+    [Route("/throwcustom400/{Message}")]
+    public partial class ThrowCustom400
+    {
+        public virtual string Message { get; set; }
+    }
+
+    [Route("/throwhttperror/{Status}")]
+    public partial class ThrowHttpError
+    {
+        public virtual int? Status { get; set; }
+        public virtual string Message { get; set; }
+    }
+
+    [Route("/throw/{Type}")]
+    public partial class ThrowType
+        : IReturn<ThrowTypeResponse>
+    {
+        public virtual string Type { get; set; }
+        public virtual string Message { get; set; }
+    }
+
+    public partial class ThrowTypeResponse
+    {
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Route("/throwvalidation")]
+    public partial class ThrowValidation
+        : IReturn<ThrowValidationResponse>
+    {
+        public virtual int Age { get; set; }
+        public virtual string Required { get; set; }
+        public virtual string Email { get; set; }
+    }
+
+    public partial class ThrowValidationResponse
+    {
+        public virtual int Age { get; set; }
+        public virtual string Required { get; set; }
+        public virtual string Email { get; set; }
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
@@ -822,6 +899,8 @@ namespace testdtos
             StringList = new List<string>{};
             PocoArray = new Poco[]{};
             PocoList = new List<Poco>{};
+            PocoLookup = new Dictionary<string, List<Poco>>{};
+            PocoLookupMap = new Dictionary<string, List<Dictionary<String,Poco>>>{};
         }
 
         public virtual int[] IntArray { get; set; }
@@ -830,6 +909,8 @@ namespace testdtos
         public virtual List<string> StringList { get; set; }
         public virtual Poco[] PocoArray { get; set; }
         public virtual List<Poco> PocoList { get; set; }
+        public virtual Dictionary<string, List<Poco>> PocoLookup { get; set; }
+        public virtual Dictionary<string, List<Dictionary<String,Poco>>> PocoLookupMap { get; set; }
     }
 
     public partial class AllTypes
@@ -857,6 +938,9 @@ namespace testdtos
         public virtual string String { get; set; }
         public virtual DateTime DateTime { get; set; }
         public virtual TimeSpan TimeSpan { get; set; }
+        public virtual DateTimeOffset DateTimeOffset { get; set; }
+        public virtual Guid Guid { get; set; }
+        public virtual Char Char { get; set; }
         public virtual DateTime? NullableDateTime { get; set; }
         public virtual TimeSpan? NullableTimeSpan { get; set; }
         public virtual List<string> StringList { get; set; }

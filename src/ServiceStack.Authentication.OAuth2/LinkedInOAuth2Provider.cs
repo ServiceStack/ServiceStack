@@ -29,7 +29,6 @@ namespace ServiceStack.Authentication.OAuth2
             {
                 this.Scopes = new[] {
                     "r_emailaddress", 
-                    "r_fullprofile", 
                     "r_basicprofile"
                 };
             }

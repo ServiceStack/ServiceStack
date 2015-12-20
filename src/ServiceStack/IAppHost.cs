@@ -88,6 +88,26 @@ namespace ServiceStack
         List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; }
 
         /// <summary>
+        /// Add Request Filter for a specific Request DTO Type
+        /// </summary>
+        void RegisterTypedRequestFilter<T>(Action<IRequest, IResponse, T> filterFn);
+
+        /// <summary>
+        /// Add Request Filter for a specific Response DTO Type
+        /// </summary>
+        void RegisterTypedResponseFilter<T>(Action<IRequest, IResponse, T> filterFn);
+
+        /// <summary>
+        /// Add Request Filter for a specific MQ Request DTO Type
+        /// </summary>
+        void RegisterTypedMessageRequestFilter<T>(Action<IRequest, IResponse, T> filterFn);
+
+        /// <summary>
+        /// Add Request Filter for a specific MQ Response DTO Type
+        /// </summary>
+        void RegisterTypedMessageResponseFilter<T>(Action<IRequest, IResponse, T> filterFn);
+
+        /// <summary>
         /// Add alternative HTML View Engines
         /// </summary>
         List<IViewEngine> ViewEngines { get; }
@@ -162,10 +182,18 @@ namespace ServiceStack
         /// </summary>
         void LoadPlugin(params IPlugin[] plugins);
 
-        /// <summary>
-        /// Virtual access to file resources
-        /// </summary>
+        [Obsolete("Renamed to VirtualFileSources")]
         IVirtualPathProvider VirtualPathProvider { get; set; }
+
+        /// <summary>
+        /// Cascading number of file sources, inc. Embedded Resources, File System, In Memory, S3
+        /// </summary>
+        IVirtualPathProvider VirtualFileSources { get; set; }
+
+        /// <summary>
+        /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
+        /// </summary>
+        IVirtualFiles VirtualFiles { get; set; }
 
         /// <summary>
         /// Create a service runner for IService actions

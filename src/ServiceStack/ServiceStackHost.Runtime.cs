@@ -155,14 +155,13 @@ namespace ServiceStack
 
             if (res.IsClosed)
                 return true;
-
             using (Profiler.Current.Step("Executing Response Filters"))
             {
-                if (!req.IsMultiRequest() || !(response is IEnumerable))
+                var batchResponse = req.IsMultiRequest() ? response as IEnumerable : null;
+                if (batchResponse == null)
                     return ApplyResponseFiltersSingle(req, res, response);
 
-                var dtos = (IEnumerable)response;
-                foreach (var dto in dtos)
+                foreach (var dto in batchResponse)
                 {
                     if (ApplyResponseFiltersSingle(req, res, dto))
                         return true;
@@ -192,8 +191,11 @@ namespace ServiceStack
                 }
             }
 
-            ExecTypedFilters(GlobalTypedResponseFilters, req, res, response);
-            if (res.IsClosed) return res.IsClosed;
+            if (response != null)
+            {
+                ExecTypedFilters(GlobalTypedResponseFilters, req, res, response);
+                if (res.IsClosed) return res.IsClosed;
+            }
 
             //Exec global filters
             foreach (var responseFilter in GlobalResponseFilters)
@@ -417,7 +419,7 @@ namespace ServiceStack
             var isValidationSummaryEx = argEx is ValidationException;
             if (argEx != null && !isValidationSummaryEx && argEx.ParamName != null)
             {
-                var paramMsgIndex = argEx.Message.LastIndexOf("Parameter name:");
+                var paramMsgIndex = argEx.Message.LastIndexOf("Parameter name:", StringComparison.Ordinal);
                 var errorMsg = paramMsgIndex > 0
                     ? argEx.Message.Substring(0, paramMsgIndex)
                     : argEx.Message;
@@ -435,14 +437,27 @@ namespace ServiceStack
         {
             if (httpReq == null) return;
 
-            using (var cache = this.GetCacheClient())
-            {
-                var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
-                session.LastModified = DateTime.UtcNow;
-                cache.CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
-            }
+            var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
+            session.LastModified = DateTime.UtcNow;
+            this.GetCacheClient().CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
 
             httpReq.Items[SessionFeature.RequestItemsSessionKey] = session;
+        }
+
+        public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId)
+        {
+            if (session == null || !SessionFeature.VerifyCachedSessionId)
+                return session;
+
+            if (session.Id == withSessionId)
+                return session;
+
+            if (Log.IsDebugEnabled)
+            {
+                Log.Debug("ignoring cached sessionId '{0}' which is different to request '{1}'"
+                    .Fmt(session.Id, withSessionId));
+            }
+            return null;
         }
 
         public virtual IRequest TryGetCurrentRequest()
@@ -452,7 +467,10 @@ namespace ServiceStack
 
         public virtual object OnAfterExecute(IRequest req, object requestDto, object response)
         {
-            return req.Response.Dto = response;
+            if (req.Response.Dto == null)
+                req.Response.Dto = response;
+
+            return response;
         }
 
         public virtual MetadataTypesConfig GetTypesConfigForMetadata(IRequest req)
@@ -476,7 +494,7 @@ namespace ServiceStack
 
         public virtual bool ExportSoapType(Type type)
         {
-            return !type.IsGenericTypeDefinition() && 
+            return !type.IsGenericTypeDefinition() &&
                    !type.AllAttributes<ExcludeAttribute>()
                         .Any(attr => attr.Feature.HasFlag(Feature.Soap));
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
@@ -7,7 +8,7 @@ using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
 using ServiceStack.RabbitMq;
 using ServiceStack.Redis;
-using ServiceStack.Server.Tests.Properties;
+using ServiceStack.Server.Tests.Caching;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
@@ -179,7 +180,7 @@ namespace ServiceStack.Server.Tests.Messaging
                 var called = 0;
                 mqServer.RegisterHandler<HelloIntro>(m =>
                 {
-                    called++;
+                    Interlocked.Increment(ref called);
                     throw new ArgumentException("Name");
                 });
                 mqServer.Start();
@@ -401,7 +402,7 @@ namespace ServiceStack.Server.Tests.Messaging
                     RequestContext.UseThreadStatic = true;
                     host.Container.Register<IDisposableDependency>(c => new DisposableDependency(() =>
                     {
-                        disposeCount++;
+                        Interlocked.Increment(ref disposeCount);
                     }))
                         .ReusedWithin(ReuseScope.Request);
                     host.Container.Register(c => CreateMqServer(host));

@@ -25,13 +25,13 @@ namespace ServiceStack.Formats
         private const string ErrorPageNotFound = "Could not find Markdown page '{0}'";
 
         public static string DefaultTemplateName = "_Layout.shtml";
-        public static string DefaultTemplate = "/Views/Shared/_Layout.shtml";
+        public static string DefaultTemplate = "Views/Shared/_Layout.shtml";
         public static string DefaultPage = "default";
         public static string TemplatePlaceHolder = "<!--@Body-->";
         public static string WebHostUrlPlaceHolder = "~/";
         public static string MarkdownExt = "md";
         public static string TemplateExt = "shtml";
-        public static string SharedDir = "/Views/Shared";
+        public static string SharedDir = "Views/Shared";
         public static string[] PageExts = new[] { MarkdownExt, TemplateExt };
 
         private static MarkdownFormat instance;
@@ -68,7 +68,7 @@ namespace ServiceStack.Formats
 
         public IVirtualPathProvider VirtualPathProvider { get; set; }
 
-        public bool WatchForModifiedPages { get; set; }
+        public bool CheckLastModifiedForChanges { get; set; }
 
         readonly TemplateProvider templateProvider = new TemplateProvider(DefaultTemplateName);
 
@@ -92,8 +92,8 @@ namespace ServiceStack.Formats
             this.AppHost = appHost;
             appHost.ViewEngines.Add(this);
 
-            if (!WatchForModifiedPages)
-                WatchForModifiedPages = appHost.Config.DebugMode;
+            if (!CheckLastModifiedForChanges)
+                CheckLastModifiedForChanges = appHost.Config.DebugMode;
 
             foreach (var ns in appHost.Config.RazorNamespaces)
                 Evaluator.AddAssembly(ns);
@@ -119,7 +119,7 @@ namespace ServiceStack.Formats
 
                 markdownPage = FindByPathInfo(pathInfo);
 
-                if (WatchForModifiedPages)
+                if (CheckLastModifiedForChanges)
                     ReloadModifiedPageAndTemplates(markdownPage);
 
                 if (markdownPage == null)
@@ -176,7 +176,7 @@ namespace ServiceStack.Formats
             if ((markdownPage = GetViewPageByResponse(dto, httpReq)) == null)
                 return false;
 
-            if (WatchForModifiedPages)
+            if (CheckLastModifiedForChanges)
                 ReloadModifiedPageAndTemplates(markdownPage);
 
             return ProcessMarkdownPage(httpReq, markdownPage, dto, httpRes);
@@ -250,7 +250,7 @@ namespace ServiceStack.Formats
 
         public void ReloadModifiedPageAndTemplates(MarkdownPage markdownPage)
         {
-            if (markdownPage == null || !WatchForModifiedPages) return;
+            if (markdownPage == null || !CheckLastModifiedForChanges) return;
 
             ReloadIfNeeded(markdownPage);
 
@@ -274,7 +274,7 @@ namespace ServiceStack.Formats
 
         private MarkdownPage ReloadIfNeeded(MarkdownPage markdownPage)
         {
-            if (markdownPage == null || !WatchForModifiedPages) return markdownPage;
+            if (markdownPage == null || !CheckLastModifiedForChanges) return markdownPage;
             if (markdownPage.FilePath != null)
             {
                 var latestPage = GetLatestPage(markdownPage);
@@ -452,12 +452,23 @@ namespace ServiceStack.Formats
             }                
 
             if (!hasReloadableWebPages)
-                WatchForModifiedPages = false;
+                CheckLastModifiedForChanges = false;
         }
 
 		public void RegisterMarkdownPage(MarkdownPage markdownPage)
         {
             AddPage(markdownPage);
+        }
+
+        public MarkdownPage RefreshPage(string filePath)
+        {
+            var markdownPage = GetContentPage(SanitizePath(filePath));
+            if (markdownPage == null)
+                throw new ArgumentException("No MarkdownPage found at: " + filePath);
+
+            var latestPage = GetLatestPage(markdownPage);
+            markdownPage.Reload(GetPageContents(latestPage), latestPage.LastModified);
+            return markdownPage;
         }
 
         public void AddPage(MarkdownPage page)
@@ -500,9 +511,14 @@ namespace ServiceStack.Formats
                     ViewSharedPages.Add(page.Name, page);
                     break;
                 case MarkdownPageType.ContentPage:
-                    ContentPages.Add(page.FilePath.WithoutExtension().TrimStart(DirSeps), page);
+                    ContentPages.Add(SanitizePath(page.FilePath), page);
                     break;
             }
+        }
+
+        private static string SanitizePath(string filePath)
+        {
+            return filePath.WithoutExtension().TrimStart(DirSeps);
         }
 
         public MarkdownTemplate AddTemplate(string templatePath, string templateContents)

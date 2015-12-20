@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoQueryTypes.cs" />
     <Compile Include="CodeGenTestTypes.cs" />
     <Compile Include="CustomMethodRoutes.cs" />
     <Compile Include="Echoes.cs" />

@@ -328,6 +328,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
+                Assert.That(ex.IsAny400());
+                Assert.That(!ex.IsAny500());
                 Assert.That(ex.ErrorCode, Is.EqualTo("ArgumentException"));
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.BadRequest));
             }
@@ -349,6 +351,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebException webEx)
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
+                Assert.That(webEx.IsAny400());
+                Assert.That(!webEx.IsAny500());
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
                 Assert.That(body, Is.EqualTo(
                     "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\",\"errors\":[]}}"));
@@ -411,6 +415,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo(400));
+                Assert.That(ex.IsAny400());
                 Assert.That(ex.StatusDescription, Is.EqualTo(typeof(CustomException).Name));
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(CustomException).Name));
                 Assert.That(ex.ErrorMessage, Is.EqualTo("User Defined Error"));
@@ -430,6 +435,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Assert.That((int)errorResponse.StatusCode, Is.EqualTo(500));
+                Assert.That(webEx.IsAny500());
                 Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
 
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
@@ -456,6 +462,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Assert.That((int)errorResponse.StatusCode, Is.EqualTo(406));
+                Assert.That(webEx.IsAny400());
                 Assert.That(errorResponse.StatusDescription, Is.EqualTo("CustomDescription"));
             }
         }
@@ -472,6 +479,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Assert.That((int)errorResponse.StatusCode, Is.EqualTo(500));
+                Assert.That(webEx.IsAny500());
                 Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
 
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();

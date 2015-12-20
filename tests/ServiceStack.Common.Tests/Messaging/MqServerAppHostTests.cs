@@ -303,7 +303,6 @@ namespace ServiceStack.Common.Tests.Messaging
                     var errorMsg = mqClient.Get<ValidateTestMq>(QueueNames<ValidateTestMq>.Dlq, null);
                     mqClient.Ack(errorMsg);
 
-                    errorMsg.GetBody().PrintDump();
                     Assert.That(errorMsg.Error.ErrorCode, Is.EqualTo("PositiveIntegersOnly"));
 
                     request = new ValidateTestMq { Id = 10 };
@@ -330,7 +329,6 @@ namespace ServiceStack.Common.Tests.Messaging
                     var msg = mqClient.Get<ThrowGenericError>(QueueNames<ThrowGenericError>.Dlq, null);
                     mqClient.Ack(msg);
 
-                    msg.PrintDump();
                     Assert.That(msg.Error.ErrorCode, Is.EqualTo("ArgumentException"));
                 }
             }
@@ -355,7 +353,6 @@ namespace ServiceStack.Common.Tests.Messaging
                     var errorMsg = mqClient.Get<ValidateTestMqResponse>(requestMsg.ReplyTo, null);
                     mqClient.Ack(errorMsg);
 
-                    errorMsg.GetBody().PrintDump();
                     Assert.That(errorMsg.GetBody().ResponseStatus.ErrorCode, Is.EqualTo("PositiveIntegersOnly"));
 
                     request = new ValidateTestMq { Id = 10 };
@@ -390,7 +387,6 @@ namespace ServiceStack.Common.Tests.Messaging
                     var msg = mqClient.Get<ErrorResponse>(requestMsg.ReplyTo, null);
                     mqClient.Ack(msg);
 
-                    msg.PrintDump();
                     Assert.That(msg.GetBody().ResponseStatus.ErrorCode, Is.EqualTo("ArgumentException"));
                 }
             }

@@ -167,6 +167,7 @@ namespace ServiceStack.Auth
             {
                 var ctx = new AuthContext
                 {
+                    Request = authService.Request,
                     Service = authService,
                     AuthProvider = this,
                     Session = session,
@@ -293,7 +294,7 @@ namespace ServiceStack.Auth
             }
             else
             {
-                if (!userName.EqualsIgnoreCase(session.UserName))
+                if (!userName.EqualsIgnoreCase(session.UserAuthName))
                     return false;
             }
             return true;
@@ -413,6 +414,7 @@ namespace ServiceStack.Auth
 
     public class AuthContext
     {
+        public IRequest Request { get; set; }
         public IServiceBase Service { get; set; }
         public AuthProvider AuthProvider { get; set; }
         public IAuthSession Session { get; set; }
@@ -446,6 +448,17 @@ namespace ServiceStack.Auth
         public static string SanitizeOAuthUrl(this string url)
         {
             return (url ?? "").Replace("\\/", "/");
+        }
+
+        internal static bool PopulateFromRequestIfHasSessionId(this IRequest req, object requestDto)
+        {
+            var hasSession = requestDto as IHasSessionId;
+            if (hasSession != null && hasSession.SessionId != null)
+            {
+                req.SetSessionId(hasSession.SessionId);
+                return true;
+            }
+            return false;
         }
     }
 

@@ -17,6 +17,7 @@ namespace ServiceStack
         public Action<IndexOperationsControl> IndexPageFilter { get; set; }
         public Action<OperationControl> DetailPageFilter { get; set; }
 
+        public bool ShowResponseStatusInMetadataPages { get; set; }
 
         public MetadataFeature()
         {
@@ -82,8 +83,8 @@ namespace ServiceStack
                     return new Soap12MetadataHandler();
 
                 case "operations":
-                    return new CustomResponseHandler((httpReq, httpRes) => 
-                        HostContext.AppHost.HasAccessToMetadata(httpReq, httpRes) 
+                    return new CustomResponseHandler((httpReq, httpRes) =>
+                        HostContext.AppHost.HasAccessToMetadata(httpReq, httpRes)
                             ? HostContext.Metadata.GetOperationDtos()
                             : null, "Operations");
 

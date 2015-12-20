@@ -15,13 +15,14 @@ namespace ServiceStack
         {
             var pending = new Queue<string>();
             pending.Enqueue(rootDirPath);
-            string[] paths; 
+            string[] paths;
 
             while (pending.Count > 0)
             {
                 rootDirPath = pending.Dequeue();
                 paths = Directory.GetFiles(rootDirPath, fileSearchPattern);
-                foreach (var filePath in paths) {
+                foreach (var filePath in paths)
+                {
                     yield return filePath;
                 }
                 paths = Directory.GetDirectories(rootDirPath);
@@ -36,7 +37,7 @@ namespace ServiceStack
                     }
                 }
             }
-        }		 
+        }
 
     }
 

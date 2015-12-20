@@ -314,7 +314,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     }
                 };
 
-                var connectMsg = await taskConnect.WaitAsync();
+                var connectMsg = await taskConnect.WaitAsync(2000);
                 Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
 
                 await allJoinsReceived.Task;
@@ -549,13 +549,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     {
                         await client2.Connect();
 
-                        await Task.WhenAny(client1.Connect(), Task.Delay(1000));
+                        await Task.WhenAny(client1.Connect(), Task.Delay(2000));
 
                         client2.PostChat("msg2 from client2");
                     }
 
                     "Waiting for 30s...".Print();
-                    var msg2 = await msgTask.WaitAsync(2000);
+                    var msg2 = await msgTask.WaitAsync(3000);
 
                     var chatMsg2 = msg2.Json.FromJson<ChatMessage>();
 
@@ -1025,7 +1025,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     class Conf
     {
-        public const string AbsoluteBaseUri = "http://macbook:10000/";
+        public const string AbsoluteBaseUri = "http://127.0.0.1:10000/";
     }
 
     [TestFixture]

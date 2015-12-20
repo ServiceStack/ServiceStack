@@ -48,7 +48,7 @@ namespace ServiceStack
                 // clear details to allow credentials to be rechecked, 
                 // otherwise IsAuthorized will just return, bypassing the auth provider's Authenticate method
                 // fields cleared LoginMatchesSession
-                session.UserName = null;
+                session.UserAuthName = null;
                 session.Email = null;
             }
         }

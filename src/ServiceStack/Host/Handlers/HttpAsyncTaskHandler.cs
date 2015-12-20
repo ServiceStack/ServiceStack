@@ -99,7 +99,7 @@ namespace ServiceStack.Host.Handlers
         public virtual Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             var task = CreateProcessRequestTask(httpReq, httpRes, operationName);
-            task.Start();
+            task.Start(TaskScheduler.Default);
             return task;
         }
 
@@ -122,7 +122,7 @@ namespace ServiceStack.Host.Handlers
 
             RememberLastRequestInfo(operationName, context.Request.RawUrl);
 
-            if (String.IsNullOrEmpty(operationName)) return;
+            if (string.IsNullOrEmpty(operationName)) return;
 
             if (DefaultHandledRequest(context)) return;
 
@@ -144,12 +144,10 @@ namespace ServiceStack.Host.Handlers
             var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
 
             task.ContinueWith(ar =>
-                              cb(ar));
+                cb(ar));
 
             if (task.Status == TaskStatus.Created)
-            {
-                task.Start();
-            }
+                task.Start(TaskScheduler.Default);
 
             return task;
         }

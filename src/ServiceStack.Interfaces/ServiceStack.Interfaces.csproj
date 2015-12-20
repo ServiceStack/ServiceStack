@@ -76,6 +76,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DataAnnotations\BelongToAttribute.cs" />
+    <Compile Include="DataAnnotations\CompositeKeyAttribute.cs" />
     <Compile Include="DataAnnotations\ComputeAttribute.cs" />
     <Compile Include="DataAnnotations\CustomFieldAttribute.cs" />
     <Compile Include="DataAnnotations\DescriptionAttribute.cs" />
@@ -85,6 +86,8 @@
     <Compile Include="DataAnnotations\PreCreateTableAttribute.cs" />
     <Compile Include="DataAnnotations\PreDropTableAttribute.cs" />
     <Compile Include="DataAnnotations\RangeAttribute.cs" />
+    <Compile Include="DataAnnotations\HashKeyAttribute.cs" />
+    <Compile Include="DataAnnotations\RangeKeyAttribute.cs" />
     <Compile Include="DataAnnotations\ReferenceAttribute.cs" />
     <Compile Include="DataAnnotations\DecimalLengthAttribute.cs" />
     <Compile Include="DataAnnotations\ForeignKeyAttribute.cs" />
@@ -135,13 +138,15 @@
     </Compile>
     <Compile Include="Data\OptimisticConcurrencyException.cs" />
     <Compile Include="ICompressor.cs" />
+    <Compile Include="IO\IVirtualFiles.cs" />
     <Compile Include="IO\IEndpoint.cs" />
     <Compile Include="IQuery.cs" />
     <Compile Include="IReceiver.cs" />
+    <Compile Include="IRequiresSchema.cs" />
     <Compile Include="IRestGateway.cs" />
     <Compile Include="IEncryptedClient.cs" />
-    <Compile Include="Logging\DebugLogFactory.cs" />
-    <Compile Include="Logging\DebugLogger.cs" />
+    <Compile Include="ISequenceSource.cs" />
+    <Compile Include="IUrlFilter.cs" />
     <Compile Include="Logging\GenericLogFactory.cs" />
     <Compile Include="Logging\GenericLogger.cs" />
     <Compile Include="Logging\NullDebugLogger.cs" />

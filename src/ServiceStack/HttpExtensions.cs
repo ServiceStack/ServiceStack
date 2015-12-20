@@ -59,18 +59,19 @@ namespace ServiceStack
         public static void EndRequest(this IResponse httpRes, bool skipHeaders = false)
         {
             httpRes.EndHttpHandlerRequest(skipHeaders: skipHeaders);
-            HostContext.CompleteRequest(httpRes.Request);
         }
 
         /// <summary>
         /// End a HttpHandler Request
         /// </summary>
-        public static void EndHttpHandlerRequest(this HttpResponseBase httpRes, bool skipHeaders = false, bool skipClose = false, bool closeOutputStream = false, Action<HttpResponseBase> afterHeaders = null)
+        public static void EndHttpHandlerRequest(this HttpContextBase context, bool skipHeaders = false, bool skipClose = false, bool closeOutputStream = false, Action<HttpResponseBase> afterHeaders = null)
         {
+            var httpRes = context.Response;
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
             if (afterHeaders != null) afterHeaders(httpRes);
             if (closeOutputStream) httpRes.CloseOutputStream();
             else if (!skipClose) httpRes.Close();
+            HostContext.CompleteRequest(context.ToRequest());
 
             //skipHeaders used when Apache+mod_mono doesn't like:
             //response.OutputStream.Flush();
@@ -85,10 +86,16 @@ namespace ServiceStack
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
             if (afterHeaders != null) afterHeaders(httpRes);
             if (!skipClose && !httpRes.IsClosed) httpRes.Close();
+            HostContext.CompleteRequest(httpRes.Request);
+        }
 
-            //skipHeaders used when Apache+mod_mono doesn't like:
-            //response.OutputStream.Flush();
-            //response.Close();
+        /// <summary>
+        /// End an MQ Request
+        /// </summary>
+        public static void EndMqRequest(this IResponse httpRes, bool skipClose = false)
+        {
+            if (!skipClose && !httpRes.IsClosed) httpRes.Close();
+            HostContext.CompleteRequest(httpRes.Request);
         }
 
         /// <summary>

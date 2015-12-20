@@ -3,10 +3,12 @@
 
 namespace ServiceStack
 {
-    public interface IEncryptedClient : IReplyClient
+    public interface IEncryptedClient : IReplyClient, IHasSessionId, IHasVersion
     {
-        string PublicKeyPath { get; set; }
-        string PublicKeyXml { get; set; }
-        IServiceClient Client { get; }
+        string ServerPublicKeyXml { get; }
+        IJsonServiceClient Client { get; }
+
+        TResponse Send<TResponse>(string httpMethod, object request);
+        TResponse Send<TResponse>(string httpMethod, IReturn<TResponse> request);
     }
 }

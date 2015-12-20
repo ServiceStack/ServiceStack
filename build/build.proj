@@ -117,7 +117,7 @@
 
       <CommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Common.*"></CommonFiles>
 
-      <InterfacesFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/ServiceStack.Interfaces.*"></InterfacesFiles>
+      <InterfacesFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/Pcl/ServiceStack.Interfaces.*"></InterfacesFiles>
       <InterfacesFilesSL5 Include="$(SrcDir)/ServiceStack.Interfaces/bin/SL5/ServiceStack.Interfaces.*"></InterfacesFilesSL5>
 
       <MvcFiles Include="$(SrcDir)/ServiceStack.Mvc/bin/$(Configuration)/ServiceStack.Mvc.*"></MvcFiles>

@@ -37,7 +37,8 @@ namespace ServiceStack.Html
                 IVirtualFile templateFile;
                 while (templateDir != null && templateDir.GetFile(defaultTemplateName) == null)
                 {
-                    if (templatePathsFound.TryGetValue(templateDir.VirtualPath, out templateFile))
+                    var tmplPath = templateDir.VirtualPath;
+                    if (tmplPath != null && templatePathsFound.TryGetValue(tmplPath, out templateFile))
                         return templateFile.RealPath;
 
                     templateDir = templateDir.ParentDirectory;

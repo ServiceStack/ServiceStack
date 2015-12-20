@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -55,6 +54,10 @@ namespace ServiceStack
         static int DefaultHeartbeatMs = 10 * 1000;
         static int DefaultIdleTimeoutMs = 30 * 1000;
         private bool stopped = true;
+        public bool IsStopped
+        {
+            get { return stopped; }
+        }
 
         byte[] buffer;
         Encoding encoding = new UTF8Encoding();
@@ -160,28 +163,24 @@ namespace ServiceStack
             if (httpReq == null)
                 Start();
 
-            Contract.Assert(!connectTcs.Task.IsCompleted);
             return connectTcs.Task;
         }
 
         private TaskCompletionSource<ServerEventCommand> commandTcs;
         public Task<ServerEventCommand> WaitForNextCommand()
         {
-            Contract.Assert(!commandTcs.Task.IsCompleted);
             return commandTcs.Task;
         }
 
         private TaskCompletionSource<ServerEventHeartbeat> heartbeatTcs;
         public Task<ServerEventHeartbeat> WaitForNextHeartbeat()
         {
-            Contract.Assert(!heartbeatTcs.Task.IsCompleted);
             return heartbeatTcs.Task;
         }
 
         private TaskCompletionSource<ServerEventMessage> messageTcs;
         public Task<ServerEventMessage> WaitForNextMessage()
         {
-            Contract.Assert(!messageTcs.Task.IsCompleted);
             return messageTcs.Task;
         }
 
@@ -333,6 +332,8 @@ namespace ServiceStack
                 SleepBackOffMultiplier(errorsCount)
                     .ContinueWith(t =>
                     {
+                        if (stopped)
+                            return;
                         try
                         {
                             Start();

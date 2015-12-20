@@ -160,9 +160,26 @@ namespace ServiceStack
             return AssertAppHost().ApplyResponseFilters(httpReq, httpRes, response);
         }
 
+        /// <summary>
+        /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
+        /// </summary>
+        public static IVirtualFiles VirtualFiles
+        {
+            get { return AssertAppHost().VirtualFiles; }
+        }
+
+        /// <summary>
+        /// Cascading collection of virtual file sources, inc. Embedded Resources, File System, In Memory, S3
+        /// </summary>
+        public static IVirtualPathProvider VirtualFileSources
+        {
+            get { return AssertAppHost().VirtualFileSources; }
+        }
+
+        [Obsolete("Renamed to VirtualFileSources")]
         public static IVirtualPathProvider VirtualPathProvider
         {
-            get { return AssertAppHost().VirtualPathProvider; }
+            get { return AssertAppHost().VirtualFileSources; }
         }
 
         /// <summary>
@@ -237,7 +254,7 @@ namespace ServiceStack
                 "Request with '{0}' is not allowed".Fmt(requestAttrs));
         }
 
-        public static string ResolveLocalizedString(string text, IRequest request=null)
+        public static string ResolveLocalizedString(string text, IRequest request = null)
         {
             return AssertAppHost().ResolveLocalizedString(text, request);
         }
@@ -326,7 +343,7 @@ namespace ServiceStack
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a ASP.NET HttpContext.
         /// </summary>
-        public static T ResolveService<T>(HttpContextBase httpCtx=null) where T : class, IRequiresRequest
+        public static T ResolveService<T>(HttpContextBase httpCtx = null) where T : class, IRequiresRequest
         {
             var httpReq = httpCtx != null ? httpCtx.ToRequest() : GetCurrentRequest();
             return ResolveService(httpReq, AssertAppHost().Container.Resolve<T>());
@@ -353,7 +370,7 @@ namespace ServiceStack
             var hasRequest = service as IRequiresRequest;
             if (hasRequest != null)
             {
-                httpReq.SetPrivateRequest();
+                httpReq.SetInProcessRequest();
                 hasRequest.Request = httpReq;
             }
             return service;

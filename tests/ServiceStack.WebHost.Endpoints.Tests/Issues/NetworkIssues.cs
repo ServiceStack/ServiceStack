@@ -20,7 +20,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
 
             var response = await client.GetAsync(new Wait { ForMs = 50000 });
 
-            response.PrintDump();
         }
     }
 }

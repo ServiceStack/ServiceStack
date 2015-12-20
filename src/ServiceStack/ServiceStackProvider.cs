@@ -37,6 +37,7 @@ namespace ServiceStack
         T TryResolve<T>();
         T ResolveService<T>();
         object Execute(object requestDto);
+        TResponse Execute<TResponse>(IReturn<TResponse> requestDto);
         object Execute(IRequest request);
         IAuthSession GetSession(bool reload = false);
         TUserSession SessionAs<TUserSession>();
@@ -97,7 +98,7 @@ namespace ServiceStack
         public ServiceStackProvider(IHttpRequest request, IResolver resolver = null)
         {
             this.request = request;
-            this.resolver = resolver ?? Service.GlobalResolver ??  HostContext.AppHost;
+            this.resolver = resolver ?? Service.GlobalResolver ?? HostContext.AppHost;
         }
 
         private IResolver resolver;
@@ -142,26 +143,38 @@ namespace ServiceStack
 
         public object Execute(object requestDto)
         {
-            return HostContext.ServiceController.Execute(requestDto, Request);
+            var response = HostContext.ServiceController.Execute(requestDto, Request);
+            var ex = response as Exception;
+            if (ex != null)
+                throw ex;
+
+            return response;
+        }
+
+        public TResponse Execute<TResponse>(IReturn<TResponse> requestDto)
+        {
+            return (TResponse)Execute((object)requestDto);
         }
 
         public object Execute(IRequest request)
         {
-            return HostContext.ServiceController.Execute(request);
+            var response = HostContext.ServiceController.Execute(request);
+            var ex = response as Exception;
+            if (ex != null)
+                throw ex;
+
+            return response;
         }
 
         public object ForwardRequest()
         {
-            return HostContext.ServiceController.Execute(Request);
+            return Execute(Request);
         }
 
         private ICacheClient cache;
         public virtual ICacheClient Cache
         {
-            get
-            {
-                return cache ?? (cache = HostContext.AppHost.GetCacheClient());
-            }
+            get { return cache ?? (cache = HostContext.AppHost.GetCacheClient()); }
         }
 
         private IDbConnection db;

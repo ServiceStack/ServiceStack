@@ -133,7 +133,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
-                Assert.That(ex.Message, Is.EqualTo("Forbidden Test"));
+                Assert.That(ex.ErrorCode, Is.EqualTo("Forbidden"));
+                Assert.That(ex.ErrorMessage, Is.EqualTo("Forbidden Test"));
             }            
         }
 
@@ -314,7 +315,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public async Task<GetFactorialResponse> Any(ThrowErrorAwaitAsync request)
         {
-            throw new HttpError(System.Net.HttpStatusCode.Forbidden, request.Message ?? "Request is forbidden");
+            throw new HttpError(HttpStatusCode.Forbidden, HttpStatusCode.Forbidden.ToString(), request.Message ?? "Request is forbidden");
         }
 
         public async Task Any(VoidAsync request)

@@ -92,10 +92,10 @@ namespace ServiceStack.Common.Tests.OAuth
         {
             RegisterUser(email: "as@if.com");
 
-            var authRepo = (OrmLiteAuthRepository)appHost.Resolve<IUserAuthRepository>();
-            authRepo.MaxLoginAttempts = 3;
+            var feature = appHost.GetPlugin<AuthFeature>();
+            feature.MaxLoginAttempts = 3;
 
-            authRepo.MaxLoginAttempts.Value.Times(i =>
+            feature.MaxLoginAttempts.Value.Times(i =>
             {
                 appHost.ExecuteService(new Authenticate {
                     UserName = "as@if.com",

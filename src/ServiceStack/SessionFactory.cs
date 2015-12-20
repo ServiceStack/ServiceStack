@@ -34,7 +34,7 @@ namespace ServiceStack
                 }
                 set
                 {
-                    JsWriter.WriteDynamic(() => 
+                    JsWriter.WriteDynamic(() =>
                         cacheClient.Set(this.prefixNs + key, value));
                 }
             }

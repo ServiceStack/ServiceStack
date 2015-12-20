@@ -67,7 +67,6 @@ namespace ServiceStack.Server.Tests.Messaging
             "Elapsed time: {0}ms".Print(stopwatch.ElapsedMilliseconds);
 
             var managerStats = clientManager.GetStats();
-            managerStats.PrintDump();
         }
 
         public class Incr
@@ -239,7 +238,7 @@ namespace ServiceStack.Server.Tests.Messaging
             mqHost.RegisterHandler<Msg>(c =>
             {
                 var dto = c.GetBody();
-                received++;
+                Interlocked.Increment(ref received);
                 int count;
                 map.TryGetValue(dto.Host, out count);
                 map[dto.Host] = count + 1;
@@ -269,7 +268,6 @@ namespace ServiceStack.Server.Tests.Messaging
             lock (clientManager)
                 Monitor.Wait(clientManager);
 
-            map.PrintDump();
             "localclient inq: {0}, outq: {1}".Print(
                 localClient.GetListCount("mq:Msg.inq"),
                 localClient.GetListCount("mq:Msg.outq"));

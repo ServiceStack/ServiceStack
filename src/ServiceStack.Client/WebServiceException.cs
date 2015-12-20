@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Text;
 using ServiceStack.Text;
 
 namespace ServiceStack
@@ -151,6 +152,60 @@ namespace ServiceStack
                 return responseStatus.Errors ?? new List<ResponseError>();
 
             return new List<ResponseError>();
+        }
+
+        public bool IsAny400()
+        {
+            return StatusCode >= 400 && StatusCode < 500;
+        }
+
+        public bool IsAny500()
+        {
+            return StatusCode >= 500 && StatusCode < 600;
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.AppendFormat("{0} {1}\n", StatusCode, StatusDescription);
+            sb.AppendFormat("Code: {0}, Message: {1}\n", ErrorCode, ErrorMessage);
+
+            var status = ResponseStatus;
+            if (status != null)
+            {
+                if (!status.Errors.IsNullOrEmpty())
+                {
+                    sb.Append("Field Errors:\n");
+                    foreach (var error in status.Errors)
+                    {
+                        sb.AppendFormat("  [{0}] {1}:{2}\n", error.FieldName, error.ErrorCode, error.Message);
+
+                        if (error.Meta != null && error.Meta.Count > 0)
+                        {
+                            sb.Append("  Field Meta:\n");
+                            foreach (var entry in error.Meta)
+                            {
+                                sb.AppendFormat("    {0}:{1}\n", entry.Key, entry.Value);
+                            }
+                        }
+                    }
+                }
+
+                if (status.Meta != null && status.Meta.Count > 0)
+                {
+                    sb.Append("Meta:\n");
+                    foreach (var entry in status.Meta)
+                    {
+                        sb.AppendFormat("  {0}:{1}\n", entry.Key, entry.Value);
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(ServerStackTrace))
+                sb.AppendFormat("Server StackTrace:\n {0}\n", ServerStackTrace);
+
+
+            return sb.ToString();
         }
     }
 }

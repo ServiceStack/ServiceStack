@@ -48,6 +48,11 @@ namespace ServiceStack
             get { return ReadyAt != null; }
         }
 
+        public static bool IsReady()
+        {
+            return Instance != null && Instance.ReadyAt != null;
+        }
+
         protected ServiceStackHost(string serviceName, params Assembly[] assembliesWithServices)
         {
             this.StartedAt = DateTime.UtcNow;
@@ -106,8 +111,7 @@ namespace ServiceStack
                 typeof(PostmanService),
             };
 
-            // force deterministic initialization of static constructor
-            using (JsConfig.BeginScope()) {}
+            JsConfig.InitStatics();
         }
 
         public abstract void Configure(Container container);
@@ -147,11 +151,14 @@ namespace ServiceStack
 
             ConfigurePlugins();
 
-            if (VirtualPathProvider == null)
-            {
-                var pathProviders = GetVirtualPathProviders();
+            if (VirtualFiles == null)
+                VirtualFiles = GetFileSystemProvider();
 
-                VirtualPathProvider = pathProviders.Count > 1
+            if (VirtualFileSources == null)
+            {
+                var pathProviders = GetVirtualFileSources().Where(x => x != null).ToList();
+
+                VirtualFileSources = pathProviders.Count > 1
                     ? new MultiVirtualPathProvider(this, pathProviders.ToArray())
                     : pathProviders.First();
             }
@@ -186,7 +193,13 @@ namespace ServiceStack
             }
         }
 
+        [Obsolete("Renamed to GetVirtualFileSources")]
         public virtual List<IVirtualPathProvider> GetVirtualPathProviders()
+        {
+            return GetVirtualFileSources();
+        }
+
+        public virtual List<IVirtualPathProvider> GetVirtualFileSources()
         {
             var pathProviders = new List<IVirtualPathProvider> {
                 new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath)
@@ -199,6 +212,12 @@ namespace ServiceStack
                 .Map(x => new ResourceVirtualPathProvider(this, x)));
 
             return pathProviders;
+        }
+
+        public virtual IVirtualFiles GetFileSystemProvider()
+        {
+            var fs = GetVirtualFileSources().FirstOrDefault(x => x is FileSystemVirtualPathProvider);
+            return fs as IVirtualFiles;
         }
 
         public virtual ServiceStackHost Start(string urlBase)
@@ -306,7 +325,16 @@ namespace ServiceStack
 
         public List<IPlugin> Plugins { get; set; }
 
-        public IVirtualPathProvider VirtualPathProvider { get; set; }
+        public IVirtualFiles VirtualFiles { get; set; }
+
+        public IVirtualPathProvider VirtualFileSources { get; set; }
+
+        [Obsolete("Renamed to VirtualFileSources")]
+        public IVirtualPathProvider VirtualPathProvider
+        {
+            get { return VirtualFileSources; }
+            set { VirtualFileSources = value; }
+        }
 
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
@@ -595,17 +623,24 @@ namespace ServiceStack
 
         public virtual void OnEndRequest(IRequest request = null)
         {
-            var disposables = RequestContext.Instance.Items.Values;
-            foreach (var item in disposables)
+            try
             {
-                Release(item);
+                var disposables = RequestContext.Instance.Items.Values;
+                foreach (var item in disposables)
+                {
+                    Release(item);
+                }
+
+                RequestContext.Instance.EndRequest();
+
+                foreach (var fn in OnEndRequestCallbacks)
+                {
+                    fn(request);
+                }
             }
-
-            RequestContext.Instance.EndRequest();
-
-            foreach (var fn in OnEndRequestCallbacks)
+            catch (Exception ex)
             {
-                fn(request);
+                Log.Error("Error when Disposing Request Context", ex);
             }
         }
 
@@ -627,6 +662,16 @@ namespace ServiceStack
         public virtual T Resolve<T>()
         {
             return this.Container.Resolve<T>();
+        }
+
+        public T GetPlugin<T>() where T : class, IPlugin
+        {
+            return Plugins.FirstOrDefault(x => x is T) as T;
+        }
+
+        public bool HasPlugin<T>() where T : class, IPlugin
+        {
+            return Plugins.FirstOrDefault(x => x is T) != null;
         }
 
         public virtual IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)

@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace ServiceStack.Caching
 {
     public interface IGZipProvider
@@ -5,5 +7,7 @@ namespace ServiceStack.Caching
         byte[] GZip(string text);
 
         string GUnzip(byte[] gzBuffer);
+
+        Stream GZipStream(Stream outputStream);
     }
 }

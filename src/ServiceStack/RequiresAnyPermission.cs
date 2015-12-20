@@ -25,14 +25,22 @@ namespace ServiceStack
         }
 
         public RequiresAnyPermissionAttribute(params string[] permissions)
-            : this(ApplyTo.All, permissions) { }
+            : this(ApplyTo.All, permissions)
+        { }
 
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
+            if (HostContext.HasValidAuthSecret(req))
+                return;
+
             base.Execute(req, res, requestDto); //first check if session is authenticated
             if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
             var session = req.GetSession();
+
+            if (session != null && session.HasRole(RoleNames.Admin))
+                return;
+
             if (HasAnyPermissions(req, session)) return;
 
             if (DoHtmlRedirectIfConfigured(req, res)) return;
@@ -66,7 +74,7 @@ namespace ServiceStack
         {
             return this.RequiredPermissions
                 .Any(requiredPermission => session != null
-                    && session.UserAuthId != null 
+                    && session.UserAuthId != null
                     && session.HasPermission(requiredPermission));
         }
     }

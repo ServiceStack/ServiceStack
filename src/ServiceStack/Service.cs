@@ -4,6 +4,7 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
+using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
 using ServiceStack.Web;
@@ -107,6 +108,22 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Cascading collection of virtual file sources, inc. Embedded Resources, File System, In Memory, S3
+        /// </summary>
+        public IVirtualPathProvider VirtualFileSources
+        {
+            get { return HostContext.VirtualFileSources; }
+        }
+
+        /// <summary>
+        /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
+        /// </summary>
+        public IVirtualFiles VirtualFiles
+        {
+            get { return HostContext.VirtualFiles; }
+        }
+
+        /// <summary>
         /// Dynamic Session Bag
         /// </summary>
         private ISession session;
@@ -118,7 +135,7 @@ namespace ServiceStack
                     ?? SessionFactory.GetOrCreateSession(Request, Response));
             }
         }
-        
+
         public virtual IAuthSession GetSession(bool reload = false)
         {
             var req = this.Request;
@@ -162,7 +179,7 @@ namespace ServiceStack
 
             RequestContext.Instance.ReleaseDisposables();
 
-            Request.ReleaseIfPrivateRequest();
+            Request.ReleaseIfInProcessRequest();
         }
     }
 

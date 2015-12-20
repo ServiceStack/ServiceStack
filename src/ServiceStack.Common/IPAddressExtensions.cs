@@ -29,7 +29,7 @@ namespace ServiceStack
             }
             return new IPAddress(broadcastAddress);
         }
-        
+
         public static IPAddress GetNetworkAddress(this IPAddress address, IPAddress subnetMask)
         {
             var ipAdressBytes = address.GetAddressBytes();
@@ -38,7 +38,7 @@ namespace ServiceStack
             return new IPAddress(GetNetworkAddressBytes(ipAdressBytes, subnetMaskBytes));
         }
 
-        public static byte[] GetNetworkAddressBytes(byte[] ipAdressBytes, byte[] subnetMaskBytes) 
+        public static byte[] GetNetworkAddressBytes(byte[] ipAdressBytes, byte[] subnetMaskBytes)
         {
             if (ipAdressBytes.Length != subnetMaskBytes.Length)
                 throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
@@ -63,7 +63,7 @@ namespace ServiceStack
             return IsInSameIpv6Subnet(address1Bytes, address2Bytes);
         }
 
-        public static bool IsInSameIpv6Subnet(this byte[] address1Bytes, byte[] address2Bytes) 
+        public static bool IsInSameIpv6Subnet(this byte[] address1Bytes, byte[] address2Bytes)
         {
             if (address1Bytes.Length != address2Bytes.Length)
                 throw new ArgumentException("Lengths of IP addresses do not match.");
@@ -113,7 +113,7 @@ namespace ServiceStack
 
             try
             {
-#if !SL5 
+#if !SL5
                 foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
                 {
                     foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
@@ -129,7 +129,7 @@ namespace ServiceStack
             catch /*(NotImplementedException ex)*/
             {
                 //log.Warn("MONO does not support NetworkInterface.GetAllNetworkInterfaces(). Could not detect local ip subnets.", ex);
-            } 
+            }
             return map;
         }
 
@@ -143,7 +143,7 @@ namespace ServiceStack
 
             try
             {
-#if !SL5 
+#if !SL5
                 foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
                 {
                     foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
@@ -158,7 +158,7 @@ namespace ServiceStack
             {
                 //log.Warn("MONO does not support NetworkInterface.GetAllNetworkInterfaces(). Could not detect local ip subnets.", ex);
             }
-            
+
             return list;
         }
 

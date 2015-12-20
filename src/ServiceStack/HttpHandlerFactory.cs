@@ -271,7 +271,7 @@ namespace ServiceStack
 
         private static IHttpHandler ReturnDefaultHandler(IHttpRequest httpReq)
         {
-            var pathProvider = HostContext.VirtualPathProvider;
+            var pathProvider = HostContext.VirtualFileSources;
 
             var defaultDoc = pathProvider.GetFile(DefaultRootFileName ?? "");
             if (httpReq.GetPhysicalPath() != WebHostPhysicalPath

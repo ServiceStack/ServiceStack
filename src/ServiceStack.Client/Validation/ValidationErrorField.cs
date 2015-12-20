@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 using ServiceStack.Text;
 
 namespace ServiceStack.Validation
 {
-    public class ValidationErrorField
+    public class ValidationErrorField : IMeta
     {
         public ValidationErrorField(string errorCode, string fieldName) 
             : this(errorCode, fieldName, null) {}
@@ -35,5 +36,6 @@ namespace ServiceStack.Validation
         public string ErrorMessage { get; set; }
         public string FieldName { get; set; }
 		public object AttemptedValue { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
     }
 }

@@ -21,11 +21,12 @@ namespace ServiceStack
         {
             this.RequiredPermissions = permissions.ToList();
             this.ApplyTo = applyTo;
-            this.Priority = (int) RequestFilterPriority.RequiredPermission;
+            this.Priority = (int)RequestFilterPriority.RequiredPermission;
         }
 
         public RequiredPermissionAttribute(params string[] permissions)
-            : this(ApplyTo.All, permissions) {}
+            : this(ApplyTo.All, permissions)
+        { }
 
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
@@ -49,7 +50,7 @@ namespace ServiceStack
             res.EndRequest();
         }
 
-        public bool HasAllPermissions(IRequest req, IAuthSession session, IAuthRepository userAuthRepo=null)
+        public bool HasAllPermissions(IRequest req, IAuthSession session, IAuthRepository userAuthRepo = null)
         {
             if (HasAllPermissions(session)) return true;
 
@@ -73,7 +74,7 @@ namespace ServiceStack
 
         protected bool Equals(RequiredPermissionAttribute other)
         {
-            return base.Equals(other) 
+            return base.Equals(other)
                 && Equals(RequiredPermissions, other.RequiredPermissions);
         }
 
@@ -82,14 +83,14 @@ namespace ServiceStack
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((RequiredPermissionAttribute) obj);
+            return Equals((RequiredPermissionAttribute)obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return (base.GetHashCode()*397) ^ (RequiredPermissions != null ? RequiredPermissions.GetHashCode() : 0);
+                return (base.GetHashCode() * 397) ^ (RequiredPermissions != null ? RequiredPermissions.GetHashCode() : 0);
             }
         }
     }

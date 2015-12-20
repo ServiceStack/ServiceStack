@@ -143,8 +143,8 @@ namespace ServiceStack
             return (webEx != null
                     && webEx.Response != null
                     && ((HttpWebResponse)webEx.Response).StatusCode == HttpStatusCode.Unauthorized
-                    && !String.IsNullOrEmpty(userName)
-                    && !String.IsNullOrEmpty(password));
+                    && !string.IsNullOrEmpty(userName)
+                    && !string.IsNullOrEmpty(password));
         }
 
         internal static void AddBasicAuth(this WebRequest client, string userName, string password)
@@ -256,6 +256,10 @@ namespace ServiceStack
 
         public static Type GetErrorResponseDtoType<TResponse>(object request)
         {
+            var batchRequest = request as object[];
+            if (batchRequest != null && batchRequest.Length > 0)
+                request = batchRequest[0]; 
+
             var hasResponseStatus = typeof(TResponse) is IHasResponseStatus
                 || typeof(TResponse).GetPropertyInfo("ResponseStatus") != null;
 

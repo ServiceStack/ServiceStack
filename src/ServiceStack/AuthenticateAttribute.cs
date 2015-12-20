@@ -34,7 +34,8 @@ namespace ServiceStack
         }
 
         public AuthenticateAttribute()
-            : this(ApplyTo.All) { }
+            : this(ApplyTo.All)
+        { }
 
         public AuthenticateAttribute(string provider)
             : this(ApplyTo.All)
@@ -68,6 +69,8 @@ namespace ServiceStack
                 res.EndRequest();
                 return;
             }
+
+            req.PopulateFromRequestIfHasSessionId(requestDto);
 
             matchingOAuthConfigs.OfType<IAuthWithRequest>()
                 .Each(x => x.PreAuthenticate(req, res));
@@ -127,7 +130,7 @@ namespace ServiceStack
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((AuthenticateAttribute) obj);
+            return Equals((AuthenticateAttribute)obj);
         }
 
         public override int GetHashCode()
@@ -135,8 +138,8 @@ namespace ServiceStack
             unchecked
             {
                 var hashCode = base.GetHashCode();
-                hashCode = (hashCode*397) ^ (Provider != null ? Provider.GetHashCode() : 0);
-                hashCode = (hashCode*397) ^ (HtmlRedirect != null ? HtmlRedirect.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Provider != null ? Provider.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (HtmlRedirect != null ? HtmlRedirect.GetHashCode() : 0);
                 return hashCode;
             }
         }

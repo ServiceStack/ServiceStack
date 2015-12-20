@@ -46,6 +46,8 @@ namespace ServiceStack.Razor.Compilation
         
         public IVirtualPathProvider PathProvider { get; protected set; }
         public IVirtualFile File { get; protected set; }
+        public bool IncludeDebugInformation { get; set; }
+        public Action<CompilerParameters> CompileFilter { get; set; }
 
         public RazorPageHost(IVirtualPathProvider pathProvider,
                               IVirtualFile file,
@@ -175,7 +177,7 @@ namespace ServiceStack.Razor.Compilation
                 }
                 catch (Exception e)
                 {
-                    throw new HttpParseException(e.Message, e, this.File.VirtualPath, null, 1);
+                    throw new HttpParseException(e.Message, e, GetAbsoluteErrorPath(this.File.VirtualPath), null, 1);
                 }
 
                 //Throw the first parser message to generate the YSOD
@@ -183,11 +185,19 @@ namespace ServiceStack.Razor.Compilation
                 if  (results.ParserErrors.Count > 0)
                 {
                     var error = results.ParserErrors[0];
-                    throw new HttpParseException(error.Message, null, this.File.VirtualPath, null, error.Location.LineIndex + 1);
+                    throw new HttpParseException(error.Message, null, GetAbsoluteErrorPath(this.File.VirtualPath), null, error.Location.LineIndex + 1);
                 }
 
                 return results;
             }
+        }
+
+        public string GetAbsoluteErrorPath(string path)
+        {
+            //HttpParseException throws if given a virtual path
+            return string.IsNullOrEmpty(path)
+                ? path
+                : (path.StartsWith("/") || path.Contains(":")) ? path : ("/" + path);
         }
 
         public Dictionary<string, string> DebugSourceFiles = new Dictionary<string, string>();
@@ -206,8 +216,8 @@ namespace ServiceStack.Razor.Compilation
                 {
                     GenerateInMemory = true,
                     GenerateExecutable = false,
-                    IncludeDebugInformation = false,
-                    CompilerOptions = "/target:library /optimize",
+                    IncludeDebugInformation = IncludeDebugInformation,
+                    CompilerOptions = "/target:library" + (IncludeDebugInformation ? "" : " /optimize"),
                     TempFiles = { KeepFiles = true }
                 };
 
@@ -237,6 +247,9 @@ namespace ServiceStack.Razor.Compilation
                 .ToArray(); 
             
             @params.ReferencedAssemblies.AddRange(assemblyNames);
+
+            if (CompileFilter != null)
+                CompileFilter(@params);
 
             //Compile the code
             var results = _codeDomProvider.CompileAssemblyFromDom(@params, razorResults.GeneratedCode);

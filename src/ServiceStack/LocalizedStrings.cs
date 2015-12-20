@@ -8,11 +8,13 @@
         public static string RequestInfo = "requestinfo";
         public static string Debug = "debug";
         public static string Version = "version";
+        public static string VersionAbbr = "v";
         public static string Ignore = "ignore";
         public static string IgnorePlaceHolder = "_";
         public static string Bare = "bare";
         public static string SoapMessage = "SoapMessage";
         public static string Route = "__route";
+        public static string InvokeVerb = "__verb";
     }
 
     public static class LocalizedStrings
@@ -29,7 +31,7 @@
     {
         //Auth Errors
         public static string UnknownAuthProviderFmt = "No configuration was added for OAuth provider '{0}'";
-        
+
         public static string InvalidBasicAuthCredentials = "Invalid BasicAuth Credentials";
         public static string WindowsAuthFailed = "Windows Auth Failed";
         public static string NotAuthenticated = "Not Authenticated";
@@ -54,7 +56,7 @@
 
         //Validation
         public static string RequestAlreadyProcessedFmt = "Request '{0}' has already been processed";
-        
+
         //Hosts
         public static string OnlyAllowedInAspNetHosts = "Only ASP.NET Requests accessible via Singletons are supported";
         public static string HostDoesNotSupportSingletonRequest = "This AppHost does not support accessing the current Request via a Singleton";
@@ -62,5 +64,11 @@
         //Invalid State
         public static string ConstructorNotFoundForType = "Constructor not found for Type '{0}'";
         public static string ServiceNotFoundForType = "Service not found for Type '{0}'";
+    }
+
+    public static class HelpMessages
+    {
+        public static string NativeTypesDtoOptionsTip =
+            "To override a DTO option, remove \"{0}\" prefix before updating";
     }
 }

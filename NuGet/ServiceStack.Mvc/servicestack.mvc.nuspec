@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Mvc</id>
     <title>MVC Adapters for integrating with ServiceStack webservices</title>
     <version>4.0.0</version>
@@ -18,7 +18,7 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>MiniProfiler FluentValidation MVC Controller ServiceStack</tags>
     <language>en-US</language>
-    <copyright>Copyright 2014 Service Stack</copyright>
+    <copyright>Copyright 2015 Service Stack</copyright>
     <dependencies>
       <dependency id="ServiceStack" version="4.0" />
     </dependencies>

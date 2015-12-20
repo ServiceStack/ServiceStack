@@ -48,6 +48,13 @@
         }
         return map;
     };
+    $.ss.bindAll = function(o) {
+        for (var k in o) {
+            if (typeof o[k] == 'function')
+                o[k] = o[k].bind(o);
+        }
+        return o;
+    };
     $.ss.createUrl = function(route, args) {
         if (!args) args = {};
         var argKeys = {};
@@ -96,6 +103,18 @@
         });
         return to;
     }
+
+    $.ss.parseResponseStatus = function(json, defaultMsg) {
+        try {
+            var err = JSON.parse(json);
+            return sanitize(err.ResponseStatus || err.responseStatus);
+        } catch (e) {
+            return {
+                message: defaultMsg,
+                __error: { error: e, json: json }
+            };
+        }
+    };
 
     $.fn.setFieldError = function(name, msg) {
         $(this).applyErrors({
@@ -190,65 +209,75 @@
     
     $.fn.bindForm = function (orig) {
         return this.each(function () {
-            orig = orig || {};
-            if (orig.validation) {
-                $.extend($.ss.validation, orig.validation);
-            }
-            
             var f = $(this);
             f.submit(function (e) {
                 e.preventDefault();
-                f.clearErrors();
-                try {
-                    if (orig.validate && orig.validate.call(f) === false)
-                        return false;
-                } catch (e) { return false; }
-                f.addClass("loading");
-                var $disable = $(orig.onSubmitDisable || $.ss.onSubmitDisable, f);
-                $disable.attr("disabled", "disabled");
-                var opt = $.extend({}, orig, {
-                    type: f.attr('method') || "POST",
-                    url: f.attr('action'),
-                    data: f.serialize(),
-                    accept: "application/json",
-                    error: function (jq, jqStatus, statusText) {
-                        var err, errMsg = "The request failed with " + statusText;
-                        try {
-                            err = JSON.parse(jq.responseText);
-                        } catch (e) { }
-                        if (!err) {
-                            f.addClass("has-errors");
-                            f.find(".error-summary").html(errMsg);
-                        } else {
-                            f.applyErrors(err.ResponseStatus || err.responseStatus);
-                        }
-                        if (orig.error) {
-                            orig.error.apply(this, arguments);
-                        }
-                    },
-                    complete: function (jq) {
-                        f.removeClass("loading");
-                        $disable.removeAttr("disabled");
-                        if (orig.complete) {
-                            orig.complete.apply(this, arguments);
-                        }
-                        var loc = jq.getResponseHeader("X-Location");
-                        if (loc) {
-                            location.href = loc;
-                        }
-                        var evt = jq.getResponseHeader("X-Trigger");
-                        if (evt) {
-                            var pos = attr.indexOf(':');
-                            var cmd = pos >= 0 ? evt.substring(0, pos) : evt;
-                            var data = pos >= 0 ? evt.substring(pos + 1) : null;
-                            f.trigger(cmd, data ? [data] : []);
-                        }
-                    },
-                    dataType: "json",
-                });
-                $.ajax(opt);
-                return false;
+                return $(f).ajaxSubmit(orig);
             });
+        });
+    };
+
+    $.fn.ajaxSubmit = function (orig) {
+        orig = orig || {};
+        if (orig.validation) {
+            $.extend($.ss.validation, orig.validation);
+        }
+
+        return this.each(function () {
+            var f = $(this);
+            f.clearErrors();
+            try {
+                if (orig.validate && orig.validate.call(f) === false)
+                    return false;
+            } catch (e) {
+                return false;
+            }
+            f.addClass("loading");
+            var $disable = $(orig.onSubmitDisable || $.ss.onSubmitDisable, f);
+            $disable.attr("disabled", "disabled");
+            var opt = $.extend({}, orig, {
+                type: f.attr('method') || "POST",
+                url: f.attr('action'),
+                data: f.serialize(),
+                accept: "application/json",
+                error: function (jq, jqStatus, statusText) {
+                    var err, errMsg = "The request failed with " + statusText;
+                    try {
+                        err = JSON.parse(jq.responseText);
+                    } catch (e) {
+                    }
+                    if (!err) {
+                        f.addClass("has-errors");
+                        f.find(".error-summary").html(errMsg);
+                    } else {
+                        f.applyErrors(err.ResponseStatus || err.responseStatus);
+                    }
+                    if (orig.error) {
+                        orig.error.apply(this, arguments);
+                    }
+                },
+                complete: function (jq) {
+                    f.removeClass("loading");
+                    $disable.removeAttr("disabled");
+                    if (orig.complete) {
+                        orig.complete.apply(this, arguments);
+                    }
+                    var loc = jq.getResponseHeader("X-Location");
+                    if (loc) {
+                        location.href = loc;
+                    }
+                    var evt = jq.getResponseHeader("X-Trigger");
+                    if (evt) {
+                        var pos = attr.indexOf(':');
+                        var cmd = pos >= 0 ? evt.substring(0, pos) : evt;
+                        var data = pos >= 0 ? evt.substring(pos + 1) : null;
+                        f.trigger(cmd, data ? [data] : []);
+                    }
+                },
+                dataType: "json",
+            });
+            $.ajax(opt);
+            return false;
         });
     };
 
@@ -330,6 +359,15 @@
         hold.close();
         return $.ss.eventSource = es;
     };
+    $.ss.invokeReceiver = function (r, cmd, el, msg, e, name) {
+        if (r) {
+            if (typeof (r[cmd]) == "function") {
+                r[cmd].call(el || r[cmd], msg, e);
+            } else {
+                r[cmd] = msg;
+            }
+        }
+    };
     $.fn.handleServerEvents = function (opt) {
         $.ss.eventSource = this[0];
         opt = opt || {};
@@ -407,13 +445,7 @@
             }
             else {
                 var r = opt.receivers && opt.receivers[op] || $.ss.eventReceivers[op];
-                if (r) {
-                    if (typeof (r[cmd]) == "function") {
-                        r[cmd].call(el || r[cmd], msg, e);
-                    } else {
-                        r[cmd] = msg;
-                    }
-                }
+                $.ss.invokeReceiver(r, cmd, el, msg, e, op);
             }
 
             if (opt.success) {

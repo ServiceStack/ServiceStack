@@ -25,6 +25,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\src\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <TargetFrameworkProfile />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -72,9 +73,9 @@
     <Reference Include="Mono.Data.Sqlite">
       <HintPath>..\..\lib\tests\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\src\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\..\src\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -230,7 +231,7 @@
     <Compile Include="Services\CustomFormDataService.cs" />
     <Compile Include="Services\GeoInfoService.cs" />
     <Compile Include="Services\ProfilerService.cs" />
-    <Compile Include="Services\RouteInfoService.cs" />
+    <Compile Include="Services\RouteTokenInfoService.cs" />
     <Compile Include="Services\UserAuths.cs" />
     <Compile Include="Tests\AppHostBaseTests.cs" />
     <Compile Include="Tests\CachedServiceTests.cs" />
@@ -270,6 +271,7 @@
     <Compile Include="Tests\RestPathResolutionUnitTests.cs" />
     <Compile Include="Tests\RestsTestBase.cs" />
     <Compile Include="Tests\RestWebServiceTests.cs" />
+    <Compile Include="Tests\RouteTests.cs" />
     <Compile Include="Tests\SessionTests.cs" />
     <Compile Include="Tests\SoapTests.cs" />
     <Compile Include="Tests\UniqueRequestTests.cs" />

@@ -17,15 +17,12 @@ namespace ServiceStack.Common.Tests
             var env = new EnvironmentVariableSettings();
             var path = env.Get("PATH");
             Assert.That(path, Is.Not.Null);
-            path.Print();
 
             var unknown = env.Get("UNKNOWN");
             Assert.That(unknown, Is.Null);
 
             var envVars = env.GetAllKeys();
             Assert.That(envVars.Count, Is.GreaterThan(0));
-
-            envVars.PrintDump();
         }
     }
 
@@ -108,15 +105,11 @@ namespace ServiceStack.Common.Tests
         public void Can_preload_AppSettings()
         {
             GetAppSettings();
-            using (var db = settings.DbFactory.Open())
-            {
-                var allSettings = db.Dictionary<string,string>(
-                    db.From<ConfigSetting>().Select(x => new { x.Id, x.Value}));
 
-                var cachedSettings = new DictionarySettings(allSettings);
+            var allSettings = settings.GetAll();
+            var cachedSettings = new DictionarySettings(allSettings);
 
-                Assert.That(cachedSettings.Get("RealKey"), Is.EqualTo("This is a real value"));
-            }
+            Assert.That(cachedSettings.Get("RealKey"), Is.EqualTo("This is a real value"));
         }
 
         [Test]

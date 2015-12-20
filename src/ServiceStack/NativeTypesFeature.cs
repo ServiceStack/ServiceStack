@@ -10,6 +10,8 @@ namespace ServiceStack
     {
         public MetadataTypesConfig MetadataTypesConfig { get; set; }
 
+        public static bool DisableTokenVerification { get; set; }
+
         public NativeTypesFeature()
         {
             MetadataTypesConfig = new MetadataTypesConfig
@@ -32,12 +34,20 @@ namespace ServiceStack
                     typeof(AutoQueryViewerAttribute),
                     typeof(AutoQueryViewerFieldAttribute),
                 },
+                ExportTypes = new HashSet<Type>
+                {
+                    typeof(IGet),                    
+                    typeof(IPost),                    
+                    typeof(IPut),                    
+                    typeof(IDelete),                    
+                    typeof(IPatch),
+                },
                 IgnoreTypes = new HashSet<Type>
                 {
                 },
                 IgnoreTypesInNamespaces = new List<string>
                 {
-                    "ServiceStack",    
+                    "ServiceStack",
                     "ServiceStack.Auth",
                     "ServiceStack.Caching",
                     "ServiceStack.Configuration",
@@ -49,10 +59,10 @@ namespace ServiceStack
                     "ServiceStack.Redis",
                     "ServiceStack.Web",
                     "ServiceStack.Admin",
-                    "ServiceStack.NativeTypes",    
-                    "ServiceStack.Api.Swagger",    
+                    "ServiceStack.NativeTypes",
+                    "ServiceStack.Api.Swagger",
                 },
-                DefaultNamespaces = new List<string> 
+                DefaultNamespaces = new List<string>
                 {
                     "System",
                     "System.Collections",

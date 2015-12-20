@@ -289,23 +289,23 @@ namespace ServiceStack.ServiceHost.Tests
                         "/content/wildcard/slug/path/literal",
                         "*/content",
                         new SlugRequest { Slug = "wildcard/slug/path" },
-                        7901);
+                        97901);
 
             AssertMatch("/content/{Slug*}/version/{Version}",
                         "/content/wildcard/slug/path/version/1",
                         "*/content",
                         new SlugRequest { Slug = "wildcard/slug/path", Version = 1 },
-                        7801);
+                        97801);
 
             AssertMatch("/content/{Slug*}/with/{Options*}",
                         "/content/wildcard/slug/path/with/optionA/optionB",
                         "*/content",
                         new SlugRequest { Slug = "wildcard/slug/path", Options = "optionA/optionB" },
-                        5801);
+                        95801);
 
-            AssertMatch("/{Slug*}/content", "/content", "*/content", new SlugRequest(), 10901);
+            AssertMatch("/{Slug*}/content", "/content", "*/content", new SlugRequest(), 100901);
 
-            AssertMatch("/content/{Slug*}/literal", "/content/literal", "*/content", new SlugRequest(), 10901);
+            AssertMatch("/content/{Slug*}/literal", "/content/literal", "*/content", new SlugRequest(), 100901);
 
             AssertNoMatch("/content/{Slug*}/literal", "/content/wildcard/slug/path");
 

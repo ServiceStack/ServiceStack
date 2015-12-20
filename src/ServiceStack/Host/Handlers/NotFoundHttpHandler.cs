@@ -123,7 +123,7 @@ namespace ServiceStack.Host.Handlers
 
             response.ContentType = "text/plain";
             response.StatusCode = 404;
-            response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(sb.ToString()));
+            context.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(sb.ToString()));
         }
 
         public override bool IsReusable

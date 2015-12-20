@@ -11,7 +11,7 @@ namespace ServiceStack
         public HttpStatusCode? StatusCode { get; set; }
         public string Description { get; set; }
 
-        public SetStatusAttribute() {}
+        public SetStatusAttribute() { }
 
         public SetStatusAttribute(int status, string description)
         {
@@ -20,7 +20,8 @@ namespace ServiceStack
         }
 
         public SetStatusAttribute(HttpStatusCode statusCode, string description)
-        : this((int)statusCode, description) {}
+        : this((int)statusCode, description)
+        { }
 
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {

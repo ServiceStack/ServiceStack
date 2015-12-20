@@ -63,7 +63,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             var formData = NewMovie.ToStringDictionary();
 
             var response = ExecutePath(HttpMethods.Post, "/movies", null, formData, null);
-            response.PrintDump();
             using (var db = DbFactory.Open())
             {
                 var lastInsertId = db.LastInsertId();
@@ -77,7 +76,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         public void Can_create_new_Movie_from_dto()
         {
             var response = ExecutePath(HttpMethods.Post, "/movies", null, null, NewMovie);
-            response.PrintDump();
             using (var db = DbFactory.Open())
             {
                 var lastInsertId = db.LastInsertId();
@@ -91,7 +89,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         public void Can_POST_to_resetmovies()
         {
             var response = ExecutePath(HttpMethods.Post, "/reset-movies");
-            response.PrintDump();
             using (var db = DbFactory.Open())
             {
                 var movies = db.Select<Movie>();
@@ -105,7 +102,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             try
             {
                 var response = (ResetMoviesResponse)ExecutePath(HttpMethods.Get, "/reset-movies");
-                response.PrintDump();
                 Assert.Fail("Should throw HTTP errors");
             }
             catch (WebServiceException webEx)

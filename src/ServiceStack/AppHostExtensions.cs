@@ -1,54 +1,56 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Funq;
+using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
-	public static class AppHostExtensions
-	{
-		private static ILog log = LogManager.GetLogger(typeof(AppHostExtensions));
+    public static class AppHostExtensions
+    {
+        private static ILog log = LogManager.GetLogger(typeof(AppHostExtensions));
 
-		public static void RegisterService<TService>(this IAppHost appHost, params string[] atRestPaths)
-		{
-			appHost.RegisterService(typeof(TService), atRestPaths);
-		}
+        public static void RegisterService<TService>(this IAppHost appHost, params string[] atRestPaths)
+        {
+            appHost.RegisterService(typeof(TService), atRestPaths);
+        }
 
-		public static void RegisterRequestBinder<TRequest>(this IAppHost appHost, Func<IRequest, object> binder)
-		{
-			appHost.RequestBinders[typeof(TRequest)] = binder;
-		}
+        public static void RegisterRequestBinder<TRequest>(this IAppHost appHost, Func<IRequest, object> binder)
+        {
+            appHost.RequestBinders[typeof(TRequest)] = binder;
+        }
 
-		public static void AddPluginsFromAssembly(this IAppHost appHost, params Assembly[] assembliesWithPlugins)
-		{
-		    var ssHost = (ServiceStackHost)appHost;
-			foreach (Assembly assembly in assembliesWithPlugins)
-			{
-				var pluginTypes =
-					from t in assembly.GetExportedTypes()
-					where t.GetInterfaces().Any(x => x == typeof(IPlugin))
-					select t;
+        public static void AddPluginsFromAssembly(this IAppHost appHost, params Assembly[] assembliesWithPlugins)
+        {
+            var ssHost = (ServiceStackHost)appHost;
+            foreach (Assembly assembly in assembliesWithPlugins)
+            {
+                var pluginTypes =
+                    from t in assembly.GetExportedTypes()
+                    where t.GetInterfaces().Any(x => x == typeof(IPlugin))
+                    select t;
 
-				foreach (var pluginType in pluginTypes)
-				{
-					try
-					{
+                foreach (var pluginType in pluginTypes)
+                {
+                    try
+                    {
                         var plugin = pluginType.CreateInstance() as IPlugin;
-						if (plugin != null)
-						{
+                        if (plugin != null)
+                        {
                             ssHost.LoadPlugin(plugin);
-						}
-					}
-					catch (Exception ex)
-					{
-						log.Error("Error adding new Plugin " + pluginType.GetOperationName(), ex);
-					}
-				}
-			}
-		}
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error("Error adding new Plugin " + pluginType.GetOperationName(), ex);
+                    }
+                }
+            }
+        }
 
         public static T GetPlugin<T>(this IAppHost appHost) where T : class, IPlugin
         {
@@ -101,6 +103,13 @@ namespace ServiceStack
         {
             return (HostContext.AppHost.ApplyResponseConverters(httpReq, ex) as Exception) ?? ex;
         }
-	}
+
+        public static IAppHost Start(this IAppHost appHost, IEnumerable<string> urlBases)
+        {
+            var listener = (HttpListenerBase)appHost;
+            listener.Start(urlBases);
+            return appHost;
+        }
+    }
 
 }

@@ -71,7 +71,7 @@ namespace ServiceStack.NativeTypes.VbNet
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
 
-            metadata.RemoveIgnoredTypes(Config);
+            metadata.RemoveIgnoredTypesForNet(Config);
 
             if (Config.GlobalNamespace == null)
             {
@@ -89,7 +89,8 @@ namespace ServiceStack.NativeTypes.VbNet
             var sb = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("' Options:");
             sb.AppendLine("'Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("'Version: {0}".Fmt(metadata.Version));
+            sb.AppendLine("'Version: {0}".Fmt(Env.ServiceStackVersion));
+            sb.AppendLine("'Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("''")));
             sb.AppendLine("'BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine("'");
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
@@ -110,7 +111,8 @@ namespace ServiceStack.NativeTypes.VbNet
             //sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), Config.DefaultNamespaces.ToArray().Join(", ")));
             sb.AppendLine();
 
-            namespaces.Each(x => sb.AppendLine("Imports {0}".Fmt(x)));
+            namespaces.Where(x => !string.IsNullOrEmpty(x))
+                .Each(x => sb.AppendLine("Imports {0}".Fmt(x)));
             if (Config.AddGeneratedCodeAttributes)
                 sb.AppendLine("Imports System.CodeDom.Compiler");
 
@@ -290,6 +292,8 @@ namespace ServiceStack.NativeTypes.VbNet
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
                         implements.Add(implStr);
+                    if (!type.Implements.IsEmpty())
+                        type.Implements.Each(x => implements.Add(Type(x)));
                 }
 
                 var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
@@ -657,7 +661,7 @@ namespace ServiceStack.NativeTypes.VbNet
         public static string SafeToken(this string token)
         {
             var t = token.Replace("Of ", ""); // remove Of from token so [space] character will work 
-            if (t.ContainsAny("\"", " ", "-", "+", "\\", "*", "=", "!"))
+            if (t.ContainsAny("\"", "-", "+", "\\", "*", "=", "!"))
                 throw new InvalidDataException("MetaData is potentially malicious. Expected token, Received: {0}".Fmt(token));
 
             return token;

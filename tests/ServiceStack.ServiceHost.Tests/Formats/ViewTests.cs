@@ -215,6 +215,10 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             public void SetCookie(Cookie cookie)
             {                
             }
+
+            public void ClearCookies()
+            {
+            }
         }
 
         [Test]

@@ -38,14 +38,14 @@ namespace ServiceStack
         {
 
         }
-        
+
         private void OnPostReleaseRequestState(object source, EventArgs args)
         {
-          //System.Web.Security.FormsAuthenticationModule  //swap error code to 402 ...then put it back on endrequest?
+            //System.Web.Security.FormsAuthenticationModule  //swap error code to 402 ...then put it back on endrequest?
             var context = (HttpApplication)source;
             if (context.Response.StatusCode == 401 && context.Request.Url.PathAndQuery.StartsWith(PathToSupress))
                 context.Response.StatusCode = 402;                              //.net 4.0 solution.
-                //context.Response.SuppressFormsAuthenticationRedirect = true;  //.net 4.5 solution.
+                                                                                //context.Response.SuppressFormsAuthenticationRedirect = true;  //.net 4.5 solution.
         }
     }
 }

@@ -1,0 +1,43 @@
+{
+    "version": "4.0.0-*",
+
+    "frameworks": {
+        ".NETPortable,Version=v4.5,Profile=Profile7": {
+            "compilationOptions": {
+                "define": [ "PCL" ]
+            },
+            "frameworkAssemblies": {
+                "System": "",
+                "System.Collections": "",
+                "System.Collections.Concurrent": "",
+                "System.Globalization": "",
+                "System.IO": "",
+                "System.Linq": "",
+                "System.Linq.Expressions": "",
+                "System.Reflection": "",
+                "System.Reflection.Extensions": "",
+                "System.Runtime": "",
+                "System.Runtime.Extensions": "",
+                "System.Runtime.Serialization.Primitives": "",
+                "System.Text.Encoding": "",
+                "System.Text.Encoding.Extensions": "",
+                "System.Text.RegularExpressions": "",
+                "System.Threading": "",
+                "System.Threading.Tasks": "",
+                "System.Net.Requests": "",
+                "System.Net.Http": "",
+                "System.Net.Primitives": ""
+            },
+            "dependencies": {
+                "ServiceStack.Interfaces": "1.0.0-*"
+            }
+        }
+    },
+    "configurations": {
+        "PCL": { }
+    },
+    "dependencies": {
+        "ServiceStack.Text": "4.0.0-*",
+        "ServiceStack.Interfaces": "4.0.0-*"
+    }
+}

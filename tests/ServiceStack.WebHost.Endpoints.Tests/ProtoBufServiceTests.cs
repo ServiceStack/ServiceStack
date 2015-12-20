@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Common.Tests;
+using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Text;
@@ -10,6 +12,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    [Route("/protobufemail")]
 	[DataContract]
 	public class ProtoBufEmail
 	{
@@ -87,7 +90,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			appHost = new ExampleAppHostHttpListener();
 			appHost.Plugins.Add(new ProtoBufFormat());
-			appHost.Init();
+            appHost.Init();
 			appHost.Start(ListeningOn);
 		}
 
@@ -103,32 +106,64 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			appHost.Dispose();
 		}
 
-		[Test]
+        private static ProtoBufEmail CreateProtoBufEmail()
+        {
+            var request = new ProtoBufEmail
+            {
+                ToAddress = "to@email.com",
+                FromAddress = "from@email.com",
+                Subject = "Subject",
+                Body = "Body",
+                AttachmentData = Encoding.UTF8.GetBytes("AttachmentData"),
+            };
+            return request;
+        }
+
+        [Test]
 		public void Can_Send_ProtoBuf_request()
 		{
-			var client = new ProtoBufServiceClient(ListeningOn);
+            var client = new ProtoBufServiceClient(ListeningOn)
+            {
+                RequestFilter = req =>
+                    Assert.That(req.Accept, Is.EqualTo(MimeTypes.ProtoBuf))
+            };
 
-			var request = new ProtoBufEmail {
-				ToAddress = "to@email.com",
-				FromAddress = "from@email.com",
-				Subject = "Subject",
-				Body = "Body",
-				AttachmentData = Encoding.UTF8.GetBytes("AttachmentData"),
-			};
+            var request = CreateProtoBufEmail();
+            var response = client.Send<ProtoBufEmail>(request);
 
-			try
-			{
-				var response = client.Send<ProtoBufEmail>(request);
+            response.PrintDump();
+            Assert.That(response.Equals(request));
+        }
 
-				Console.WriteLine(response.Dump());
+        [Test]
+        public async Task Can_Send_ProtoBuf_request_Async()
+        {
+	        var client = new ProtoBufServiceClient(ListeningOn) {
+	            RequestFilter = req =>
+	                Assert.That(req.Accept, Is.EqualTo(MimeTypes.ProtoBuf))
+	        };
 
-				Assert.That(response.Equals(request));
-			}
-			catch (WebServiceException webEx)
-			{
-				Console.WriteLine(webEx.ResponseDto.Dump());
-			}
-		}
+	        var request = CreateProtoBufEmail();
+            var response = await client.SendAsync<ProtoBufEmail>(request);
 
-	}
+            response.PrintDump();
+            Assert.That(response.Equals(request));
+        }
+
+        [Test]
+        public void Does_return_ProtoBuf_when_using_ProtoBuf_Content_Type_and_Wildcard()
+        {
+            var bytes = ListeningOn.CombineWith("protobufemail")
+                .PostBytesToUrl(accept: "{0}, */*".Fmt(MimeTypes.ProtoBuf),
+                    contentType:MimeTypes.ProtoBuf,
+                    requestBody: CreateProtoBufEmail().ToProtoBuf(),
+                    responseFilter: res => Assert.That(res.ContentType, Is.EqualTo(MimeTypes.ProtoBuf)));
+
+            Assert.That(bytes.Length, Is.GreaterThan(0));
+
+            bytes = ListeningOn.CombineWith("protobufemail")
+                .GetBytesFromUrl(accept: "{0}, */*".Fmt(MimeTypes.ProtoBuf),
+                    responseFilter: res => Assert.That(res.ContentType, Is.EqualTo(MimeTypes.ProtoBuf)));
+        }
+    }
 }

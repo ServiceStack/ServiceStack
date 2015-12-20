@@ -13,7 +13,7 @@ namespace ServiceStack
         public const string SessionOptionsKey = "ss-opt";
         public const string XUserAuthId = HttpHeaders.XUserAuthId;
         public const string RequestItemsSessionKey = "__session";
-        
+
         public static TimeSpan DefaultSessionExpiry = TimeSpan.FromDays(7 * 2); //2 weeks
         public static TimeSpan DefaultPermanentSessionExpiry = TimeSpan.FromDays(7 * 4); //4 weeks
 
@@ -35,6 +35,8 @@ namespace ServiceStack
 
         public static void AddSessionIdToRequestFilter(IRequest req, IResponse res, object requestDto)
         {
+            if (req.PopulateFromRequestIfHasSessionId(requestDto)) return;
+
             if (req.GetTemporarySessionId() == null)
             {
                 res.CreateTemporarySessionId(req);
@@ -77,7 +79,7 @@ namespace ServiceStack
             {
                 var session = (cache ?? httpReq.GetCacheClient()).Get<T>(sessionKey);
                 if (!Equals(session, default(T)))
-                    return session;
+                    return (T)HostContext.AppHost.OnSessionFilter((IAuthSession)session, sessionId);
             }
 
             return (T)CreateNewSession(httpReq, sessionId);

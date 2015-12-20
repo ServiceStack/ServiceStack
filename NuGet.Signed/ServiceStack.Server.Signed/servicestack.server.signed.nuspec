@@ -8,15 +8,18 @@
     <owners>Service Stack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
-      Integration libraries and adapters with other major ServiceStack server components.
+        Integration libraries and adapters with other major ServiceStack server components.
+        Includes high-level API's that use OrmLite and Redis including:
+        AutoQuery, Redis MQ, OrmLiteAuthRepository, OrmLiteCacheClient, OrmLiteAppSettings,
+        RedisServerEvents and RedisRequestLogger.
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
-    <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
+    <tags>ServiceStack AutoQuery OrmLite Redis MQ Caching ServerEvents</tags>
     <language>en-US</language>
-    <copyright>Copyright 2014 Service Stack</copyright>
+    <copyright>Copyright 2015 Service Stack</copyright>
     <dependencies>
       <dependency id="ServiceStack.Common.Signed" version="4.0" />
       <dependency id="ServiceStack.Redis.Signed" version="4.0" />

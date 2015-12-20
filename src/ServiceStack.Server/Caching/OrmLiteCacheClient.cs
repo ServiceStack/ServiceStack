@@ -429,6 +429,22 @@ namespace ServiceStack.Caching
             });
         }
 
+        public IEnumerable<string> GetKeysByPattern(string pattern)
+        {
+            return Exec(db =>
+            {
+                if (pattern == "*")
+                    return db.Column<string>(db.From<CacheEntry>().Select(x => x.Id));
+
+                var dbPattern = pattern.Replace('*', '%');
+                var dialect = db.GetDialectProvider();
+                var id = dialect.GetQuotedColumnName("Id");
+
+                return db.Column<string>(db.From<CacheEntry>()
+                    .Where(id + " LIKE {0}", dbPattern));
+            });
+        }
+
         public void RemoveByRegex(string regex)
         {
             throw new NotImplementedException();
@@ -447,17 +463,8 @@ namespace ServiceStack.Caching
         public DateTime ModifiedDate { get; set; }
     }
 
-    public static class CacheExtensions
+    public static class DbExtensions
     {
-        public static void InitSchema(this ICacheClient cache)
-        {
-            var requiresSchema = cache as IRequiresSchema;
-            if (requiresSchema != null)
-            {
-                requiresSchema.InitSchema();
-            }
-        }
-
         public static string Serialize<T>(this IDbConnection db, T value)
         {
             return db.GetDialectProvider().StringSerializer.SerializeToString(value);

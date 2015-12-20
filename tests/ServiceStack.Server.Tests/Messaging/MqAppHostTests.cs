@@ -4,7 +4,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Messaging;
 using ServiceStack.RabbitMq;
-using ServiceStack.Server.Tests.Properties;
+using ServiceStack.Server.Tests.Caching;
 
 namespace ServiceStack.Server.Tests.Messaging
 {

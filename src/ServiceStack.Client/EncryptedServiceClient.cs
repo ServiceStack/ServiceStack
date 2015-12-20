@@ -5,7 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Cryptography;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -13,7 +15,8 @@ namespace ServiceStack
 
     public class EncryptedMessage : IReturn<EncryptedMessageResponse>
     {
-        public string SymmetricKeyEncrypted { get; set; }
+        public string KeyId { get; set; }
+        public string EncryptedSymmetricKey { get; set; }
         public string EncryptedBody { get; set; }
     }
 
@@ -24,91 +27,117 @@ namespace ServiceStack
 
     public class EncryptedServiceClient : IEncryptedClient
     {
-        public string PublicKeyPath { get; set; }
-        public string PublicKeyXml { get; set; }
-        public RSAParameters? PublicKey { get; set; }
-        public IServiceClient Client { get; set; }
+        public string ServerPublicKeyXml { get; private set; }
+        public int Version { get; set; }
+        public string SessionId { get; set; }
+        public RSAParameters PublicKey { get; set; }
+        public IJsonServiceClient Client { get; set; }
+        public string KeyId { get; set; }
 
-        public EncryptedServiceClient(IServiceClient client)
+        public EncryptedServiceClient(IJsonServiceClient client, string publicKeyXml)
+            : this(client, publicKeyXml.ToPublicRSAParameters()) {}
+
+        public EncryptedServiceClient(IJsonServiceClient client, RSAParameters publicKey)
         {
-            PublicKeyPath = "/publickey";
             Client = client;
-        }
-
-        private RSAParameters GetPublicKey()
-        {
-            if (PublicKey == null)
-            {
-                if (PublicKeyXml == null)
-                {
-                    PublicKeyXml = Client.Get<string>(PublicKeyPath);
-                }
-
-                PublicKey = PublicKeyXml.ToPublicRSAParameters();
-            }
-
-            return PublicKey.Value;
+            Client.ClearCookies();
+            PublicKey = publicKey;
+            ServerPublicKeyXml = publicKey.ToPublicKeyXml();
+            KeyId = Convert.ToBase64String(publicKey.Modulus).Substring(0, 7);
         }
 
         public TResponse Send<TResponse>(object request)
         {
-            using (var aes = new AesManaged { KeySize = AesUtils.KeySize })
+            return Send<TResponse>(HttpMethods.Post, request);
+        }
+
+        public TResponse Send<TResponse>(string httpMethod, object request)
+        {
+            byte[] cryptKey, authKey, iv;
+            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+
+            try
             {
-                try
-                {
-                    var encryptedMessage = CreateEncryptedMessage(request, request.GetType().Name, aes);
-                    var encResponse = Client.Send(encryptedMessage);
+                var encryptedMessage = CreateEncryptedMessage(request, request.GetType().Name, cryptKey, authKey, iv, httpMethod);
+                var encResponse = Client.Send(encryptedMessage);
 
-                    var responseJson = AesUtils.Decrypt(encResponse.EncryptedBody, aes.Key, aes.IV);
-                    var response = responseJson.FromJson<TResponse>();
+                var authEncryptedBytes = Convert.FromBase64String(encResponse.EncryptedBody);
 
-                    return response;
-                }
-                catch (WebServiceException ex)
-                {
-                    throw DecryptedException(ex, aes);
-                }
+                if (!HmacUtils.Verify(authEncryptedBytes, authKey))
+                    throw new Exception("Invalid EncryptedBody");
+
+                var decryptedBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
+
+                var responseJson = decryptedBytes.FromUtf8Bytes();
+                var response = JsonServiceClient.FromJson<TResponse>(responseJson);
+
+                return response;
             }
+            catch (WebServiceException ex)
+            {
+                throw DecryptedException(ex, cryptKey, authKey);
+            }
+        }
+
+        public TResponse Send<TResponse>(string httpMethod, IReturn<TResponse> request)
+        {
+            return Send<TResponse>(httpMethod, (object) request);
         }
 
         public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
-            using (var aes = new AesManaged { KeySize = AesUtils.KeySize })
+            byte[] cryptKey, authKey, iv;
+            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+
+            try
             {
-                try
-                {
-                    var elType = requests.GetType().GetCollectionType();
-                    var encryptedMessage = CreateEncryptedMessage(requests, elType.Name + "[]", aes);
-                    var encResponse = Client.Send(encryptedMessage);
+                var elType = requests.GetType().GetCollectionType();
+                var encryptedMessage = CreateEncryptedMessage(requests, elType.Name + "[]", cryptKey, authKey, iv);
+                var encResponse = Client.Send(encryptedMessage);
 
-                    var responseJson = AesUtils.Decrypt(encResponse.EncryptedBody, aes.Key, aes.IV);
-                    var response = responseJson.FromJson<List<TResponse>>();
+                var authEncryptedBytes = Convert.FromBase64String(encResponse.EncryptedBody);
 
-                    return response;
-                }
-                catch (WebServiceException ex)
-                {
-                    throw DecryptedException(ex, aes);
-                }
+                if (!HmacUtils.Verify(authEncryptedBytes, authKey))
+                    throw new Exception("Invalid EncryptedBody");
+
+                var decryptedBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
+
+                var responseJson = decryptedBytes.FromUtf8Bytes();
+                var response = JsonServiceClient.FromJson<List<TResponse>>(responseJson);
+
+                return response;
+            }
+            catch (WebServiceException ex)
+            {
+                throw DecryptedException(ex, cryptKey, authKey);
             }
         }
 
-        public EncryptedMessage CreateEncryptedMessage(object request, string operationName, SymmetricAlgorithm aes)
+        public EncryptedMessage CreateEncryptedMessage(object request, string operationName, byte[] cryptKey, byte[] authKey, byte[] iv, string verb = null)
         {
-            var aesKeyBytes = aes.Key.Combine(aes.IV);
+            this.PopulateRequestMetadata(request);
 
-            var publicKey = GetPublicKey();
+            if (verb == null)
+                verb = HttpMethods.Post;
 
-            var rsaEncAesKeyBytes = RsaUtils.Encrypt(aesKeyBytes, publicKey);
+            var cryptAuthKeys = cryptKey.Combine(authKey);
 
-            var requestBody = operationName + " " + request.ToJson();
+            var rsaEncCryptAuthKeys = RsaUtils.Encrypt(cryptAuthKeys, PublicKey);
+            var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
+
+            var timestamp = DateTime.UtcNow.ToUnixTime();
+            var requestBody = timestamp + " " + verb + " " + operationName + " " + JsonServiceClient.ToJson(request);
+
+            var encryptedBytes = AesUtils.Encrypt(requestBody.ToUtf8Bytes(), cryptKey, iv);
+            var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
 
             var encryptedMessage = new EncryptedMessage
             {
-                SymmetricKeyEncrypted = Convert.ToBase64String(rsaEncAesKeyBytes),
-                EncryptedBody = AesUtils.Encrypt(requestBody, aes.Key, aes.IV)
+                KeyId = KeyId,
+                EncryptedSymmetricKey = Convert.ToBase64String(authRsaEncCryptAuthKeys),
+                EncryptedBody = Convert.ToBase64String(authEncryptedBytes),
             };
-
+            
             return encryptedMessage;
         }
 
@@ -119,28 +148,43 @@ namespace ServiceStack
 
         public void Send(IReturnVoid request)
         {
-            using (var aes = new AesManaged { KeySize = AesUtils.KeySize })
+            byte[] cryptKey, authKey, iv;
+            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+
+            try
             {
-                try
-                {
-                    var encryptedMessage = CreateEncryptedMessage(request, request.GetType().Name, aes);
-                    Client.SendOneWay(encryptedMessage);
-                }
-                catch (WebServiceException ex)
-                {
-                    throw DecryptedException(ex, aes);
-                }
+                var encryptedMessage = CreateEncryptedMessage(request, request.GetType().Name, cryptKey, authKey, iv);
+                Client.SendOneWay(encryptedMessage);
+            }
+            catch (WebServiceException ex)
+            {
+                throw DecryptedException(ex, cryptKey, authKey);
             }
         }
 
-        public WebServiceException DecryptedException(WebServiceException ex, SymmetricAlgorithm aes)
+        public WebServiceException DecryptedException(WebServiceException ex, byte[] cryptKey, byte[] authKey)
         {
+            //Encrypted Messsage Exceptions are always written with 400 BadRequest
+            if (ex.StatusCode != (int) HttpStatusCode.BadRequest)
+            {
+                if (ex.ResponseStatus == null)
+                    ex.ResponseDto = JsonServiceClient.FromJson<ErrorResponse>(ex.ResponseBody);
+
+                return ex;
+            }
+
             var encResponse = ex.ResponseDto as EncryptedMessageResponse;
 
             if (encResponse != null)
             {
-                var responseJson = AesUtils.Decrypt(encResponse.EncryptedBody, aes.Key, aes.IV);
-                var errorResponse = responseJson.FromJson<ErrorResponse>();
+                var authEncryptedBytes = Convert.FromBase64String(encResponse.EncryptedBody);
+                if (!HmacUtils.Verify(authEncryptedBytes, authKey))
+                    throw new Exception("EncryptedBody is Invalid");
+
+                var responseBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
+                var responseJson = responseBytes.FromUtf8Bytes();
+                var errorResponse = JsonServiceClient.FromJson<ErrorResponse>(responseJson);
+
                 ex.ResponseDto = errorResponse;
             }
 
@@ -150,9 +194,37 @@ namespace ServiceStack
 
     public static partial class ServiceClientExtensions
     {
-        public static IEncryptedClient GetEncryptedClient(this IServiceClient client)
+        public static IEncryptedClient GetEncryptedClient(this IJsonServiceClient client, string serverPublicKeyXml)
         {
-            return new EncryptedServiceClient(client);
+            if (string.IsNullOrEmpty(serverPublicKeyXml))
+                throw new ArgumentNullException("serverPublicKeyXml");
+
+            return new EncryptedServiceClient(client, serverPublicKeyXml);
+        }
+
+        public static IEncryptedClient GetEncryptedClient(this IJsonServiceClient client, RSAParameters publicKey)
+        {
+            return new EncryptedServiceClient(client, publicKey);
+        }
+
+        public static TResponse Get<TResponse>(this IEncryptedClient client, IReturn<TResponse> request)
+        {
+            return client.Send(HttpMethods.Get, request);
+        }
+
+        public static TResponse Delete<TResponse>(this IEncryptedClient client, IReturn<TResponse> request)
+        {
+            return client.Send(HttpMethods.Delete, request);
+        }
+
+        public static TResponse Post<TResponse>(this IEncryptedClient client, IReturn<TResponse> request)
+        {
+            return client.Send(HttpMethods.Post, request);
+        }
+
+        public static TResponse Put<TResponse>(this IEncryptedClient client, IReturn<TResponse> request)
+        {
+            return client.Send(HttpMethods.Put, request);
         }
     }
 }

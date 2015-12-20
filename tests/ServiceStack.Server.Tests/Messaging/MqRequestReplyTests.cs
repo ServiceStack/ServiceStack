@@ -165,7 +165,6 @@ namespace ServiceStack.Server.Tests.Messaging
     
                 "Stopping Server...".Print();
                 "Requests: {0}".Print(counter);
-                errors.PrintDump();
             }
 
             Assert.That(errors.Count, Is.EqualTo(0));

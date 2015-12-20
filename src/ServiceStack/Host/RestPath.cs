@@ -261,7 +261,7 @@ namespace ServiceStack.Host
             var score = 0;
 
             //Routes with least wildcard matches get the highest score
-            score += Math.Max((10 - wildcardMatchCount), 1) * 1000;
+            score += Math.Max((100 - wildcardMatchCount), 1) * 1000;
 
             //Routes with less variable (and more literal) matches
             score += Math.Max((10 - VariableArgsCount), 1) * 100;

@@ -99,24 +99,9 @@ namespace ServiceStack.Authentication.MongoDb
             CreateMissingCollections();
         }
 
-        private void ValidateNewUser(IUserAuth newUser, string password)
-        {
-            newUser.ThrowIfNull("newUser");
-            password.ThrowIfNullOrEmpty("password");
-
-            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
-                throw new ArgumentNullException("UserName or Email is required");
-
-            if (!newUser.UserName.IsNullOrEmpty())
-            {
-                if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
-                    throw new ArgumentException("UserName contains invalid characters", "UserName");
-            }
-        }
-
         public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
         {
-            ValidateNewUser(newUser, password);
+            newUser.ValidateNewUser(password);
 
             AssertNoExistingUser(mongoDatabase, newUser);
 
@@ -182,7 +167,7 @@ namespace ServiceStack.Authentication.MongoDb
 
         public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
         {
-            ValidateNewUser(newUser, password);
+            newUser.ValidateNewUser(password);
 
             AssertNoExistingUser(mongoDatabase, newUser, existingUser);
 
@@ -204,6 +189,23 @@ namespace ServiceStack.Authentication.MongoDb
             newUser.PasswordHash = hash;
             newUser.Salt = salt;
             newUser.DigestHa1Hash = digestHash;
+            newUser.CreatedDate = existingUser.CreatedDate;
+            newUser.ModifiedDate = DateTime.UtcNow;
+            SaveUser(newUser);
+
+            return newUser;
+        }
+
+        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
+        {
+            newUser.ValidateNewUser();
+
+            AssertNoExistingUser(mongoDatabase, newUser);
+
+            newUser.Id = existingUser.Id;
+            newUser.PasswordHash = existingUser.PasswordHash;
+            newUser.Salt = existingUser.Salt;
+            newUser.DigestHa1Hash = existingUser.DigestHa1Hash;
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
             SaveUser(newUser);
@@ -234,16 +236,19 @@ namespace ServiceStack.Authentication.MongoDb
 
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
-            //userId = null;
             userAuth = GetUserAuthByUserName(userName);
-            if (userAuth == null) return false;
+            if (userAuth == null)
+                return false;
 
             var saltedHash = HostContext.Resolve<IHashProvider>();
             if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
             {
-                //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+                this.RecordSuccessfulLogin(userAuth);
+
                 return true;
             }
+
+            this.RecordInvalidLoginAttempt(userAuth);
 
             userAuth = null;
             return false;
@@ -253,14 +258,19 @@ namespace ServiceStack.Authentication.MongoDb
         {
             //userId = null;
             userAuth = GetUserAuthByUserName(digestHeaders["username"]);
-            if (userAuth == null) return false;
+            if (userAuth == null)
+                return false;
 
             var digestHelper = new DigestAuthFunctions();
             if (digestHelper.ValidateResponse(digestHeaders, PrivateKey, NonceTimeOut, userAuth.DigestHa1Hash, sequence))
             {
-                //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+                this.RecordSuccessfulLogin(userAuth);
+
                 return true;
             }
+
+            this.RecordInvalidLoginAttempt(userAuth);
+
             userAuth = null;
             return false;
         }

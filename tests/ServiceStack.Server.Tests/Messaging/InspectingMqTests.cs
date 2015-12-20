@@ -83,7 +83,6 @@ namespace ServiceStack.Server.Tests.Messaging
 				}
 			}
 
-			redisMqStats.PrintDump();
 		}
 	}
 }

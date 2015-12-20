@@ -41,7 +41,7 @@ namespace ServiceStack.Mvc
         /// </summary>
         public virtual string UnauthorizedRedirectUrl
         {
-            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect() + "?redirect={0}#f=Unauthorized"; }
+            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect(); }
         }
 
         /// <summary>
@@ -53,7 +53,11 @@ namespace ServiceStack.Mvc
             get
             {
                 var returnUrl = HttpContext.Request.GetPathAndQuery();
-                return new RedirectResult(UnauthorizedRedirectUrl.Fmt(returnUrl.UrlEncode()));
+                var unauthorizedUrl = UnauthorizedRedirectUrl;
+                if (unauthorizedUrl.IsNullOrEmpty() )
+                    throw new HttpException(401, "Unauthorized");
+
+                return new RedirectResult(unauthorizedUrl + "?redirect={0}#f=Unauthorized".Fmt(returnUrl.UrlEncode()));
             }
         }
 
@@ -62,7 +66,7 @@ namespace ServiceStack.Mvc
         /// </summary>
         public virtual string ForbiddenRedirectUrl
         {
-            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect() + "?redirect={0}#f=Forbidden"; }
+            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect(); }
         }
 
         /// <summary>
@@ -74,7 +78,11 @@ namespace ServiceStack.Mvc
             get
             {
                 var returnUrl = HttpContext.Request.GetPathAndQuery();
-                return new RedirectResult(ForbiddenRedirectUrl.Fmt(returnUrl.UrlEncode()));
+                var forbiddenUrl = ForbiddenRedirectUrl;
+                if (forbiddenUrl.IsNullOrEmpty())
+                    throw new HttpException(403, "Forbidden");
+
+                return new RedirectResult(forbiddenUrl + "?redirect={0}#f=Forbidden".Fmt(returnUrl.UrlEncode()));
             }
         }
 
@@ -153,7 +161,7 @@ namespace ServiceStack.Mvc
         {
             get
             {
-                return serviceStackProvider ?? (serviceStackProvider = 
+                return serviceStackProvider ?? (serviceStackProvider =
                     new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name)));
             }
         }
@@ -213,6 +221,10 @@ namespace ServiceStack.Mvc
         {
             return ServiceStackProvider.Execute(requestDto);
         }
+        protected virtual TResponse Execute<TResponse>(IReturn<TResponse> requestDto)
+        {
+            return ServiceStackProvider.Execute(requestDto);
+        }
         protected virtual object ForwardRequestToServiceStack(IRequest request = null)
         {
             return ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
@@ -225,6 +237,10 @@ namespace ServiceStack.Mvc
         {
             return ServiceStackProvider.SessionAs<TUserSession>();
         }
+        protected virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null)
+        {
+            ServiceStackProvider.Request.SaveSession(session, expiresIn);
+        }
         protected virtual void ClearSession()
         {
             ServiceStackProvider.ClearSession();
@@ -233,8 +249,14 @@ namespace ServiceStack.Mvc
         {
             ServiceStackProvider.PublishMessage(message);
         }
+
+        private bool hasDisposed = false;
         protected override void Dispose(bool disposing)
         {
+            if (hasDisposed)
+                return;
+
+            hasDisposed = true;
             base.Dispose(disposing);
 
             if (serviceStackProvider != null)
@@ -242,7 +264,14 @@ namespace ServiceStack.Mvc
                 serviceStackProvider.Dispose();
                 serviceStackProvider = null;
             }
-        }    
+
+            EndServiceStackRequest();
+        }
+
+        public virtual void EndServiceStackRequest()
+        {
+            HostContext.AppHost.OnEndRequest(ServiceStackRequest);
+        }
     }
 
     public class ServiceStackJsonResult : JsonResult

@@ -74,7 +74,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 					Permissions = { Permission1, Permission2 }
 				});
 
-				response.PrintDump();
 				Assert.Fail("Should not be allowed");
 			}
 			catch (WebServiceException webEx)

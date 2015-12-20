@@ -1,16 +1,21 @@
 /* Options:
-Date: 2015-01-20 17:07:22
-Version: 1
+Date: 2015-11-23 10:40:47
+Version: 4.00
 BaseUrl: http://localhost:55799
 
-//GlobalNamespace: 
+GlobalNamespace: dtos
+//ExportAsTypes: False
 //MakePropertiesOptional: True
 //AddServiceStackTypes: True
 //AddResponseStatus: False
 //AddImplicitVersion: 
+//IncludeTypes: 
+//ExcludeTypes: 
+//DefaultImports: 
 */
 
-declare module Check.ServiceModel
+
+declare module dtos
 {
 
     interface IReturnVoid
@@ -47,6 +52,9 @@ declare module Check.ServiceModel
 
         // @DataMember(Order=4)
         errors?: ResponseError[];
+
+        // @DataMember(Order=5)
+        meta?: { [index:string]: string; };
     }
 
     interface MetadataTestChild
@@ -63,12 +71,78 @@ declare module Check.ServiceModel
         menuItemExample1?: MenuItemExample;
     }
 
+    interface MetadataType
+    {
+        name?: string;
+        namespace?: string;
+        genericArgs?: string[];
+        inherits?: MetadataTypeName;
+        implements?: MetadataTypeName[];
+        displayType?: string;
+        description?: string;
+        returnVoidMarker?: boolean;
+        isNested?: boolean;
+        isEnum?: boolean;
+        isInterface?: boolean;
+        isAbstract?: boolean;
+        returnMarkerTypeName?: MetadataTypeName;
+        routes?: MetadataRoute[];
+        dataContract?: MetadataDataContract;
+        properties?: MetadataPropertyType[];
+        attributes?: MetadataAttribute[];
+        innerTypes?: MetadataTypeName[];
+        enumNames?: string[];
+        enumValues?: string[];
+    }
+
+    interface AutoQueryViewerConfig
+    {
+        serviceBaseUrl?: string;
+        serviceName?: string;
+        serviceDescription?: string;
+        serviceIconUrl?: string;
+        isPublic?: boolean;
+        onlyShowAnnotatedServices?: boolean;
+        implicitConventions?: Property[];
+        defaultSearchField?: string;
+        defaultSearchType?: string;
+        defaultSearchText?: string;
+        brandUrl?: string;
+        brandImageUrl?: string;
+        textColor?: string;
+        linkColor?: string;
+        backgroundColor?: string;
+        backgroundImageUrl?: string;
+        iconUrl?: string;
+    }
+
+    interface AutoQueryOperation
+    {
+        request?: string;
+        from?: string;
+        to?: string;
+    }
+
+    interface Issue221Base<T>
+    {
+        id?: T;
+    }
+
+    interface NativeTypesTestService
+    {
+    }
+
     interface NestedClass
     {
         value?: string;
     }
 
     interface ListResult
+    {
+        result?: string;
+    }
+
+    interface OnlyInReturnListArg
     {
         result?: string;
     }
@@ -84,38 +158,18 @@ declare module Check.ServiceModel
         value2,
     }
 
+    enum EnumWithValues
+    {
+        value1 = 1,
+        value2 = 2,
+    }
+
     // @Flags()
     enum EnumFlags
     {
         value1 = 1,
         value2 = 2,
         value3 = 4,
-    }
-
-    interface AllTypes
-    {
-        id?: number;
-        nullableId?: number;
-        byte?: number;
-        short?: number;
-        int?: number;
-        long?: number;
-        uShort?: number;
-        uInt?: number;
-        uLong?: number;
-        float?: number;
-        double?: number;
-        decimal?: number;
-        string?: string;
-        dateTime?: string;
-        timeSpan?: string;
-        nullableDateTime?: string;
-        nullableTimeSpan?: string;
-        stringList?: string[];
-        stringArray?: string[];
-        stringMap?: { [index:string]: string; };
-        intStringMap?: { [index:number]: string; };
-        subType?: SubType;
     }
 
     interface AllCollectionTypes
@@ -126,6 +180,14 @@ declare module Check.ServiceModel
         stringList?: string[];
         pocoArray?: Poco[];
         pocoList?: Poco[];
+        pocoLookup?: { [index:string]: Poco[]; };
+        pocoLookupMap?: { [index:string]: { [index:string]: Poco; }[]; };
+    }
+
+    interface SubType
+    {
+        id?: number;
+        name?: string;
     }
 
     interface HelloBase
@@ -275,22 +337,22 @@ declare module Check.ServiceModel
         lastModified?: string;
 
         // @DataMember(Order=35)
-        providerOAuthAccess?: IAuthTokens[];
-
-        // @DataMember(Order=36)
         roles?: string[];
 
-        // @DataMember(Order=37)
+        // @DataMember(Order=36)
         permissions?: string[];
 
-        // @DataMember(Order=38)
+        // @DataMember(Order=37)
         isAuthenticated?: boolean;
 
-        // @DataMember(Order=39)
+        // @DataMember(Order=38)
         sequence?: string;
 
-        // @DataMember(Order=40)
+        // @DataMember(Order=39)
         tag?: number;
+
+        // @DataMember(Order=40)
+        providerOAuthAccess?: IAuthTokens[];
     }
 
     interface IPoco
@@ -324,14 +386,35 @@ declare module Check.ServiceModel
         baz,
     }
 
-    // @DataContract
-    interface RestService
+    interface IAuthTokens
     {
-        // @DataMember(Name="path")
-        path?: string;
+        provider?: string;
+        userId?: string;
+        accessToken?: string;
+        accessTokenSecret?: string;
+        refreshToken?: string;
+        refreshTokenExpiry?: string;
+        requestToken?: string;
+        requestTokenSecret?: string;
+        items?: { [index:string]: string; };
+    }
 
-        // @DataMember(Name="description")
-        description?: string;
+    enum DayOfWeek
+    {
+        sunday,
+        monday,
+        tuesday,
+        wednesday,
+        thursday,
+        friday,
+        saturday,
+    }
+
+    // @DataContract
+    enum ScopeType
+    {
+        global = 1,
+        sale = 2,
     }
 
     interface QueryBase_2<From, Into> extends QueryBase
@@ -340,10 +423,18 @@ declare module Check.ServiceModel
 
     interface CustomRockstar
     {
+        // @AutoQueryViewerField(Title="Name")
         firstName?: string;
+
+        // @AutoQueryViewerField(HideInSummary=true)
         lastName?: string;
+
         age?: number;
+        // @AutoQueryViewerField(Title="Album")
         rockstarAlbumName?: string;
+
+        // @AutoQueryViewerField(Title="Genre")
+        rockstarGenreName?: string;
     }
 
     interface Movie
@@ -368,6 +459,24 @@ declare module Check.ServiceModel
         albums?: RockstarAlbum[];
     }
 
+    interface OnlyDefinedInGenericType
+    {
+        id?: number;
+        name?: string;
+    }
+
+    interface OnlyDefinedInGenericTypeFrom
+    {
+        id?: number;
+        name?: string;
+    }
+
+    interface OnlyDefinedInGenericTypeInto
+    {
+        id?: number;
+        name?: string;
+    }
+
     interface QueryBase
     {
         // @DataMember(Order=1)
@@ -381,6 +490,12 @@ declare module Check.ServiceModel
 
         // @DataMember(Order=4)
         orderByDesc?: string;
+
+        // @DataMember(Order=5)
+        include?: string;
+
+        // @DataMember(Order=6)
+        meta?: { [index:string]: string; };
     }
 
     // @DataContract
@@ -394,6 +509,9 @@ declare module Check.ServiceModel
 
         // @DataMember(Order=3, EmitDefaultValue=false)
         message?: string;
+
+        // @DataMember(Order=4, EmitDefaultValue=false)
+        meta?: { [index:string]: string; };
     }
 
     interface MetadataTestNestedChild
@@ -410,23 +528,62 @@ declare module Check.ServiceModel
         menuItemExampleItem?: MenuItemExampleItem;
     }
 
-    interface SubType
+    interface MetadataTypeName
     {
-        id?: number;
         name?: string;
+        namespace?: string;
+        genericArgs?: string[];
     }
 
-    interface IAuthTokens
+    interface MetadataRoute
     {
-        provider?: string;
-        userId?: string;
-        accessToken?: string;
-        accessTokenSecret?: string;
-        refreshToken?: string;
-        refreshTokenExpiry?: string;
-        requestToken?: string;
-        requestTokenSecret?: string;
-        items?: { [index:string]: string; };
+        path?: string;
+        verbs?: string;
+        notes?: string;
+        summary?: string;
+    }
+
+    interface MetadataDataContract
+    {
+        name?: string;
+        namespace?: string;
+    }
+
+    interface MetadataPropertyType
+    {
+        name?: string;
+        type?: string;
+        isValueType?: boolean;
+        typeNamespace?: string;
+        genericArgs?: string[];
+        value?: string;
+        description?: string;
+        dataMember?: MetadataDataMember;
+        readOnly?: boolean;
+        paramType?: string;
+        displayType?: string;
+        isRequired?: boolean;
+        allowableValues?: string[];
+        allowableMin?: number;
+        allowableMax?: number;
+        attributes?: MetadataAttribute[];
+    }
+
+    interface MetadataAttribute
+    {
+        name?: string;
+        constructorArgs?: MetadataPropertyType[];
+        args?: MetadataPropertyType[];
+    }
+
+    // @DataContract
+    interface Property
+    {
+        // @DataMember
+        name?: string;
+
+        // @DataMember
+        value?: string;
     }
 
     interface TypeB
@@ -452,8 +609,16 @@ declare module Check.ServiceModel
         name1?: string;
     }
 
+    interface MetadataDataMember
+    {
+        name?: string;
+        order?: number;
+        isRequired?: boolean;
+        emitDefaultValue?: boolean;
+    }
+
     // @DataContract
-    interface QueryResponse<Rockstar>
+    interface QueryResponse<T>
     {
         // @DataMember(Order=1)
         offset?: number;
@@ -462,7 +627,7 @@ declare module Check.ServiceModel
         total?: number;
 
         // @DataMember(Order=3)
-        results?: Rockstar[];
+        results?: T[];
 
         // @DataMember(Order=4)
         meta?: { [index:string]: string; };
@@ -492,6 +657,17 @@ declare module Check.ServiceModel
         responseStatus?: ResponseStatus;
     }
 
+    interface NoRepeatResponse
+    {
+        id?: string;
+    }
+
+    interface BatchThrowsResponse
+    {
+        result?: string;
+        responseStatus?: ResponseStatus;
+    }
+
     interface MetadataTestResponse
     {
         id?: number;
@@ -507,6 +683,14 @@ declare module Check.ServiceModel
         // @DataMember(Order=2)
         // @ApiMember()
         menuExample1?: MenuExample;
+    }
+
+    interface AutoQueryMetadataResponse
+    {
+        config?: AutoQueryViewerConfig;
+        operations?: AutoQueryOperation[];
+        types?: MetadataType[];
+        responseStatus?: ResponseStatus;
     }
 
     interface HelloResponse
@@ -537,6 +721,37 @@ declare module Check.ServiceModel
         result?: string;
         allTypes?: AllTypes;
         allCollectionTypes?: AllCollectionTypes;
+    }
+
+    interface AllTypes
+    {
+        id?: number;
+        nullableId?: number;
+        byte?: number;
+        short?: number;
+        int?: number;
+        long?: number;
+        uShort?: number;
+        uInt?: number;
+        uLong?: number;
+        float?: number;
+        double?: number;
+        decimal?: number;
+        string?: string;
+        dateTime?: string;
+        timeSpan?: string;
+        dateTimeOffset?: string;
+        guid?: string;
+        char?: string;
+        nullableDateTime?: string;
+        nullableTimeSpan?: string;
+        stringList?: string[];
+        stringArray?: string[];
+        stringMap?: { [index:string]: string; };
+        intStringMap?: { [index:number]: string; };
+        subType?: SubType;
+        // @DataMember(Name="aliasedName")
+        originalName?: string;
     }
 
     // @DataContract
@@ -595,30 +810,66 @@ declare module Check.ServiceModel
         innerEnum?: InnerEnum;
     }
 
+    interface CustomUserSession extends AuthUserSession
+    {
+        // @DataMember
+        customName?: string;
+
+        // @DataMember
+        customInfo?: string;
+    }
+
+    // @DataContract
+    interface QueryResponseTemplate<T>
+    {
+        // @DataMember(Order=1)
+        offset?: number;
+
+        // @DataMember(Order=2)
+        total?: number;
+
+        // @DataMember(Order=3)
+        results?: T[];
+
+        // @DataMember(Order=4)
+        meta?: { [index:string]: string; };
+
+        // @DataMember(Order=5)
+        responseStatus?: ResponseStatus;
+    }
+
+    interface HelloVerbResponse
+    {
+        result?: string;
+    }
+
+    interface EnumResponse
+    {
+        operator?: ScopeType;
+    }
+
+    interface ExcludeTestNested
+    {
+        id?: number;
+    }
+
     interface Echo
     {
         sentence?: string;
     }
 
+    interface ThrowHttpErrorResponse
+    {
+    }
+
+    interface ThrowTypeResponse
+    {
+        responseStatus?: ResponseStatus;
+    }
+
     interface acsprofileResponse
     {
         profileId?: string;
-    }
-
-    // @DataContract
-    interface ResourcesResponse
-    {
-        // @DataMember(Name="swaggerVersion")
-        swaggerVersion?: string;
-
-        // @DataMember(Name="apiVersion")
-        apiVersion?: string;
-
-        // @DataMember(Name="basePath")
-        basePath?: string;
-
-        // @DataMember(Name="apis")
-        apis?: RestService[];
     }
 
     // @Route("/anontype")
@@ -633,7 +884,7 @@ declare module Check.ServiceModel
     }
 
     // @Route("/changerequest/{Id}")
-    interface ChangeRequest extends IReturn<ChangeRequest>
+    interface ChangeRequest extends IReturn<ChangeRequestResponse>
     {
         id?: string;
     }
@@ -645,13 +896,19 @@ declare module Check.ServiceModel
         myId?: number;
     }
 
-    interface CustomHttpError extends IReturn<CustomHttpError>
+    // @Route("/info/{Id}")
+    interface Info
+    {
+        id?: string;
+    }
+
+    interface CustomHttpError extends IReturn<CustomHttpErrorResponse>
     {
         statusCode?: number;
         statusDescription?: string;
     }
 
-    interface CustomFieldHttpError extends IReturn<CustomFieldHttpError>
+    interface CustomFieldHttpError extends IReturn<CustomFieldHttpErrorResponse>
     {
     }
 
@@ -659,6 +916,23 @@ declare module Check.ServiceModel
     interface FallbackRoute
     {
         pathInfo?: string;
+    }
+
+    interface NoRepeat extends IReturn<NoRepeatResponse>
+    {
+        id?: string;
+    }
+
+    interface BatchThrows extends IReturn<BatchThrowsResponse>
+    {
+        id?: number;
+        name?: string;
+    }
+
+    interface BatchThrowsAsync extends IReturn<BatchThrowsResponse>
+    {
+        id?: number;
+        name?: string;
     }
 
     interface MetadataTest extends IReturn<MetadataTestResponse>
@@ -672,14 +946,29 @@ declare module Check.ServiceModel
     {
     }
 
+    interface MetadataRequest extends IReturn<AutoQueryMetadataResponse>
+    {
+        metadataType?: MetadataType;
+    }
+
     // @Route("/namedconnection")
     interface NamedConnection
     {
         emailAddresses?: string;
     }
 
+    interface Issue221Long extends Issue221Base<number>
+    {
+    }
+
+    interface HelloInService extends IReturn<HelloResponse>
+    {
+        name?: string;
+    }
+
+    // @Route("/hello")
     // @Route("/hello/{Name}")
-    interface Hello extends IReturn<Hello>
+    interface Hello extends IReturn<HelloResponse>
     {
         // @Required()
         name: string;
@@ -703,12 +992,17 @@ declare module Check.ServiceModel
         nestedClassProp?: NestedClass;
     }
 
-    interface HelloList extends IReturn<ListResult[]>
+    interface HelloList extends IReturn<Array<ListResult>>
     {
         names?: string[];
     }
 
-    interface HelloArray extends IReturn<ArrayResult[]>
+    interface HelloReturnList extends IReturn<Array<OnlyInReturnListArg>>
+    {
+        names?: string[];
+    }
+
+    interface HelloArray extends IReturn<Array<ArrayResult>>
     {
         names?: string[];
     }
@@ -721,6 +1015,7 @@ declare module Check.ServiceModel
     interface HelloWithEnum
     {
         enumProp?: EnumType;
+        enumWithValues?: EnumWithValues;
         nullableEnumProp?: EnumType;
         enumFlags?: EnumFlags;
     }
@@ -741,39 +1036,40 @@ declare module Check.ServiceModel
     // @DataContract
     interface AllowedAttributes
     {
-        // @Default(5)
-        // @Required()
-        id: number;
-
         // @DataMember(Name="Aliased")
         // @ApiMember(Description="Range Description", ParameterType="path", DataType="double", IsRequired=true)
         range?: number;
-
-        // @StringLength(20)
-        // @References(typeof(Hello))
-        // @Meta("Foo", "Bar")
-        name?: string;
     }
 
-    interface HelloAllTypes extends IReturn<HelloAllTypes>
+    /**
+    * Multi Line Class
+    */
+    // @Api("Multi Line Class")
+    interface HelloMultiline
+    {
+        // @ApiMember(Description="Multi Line Property")
+        overflow?: string;
+    }
+
+    interface HelloAllTypes extends IReturn<HelloAllTypesResponse>
     {
         name?: string;
         allTypes?: AllTypes;
         allCollectionTypes?: AllCollectionTypes;
     }
 
-    interface HelloString
+    interface HelloString extends IReturn<string>
     {
         name?: string;
     }
 
-    interface HelloVoid
+    interface HelloVoid extends IReturnVoid
     {
         name?: string;
     }
 
     // @DataContract
-    interface HelloWithDataContract extends IReturn<HelloWithDataContract>
+    interface HelloWithDataContract extends IReturn<HelloWithDataContractResponse>
     {
         // @DataMember(Name="name", Order=1, IsRequired=true, EmitDefaultValue=false)
         name?: string;
@@ -785,12 +1081,12 @@ declare module Check.ServiceModel
     /**
     * Description on HelloWithDescription type
     */
-    interface HelloWithDescription extends IReturn<HelloWithDescription>
+    interface HelloWithDescription extends IReturn<HelloWithDescriptionResponse>
     {
         name?: string;
     }
 
-    interface HelloWithInheritance extends HelloBase, IReturn<HelloWithInheritance>
+    interface HelloWithInheritance extends HelloBase, IReturn<HelloWithInheritanceResponse>
     {
         name?: string;
     }
@@ -819,12 +1115,12 @@ declare module Check.ServiceModel
     }
 
     // @Route("/helloroute")
-    interface HelloWithRoute extends IReturn<HelloWithRoute>
+    interface HelloWithRoute extends IReturn<HelloWithRouteResponse>
     {
         name?: string;
     }
 
-    interface HelloWithType extends IReturn<HelloWithType>
+    interface HelloWithType extends IReturn<HelloWithTypeResponse>
     {
         name?: string;
     }
@@ -838,6 +1134,7 @@ declare module Check.ServiceModel
         poco?: IPoco;
         emptyInterface?: IEmptyInterface;
         emptyClass?: EmptyClass;
+        value?: string;
     }
 
     interface Request1 extends IReturn<Request1Response>
@@ -852,6 +1149,75 @@ declare module Check.ServiceModel
 
     interface HelloInnerTypes extends IReturn<HelloInnerTypesResponse>
     {
+    }
+
+    interface GetUserSession extends IReturn<CustomUserSession>
+    {
+    }
+
+    interface QueryTemplate extends IReturn<QueryResponseTemplate<Poco>>
+    {
+    }
+
+    interface HelloReserved
+    {
+        class?: string;
+        type?: string;
+        extension?: string;
+    }
+
+    interface HelloDictionary extends IReturn<any>
+    {
+        key?: string;
+        value?: string;
+    }
+
+    interface HelloBuiltin
+    {
+        dayOfWeek?: DayOfWeek;
+    }
+
+    interface HelloGet extends IReturn<HelloVerbResponse>
+    {
+        id?: number;
+    }
+
+    interface HelloPost extends HelloBase, IReturn<HelloVerbResponse>
+    {
+    }
+
+    interface HelloPut extends IReturn<HelloVerbResponse>
+    {
+        id?: number;
+    }
+
+    interface HelloDelete extends IReturn<HelloVerbResponse>
+    {
+        id?: number;
+    }
+
+    interface HelloPatch extends IReturn<HelloVerbResponse>
+    {
+        id?: number;
+    }
+
+    interface HelloReturnVoid extends IReturnVoid
+    {
+        id?: number;
+    }
+
+    interface EnumRequest extends IReturn<EnumResponse>
+    {
+        operator?: ScopeType;
+    }
+
+    interface ExcludeTest1 extends IReturn<ExcludeTestNested>
+    {
+    }
+
+    interface ExcludeTest2 extends IReturn<string>
+    {
+        excludeTestNested?: ExcludeTestNested;
     }
 
     /**
@@ -876,7 +1242,7 @@ declare module Check.ServiceModel
     }
 
     // @Route("/throwhttperror/{Status}")
-    interface ThrowHttpError
+    interface ThrowHttpError extends IReturn<ThrowHttpErrorResponse>
     {
         status?: number;
         message?: string;
@@ -889,13 +1255,30 @@ declare module Check.ServiceModel
         message?: string;
     }
 
-    // @Route("/api/acsprofiles/{profileId}")
+    // @Route("/return404")
+    interface Return404
+    {
+    }
+
+    // @Route("/return404result")
+    interface Return404Result
+    {
+    }
+
+    // @Route("/throw/{Type}")
+    interface ThrowType extends IReturn<ThrowTypeResponse>
+    {
+        type?: string;
+        message?: string;
+    }
+
     // @Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")
+    // @Route("/api/acsprofiles/{profileId}")
     interface ACSProfile extends IReturn<acsprofileResponse>
     {
         profileId?: string;
-        // @StringLength(20)
         // @Required()
+        // @StringLength(20)
         shortName: string;
 
         // @StringLength(60)
@@ -912,35 +1295,17 @@ declare module Check.ServiceModel
 
         lastUpdated?: string;
         enabled?: boolean;
+        version?: number;
+        sessionId?: string;
     }
 
-    // @Route("/resources")
-    // @DataContract
-    interface Resources extends IReturn<Resources>
+    interface TestMiniverView
     {
-        // @DataMember(Name="apiKey")
-        apiKey?: string;
     }
 
-    // @Route("/resource/{Name*}")
-    // @DataContract
-    interface ResourceRequest
+    // @Route("/testexecproc")
+    interface TestExecProc
     {
-        // @DataMember(Name="apiKey")
-        apiKey?: string;
-
-        // @DataMember(Name="name")
-        name?: string;
-    }
-
-    // @Route("/postman")
-    interface Postman
-    {
-        label?: string[];
-        exportSession?: boolean;
-        ssid?: string;
-        sspid?: string;
-        ssopt?: string;
     }
 
     interface QueryRockstarsConventions extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
@@ -958,6 +1323,7 @@ declare module Check.ServiceModel
         rockstarIdOnOrAfter?: number;
     }
 
+    // @AutoQueryViewer(Title="Search for Rockstars", Description="Use this option to search for Rockstars!")
     interface QueryCustomRockstars extends QueryBase_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
     {
         age?: number;
@@ -1069,6 +1435,16 @@ declare module Check.ServiceModel
     interface QueryRockstarsWithReferences extends QueryBase_1<RockstarReference>, IReturn<QueryResponse<RockstarReference>>
     {
         age?: number;
+    }
+
+    interface QueryPocoBase extends QueryBase_1<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>
+    {
+        id?: number;
+    }
+
+    interface QueryPocoIntoBase extends QueryBase_2<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>
+    {
+        id?: number;
     }
 
 }

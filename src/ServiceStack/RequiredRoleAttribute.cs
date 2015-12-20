@@ -21,11 +21,12 @@ namespace ServiceStack
         {
             this.RequiredRoles = roles.ToList();
             this.ApplyTo = applyTo;
-            this.Priority = (int) RequestFilterPriority.RequiredRole;
+            this.Priority = (int)RequestFilterPriority.RequiredRole;
         }
 
         public RequiredRoleAttribute(params string[] roles)
-            : this(ApplyTo.All, roles) {}
+            : this(ApplyTo.All, roles)
+        { }
 
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
@@ -49,7 +50,7 @@ namespace ServiceStack
             res.EndRequest();
         }
 
-        public bool HasAllRoles(IRequest req, IAuthSession session, IAuthRepository userAuthRepo=null)
+        public bool HasAllRoles(IRequest req, IAuthSession session, IAuthRepository userAuthRepo = null)
         {
             if (HasAllRoles(session)) return true;
 
@@ -133,7 +134,7 @@ namespace ServiceStack
 
         protected bool Equals(RequiredRoleAttribute other)
         {
-            return base.Equals(other) 
+            return base.Equals(other)
                 && Equals(RequiredRoles, other.RequiredRoles);
         }
 
@@ -142,14 +143,14 @@ namespace ServiceStack
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((RequiredRoleAttribute) obj);
+            return Equals((RequiredRoleAttribute)obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return (base.GetHashCode()*397) ^ (RequiredRoles != null ? RequiredRoles.GetHashCode() : 0);
+                return (base.GetHashCode() * 397) ^ (RequiredRoles != null ? RequiredRoles.GetHashCode() : 0);
             }
         }
     }

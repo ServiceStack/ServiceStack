@@ -180,12 +180,15 @@ namespace ServiceStack.Caching
 
         private int UpdateCounter(string key, int value)
         {
-            if (!this.counters.ContainsKey(key))
+            lock (counters)
             {
-                this.counters[key] = 0;
+                if (!this.counters.ContainsKey(key))
+                {
+                    this.counters[key] = 0;
+                }
+                this.counters[key] += value;
+                return this.counters[key];
             }
-            this.counters[key] += value;
-            return this.counters[key];
         }
 
         public long Increment(string key, uint amount)
@@ -309,9 +312,14 @@ namespace ServiceStack.Caching
             }
         }
 
+        private static string ConvertToRegex(string pattern)
+        {
+            return pattern.Replace("*", ".*").Replace("?", ".+");
+        }
+
         public void RemoveByPattern(string pattern)
         {
-            RemoveByRegex(pattern.Replace("*", ".*").Replace("?", ".+"));
+            RemoveByRegex(ConvertToRegex(pattern));
         }
 
         public void RemoveByRegex(string pattern)
@@ -337,7 +345,14 @@ namespace ServiceStack.Caching
             }
         }
 
-        public List<string> GetKeysByPattern(string pattern)
+        public IEnumerable<string> GetKeysByPattern(string pattern)
+        {
+            return pattern == "*" 
+                ? memory.Keys 
+                : GetKeysByRegex(ConvertToRegex(pattern));
+        }
+
+        public List<string> GetKeysByRegex(string pattern)
         {
             var regex = new Regex(pattern);
             var enumerator = this.memory.GetEnumerator();
@@ -368,6 +383,22 @@ namespace ServiceStack.Caching
                 Log.Error(string.Format("Error trying to remove items from cache with this {0} pattern", pattern), ex);
             }
             return keys;
+        }
+
+        public void RemoveExpiredEntries()
+        {
+            var expiredKeys = new List<string>();
+            var enumerator = this.memory.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                var current = enumerator.Current;
+                if (current.Value.HasExpired)
+                {
+                    expiredKeys.Add(current.Key);
+                }
+            }
+
+            RemoveAll(expiredKeys);
         }
 
         public TimeSpan? GetTimeToLive(string key)

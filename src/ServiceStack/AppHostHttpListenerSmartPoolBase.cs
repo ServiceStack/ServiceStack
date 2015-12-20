@@ -35,16 +35,20 @@ namespace ServiceStack
         private const int IdleTimeout = 300;
 
         protected AppHostHttpListenerSmartPoolBase(string serviceName, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices) { threadPoolManager = new SmartThreadPool(IdleTimeout); }
+            : base(serviceName, assembliesWithServices)
+        { threadPoolManager = new SmartThreadPool(IdleTimeout); }
 
         protected AppHostHttpListenerSmartPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices) { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
+            : base(serviceName, assembliesWithServices)
+        { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
 
         protected AppHostHttpListenerSmartPoolBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-            : this(serviceName, handlerPath, CalculatePoolSize(), assembliesWithServices) { }
+            : this(serviceName, handlerPath, CalculatePoolSize(), assembliesWithServices)
+        { }
 
         protected AppHostHttpListenerSmartPoolBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
-            : base(serviceName, handlerPath, assembliesWithServices) { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
+            : base(serviceName, handlerPath, assembliesWithServices)
+        { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
 
         private bool disposed = false;
 
@@ -134,9 +138,9 @@ namespace ServiceStack
             if (Config.DebugMode)
                 log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
-            RaiseReceiveWebRequest(context);
+            OnBeginRequest(context);
 
-            threadPoolManager.QueueWorkItem(() => InitTask(context));
+            threadPoolManager.QueueWorkItem(() => ProcessRequestContext(context));
         }
     }
 }

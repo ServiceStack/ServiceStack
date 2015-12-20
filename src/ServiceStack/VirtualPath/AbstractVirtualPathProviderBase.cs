@@ -22,7 +22,7 @@ namespace ServiceStack.VirtualPath
 
         public virtual string CombineVirtualPath(string basePath, string relativePath)
         {
-            return String.Concat(basePath, VirtualPathSeparator, relativePath);
+            return string.Concat(basePath, VirtualPathSeparator, relativePath);
         }
 
         public virtual bool FileExists(string virtualPath)
@@ -59,6 +59,11 @@ namespace ServiceStack.VirtualPath
         public virtual IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = Int32.MaxValue)
         {
             return RootDirectory.GetAllMatchingFiles(globPattern, maxDepth);
+        }
+
+        public virtual IEnumerable<IVirtualFile> GetAllFiles()
+        {
+            return RootDirectory.GetAllMatchingFiles("*");
         }
 
         public virtual IEnumerable<IVirtualFile> GetRootFiles()

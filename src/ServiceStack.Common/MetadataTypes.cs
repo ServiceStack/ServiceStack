@@ -70,6 +70,7 @@ namespace ServiceStack
         public bool ExcludeGenericBaseTypes { get; set; }
         public bool SettersReturnThis { get; set; }
         public bool MakePropertiesOptional { get; set; }
+        public bool ExportAsTypes { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public bool MakeDataContractsExtensible { get; set; }
         public bool InitializeCollections { get; set; }
@@ -77,10 +78,12 @@ namespace ServiceStack
         public List<string> DefaultImports { get; set; }
         public List<string> IncludeTypes { get; set; }
         public List<string> ExcludeTypes { get; set; }
+        public List<string> TreatTypesAsStrings { get; set; }
 
         public string GlobalNamespace { get; set; }
 
         public HashSet<Type> IgnoreTypes { get; set; }
+        public HashSet<Type> ExportTypes { get; set; }
         public HashSet<Type> ExportAttributes { get; set; }
         public List<string> IgnoreTypesInNamespaces { get; set; }
     }
@@ -93,10 +96,8 @@ namespace ServiceStack
             Types = new List<MetadataType>();
             Operations = new List<MetadataOperationType>();
             Namespaces = new List<string>();
-            Version = 1;
         }
 
-        public int Version { get; set; }
         public MetadataTypesConfig Config { get; set; }
         public List<string> Namespaces { get; set; }
         public List<MetadataType> Types { get; set; }
@@ -116,6 +117,7 @@ namespace ServiceStack
         public string Namespace { get; set; }
         public string[] GenericArgs { get; set; }
         public MetadataTypeName Inherits { get; set; }
+        public MetadataTypeName[] Implements { get; set; }
         public string DisplayType { get; set; }
         public string Description { get; set; }
         public bool ReturnVoidMarker { get; set; }
@@ -137,7 +139,7 @@ namespace ServiceStack
         public List<MetadataTypeName> InnerTypes { get; set; }
 
         public List<string> EnumNames { get; set; }
-        public List<string> EnumValues { get; set; } 
+        public List<string> EnumValues { get; set; }
 
         public string GetFullName()
         {

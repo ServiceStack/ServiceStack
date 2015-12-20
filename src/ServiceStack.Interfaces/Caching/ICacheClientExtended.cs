@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ServiceStack.Caching
 {
@@ -8,5 +9,7 @@ namespace ServiceStack.Caching
     public interface ICacheClientExtended : ICacheClient
     {
         TimeSpan? GetTimeToLive(string key);
+
+        IEnumerable<string> GetKeysByPattern(string pattern);
     }
 }

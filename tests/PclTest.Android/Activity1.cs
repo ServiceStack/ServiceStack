@@ -46,6 +46,7 @@ namespace PclTest.Android
         {
             base.OnCreate(bundle);
             //AndroidPclExportClient.Configure();
+            AndroidPclExportWithXml.Configure();
 
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);

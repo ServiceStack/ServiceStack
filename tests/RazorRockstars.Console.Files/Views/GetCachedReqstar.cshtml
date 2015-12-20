@@ -1,0 +1,27 @@
+﻿@inherits ViewPage<Reqstar>
+
+@{
+    ViewBag.Title = "Viewing {0}yo {1} {2} profile".Fmt(Model.Age, Model.FirstName, Model.LastName);
+    Layout = "HtmlReport";
+}
+<div>
+    <strong>View this page in: </strong>
+    <a href="?format=json">json</a>,
+    <a href="?format=xml">xml</a>,
+    <a href="?format=jsv">jsv</a>,
+    <a href="?format=csv">csv</a>
+    
+    <h3>@Model.FirstName Details</h3>
+    <dl>
+        <dt>Id</dt>
+        <dd>@Model.Id</dd>
+        <dt>Age</dt>
+        <dd>@Model.Age</dd>
+        <dt>First Name</dt>
+        <dd>@Model.FirstName</dd>
+        <dt>LastName</dt>
+        <dd>@Model.LastName</dd>
+    </dl>
+</div>
+
+<!--view:GetCachedReqstar.cshtml-->

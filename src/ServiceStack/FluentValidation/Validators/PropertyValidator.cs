@@ -96,7 +96,10 @@ namespace ServiceStack.FluentValidation.Validators
 
             string error = context.MessageFormatter.BuildMessage(errorSource.GetString());
 
-            var failure = new ValidationFailure(context.PropertyName, error, errorCode, context.PropertyValue);
+            var failure = new ValidationFailure(context.PropertyName, error, errorCode, context.PropertyValue)
+            {
+                PlaceholderValues = context.MessageFormatter.PlaceholderValues
+            };
 
             if (CustomStateProvider != null) {
                 failure.CustomState = CustomStateProvider(context.Instance);

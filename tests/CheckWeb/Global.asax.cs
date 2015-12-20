@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Check.ServiceInterface;
 using Check.ServiceModel;
+using Check.ServiceModel.Types;
 using Funq;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
@@ -33,6 +34,9 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         public override void Configure(Container container)
         {
+            var nativeTypes = this.GetPlugin<NativeTypesFeature>();
+            nativeTypes.MetadataTypesConfig.ExportTypes.Add(typeof(DayOfWeek));
+
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
             {
@@ -73,7 +77,7 @@ namespace CheckWeb
 
             Plugins.Add(new AutoQueryFeature());
             Plugins.Add(new PostmanFeature());
-            Plugins.Add(new CorsFeature());
+            Plugins.Add(new CorsFeature(allowedMethods: "GET, POST, PUT, DELETE, PATCH, OPTIONS"));
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
@@ -88,7 +92,7 @@ namespace CheckWeb
 
             dbFactory.RegisterConnection("SqlServer", 
                 new OrmLiteConnectionFactory(
-                    "Server={0};Database=test;User Id=test;Password=test;".Fmt(Environment.GetEnvironmentVariable("CI_HOST")),
+                    "Server=localhost;Database=test;User Id=test;Password=test;",
                     SqlServerDialect.Provider) {
                         ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
                     });
@@ -114,7 +118,7 @@ namespace CheckWeb
         private void ConfigureSerialization(Container container)
         {
             // Set JSON web services to return idiomatic JSON camelCase properties
-            JsConfig.EmitCamelCaseNames = true;
+            //JsConfig.EmitCamelCaseNames = true;
             //JsConfig.EmitLowercaseUnderscoreNames = true;
 
             // Set JSON web services to return ISO8601 date format
@@ -176,9 +180,9 @@ namespace CheckWeb
             //Plugins.Add(new CorsFeature()); // Uncomment if the services to be available from external sites
         }
 
-        public override List<IVirtualPathProvider> GetVirtualPathProviders()
+        public override List<IVirtualPathProvider> GetVirtualFileSources()
         {
-            var existingProviders = base.GetVirtualPathProviders();
+            var existingProviders = base.GetVirtualFileSources();
             var memFs = new InMemoryVirtualPathProvider(this);
 
             //Get FileSystem Provider
@@ -188,7 +192,7 @@ namespace CheckWeb
             foreach (var file in fs.GetAllMatchingFiles("*.html"))
             {
                 var contents = Minifiers.HtmlAdvanced.Compress(file.ReadAllText());
-                memFs.AddFile(file.VirtualPath, contents);
+                memFs.WriteFile(file.VirtualPath, contents);
             }
 
             //Process all .css files:
@@ -196,7 +200,7 @@ namespace CheckWeb
                 .Where(file => !file.VirtualPath.EndsWith(".min.css")))
             {
                 var contents = Minifiers.Css.Compress(file.ReadAllText());
-                memFs.AddFile(file.VirtualPath, contents);
+                memFs.WriteFile(file.VirtualPath, contents);
             }
 
             //Process all .js files
@@ -207,7 +211,7 @@ namespace CheckWeb
                 {
                     var js = file.ReadAllText();
                     var contents = Minifiers.JavaScript.Compress(js);
-                    memFs.AddFile(file.VirtualPath, contents);
+                    memFs.WriteFile(file.VirtualPath, contents);
                 }
                 catch (Exception ex)
                 {

@@ -175,8 +175,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
         {
-            if (session.UserName == AuthTests.UserNameWithSessionRedirect)
+            if (session.UserAuthName == AuthTests.UserNameWithSessionRedirect)
                 session.ReferrerUrl = AuthTests.SessionRedirectUrl;
+        }
+
+        public int Counter { get; set; }
+    }
+
+    public class IncrSession : IReturn<CustomUserSession>
+    {
+        public int? By { get; set; }
+    }
+
+    public class CustomUserSessionService : Service
+    {
+        public object Any(IncrSession request)
+        {
+            var session = SessionAs<CustomUserSession>();
+            session.Counter += request.By.GetValueOrDefault(1);
+            Request.SaveSession(session);
+            return session;
         }
     }
 
@@ -277,97 +295,102 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class AuthAppHost
+        : AppSelfHostBase
+    {
+        private readonly string webHostUrl;
+        private readonly Action<Container> configureFn;
+
+        public AuthAppHost(string webHostUrl, Action<Container> configureFn = null)
+            : base("Validation Tests", typeof(CustomerService).Assembly)
+        {
+            this.webHostUrl = webHostUrl;
+            this.configureFn = configureFn;
+        }
+
+        private InMemoryAuthRepository userRep;
+
+        public override void Configure(Container container)
+        {
+            SetConfig(new HostConfig { WebHostUrl = webHostUrl, DebugMode = true });
+
+            Plugins.Add(new AuthFeature(() => new CustomUserSession(),
+                GetAuthProviders(), "~/" + AuthTests.LoginUrl)
+            { RegisterPlugins = { new WebSudoFeature() } });
+
+            container.Register(new MemoryCacheClient());
+            userRep = new InMemoryAuthRepository();
+            container.Register<IAuthRepository>(userRep);
+
+            if (configureFn != null)
+            {
+                configureFn(container);
+            }
+
+            CreateUser(1, AuthTests.UserName, null, AuthTests.Password, new List<string> { "TheRole" }, new List<string> { "ThePermission" });
+            CreateUser(2, AuthTests.UserNameWithSessionRedirect, null, AuthTests.PasswordForSessionRedirect);
+            CreateUser(3, null, AuthTests.EmailBasedUsername, AuthTests.PasswordForEmailBasedAccount);
+        }
+
+        public virtual IAuthProvider[] GetAuthProviders()
+        {
+            return new IAuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first
+                    new BasicAuthProvider(), //Sign-in with Basic Auth
+                    new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
+                    new CustomAuthProvider()
+                };
+        }
+
+        private void CreateUser(int id, string username, string email, string password, List<string> roles = null, List<string> permissions = null)
+        {
+            string hash;
+            string salt;
+            new SaltedHash().GetHashAndSaltString(password, out hash, out salt);
+
+            userRep.CreateUserAuth(new UserAuth
+            {
+                Id = id,
+                DisplayName = "DisplayName",
+                Email = email ?? "as@if{0}.com".Fmt(id),
+                UserName = username,
+                FirstName = "FirstName",
+                LastName = "LastName",
+                PasswordHash = hash,
+                Salt = salt,
+                Roles = roles,
+                Permissions = permissions
+            }, password);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            // Needed so that when the derived class tests run the same users can be added again.
+            userRep.Clear();
+            base.Dispose(disposing);
+        }
+    }
+
     public class AuthTests
     {
         protected virtual string VirtualDirectory { get { return ""; } }
         protected virtual string ListeningOn { get { return "http://localhost:1337/"; } }
         protected virtual string WebHostUrl { get { return "http://mydomain.com"; } }
 
-
-        private const string UserName = "user";
-        private const string Password = "p@55word";
+        public const string UserName = "user";
+        public const string Password = "p@55word";
         public const string UserNameWithSessionRedirect = "user2";
         public const string PasswordForSessionRedirect = "p@55word2";
         public const string SessionRedirectUrl = "specialLandingPage.html";
         public const string LoginUrl = "specialLoginPage.html";
-        private const string EmailBasedUsername = "user@email.com";
-        private const string PasswordForEmailBasedAccount = "p@55word3";
+        public const string EmailBasedUsername = "user@email.com";
+        public const string PasswordForEmailBasedAccount = "p@55word3";
 
-        public class AuthAppHostHttpListener
-            : AppHostHttpListenerBase
-        {
-            private readonly string webHostUrl;
-            private Action<Container> configureFn;
-
-            public AuthAppHostHttpListener(string webHostUrl, Action<Container> configureFn=null)
-                : base("Validation Tests", typeof(CustomerService).Assembly)
-            {
-                this.webHostUrl = webHostUrl;
-                this.configureFn = configureFn;
-            }
-
-            private InMemoryAuthRepository userRep;
-
-            public override void Configure(Container container)
-            {
-                SetConfig(new HostConfig { WebHostUrl = webHostUrl, DebugMode = true });
-
-                Plugins.Add(new AuthFeature(() => new CustomUserSession(),
-                    new IAuthProvider[] { //Www-Authenticate should contain basic auth, therefore register this provider first
-                        new BasicAuthProvider(), //Sign-in with Basic Auth
-						new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
-                        new CustomAuthProvider()
-					}, "~/" + LoginUrl) { RegisterPlugins = { new WebSudoFeature() } });
-
-                container.Register(new MemoryCacheClient());
-                userRep = new InMemoryAuthRepository();
-                container.Register<IAuthRepository>(userRep);
-
-                if (configureFn != null)
-                {
-                    configureFn(container);
-                }
-
-                CreateUser(1, UserName, null, Password, new List<string> { "TheRole" }, new List<string> { "ThePermission" });
-                CreateUser(2, UserNameWithSessionRedirect, null, PasswordForSessionRedirect);
-                CreateUser(3, null, EmailBasedUsername, PasswordForEmailBasedAccount);
-            }
-
-            private void CreateUser(int id, string username, string email, string password, List<string> roles = null, List<string> permissions = null)
-            {
-                string hash;
-                string salt;
-                new SaltedHash().GetHashAndSaltString(password, out hash, out salt);
-
-                userRep.CreateUserAuth(new UserAuth
-                {
-                    Id = id,
-                    DisplayName = "DisplayName",
-                    Email = email ?? "as@if{0}.com".Fmt(id),
-                    UserName = username,
-                    FirstName = "FirstName",
-                    LastName = "LastName",
-                    PasswordHash = hash,
-                    Salt = salt,
-                    Roles = roles,
-                    Permissions = permissions
-                }, password);
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                // Needed so that when the derived class tests run the same users can be added again.
-                userRep.Clear();
-                base.Dispose(disposing);
-            }
-        }
-
-        AuthAppHostHttpListener appHost;
+        ServiceStackHost appHost;
 
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
-            appHost = new AuthAppHostHttpListener(WebHostUrl, Configure);
+            appHost = new AuthAppHost(WebHostUrl, Configure);
             appHost.Init();
             appHost.Start(ListeningOn);
         }
@@ -514,6 +537,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async Task Does_work_with_BasicAuth_Async()
+        {
+            try
+            {
+                var client = GetClientWithUserPassword();
+                var request = new Secured { Name = "test" };
+                var response = await client.SendAsync<SecureResponse>(request);
+                Assert.That(response.Result, Is.EqualTo(request.Name));
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.Fail(webEx.Message);
+            }
+        }
+
+        [Test]
         public void Does_always_send_BasicAuth()
         {
             try
@@ -556,8 +595,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     RememberMe = true,
                 });
 
-                authResponse.PrintDump();
-
                 var request = new Secured { Name = "test" };
                 var response = client.Send<SecureResponse>(request);
                 Assert.That(response.Result, Is.EqualTo(request.Name));
@@ -582,8 +619,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Password = "p@55word",
                     RememberMe = true,
                 });
-
-                authResponse.PrintDump();
 
                 var clientWithHeaders = (JsonServiceClient)GetClient();
                 clientWithHeaders.Headers["X-ss-pid"] = authResponse.SessionId;
@@ -613,8 +648,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Password = "p@55word",
                     RememberMe = true,
                 });
-
-            authResponse.PrintDump();
 
             var response = await client.SendAsync<SecureResponse>(request);
 
@@ -794,7 +827,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 Console.WriteLine(authResponse.Dump());
 
-                for (int i = 0; i < 500; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     var request = new Secured { Name = "test" };
                     var response = client.Send<SecureResponse>(request);
@@ -806,6 +839,57 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.Fail(webEx.Message);
             }
+        }
+
+        [Test]
+        public void Does_generate_new_SessionCookies_when_Authenticating_multiple_times()
+        {
+            var client = GetClient();
+            string lastPermId = null;
+
+            3.Times(x =>
+            {
+                var authResponse = client.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "p@55word",
+                    RememberMe = true,
+                });
+
+                var permId = client.GetCookieValues()[SessionFeature.PermanentSessionId];
+                Assert.That(permId, Is.Not.EqualTo(lastPermId));
+
+                var ssOpt = client.GetCookieValues()[SessionFeature.SessionOptionsKey];
+                Assert.That(ssOpt, Is.Not.Null);
+
+                lastPermId = permId;
+            });
+        }
+
+        [Test]
+        public void Does_retain_Session_after_authenticating_multiple_times()
+        {
+            var client = GetClient();
+            CustomUserSession lastSession = null;
+            3.Times(x =>
+            {
+                var authResponse = client.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "p@55word",
+                    RememberMe = true,
+                });
+
+                var customSession = client.Send(new IncrSession { By = 1 });
+                Assert.That(customSession.Counter,
+                    lastSession == null ? Is.EqualTo(1) : Is.EqualTo(lastSession.Counter + 1));
+
+                lastSession = customSession;
+            });
+
+            Assert.That(lastSession.Counter, Is.EqualTo(3));
         }
 
         [Test]
@@ -1267,10 +1351,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
                 Console.WriteLine(webEx.ResponseDto.Dump());
             }
-            
+
             // Should still be authenticated, but not elevated
-            try 
-            { 
+            try
+            {
                 client.Send<RequiresWebSudoResponse>(request);
                 Assert.Fail("Shouldn't be allowed");
             }

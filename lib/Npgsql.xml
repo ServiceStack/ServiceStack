@@ -2595,6 +2595,13 @@
             against a PostgreSQL database. This class cannot be inherited.
             </summary>
         </member>
+        <member name="F:Npgsql.NpgsqlCommand._prepareConnectionOpenId">
+            <summary>
+            For prepared commands, captures the connection's <see cref="P:Npgsql.NpgsqlConnection.OpenCounter"/>
+            at the time the command was prepared. This allows us to know whether the connection was
+            closed since the command was prepared.
+            </summary>
+        </member>
         <member name="M:Npgsql.NpgsqlCommand.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:Npgsql.NpgsqlCommand">NpgsqlCommand</see> class.
@@ -3293,6 +3300,13 @@
             Called to validate server's certificate during SSL handshake
             </summary>
         </member>
+        <member name="P:Npgsql.NpgsqlConnection.OpenCounter">
+            <summary>
+            A counter that gets incremented every time the connection is (re-)opened.
+            This allows us to identify an "instance" of connection, which is useful since
+            some resources are released when a connection is closed (e.g. prepared statements).
+            </summary>
+        </member>
         <member name="P:Npgsql.NpgsqlConnection.ConnectionString">
             <summary>
             Gets or sets the string used to connect to a PostgreSQL database.
@@ -3453,6 +3467,11 @@
             Always retuna Version3
             </summary>
         </member>
+        <member name="P:Npgsql.NpgsqlConnection.IsRedshift">
+            <summary>
+            Whether the backend is an AWS Redshift instance
+            </summary>
+        </member>
         <member name="P:Npgsql.NpgsqlConnection.ProcessID">
             <summary>
             Process id of backend server.
@@ -3582,6 +3601,11 @@
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.Password">
             <summary>
             Sets the login password as a string.
+            </summary>
+        </member>
+        <member name="P:Npgsql.NpgsqlConnectionStringBuilder.Krbsrvname">
+            <summary>
+            Gets or sets the krbsrvname.
             </summary>
         </member>
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.SSL">
@@ -3721,6 +3745,11 @@
             the application developer from connection pooling internals.
             </summary>
         </member>
+        <member name="F:Npgsql.NpgsqlConnector._isRedshift">
+            <summary>
+            Whether the backend is an AWS Redshift instance
+            </summary>
+        </member>
         <member name="M:Npgsql.NpgsqlConnector.#ctor(Npgsql.NpgsqlConnectionStringBuilder,System.Boolean,System.Boolean)">
             <summary>
             Constructor.
@@ -3852,6 +3881,11 @@
         <member name="P:Npgsql.NpgsqlConnector.ServerVersion">
             <summary>
             Version of backend server this connector is connected to.
+            </summary>
+        </member>
+        <member name="P:Npgsql.NpgsqlConnector.IsRedshift">
+            <summary>
+            Whether the backend is an AWS Redshift instance
             </summary>
         </member>
         <member name="P:Npgsql.NpgsqlConnector.Socket">

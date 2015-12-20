@@ -1,14 +1,56 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
+using Autofac;
 using Check.ServiceInterface;
 using Funq;
 using ServiceStack;
+using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 
 namespace CheckHttpListener
 {
+    [Route("/request")]
+    public class Request : IReturn<Response> { }
+    public class Response { }
+
+    public class MyServices : Service
+    {
+        public object Any(Request request)
+        {
+            return new Response();
+        }
+    }
+
+    public class AutofacIocAdapter : IContainerAdapter
+    {
+        private readonly IContainer _container;
+
+        public AutofacIocAdapter(IContainer container)
+        {
+            _container = container;
+        }
+
+        public T Resolve<T>()
+        {
+            return _container.Resolve<T>();
+        }
+
+        public T TryResolve<T>()
+        {
+            T result;
+
+            if (_container.TryResolve<T>(out result))
+            {
+                return result;
+            }
+
+            return default(T);
+        }
+    }
+
     public class AppHost : AppHostHttpListenerBase
     {
         public AppHost() : base("Check HttpListener Tests", 
@@ -32,7 +74,29 @@ namespace CheckHttpListener
             });
 
             //Plugins.Add(new NativeTypesFeature());
+
+            //var builder = new ContainerBuilder();
+            //var autofac = builder.Build();
+            //container.Adapter = new AutofacIocAdapter(autofac);
+
+            //Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+            //    new IAuthProvider[] {
+            //        new BasicAuthProvider(AppSettings), 
+            //    }));
+
+            container.Register<IConnectionString>(c => 
+                new FoundationConnectionString("My Connection"));
         }
+
+        //public override void OnAfterInit()
+        //{
+        //    base.OnAfterInit();
+
+        //    using (var authService = Container.Resolve<AuthenticateService>())
+        //    {
+        //        authService.Authenticate(new Authenticate());
+        //    }
+        //}
     }
 
     class Program
@@ -73,7 +137,6 @@ namespace CheckHttpListener
                 ex.StatusCode.ToString().Print();
                 ex.StatusDescription.Print();
                 ex.ResponseBody.Print();
-                ex.ResponseStatus.PrintDump();
             }
         }
     }
@@ -130,6 +193,34 @@ namespace CheckHttpListener
         {
             int filesCount = Request.Files.Length;
             Console.WriteLine(filesCount); // Always 0
+        }
+    }
+
+    public interface IConnectionString
+    {
+        string ConnectionString { get; }
+    }
+
+    class FoundationConnectionString : IConnectionString
+    {
+        public FoundationConnectionString(string connectionString)
+        {
+            ConnectionString = connectionString;
+        }
+
+        public string ConnectionString { get; set; }
+    }
+
+    [Route("/test")]
+    public class Test : IReturn<string> { }
+
+    public class TestService : Service
+    {
+        public IConnectionString Config { get; set; }
+
+        public object Any(Test request)
+        {
+            return Config.ConnectionString;
         }
     }
 }

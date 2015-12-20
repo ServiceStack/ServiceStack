@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,14 +12,16 @@ namespace ServiceStack.NativeTypes.Java
     public class JavaGenerator
     {
         readonly MetadataTypesConfig Config;
+        readonly List<MetadataType> AllTypes;
         List<string> conflictTypeNames = new List<string>();
 
         public JavaGenerator(MetadataTypesConfig config)
         {
             Config = config;
+            AllTypes = new List<MetadataType>();
         }
 
-        public static string DefaultGlobalNamespace = "dto";
+        public static string DefaultGlobalNamespace = "dtos";
 
         public static List<string> DefaultImports = new List<string>
         {
@@ -50,7 +53,7 @@ namespace ServiceStack.NativeTypes.Java
         }
 
         //http://java.interoperabilitybridges.com/articles/data-types-interoperability-between-net-and-java#h4Section2
-        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
+        public static ConcurrentDictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"String", "String"},
             {"Boolean", "Boolean"},
@@ -73,7 +76,7 @@ namespace ServiceStack.NativeTypes.Java
             {"Type", "Class"},
             {"List", "ArrayList"},
             {"Dictionary", "HashMap"},
-        };
+        }.ToConcurrentDictionary();
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
@@ -103,7 +106,8 @@ namespace ServiceStack.NativeTypes.Java
             var sb = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(metadata.Version));
+            sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
+            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
@@ -115,10 +119,16 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
+
+            foreach (var typeName in Config.TreatTypesAsStrings.Safe())
+            {
+                TypeAliases[typeName] = "String";
+            }
 
             if (Config.Package != null)
             {
@@ -137,20 +147,18 @@ namespace ServiceStack.NativeTypes.Java
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            var allTypes = new List<MetadataType>();
-            allTypes.AddRange(types);
-            allTypes.AddRange(responseTypes);
-            allTypes.AddRange(requestTypes);
-            allTypes.RemoveAll(x => x.IgnoreType(Config));
+            AllTypes.AddRange(requestTypes);
+            AllTypes.AddRange(responseTypes);
+            AllTypes.AddRange(types);
 
             //TypeScript doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
+            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.SplitOnFirst('`')[0])
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
 
-            this.conflictTypeNames = allTypes
+            this.conflictTypeNames = AllTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
@@ -161,7 +169,7 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("{");
 
             //ServiceStack core interfaces
-            foreach (var type in allTypes)
+            foreach (var type in AllTypes)
             {
                 var fullTypeName = type.GetFullName();
                 if (requestTypes.Contains(type))
@@ -290,10 +298,13 @@ namespace ServiceStack.NativeTypes.Java
                         var value = type.EnumValues != null ? type.EnumValues[i] : null;
 
                         var delim = i == type.EnumNames.Count - 1 ? ";" : ",";
+                        var serializeAs = JsConfig.TreatEnumAsInteger || (type.Attributes.Safe().Any(x => x.Name == "Flags"))
+                            ? "@SerializedName(\"{0}\") ".Fmt(value)
+                            : "";
 
                         sb.AppendLine(value == null
                             ? "{0}{1}".Fmt(name.ToPascalCase(), delim)
-                            : "@SerializedName(\"{1}\") {0}({1}){2}".Fmt(name.ToPascalCase(), value, delim));
+                            : serializeAs + "{0}({1}){2}".Fmt(name.ToPascalCase(), value, delim));
 
                         hasIntValue = hasIntValue || value != null;
                     }
@@ -321,17 +332,15 @@ namespace ServiceStack.NativeTypes.Java
                 if (type.Inherits != null)
                     extends.Add(Type(type.Inherits).InheritedType());
 
-                var extendsModifier = " extends ";
-
                 string responseTypeExpression = null;
 
+                var interfaces = new List<string>();
                 if (options.ImplementsFn != null)
                 {
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
                     {
-                        extends.Add(implStr);
-                        extendsModifier = " implements ";
+                        interfaces.Add(implStr);
 
                         if (implStr.StartsWith("IReturn<"))
                         {
@@ -344,13 +353,21 @@ namespace ServiceStack.NativeTypes.Java
                                 : "{0}.class".Fmt(returnType);
                         }
                     }
+                    if (!type.Implements.IsEmpty())
+                    {
+                        foreach (var interfaceRef in type.Implements)
+                        {
+                            interfaces.Add(Type(interfaceRef));
+                        }
+                    }
                 }
 
-                var extend = extends.Count == 1 ?
-                      extendsModifier + extends[0]
-                    : extends.Count > 1 ? 
-                      " extends " + extends[0] + " implements " + string.Join(", ", extends.Skip(1)) : 
-                      "";
+                var extend = extends.Count > 0 
+                    ? " extends " + extends[0]
+                    : "";
+
+                if (interfaces.Count > 0)
+                    extend += " implements " + string.Join(", ", interfaces.ToArray());
 
                 var addPropertyAccessors = Config.AddPropertyAccessors && !type.IsInterface();
                 var settersReturnType = addPropertyAccessors && Config.SettersReturnThis ? typeName : null;
@@ -818,11 +835,6 @@ namespace ServiceStack.NativeTypes.Java
                     : name;
 
             return fieldName;
-
-            //var propName = name.ToCamelCase(); //Always use Java conventions for now
-            //return JavaKeyWords.Contains(propName)
-            //    ? propName.ToPascalCase()
-            //    : propName;
         }
 
         public static MetadataAttribute ToMetadataAttribute(this MetadataRoute route)

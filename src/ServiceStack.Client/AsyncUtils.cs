@@ -131,7 +131,7 @@ namespace ServiceStack
         {
             return token.IsCancellationRequested
                 ? TaskConstants.Canceled
-                : Task.Factory.StartNew(l => ((Stream)l).Flush(), stream, token);
+                : Task.Factory.StartNew(l => ((Stream)l).Flush(), stream, token, TaskCreationOptions.None, TaskScheduler.Default);
         }
 
         public static Task<int> ReadAsync(this Stream stream, byte[] buffer, int offset, int count)

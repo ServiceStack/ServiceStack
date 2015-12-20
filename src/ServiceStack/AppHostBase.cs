@@ -13,7 +13,8 @@ namespace ServiceStack
     public abstract class AppHostBase : ServiceStackHost
     {
         protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices) { }
+            : base(serviceName, assembliesWithServices)
+        { }
 
         public override string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
         {

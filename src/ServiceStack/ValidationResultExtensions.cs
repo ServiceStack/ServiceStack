@@ -1,4 +1,5 @@
-﻿using ServiceStack.FluentValidation.Results;
+﻿using System.Collections.Generic;
+using ServiceStack.FluentValidation.Results;
 using ServiceStack.Validation;
 
 namespace ServiceStack
@@ -14,7 +15,12 @@ namespace ServiceStack
         {
             var validationResult = new ValidationErrorResult();
             foreach (var error in result.Errors)
-                validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage, error.AttemptedValue));
+            {
+                validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage, error.AttemptedValue)
+                {
+                    Meta = error.CustomState as Dictionary<string, string> ?? error.PlaceholderValues
+                });
+            }
 
             return validationResult;
         }

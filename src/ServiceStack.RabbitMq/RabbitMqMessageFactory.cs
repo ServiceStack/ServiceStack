@@ -63,7 +63,7 @@ namespace ServiceStack.RabbitMq
             ConnectionFactory = connectionFactory;
         }
 
-        public IMessageQueueClient CreateMessageQueueClient()
+        public virtual IMessageQueueClient CreateMessageQueueClient()
         {
             return new RabbitMqQueueClient(this) {
                 RetryCount = RetryCount,
@@ -72,7 +72,7 @@ namespace ServiceStack.RabbitMq
             };
         }
 
-        public IMessageProducer CreateMessageProducer()
+        public virtual IMessageProducer CreateMessageProducer()
         {
             return new RabbitMqProducer(this) {
                 RetryCount = RetryCount,
@@ -81,7 +81,7 @@ namespace ServiceStack.RabbitMq
             };
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
         }
     }

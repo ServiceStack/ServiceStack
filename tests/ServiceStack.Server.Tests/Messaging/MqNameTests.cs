@@ -9,8 +9,8 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Does_resolve_the_same_default_QueueNames()
         {
-            Assert.That(new QueueNames(typeof(HelloIntro)).In, Is.EqualTo("mq:Hello.inq"));
-            Assert.That(QueueNames<HelloIntro>.In, Is.EqualTo("mq:Hello.inq"));
+            Assert.That(new QueueNames(typeof(HelloIntro)).In, Is.EqualTo("mq:HelloIntro.inq"));
+            Assert.That(QueueNames<HelloIntro>.In, Is.EqualTo("mq:HelloIntro.inq"));
         }
 
         public class TestPrefix { }

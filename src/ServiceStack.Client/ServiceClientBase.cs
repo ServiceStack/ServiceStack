@@ -5,13 +5,13 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Reflection;
+using ServiceStack.Auth;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
@@ -31,7 +31,7 @@ namespace ServiceStack
      * Need to provide async request options
      * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
      */
-    public abstract class ServiceClientBase : IServiceClient, IMessageProducer
+    public abstract class ServiceClientBase : IServiceClient, IMessageProducer, IHasCookieContainer
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
@@ -80,7 +80,7 @@ namespace ServiceStack
         /// </summary>
         public INameValueCollection Headers { get; private set; }
 
-        public const string DefaultHttpMethod = "POST";
+        public const string DefaultHttpMethod = HttpMethods.Post;
         public static string DefaultUserAgent = "ServiceStack .NET Client " + Env.ServiceStackVersion;
 
         readonly AsyncServiceClient asyncClient;
@@ -108,6 +108,8 @@ namespace ServiceStack
 
             asyncClient.HandleCallbackOnUiThread = this.HandleCallbackOnUiThread = true;
             asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
+
+            JsConfig.InitStatics();
         }
 
         protected ServiceClientBase(string syncReplyBaseUri, string asyncOneWayBaseUri)
@@ -198,6 +200,9 @@ namespace ServiceStack
         public string SyncReplyBaseUri { get; set; }
 
         public string AsyncOneWayBaseUri { get; set; }
+
+        public int Version { get; set; }
+        public string SessionId { get; set; }
 
         private string userAgent;
         public string UserAgent
@@ -437,7 +442,7 @@ namespace ServiceStack
         {
             using (__requestAccess())
             {
-                SerializeToStream(requestContext, request, stream);
+                SerializeRequestToStream(requestContext, request, stream);
             }
         }
 
@@ -468,7 +473,7 @@ namespace ServiceStack
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
-            var client = SendRequest(requestUri, requests);
+            var client = SendRequest(HttpMethods.Post, requestUri, requests);
 
             try
             {
@@ -506,15 +511,16 @@ namespace ServiceStack
         public virtual TResponse Send<TResponse>(object request)
         {
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
 
             if (ResultsFilter != null)
             {
-                var response = ResultsFilter(typeof(TResponse), HttpMethod ?? DefaultHttpMethod, requestUri, request);
+                var response = ResultsFilter(typeof(TResponse), httpMethod, requestUri, request);
                 if (response is TResponse)
                     return (TResponse)response;
             }
 
-            var client = SendRequest(requestUri, request);
+            var client = SendRequest(httpMethod, requestUri, request);
 
             try
             {
@@ -523,9 +529,9 @@ namespace ServiceStack
 
                 if (ResultsFilterResponse != null)
                 {
-                    ResultsFilterResponse(webResponse, response, HttpMethod ?? DefaultHttpMethod, requestUri, request);
+                    ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
                 }
-                
+
                 return response;
             }
             catch (Exception ex)
@@ -567,29 +573,10 @@ namespace ServiceStack
 
                     var client = createWebRequest();
 
-                    var webEx = ex as WebException;
-                    if (webEx != null && webEx.Response != null)
-                    {
-                        var headers = ((HttpWebResponse)webEx.Response).Headers;
-                        var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
-                            HttpHeaders.WwwAuthenticate, x => x.Contains("realm"));
-
-                        if (doAuthHeader == null)
-                        {
-                            client.AddBasicAuth(this.UserName, this.Password);
-                        }
-                        else
-                        {
-                            this.authInfo = new AuthenticationInfo(doAuthHeader);
-                            client.AddAuthInfo(this.UserName, this.Password, authInfo);
-                        }
-                    }
-
+                    HandleAuthException(ex, client);
 
                     if (OnAuthenticationRequired != null)
-                    {
                         OnAuthenticationRequired(client);
-                    }
 
                     var webResponse = getResponse(client);
                     response = HandleResponse<TResponse>(webResponse);
@@ -615,6 +602,27 @@ namespace ServiceStack
 
             response = default(TResponse);
             return false;
+        }
+
+        private void HandleAuthException(Exception ex, WebRequest client)
+        {
+            var webEx = ex as WebException;
+            if (webEx != null && webEx.Response != null)
+            {
+                var headers = ((HttpWebResponse)webEx.Response).Headers;
+                var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
+                    HttpHeaders.WwwAuthenticate, x => x.Contains("realm"));
+
+                if (doAuthHeader == null)
+                {
+                    client.AddBasicAuth(this.UserName, this.Password);
+                }
+                else
+                {
+                    this.authInfo = new AuthenticationInfo(doAuthHeader);
+                    client.AddAuthInfo(this.UserName, this.Password, authInfo);
+                }
+            }
         }
 
         readonly ConcurrentDictionary<Type, Action<Exception, string>> ResponseHandlers
@@ -703,11 +711,6 @@ namespace ServiceStack
             }
         }
 
-        private WebRequest SendRequest(string requestUri, object request)
-        {
-            return SendRequest(HttpMethod ?? DefaultHttpMethod, requestUri, request);
-        }
-
         private WebRequest SendRequest(string httpMethod, string requestUri, object request)
         {
             return PrepareWebRequest(httpMethod, requestUri, request, client =>
@@ -715,15 +718,32 @@ namespace ServiceStack
                 using (__requestAccess())
                 using (var requestStream = PclExport.Instance.GetRequestStream(client))
                 {
-                    SerializeToStream(null, request, requestStream);
+                    SerializeRequestToStream(null, request, requestStream);
                 }
             });
+        }
+
+        private void SerializeRequestToStream(IRequest requestContext, object request, Stream requestStream)
+        {
+            var str = request as string;
+            var bytes = request as byte[];
+            var stream = request as Stream;
+            if (str != null)
+                requestStream.Write(str);
+            else if (bytes != null)
+                requestStream.Write(bytes, 0, bytes.Length);
+            else if (stream != null)
+                stream.WriteTo(requestStream);
+            else
+                SerializeToStream(null, request, requestStream);
         }
 
         private WebRequest PrepareWebRequest(string httpMethod, string requestUri, object request, Action<HttpWebRequest> sendRequestAction)
         {
             if (httpMethod == null)
                 throw new ArgumentNullException("httpMethod");
+
+            this.PopulateRequestMetadata(request);
 
             if (!httpMethod.HasRequestBody() && request != null)
             {
@@ -752,17 +772,13 @@ namespace ServiceStack
                     readWriteTimeout: ReadWriteTimeout,
                     userAgent: UserAgent);
 
-                if (this.credentials != null) client.Credentials = this.credentials;
+                if (this.credentials != null)
+                    client.Credentials = this.credentials;
 
-                if (null != this.authInfo)
-                {
+                if (this.authInfo != null)
                     client.AddAuthInfo(this.UserName, this.Password, authInfo);
-                }
-                else
-                {
-                    if (this.AlwaysSendBasicAuthHeader) 
-                        client.AddBasicAuth(this.UserName, this.Password);
-                }
+                else if (this.AlwaysSendBasicAuthHeader)
+                    client.AddBasicAuth(this.UserName, this.Password);
 
                 if (!DisableAutoCompression)
                 {
@@ -780,7 +796,7 @@ namespace ServiceStack
                 {
                     client.ContentType = ContentType;
 
-                    if (sendRequestAction != null) 
+                    if (sendRequestAction != null)
                         sendRequestAction(client);
                 }
             }
@@ -860,15 +876,32 @@ namespace ServiceStack
             Post(requestDto);
         }
 
-        public virtual void SendOneWay(object requestDto)
+        public static string GetExplicitMethod(object request)
         {
-            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
-            SendOneWay(HttpMethods.Post, requestUri, requestDto);
+            return request is IGet ?
+                  HttpMethods.Get
+                : request is IPost ?
+                  HttpMethods.Post
+                : request is IPut ?
+                  HttpMethods.Put
+                : request is IDelete ?
+                  HttpMethods.Delete
+                : request is IPatch ?
+                  HttpMethods.Patch :
+                  null;
+        }
+
+        public virtual void SendOneWay(object request)
+        {
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
+            SendOneWay(httpMethod, requestUri, request);
         }
 
         public virtual void SendOneWay(string relativeOrAbsoluteUrl, object request)
         {
-            SendOneWay(HttpMethods.Post, relativeOrAbsoluteUrl, request);
+            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
+            SendOneWay(httpMethod, relativeOrAbsoluteUrl, request);
         }
 
         public virtual void SendAllOneWay(IEnumerable<object> requests)
@@ -900,7 +933,7 @@ namespace ServiceStack
                     throw;
                 }
 
-                using(response){} //auto dispose
+                using (response) { } //auto dispose
             }
         }
 
@@ -909,10 +942,12 @@ namespace ServiceStack
             return SendAsync<TResponse>((object)requestDto);
         }
 
-        public virtual Task<TResponse> SendAsync<TResponse>(object requestDto)
+        public virtual Task<TResponse> SendAsync<TResponse>(object request)
         {
-            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
-            return asyncClient.SendAsync<TResponse>(HttpMethods.Post, requestUri, requestDto);
+            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
+
+            return asyncClient.SendAsync<TResponse>(httpMethod, requestUri, request);
         }
 
         public virtual Task<HttpWebResponse> SendAsync(IReturnVoid requestDto)
@@ -1111,6 +1146,26 @@ namespace ServiceStack
             }
         }
 
+        public void AddHeader(string name, string value)
+        {
+            Headers[name] = value;
+        }
+
+        public void ClearCookies()
+        {
+            CookieContainer = new CookieContainer();
+        }
+
+        public Dictionary<string, string> GetCookieValues()
+        {
+            return CookieContainer.ToDictionary(BaseUri);
+        }
+
+        public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
+        {
+            this.SetCookie(new Uri(BaseUri), name, value,
+                expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : (DateTime?)null);
+        }
 
         public virtual void Get(IReturnVoid requestDto)
         {
@@ -1339,7 +1394,7 @@ namespace ServiceStack
                 var queryString = QueryStringSerializer.SerializeToString(request);
 
                 var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
-                var boundary = "----------------------------" + Stopwatch.GetTimestamp().ToString("x");
+                var boundary = "----------------------------" + Guid.NewGuid().ToString("N");
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
                 var newLine = "\r\n";
@@ -1447,7 +1502,7 @@ namespace ServiceStack
             {
                 return (TResponse)Convert.ChangeType(webResponse, typeof(TResponse), null);
             }
-            if (typeof(TResponse) == typeof(Stream)) 
+            if (typeof(TResponse) == typeof(Stream))
             {
                 return (TResponse)(object)webResponse.GetResponseStream();
             }
@@ -1482,7 +1537,7 @@ namespace ServiceStack
     {
 #if !(NETFX_CORE || SL5 || PCL)
         public static TResponse PostFile<TResponse>(this IRestClient client,
-            string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType) 
+            string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
             using (FileStream fileStream = fileToUpload.OpenRead())
             {
@@ -1490,7 +1545,7 @@ namespace ServiceStack
             }
         }
 
-        public static TResponse PostFileWithRequest<TResponse>(this IRestClient client, 
+        public static TResponse PostFileWithRequest<TResponse>(this IRestClient client,
             FileInfo fileToUpload, object request, string fieldName = "upload")
         {
             return client.PostFileWithRequest<TResponse>(request.ToPostUrl(), fileToUpload, request, fieldName);
@@ -1502,9 +1557,39 @@ namespace ServiceStack
             using (FileStream fileStream = fileToUpload.OpenRead())
             {
                 return client.PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName);
-            }            
+            }
         }
 #endif
+
+        public static void PopulateRequestMetadata(this IHasSessionId client, object request)
+        {
+            if (client.SessionId != null)
+            {
+                var hasSession = request as IHasSessionId;
+                if (hasSession != null && hasSession.SessionId == null)
+                    hasSession.SessionId = client.SessionId;
+            }
+            var clientVersion = client as IHasVersion;
+            if (clientVersion != null && clientVersion.Version > 0)
+            {
+                var hasVersion = request as IHasVersion;
+                if (hasVersion != null && hasVersion.Version <= 0)
+                    hasVersion.Version = clientVersion.Version;
+            }
+        }
+
+        public static Dictionary<string, string> ToDictionary(this CookieContainer cookies, string baseUri)
+        {
+            var to = new Dictionary<string, string>();
+            if (cookies == null)
+                return to;
+
+            foreach (Cookie cookie in cookies.GetCookies(new Uri(baseUri)))
+            {
+                to[cookie.Name] = cookie.Value;
+            }
+            return to;
+        }
 
         public static HttpWebResponse Get(this IRestClient client, object request)
         {
@@ -1577,6 +1662,32 @@ namespace ServiceStack
                 throw new NotSupportedException();
             return c.Head(relativeOrAbsoluteUrl);
         }
+
+        public static void SetCookie(this IServiceClient client, Uri baseUri, string name, string value,
+            DateTime? expiresAt = null, string path = "/",
+            bool? httpOnly = null, bool? secure = null)
+        {
+            var hasCookies = client as IHasCookieContainer;
+            if (hasCookies == null)
+                throw new NotSupportedException("Client does not implement IHasCookieContainer");
+
+            var cookie = new Cookie(name, value, path);
+            if (expiresAt != null)
+                cookie.Expires = expiresAt.Value;
+            if (path != null)
+                cookie.Path = path;
+            if (httpOnly != null)
+                cookie.HttpOnly = httpOnly.Value;
+            if (secure != null)
+                cookie.Secure = secure.Value;
+
+            hasCookies.CookieContainer.Add(baseUri, cookie);
+        }
+    }
+
+    public interface IHasCookieContainer
+    {
+        CookieContainer CookieContainer { get; }
     }
 
     public delegate object ResultsFilterDelegate(Type responseType, string httpMethod, string requestUri, object request);

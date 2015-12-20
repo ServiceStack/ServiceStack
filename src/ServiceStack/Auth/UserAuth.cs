@@ -303,6 +303,30 @@ namespace ServiceStack.Auth
                 Items = from.Items,
             };
         }
+
+        public static void RecordSuccessfulLogin(this IUserAuthRepository repo, IUserAuth userAuth)
+        {
+            var feature = HostContext.GetPlugin<AuthFeature>();
+            if (feature == null || feature.MaxLoginAttempts == null) return;
+
+            userAuth.InvalidLoginAttempts = 0;
+            userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+            repo.SaveUserAuth(userAuth);
+        }
+
+        public static void RecordInvalidLoginAttempt(this IUserAuthRepository repo, IUserAuth userAuth)
+        {
+            var feature = HostContext.GetPlugin<AuthFeature>();
+            if (feature == null || feature.MaxLoginAttempts == null) return;
+
+            userAuth.InvalidLoginAttempts += 1;
+            userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+            if (userAuth.InvalidLoginAttempts >= feature.MaxLoginAttempts.Value)
+            {
+                userAuth.LockedDate = userAuth.LastLoginAttempt;
+            }
+            repo.SaveUserAuth(userAuth);
+        }
     }
 
 }

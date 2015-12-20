@@ -14,19 +14,19 @@ namespace ServiceStack.Razor.Managers.RazorGen
         }
 
         private static readonly HashSet<string> namespaces = new HashSet<string>()
-            {
-                "System",
-            };
+        {
+            "System",
+        };
 
         private readonly List<RazorCodeTransformerBase> codeTransformers = new List<RazorCodeTransformerBase>
-            {
-                new AddGeneratedClassAttribute(),
-                new AddPageVirtualPathAttribute(),
-                new SetImports( namespaces, replaceExisting: false ),
-                new RemoveLineHiddenPragmas(),
-                new MakeTypePartial(),
-                new WebConfigTransformer()
-            };
+        {
+            new AddGeneratedClassAttribute(),
+            new AddPageVirtualPathAttribute(),
+            new SetImports( namespaces, replaceExisting: false ),
+            new RemoveLineHiddenPragmas(),
+            new MakeTypePartial(),
+            new WebConfigTransformer()
+        };
 
         protected override IEnumerable<RazorCodeTransformerBase> CodeTransformers
         {
@@ -39,11 +39,11 @@ namespace ServiceStack.Razor.Managers.RazorGen
 
             var path = razorHost.EnableLinePragmas ? razorHost.File.RealPath : string.Empty;
             razorHost.CodeGenerator = new ServiceStackCSharpRazorCodeGenerator(razorHost.DefaultClassName, razorHost.DefaultNamespace, path, razorHost)
-                {
-                    GenerateLinePragmas = razorHost.EnableLinePragmas
-                };
-
+            {
+                GenerateLinePragmas = razorHost.EnableLinePragmas
+            };
         }
+
         public override void ProcessGeneratedCode(System.CodeDom.CodeCompileUnit codeCompileUnit, System.CodeDom.CodeNamespace generatedNamespace, System.CodeDom.CodeTypeDeclaration generatedClass, System.CodeDom.CodeMemberMethod executeMethod)
         {
             base.ProcessGeneratedCode(codeCompileUnit, generatedNamespace, generatedClass, executeMethod);

@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Web;
 using ServiceStack.Host;
+using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -36,11 +38,13 @@ namespace ServiceStack
         }
 
         public HttpResult(object response, HttpStatusCode statusCode)
-            : this(response, null, statusCode) { }
+            : this(response, null, statusCode)
+        { }
 
         public HttpResult(object response, string contentType, HttpStatusCode statusCode)
         {
             this.Headers = new Dictionary<string, string>();
+            this.Cookies = new List<Cookie>();
             this.ResponseFilter = ContentTypes.Instance;
 
             this.Response = response;
@@ -49,9 +53,10 @@ namespace ServiceStack
         }
 
         public HttpResult(FileInfo fileResponse, bool asAttachment)
-            : this(fileResponse, MimeTypes.GetMimeType(fileResponse.Name), asAttachment) { }
+            : this(fileResponse, MimeTypes.GetMimeType(fileResponse.Name), asAttachment)
+        { }
 
-        public HttpResult(FileInfo fileResponse, string contentType=null, bool asAttachment=false)
+        public HttpResult(FileInfo fileResponse, string contentType = null, bool asAttachment = false)
             : this(null, contentType ?? MimeTypes.GetMimeType(fileResponse.Name), HttpStatusCode.OK)
         {
             this.FileInfo = fileResponse;
@@ -69,8 +74,33 @@ namespace ServiceStack
                 "modification-date=" + fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "") + "; " +
                 "read-date=" + fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "");
 
-            this.Headers = new Dictionary<string, string> {
-                { HttpHeaders.ContentDisposition, headerValue },
+            this.Headers = new Dictionary<string, string>
+            {
+                {HttpHeaders.ContentDisposition, headerValue},
+            };
+        }
+
+        public HttpResult(IVirtualFile fileResponse, bool asAttachment)
+            : this(fileResponse, MimeTypes.GetMimeType(fileResponse.Name), asAttachment)
+        { }
+
+        public HttpResult(IVirtualFile fileResponse, string contentType = null, bool asAttachment = false)
+            : this(null, contentType ?? MimeTypes.GetMimeType(fileResponse.Name), HttpStatusCode.OK)
+        {
+            this.AllowsPartialResponse = true;
+            this.ResponseStream = fileResponse.OpenRead();
+
+            if (!asAttachment) return;
+
+            var headerValue =
+                "attachment; " +
+                "filename=\"" + fileResponse.Name + "\"; " +
+                "size=" + fileResponse.Length + "; " +
+                "modification-date=" + fileResponse.LastModified.ToString("R").Replace(",", "");
+
+            this.Headers = new Dictionary<string, string>
+            {
+                { HttpHeaders.ContentDisposition, headerValue},
             };
         }
 
@@ -104,6 +134,10 @@ namespace ServiceStack
         public string ContentType { get; set; }
 
         public Dictionary<string, string> Headers { get; private set; }
+
+        public List<Cookie> Cookies { get; private set; }
+
+        public Func<IDisposable> ResultScope { get; set; }
 
         private bool allowsPartialResponse;
         public bool AllowsPartialResponse
@@ -165,10 +199,15 @@ namespace ServiceStack
             SetCookie(name, value, expiresAt, path);
         }
 
-        public void SetCookie(string name, string value, DateTime expiresAt, string path)
+        public void SetCookie(string name, string value, DateTime expiresAt, string path, bool secure = false, bool httpOnly = false)
         {
             path = path ?? "/";
             var cookie = string.Format("{0}={1};expires={2};path={3}", name, value, expiresAt.ToString("R"), path);
+            if (secure)
+                cookie += ";Secure";
+            if (httpOnly)
+                cookie += ";HttpOnly";
+
             this.Headers[HttpHeaders.SetCookie] = cookie;
         }
 
@@ -319,7 +358,7 @@ namespace ServiceStack
                 {
                     ResponseStream.WritePartialTo(outputStream, rangeStart, rangeEnd);
                 }
-                finally 
+                finally
                 {
                     DisposeStream();
                 }
@@ -389,7 +428,7 @@ namespace ServiceStack
         /// Decorate the response with an additional client-side event to instruct participating 
         /// smart clients (e.g. ajax) with hints to transparently invoke client-side functionality
         /// </summary>
-        public static HttpResult TriggerEvent(object response, string eventName, string value=null)
+        public static HttpResult TriggerEvent(object response, string eventName, string value = null)
         {
             return new HttpResult(response)
             {
@@ -410,6 +449,24 @@ namespace ServiceStack
                 }
             }
             catch { /*ignore*/ }
+        }
+    }
+
+    public static class HttpResultExtensions
+    {
+        public static System.Net.Cookie ToCookie(this HttpCookie httpCookie)
+        {
+            var to = new System.Net.Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path)
+            {
+                Expires = httpCookie.Expires,
+                Secure = httpCookie.Secure,
+                HttpOnly = httpCookie.HttpOnly,
+            };
+
+            if (httpCookie.Domain != null)
+                to.Domain = httpCookie.Domain;
+
+            return to;
         }
     }
 }

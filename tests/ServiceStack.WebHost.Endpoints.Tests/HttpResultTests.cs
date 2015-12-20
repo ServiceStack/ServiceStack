@@ -3,6 +3,7 @@ using NUnit.Framework;
 using ServiceStack.Common.Tests;
 using ServiceStack.Host;
 using ServiceStack.Testing;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -21,9 +22,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var httpResult = new HttpResult(customText, MimeTypes.Html)
             {
                 Headers =
-				{
-					{"X-Custom","Header"}
-				}
+                {
+                    {"X-Custom","Header"}
+                }
             };
 
             var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
@@ -49,9 +50,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var httpResult = new HttpResult(ms, MimeTypes.Html)
             {
                 Headers =
-				{
-					{"X-Custom","Header"}
-				}
+                {
+                    {"X-Custom","Header"}
+                }
             };
 
             var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
@@ -96,6 +97,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(reponseWasAutoHandled.Result, Is.True);
 
             Assert.IsNotNull(mockResponse.StatusDescription);
+        }
+
+        [Test]
+        public void Can_change_serialization_options()
+        {
+            var mockResponse = new MockHttpResponse();
+
+            var dto = new Poco();
+            Assert.That(dto.ToJson(), Is.EqualTo("{}"));
+
+            var httpResult = new HttpResult(dto)
+            {
+                ResultScope = () => JsConfig.With(includeNullValues:true)
+            };
+
+            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
+            Assert.That(reponseWasAutoHandled.Result, Is.True);
+
+            Assert.That(mockResponse.ReadAsString(), Is.EqualTo("{\"Text\":null}"));
         }
     }
 

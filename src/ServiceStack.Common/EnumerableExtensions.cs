@@ -40,7 +40,7 @@ namespace ServiceStack
                 action(i++, value);
             }
         }
-        
+
         public static List<To> Map<To, From>(this IEnumerable<From> items, Func<From, To> converter)
         {
             if (items == null)
@@ -95,9 +95,13 @@ namespace ServiceStack
             return default(T);
         }
 
-        public static bool EquivalentTo<T>(this IEnumerable<T> thisList, IEnumerable<T> otherList)
+        public static bool EquivalentTo<T>(this IEnumerable<T> thisList, IEnumerable<T> otherList, Func<T, T, bool> comparer = null)
         {
-            if (thisList == null || otherList == null) return thisList == otherList;
+            if (comparer == null)
+                comparer = (v1, v2) => v1.Equals(v2);
+
+            if (thisList == null || otherList == null)
+                return thisList == otherList;
 
             var otherEnum = otherList.GetEnumerator();
             foreach (var item in thisList)
@@ -111,10 +115,39 @@ namespace ServiceStack
                     return thisIsDefault && otherIsDefault;
                 }
 
-                if (!item.Equals(otherEnum.Current)) return false;
+                if (!comparer(item, otherEnum.Current)) return false;
             }
             var hasNoMoreLeftAsWell = !otherEnum.MoveNext();
             return hasNoMoreLeftAsWell;
+        }
+
+        public static bool EquivalentTo<K, V>(this IDictionary<K, V> a, IDictionary<K, V> b, Func<V,V,bool> comparer = null)
+        {
+            if (comparer == null)
+                comparer = (v1, v2) => v1.Equals(v2);
+
+            if (a == null || b == null)
+                return a == b;
+
+            if (a.Count != b.Count)
+                return false;
+
+            foreach (var entry in a)
+            {
+                V value;
+                if (!b.TryGetValue(entry.Key, out value))
+                    return false;
+                if (entry.Value == null || value == null)
+                {
+                    if (entry.Value == null && value == null)
+                        continue;
+
+                    return false;
+                }
+                if (!comparer(entry.Value, value))
+                    return false;
+            }
+            return true;
         }
 
         public static IEnumerable<T[]> BatchesOf<T>(this IEnumerable<T> sequence, int batchSize)

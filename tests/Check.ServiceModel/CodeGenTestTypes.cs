@@ -40,12 +40,22 @@ namespace Check.ServiceModel.Operations
         public string Result { get; set; }
     }
 
+    public class OnlyInReturnListArg
+    {
+        public string Result { get; set; }
+    }
+
     public class ArrayResult
     {
         public string Result { get; set; }
     }
 
     public class HelloList : IReturn<List<ListResult>>
+    {
+        public List<string> Names { get; set; }
+    }
+
+    public class HelloReturnList : IReturn<List<OnlyInReturnListArg>>
     {
         public List<string> Names { get; set; }
     }
@@ -71,6 +81,7 @@ namespace Check.ServiceModel.Operations
     public class HelloWithEnum
     {
         public EnumType EnumProp { get; set; }
+        public EnumWithValues EnumWithValues { get; set; }
         public EnumType? NullableEnumProp { get; set; }
 
         public EnumFlags EnumFlags { get; set; }
@@ -80,6 +91,12 @@ namespace Check.ServiceModel.Operations
     {
         Value1,
         Value2
+    }
+
+    public enum EnumWithValues
+    {
+        Value1 = 1,
+        Value2 = 2
     }
 
     [Flags]
@@ -122,8 +139,8 @@ namespace Check.ServiceModel.Operations
     }
 
     [DataContract]
-    [Route("/allowed-attributes","GET")]
-    [Api("AllowedAttributes Description")]
+    [Route("/allowed-attributes", "GET")]
+    [Api(@"AllowedAttributes Description")]
     [ApiResponse(HttpStatusCode.BadRequest, "Your request was not understood")]
     [Description("Description on AllowedAttributes")]
     public class AllowedAttributes
@@ -141,8 +158,19 @@ namespace Check.ServiceModel.Operations
 
         [StringLength(20)]
         [References(typeof(Hello))]
-        [Meta("Foo","Bar")]
+        [Meta("Foo", "Bar")]
         public string Name { get; set; }
+    }
+
+    [Api(@"Multi 
+Line 
+Class")]
+    public class HelloMultiline
+    {
+        [ApiMember(Description = @"Multi 
+Line 
+Property")]
+        public string Overflow { get; set; }
     }
 
     [System.ComponentModel.Description("Description on HelloAllResponse type")]
@@ -285,7 +313,7 @@ namespace Check.ServiceModel.Operations
 
 namespace Check.ServiceModel.Types
 {
-    public class AllTypes
+    public class AllTypes : IReturn<AllTypes>
     {
         public int Id { get; set; }
         public int? NullableId { get; set; }
@@ -471,6 +499,87 @@ namespace Check.ServiceModel.Types
 
         [DataMember(Order = 5)]
         public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public class HelloReserved
+    {
+        public string Class { get; set; }
+        public string Type { get; set; }
+        public string extension { get; set; }
+    }
+
+    public class HelloDictionary : IReturn<Dictionary<string, string>>
+    {
+        public string Key { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class HelloBuiltin
+    {
+        public DayOfWeek DayOfWeek { get; set; }
+    }
+
+    public class HelloVerbResponse
+    {
+        public string Result { get; set; }
+    }
+
+    public class HelloGet : IReturn<HelloVerbResponse>, IGet
+    {
+        public int Id { get; set; }
+    }
+    public class HelloPost : HelloBase, IReturn<HelloVerbResponse>, IPost
+    {
+    }
+    public class HelloPut : IReturn<HelloVerbResponse>, IPut
+    {
+        public int Id { get; set; }
+    }
+    public class HelloDelete : IReturn<HelloVerbResponse>, IDelete
+    {
+        public int Id { get; set; }
+    }
+    public class HelloPatch : IReturn<HelloVerbResponse>, IPatch
+    {
+        public int Id { get; set; }
+    }
+
+    public class HelloReturnVoid : IReturnVoid
+    {
+        public int Id { get; set; }
+    }
+
+    public class EnumRequest : IReturn<EnumResponse>, IPut
+    {
+        public ScopeType Operator { get; set; }
+    }
+
+    public class EnumResponse
+    {
+        public ScopeType Operator { get; set; }
+    }
+
+    [DataContract]
+    public enum ScopeType
+    {
+        [EnumMember]
+        Global = 1,
+        [EnumMember]
+        Sale = 2,
+    }
+
+    public class ExcludeTest1 : IReturn<ExcludeTestNested>
+    {
+    }
+
+    public class ExcludeTest2 : IReturn<string>
+    {
+        public ExcludeTestNested ExcludeTestNested { get; set; }
+    }
+
+    public class ExcludeTestNested
+    {
+        public int Id { get; set; }
     }
 }
 

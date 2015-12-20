@@ -15,7 +15,6 @@ namespace ServiceStack.Auth.Tests
             var response = Client.Post<AuthenticateResponse>("/auth",
                 new Authenticate { UserName = "test1", Password = "test1" });
 
-            response.PrintDump();
         }
 
         [TestFixtureTearDown]

@@ -70,16 +70,20 @@ namespace ServiceStack
         private readonly ILog log = LogManager.GetLogger(typeof(HttpListenerBase));
 
         protected AppHostHttpListenerPoolBase(string serviceName, params Assembly[] assembliesWithServices)
-            : this(serviceName, CalculatePoolSize(), assembliesWithServices) { }
+            : this(serviceName, CalculatePoolSize(), assembliesWithServices)
+        { }
 
         protected AppHostHttpListenerPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
+            : base(serviceName, assembliesWithServices)
+        { threadPoolManager = new ThreadPoolManager(poolSize); }
 
         protected AppHostHttpListenerPoolBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-            : this(serviceName, handlerPath, CalculatePoolSize(), assembliesWithServices) { }
+            : this(serviceName, handlerPath, CalculatePoolSize(), assembliesWithServices)
+        { }
 
         protected AppHostHttpListenerPoolBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
-            : base(serviceName, handlerPath, assembliesWithServices) { threadPoolManager = new ThreadPoolManager(poolSize); }
+            : base(serviceName, handlerPath, assembliesWithServices)
+        { threadPoolManager = new ThreadPoolManager(poolSize); }
 
 
         private bool disposed = false;
@@ -171,11 +175,11 @@ namespace ServiceStack
             if (Config.DebugMode)
                 log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
-            RaiseReceiveWebRequest(context);
+            OnBeginRequest(context);
 
             threadPoolManager.Peek(() =>
             {
-                InitTask(context);
+                ProcessRequestContext(context);
 
                 threadPoolManager.Free();
             }).Start();

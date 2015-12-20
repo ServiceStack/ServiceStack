@@ -19,6 +19,12 @@ namespace ServiceStack
             set { local.IdleTimeout = value; }
         }
 
+        public TimeSpan HouseKeepingInterval
+        {
+            get { return local.HouseKeepingInterval; }
+            set { local.HouseKeepingInterval = value; }
+        }
+
         public Action<IEventSubscription> OnSubscribe
         {
             get { return local.OnSubscribe; }
@@ -82,6 +88,7 @@ namespace ServiceStack
             if (feature != null)
             {
                 Timeout = feature.IdleTimeout;
+                HouseKeepingInterval = feature.HouseKeepingInterval;
                 OnSubscribe = feature.OnSubscribe;
                 OnUnsubscribe = feature.OnUnsubscribe;
                 NotifyChannelOfSubscriptions = feature.NotifyChannelOfSubscriptions;
@@ -289,6 +296,11 @@ namespace ServiceStack
             }
         }
 
+        public int RemoveExpiredSubscriptions()
+        {
+            return local.RemoveExpiredSubscriptions();
+        }
+
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
         {
             using (var redis = clientsManager.GetClient())
@@ -297,6 +309,30 @@ namespace ServiceStack
                 foreach (var channel in channels)
                 {
                     var channelIds = redis.GetAllItemsFromSet(RedisIndex.ChannelSet.Fmt(channel));
+                    foreach (var channelId in channelIds)
+                    {
+                        ids.Add(channelId);
+                    }
+                }
+
+                var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
+                var infos = redis.GetValues<SubscriptionInfo>(keys);
+
+                var metas = infos.Map(x => x.Meta);
+                return metas;
+            }
+        }
+
+        public List<Dictionary<string, string>> GetAllSubscriptionsDetails()
+        {
+            using (var redis = clientsManager.GetClient())
+            {
+                var ids = new HashSet<string>();
+
+                var channelSetKeys = redis.ScanAllKeys(pattern: RedisIndex.ChannelSet.Fmt("*"));
+                foreach (var channelSetKey in channelSetKeys)
+                {
+                    var channelIds = redis.GetAllItemsFromSet(RedisIndex.ChannelSet.Fmt(channelSetKey));
                     foreach (var channelId in channelIds)
                     {
                         ids.Add(channelId);

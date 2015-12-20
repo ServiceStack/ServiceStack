@@ -131,6 +131,7 @@ function notUndefinedNullOrZeroLength(obj) {
                 api.operations.forEach(function (operation) {
                 operation.path = api.path;
                 operation.accordionId = accordionId;
+                operation.id = operation.method + '_' + operation.path.replace(/[\/\{\}]/g,'-');
                 %>
 
                 %{ apiAccordionPanel(operation) }
@@ -148,12 +149,12 @@ function notUndefinedNullOrZeroLength(obj) {
 
 {% function name="apiAccordionPanel" %}
 
-<div class="panel panel-${ getVerbClass(a.httpMethod ) }">
+<div class="panel panel-${ getVerbClass(a.method ) }">
     <div class="panel-heading">
         <div class="panel-title clearfix">
             <div class="col-md-2">
-                <a data-toggle="collapse" data-parent="#${ a.accordionId }" href="#${ a.nickname }Panel" class="verb">
-                    <span class="label label-${ getVerbClass(a.httpMethod ) } verb">${ a.httpMethod }</span>
+                <a data-toggle="collapse" data-parent="#${ a.accordionId }" href="#${ a.id }Panel" class="verb">
+                    <span class="label label-${ getVerbClass(a.method ) } verb">${ a.method }</span>
                 </a>
             </div>
             <a data-toggle="collapse" data-parent="#${ a.accordionId }" href="#${ a.nickname }Panel">
@@ -165,7 +166,7 @@ function notUndefinedNullOrZeroLength(obj) {
         </div>
     </div>
 
-    <div id="${ a.nickname }Panel" class="panel-collapse collapse">
+    <div id="${ a.id }Panel" class="panel-collapse collapse">
         <div class="panel-body">
             % if (a.notes !== undefined && a.notes !== null) {
                 <h3>Implementation Notes</h3>
@@ -178,8 +179,8 @@ function notUndefinedNullOrZeroLength(obj) {
             % }
                 
             % var requestClassType = _.findWhere(a.parameters, { paramType: 'body' });   
-            % if (requestClassType !== undefined && requestClassType.dataType !== undefined) {      
-            %   var requestClassModel = currentData.models[requestClassType.dataType];
+            % if (requestClassType !== undefined && requestClassType.type !== undefined) {      
+            %   var requestClassModel = currentData.models[requestClassType.type];
                 <h3>Request Class</h3>
                 %{ classDescription({ nickname: a.nickname, models: getModelChain(requestClassModel) }) }
             % }
@@ -231,9 +232,9 @@ function notUndefinedNullOrZeroLength(obj) {
     <tbody>
         % a.parameters.forEach(function(param) {
         <tr>
-            <td>${ param.name !== undefined && param.name !== null ? param.name : param.dataType }</td>
+            <td>${ param.name !== undefined && param.name !== null ? param.name : param.type }</td>
             <td>${ param.paramType }</td>
-            <td>${ param.name === undefined || param.name === null ? '' : param.dataType }</td>
+            <td>${ param.name === undefined || param.name === null ? '' : param.type }</td>
             <td>${ param.description }</td>
         </tr>
         % });
@@ -244,7 +245,7 @@ function notUndefinedNullOrZeroLength(obj) {
 
 {% function name="classDescription" %}
 
-% console.log(a);
+% //console.log(a);
 % var prefix = _.uniqueId(a.nickname);
 <ul id="myTab" class="nav nav-tabs">
     <li class="active"><a href="#${ prefix }ModelTab" data-toggle="tab">Model</a></li>
@@ -297,7 +298,7 @@ function notUndefinedNullOrZeroLength(obj) {
             % _.each(a.properties, function(prop, key) {
             <tr>
                 <td>${ key }</td>
-                <td>${ prop.required }</td>
+                <td>${ _.contains(a.required, key) ? "yes" : "" }</td>
                 <td>${ toSwaggerType(prop) }</td>
                 <td>${ prop.description }</td>
             </tr>

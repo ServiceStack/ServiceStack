@@ -76,9 +76,7 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
         {
             var fullGenericTypeName = "Poco";
 
-            var textNode = MetadataExtensions.ParseTypeIntoNodes(fullGenericTypeName);
-
-            textNode.PrintDump();
+            var textNode = fullGenericTypeName.ParseTypeIntoNodes();
 
             Assert.That(textNode.Text, Is.EqualTo("Poco"));
             Assert.That(textNode.Children.Count, Is.EqualTo(0));
@@ -103,9 +101,7 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
         {
             var fullGenericTypeName = "List<Dictionary<String,Poco>>";
 
-            var textNode = MetadataExtensions.ParseTypeIntoNodes(fullGenericTypeName);
-
-            textNode.PrintDump();
+            var textNode = fullGenericTypeName.ParseTypeIntoNodes();
 
             Assert.That(textNode.Text, Is.EqualTo("List"));
             Assert.That(textNode.Children.Count, Is.EqualTo(1));
@@ -121,9 +117,7 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
         {
             var fullGenericTypeName = "List<Dictionary<String,Dictionary<String,Poco>>>";
 
-            var textNode = MetadataExtensions.ParseTypeIntoNodes(fullGenericTypeName);
-
-            textNode.PrintDump();
+            var textNode = fullGenericTypeName.ParseTypeIntoNodes();
 
             Assert.That(textNode.Text, Is.EqualTo("List"));
             Assert.That(textNode.Children.Count, Is.EqualTo(1));

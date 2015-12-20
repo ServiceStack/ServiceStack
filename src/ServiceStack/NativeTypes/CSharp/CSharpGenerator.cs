@@ -38,7 +38,7 @@ namespace ServiceStack.NativeTypes.CSharp
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
 
-            metadata.RemoveIgnoredTypes(Config);
+            metadata.RemoveIgnoredTypesForNet(Config);
 
             if (Config.GlobalNamespace == null)
             {
@@ -56,7 +56,8 @@ namespace ServiceStack.NativeTypes.CSharp
             var sb = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T"," ")));
-            sb.AppendLine("Version: {0}".Fmt(metadata.Version));
+            sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
+            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
@@ -80,7 +81,8 @@ namespace ServiceStack.NativeTypes.CSharp
             sb.AppendLine("*/");
             sb.AppendLine();
 
-            namespaces.Each(x => sb.AppendLine("using {0};".Fmt(x)));
+            namespaces.Where(x => !string.IsNullOrEmpty(x))
+                .Each(x => sb.AppendLine("using {0};".Fmt(x)));
             if (Config.AddGeneratedCodeAttributes)
                 sb.AppendLine("using System.CodeDom.Compiler;");
 
@@ -252,6 +254,8 @@ namespace ServiceStack.NativeTypes.CSharp
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
                         inheritsList.Add(implStr);
+                    if (!type.Implements.IsEmpty())
+                        type.Implements.Each(x => inheritsList.Add(Type(x)));
                 }
 
                 var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
@@ -455,7 +459,7 @@ namespace ServiceStack.NativeTypes.CSharp
             return TypeAlias(type, includeNested: includeNested);
         }
 
-        private string TypeAlias(string type, bool includeNested = false)
+        public static string TypeAlias(string type, bool includeNested = false)
         {
             type = type.SanitizeType();
             var arrParts = type.SplitOnFirst('[');
@@ -468,7 +472,7 @@ namespace ServiceStack.NativeTypes.CSharp
             return typeAlias ?? NameOnly(type, includeNested: includeNested);
         }
 
-        public string NameOnly(string type, bool includeNested = false)
+        public static string NameOnly(string type, bool includeNested = false)
         {
             var name = type.SplitOnFirst('`')[0];
 

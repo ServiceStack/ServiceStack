@@ -19,7 +19,7 @@ namespace ServiceStack
         protected AppSelfHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
-            threadPoolManager = new SmartThreadPool(IdleTimeout, 
+            threadPoolManager = new SmartThreadPool(IdleTimeout,
                 maxWorkerThreads: Math.Max(16, Environment.ProcessorCount * 2));
         }
 
@@ -118,9 +118,9 @@ namespace ServiceStack
             if (Config.DebugMode)
                 log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
-            RaiseReceiveWebRequest(context);
+            OnBeginRequest(context);
 
-            threadPoolManager.QueueWorkItem(() => InitTask(context));
+            threadPoolManager.QueueWorkItem(() => ProcessRequestContext(context));
         }
     }
 }

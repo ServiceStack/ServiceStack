@@ -94,15 +94,27 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AWSSDK.Core, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\..\src\packages\AWSSDK.Core.3.1.3.6\lib\net45\AWSSDK.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AWSSDK.DynamoDBv2, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\..\src\packages\AWSSDK.DynamoDBv2.3.1.1.1\lib\net45\AWSSDK.DynamoDBv2.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Moq">
       <HintPath>..\..\lib\tests\Moq.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\src\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\..\src\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="RabbitMQ.Client">
-      <HintPath>..\..\src\packages\RabbitMQ.Client.3.4.0\lib\net35\RabbitMQ.Client.dll</HintPath>
+    <Reference Include="RabbitMQ.Client, Version=3.5.6.0, Culture=neutral, PublicKeyToken=89e7d7c5feba84ce, processorArchitecture=MSIL">
+      <HintPath>..\..\src\packages\RabbitMQ.Client.3.5.6\lib\net40\RabbitMQ.Client.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ServiceStack.Aws">
+      <HintPath>..\..\lib\ServiceStack.Aws.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
@@ -154,6 +166,7 @@
     <Compile Include="CheckWebTests.cs" />
     <Compile Include="Configuration\AppSettingsTests.cs" />
     <Compile Include="CryptUtilTest.cs" />
+    <Compile Include="DynamoConfig.cs" />
     <Compile Include="EndpointHandlerBaseTests.cs" />
     <Compile Include="FluentValidation\ErrorCodeTests.cs" />
     <Compile Include="FormatTests.cs" />
@@ -179,13 +192,12 @@
     <Compile Include="Models\Shipper.cs" />
     <Compile Include="Models\ShipperFactory.cs" />
     <Compile Include="Models\BuiltInsFactory.cs" />
-    <Compile Include="OAuth\OAuthUserSessionTests.cs" />
+    <Compile Include="OAuth\AuthUserSessionTests.cs" />
     <Compile Include="OAuth\OrmLiteUserAuthRepositoryTests.cs" />
     <Compile Include="OAuth\OrmLiteUserAuthTests.cs" />
     <Compile Include="OAuth\RegistrationServiceTests.cs" />
     <Compile Include="OAuth\CredentialsServiceTests.cs" />
     <Compile Include="OAuth\MockAuthHttpGateway.cs" />
-    <Compile Include="OAuth\OAuthUserSessionWithoutTestSourceTests.cs" />
     <Compile Include="OAuth\RequiredRolesTests.cs" />
     <Compile Include="PerfUtilsTests.cs" />
     <Compile Include="Perf\DateTimePerf.cs" />
@@ -230,7 +242,7 @@
     <Compile Include="StringUtilsTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Text\AdhocJsTests.cs" />
-    <Compile Include="OAuth\OAuthUserSessionTestsBase.cs" />
+    <Compile Include="OAuth\AuthUserSessionTestsBase.cs" />
     <Compile Include="UrlExtensionTests.cs" />
     <Compile Include="ValidationTests.cs" />
     <Compile Include="Xlinq\XlinqExtensionsTests.cs" />

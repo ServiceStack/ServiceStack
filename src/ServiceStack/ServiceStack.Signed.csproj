@@ -103,6 +103,8 @@
     <Compile Include="AspNet\ServiceStackPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="NativeTypes\Kotlin\KotlinGenerator.cs" />
+    <Compile Include="RequiresSchemaProviders.cs" />
     <Compile Include="CancellableRequestsFeature.cs" />
     <Compile Include="Configuration\EnvironmentVariableSettings.cs" />
     <Compile Include="Configuration\MultiAppSettings.cs" />
@@ -589,6 +591,7 @@
     <Compile Include="Metadata\IndexOperationsControl.cs" />
     <Compile Include="Metadata\XsdTypeNames.cs" />
     <Compile Include="Metadata\XsdTypes.cs" />
+    <Compile Include="VirtualPath\VirtualPathProviderExtensions.cs" />
     <Compile Include="WebSudoFeature.cs" />
     <Compile Include="WebSudoRequiredAttribute.cs" />
     <Compile Include="XsdUtils.cs" />

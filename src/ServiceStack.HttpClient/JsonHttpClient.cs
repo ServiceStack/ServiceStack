@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,7 +19,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class JsonHttpClient : IServiceClient
+    public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieContainer
     {
         public static ILog log = LogManager.GetLogger(typeof(JsonHttpClient));
 
@@ -28,11 +27,12 @@ namespace ServiceStack
         public HttpMessageHandler HttpMessageHandler { get; set; }
 
         public HttpClient HttpClient { get; set; }
+        public CookieContainer CookieContainer { get; set; }
 
         public ResultsFilterHttpDelegate ResultsFilter { get; set; }
         public ResultsFilterHttpResponseDelegate ResultsFilterResponse { get; set; }
 
-        public const string DefaultHttpMethod = "POST";
+        public const string DefaultHttpMethod = HttpMethods.Post;
         public static string DefaultUserAgent = "ServiceStack .NET HttpClient " + Env.ServiceStackVersion;
 
         public string BaseUri { get; set; }
@@ -43,6 +43,9 @@ namespace ServiceStack
         public string SyncReplyBaseUri { get; set; }
 
         public string AsyncOneWayBaseUri { get; set; }
+
+        public int Version { get; set; }
+        public string SessionId { get; set; }
 
         public string UserName { get; set; }
         public string Password { get; set; }
@@ -70,6 +73,9 @@ namespace ServiceStack
         public JsonHttpClient()
         {
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
+            this.CookieContainer = new CookieContainer();
+
+            JsConfig.InitStatics();
         }
 
         public void SetCredentials(string userName, string password)
@@ -95,15 +101,37 @@ namespace ServiceStack
             if (HttpMessageHandler == null && GlobalHttpMessageHandlerFactory != null)
                 HttpMessageHandler = GlobalHttpMessageHandlerFactory();
 
+            var baseUri = BaseUri != null ? new Uri(BaseUri) : null;
+
             return HttpClient = HttpMessageHandler != null
-                ? new HttpClient(HttpMessageHandler)
-                : new HttpClient();
+                ? new HttpClient(HttpMessageHandler) { BaseAddress = baseUri }
+                : new HttpClient(new HttpClientHandler {
+                        UseCookies = true,
+                        CookieContainer = CookieContainer, 
+                        UseDefaultCredentials = true
+                    }) {
+                        BaseAddress = baseUri
+                    };
+        }
+
+        public void AddHeader(string name, string value)
+        {
+            Headers[name] = value;
         }
 
         private int activeAsyncRequests = 0;
 
         public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request)
         {
+            if (!httpMethod.HasRequestBody() && request != null)
+            {
+                var queryString = QueryStringSerializer.SerializeToString(request);
+                if (!string.IsNullOrEmpty(queryString))
+                {
+                    absoluteUrl += "?" + queryString;
+                }
+            }
+
             if (ResultsFilter != null)
             {
                 var response = ResultsFilter(typeof(TResponse), httpMethod, absoluteUrl, request);
@@ -120,15 +148,18 @@ namespace ServiceStack
             if (AlwaysSendBasicAuthHeader)
                 AddBasicAuth(client);
 
+            this.PopulateRequestMetadata(request);
+
             var httpReq = new HttpRequestMessage(new HttpMethod(httpMethod), absoluteUrl);
+
+            foreach (var name in Headers.AllKeys)
+            {
+                httpReq.Headers.Add(name, Headers[name]);
+            }
+            httpReq.Headers.Add(HttpHeaders.Accept, ContentType);
 
             if (httpMethod.HasRequestBody() && request != null)
             {
-                foreach (var name in Headers.AllKeys)
-                {
-                    httpReq.Headers.Add(name, Headers[name]);
-                }
-
                 var httpContent = request as HttpContent;
                 if (httpContent != null)
                 {
@@ -136,14 +167,24 @@ namespace ServiceStack
                 }
                 else
                 {
-                    using (__requestAccess())
+                    var str = request as string;
+                    var bytes = request as byte[];
+                    var stream = request as Stream;
+                    if (str != null)
+                        httpReq.Content = new StringContent(str);
+                    else if (bytes != null)
+                        httpReq.Content = new ByteArrayContent(bytes);
+                    else if (stream != null)
+                        httpReq.Content = new StreamContent(stream);
+                    else
                     {
-                        httpReq.Content = new StringContent(request.ToJson(), Encoding.UTF8, ContentType);
+                        using (__requestAccess())
+                        {
+                            httpReq.Content = new StringContent(request.ToJson(), Encoding.UTF8, ContentType);
+                        }
                     }
                 }
             }
-
-            httpReq.Headers.Add(HttpHeaders.Accept, ContentType);
 
             ApplyWebRequestFilters(httpReq);
 
@@ -199,12 +240,15 @@ namespace ServiceStack
                         ThrowIfError<TResponse>(task, httpRes, request, absoluteUrl, task.Result);
 
                         var body = task.Result;
-                        var response = body.FromJson<TResponse>();
+                        using (__requestAccess())
+                        {
+                            var response = body.FromJson<TResponse>();
 
-                        if (ResultsFilterResponse != null)
-                            ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
+                            if (ResultsFilterResponse != null)
+                                ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
 
-                        return response;
+                            return response;
+                        }
                     });
                 }).Unwrap();
         }
@@ -217,11 +261,6 @@ namespace ServiceStack
             
             CancelTokenSource.Dispose();
             CancelTokenSource = null;
-        }
-
-        public virtual void SerializeToStream(IRequest requestContext, object request, Stream stream)
-        {
-            JsonDataContractSerializer.Instance.SerializeToStream(request, stream);
         }
 
         private class AccessToken
@@ -426,10 +465,11 @@ namespace ServiceStack
             return SendAsync<TResponse>((object)requestDto);
         }
 
-        public virtual Task<TResponse> SendAsync<TResponse>(object requestDto)
+        public virtual Task<TResponse> SendAsync<TResponse>(object request)
         {
-            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
-            return SendAsync<TResponse>(HttpMethods.Post, requestUri, requestDto);
+            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
+            return SendAsync<TResponse>(httpMethod, requestUri, request);
         }
 
         public virtual Task<HttpResponseMessage> SendAsync(IReturnVoid requestDto)
@@ -572,10 +612,11 @@ namespace ServiceStack
         }
 
 
-        public void SendOneWay(object requestDto)
+        public void SendOneWay(object request)
         {
-            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + requestDto.GetType().Name;
-            SendOneWay(HttpMethods.Post, requestUri, requestDto);
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
+            SendOneWay(httpMethod, requestUri, request);
         }
 
         public void SendOneWay(string relativeOrAbsoluteUri, object request)
@@ -594,6 +635,24 @@ namespace ServiceStack
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
             SendOneWay(HttpMethods.Post, requestUri, requests);
+        }
+
+        public void ClearCookies()
+        {
+            CookieContainer = new CookieContainer();
+            HttpClient = null;
+            GetHttpClient();
+        }
+
+        public Dictionary<string, string> GetCookieValues()
+        {
+            return CookieContainer.ToDictionary(BaseUri);
+        }
+
+        public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
+        {
+            this.SetCookie(HttpClient.BaseAddress, name, value,
+                expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : (DateTime?)null);
         }
 
         public void Get(IReturnVoid request)

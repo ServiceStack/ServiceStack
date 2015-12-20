@@ -59,9 +59,17 @@ namespace ServiceStack.VirtualPath
             }
         }
 
+        public virtual byte[] ReadAllBytes()
+        {
+            using (var stream = OpenRead())
+            {
+                return stream.ReadFully();
+            }
+        }
+
         public abstract Stream OpenRead();
 
-        protected virtual String GetVirtualPathToRoot()
+        protected virtual string GetVirtualPathToRoot()
         {
             return GetPathToRoot(VirtualPathProvider.VirtualPathSeparator, p => p.VirtualPath);
         }
@@ -77,7 +85,9 @@ namespace ServiceStack.VirtualPath
             if (parentPath == separator)
                 parentPath = string.Empty;
 
-            return string.Concat(parentPath, separator, Name);
+            return parentPath == null
+                ? Name
+                : string.Concat(parentPath, separator, Name);
         }
 
         public override bool Equals(object obj)
@@ -116,7 +126,7 @@ namespace ServiceStack
             {
                 foreach (var skipPath in appHost.Config.ScanSkipPaths)
                 {
-                    if (node.VirtualPath.StartsWith(skipPath, StringComparison.InvariantCultureIgnoreCase))
+                    if (node.VirtualPath.StartsWith(skipPath.TrimStart('/'), StringComparison.InvariantCultureIgnoreCase))
                         return true;
                 }
             }

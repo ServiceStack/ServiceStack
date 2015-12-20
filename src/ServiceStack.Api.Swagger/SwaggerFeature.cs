@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
@@ -24,11 +25,14 @@ namespace ServiceStack.Api.Swagger
 
         public Action<SwaggerModel> ModelFilter { get; set; }
 
-        public Action<ModelProperty> ModelPropertyFilter { get; set; }
+        public Action<SwaggerProperty> ModelPropertyFilter { get; set; }
+
+        public Dictionary<string, string> RouteSummary { get; set; }
 
         public SwaggerFeature()
         {
             LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-24.png";
+            RouteSummary = new Dictionary<string, string>();
         }
 
         public void Configure(IAppHost appHost)
@@ -60,12 +64,14 @@ namespace ServiceStack.Api.Swagger
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
             {
                 IVirtualFile indexFile;
+                IVirtualFile patchFile = null;
                 switch (pathInfo)
                 {
                     case "/swagger-ui":
                     case "/swagger-ui/":
                     case "/swagger-ui/default.html":
                         indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui/index.html");
+                        patchFile = appHost.VirtualPathProvider.GetFile("/swagger-ui/patch.js");
                         break;
                     case "/swagger-ui-bootstrap":
                     case "/swagger-ui-bootstrap/":
@@ -79,6 +85,9 @@ namespace ServiceStack.Api.Swagger
                 if (indexFile != null)
                 {
                     var html = indexFile.ReadAllText();
+                    var injectJs = patchFile != null
+                        ? patchFile.ReadAllText()
+                        : null;
 
                     return new CustomResponseHandler((req, res) =>
                     {
@@ -87,6 +96,13 @@ namespace ServiceStack.Api.Swagger
                         html = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)
                             .Replace("ApiDocs", HostContext.ServiceName)
                             .Replace("{LogoUrl}", LogoUrl);
+
+                        if (injectJs != null)
+                        {
+                            html = html.Replace("</body>",
+                                "<script type='text/javascript'>" + injectJs + "</script></body>");
+                        }
+
                         return html;
                     });
                 }

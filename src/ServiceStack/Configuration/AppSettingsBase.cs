@@ -52,6 +52,17 @@ namespace ServiceStack.Configuration
             return settings.Get(name);
         }
 
+        public virtual Dictionary<string, string> GetAll()
+        {
+            var keys = GetAllKeys();
+            var to = new Dictionary<string,string>();
+            foreach (var key in keys)
+            {
+                to[key] = GetNullableString(key);
+            }
+            return to;
+        }
+
         public virtual List<string> GetAllKeys()
         {
             var keys = settings.GetAllKeys().ToHashSet();

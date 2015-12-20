@@ -15,8 +15,9 @@ namespace PclTest.Ios
 
 		public PclTest_IosViewController () : base ("PclTest_IosViewController", null)
 		{
-            //IosPclExportClient.Configure ();
-			client = new JsonServiceClient ("http://localhost:81/");
+            //IosPclExportClient.Configure();
+            //IosPclExportWithXml.Configure();
+            client = new JsonServiceClient("http://localhost:81/");
 		}
 
 		public override void DidReceiveMemoryWarning ()

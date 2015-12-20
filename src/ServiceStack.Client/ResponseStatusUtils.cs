@@ -34,6 +34,7 @@ namespace ServiceStack
                         ErrorCode = validationError.ErrorCode,
                         FieldName = validationError.FieldName,
                         Message = validationError.ErrorMessage,
+                        Meta = validationError.Meta,
                     };
                     to.Errors.Add(error);
 

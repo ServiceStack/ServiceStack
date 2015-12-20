@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Host;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -25,14 +26,26 @@ namespace ServiceStack
             return sessionId ?? SessionFeature.CreateSessionIds(httpReq);
         }
 
-        public static string GetSessionId(this IRequest httpReq)
+        public static void SetSessionId(this IRequest req, string sessionId)
         {
-            if (httpReq == null)
-                httpReq = HostContext.GetCurrentRequest();
+            if (string.IsNullOrEmpty(sessionId))
+                return;
 
-            return httpReq.IsPermanentSession()
-                ? httpReq.GetPermanentSessionId()
-                : httpReq.GetTemporarySessionId();
+            var sessionKey = req.IsPermanentSession()
+                ? SessionFeature.PermanentSessionId
+                : SessionFeature.SessionId;
+
+            req.Items[sessionKey] = sessionId;
+        }
+
+        public static string GetSessionId(this IRequest req)
+        {
+            if (req == null)
+                req = HostContext.GetCurrentRequest();
+
+            return req.IsPermanentSession()
+                ? req.GetPermanentSessionId()
+                : req.GetTemporarySessionId();
         }
 
         public static string GetPermanentSessionId(this IRequest httpReq)
@@ -47,11 +60,12 @@ namespace ServiceStack
 
         public static string GetSessionParam(this IRequest httpReq, string sessionKey)
         {
-            return httpReq.GetItemOrCookie(sessionKey)
+            return httpReq.GetItem(sessionKey) as string
                 ?? httpReq.GetHeader("X-" + sessionKey)
                 ?? (HostContext.Config.AllowSessionIdsInHttpParams
                     ? (httpReq.QueryString[sessionKey] ?? httpReq.FormData[sessionKey])
-                    : null);
+                    : null)
+                ?? httpReq.GetCookieValue(sessionKey);
         }
 
         /// <summary>
@@ -108,8 +122,10 @@ namespace ServiceStack
 
             var httpRes = res as IHttpResponse;
             if (httpRes != null)
+            {
                 httpRes.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId,
                     (HostContext.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
+            }
 
             req.Items[SessionFeature.PermanentSessionId] = sessionId;
             return sessionId;
@@ -137,14 +153,7 @@ namespace ServiceStack
 
         public static HashSet<string> GetSessionOptions(this IRequest httpReq)
         {
-            var sessionOptions = httpReq.GetItemOrCookie(SessionFeature.SessionOptionsKey);
-            var headerOptions = httpReq.GetHeader("X-" + SessionFeature.SessionOptionsKey);
-            if (headerOptions != null)
-            {
-                sessionOptions = sessionOptions.IsNullOrEmpty()
-                    ? headerOptions
-                    : headerOptions + "," + sessionOptions;
-            }                
+            var sessionOptions = httpReq.GetSessionParam(SessionFeature.SessionOptionsKey);
             return sessionOptions.IsNullOrEmpty()
                 ? new HashSet<string>()
                 : sessionOptions.Split(',').ToHashSet();
@@ -170,7 +179,8 @@ namespace ServiceStack
 
         public static HashSet<string> AddSessionOptions(this IRequest req, params string[] options)
         {
-            if (req == null || options.Length == 0) return new HashSet<string>();
+            if (req == null || options.Length == 0)
+                return new HashSet<string>();
 
             var existingOptions = req.GetSessionOptions();
             foreach (var option in options)
@@ -185,7 +195,7 @@ namespace ServiceStack
                 existingOptions.Add(option);
             }
 
-            var strOptions = String.Join(",", existingOptions.ToArray());
+            var strOptions = string.Join(",", existingOptions.ToArray());
 
             var httpRes = req.Response as IHttpResponse;
             if (httpRes != null)
@@ -259,6 +269,29 @@ namespace ServiceStack
             if (httpRes == null) return;
             httpRes.Cookies.DeleteCookie(SessionFeature.SessionId);
             httpRes.Cookies.DeleteCookie(SessionFeature.PermanentSessionId);
+            httpRes.Cookies.DeleteCookie(HttpHeaders.XUserAuthId);
+        }
+
+        public static void GenerateNewSessionCookies(this IRequest req, IAuthSession session)
+        {
+            var httpRes = req.Response as IHttpResponse;
+            if (httpRes == null)
+                return;
+
+            req.Response.ClearCookies();
+
+            var tempId = req.Response.CreateTemporarySessionId(req);
+            var permId = req.Response.CreatePermanentSessionId(req);
+
+            var isPerm = req.IsPermanentSession();
+            if (isPerm)
+                req.AddSessionOptions(SessionOptions.Permanent);
+
+            session.Id = isPerm
+                ? permId
+                : tempId;
+
+            req.SaveSessionInItems(session);
         }
     }
 }

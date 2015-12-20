@@ -5,7 +5,7 @@
 // Authors:
 //   Demis Bellot (demis.bellot@gmail.com)
 //
-// Copyright 2014 Service Stack LLC. All Rights Reserved.
+// Copyright 2015 Service Stack LLC. All Rights Reserved.
 //
 // Licensed under the same terms of ServiceStack.
 //
@@ -43,9 +43,11 @@ namespace ServiceStack.Redis
         void Save();
         void SaveAsync();
         void Shutdown();
+        void ShutdownNoSave();
         void RewriteAppendOnlyFileAsync();
         void FlushDb();
 
+        RedisServerRole GetServerRole();
         RedisText GetServerRoleInfo();
         string GetConfig(string item);
         void SetConfig(string item, string value);
@@ -64,6 +66,11 @@ namespace ServiceStack.Redis
 
         List<string> GetAllKeys();
 
+        //Fetch fully qualified key for specific Type and Id
+        string UrnKey<T>(T value);
+        string UrnKey<T>(object id);
+        string UrnKey(Type type, object id);
+
         [Obsolete("Use SetValue()")]
         void SetEntry(string key, string value);
         [Obsolete("Use SetValue()")]
@@ -77,6 +84,7 @@ namespace ServiceStack.Redis
 
         void SetAll(IEnumerable<string> keys, IEnumerable<string> values);
         void SetAll(Dictionary<string, string> map);
+        void SetValues(Dictionary<string, string> map);
 
         void SetValue(string key, string value);
         void SetValue(string key, string value, TimeSpan expireIn);
@@ -109,7 +117,9 @@ namespace ServiceStack.Redis
         long DecrementValueBy(string key, int count);
         List<string> SearchKeys(string pattern);
 
+        string Type(string key);
         RedisKeyType GetEntryType(string key);
+        long GetStringCount(string key);
         string GetRandomKey();
         bool ExpireEntryIn(string key, TimeSpan expireIn);
         bool ExpireEntryAt(string key, DateTime expireAt);
@@ -302,6 +312,13 @@ namespace ServiceStack.Redis
 
 
         #region Eval/Lua operations
+
+        T ExecCachedLua<T>(string scriptBody, Func<string, T> scriptSha1);
+
+        RedisText ExecLua(string body, params string[] args);
+        RedisText ExecLua(string luaBody, string[] keys, string[] args);
+        RedisText ExecLuaSha(string sha1, params string[] args);
+        RedisText ExecLuaSha(string sha1, string[] keys, string[] args);
 
         string ExecLuaAsString(string luaBody, params string[] args);
         string ExecLuaAsString(string luaBody, string[] keys, string[] args);

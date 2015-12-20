@@ -1,3 +1,4 @@
+#if !LITE
 using System.IO;
 using System.Xml;
 using ServiceStack.Serialization;
@@ -59,3 +60,4 @@ namespace ServiceStack
         }
     }
 }
+#endif

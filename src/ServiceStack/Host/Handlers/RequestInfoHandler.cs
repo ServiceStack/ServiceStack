@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
@@ -80,6 +81,9 @@ namespace ServiceStack.Host.Handlers
 
         [DataMember]
         public string VirtualAppRelativePathRoot { get; set; }
+
+        [DataMember]
+        public string CurrentDirectory { get; set; }
 
         [DataMember]
         public string HandlerFactoryArgs { get; set; }
@@ -224,6 +228,7 @@ namespace ServiceStack.Host.Handlers
             var json = JsonSerializer.SerializeToString(response);
             httpRes.ContentType = MimeTypes.Json;
             httpRes.Write(json);
+            httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
 
         public override void ProcessRequest(HttpContextBase context)
@@ -250,6 +255,9 @@ namespace ServiceStack.Host.Handlers
 
         public static RequestInfoResponse GetRequestInfo(IRequest httpReq)
         {
+            int virtualPathCount = 0;
+            int.TryParse(httpReq.QueryString["virtualPathCount"], out virtualPathCount);
+
             var response = new RequestInfoResponse
             {
                 Usage = "append '?debug=requestinfo' to any querystring",
@@ -264,6 +272,7 @@ namespace ServiceStack.Host.Handlers
                 ApplicationBaseUrl = httpReq.GetBaseUrl(),
                 ResolveAbsoluteUrl = HostContext.AppHost.ResolveAbsoluteUrl("~/resolve", httpReq),
                 StripApplicationVirtualPath = HostContext.Config.StripApplicationVirtualPath,
+                CurrentDirectory = Directory.GetCurrentDirectory(),
                 RawUrl = httpReq.RawUrl,
                 ResolvedPathInfo = httpReq.PathInfo,
                 ContentType = httpReq.ContentType,
@@ -277,7 +286,7 @@ namespace ServiceStack.Host.Handlers
                 PluginsLoaded = HostContext.AppHost.PluginsLoaded,
                 StartUpErrors = HostContext.AppHost.StartUpErrors,
                 LastRequestInfo = LastRequestInfo,
-                VirtualPathProviderFiles = HostContext.AppHost.VirtualPathProvider.GetAllMatchingFiles("*").Take(1000).Map(x => x.RealPath),
+                VirtualPathProviderFiles = HostContext.AppHost.VirtualPathProvider.GetAllMatchingFiles("*").Take(virtualPathCount).Map(x => x.RealPath),
                 Stats = new Dictionary<string, string> {
                     {"RawHttpHandlers", HostContext.AppHost.RawHttpHandlers.Count.ToString() },
                     {"PreRequestFilters", HostContext.AppHost.PreRequestFilters.Count.ToString() },

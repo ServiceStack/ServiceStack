@@ -5,7 +5,6 @@ using System.Reflection;
 using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -44,23 +43,40 @@ namespace ServiceStack.Host
             var restrictTo = requestType.FirstAttribute<RestrictAttribute>()
                           ?? serviceType.FirstAttribute<RestrictAttribute>();
 
-            var operation = new Operation {
+
+            var reqFilterAttrs = new[] { requestType, serviceType }
+                .SelectMany(x => x.AllAttributes<IHasRequestFilter>()).ToList();
+            var resFilterAttrs = (responseType != null ? new[] { responseType, serviceType } : new[] { serviceType })
+                .SelectMany(x => x.AllAttributes<IHasResponseFilter>()).ToList();
+
+            var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
+            var actions = GetImplementedActions(serviceType, requestType);
+            authAttrs.AddRange(actions.SelectMany(x => x.AllAttributes<AuthenticateAttribute>()));
+
+            var operation = new Operation
+            {
                 ServiceType = serviceType,
                 RequestType = requestType,
                 ResponseType = responseType,
                 RestrictTo = restrictTo,
-                Actions = GetImplementedActions(serviceType, requestType),
+                Actions = actions.Map(x => x.Name.ToUpper()),
                 Routes = new List<RestPath>(),
+                RequestFilterAttributes = reqFilterAttrs,
+                ResponseFilterAttributes = resFilterAttrs,
+                RequiresAuthentication = authAttrs.Count > 0,
+                RequiredRoles = authAttrs.OfType<RequiredRoleAttribute>().SelectMany(x => x.RequiredRoles).ToList(),
+                RequiresAnyRole = authAttrs.OfType<RequiresAnyRoleAttribute>().SelectMany(x => x.RequiredRoles).ToList(),
+                RequiredPermissions = authAttrs.OfType<RequiredPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
+                RequiresAnyPermission = authAttrs.OfType<RequiresAnyPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
             };
 
-			this.OperationsMap[requestType] = operation;
-			this.OperationNamesMap[operation.Name.ToLower()] = operation;
-			//this.OperationNamesMap[requestType.Name.ToLower()] = operation;
-			if (responseType != null)
-			{
-				this.ResponseTypes.Add(responseType);
-				this.OperationsResponseMap[responseType] = operation;
-			}
+            this.OperationsMap[requestType] = operation;
+            this.OperationNamesMap[operation.Name.ToLower()] = operation;
+            if (responseType != null)
+            {
+                this.ResponseTypes.Add(responseType);
+                this.OperationsResponseMap[responseType] = operation;
+            }
 
             //Only count non-core ServiceStack Services, i.e. defined outside of ServiceStack.dll or Swagger
             var nonCoreServicesCount = OperationsMap.Values
@@ -117,14 +133,13 @@ namespace ServiceStack.Host
             return op;
         }
 
-        public List<string> GetImplementedActions(Type serviceType, Type requestType)
+        public List<MethodInfo> GetImplementedActions(Type serviceType, Type requestType)
         {
             if (!typeof(IService).IsAssignableFrom(serviceType))
                 throw new NotSupportedException("All Services must implement IService");
 
             return serviceType.GetActions()
                 .Where(x => x.GetParameters()[0].ParameterType == requestType)
-                .Select(x => x.Name.ToUpper())
                 .ToList();
         }
 
@@ -205,6 +220,9 @@ namespace ServiceStack.Host
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
+            if (operation.RequestType.ExcludesFeature(Feature.Metadata))
+                return false;
+
             if (operation.RestrictTo == null) return true;
 
             //Less fine-grained on /metadata pages. Only check Network and Format
@@ -230,6 +248,8 @@ namespace ServiceStack.Host
             Operation operation;
             OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
             if (operation == null) return false;
+
+            if (operation.RequestType.ExcludesFeature(Feature.Metadata)) return false;
 
             var canCall = HasImplementation(operation, format);
             if (!canCall) return false;
@@ -316,6 +336,12 @@ namespace ServiceStack.Host
             var typeMetadata = HostContext.TryResolve<INativeTypesMetadata>();
 
             var typesConfig = HostContext.AppHost.GetTypesConfigForMetadata(httpReq);
+
+            if (HostContext.GetPlugin<MetadataFeature>().ShowResponseStatusInMetadataPages)
+            {
+                typesConfig.IgnoreTypes.Remove(typeof(ResponseStatus));
+                typesConfig.IgnoreTypes.Remove(typeof(ResponseError));
+            }
 
             var metadataTypes = typeMetadata != null
                 ? typeMetadata.GetMetadataTypes(httpReq, typesConfig)
@@ -420,7 +446,9 @@ namespace ServiceStack.Host
 
         static MetadataType FindMetadataType(MetadataTypes metadataTypes, string name, string @namespace = null)
         {
-            if (@namespace != null && @namespace.StartsWith("System"))
+            if (@namespace != null 
+                && @namespace.StartsWith("System") 
+                && metadataTypes.Config.ExportTypes.All(x => x.Name != name))
                 return null;
 
             var reqType = metadataTypes.Operations.FirstOrDefault(x => x.Request.Name == name);
@@ -442,13 +470,13 @@ namespace ServiceStack.Host
 
     public class Operation
     {
-    	public string Name
-    	{
-    		get 
-			{
-				return RequestType.GetOperationName(); 
-			}
-    	}
+        public string Name
+        {
+            get
+            {
+                return RequestType.GetOperationName();
+            }
+        }
 
         public Type RequestType { get; set; }
         public Type ServiceType { get; set; }
@@ -457,6 +485,13 @@ namespace ServiceStack.Host
         public List<string> Actions { get; set; }
         public List<RestPath> Routes { get; set; }
         public bool IsOneWay { get { return ResponseType == null; } }
+        public List<IHasRequestFilter> RequestFilterAttributes { get; set; }
+        public List<IHasResponseFilter> ResponseFilterAttributes { get; set; }
+        public bool RequiresAuthentication { get; set; }
+        public List<string> RequiredRoles { get; set; }
+        public List<string> RequiresAnyRole { get; set; }
+        public List<string> RequiredPermissions { get; set; }
+        public List<string> RequiresAnyPermission { get; set; }
     }
 
     public class OperationDto
@@ -530,14 +565,15 @@ namespace ServiceStack.Host
     {
         public static OperationDto ToOperationDto(this Operation operation)
         {
-            var to = new OperationDto {
+            var to = new OperationDto
+            {
                 Name = operation.Name,
                 ResponseName = operation.IsOneWay ? null : operation.ResponseType.GetOperationName(),
                 ServiceName = operation.ServiceType.GetOperationName(),
                 Actions = operation.Actions,
                 Routes = operation.Routes.Map(x => x.Path),
             };
-            
+
             if (operation.RestrictTo != null)
             {
                 to.RestrictTo = operation.RestrictTo.AccessibleToAny.ToList().ConvertAll(x => x.ToString());
@@ -601,7 +637,7 @@ namespace ServiceStack.Host
             return !isRequestType ? defaultType : GetRequestParamType(op, attr.Name, defaultType);
         }
 
-        private static string GetRequestParamType(Operation op, string name, string defaultType="body")
+        private static string GetRequestParamType(Operation op, string name, string defaultType = "body")
         {
             if (op.Routes.Any(x => x.IsVariable(name)))
                 return "path";
@@ -639,6 +675,12 @@ namespace ServiceStack.Host
         {
             return type.IsAbstract.GetValueOrDefault()
                 || type.Name == typeof(AuthUserSession).Name; //not abstract but treat it as so
+        }
+
+        public static bool ExcludesFeature(this Type type, Feature feature)
+        {
+            var excludeAttr = type.FirstAttribute<ExcludeAttribute>();
+            return excludeAttr != null && excludeAttr.Feature.HasFlag(feature);
         }
     }
 }

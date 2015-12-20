@@ -15,7 +15,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class ReplyAllAppHost : AppSelfHostBase
     {
         public ReplyAllAppHost()
-            : base(typeof(ReplyAllTests).Name, typeof(ReplyAllService).Assembly) { }
+            : base(typeof(ReplyAllTests).Name, typeof(ReplyAllService).Assembly)
+        { }
 
         public override void Configure(Container container)
         {
@@ -42,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public static void AssertSingleDto(object dto)
         {
-            if (!(dto is BatchThrows || dto is BatchThrowsAsync || dto is NoRepeat || dto is HelloAll || dto is HelloAllAsync || dto is HelloGet || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
+            if (!(dto is BatchThrows || dto is BatchThrowsAsync || dto is NoRepeat || dto is HelloAll || dto is HelloAllAsync || dto is HelloAllVoid || dto is HelloAllVoidAsync || dto is HelloGet || dto is HelloAllCustom || dto is HelloAllTransaction || dto is Request))
                 throw new Exception("Invalid " + dto.GetType().Name);
         }
     }
@@ -88,6 +89,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class HelloAllAsync : IReturn<HelloAllResponse>
     {
+        public string Name { get; set; }
+    }
+
+    public class HelloAllVoid : IReturnVoid
+    {
+        public static int Counter;
+
+        public string Name { get; set; }
+    }
+
+    public class HelloAllVoidAsync : IReturnVoid
+    {
+        public static int Counter;
+
         public string Name { get; set; }
     }
 
@@ -149,6 +164,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Get(HelloGet request)
         {
             return new HelloAllResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+
+        public void Any(HelloAllVoid request)
+        {
+            HelloAllVoid.Counter++;
+        }
+
+        public async Task Any(HelloAllVoidAsync request)
+        {
+            HelloAllVoidAsync.Counter++;
+            await Task.FromResult(0);
         }
 
         [ReplyAllRequest]
@@ -286,6 +312,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class ReplyAllXmlServiceClientTests : ReplyAllTests
+    {
+        public override IServiceClient CreateClient(string baseUri)
+        {
+            return new XmlServiceClient(baseUri);
+        }
+
+        public override IServiceClientAsync CreateClientAsync(string baseUri)
+        {
+            return new XmlServiceClient(baseUri);
+        }
+    }
+
     [TestFixture]
     public abstract class ReplyAllTests
     {
@@ -343,8 +382,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var responses = client.SendAll(requests);
-            responses.PrintDump();
-
             var results = responses.Map(x => x.Result);
 
             Assert.That(results, Is.EquivalentTo(new[] {
@@ -367,8 +404,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var responses = await client.SendAllAsync(requests);
-            responses.PrintDump();
-
             var results = responses.Map(x => x.Result);
 
             Assert.That(results, Is.EquivalentTo(new[] {
@@ -395,13 +430,41 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.Get(new HelloGet { Name = "aaa" });
 
             var responses = client.SendAll(requests);
-            responses.PrintDump();
-
             var results = responses.Map(x => x.Result);
 
             Assert.That(results, Is.EquivalentTo(new[] {
                 "Hello, Foo!", "Hello, Bar!", "Hello, Baz!"
             }));
+        }
+
+        [Test]
+        public void Can_send_multi_HelloAllVoid()
+        {
+            var client = CreateClient(Config.AbsoluteBaseUri);
+
+            var requests = new[]
+            {
+                new HelloAllVoid { Name = "Foo" },
+                new HelloAllVoid { Name = "Bar" },
+                new HelloAllVoid { Name = "Baz" },
+            };
+
+            client.SendAllOneWay(requests);
+        }
+
+        [Test]
+        public void Can_send_multi_HelloAllVoidAsync()
+        {
+            var client = CreateClient(Config.AbsoluteBaseUri);
+
+            var requests = new[]
+            {
+                new HelloAllVoidAsync { Name = "Foo" },
+                new HelloAllVoidAsync { Name = "Bar" },
+                new HelloAllVoidAsync { Name = "Baz" },
+            };
+
+            client.SendAllOneWay(requests);
         }
 
         [Test]
@@ -427,8 +490,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var responses = client.SendAll(requests);
-            responses.PrintDump();
-
             var results = responses.Map(x => x.Result);
 
             Assert.That(results, Is.EquivalentTo(new[] {
@@ -449,8 +510,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var responses = await client.SendAllAsync(requests);
-            responses.PrintDump();
-
             var results = responses.Map(x => x.Result);
 
             Assert.That(results, Is.EquivalentTo(new[] {
@@ -569,7 +628,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_not_repeat()
         {
-            //var client = new JsonServiceClient("http://localhost:55799/");
             var client = CreateClient(Config.AbsoluteBaseUri);
             var batch = new[] { new NoRepeat { Id = Guid.NewGuid() }, new NoRepeat { Id = Guid.NewGuid() } };
 
@@ -582,7 +640,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_throw_WebServiceException_on_Error()
         {
             var client = CreateClient(Config.AbsoluteBaseUri);
-            //var client = new JsonServiceClient("http://localhost:55799/");
 
             var requests = new[]
             {
@@ -598,8 +655,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                ex.ResponseStatus.PrintDump();
-                
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(Exception).Name));
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Exception).Name));
                 Assert.That(ex.ResponseStatus.Message, Is.EqualTo("Batch Throws"));
@@ -611,12 +666,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Does_throw_WebServiceException_on_Error_Async()
         {
             var client = CreateClient(Config.AbsoluteBaseUri);
-            //var client = new JsonServiceClient("http://localhost:55799/");
 
             var requests = new[]
             {
                 new BatchThrowsAsync { Id = 1, Name = "Foo" },
-                new BatchThrowsAsync { Id = 2, Name = "Bar" }, 
+                new BatchThrowsAsync { Id = 2, Name = "Bar" },
                 new BatchThrowsAsync { Id = 3, Name = "Baz" },
             };
 
@@ -627,8 +681,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                ex.ResponseStatus.PrintDump();
-
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(Exception).Name));
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Exception).Name));
                 Assert.That(ex.ResponseStatus.Message, Is.EqualTo("Batch Throws"));

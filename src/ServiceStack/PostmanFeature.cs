@@ -72,6 +72,11 @@ namespace ServiceStack
 
     public class PostmanRequest
     {
+        public PostmanRequest()
+        {
+            responses = new List<string>();
+        }
+        
         public string collectionId { get; set; }
         public string id { get; set; }
         public string name { get; set; }
@@ -314,7 +319,7 @@ namespace ServiceStack
             }
             else if (type.IsGenericType())
             {
-                var args = type.GetGenericArguments().Map(x => 
+                var args = type.GetGenericArguments().Map(x =>
                     x.AsFriendlyName(feature));
                 suffix = "<{0}>".Fmt(string.Join(",", args.ToArray()));
             }

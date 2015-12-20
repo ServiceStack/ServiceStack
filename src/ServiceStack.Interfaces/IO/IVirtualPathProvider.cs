@@ -22,6 +22,7 @@ namespace ServiceStack.IO
 
         IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = Int32.MaxValue);
 
+        IEnumerable<IVirtualFile> GetAllFiles();
         IEnumerable<IVirtualFile> GetRootFiles();
         IEnumerable<IVirtualDirectory> GetRootDirectories();
 

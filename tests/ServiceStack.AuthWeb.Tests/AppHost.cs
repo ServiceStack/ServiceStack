@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
 using System.Net;
 using System.Threading;
+using System.Web;
 using Funq;
 using Raven.Client;
 using Raven.Client.Document;
@@ -43,12 +44,22 @@ namespace ServiceStack.AuthWeb.Tests
         public static ILog Log = LogManager.GetLogger(typeof(AppHost));
 
         public AppHost()
-            : base("Test Auth", typeof(AppHost).Assembly) { }
+            : base("Test Auth", typeof(AppHost).Assembly)
+        { }
 
         public override void Configure(Container container)
         {
             Plugins.Add(new RazorFormat());
-            Plugins.Add(new ServerEventsFeature());
+            Plugins.Add(new ServerEventsFeature
+            {
+                WriteEvent = (res, frame) =>
+                {
+                    var aspRes = (HttpResponseBase)res.OriginalResponse;
+                    var bytes = frame.ToUtf8Bytes();
+                    aspRes.OutputStream.WriteAsync(bytes, 0, bytes.Length)
+                        .Then(_ => aspRes.OutputStream.FlushAsync());
+                }
+            });
 
             container.Register(new DataSource());
 
@@ -57,15 +68,17 @@ namespace ServiceStack.AuthWeb.Tests
             {
                 container.Register<IDbConnectionFactory>(
                     new OrmLiteConnectionFactory(
-                        "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200", 
-                        PostgreSqlDialect.Provider) {
-                            ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
-                        });
+                        "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+                        PostgreSqlDialect.Provider)
+                    {
+                        ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+                    });
             }
             else
             {
                 container.Register<IDbConnectionFactory>(
-                    new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider) {
+                    new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider)
+                    {
                         ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
                     });
             }
@@ -88,7 +101,8 @@ namespace ServiceStack.AuthWeb.Tests
             using (var db = container.Resolve<IDbConnectionFactory>().Open())
                 db.DropAndCreateTable<UserTable>();
 
-            SetConfig(new HostConfig {
+            SetConfig(new HostConfig
+            {
                 DebugMode = true,
                 AddRedirectParamsToQueryString = true,
             });
@@ -100,6 +114,11 @@ namespace ServiceStack.AuthWeb.Tests
             //Look in Web.config for examples on how to configure your oauth providers, e.g. oauth.facebook.AppId, etc.
             var appSettings = new AppSettings();
 
+            Plugins.Add(new EncryptedMessagesFeature
+            {
+                PrivateKeyXml = "<RSAKeyValue><Modulus>s1/rrg2UxchL5O4yFKCHTaDQgr8Bfkr1kmPf8TCXUFt4WNgAxRFGJ4ap1Kc22rt/k0BRJmgC3xPIh7Z6HpYVzQroXuYI6+q66zyk0DRHG7ytsoMiGWoj46raPBXRH9Gj5hgv+E3W/NRKtMYXqq60hl1DvtGLUs2wLGv15K9NABc=</Modulus><Exponent>AQAB</Exponent><P>6CiNjgn8Ov6nodG56rCOXBoSGksYUf/2C8W23sEBfwfLtKyqTbTk3WolBj8sY8QptjwFBF4eaQiFdVLt3jg08w==</P><Q>xcuu4OGTcSOs5oYqyzsQrOAys3stMauM2RYLIWqw7JGEF1IV9LBwbaW/7foq2dG8saEI48jxcskySlDgq5dhTQ==</Q><DP>KqzhsH13ZyTOjblusox37shAEaNCOjiR8wIKJpJWAxLcyD6BI72f4G+VlLtiHoi9nikURwRCFM6jMbjnztSILw==</DP><DQ>H4CvW7XRy+VItnaL/k5r+3zB1oA51H1kM3clUq8xepw6k5RJVu17GpuZlAeSJ5sWGJxzVAQ/IG8XCWsUPYAgyQ==</DQ><InverseQ>vTLuAT3rSsoEdNwZeH2/JDEWmQ1NGa5PUq1ak1UbDD0snhsfJdLo6at3isRqEtPVsSUK6I07Nrfkd6okGhzGDg==</InverseQ><D>M8abO9lVuSVQqtsKf6O6inDB3wuNPcwbSE8l4/O3qY1Nlq96wWd0DZK0UNqXXdnDQFjPU7uwIH4QYwQMCeoejl3dZlllkyvKVa3jihImDD++qgswX2DmHGDqTIkVABf1NF730gqTmt1kqXoVp5Y+VcO7CZPEygIQyTK4WwYlRjk=</D></RSAKeyValue>"
+            });
+
             //Register all Authentication methods you want to enable for this web app.            
             Plugins.Add(new AuthFeature(
                 () => new CustomUserSession(), //Use your own typed Custom UserSession type
@@ -109,8 +128,12 @@ namespace ServiceStack.AuthWeb.Tests
                     //    AllowAllWindowsAuthUsers = true
                     //}, 
                     new CredentialsAuthProvider {  //HTML Form post of UserName/Password credentials
-                        SkipPasswordVerificationForPrivateRequests = true,
-                    },        
+                        SkipPasswordVerificationForInProcessRequests = true,
+                        //CustomValidationFilter = authCtx => 
+                        //    authCtx.Request.UserHostAddress.StartsWith("175.45.17")
+                        //        ? HttpResult.Redirect("https://youtu.be/dQw4w9WgXcQ")
+                        //        : null
+                    },
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
                     new DigestAuthProvider(appSettings),        //Sign-in with Digest Auth
@@ -165,9 +188,20 @@ namespace ServiceStack.AuthWeb.Tests
                     UserName = "mythz",
                 }, "test");
             }
-            catch (Exception) {}
+            catch (Exception) { }
 
             Plugins.Add(new RequestLogsFeature());
+
+            this.GlobalResponseFilters.Add((req, res, responseDto) =>
+            {
+                var authResponse = responseDto as AuthenticateResponse;
+                if (authResponse != null)
+                {
+                    authResponse.Meta = new Dictionary<string, string> {
+                        {"foo", "bar"}
+                    };
+                }
+            });
         }
 
         private static IUserAuthRepository CreateRavenDbAuthRepo(Container container, AppSettings appSettings)
@@ -197,7 +231,7 @@ namespace ServiceStack.AuthWeb.Tests
 
             var authRepo = (IUserAuthRepository)container.Resolve<IAuthRepository>();
             authRepo.InitSchema(); //unnecessary, but staying consistent
-            
+
             return authRepo;
         }
 
@@ -206,10 +240,10 @@ namespace ServiceStack.AuthWeb.Tests
             //Store User Data into the referenced SqlServer database
             container.Register<IAuthRepository>(c =>
                 new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
-            
+
             //Use OrmLite DB Connection to persist the UserAuth and AuthProvider info
-            var authRepo = (OrmLiteAuthRepository) container.Resolve<IAuthRepository>();
-                //If using and RDBMS to persist UserAuth, we must create required tables
+            var authRepo = (OrmLiteAuthRepository)container.Resolve<IAuthRepository>();
+            //If using and RDBMS to persist UserAuth, we must create required tables
             if (appSettings.Get("RecreateAuthTables", false))
                 authRepo.DropAndReCreateTables(); //Drop and re-create all Auth and registration tables
             else
@@ -289,6 +323,8 @@ namespace ServiceStack.AuthWeb.Tests
         }
     }
 
+    //[RequiredRole("Admin")]
+    //[Restrict(InternalOnly = true)]
     [Route("/privateauth")]
     public class PrivateAuth
     {
@@ -301,7 +337,8 @@ namespace ServiceStack.AuthWeb.Tests
         {
             using (var service = base.ResolveService<AuthenticateService>())
             {
-                return service.Post(new Authenticate {
+                return service.Post(new Authenticate
+                {
                     provider = AuthenticateService.CredentialsProvider,
                     UserName = request.UserName,
                 });

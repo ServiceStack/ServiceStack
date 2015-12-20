@@ -50,7 +50,7 @@ namespace ServiceStack.RabbitMq
             this.msgFactory = msgFactory;
         }
 
-        public void Publish<T>(T messageBody)
+        public virtual void Publish<T>(T messageBody)
         {
             var message = messageBody as IMessage;
             if (message != null)
@@ -62,28 +62,28 @@ namespace ServiceStack.RabbitMq
                 Publish(new Message<T>(messageBody));
             }
         }
- 
-        public void Publish<T>(IMessage<T> message)
+
+        public virtual void Publish<T>(IMessage<T> message)
         {
             Publish(message.ToInQueueName(), message);
         }
 
-        public void Publish(string queueName, IMessage message)
+        public virtual void Publish(string queueName, IMessage message)
         {
             Publish(queueName, message, QueueNames.Exchange);
         }
 
-        public void SendOneWay(object requestDto)
+        public virtual void SendOneWay(object requestDto)
         {
             Publish(MessageFactory.Create(requestDto));
         }
 
-        public void SendOneWay(string queueName, object requestDto)
+        public virtual void SendOneWay(string queueName, object requestDto)
         {
             Publish(queueName, MessageFactory.Create(requestDto));
         }
 
-        public void SendAllOneWay(IEnumerable<object> requests)
+        public virtual void SendAllOneWay(IEnumerable<object> requests)
         {
             if (requests == null) return;
             foreach (var request in requests)
@@ -92,12 +92,12 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public void Publish(string queueName, IMessage message, string exchange)
+        public virtual void Publish(string queueName, IMessage message, string exchange)
         {
             using (__requestAccess())
             {
                 var props = Channel.CreateBasicProperties();
-                props.SetPersistent(true);
+                props.Persistent = true;
                 props.PopulateFromMessage(message);
 
                 if (PublishMessageFilter != null)
@@ -120,7 +120,7 @@ namespace ServiceStack.RabbitMq
 
         static HashSet<string> Queues = new HashSet<string>();
 
-        public void PublishMessage(string exchange, string routingKey, IBasicProperties basicProperties, byte[] body)
+        public virtual void PublishMessage(string exchange, string routingKey, IBasicProperties basicProperties, byte[] body)
         {
             try
             {
@@ -162,7 +162,7 @@ namespace ServiceStack.RabbitMq
             }
         }
 
-        public BasicGetResult GetMessage(string queueName, bool noAck)
+        public virtual BasicGetResult GetMessage(string queueName, bool noAck)
         {
             try
             {

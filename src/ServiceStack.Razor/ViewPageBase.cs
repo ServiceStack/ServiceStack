@@ -421,7 +421,7 @@ namespace ServiceStack.Razor
 
         public bool IsError
         {
-            get { return ModelError != null; }
+            get { return ModelError != null || GetErrorStatus() != null; }
         }
 
         public object ModelError { get; set; }
@@ -550,7 +550,28 @@ namespace ServiceStack.Razor
         public ResponseStatus GetErrorStatus()
         {
             var errorStatus = this.Request.GetItem(HtmlFormat.ErrorStatusKey);
-            return errorStatus as ResponseStatus;
+            return errorStatus as ResponseStatus 
+                ?? GetResponseStatus(ModelError);
+        }
+        
+        private static ResponseStatus GetResponseStatus(object response)
+        {
+            if (response == null)
+                return null;
+
+            var status = response as ResponseStatus;
+            if (status != null)
+                return status;
+
+            var hasResponseStatus = response as IHasResponseStatus;
+            if (hasResponseStatus != null)
+                return hasResponseStatus.ResponseStatus;
+
+            var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");
+            if (propertyInfo == null)
+                return null;
+
+            return propertyInfo.GetProperty(response) as ResponseStatus;
         }
 
         public MvcHtmlString GetErrorMessage()
@@ -586,23 +607,37 @@ namespace ServiceStack.Razor
 
         public bool RenderErrorIfAny()
         {
-            if (!IsError) return false;
+            var html = GetErrorHtml(GetErrorStatus());
+            if (html == null)
+                return false;
 
-            var responseStatus = GetErrorStatus();
+            WriteLiteral(html);
+
+            return true;
+        }
+
+        public MvcHtmlString GetErrorHtml()
+        {
+            return MvcHtmlString.Create(GetErrorHtml(GetErrorStatus()) ?? "");
+        }
+
+        private string GetErrorHtml(ResponseStatus responseStatus)
+        {
+            if (responseStatus == null) return null;
+
             var stackTrace = responseStatus.StackTrace != null
                 ? "<pre>" + responseStatus.StackTrace + "</pre>"
                 : "";
 
-            WriteLiteral(@"
-            <div id=""error-response"" class=""alert alert-danger"">
-                <h4>" + 
-                    responseStatus.ErrorCode + ": " + 
-                    responseStatus.Message + @"
-                </h4>" + 
-                stackTrace + 
-            "</div>");
-
-            return true;
+            var html = @"
+                <div id=""error-response"" class=""alert alert-danger"">
+                    <h4>" +
+                        responseStatus.ErrorCode + ": " +
+                        responseStatus.Message + @"
+                    </h4>" +
+                    stackTrace +
+                "</div>";
+            return html;
         }
     }
 }

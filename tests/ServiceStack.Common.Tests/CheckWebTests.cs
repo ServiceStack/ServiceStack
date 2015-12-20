@@ -51,8 +51,6 @@ namespace ServiceStack.Common.Tests
             var client = new JsonServiceClient(BaseUri);
 
             var response = client.Post(new Echoes { Sentence = "Foo" });
-
-            response.PrintDump();
         }
     }
 }

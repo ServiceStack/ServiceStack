@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
+using ServiceStack.Model;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
@@ -53,6 +55,46 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Route("/throw404")]
+    public class Throw404 { }
+
+    [Route("/throwcustom404")]
+    public class ThrowCustom404 { }
+
+    [Route("/return404")]
+    public class Return404 { }
+
+    [Route("/return404result")]
+    public class Return404Result { }
+
+    public class Custom404Exception : Exception, IResponseStatusConvertible, IHasStatusCode
+    {
+        public Custom404Exception(string message) : base(message) {}
+
+        public ResponseStatus ToResponseStatus()
+        {
+            return new ResponseStatus
+            {
+                ErrorCode = GetType().Name,
+                Message = this.Message,
+                Errors = new List<ResponseError>
+                {
+                    new ResponseError
+                    {
+                        ErrorCode = "FieldErrorCode",
+                        Message = "FieldMessage",
+                        FieldName = "FieldName",
+                    }
+                }
+            };
+        }
+
+        public int StatusCode
+        {
+            get { return (int)HttpStatusCode.NotFound; }
+        }
+    }
+
     public class HttpErrorService : Service
     {
         public object Any(ThrowHttpError request)
@@ -72,7 +114,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
                 throw ex;
 
             var httpStatus = (HttpStatusCode)request.StatusCode.Value;
-            throw new ServiceStack.HttpError(httpStatus, ex);
+            throw new HttpError(httpStatus, ex);
+        }
+
+        public object Any(Throw404 request)
+        {
+            throw HttpError.NotFound("Custom Status Description");
+        }
+
+        public object Any(ThrowCustom404 request)
+        {
+            throw new Custom404Exception("Custom Status Description");
+        }
+
+        public object Any(Return404 request)
+        {
+            return HttpError.NotFound("Custom Status Description");
+        }
+
+        public object Any(Return404Result request)
+        {
+            return new HttpResult(HttpStatusCode.NotFound, "Custom Status Description");
         }
     }
 

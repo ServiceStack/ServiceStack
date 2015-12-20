@@ -1,10 +1,18 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
-	public interface IRestClient 
-	{
+    public interface IRestClient
+    {
+        void AddHeader(string name, string value);
+
+        void ClearCookies();
+        Dictionary<string, string> GetCookieValues();
+        void SetCookie(string name, string value, TimeSpan? expiresIn = null);
+
         void Get(IReturnVoid request);
         TResponse Get<TResponse>(IReturn<TResponse> requestDto);
         TResponse Get<TResponse>(object requestDto);

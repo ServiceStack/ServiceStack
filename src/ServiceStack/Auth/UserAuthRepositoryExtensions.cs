@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
@@ -9,15 +10,6 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Creates the required missing tables or DB schema 
         /// </summary>
-        public static void InitSchema(this IAuthRepository authRepo)
-        {
-            var requiresSchema = authRepo as IRequiresSchema;
-            if (requiresSchema != null)
-            {
-                requiresSchema.InitSchema();
-            }
-        }
-
         public static void AssignRoles(this IAuthRepository UserAuthRepo, IUserAuth userAuth,
             ICollection<string> roles = null, ICollection<string> permissions = null)
         {
@@ -104,6 +96,95 @@ namespace ServiceStack.Auth
             session.Id = originalId;
             session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
             session.ProviderOAuthAccess = authTokens;
+        }
+
+        public static List<IUserAuthDetails> GetUserAuthDetails(this IAuthRepository authRepo, int userAuthId)
+        {
+            return authRepo.GetUserAuthDetails(userAuthId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static IUserAuth GetUserAuth(this IUserAuthRepository authRepo, int userAuthId)
+        {
+            return authRepo.GetUserAuth(userAuthId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static void DeleteUserAuth(this IUserAuthRepository authRepo, int userAuthId)
+        {
+            authRepo.DeleteUserAuth(userAuthId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static ICollection<string> GetRoles(this IManageRoles manageRoles, int userAuthId)
+        {
+            return manageRoles.GetRoles(userAuthId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static ICollection<string> GetPermissions(this IManageRoles manageRoles, int userAuthId)
+        {
+            return manageRoles.GetPermissions(userAuthId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static bool HasRole(this IManageRoles manageRoles, int userAuthId, string role)
+        {
+            return manageRoles.HasRole(userAuthId.ToString(CultureInfo.InvariantCulture), role);
+        }
+
+        public static bool HasPermission(this IManageRoles manageRoles, int userAuthId, string permission)
+        {
+            return manageRoles.HasPermission(userAuthId.ToString(CultureInfo.InvariantCulture), permission);
+        }
+
+        public static void AssignRoles(this IManageRoles manageRoles, int userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+        {
+            manageRoles.AssignRoles(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions);
+        }
+
+        public static void UnAssignRoles(this IManageRoles manageRoles, int userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+        {
+            manageRoles.UnAssignRoles(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions);
+        }
+
+        public static IUserAuth CreateUserAuth(this IAuthRepository authRepo, IUserAuth newUser, string password)
+        {
+            return ((IUserAuthRepository)authRepo).CreateUserAuth(newUser, password);
+        }
+
+        public static IUserAuth UpdateUserAuth(this IAuthRepository authRepo, IUserAuth existingUser, IUserAuth newUser, string password)
+        {
+            return ((IUserAuthRepository)authRepo).UpdateUserAuth(existingUser, newUser, password);
+        }
+
+        public static IUserAuth GetUserAuth(this IAuthRepository authRepo, string userAuthId)
+        {
+            return ((IUserAuthRepository)authRepo).GetUserAuth(userAuthId);
+        }
+
+        public static void DeleteUserAuth(this IAuthRepository authRepo, string userAuthId)
+        {
+            ((IUserAuthRepository)authRepo).DeleteUserAuth(userAuthId);
+        }
+
+        public static void ValidateNewUser(this IUserAuth newUser)
+        {
+            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
+                throw new ArgumentNullException(ErrorMessages.UsernameOrEmailRequired);
+
+            if (!newUser.UserName.IsNullOrEmpty() && !HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
+                throw new ArgumentException(ErrorMessages.IllegalUsername, "UserName");
+        }
+
+        public static void ValidateNewUser(this IUserAuth newUser, string password)
+        {
+            newUser.ThrowIfNull("newUser");
+            password.ThrowIfNullOrEmpty("password");
+
+            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
+                throw new ArgumentNullException(ErrorMessages.UsernameOrEmailRequired);
+
+            if (!newUser.UserName.IsNullOrEmpty())
+            {
+                if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
+                    throw new ArgumentException(ErrorMessages.IllegalUsername, "UserName");
+            }
         }
     }
 }

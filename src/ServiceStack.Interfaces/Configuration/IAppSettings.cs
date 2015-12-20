@@ -4,7 +4,9 @@ namespace ServiceStack.Configuration
 {
     public interface IAppSettings
     {
-        List<string> GetAllKeys(); 
+        Dictionary<string, string> GetAll();
+         
+        List<string> GetAllKeys();
 
         bool Exists(string key);
 
@@ -15,6 +17,8 @@ namespace ServiceStack.Configuration
         IList<string> GetList(string key);
 
         IDictionary<string, string> GetDictionary(string key);
+
+        T Get<T>(string name);
 
         T Get<T>(string name, T defaultValue);
     }
