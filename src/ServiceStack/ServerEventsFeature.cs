@@ -557,7 +557,7 @@ namespace ServiceStack
         
         public void NotifyAll(string selector, object message)
         {
-            foreach (var sub in Subcriptions.ValuesWithoutLock().Where(sub => sub != null)) {
+            foreach (var sub in Subcriptions.ValuesWithoutLock()) {
                 sub.Publish(selector, Serialize(message));
             }
         }
@@ -606,20 +606,23 @@ namespace ServiceStack
             var expired = new List<IEventSubscription>();
             var now = DateTime.UtcNow;
 
-            foreach(var sub in subs.KeysWithoutLock().Where(sub => sub != null && sub.HasChannel(channel))) {
-                if (now - sub.LastPulseAt > IdleTimeout) {
+            foreach(var sub in subs.KeysWithoutLock()) {
+                if (sub.HasChannel(channel))
+                {
+                    if (now - sub.LastPulseAt > IdleTimeout) {
+                        if (Log.IsDebugEnabled)
+                            Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
+                                string.Join(", ", sub.Channels));
+
+                        expired.Add(sub);
+                    }
+
                     if (Log.IsDebugEnabled)
-                        Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
+                        Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
                             string.Join(", ", sub.Channels));
 
-                    expired.Add(sub);
+                    sub.Publish(selector, Serialize(message));
                 }
-
-                if (Log.IsDebugEnabled)
-                    Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
-                        string.Join(", ", sub.Channels));
-
-                sub.Publish(selector, Serialize(message));
             }
             
             foreach (var sub in expired)
@@ -689,7 +692,12 @@ namespace ServiceStack
                 return subInfos;
             }
 
-            subInfos.AddRange(subs.KeysWithoutLock().Select(sub => sub.GetInfo()).Where(sub => sub != null));
+            foreach (var sub in subs.KeysWithoutLock())
+            {
+                var info = sub.GetInfo();
+                if (info != null)
+                    subInfos.Add(info);
+            }
             
             return subInfos;
         }
@@ -714,11 +722,15 @@ namespace ServiceStack
             if (now - LastCleanAt <= HouseKeepingInterval)
                 return -1;
 
+            var expired = new List<IEventSubscription>();
             LastCleanAt = now;
-            var expired =
-                Subcriptions.ValuesWithoutLock()
-                    .Where(sub => sub != null && (now - sub.LastPulseAt > IdleTimeout))
-                    .ToList();
+            foreach (var sub in Subcriptions.ValuesWithoutLock())
+            {
+                if (now - sub.LastPulseAt > IdleTimeout)
+                {
+                    expired.Add(sub);
+                } 
+            }
 
             foreach (var sub in expired) {
                 sub.Unsubscribe();
@@ -732,11 +744,15 @@ namespace ServiceStack
             var ret = new List<Dictionary<string, string>>();
             var alreadyAdded = new HashSet<string>();
 
-            foreach (
-                var subs in channels.Select(channel => ChannelSubcriptions.TryGet(channel)).Where(subs => subs != null)) {
-                foreach (
-                    IEventSubscription sub in
-                        subs.KeysWithoutLock().Where(sub => !alreadyAdded.Contains(sub.SubscriptionId))) {
+            foreach (var channel in channels) {
+                var subs = ChannelSubcriptions.TryGet(channel);
+                if(subs == null)
+                    continue;
+
+                foreach (var sub in subs.KeysWithoutLock()) {
+                    if (alreadyAdded.Contains(sub.SubscriptionId))
+                        continue;
+
                     ret.Add(sub.Meta);
                     alreadyAdded.Add(sub.SubscriptionId);
                 }
@@ -747,7 +763,11 @@ namespace ServiceStack
 
         public List<Dictionary<string, string>> GetAllSubscriptionsDetails()
         {
-            var ret = Subcriptions.ValuesWithoutLock().Where(sub => sub != null).Select(sub => sub.Meta).ToList();
+            var ret = new List<Dictionary<string, string>>();
+            foreach (var sub in Subcriptions.ValuesWithoutLock())
+            {
+                ret.Add(sub.Meta);
+            }
             return ret;
         }
 
