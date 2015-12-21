@@ -44,7 +44,8 @@ namespace ServiceStack
             UnRegisterPath = "/event-unregister";
             SubscribersPath = "/event-subscribers";
 
-            WriteEvent = (res, frame) => {
+            WriteEvent = (res, frame) =>
+            {
                 res.OutputStream.Write(frame);
                 res.Flush();
             };
@@ -506,7 +507,7 @@ namespace ServiceStack
     public class MemoryServerEvents : IServerEvents
     {
         private static ILog Log = LogManager.GetLogger(typeof(MemoryServerEvents));
-        
+
         public TimeSpan IdleTimeout { get; set; }
         public TimeSpan HouseKeepingInterval { get; set; }
 
@@ -554,10 +555,11 @@ namespace ServiceStack
         {
             Reset();
         }
-        
+
         public void NotifyAll(string selector, object message)
         {
-            foreach (var sub in Subcriptions.ValuesWithoutLock()) {
+            foreach (var sub in Subcriptions.ValuesWithoutLock())
+            {
                 sub.Publish(selector, Serialize(message));
             }
         }
@@ -599,17 +601,18 @@ namespace ServiceStack
             string key, string selector, object message, string channel = null)
         {
             var subs = map.TryGet(key);
-            if (subs == null) {
+            if (subs == null)
                 return;
-            }
 
             var expired = new List<IEventSubscription>();
             var now = DateTime.UtcNow;
 
-            foreach(var sub in subs.KeysWithoutLock()) {
+            foreach (var sub in subs.KeysWithoutLock())
+            {
                 if (sub.HasChannel(channel))
                 {
-                    if (now - sub.LastPulseAt > IdleTimeout) {
+                    if (now - sub.LastPulseAt > IdleTimeout)
+                    {
                         if (Log.IsDebugEnabled)
                             Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
                                 string.Join(", ", sub.Channels));
@@ -624,7 +627,7 @@ namespace ServiceStack
                     sub.Publish(selector, Serialize(message));
                 }
             }
-            
+
             foreach (var sub in expired)
             {
                 sub.Unsubscribe();
@@ -635,12 +638,12 @@ namespace ServiceStack
             object message, string channel = null)
         {
             var sub = map.TryGet(key);
-            if (sub == null || !sub.HasChannel(channel)) {
+            if (sub == null || !sub.HasChannel(channel))
                 return;
-            }
 
             var now = DateTime.UtcNow;
-            if (now - sub.LastPulseAt > IdleTimeout) {
+            if (now - sub.LastPulseAt > IdleTimeout)
+            {
                 if (Log.IsDebugEnabled)
                     Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
                         string.Join(", ", sub.Channels));
@@ -671,9 +674,10 @@ namespace ServiceStack
 
         public IEventSubscription GetSubscription(string id)
         {
-            if (id == null) return null;
-            IEventSubscription sub = Subcriptions.TryGet(id);
+            if (id == null)
+                return null;
 
+            var sub = Subcriptions.TryGet(id);
             return sub;
         }
 
@@ -688,7 +692,8 @@ namespace ServiceStack
             if (userId == null) return subInfos;
 
             var subs = UserIdSubcriptions.TryGet(userId);
-            if (subs == null) {
+            if (subs == null)
+            {
                 return subInfos;
             }
 
@@ -698,11 +703,11 @@ namespace ServiceStack
                 if (info != null)
                     subInfos.Add(info);
             }
-            
+
             return subInfos;
         }
 
-        ConcurrentDictionary<string, long> SequenceCounters = new ConcurrentDictionary<string, long>();
+        readonly ConcurrentDictionary<string, long> SequenceCounters = new ConcurrentDictionary<string, long>();
 
         public long GetNextSequence(string sequenceId)
         {
@@ -729,10 +734,11 @@ namespace ServiceStack
                 if (now - sub.LastPulseAt > IdleTimeout)
                 {
                     expired.Add(sub);
-                } 
+                }
             }
 
-            foreach (var sub in expired) {
+            foreach (var sub in expired)
+            {
                 sub.Unsubscribe();
             }
 
@@ -744,12 +750,14 @@ namespace ServiceStack
             var ret = new List<Dictionary<string, string>>();
             var alreadyAdded = new HashSet<string>();
 
-            foreach (var channel in channels) {
+            foreach (var channel in channels)
+            {
                 var subs = ChannelSubcriptions.TryGet(channel);
-                if(subs == null)
+                if (subs == null)
                     continue;
 
-                foreach (var sub in subs.KeysWithoutLock()) {
+                foreach (var sub in subs.KeysWithoutLock())
+                {
                     if (alreadyAdded.Contains(sub.SubscriptionId))
                         continue;
 
@@ -773,13 +781,16 @@ namespace ServiceStack
 
         public void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null)
         {
-            try {
-                lock (subscription) {
+            try
+            {
+                lock (subscription)
+                {
                     if (connectArgs != null)
                         subscription.Publish("cmd.onConnect", connectArgs.ToJson());
 
                     subscription.OnUnsubscribe = HandleUnsubscription;
-                    foreach (string channel in subscription.Channels ?? EventSubscription.UnknownChannel) {
+                    foreach (string channel in subscription.Channels ?? EventSubscription.UnknownChannel)
+                    {
                         RegisterSubscription(subscription, channel, ChannelSubcriptions);
                     }
                     RegisterSubscription(subscription, subscription.SubscriptionId, Subcriptions);
@@ -794,7 +805,8 @@ namespace ServiceStack
                 if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyJoin != null)
                     NotifyJoin(subscription);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Log.Error("Register: " + ex.Message, ex);
                 throw;
             }
@@ -803,9 +815,8 @@ namespace ServiceStack
         void RegisterSubscription(IEventSubscription subscription, string key,
             ConcurrentDictionary<string, IEventSubscription> map)
         {
-            if (key == null || subscription == null) {
+            if (key == null || subscription == null)
                 return;
-            }
 
             map.TryAdd(key, subscription);
         }
@@ -813,16 +824,13 @@ namespace ServiceStack
         void RegisterSubscription(IEventSubscription subscription, string key,
             ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map)
         {
-            if (key == null || subscription == null) {
+            if (key == null || subscription == null)
                 return;
-            }
 
-            ConcurrentDictionary<IEventSubscription, bool> subs = map.GetOrAdd(key,
-                k => new ConcurrentDictionary<IEventSubscription, bool>());
-
+            var subs = map.GetOrAdd(key, k => new ConcurrentDictionary<IEventSubscription, bool>());
             subs.TryAdd(subscription, true);
         }
-        
+
         public void UnRegister(string subscriptionId)
         {
             var subscription = GetSubscription(subscriptionId);
@@ -838,18 +846,18 @@ namespace ServiceStack
             if (key == null || subscription == null)
                 return;
 
-            try {
-                ConcurrentDictionary<IEventSubscription, bool> subs = map.TryGet(key);
-
-                if (subs == null) {
+            try
+            {
+                var subs = map.TryGet(key);
+                if (subs == null)
                     return;
-                }
 
                 bool flag;
                 subs.TryRemove(subscription, out flag);
             }
-            catch (Exception ex) {
-                Log.Error("UnRegister: " + ex.Message, ex);
+            catch (Exception ex)
+            {
+                Log.Error("UnRegisterSubscription: " + ex.Message, ex);
                 throw;
             }
         }
