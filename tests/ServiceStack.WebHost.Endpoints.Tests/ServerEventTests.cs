@@ -264,7 +264,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async void Can_connect_to_ServerEventsStream()
         {
-            using (var client = CreateServerEventsClient().Start())
+            using (var client = CreateServerEventsClient())
             {
                 var task = client.Connect();
                 var connectMsg = await task.WaitAsync();
@@ -279,7 +279,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async void Does_fire_onJoin_events()
         {
-            using (var client = CreateServerEventsClient().Start())
+            using (var client = CreateServerEventsClient())
             {
                 var taskConnect = client.Connect();
                 var taskMsg = client.WaitForNextCommand();
@@ -296,7 +296,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async void Does_fire_onJoin_events_for_multiple_Channels()
         {
             var channels = new[] { "A", "B", "C" };
-            using (var client = CreateServerEventsClient(channels).Start())
+            using (var client = CreateServerEventsClient(channels))
             {
                 var taskConnect = client.Connect();
 
