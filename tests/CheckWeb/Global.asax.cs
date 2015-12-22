@@ -97,6 +97,9 @@ namespace CheckWeb
                         ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
                     });
 
+
+            this.GlobalHtmlErrorHttpHandler = new RazorHandler("GlobalErrorHandler.cshtml");
+
             //JavaGenerator.AddGsonImport = true;
         }
 

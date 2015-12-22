@@ -19,6 +19,7 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -122,6 +123,9 @@
     <Content Include="TestMinifier.cshtml" />
     <Content Include="TestMinifier.html" />
     <Content Include="default.html" />
+    <Content Include="TestError.cshtml" />
+    <Content Include="GlobalErrorHandler.cshtml" />
+    <Content Include="Views\TestErrorView.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
