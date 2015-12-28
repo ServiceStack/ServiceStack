@@ -118,6 +118,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
+                Assert.That(ex.ResponseStatus.Message, 
+                    Is.EqualTo("Unable to bind to request 'ErrorRequestBinding': Input string was not in a correct format."));
+
                 var fieldError = ex.GetFieldErrors()[0];
                 Assert.That(fieldError.FieldName, Is.EqualTo("Int"));
                 Assert.That(fieldError.ErrorCode, Is.EqualTo(typeof(SerializationException).Name));

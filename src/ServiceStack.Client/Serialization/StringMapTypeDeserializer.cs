@@ -88,7 +88,8 @@ namespace ServiceStack.Serialization
 
             try
             {
-                if (instance == null) instance = type.CreateInstance();
+                if (instance == null)
+                    instance = type.CreateInstance();
 
                 foreach (var pair in keyValuePairs.Where(x => !string.IsNullOrEmpty(x.Value)))
                 {
@@ -141,7 +142,7 @@ namespace ServiceStack.Serialization
             }
             catch (Exception ex)
             {
-                var serializationException = new SerializationException("KeyValueDataContractDeserializer: Error converting to type: " + ex.Message, ex);
+                var serializationException = new SerializationException("Unable to bind to request '{0}': {1}".Fmt(type.Name, ex.Message), ex);
                 if (propertyName != null)
                     serializationException.Data.Add("propertyName", propertyName);
 
