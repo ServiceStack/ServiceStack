@@ -61,24 +61,23 @@ namespace ServiceStack.Serialization
                 var attr = propertyInfo.FirstAttribute<DataMemberAttribute>();
                 if (attr != null && attr.Name != null)
                 {
-                    propertySetterMap[attr.Name] = propertySerializer;                    
+                    propertySetterMap[attr.Name] = propertySerializer;
                 }
                 propertySetterMap[propertyInfo.Name] = propertySerializer;
             }
 
-	        if (JsConfig.IncludePublicFields)
-	        {
-		        foreach (var fieldInfo in type.GetSerializableFields())
-		        {
-			        var fieldSetFn = JsvDeserializeType.GetSetFieldMethod(type, fieldInfo);
-			        var fieldType = fieldInfo.FieldType;
-			        var fieldParseStringFn = JsvReader.GetParseFn(fieldType);
-			        var fieldSerializer = new PropertySerializerEntry(fieldSetFn, fieldParseStringFn) {PropertyType = fieldType};
+            if (JsConfig.IncludePublicFields)
+            {
+                foreach (var fieldInfo in type.GetSerializableFields())
+                {
+                    var fieldSetFn = JsvDeserializeType.GetSetFieldMethod(type, fieldInfo);
+                    var fieldType = fieldInfo.FieldType;
+                    var fieldParseStringFn = JsvReader.GetParseFn(fieldType);
+                    var fieldSerializer = new PropertySerializerEntry(fieldSetFn, fieldParseStringFn) { PropertyType = fieldType };
 
-			        propertySetterMap[fieldInfo.Name] = fieldSerializer;
-		        }
-	        }
-
+                    propertySetterMap[fieldInfo.Name] = fieldSerializer;
+                }
+            }
         }
 
         public object PopulateFromMap(object instance, IDictionary<string, string> keyValuePairs, List<string> ignoredWarningsOnPropertyNames = null)
@@ -126,7 +125,7 @@ namespace ServiceStack.Serialization
                     if (propertySerializerEntry.PropertyType == typeof(bool))
                     {
                         //InputExtensions.cs#530 MVC Checkbox helper emits extra hidden input field, generating 2 values, first is the real value
-                        propertyTextValue = propertyTextValue.SplitOnFirst(',').First(); 
+                        propertyTextValue = propertyTextValue.SplitOnFirst(',').First();
                     }
 
                     var value = propertySerializerEntry.PropertyParseStringFn(propertyTextValue);
@@ -139,20 +138,19 @@ namespace ServiceStack.Serialization
                     propertySerializerEntry.PropertySetFn(instance, value);
                 }
                 return instance;
-
             }
             catch (Exception ex)
             {
                 var serializationException = new SerializationException("KeyValueDataContractDeserializer: Error converting to type: " + ex.Message, ex);
-                if (propertyName != null) {
+                if (propertyName != null)
                     serializationException.Data.Add("propertyName", propertyName);
-                }
-                if (propertyTextValue != null) {
+
+                if (propertyTextValue != null)
                     serializationException.Data.Add("propertyValueString", propertyTextValue);
-                }
-                if (propertySerializerEntry != null && propertySerializerEntry.PropertyType != null) {
+
+                if (propertySerializerEntry != null && propertySerializerEntry.PropertyType != null)
                     serializationException.Data.Add("propertyType", propertySerializerEntry.PropertyType);
-                }
+
                 throw serializationException;
             }
         }

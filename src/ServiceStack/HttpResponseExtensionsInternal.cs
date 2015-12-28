@@ -353,6 +353,8 @@ namespace ServiceStack
             string contentType, string operationName, string errorMessage, Exception ex, int statusCode)
         {
             var errorDto = ex.ToErrorResponse();
+            HostContext.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
+
             if (HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto))
                 return EmptyTask;
 

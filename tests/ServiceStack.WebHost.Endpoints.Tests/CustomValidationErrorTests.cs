@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
@@ -12,12 +13,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class CustomValidationAppHost : AppHostHttpListenerBase
     {
-        public CustomValidationAppHost() : base("Custom Error", typeof(CustomValidationAppHost).Assembly) {}
+        public CustomValidationAppHost() : base("Custom Error", typeof(CustomValidationAppHost).Assembly) { }
 
         public override void Configure(Container container)
         {
             Plugins.Add(new ValidationFeature { ErrorResponseFilter = CustomValidationError });
-            container.RegisterValidators(typeof(MyValidator).Assembly);           
+            container.RegisterValidators(typeof(MyValidator).Assembly);
         }
 
         public static object CustomValidationError(ValidationResult validationResult, object errorDto)
@@ -58,6 +59,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Route("/errorrequestbinding")]
+    public class ErrorRequestBinding : IReturn<ErrorRequestBinding>
+    {
+        public int Int { get; set; }
+    }
+
+    public class TestRequestBindingService : Service
+    {
+        public object Any(ErrorRequestBinding errorRequest)
+        {
+            return errorRequest;
+        }
+    }
+
     [TestFixture]
     public class CustomValidationErrorTests
     {
@@ -89,6 +104,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var body = ex.GetResponseBody();
                 Assert.That(body, Is.EqualTo("{\"code\":\"GreaterThan\",\"error\":\"'Age' must be greater than '0'.\"}"));
+            }
+        }
+
+        [Test]
+        public void RequestBindingException_returns_populated_FieldError()
+        {
+            var client = new JsonServiceClient(Config.ServiceStackBaseUri);
+            try
+            {
+                var response = client.Get<ErrorRequestBinding>("/errorrequestbinding?Int=string");
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                var fieldError = ex.GetFieldErrors()[0];
+                Assert.That(fieldError.FieldName, Is.EqualTo("Int"));
+                Assert.That(fieldError.ErrorCode, Is.EqualTo(typeof(SerializationException).Name));
+                Assert.That(fieldError.Message, Is.EqualTo("'string' is an Invalid value for 'Int'"));
             }
         }
     }

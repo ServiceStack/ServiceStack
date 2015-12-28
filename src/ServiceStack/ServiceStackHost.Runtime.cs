@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Web;
 using System.Xml;
 using ServiceStack.Auth;
@@ -424,12 +425,39 @@ namespace ServiceStack
                     ? argEx.Message.Substring(0, paramMsgIndex)
                     : argEx.Message;
 
+                if (responseStatus.Errors == null)
+                    responseStatus.Errors = new List<ResponseError>();
+
                 responseStatus.Errors.Add(new ResponseError
                 {
                     ErrorCode = ex.GetType().Name,
                     FieldName = argEx.ParamName,
                     Message = errorMsg,
                 });
+                return;
+            }
+
+            var serializationEx = ex as SerializationException;
+            if (serializationEx != null)
+            {
+                var paramName = serializationEx.Data["propertyName"] as string;
+                if (paramName != null)
+                {
+                    var valueString = serializationEx.Data["propertyValueString"] as string;
+                    var errorMsg = valueString != null
+                        ? "'{0}' is an Invalid value for '{1}'".Fmt(valueString, paramName)
+                        : "Invalid Value for '{0}'".Fmt(paramName);
+
+                    if (responseStatus.Errors == null)
+                        responseStatus.Errors = new List<ResponseError>();
+
+                    responseStatus.Errors.Add(new ResponseError
+                    {
+                        ErrorCode = ex.GetType().Name,
+                        FieldName = paramName,
+                        Message = errorMsg,
+                    });
+                }
             }
         }
 
