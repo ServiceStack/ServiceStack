@@ -520,7 +520,6 @@
     <Compile Include="Host\AppDelegates.cs" />
     <Compile Include="Host\Handlers\CustomResponseHandler.cs" />
     <Compile Include="Templates\HtmlTemplates.cs" />
-    <Compile Include="Host\RequestBindingException.cs" />
     <Compile Include="Support\Markdown\Evaluator.cs" />
     <Compile Include="Support\Markdown\ITemplateWriter.cs" />
     <Compile Include="Support\Markdown\Markdown.cs" />
