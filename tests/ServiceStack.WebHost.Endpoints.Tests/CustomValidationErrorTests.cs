@@ -108,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void RequestBindingException_returns_populated_FieldError()
+        public void RequestBindingException_QueryString_returns_populated_FieldError()
         {
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             try
@@ -118,10 +118,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                Assert.That(ex.ResponseStatus.Message, 
+                Assert.That(ex.ResponseStatus.Message,
                     Is.EqualTo("Unable to bind to request 'ErrorRequestBinding': Input string was not in a correct format."));
 
                 var fieldError = ex.GetFieldErrors()[0];
+                Assert.That(fieldError.FieldName, Is.EqualTo("Int"));
+                Assert.That(fieldError.ErrorCode, Is.EqualTo(typeof(SerializationException).Name));
+                Assert.That(fieldError.Message, Is.EqualTo("'string' is an Invalid value for 'Int'"));
+            }
+        }
+
+        [Test]
+        public void RequestBindingException_FormData_returns_populated_FieldError()
+        {
+            var client = new JsonServiceClient(Config.ServiceStackBaseUri);
+            try
+            {
+                var response = Config.ServiceStackBaseUri.CombineWith("errorrequestbinding")
+                    .PostStringToUrl("Int=string", contentType:MimeTypes.FormUrlEncoded, accept:MimeTypes.Json);
+                response.Print();
+                Assert.Fail("Should throw");
+            }
+            catch (WebException ex)
+            {
+                var responseBody = ex.GetResponseBody();
+                var status = responseBody.FromJson<ErrorResponse>().ResponseStatus;
+
+                Assert.That(status.Message,
+                    Is.EqualTo("Unable to bind to request 'ErrorRequestBinding': Input string was not in a correct format."));
+
+                var fieldError = status.Errors[0];
                 Assert.That(fieldError.FieldName, Is.EqualTo("Int"));
                 Assert.That(fieldError.ErrorCode, Is.EqualTo(typeof(SerializationException).Name));
                 Assert.That(fieldError.Message, Is.EqualTo("'string' is an Invalid value for 'Int'"));
