@@ -116,29 +116,13 @@ namespace ServiceStack.Host.Handlers
             if (!hasRequestBody
                 && (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Options))
             {
-                try
-                {
-                    return KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType);
-                }
-                catch (Exception ex)
-                {
-                    var msg = "Could not deserialize '{0}' request using KeyValueDataContractDeserializer: '{1}'.\nError: '{2}'"
-                        .Fmt(operationType, queryString, ex);
-                    throw new SerializationException(msg);
-                }
+                return KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType);
             }
 
             var isFormData = httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData);
             if (isFormData)
             {
-                try
-                {
-                    return KeyValueDataContractDeserializer.Instance.Parse(httpReq.FormData, operationType);
-                }
-                catch (Exception ex)
-                {
-                    throw new SerializationException("Error deserializing FormData: " + httpReq.FormData, ex);
-                }
+                return KeyValueDataContractDeserializer.Instance.Parse(httpReq.FormData, operationType);
             }
 
             var request = CreateContentTypeRequest(httpReq, operationType, contentType);
