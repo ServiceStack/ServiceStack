@@ -414,6 +414,13 @@ namespace ServiceStack
             return false;
         }
 
+        public virtual Exception ResolveResponseException(Exception ex)
+        {
+            return Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
+                ? ex.InnerException
+                : ex;
+        }
+
         public virtual void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
         {
             var argEx = ex as ArgumentException;

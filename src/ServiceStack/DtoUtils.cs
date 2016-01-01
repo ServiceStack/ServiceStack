@@ -140,12 +140,7 @@ namespace ServiceStack
         /// <returns></returns>
         public static object CreateErrorResponse(object request, Exception ex)
         {
-            if (HostContext.Config.ReturnsInnerException
-                && ex.InnerException != null && !(ex is IHttpError))
-            {
-                ex = ex.InnerException;
-            }
-
+            ex = HostContext.AppHost.ResolveResponseException(ex);
             var responseStatus = ex.ToResponseStatus();
 
             if (HostContext.DebugMode)
