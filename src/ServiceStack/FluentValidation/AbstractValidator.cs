@@ -124,6 +124,15 @@ namespace ServiceStack.FluentValidation
             return ruleBuilder;
         }
 
+        public IRuleBuilderInitial<T, TProperty> RuleForEach<TProperty>(Expression<Func<T, IEnumerable<TProperty>>> expression)
+        {
+            expression.Guard("Cannot pass null to RuleForEach");
+            var rule = CollectionPropertyRule<TProperty>.Create(expression, () => CascadeMode);
+            AddRule(rule);
+            var ruleBuilder = new RuleBuilder<T, TProperty>(rule);
+            return ruleBuilder;
+        }
+
         /// <summary>
         /// Defines a custom validation rule using a lambda expression.
         /// If the validation rule fails, it should return a instance of a <see cref="ValidationFailure">ValidationFailure</see>
@@ -223,6 +232,5 @@ namespace ServiceStack.FluentValidation
         IEnumerator IEnumerable.GetEnumerator() {
             return GetEnumerator();
         }
-
     }
 }

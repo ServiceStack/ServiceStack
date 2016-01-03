@@ -25,6 +25,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string Address { get; set; }
         public string Postcode { get; set; }
         public bool HasDiscount { get; set; }
+        public string[] NickNames { get; set; }
     }
 
     public interface IAddressValidator
@@ -58,6 +59,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
                 RuleFor(x => x.Discount).NotEqual(0).When(x => x.HasDiscount);
                 RuleFor(x => x.Address).Must(x => AddressValidator.ValidAddress(x));
                 RuleFor(x => x.Postcode).Must(BeAValidPostcode).WithMessage("Please specify a valid postcode");
+                RuleForEach(x => x.NickNames).NotNull();
             });
         }
 
@@ -174,7 +176,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [SetUp]
         public void SetUp()
         {
-            validRequest = new ValidCustomers
+            validRequest = CreateValidCustomers();
+        }
+
+        private ValidCustomers CreateValidCustomers()
+        {
+            return new ValidCustomers
             {
                 Id = 1,
                 FirstName = "FirstName",
@@ -268,6 +275,20 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             Assert.That(errorFields.Count, Is.EqualTo(1));
             Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotEqual"));
             Assert.That(errorFields[0].FieldName, Is.EqualTo("Id"));
+        }
+
+        [Test]
+        public void Validates_collection_with_null_request_on_Post()
+        {
+            var invalidCollection = CreateValidCustomers();
+            invalidCollection.NickNames = new[] { null, "foo", null };
+            var errorFields = GetValidationFieldErrors(HttpMethods.Post, invalidCollection);
+
+            Assert.That(errorFields.Count, Is.EqualTo(2));
+            Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotNull"));
+            Assert.That(errorFields[0].FieldName, Is.EqualTo("NickNames[0]"));
+            Assert.That(errorFields[1].ErrorCode, Is.EqualTo("NotNull"));
+            Assert.That(errorFields[1].FieldName, Is.EqualTo("NickNames[2]"));
         }
 
         protected static IServiceClient UnitTestServiceClient()
