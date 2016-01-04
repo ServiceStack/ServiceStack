@@ -18,6 +18,7 @@ using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 
@@ -447,23 +448,18 @@ namespace ServiceStack
             var serializationEx = ex as SerializationException;
             if (serializationEx != null)
             {
-                var paramName = serializationEx.Data["propertyName"] as string;
-                if (paramName != null)
+                var errors = serializationEx.Data["errors"] as List<RequestBindingError>;
+                if (errors != null)
                 {
-                    var valueString = serializationEx.Data["propertyValueString"] as string;
-                    var errorMsg = valueString != null
-                        ? "'{0}' is an Invalid value for '{1}'".Fmt(valueString, paramName)
-                        : "Invalid Value for '{0}'".Fmt(paramName);
-
                     if (responseStatus.Errors == null)
                         responseStatus.Errors = new List<ResponseError>();
 
-                    responseStatus.Errors.Add(new ResponseError
+                    responseStatus.Errors = errors.Select(e => new ResponseError
                     {
                         ErrorCode = ex.GetType().Name,
-                        FieldName = paramName,
-                        Message = errorMsg,
-                    });
+                        FieldName = e.PropertyName,
+                        Message = e.PropertyValueString != null ? "'{0}' is an Invalid value for '{1}'".Fmt(e.PropertyValueString, e.PropertyName) : "Invalid Value for '{0}'".Fmt(e.PropertyName)
+                    }).ToList();
                 }
             }
         }
