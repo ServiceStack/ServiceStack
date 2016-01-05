@@ -569,8 +569,6 @@ namespace ServiceStack
             {
                 if (WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password))
                 {
-                    // adamfowleruk : Check response object to see what type of auth header to add
-
                     var client = createWebRequest();
 
                     HandleAuthException(ex, client);
