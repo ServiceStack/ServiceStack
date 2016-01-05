@@ -63,6 +63,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class ErrorRequestBinding : IReturn<ErrorRequestBinding>
     {
         public int Int { get; set; }
+        public decimal Decimal { get; set; }
     }
 
     public class TestRequestBindingService : Service
@@ -113,18 +114,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             try
             {
-                var response = client.Get<ErrorRequestBinding>("/errorrequestbinding?Int=string");
+                var response = client.Get<ErrorRequestBinding>("/errorrequestbinding?Int=string&Decimal=string");
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException ex)
             {
                 Assert.That(ex.ResponseStatus.Message,
-                    Is.EqualTo("Unable to bind to request 'ErrorRequestBinding': Input string was not in a correct format."));
+                    Is.EqualTo("Unable to bind to request 'ErrorRequestBinding'"));
 
-                var fieldError = ex.GetFieldErrors()[0];
-                Assert.That(fieldError.FieldName, Is.EqualTo("Int"));
-                Assert.That(fieldError.ErrorCode, Is.EqualTo(typeof(SerializationException).Name));
-                Assert.That(fieldError.Message, Is.EqualTo("'string' is an Invalid value for 'Int'"));
+                var intFieldError = ex.GetFieldErrors()[0];
+                Assert.That(intFieldError.FieldName, Is.EqualTo("Int"));
+                Assert.That(intFieldError.ErrorCode, Is.EqualTo(typeof(SerializationException).Name));
+                Assert.That(intFieldError.Message, Is.EqualTo("'string' is an Invalid value for 'Int'"));
+
+                var decimalFieldError = ex.GetFieldErrors()[1];
+                Assert.That(decimalFieldError.FieldName, Is.EqualTo("Decimal"));
+                Assert.That(decimalFieldError.ErrorCode, Is.EqualTo(typeof(SerializationException).Name));
+                Assert.That(decimalFieldError.Message, Is.EqualTo("'string' is an Invalid value for 'Decimal'"));
             }
         }
 
@@ -133,7 +139,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var response = Config.ServiceStackBaseUri.CombineWith("/json/reply/ErrorRequestBinding?Int=string")
+                var response = Config.ServiceStackBaseUri.CombineWith("/json/reply/ErrorRequestBinding?Int=string&Decimal=string")
                     .GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
@@ -149,7 +155,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var response = Config.ServiceStackBaseUri.CombineWith("errorrequestbinding")
-                    .PostStringToUrl("Int=string", contentType: MimeTypes.FormUrlEncoded, accept: MimeTypes.Json);
+                    .PostStringToUrl("Int=string&Decimal=string", contentType: MimeTypes.FormUrlEncoded, accept: MimeTypes.Json);
                 Assert.Fail("Should throw");
             }
             catch (WebException ex)
@@ -164,7 +170,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var response = Config.ServiceStackBaseUri.CombineWith("/json/reply/ErrorRequestBinding")
-                    .PostStringToUrl("Int=string", contentType: MimeTypes.FormUrlEncoded, accept: MimeTypes.Json);
+                    .PostStringToUrl("Int=string&Decimal=string", contentType: MimeTypes.FormUrlEncoded, accept: MimeTypes.Json);
                 Assert.Fail("Should throw");
             }
             catch (WebException ex)
@@ -179,12 +185,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var status = responseBody.FromJson<ErrorResponse>().ResponseStatus;
 
             Assert.That(status.Message,
-                Is.EqualTo("Unable to bind to request 'ErrorRequestBinding': Input string was not in a correct format."));
+                Is.EqualTo("Unable to bind to request 'ErrorRequestBinding'"));
 
             var fieldError = status.Errors[0];
             Assert.That(fieldError.FieldName, Is.EqualTo("Int"));
             Assert.That(fieldError.ErrorCode, Is.EqualTo(typeof (SerializationException).Name));
             Assert.That(fieldError.Message, Is.EqualTo("'string' is an Invalid value for 'Int'"));
+
+            var fieldError2 = status.Errors[1];
+            Assert.That(fieldError2.FieldName, Is.EqualTo("Decimal"));
+            Assert.That(fieldError2.ErrorCode, Is.EqualTo(typeof(SerializationException).Name));
+            Assert.That(fieldError2.Message, Is.EqualTo("'string' is an Invalid value for 'Decimal'"));
         }
     }
 
