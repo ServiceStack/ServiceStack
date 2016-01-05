@@ -13,7 +13,7 @@ namespace ServiceStack
 
         public void InitSchema() {}
 
-        public long Increment(string key, int amount = 1)
+        public long Increment(string key, long amount = 1)
         {
             using (var redis = redisManager.GetClient())
             {
@@ -21,7 +21,7 @@ namespace ServiceStack
             }
         }
 
-        public void Reset(string key, int startingAt = 0)
+        public void Reset(string key, long startingAt = 0)
         {
             using (var redis = redisManager.GetClient())
             {
