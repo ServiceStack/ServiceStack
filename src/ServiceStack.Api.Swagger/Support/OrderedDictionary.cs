@@ -403,7 +403,7 @@ namespace ServiceStack.Api.Swagger.Support
         /// <remarks>This method performs a linear search; therefore it has a cost of O(n) at worst.</remarks>
         public int IndexOfKey(TKey key)
         {
-            if (EqualityComparer<TKey>.Default.Equals(key, default(TKey)))
+            if (null == key)
                 throw new ArgumentNullException("key");
 
             for (int index = 0; index < List.Count; index++)
@@ -433,7 +433,7 @@ namespace ServiceStack.Api.Swagger.Support
         /// <returns><see langword="true"/> if the key was found and the corresponding element was removed; otherwise, <see langword="false"/></returns>
         public bool Remove(TKey key)
         {
-            if (EqualityComparer<TKey>.Default.Equals(key, default(TKey)))
+            if (null == key)
                 throw new ArgumentNullException("key");
 
             int index = IndexOfKey(key);
