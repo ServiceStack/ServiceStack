@@ -115,7 +115,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException webEx)
             {
+                webEx.StatusDescription.Print();
                 Assert404(webEx);
+            }
+        }
+
+        [Test]
+        public void Throw404Description_does_return_404_with_Custom_StatusDescription()
+        {
+            var client = CreateClient(ListeningOn);
+
+            try
+            {
+                var response = client.Get<string>(new Throw404Description());
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo(404));
+                Assert.That(webEx.StatusDescription, Is.EqualTo("Custom Status Description"));
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(HttpStatusCode.NotFound.ToString()));
             }
         }
 
@@ -146,6 +164,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(404));
+                Assert.That(webEx.StatusDescription, Is.EqualTo("Custom Status Description"));
                 Assert.That(webEx.ResponseStatus, Is.Null);
                 Assert.That(webEx.ResponseBody, Is.Null.Or.Empty);
             }

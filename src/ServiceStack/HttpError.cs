@@ -14,6 +14,10 @@ namespace ServiceStack
             : this(HttpStatusCode.InternalServerError, message)
         { }
 
+        public HttpError(HttpStatusCode statusCode)
+            : this(statusCode, statusCode.ToString(), null)
+        { }
+
         public HttpError(HttpStatusCode statusCode, string errorMessage)
             : this(statusCode, statusCode.ToString(), errorMessage)
         { }
