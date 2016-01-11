@@ -85,7 +85,7 @@ namespace ServiceStack.Auth
 
             var session = service.GetSession();
             var referrerUrl = (request != null ? request.Continue : null)
-                ?? feature.HtmlLogoutRedirect
+                ?? (feature.HtmlLogoutRedirect != null ? service.Request.ResolveAbsoluteUrl(feature.HtmlLogoutRedirect) : null)
                 ?? session.ReferrerUrl
                 ?? service.Request.GetHeader("Referer")
                 ?? this.CallbackUrl;
@@ -100,7 +100,7 @@ namespace ServiceStack.Auth
                 service.Request.Response.DeleteSessionCookies();
             }
 
-            if (service.Request.ResponseContentType == MimeTypes.Html && !String.IsNullOrEmpty(referrerUrl))
+            if (service.Request.ResponseContentType == MimeTypes.Html && !string.IsNullOrEmpty(referrerUrl))
                 return service.Redirect(LogoutUrlFilter(this, referrerUrl.SetParam("s", "-1")));
 
             return new AuthenticateResponse();
