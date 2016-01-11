@@ -28,6 +28,8 @@ namespace ServiceStack
 
         public string HtmlRedirect { get; set; }
 
+        public string HtmlLogoutRedirect { get; set; }
+
         public bool IncludeAuthMetadataProvider { get; set; }
 
         public bool ValidateUniqueEmails { get; set; }

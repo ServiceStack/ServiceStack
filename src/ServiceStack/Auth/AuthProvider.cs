@@ -81,8 +81,11 @@ namespace ServiceStack.Auth
         /// <returns></returns>
         public virtual object Logout(IServiceBase service, Authenticate request)
         {
+            var feature = HostContext.GetPlugin<AuthFeature>();
+
             var session = service.GetSession();
             var referrerUrl = (request != null ? request.Continue : null)
+                ?? feature.HtmlLogoutRedirect
                 ?? session.ReferrerUrl
                 ?? service.Request.GetHeader("Referer")
                 ?? this.CallbackUrl;
@@ -92,7 +95,6 @@ namespace ServiceStack.Auth
 
             service.RemoveSession();
 
-            var feature = HostContext.GetPlugin<AuthFeature>();
             if (feature != null && feature.DeleteSessionCookiesOnLogout)
             {
                 service.Request.Response.DeleteSessionCookies();
