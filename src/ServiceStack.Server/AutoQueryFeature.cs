@@ -204,16 +204,6 @@ namespace ServiceStack
                     TypeAttributes.Public | TypeAttributes.Class,
                     AutoQueryServiceBaseType);
 
-            var emptyCtor = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes);
-            var baseType = AutoQueryServiceBaseType.BaseType;
-            if (baseType != null)
-            {
-                var ctorIl = emptyCtor.GetILGenerator();
-                ctorIl.Emit(OpCodes.Ldarg_0);
-                ctorIl.Emit(OpCodes.Call, baseType.GetEmptyConstructor());
-                ctorIl.Emit(OpCodes.Ret);
-            }
-
             foreach (var requestType in misingRequestTypes)
             {
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQuery<,>));
