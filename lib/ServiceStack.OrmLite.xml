@@ -135,7 +135,7 @@
             </summary>
             <returns></returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.SqlExpression`1.Update(System.Collections.Generic.IList{System.String})" -->
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.SqlExpression`1.Update(System.Collections.Generic.List{System.String})" -->
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Update``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
             <summary>
             Fields to be updated.
@@ -163,7 +163,7 @@
             objectWithProperties
             </typeparam>
         </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert(System.Collections.Generic.IList{System.String})">
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert(System.Collections.Generic.List{System.String})">
             <summary>
             fields to be inserted.
             </summary>

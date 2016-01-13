@@ -258,6 +258,11 @@
             The default RetryTimeout for auto retry of failed operations (default 3000ms)
             </summary>
         </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.DefaultMaxPoolSize">
+            <summary>
+            Default Max Pool Size for Pooled Redis Client Managers (default none)
+            </summary>
+        </member>
         <member name="F:ServiceStack.Redis.RedisConfig.BackOffMultiplier">
             <summary>
             The BackOff multiplier failed Auto Retries starts from (default 10ms)
