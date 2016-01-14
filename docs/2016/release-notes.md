@@ -4,7 +4,8 @@ We've hope everyone's had a great X-mas holidays and are super-charged for a pro
 
 To kick things off we're making your ServiceStack Services even more attractive to mobile and Java developers 
 with first-class support for JetBrains modern and highly-productive [Kotlin](https://kotlinlang.org/) 
-programming language including integration into Android Studio and enhanced Android JsonServiceClient support.
+programming language including integration into Android Studio and enhanced support in Android and 
+JsonServiceClients.
 
 ## [Kotlin](https://kotlinlang.org/) - a better language for Android and the JVM
 
@@ -317,7 +318,7 @@ To demonstrate Kotlin Native Types in action we've ported the Java
 Android App written in Kotlin to showcase the responsiveness and easy-of-use of leveraging 
 Kotlin Add ServiceStack Reference in Android Projects. 
 
-[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/techstacks-kotlin-app.png)](https://github.com/ServiceStackApps/TechStacksAndroidApp)
+[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/techstacks-kotlin-app.png)](https://play.google.com/store/apps/details?id=test.servicestack.net.techstackskotlin)
 
 Checkout the [TechStacks Kotlin Android App](https://github.com/ServiceStackApps/TechStacksKotlinApp) 
 repository for a nice overview of how it leverages Kotlin Native Types and iOS-inspired Data Binding to easily 
@@ -392,7 +393,7 @@ where [existing 2.x versions](http://www.npgsql.org/2.2.6-release/) are now cons
 result we've upgraded 
 [ServiceStack.OrmLite.PostgreSQL](https://www.nuget.org/packages/ServiceStack.OrmLite.PostgreSQL/)
 to use the latest **v3.0.5** of Npgsql which is only avaliable for .NET 4.5+ projects. We're also distributing
-.NET 4.0 builds of OrmLite in the same NuGet package but you'll need to use manually reference the **2.x** Npgsql 
+.NET 4.0 builds of OrmLite in the same NuGet package but you'll need to manually reference the **2.x** Npgsql 
 dependency which contains .NET 4.0 .dll. 
 
 The primary benefit of upgrading means PostgreSQL now has true Async support where you can now use all of
