@@ -431,6 +431,15 @@ namespace ServiceStack
             catch (Exception ex)
             {
                 Log.Error("Error publishing notification to: " + selector, ex);
+
+                // Mono: If we explicitly close OutputStream after the error socket wont leak (response.Close() doesn't work)
+                try
+                {
+                    // This will throw an exception, but on Mono (Linux/OSX) the socket will leak if we not close the OutputStream
+                    response.OutputStream.Close();
+                }
+                catch { }
+
                 Unsubscribe();
             }
         }
