@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}"
 EndProject
@@ -20,7 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\build\copy-sn.bat = ..\build\copy-sn.bat
 		..\build\copy.bat = ..\build\copy.bat
 		..\README.md = ..\README.md
-		..\docs\2015\release-notes.md = ..\docs\2015\release-notes.md
+		..\docs\2016\release-notes.md = ..\docs\2016\release-notes.md
 		..\NuGet\ServiceStack.Api.Swagger\servicestack.api.swagger.nuspec = ..\NuGet\ServiceStack.Api.Swagger\servicestack.api.swagger.nuspec
 		..\NuGet\ServiceStack.Authentication.MongoDb\servicestack.authentication.mongodb.nuspec = ..\NuGet\ServiceStack.Authentication.MongoDb\servicestack.authentication.mongodb.nuspec
 		..\NuGet\ServiceStack.Authentication.NHibernate\servicestack.authentication.nhibernate.nuspec = ..\NuGet\ServiceStack.Authentication.NHibernate\servicestack.authentication.nhibernate.nuspec
