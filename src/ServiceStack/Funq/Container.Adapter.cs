@@ -150,7 +150,7 @@ namespace Funq
                 (
                     Expression.MemberInit
                     (
-                        ConstrcutorExpression(ctorResolveFn, typeof(TService), lambdaParam),
+                        ConstructorExpression(ctorResolveFn, typeof(TService), lambdaParam),
                         memberBindings
                     ),
                     lambdaParam
@@ -220,7 +220,7 @@ namespace Funq
             };
         }
 
-        private static NewExpression ConstrcutorExpression(
+        private static NewExpression ConstructorExpression(
             MethodInfo resolveMethodInfo, Type type, Expression lambdaParam)
         {
             var ctorWithMostParameters = GetConstructorWithMostParams(type);
