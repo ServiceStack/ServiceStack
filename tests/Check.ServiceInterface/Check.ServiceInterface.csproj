@@ -75,6 +75,7 @@
     <Compile Include="TestErrorService.cs" />
     <Compile Include="TestMinifierServices.cs" />
     <Compile Include="TestProfilerService.cs" />
+    <Compile Include="VirtualPathServices.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
