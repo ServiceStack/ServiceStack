@@ -70,13 +70,13 @@ namespace ServiceStack.Api.Swagger
                     case "/swagger-ui":
                     case "/swagger-ui/":
                     case "/swagger-ui/default.html":
-                        indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui/index.html");
-                        patchFile = appHost.VirtualPathProvider.GetFile("/swagger-ui/patch.js");
+                        indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui/index.html");
+                        patchFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch.js");
                         break;
                     case "/swagger-ui-bootstrap":
                     case "/swagger-ui-bootstrap/":
                     case "/swagger-ui-bootstrap/index.html":
-                        indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui-bootstrap/index.html");
+                        indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui-bootstrap/index.html");
                         break;
                     default:
                         indexFile = null;

@@ -695,19 +695,19 @@ namespace ServiceStack
 
         public virtual string ResolvePhysicalPath(string virtualPath, IRequest httpReq)
         {
-            return VirtualPathProvider.CombineVirtualPath(VirtualPathProvider.RootDirectory.RealPath, virtualPath);
+            return VirtualFileSources.CombineVirtualPath(VirtualFileSources.RootDirectory.RealPath, virtualPath);
         }
 
         public virtual IVirtualFile ResolveVirtualFile(string virtualPath, IRequest httpReq)
         {
-            return VirtualPathProvider.GetFile(virtualPath);
+            return VirtualFileSources.GetFile(virtualPath);
         }
 
         public virtual IVirtualDirectory ResolveVirtualDirectory(string virtualPath, IRequest httpReq)
         {
-            return virtualPath == VirtualPathProvider.VirtualPathSeparator
-                ? VirtualPathProvider.RootDirectory
-                : VirtualPathProvider.GetDirectory(virtualPath);
+            return virtualPath == VirtualFileSources.VirtualPathSeparator
+                ? VirtualFileSources.RootDirectory
+                : VirtualFileSources.GetDirectory(virtualPath);
         }
 
         public virtual IVirtualNode ResolveVirtualNode(string virtualPath, IRequest httpReq)
