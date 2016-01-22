@@ -58,11 +58,11 @@ Configuring a project to support Kotlin just modifies that projects
 [build.gradle](https://github.com/mythz/kotlin-linq-examples/blob/master/src/app/build.gradle), applying the
 necessary Android Kotlin plugin and build scripts needed to compile Kotlin files with your project. Once Kotlin
 is configured with your project you'll get first-class IDE support for Kotlin `.kt` source files including 
-intell-sense, integrated compiler analysis and feedback, refactoring and debugging support, etc.
+intellisense, integrated compiler analysis and feedback, refactoring and debugging support, etc.
 
 One convenient feature that's invaluable for porting Java code and learning Kotlin is the 
 [Converting Java to Kotlin](https://kotlinlang.org/docs/tutorials/kotlin-android.html#converting-java-code-to-kotlin)
-Feature which can be triggered by selecting a `.java` class and clicking `Ctrl + Alt + Shift + K` keyboard short-cut
+Feature which can be triggered by selecting a `.java` class and clicking `Ctrl + Alt + Shift + K` keyboard shortcut
 (or using [Find Action](https://kotlinlang.org/docs/tutorials/kotlin-android.html#converting-java-code-to-kotlin)).
 
 ### Kotlin Add ServiceStack Reference
@@ -140,7 +140,7 @@ val allTiers:ArrayList<Option> = response.AllTiers
 val topTech:ArrayList<TechnologyInfo> = response.TopTechnologies
 ```
 
-As Kotlin has proper type inference, the explicit types are unnecceessary. Here's a typical example using a populated Request DTO:
+As Kotlin has proper type inference, the explicit types are unnecessary. Here's a typical example using a populated Request DTO:
 
 ```kotlin
 var request = GetTechnology()
@@ -281,7 +281,7 @@ try {
 
 ### Async Error Handling
 
-Whilst Async Error handers can cast into a `WebServiceException` to access the structured error response:
+Whilst Async Error handlers can cast into a `WebServiceException` to access the structured error response:
 
 ```kotlin
 client.postAsync(ThrowError(), AsyncSuccess<ThrowErrorResponse> { },
@@ -340,7 +340,7 @@ To help getting started, here are some useful resources helping to develop Andro
 We've continued making improvements to Java and Android Service Clients which now have fewer dependencies
 initially triggered by [Google removing Apache HTTP Client](http://developer.android.com/about/versions/marshmallow/android-6.0-changes.html#behavior-apache-http-client)
 in Android 6.0. Previously the `AndroidServiceClient` **net.servicestack:android** package contained dependencies
-on the pure Java **net.servicestack:client** package as well as the external Apache Client. Both depdencies
+on the pure Java **net.servicestack:client** package as well as the external Apache Client. Both dependencies
 have been removed, the **android** package now uses the HTTP classes built into Android and all **client** classes
 have been merged into the **android** package. 
 
@@ -350,7 +350,7 @@ source-compatible with the `JsonServiceClient` classes in the **android** packag
 ### Integrated Basic Auth
 
 We've added HTTP Basic Auth support to `JsonServiceClient` following the implementation in .NET Service Client
-where you can specify the users credentials and whether you always want to send Basic Auth with each request by:
+where you can specify the user's credentials and whether you always want to send Basic Auth with each request by:
 
 ```java
 client.setCredentials(userName, password);
@@ -372,7 +372,7 @@ Although this has the additional latency of waiting for a failed 401 response be
 
 ### Cookies-enabled Service Client
 
-The `JsonServiceClient` now initializes a `CookieManager` in its constructor to enable any Cookies recevied to
+The `JsonServiceClient` now initializes a `CookieManager` in its constructor to enable any Cookies received to
 be added on subsequent requests to allow you to make authenticated requests after authenticating, e.g:
 
 ```java
@@ -392,7 +392,7 @@ The [Npgsql](http://www.npgsql.org) ADO.NET PostgreSQL provider [underwent a maj
 where [existing 2.x versions](http://www.npgsql.org/2.2.6-release/) are now considered obsolete. As a 
 result we've upgraded 
 [ServiceStack.OrmLite.PostgreSQL](https://www.nuget.org/packages/ServiceStack.OrmLite.PostgreSQL/)
-to use the latest **v3.0.5** of Npgsql which is only avaliable for .NET 4.5+ projects. We're also distributing
+to use the latest **v3.0.5** of Npgsql which is only available for .NET 4.5+ projects. We're also distributing
 .NET 4.0 builds of OrmLite in the same NuGet package but you'll need to manually reference the **2.x** Npgsql 
 dependency which contains .NET 4.0 .dll. 
 
@@ -465,7 +465,7 @@ Db.ExecuteSqlAsync("UPDATE page_stats SET view_count = view_count + 1 WHERE id =
 
 ### LoadSelect Typed Include References
 
-Similar to `LoadSingleById`, there's now a typed API that lets you selectively load refernces in `LoadSelect` queries, e.g:
+Similar to `LoadSingleById`, there's now a typed API that lets you selectively load references in `LoadSelect` queries, e.g:
 
 ```csharp
 var customers = db.LoadSelect<Customer>(x => x.Name.StartsWith("A"), 
@@ -552,6 +552,7 @@ malformed. They are now being converted into a structured error so the same erro
 [field validation errors](https://github.com/ServiceStack/ServiceStack/wiki/Validation) can also handle request
 binding exceptions, e.g:
 
+```csharp
 try
 {
     var response = client.Get<ErrorRequestBinding>("/errorrequestbinding?Int=string");
@@ -565,6 +566,7 @@ catch (WebServiceException ex)
     fieldError.ErrorCode //= SerializationException
     fieldError.Message   //= 'string' is an Invalid value for 'Int'
 }
+```
  
 Special thanks to [@georgehemmings](https://github.com/georgehemmings) for his contributions to this feature. 
  
@@ -593,7 +595,7 @@ Plugins.Add(new ServerEventsFeature
 
 ## [Metadata pages](https://github.com/ServiceStack/ServiceStack/wiki/Metadata-page)
 
-To avoid repitive noise in each Metadata Operation Page the common `ResposneStatus` DTO's were omitted, if
+To avoid repetitive noise in each Metadata Operation Page the common `ResposneStatus` DTO's were omitted, if
 you prefer they can now be enabled with:
 
 ```csharp
@@ -621,3 +623,5 @@ Will return all Rockstars where **DateDied IS NULL**.
 
 
 ## [2015 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2015/release-notes.md)
+
+
