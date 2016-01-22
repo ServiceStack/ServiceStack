@@ -257,7 +257,7 @@ GetCustomersResponse all = client.get(new GetCustomers());
 ```kotlin
 val client = JsonServiceClient(BaseUri)
 
-val all = client.get(GetCustomers())
+val response = client.get(GetCustomers())
 ```
 
 ### [Calling from jQuery using TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference)
