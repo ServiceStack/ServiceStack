@@ -555,11 +555,11 @@ binding exceptions, e.g:
 ```csharp
 try
 {
-    var response = client.Get<ErrorRequestBinding>("/errorrequestbinding?Int=string");
+    var response = client.Get<RequestBinding>("/errorrequestbinding?Int=string");
 }
 catch (WebServiceException ex)
 {
-    ex.ResponseStatus.Message //= Unable to bind to request 'ErrorRequestBinding': Input string was not in a correct format.
+    ex.ResponseStatus.Message //= Unable to bind 'RequestBinding': Input string was not in a correct format.
 
     var fieldError = ex.GetFieldErrors()[0];
     fieldError.FieldName //= Int
