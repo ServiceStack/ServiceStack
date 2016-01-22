@@ -107,9 +107,7 @@ namespace ServiceStack
             this.EventStreamUri = baseUri.CombineWith("event-stream");
             this.Channels = channels;
 
-            if (Channels != null && Channels.Length > 0)
-                this.EventStreamUri = this.EventStreamUri
-                    .AddQueryParam("channel", string.Join(",", Channels));
+            this.InitializeEventStreamUri();
 
             this.ServiceClient = new JsonServiceClient(baseUri);
 
@@ -117,6 +115,13 @@ namespace ServiceStack
             this.ReceiverTypes = new List<Type>();
             this.Handlers = new Dictionary<string, ServerEventCallback>();
             this.NamedReceivers = new Dictionary<string, ServerEventCallback>();
+        }
+
+        public void InitializeEventStreamUri()
+        {
+            if (Channels != null && Channels.Length > 0)
+                this.EventStreamUri = this.EventStreamUri
+                    .AddQueryParam("channel", string.Join(",", Channels));
         }
 
         public ServerEventsClient Start()
@@ -336,6 +341,8 @@ namespace ServiceStack
                             return;
                         try
                         {
+                            //Channels may have changed
+                            InitializeEventStreamUri();
                             Start();
                         }
                         catch (Exception ex)

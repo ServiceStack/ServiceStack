@@ -1117,6 +1117,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(chatMsg.Message, Is.EqualTo("msg2"));
             }
         }
+
+        [Test]
+        public async void Channels_updated_after_Restart()
+        {
+            using (var client = new ServerEventsClient(Conf.AbsoluteBaseUri, "home"))
+            {
+                Assert.That(client.EventStreamUri.EndsWith("home"));
+
+                await client.AuthenticateAsync(new Authenticate
+                {
+                    provider = CustomCredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "pass",
+                });
+
+                client.Start();
+                client.Channels = new[] {"Foo", "Bar"};
+                client.Restart();
+
+                Assert.That(client.EventStreamUri.EndsWith("Foo,Bar"));
+            }
+        }
     }
 
 
