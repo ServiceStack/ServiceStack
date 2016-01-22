@@ -117,7 +117,7 @@ namespace ServiceStack
             this.NamedReceivers = new Dictionary<string, ServerEventCallback>();
         }
 
-        public void InitializeEventStreamUri()
+        private void InitializeEventStreamUri()
         {
             if (Channels != null && Channels.Length > 0)
                 this.EventStreamUri = this.EventStreamUri

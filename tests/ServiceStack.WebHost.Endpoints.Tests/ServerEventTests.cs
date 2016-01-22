@@ -1136,6 +1136,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 client.Channels = new[] {"Foo", "Bar"};
                 client.Restart();
 
+                Thread.Sleep(10); // Wait for SleepBackOffMultiplier to continue
+
                 Assert.That(client.EventStreamUri.EndsWith("Foo,Bar"));
             }
         }
