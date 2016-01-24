@@ -165,9 +165,8 @@ namespace ServiceStack
                     ResponseFilters = ResponseFilters,
                     StartsWithConventions = StartsWithConventions,
                     EndsWithConventions = EndsWithConventions,
-                    Db = UseNamedConnection != null
-                        ? c.Resolve<IDbConnectionFactory>().OpenDbConnection(UseNamedConnection)
-                        : c.Resolve<IDbConnectionFactory>().OpenDbConnection(),
+                    DbFactory = c.Resolve<IDbConnectionFactory>(),
+                    UseNamedConnection = UseNamedConnection,
                 })
                 .ReusedWithin(ReuseScope.None);
 
@@ -573,6 +572,8 @@ namespace ServiceStack
         public Dictionary<string, QueryFieldAttribute> StartsWithConventions { get; set; }
         public Dictionary<string, QueryFieldAttribute> EndsWithConventions { get; set; }
 
+        public string UseNamedConnection { get; set; }
+        public IDbConnectionFactory DbFactory { get; set; }
         public virtual IDbConnection Db { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryFilterContext>> ResponseFilters { get; set; }
@@ -670,28 +671,45 @@ namespace ServiceStack
             return response;
         }
 
+        public IDbConnection GetDb<From>()
+        {
+            if (Db != null)
+                return Db;
+
+            var namedConnection = UseNamedConnection;
+            var attr = typeof(From).FirstAttribute<NamedConnectionAttribute>();
+            if (attr != null)
+                namedConnection = attr.Name;
+
+            Db = namedConnection == null 
+                ? DbFactory.OpenDbConnection()
+                : DbFactory.OpenDbConnection(namedConnection);
+
+            return Db;
+        }
+
         public SqlExpression<From> CreateQuery<From>(IQuery<From> model, Dictionary<string, string> dynamicParams, IRequest request = null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return Filter<From>(request, typedQuery.CreateQuery(Db, model, dynamicParams, this), model);
+            return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(), model, dynamicParams, this), model);
         }
 
         public QueryResponse<From> Execute<From>(IQuery<From> model, SqlExpression<From> query)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return ResponseFilter(typedQuery.Execute<From>(Db, query), query, model);
+            return ResponseFilter(typedQuery.Execute<From>(GetDb<From>(), query), query, model);
         }
 
         public SqlExpression<From> CreateQuery<From, Into>(IQuery<From, Into> model, Dictionary<string, string> dynamicParams, IRequest request = null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return Filter<From>(request, typedQuery.CreateQuery(Db, model, dynamicParams, this), model);
+            return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(), model, dynamicParams, this), model);
         }
 
         public QueryResponse<Into> Execute<From, Into>(IQuery<From, Into> model, SqlExpression<From> query)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return ResponseFilter(typedQuery.Execute<Into>(Db, query), query, model);
+            return ResponseFilter(typedQuery.Execute<Into>(GetDb<From>(), query), query, model);
         }
     }
 

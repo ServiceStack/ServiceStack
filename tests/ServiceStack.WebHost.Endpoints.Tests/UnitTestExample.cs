@@ -10,6 +10,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Testing;
 using ServiceStack.Text;

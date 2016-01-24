@@ -20,15 +20,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override void Configure(Container container)
         {
-            container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+            var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
+            container.Register<IDbConnectionFactory>(dbFactory);
+
+            dbFactory.RegisterConnection("SqlServer",
+                "Server=localhost;Database=test;User Id=test;Password=test;", SqlServer2012Dialect.Provider);
+
+            using (var db = dbFactory.OpenDbConnection("SqlServer"))
+            {
+                db.DropAndCreateTable<NamedRockstar>();
+
+                db.Insert(new NamedRockstar {
+                    Id = 1,
+                    FirstName = "Microsoft",
+                    LastName = "SQL Server",
+                    Age = 27,
+                    DateOfBirth = new DateTime(1989,1,1),
+                    LivingStatus = LivingStatus.Alive,
+                });
+            }
 
             //container.Register<IDbConnectionFactory>(
-            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;"),
+            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;",
             //        SqlServerDialect.Provider));
 
             //container.Register<IDbConnectionFactory>(
-            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;"),
+            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;",
             //        SqlServer2012Dialect.Provider));
 
             //container.Register<IDbConnectionFactory>(
@@ -51,11 +68,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 db.InsertAll(SeedMovies);
 
                 db.DropAndCreateTable<AllFields>();
-                db.Insert(new AllFields {
+                db.Insert(new AllFields
+                {
                     Id = 1,
                     NullableId = 2,
                     Byte = 3,
-                    DateTime = new DateTime(2001,01,01),
+                    DateTime = new DateTime(2001, 01, 01),
                     NullableDateTime = new DateTime(2002, 02, 02),
                     Decimal = 4,
                     Double = 5.5,
@@ -73,8 +91,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 });
 
                 db.DropAndCreateTable<Adhoc>();
-                db.InsertAll(SeedRockstars.Map(x => new Adhoc {
-                    Id = x.Id, FirstName = x.FirstName, LastName = x.LastName
+                db.InsertAll(SeedRockstars.Map(x => new Adhoc
+                {
+                    Id = x.Id,
+                    FirstName = x.FirstName,
+                    LastName = x.LastName
                 }));
             }
 
@@ -154,7 +175,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			new Movie { ImdbId = "tt0109830", Title = "Forrest Gump", Score = 8.8m, Director = "Robert Zemeckis", ReleaseDate = new DateTime(1996,07,06), TagLine = "Forrest Gump, while not intelligent, has accidentally been present at many historic moments, but his true love, Jenny Curran, eludes him.", Genres = new List<string>{"Drama","Romance"}, Rating = "PG-13", },
         };
     }
-    
+
+    [Alias("Rockstar")]
+    [NamedConnection("SqlServer")]
+    public class NamedRockstar : Rockstar { }
+
+    [Route("/query/namedrockstars")]
+    public class QueryNamedRockstars : QueryBase<NamedRockstar>
+    {
+        public int? Age { get; set; }
+    }
+
     [Route("/query/rockstars")]
     public class QueryRockstars : QueryBase<Rockstar>
     {
@@ -514,6 +545,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
+        }
+
+        [Test]
+        public void Can_execute_basic_query_NamedRockstar()
+        {
+            var response = client.Get(new QueryNamedRockstars());
+
+            Assert.That(response.Offset, Is.EqualTo(0));
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].LastName, Is.EqualTo("SQL Server"));
         }
 
         [Test]
