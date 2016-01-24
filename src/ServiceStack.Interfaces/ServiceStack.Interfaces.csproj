@@ -316,6 +316,7 @@
     <Compile Include="ApiResponse.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="SwaggerType.cs" />
+    <Compile Include="NamedConnectionAttribute.cs" />
     <Compile Include="Web\INameValueCollection.cs" />
     <Compile Include="Web\IRequiresRequestStream.cs" />
     <Compile Include="RequestAttributes.cs">
