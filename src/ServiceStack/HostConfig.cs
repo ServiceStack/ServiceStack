@@ -115,6 +115,7 @@ namespace ServiceStack
                     "obj/",
                     "bin/",
                     "node_modules/",
+                    "jspm_packages/",
                     "bower_components/",
                     "wwwroot/",
                     "wwwroot_build/",
