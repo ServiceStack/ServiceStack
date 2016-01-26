@@ -31,7 +31,7 @@
         </member>
         <member name="M:ServiceStack.Text.Common.DateTimeSerializer.Prepare(System.DateTime,System.Boolean)">
             <summary>
-            If AlwaysUseUtc is set to true then convert all DateTime to UTC.
+            If AlwaysUseUtc is set to true then convert all DateTime to UTC. If PreserveUtc is set to true then UTC dates will not convert to local
             </summary>
             <param name="dateTime"></param>
             <returns></returns>
@@ -154,6 +154,15 @@
         <member name="F:ServiceStack.Text.JsConfig.sAlwaysUseUtc">
             <summary>
             Gets or sets a value indicating if the framework should always convert <see cref="T:System.DateTime"/> to UTC format instead of local time. 
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig.sSkipDateTimeConversion">
+            <summary>
+            Gets or sets a value indicating if the framework should skip automatic <see cref="T:System.DateTime"/> conversions.
+            Dates will be handled literally, any included timezone encoding will be lost and the date will be treaded as DateTimeKind.Local
+            Utc formatted input will result in DateTimeKind.Utc output. Any input without TZ data will be set DateTimeKind.Unspecified
+            This will take precedence over other flags like AlwaysUseUtc 
+            JsConfig.DateHandler = DateHandler.ISO8601 should be used when set true for consistent de/serialization.
             </summary>
         </member>
         <member name="F:ServiceStack.Text.JsConfig.sAssumeUtc">
