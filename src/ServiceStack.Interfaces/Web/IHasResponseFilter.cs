@@ -6,12 +6,12 @@
     /// </summary>
     public interface IHasResponseFilter
     {
-		/// <summary>
-		/// Order in which Response Filters are executed. 
-		/// &lt;0 Executed before global response filters
-		/// &gt;0 Executed after global response filters
-		/// </summary>
-		int Priority { get; }
+        /// <summary>
+        /// Order in which Response Filters are executed. 
+        /// &lt;0 Executed before global response filters
+        /// &gt;0 Executed after global response filters
+        /// </summary>
+        int Priority { get; }
 
         /// <summary>
         /// The response filter is executed after the service

@@ -3,8 +3,8 @@
 
 namespace ServiceStack.Model
 {
-	public interface IHasId<T>
-	{
-		T Id { get; }
-	}
+    public interface IHasId<T>
+    {
+        T Id { get; }
+    }
 }

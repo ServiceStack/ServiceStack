@@ -5,5 +5,5 @@ using System;
 
 namespace ServiceStack.Model
 {
-	public interface IHasGuidId : IHasId<Guid> {}
+    public interface IHasGuidId : IHasId<Guid> { }
 }
