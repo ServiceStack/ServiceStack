@@ -1,4 +1,9 @@
-/// <reference path="jquery.d.ts"/>
+// Type definitions for ServiceStack Utils v0.0.1
+// Project: https://servicestack.net/
+// Definitions by: Demis Bellot <https://github.com/mythz/>
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+
+/// <reference path="../jquery/jquery.d.ts" />
 
 interface JQuery {
     setFieldError: (name: string, msg: string) => void;
@@ -88,4 +93,21 @@ interface SSUtilsReconnectServerEventsOptions {
 
 interface JQueryStatic {
     ss: SSUtilsStatic;
+}
+
+interface SSUtilsSSECommand {
+    userId: string;
+    displayName: string;
+    channels: string;
+    profileUrl: string;
+}
+interface SSUtilsSSEHeartbeat extends SSUtilsSSECommand { }
+interface SSUtilsSSEJoin extends SSUtilsSSECommand { }
+interface SSUtilsSSELeave extends SSUtilsSSECommand { }
+interface SSUtilsSSEConnect extends SSUtilsSSECommand {
+    id: string;
+    unRegisterUrl: string;
+    heartbeatUrl: string;
+    heartbeatIntervalMs: number;
+    idleTimeoutMs: number;
 }
