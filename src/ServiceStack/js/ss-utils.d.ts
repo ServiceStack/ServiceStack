@@ -5,23 +5,8 @@
 
 /// <reference path="../jquery/jquery.d.ts" />
 
-interface JQuery {
-    setFieldError: (name: string, msg: string) => void;
-    serializeMap: () => { [index: string]: any };
-    applyErrors: (status: ssutils.ResponseStatus, opt?: ssutils.ApplyErrorsOptions) => JQuery;
-    clearErrors: () => JQuery;
-    bindForm: (opt?: ssutils.ApplyErrorsOptions) => JQuery;
-    applyValues: (values: { [index: string]: string }) => JQuery;
-    bindHandlers: (handlers: { [index: string]: Function }) => JQuery;
-    setActiveLinks: () => JQuery;
-    handleServerEvents: (opt?: ssutils.HandleServerEventsOptions) => void;
-}
+declare namespace ssutils {
 
-interface JQueryStatic {
-    ss: ssutils.Static;
-}
-
-declare module ssutils {
     interface Static {
         handlers: { [index: string]: Function };
         onSubmitDisable: string;
@@ -116,3 +101,22 @@ declare module ssutils {
     }
 }
 
+interface JQuery {
+    setFieldError: (name: string, msg: string) => void;
+    serializeMap: () => { [index: string]: any };
+    applyErrors: (status: ssutils.ResponseStatus, opt?: ssutils.ApplyErrorsOptions) => JQuery;
+    clearErrors: () => JQuery;
+    bindForm: (opt?: ssutils.ApplyErrorsOptions) => JQuery;
+    applyValues: (values: { [index: string]: string }) => JQuery;
+    bindHandlers: (handlers: { [index: string]: Function }) => JQuery;
+    setActiveLinks: () => JQuery;
+    handleServerEvents: (opt?: ssutils.HandleServerEventsOptions) => void;
+}
+
+interface JQueryStatic {
+    ss: ssutils.Static;
+}
+
+declare module "ss-utils" {
+    export = ssutils;
+}
