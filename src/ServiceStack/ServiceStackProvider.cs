@@ -174,32 +174,33 @@ namespace ServiceStack
         private ICacheClient cache;
         public virtual ICacheClient Cache
         {
-            get { return cache ?? (cache = HostContext.AppHost.GetCacheClient()); }
+            get { return cache ?? (cache = HostContext.AppHost.GetCacheClient(Request)); }
         }
 
         private IDbConnection db;
         public virtual IDbConnection Db
         {
-            get { return db ?? (db = TryResolve<IDbConnectionFactory>().OpenDbConnection()); }
+            get { return db ?? (db = HostContext.AppHost.GetDbConnection(Request)); }
         }
 
         private IRedisClient redis;
         public virtual IRedisClient Redis
         {
-            get { return redis ?? (redis = TryResolve<IRedisClientsManager>().GetClient()); }
-        }
-
-        private IMessageFactory messageFactory;
-        public virtual IMessageFactory MessageFactory
-        {
-            get { return messageFactory ?? (messageFactory = TryResolve<IMessageFactory>()); }
-            set { messageFactory = value; }
+            get { return redis ?? (redis = HostContext.AppHost.GetRedisClient(Request)); }
         }
 
         private IMessageProducer messageProducer;
         public virtual IMessageProducer MessageProducer
         {
-            get { return messageProducer ?? (messageProducer = MessageFactory.CreateMessageProducer()); }
+            get { return messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request)); }
+        }
+
+        private IMessageFactory messageFactory;
+        [Obsolete("Will remove in future, resolve directly from HostContext.TryResolve<IMessageFactory>()")]
+        public virtual IMessageFactory MessageFactory
+        {
+            get { return messageFactory ?? (messageFactory = TryResolve<IMessageFactory>()); }
+            set { messageFactory = value; }
         }
 
         private ISessionFactory sessionFactory;

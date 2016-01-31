@@ -1,4 +1,5 @@
 ﻿using ServiceStack;
+using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
 namespace Check.ServiceInterface
@@ -14,9 +15,11 @@ namespace Check.ServiceInterface
 
     public class TestProfilerService : Service
     {
-         public object Any(TestExecProc request)
+        public IDbConnectionFactory ConnectionFactory { get; set; }
+
+        public object Any(TestExecProc request)
          {
-             using (var sqlServer = DbFactory.OpenDbConnection("SqlServer"))
+             using (var sqlServer = ConnectionFactory.OpenDbConnection("SqlServer"))
              {
                  var results = sqlServer.SqlList<DummyTable>("EXEC DummyTable @Times", new { Times = 10 });
                  return results;

@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using ServiceStack;
+using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
 namespace Check.ServiceInterface
@@ -12,9 +13,11 @@ namespace Check.ServiceInterface
 
     public class NamedConnectionService : Service
     {
+        public IDbConnectionFactory ConnectionFactory { get; set; }
+
         public object Any(NamedConnection request)
         {
-            using (var db = DbFactory.OpenDbConnection("SqlServer"))
+            using (var db = ConnectionFactory.OpenDbConnection("SqlServer"))
             {
                 using (var cmd = db.SqlProc(
                     "GetUserIdsFromEmailAddresses", new {request.EmailAddresses}))

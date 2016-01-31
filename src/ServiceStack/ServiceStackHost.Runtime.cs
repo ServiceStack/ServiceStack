@@ -5,6 +5,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -12,12 +13,16 @@ using System.Runtime.Serialization;
 using System.Web;
 using System.Xml;
 using ServiceStack.Auth;
+using ServiceStack.Caching;
+using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Redis;
 using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
@@ -561,6 +566,38 @@ namespace ServiceStack
             {
                 HostContext.CompleteRequest(req);
             }
+        }
+
+        public virtual IDbConnection GetDbConnection(IRequest req)
+        {
+            if (req == null)
+                throw new ArgumentNullException("req");
+
+            return TryResolve<IDbConnectionFactory>().OpenDbConnection();
+        }
+
+        public virtual IRedisClient GetRedisClient(IRequest req)
+        {
+            if (req == null)
+                throw new ArgumentNullException("req");
+
+            return TryResolve<IRedisClientsManager>().GetClient();
+        }
+
+        public virtual ICacheClient GetCacheClient(IRequest req)
+        {
+            if (req == null)
+                throw new ArgumentNullException("req");
+
+            return this.GetCacheClient();
+        }
+
+        public virtual IMessageProducer GetMessageProducer(IRequest req)
+        {
+            if (req == null)
+                throw new ArgumentNullException("req");
+
+            return TryResolve<IMessageFactory>().CreateMessageProducer();
         }
     }
 

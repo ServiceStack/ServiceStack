@@ -55,51 +55,51 @@ namespace ServiceStack
             get { return Request != null ? Request.Response : null; }
         }
 
-        private ICacheClient cache;
-        public virtual ICacheClient Cache
-        {
-            get
-            {
-                return cache ??
-                    (cache = TryResolve<ICacheClient>()) ??
-                    (cache = (RedisManager != null ? RedisManager.GetCacheClient() : null));
-            }
-        }
 
+        [Obsolete("Db instance now resolved from AppHost.GetDbConnection(). This will be removed in future - declare own property if needed")]
         public virtual IDbConnectionFactory DbFactory
         {
             get { return TryResolve<IDbConnectionFactory>(); }
         }
 
+        [Obsolete("Redis instance now resolved from AppHost.GetCacheClient(). This will be removed in future - declare own property if needed")]
         public virtual IRedisClientsManager RedisManager
         {
             get { return TryResolve<IRedisClientsManager>(); }
         }
 
+        [Obsolete("MessageProducer instance now resolved from AppHost.GetMessageProducer(). This will be removed in future - declare own property if needed")]
+        private IMessageFactory messageFactory;
+        public virtual IMessageFactory MessageFactory
+        {
+            get { return messageFactory ?? (messageFactory = TryResolve<IMessageFactory>()); }
+        }
+
+
+        private ICacheClient cache;
+        public virtual ICacheClient Cache
+        {
+            get { return cache ?? HostContext.AppHost.GetCacheClient(Request); }
+        }
+
         private IDbConnection db;
         public virtual IDbConnection Db
         {
-            get { return db ?? (db = DbFactory.OpenDbConnection()); }
+            get { return db ?? (db = HostContext.AppHost.GetDbConnection(Request)); }
         }
 
         private IRedisClient redis;
         public virtual IRedisClient Redis
         {
-            get { return redis ?? (redis = RedisManager.GetClient()); }
-        }
-
-        private IMessageFactory messageFactory;
-        public virtual IMessageFactory MessageFactory
-        {
-            get { return messageFactory ?? (messageFactory = TryResolve<IMessageFactory>()); }
-            set { messageFactory = value; }
+            get { return redis ?? (redis = HostContext.AppHost.GetRedisClient(Request)); }
         }
 
         private IMessageProducer messageProducer;
         public virtual IMessageProducer MessageProducer
         {
-            get { return messageProducer ?? (messageProducer = MessageFactory.CreateMessageProducer()); }
+            get { return messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request)); }
         }
+
 
         private ISessionFactory sessionFactory;
         public virtual ISessionFactory SessionFactory
