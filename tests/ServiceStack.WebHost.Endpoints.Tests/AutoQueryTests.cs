@@ -18,15 +18,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public AutoQueryAppHost()
             : base("AutoQuery", typeof(AutoQueryService).Assembly) { }
 
+        public const string SqlServerNamedConnection = "SqlServer";
+        public const string SqlServerConnString = "Server=localhost;Database=test;User Id=test;Password=test;";
+        public const string SqlServerProvider = "SqlServer2012";
+
+        public static string SqliteFileConnString = "~/App_Data/autoquery.sqlite".MapProjectPath();
+
         public override void Configure(Container container)
         {
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
             container.Register<IDbConnectionFactory>(dbFactory);
 
-            dbFactory.RegisterConnection("SqlServer",
-                "Server=localhost;Database=test;User Id=test;Password=test;", SqlServer2012Dialect.Provider);
+            dbFactory.RegisterConnection(SqlServerNamedConnection, SqlServerConnString, SqlServer2012Dialect.Provider);
+            dbFactory.RegisterDialectProvider(SqlServerProvider, SqlServer2012Dialect.Provider);
 
-            using (var db = dbFactory.OpenDbConnection("SqlServer"))
+            using (var db = dbFactory.OpenDbConnection(SqlServerNamedConnection))
             {
                 db.DropAndCreateTable<NamedRockstar>();
 
@@ -39,6 +45,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     LivingStatus = LivingStatus.Alive,
                 });
             }
+
+            using (var db = dbFactory.OpenDbConnectionString(SqliteFileConnString))
+            {
+                db.DropAndCreateTable<Rockstar>();
+                db.Insert(new Rockstar {
+                    Id = 1,
+                    FirstName = "Sqlite",
+                    LastName = "File DB",
+                    Age = 16,
+                    DateOfBirth = new DateTime(2000, 8, 1),
+                    LivingStatus = LivingStatus.Alive,
+                });
+            }
+
+            //GlobalRequestFilters.Add((req, res, dto) =>
+            //{
+            //    var changeDb = dto as IChangeDb;
+            //    if (changeDb == null) return;
+
+            //    req.Items[Keywords.DbInfo] = new ConnectionInfo
+            //    {
+            //        NamedConnection = changeDb.NamedConnection,
+            //        ConnectionString = changeDb.ConnectionString,
+            //        ProviderName = changeDb.ProviderName,
+            //    };
+            //});
+
+            // Equivalent to above:
+            RegisterTypedRequestFilter<IChangeDb>((req, res, dto) =>
+                req.Items[Keywords.DbInfo] = dto.ConvertTo<ConnectionInfo>());
 
             //container.Register<IDbConnectionFactory>(
             //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;",
@@ -502,6 +538,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
             q.Take(2);
             return AutoQuery.Execute(dto, q);
+        }
+    }
+
+    public interface IChangeDb
+    {
+        string NamedConnection { get; set; }
+        string ConnectionString { get; set; }
+        string ProviderName { get; set; }
+    }
+
+    [Route("/querychangedb")]
+    public class QueryChangeDb : QueryBase<Rockstar>, IChangeDb
+    {
+        public string NamedConnection { get; set; }
+        public string ConnectionString { get; set; }
+        public string ProviderName { get; set; }
+    }
+
+    [Route("/changedb")]
+    public class ChangeDb : IReturn<ChangeDbResponse>, IChangeDb
+    {
+        public string NamedConnection { get; set; }
+        public string ConnectionString { get; set; }
+        public string ProviderName { get; set; }
+    }
+
+    public class ChangeDbResponse
+    {
+        public List<Rockstar> Results { get; set; }
+    }
+
+    public class DynamicDbServices : Service
+    {
+        public object Any(ChangeDb request)
+        {
+            return new ChangeDbResponse { Results = Db.Select<Rockstar>() };
         }
     }
 
@@ -1319,6 +1391,60 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Meta["SixTimesTwo"], Is.EqualTo("12"));
             Assert.That(response.Meta["Subtract(6,2)"], Is.EqualTo("4"));
             Assert.That(response.Meta["TheDivide"], Is.EqualTo("3"));
+        }
+
+        [Test]
+        public void Sending_empty_ChangeDb_returns_default_info()
+        {
+            var response = client.Get(new ChangeDb());
+            Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
+
+            var aqResponse = client.Get(new QueryChangeDb());
+            Assert.That(aqResponse.Results.Count, Is.EqualTo(TotalRockstars));
+        }
+
+        [Test]
+        public void Can_ChangeDb_with_Named_Connection()
+        {
+            var response = client.Get(new ChangeDb { NamedConnection = AutoQueryAppHost.SqlServerNamedConnection });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Microsoft"));
+
+            var aqResponse = client.Get(new QueryChangeDb { NamedConnection = AutoQueryAppHost.SqlServerNamedConnection });
+            Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
+            Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
+        }
+
+        [Test]
+        public void Can_ChangeDb_with_ConnectionString()
+        {
+            var response = client.Get(new ChangeDb { ConnectionString = AutoQueryAppHost.SqliteFileConnString });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Sqlite"));
+
+            var aqResponse = client.Get(new QueryChangeDb { ConnectionString = AutoQueryAppHost.SqliteFileConnString });
+            Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
+            Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Sqlite"));
+        }
+
+        [Test]
+        public void Can_ChangeDb_with_ConnectionString_and_Provider()
+        {
+            var response = client.Get(new ChangeDb
+            {
+                ConnectionString = AutoQueryAppHost.SqlServerConnString,
+                ProviderName = AutoQueryAppHost.SqlServerProvider,
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Microsoft"));
+
+            var aqResponse = client.Get(new QueryChangeDb
+            {
+                ConnectionString = AutoQueryAppHost.SqlServerConnString,
+                ProviderName = AutoQueryAppHost.SqlServerProvider,
+            });
+            Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
+            Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
         }
     }
 
