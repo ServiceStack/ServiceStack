@@ -568,35 +568,23 @@ namespace ServiceStack
             }
         }
 
-        public virtual IDbConnection GetDbConnection(IRequest req)
+        public virtual IDbConnection GetDbConnection(IRequest req = null)
         {
-            if (req == null)
-                throw new ArgumentNullException("req");
-
             return TryResolve<IDbConnectionFactory>().OpenDbConnection();
         }
 
-        public virtual IRedisClient GetRedisClient(IRequest req)
+        public virtual IRedisClient GetRedisClient(IRequest req = null)
         {
-            if (req == null)
-                throw new ArgumentNullException("req");
-
             return TryResolve<IRedisClientsManager>().GetClient();
         }
 
         public virtual ICacheClient GetCacheClient(IRequest req)
         {
-            if (req == null)
-                throw new ArgumentNullException("req");
-
             return this.GetCacheClient();
         }
 
-        public virtual IMessageProducer GetMessageProducer(IRequest req)
+        public virtual IMessageProducer GetMessageProducer(IRequest req = null)
         {
-            if (req == null)
-                throw new ArgumentNullException("req");
-
             return TryResolve<IMessageFactory>().CreateMessageProducer();
         }
     }

@@ -680,9 +680,7 @@ namespace ServiceStack
                 namedConnection = attr.Name;
 
             Db = namedConnection == null 
-                ? (req != null 
-                    ? HostContext.AppHost.GetDbConnection(req) 
-                    : HostContext.TryResolve<IDbConnectionFactory>().OpenDbConnection())
+                ? HostContext.AppHost.GetDbConnection(req)
                 : HostContext.TryResolve<IDbConnectionFactory>().OpenDbConnection(namedConnection);
 
             return Db;
