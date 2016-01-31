@@ -8,5 +8,13 @@ namespace ServiceStack.Data
         IDbConnection OpenDbConnection();
         IDbConnection CreateDbConnection();
     }
+
+    public interface IDbConnectionFactoryExtended : IDbConnectionFactory
+    {
+        IDbConnection OpenDbConnection(string namedConnection);
+
+        IDbConnection OpenDbConnectionString(string connectionString);
+        IDbConnection OpenDbConnectionString(string connectionString, string providerName);
+    }
 }
 #endif
