@@ -176,6 +176,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var pathProvider = GetPathProvider();
 
+            pathProvider.DeleteFiles(pathProvider.GetAllFiles());
+
             var allFilePaths = new[] {
                 "testfile.txt",
                 "a/testfile-a1.txt",
