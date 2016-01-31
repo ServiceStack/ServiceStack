@@ -570,7 +570,26 @@ namespace ServiceStack
 
         public virtual IDbConnection GetDbConnection(IRequest req = null)
         {
-            return TryResolve<IDbConnectionFactory>().OpenDbConnection();
+            var dbFactory = TryResolve<IDbConnectionFactory>();
+
+            ConnectionInfo connInfo;
+            if (req != null && (connInfo = req.GetItem(Keywords.DbInfo) as ConnectionInfo) != null)
+            {
+                var dbFactoryExtended = dbFactory as IDbConnectionFactoryExtended;
+                if (dbFactoryExtended == null)
+                    throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
+
+                if (connInfo.ConnectionString != null && connInfo.ProviderName != null)
+                    return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString, connInfo.ProviderName);
+
+                if (connInfo.ConnectionString != null)
+                    return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString);
+
+                if (connInfo.NamedConnection != null)
+                    return dbFactoryExtended.OpenDbConnection(connInfo.NamedConnection);
+            }
+
+            return dbFactory.OpenDbConnection();
         }
 
         public virtual IRedisClient GetRedisClient(IRequest req = null)
