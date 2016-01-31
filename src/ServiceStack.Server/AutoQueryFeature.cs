@@ -165,7 +165,6 @@ namespace ServiceStack
                     ResponseFilters = ResponseFilters,
                     StartsWithConventions = StartsWithConventions,
                     EndsWithConventions = EndsWithConventions,
-                    DbFactory = c.Resolve<IDbConnectionFactory>(),
                     UseNamedConnection = UseNamedConnection,
                 })
                 .ReusedWithin(ReuseScope.None);
@@ -526,7 +525,7 @@ namespace ServiceStack
             SqlExpression<From> q;
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
-                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
+                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
             }
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
@@ -539,7 +538,7 @@ namespace ServiceStack
             SqlExpression<From> q;
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
-                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
+                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
             }
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
@@ -573,7 +572,6 @@ namespace ServiceStack
         public Dictionary<string, QueryFieldAttribute> EndsWithConventions { get; set; }
 
         public string UseNamedConnection { get; set; }
-        public IDbConnectionFactory DbFactory { get; set; }
         public virtual IDbConnection Db { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryFilterContext>> ResponseFilters { get; set; }
@@ -671,7 +669,7 @@ namespace ServiceStack
             return response;
         }
 
-        public IDbConnection GetDb<From>()
+        public IDbConnection GetDb<From>(IRequest req = null)
         {
             if (Db != null)
                 return Db;
@@ -682,8 +680,10 @@ namespace ServiceStack
                 namedConnection = attr.Name;
 
             Db = namedConnection == null 
-                ? DbFactory.OpenDbConnection()
-                : DbFactory.OpenDbConnection(namedConnection);
+                ? (req != null 
+                    ? HostContext.AppHost.GetDbConnection(req) 
+                    : HostContext.TryResolve<IDbConnectionFactory>().OpenDbConnection())
+                : HostContext.TryResolve<IDbConnectionFactory>().OpenDbConnection(namedConnection);
 
             return Db;
         }
@@ -691,7 +691,7 @@ namespace ServiceStack
         public SqlExpression<From> CreateQuery<From>(IQuery<From> model, Dictionary<string, string> dynamicParams, IRequest request = null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(), model, dynamicParams, this), model);
+            return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(request), model, dynamicParams, this), model);
         }
 
         public QueryResponse<From> Execute<From>(IQuery<From> model, SqlExpression<From> query)
@@ -703,7 +703,7 @@ namespace ServiceStack
         public SqlExpression<From> CreateQuery<From, Into>(IQuery<From, Into> model, Dictionary<string, string> dynamicParams, IRequest request = null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(), model, dynamicParams, this), model);
+            return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(request), model, dynamicParams, this), model);
         }
 
         public QueryResponse<Into> Execute<From, Into>(IQuery<From, Into> model, SqlExpression<From> query)

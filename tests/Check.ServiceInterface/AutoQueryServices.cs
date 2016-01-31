@@ -214,7 +214,7 @@ namespace Check.ServiceInterface
         //Override with custom impl
         public QueryResponse<Rockstar> Any(QueryRockstars dto)
         {
-            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
+            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
             q.Take(1);
             return AutoQuery.Execute(dto, q);
         }
