@@ -663,6 +663,12 @@
             <para>db.SelectLazy&lt;Person&gt;("Age &gt; @age", new { age = 40 })</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SelectLazy``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Returns a lazyily loaded stream of results using a parameterized query. E.g:
+            <para>db.SelectLazy(db.From&lt;Person&gt;().Where(x =&gt; x == 40))</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SelectLazyFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
             <summary>
             Returns a lazyily loaded stream of results using an SqlFilter query. E.g:
