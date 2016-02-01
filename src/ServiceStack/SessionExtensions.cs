@@ -278,6 +278,10 @@ namespace ServiceStack
             if (httpRes == null)
                 return;
 
+            var sessionId = req.GetSessionId();
+            if (sessionId != null)
+                req.RemoveSession(sessionId);
+
             req.Response.ClearCookies();
 
             var tempId = req.Response.CreateTemporarySessionId(req);
