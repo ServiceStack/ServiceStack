@@ -238,7 +238,10 @@ namespace ServiceStack.Auth
             else
             {
                 if (generateNewCookies)
+                {
                     this.Request.GenerateNewSessionCookies(session);
+                    this.Request.SaveSession(session);
+                }
             }
             return response;
         }
