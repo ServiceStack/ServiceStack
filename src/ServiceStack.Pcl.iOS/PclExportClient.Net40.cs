@@ -8,12 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using System.Web;
 using ServiceStack;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
+#if !(ANDROID || __IOS__)
+    using System.Web;
+
     public class Net40PclExportClient : PclExportClient
     {
         public static Net40PclExportClient Provider = new Net40PclExportClient();
@@ -78,6 +80,7 @@ namespace ServiceStack
                 && webEx.Status == WebExceptionStatus.ProtocolError;
         }
     }
+#endif
 
     public class AsyncTimer : ITimer
     {

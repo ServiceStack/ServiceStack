@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Threading;
+using System.Net;
 using ServiceStack.Web;
 
 namespace ServiceStack
