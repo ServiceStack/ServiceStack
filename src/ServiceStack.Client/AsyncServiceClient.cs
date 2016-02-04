@@ -277,7 +277,7 @@ namespace ServiceStack
                     StreamSerializer(null, requestState.Request, stream);
                 }
 
-                stream.EndWriteStream();
+                PclExportClient.Instance.CloseWriteStream(stream);
 
                 requestState.WebRequest.BeginGetResponse(ResponseCallback<T>, requestState);
             }
@@ -448,7 +448,7 @@ namespace ServiceStack
                     }
                     finally
                     {
-                        responseStream.EndReadStream();
+                        PclExportClient.Instance.CloseReadStream(responseStream);
 
                         CancelAsyncFn = null;
                     }
@@ -463,7 +463,7 @@ namespace ServiceStack
         private void HandleResponseError<TResponse>(Exception exception, AsyncState<TResponse> state)
         {
             var webEx = exception as WebException;
-            if (webEx.IsWebException())
+            if (PclExportClient.Instance.IsWebException(webEx))
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Log.Error(webEx);

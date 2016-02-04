@@ -4,6 +4,7 @@
 #if !(XBOX || SL5 || NETFX_CORE || WP || PCL)
 using System;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -64,6 +65,17 @@ namespace ServiceStack
         {
             return new AsyncTimer(new
                 System.Threading.Timer(s => cb(s), state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
+        }
+
+        public override Exception CreateTimeoutException(Exception ex, string errorMsg)
+        {
+            return new WebException("The request timed out", ex, WebExceptionStatus.Timeout, null);
+        }
+
+        public override bool IsWebException(WebException webEx)
+        {
+            return webEx != null && webEx.Response != null
+                && webEx.Status == WebExceptionStatus.ProtocolError;
         }
     }
 
