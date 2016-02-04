@@ -3,6 +3,7 @@
 
 #if NETFX_CORE
 using System;
+using System.IO;
 using System.Threading;
 using ServiceStack.Pcl;
 using ServiceStack.Web;
