@@ -53,6 +53,7 @@
     <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
     <Compile Include="PclExport.Net40.cs" />
     <Compile Include="PclExportClient.Android.cs" />
+    <Compile Include="PclExportClient.Net40.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

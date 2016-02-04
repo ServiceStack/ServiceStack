@@ -4,6 +4,7 @@
 #if ANDROID
 using System;
 using System.Collections.Specialized;
+using System.Net;
 using System.Threading;
 using Android.OS;
 using System.Net;
