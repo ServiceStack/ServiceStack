@@ -26,6 +26,13 @@ declare namespace ssutils {
 
         listenOn: string;
         eventReceivers: any;
+        eventChannels: string[];
+        eventSourceUrl: string;
+        updateSubscriberUrl: string;
+        updateChannels: (channels: string[]) => void;
+        updateSubscriber: (data: UpdateSubscriberOptions, cb?: (user: SSEUpdate) => void, cbError?: Function) => any;
+        subscribeToChannels: (channels: string[], cb?: (user: SSEUpdate) => void, cbError?: Function) => any;
+        unsubscribeFromChannels: (channels: string[], cb?: (user: SSEUpdate) => void, cbError?: Function) => any;
         reconnectServerEvents: (opt: ReconnectServerEventsOptions) => any;
     }
 
@@ -62,6 +69,11 @@ declare namespace ssutils {
         success?: (selector: string, msg: string, e: any) => void;
     }
 
+    interface UpdateSubscriberOptions {
+        SubscribeChannels?: string;
+        UnsubscribeChannels?: string;
+    }
+
     interface ResponseStatus {
         errorCode: string;
         message: string;
@@ -84,11 +96,13 @@ declare namespace ssutils {
     interface SSEHeartbeat extends SSECommand { }
     interface SSEJoin extends SSECommand { }
     interface SSELeave extends SSECommand { }
+    interface SSEUpdate extends SSECommand { }
 
     interface SSEConnect extends SSECommand {
         id: string;
         unRegisterUrl: string;
         heartbeatUrl: string;
+        updateSubscriberUrl: string;
         heartbeatIntervalMs: number;
         idleTimeoutMs: number;
     }
@@ -97,9 +111,39 @@ declare namespace ssutils {
         url?: string;
         onerror?: (...args: any[]) => void;
         onmessage?: (...args: any[]) => void;
-        errorArgs: any[];
+        errorArgs?: any[];
+    }
+
+    /**
+     * EventSource
+     */
+    enum ReadyState { CONNECTING = 0, OPEN = 1, CLOSED = 2 }
+
+    interface IEventSourceStatic extends EventTarget {
+        new (url: string, eventSourceInitDict?: IEventSourceInit): IEventSourceStatic;
+        url: string;
+        withCredentials: boolean;
+        CONNECTING: ReadyState; // constant, always 0
+        OPEN: ReadyState; // constant, always 1
+        CLOSED: ReadyState; // constant, always 2
+        readyState: ReadyState;
+        onopen: Function;
+        onmessage: (event: IOnMessageEvent) => void;
+        onerror: Function;
+        close: () => void;
+    }
+
+    interface IEventSourceInit {
+        withCredentials?: boolean;
+    }
+
+    interface IOnMessageEvent {
+        data: string;
     }
 }
+
+//Needs to be declared locally
+//declare var EventSource: ssutils.IEventSourceStatic;
 
 interface JQuery {
     setFieldError: (name: string, msg: string) => void;

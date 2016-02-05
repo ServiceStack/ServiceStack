@@ -355,10 +355,45 @@
     };
 
     $.ss.eventReceivers = {};
+    $.ss.eventChannels = [];
+    $.ss.eventSourceUrl = null;
+    $.ss.updateSubscriberUrl = null;
+    $.ss.updateChannels = function(channels) {
+        $.ss.eventChannels = channels;
+        if (!$.ss.eventSource) return;
+        var url = $.ss.eventSource.url;
+        $.ss.eventSourceUrl = url.substring(0, Math.min(url.indexOf('?'), url.length)) + "?channels=" + channels.join(',');
+    };
+    $.ss.subscribeToChannels = function (channels, cb, cbError) {
+        return $.ss.updateSubscriber({ SubscribeChannels: channels.join(',') }, cb, cbError);
+    };
+    $.ss.unsubscribeFromChannels = function (channels, cb, cbError) {
+        return $.ss.updateSubscriber({ UnsubscribeChannels: channels.join(',') }, cb, cbError);
+    };
+    $.ss.updateSubscriber = function (data, cb, cbError) {
+        if (!$.ss.updateSubscriberUrl)
+            throw new Error("updateSubscriberUrl was not populated");
+        return $.ajax({
+            type: "POST",
+            url: $.ss.updateSubscriberUrl,
+            data: data,
+            dataType: "json",
+            success: function(r) {
+                $.ss.updateChannels((r.channels || '').split(','));
+                if (cb != null)
+                    cb(r);
+            },
+            error: function(e) {
+                $.ss.reconnectServerEvents({ errorArgs: arguments });
+                if (cbError != null)
+                    cbError(e);
+            }
+        });
+    };
     $.ss.reconnectServerEvents = function (opt) {
         opt = opt || {};
         var hold = $.ss.eventSource;
-        var es = new EventSource(opt.url || hold.url);
+        var es = new EventSource(opt.url || $.ss.eventSourceUrl || hold.url);
         es.onerror = opt.onerror || hold.onerror;
         es.onmessage = opt.onmessage || hold.onmessage;
         var fn = $.ss.handlers["onReconnect"];
@@ -439,6 +474,8 @@
                             $.post(opt.unRegisterUrl, null, function (r) { });
                         });
                     }
+                    $.ss.updateSubscriberUrl = opt.updateSubscriberUrl;
+                    $.ss.updateChannels((opt.channels || "").split(','));
                 }
                 var fn = $.ss.handlers[cmd];
                 if (fn) {
