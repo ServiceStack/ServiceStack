@@ -131,7 +131,8 @@ namespace ServiceStack
 
             stopped = false;
             httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
-            httpReq.CookieContainer = ((ServiceClientBase)ServiceClient).CookieContainer; //share auth cookies
+            //share auth cookies
+            httpReq.CookieContainer = ((IHasCookieContainer) ServiceClient).CookieContainer;
             //httpReq.AllowReadStreamBuffering = false; //.NET v4.5
 
             if (EventStreamRequestFilter != null)
