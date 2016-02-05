@@ -301,6 +301,16 @@ namespace ServiceStack
             return local.RemoveExpiredSubscriptions();
         }
 
+        public string[] SubscribeToChannels(string subscriptionId, string[] channels)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string[] UnsubscribeFromChannels(string subscriptionId, string[] channels)
+        {
+            throw new NotImplementedException();
+        }
+
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
         {
             using (var redis = clientsManager.GetClient())

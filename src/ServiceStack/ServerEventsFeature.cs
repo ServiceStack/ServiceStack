@@ -205,6 +205,7 @@ namespace ServiceStack
                 {"id", subscriptionId },
                 {"unRegisterUrl", unRegisterUrl},
                 {"heartbeatUrl", heartbeatUrl},
+                {"updateSubscriberUrl", req.ResolveAbsoluteUrl("~/event-subscribers/" + subscriptionId) },
                 {"heartbeatIntervalMs", ((long)feature.HeartbeatInterval.TotalMilliseconds).ToString(CultureInfo.InvariantCulture) },
                 {"idleTimeoutMs", ((long)feature.IdleTimeout.TotalMilliseconds).ToString(CultureInfo.InvariantCulture)}
             };
@@ -330,6 +331,15 @@ namespace ServiceStack
         public string Id { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
+    [Route("/event-subscribers/{Id}", "POST")]
+    public class UpdateEventSubscriber : IReturn<List<Dictionary<string, string>>>
+    {
+        public string Id { get; set; }
+        public string[] SubscribeChannels { get; set; }
+        public string[] UnsubscribeChannels { get; set; }
+    }
+
     [DefaultRequest(typeof(UnRegisterEventSubscriber))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class ServerEventsUnRegisterService : Service
@@ -348,6 +358,25 @@ namespace ServiceStack
                 throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id));
 
             ServerEvents.UnRegister(subscription.SubscriptionId);
+
+            return subscription.Meta;
+        }
+
+        public object Any(UpdateEventSubscriber request)
+        {
+            var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
+
+            if (subscription == null)
+                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.Fmt(request.Id));
+
+            var feature = HostContext.GetPlugin<ServerEventsFeature>();
+            if (!feature.CanAccessSubscription(base.Request, subscription))
+                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id));
+
+            if (request.UnsubscribeChannels != null)
+                ServerEvents.UnsubscribeFromChannels(subscription.SubscriptionId, request.UnsubscribeChannels);
+            if (request.SubscribeChannels != null)
+                ServerEvents.SubscribeToChannels(subscription.SubscriptionId, request.SubscribeChannels);
 
             return subscription.Meta;
         }
@@ -400,6 +429,12 @@ namespace ServiceStack
             this.response = response;
             this.Meta = new Dictionary<string, string>();
             this.WriteEvent = HostContext.GetPlugin<ServerEventsFeature>().WriteEvent;
+        }
+
+        public void UpdateChannels(string[] channels)
+        {
+            this.Channels = channels;
+            this.Meta["channels"] = string.Join(",", channels);
         }
 
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
@@ -489,6 +524,8 @@ namespace ServiceStack
         string UserAddress { get; set; }
         bool IsAuthenticated { get; set; }
 
+        void UpdateChannels(string[] channels);
+
         Action<IEventSubscription> OnUnsubscribe { get; set; }
         void Unsubscribe();
 
@@ -525,6 +562,7 @@ namespace ServiceStack
 
         public Action<IEventSubscription> NotifyJoin { get; set; }
         public Action<IEventSubscription> NotifyLeave { get; set; }
+        public Action<IEventSubscription> NotifyUpdate { get; set; }
         public Action<IEventSubscription> NotifyHeartbeat { get; set; }
         public Func<object, string> Serialize { get; set; }
 
@@ -543,6 +581,7 @@ namespace ServiceStack
 
             NotifyJoin = s => NotifyChannels(s.Channels, "cmd.onJoin", s.Meta);
             NotifyLeave = s => NotifyChannels(s.Channels, "cmd.onLeave", s.Meta);
+            NotifyUpdate = s => NotifyChannels(s.Channels, "cmd.onUpdate", s.Meta);
             NotifyHeartbeat = s => NotifySubscription(s.SubscriptionId, "cmd.onHeartbeat", s.Meta);
             Serialize = o => o != null ? o.ToJson() : null;
         }
@@ -754,6 +793,77 @@ namespace ServiceStack
             return expired.Count;
         }
 
+        public string[] SubscribeToChannels(string subscriptionId, string[] channels)
+        {
+            if (subscriptionId == null)
+                throw new ArgumentNullException("subscriptionId");
+            if (channels == null)
+                throw new ArgumentNullException("channels");
+
+            var sub = GetSubscription(subscriptionId);
+            if (sub == null)
+                return null;
+
+            if (channels.Length == 0)
+                return sub.Channels;
+
+            lock (sub)
+            {
+                var subChannels = sub.Channels.ToList();
+                foreach (var channel in channels)
+                {
+                    if (subChannels.Contains(channel))
+                        continue;
+
+                    subChannels.Add(channel);
+                    RegisterSubscription(sub, channel, ChannelSubcriptions);
+                }
+
+                sub.UpdateChannels(subChannels.ToArray());
+
+                if (NotifyChannelOfSubscriptions && NotifyUpdate != null)
+                    NotifyUpdate(sub);
+            }
+
+            return sub.Channels;
+        }
+
+        public string[] UnsubscribeFromChannels(string subscriptionId, string[] channels)
+        {
+            if (subscriptionId == null)
+                throw new ArgumentNullException("subscriptionId");
+            if (channels == null)
+                throw new ArgumentNullException("channels");
+
+            var sub = GetSubscription(subscriptionId);
+            if (sub == null)
+                return null;
+
+            if (channels.Length == 0)
+                return sub.Channels;
+
+            lock (sub)
+            {
+                foreach (var channel in channels)
+                {
+                    if (!sub.Channels.Contains(channel))
+                        continue;
+
+                    UnRegisterSubscription(sub, channel, ChannelSubcriptions);
+                }
+
+                var subChannels = sub.Channels.ToList();
+                subChannels.RemoveAll(channels.Contains);
+
+                sub.UpdateChannels(subChannels.ToArray());
+
+                if (NotifyChannelOfSubscriptions && NotifyUpdate != null)
+                    NotifyUpdate(sub);
+            }
+
+            return sub.Channels;
+        }
+
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
         {
             var ret = new List<Dictionary<string, string>>();
@@ -937,6 +1047,10 @@ namespace ServiceStack
         long GetNextSequence(string sequenceId);
 
         int RemoveExpiredSubscriptions();
+
+        string[] SubscribeToChannels(string subscriptionId, string[] channels);
+
+        string[] UnsubscribeFromChannels(string subscriptionId, string[] channels);
 
         // Client API's
         List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels);
