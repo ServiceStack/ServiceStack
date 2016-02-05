@@ -191,6 +191,8 @@ namespace ServiceStack.Api.Swagger
         internal static bool UseLowercaseUnderscoreModelPropertyNames { get; set; }
         internal static bool DisableAutoDtoInBodyParam { get; set; }
 
+        internal static Action<SwaggerApiDeclaration> ApiDeclarationFilter { get; set; }
+        internal static Action<SwaggerOperation> OperationFilter { get; set; }
         internal static Action<SwaggerModel> ModelFilter { get; set; }
         internal static Action<SwaggerProperty> ModelPropertyFilter { get; set; }
 
@@ -225,6 +227,12 @@ namespace ServiceStack.Api.Swagger
                 Apis = apis,
                 Models = models
             };
+
+            if (OperationFilter != null)
+                apis.Each(x => x.Operations.Each(OperationFilter));
+
+            if (ApiDeclarationFilter != null)
+                ApiDeclarationFilter(result);
 
             return new HttpResult(result)
             {

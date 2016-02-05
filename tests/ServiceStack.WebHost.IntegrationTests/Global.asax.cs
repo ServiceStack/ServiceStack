@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
@@ -106,6 +107,9 @@ namespace ServiceStack.WebHost.IntegrationTests
                 });
                 Plugins.Add(new SwaggerFeature {
                     //UseBootstrapTheme = true
+                    ApiDeclarationFilter = x => 
+                        x.Consumes = x.Produces = new[] { MimeTypes.Json, MimeTypes.Xml }.ToList(),
+                    OperationFilter = x => x.Consumes = x.Produces = new[] { MimeTypes.Json, MimeTypes.Xml }.ToList(),
                     RouteSummary =
                     {
                         { "/swaggerexamples", "Swagger Examples Summary" }
