@@ -23,6 +23,8 @@ declare namespace ssutils {
         queryString: (url: string) => { [index: string]: string };
         createUrl: (route: string, args?: any) => string;
         humanize: (s: string) => string;
+        parseResponseStatus: (json: string, defaultMsg?: string) => any;
+        postJSON: (url: string, data: Object | String, success?: Function, error?: Function) => any;
 
         listenOn: string;
         eventReceivers: any;

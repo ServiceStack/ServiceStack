@@ -107,8 +107,6 @@ namespace ServiceStack.WebHost.IntegrationTests
                 });
                 Plugins.Add(new SwaggerFeature {
                     //UseBootstrapTheme = true
-                    ApiDeclarationFilter = x => 
-                        x.Consumes = x.Produces = new[] { MimeTypes.Json, MimeTypes.Xml }.ToList(),
                     OperationFilter = x => x.Consumes = x.Produces = new[] { MimeTypes.Json, MimeTypes.Xml }.ToList(),
                     RouteSummary =
                     {
@@ -198,6 +196,5 @@ namespace ServiceStack.WebHost.IntegrationTests
             if (mqHost != null)
                 mqHost.Start();
         }
-
     }
 }

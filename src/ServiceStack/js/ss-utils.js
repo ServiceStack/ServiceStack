@@ -86,7 +86,6 @@
         }
         return url;
     };
-
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1').replace(/_/g, ' ');
     };
@@ -95,7 +94,6 @@
     function toCamelCase(key) {
         return !key ? key : key.charAt(0).toLowerCase() + key.substring(1);
     }
-
     function sanitize(status) {
         if (status["errors"])
             return status;
@@ -123,6 +121,13 @@
             };
         }
     };
+    $.ss.postJSON = function (url, data, success, error) {
+        return $.ajax({
+            type: "POST", url: url, dataType: "json", contentType: "application/json",
+            data: typeof data == "string" ? data : JSON.stringify(data),
+            success: success, error: error
+        });
+    };
 
     $.fn.setFieldError = function (name, msg) {
         $(this).applyErrors({
@@ -132,7 +137,6 @@
             }]
         });
     };
-
     $.fn.serializeMap = function () {
         var o = {};
         $.each($(this).serializeArray(), function (i, e) {
@@ -140,7 +144,6 @@
         });
         return o;
     };
-
     $.fn.applyErrors = function (status, opt) {
         this.clearErrors();
         if (!status) return this;
@@ -200,7 +203,6 @@
         }
         return this;
     };
-
     $.fn.clearErrors = function () {
         this.removeClass("has-errors");
         this.find(".error-summary").html("").hide();
@@ -214,7 +216,6 @@
             $(this).removeClass("has-error");
         });
     };
-
     $.fn.bindForm = function (orig) {
         return this.each(function () {
             var f = $(this);
@@ -224,7 +225,6 @@
             });
         });
     };
-
     $.fn.ajaxSubmit = function (orig) {
         orig = orig || {};
         if (orig.validation) {
@@ -288,7 +288,6 @@
             return false;
         });
     };
-
     $.fn.applyValues = function (map) {
         return this.each(function () {
             var $el = $(this);
