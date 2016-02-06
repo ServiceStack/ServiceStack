@@ -30,6 +30,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     public class FileUploadResponse : IHasResponseStatus
     {
         [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
         public string FileName { get; set; }
 
         [DataMember]
@@ -80,6 +83,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             var file = this.Request.Files[0];
             return new FileUploadResponse
             {
+                Name = file.Name,
                 FileName = file.FileName,
                 ContentLength = file.ContentLength,
                 ContentType = file.ContentType,
