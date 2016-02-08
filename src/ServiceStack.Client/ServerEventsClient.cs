@@ -10,7 +10,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack
 {
-    public class ServerEventConnect : ServerEventJoin
+    public class ServerEventConnect : ServerEventCommand
     {
         public string Id { get; set; }
         public string UnRegisterUrl { get; set; }
@@ -19,18 +19,21 @@ namespace ServiceStack
         public long IdleTimeoutMs { get; set; }
     }
 
-    public class ServerEventJoin : ServerEventCommand
+    public class ServerEventJoin : ServerEventCommand {}
+
+    public class ServerEventLeave : ServerEventCommand { }
+
+    public class ServerEventUpdate : ServerEventCommand { }
+
+    public class ServerEventHeartbeat : ServerEventCommand { }
+
+    public class ServerEventCommand : ServerEventMessage
     {
         public string UserId { get; set; }
         public string DisplayName { get; set; }
         public string ProfileUrl { get; set; }
+        public string[] Channels { get; set; }
     }
-
-    public class ServerEventLeave : ServerEventCommand {}
-
-    public class ServerEventCommand : ServerEventMessage { }
-
-    public class ServerEventHeartbeat : ServerEventCommand { }
 
     public class ServerEventMessage : IMeta
     {
@@ -553,22 +556,14 @@ namespace ServiceStack
 
         private void ProcessOnJoinMessage(ServerEventMessage e)
         {
-            var msg = JsonServiceClient.ParseObject(e.Json);
-            var joinMsg = new ServerEventJoin().Populate(e, msg);
-            joinMsg.UserId = msg.Get("userId");
-            joinMsg.DisplayName = msg.Get("displayName");
-            joinMsg.ProfileUrl = msg.Get("profileUrl");
-
-            OnCommandReceived(joinMsg);
+            var msg = new ServerEventJoin().Populate(e, JsonServiceClient.ParseObject(e.Json));
+            OnCommandReceived(msg);
         }
 
         private void ProcessOnLeaveMessage(ServerEventMessage e)
         {
-            var msg = JsonServiceClient.ParseObject(e.Json);
-            var leaveMsg = new ServerEventLeave().Populate(e, msg);
-            leaveMsg.Channel = msg.Get("channel");
-
-            OnCommandReceived(leaveMsg);
+            var msg = new ServerEventLeave().Populate(e, JsonServiceClient.ParseObject(e.Json));
+            OnCommandReceived(msg);
         }
 
         private void ProcessOnHeartbeatMessage(ServerEventMessage e)
@@ -654,6 +649,18 @@ namespace ServiceStack
             foreach (var entry in msg)
             {
                 dst.Meta[entry.Key] = entry.Value;
+            }
+
+            var cmd = dst as ServerEventCommand;
+            if (cmd != null)
+            {
+                cmd.UserId = msg.Get("userId");
+                cmd.DisplayName = msg.Get("displayName");
+                cmd.ProfileUrl = msg.Get("profileUrl");
+
+                var channels = msg.Get("channels");
+                if (!string.IsNullOrEmpty(channels))
+                    cmd.Channels = channels.Split(',');
             }
 
             return dst;
