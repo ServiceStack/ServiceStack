@@ -1117,5 +1117,15 @@ namespace ServiceStack
             }
             return query;
         }
+
+        public static SqlExpression<From> CreateQuery<From>(this IAutoQuery autoQuery, IQuery<From> model, IRequest request)
+        {
+            return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
+        }
+
+        public static SqlExpression<From> CreateQuery<From, Into>(this IAutoQuery autoQuery, IQuery<From, Into> model, IRequest request)
+        {
+            return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
+        }
     }
 }
