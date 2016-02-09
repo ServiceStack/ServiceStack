@@ -1050,7 +1050,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(msgs2.Count, Is.EqualTo(1));
 
                 await client1.SubscribeToChannelsAsync("B");
-                await Task.Delay(100);
+                await Task.Delay(500);
 
                 client2.PostChat("#2 hello to B", channel: "B");
                 client2.PostChat("#3 hello to C", channel: "C");
@@ -1066,7 +1066,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 await client1.SubscribeToChannelsAsync("C");
                 await client2.SubscribeToChannelsAsync("C");
-                await Task.Delay(100);
+                await Task.Delay(500);
 
                 client2.PostChat("#4 hello to C", channel: "C");
 
@@ -1110,7 +1110,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(msgs2.Count, Is.EqualTo(1));
 
                 await client1.UnsubscribeFromChannelsAsync("B");
-                await Task.Delay(100);
+                await Task.Delay(500);
 
                 client2.PostChat("#2 hello to B", channel: "B");
                 client2.PostChat("#3 hello to C", channel: "C");
@@ -1126,7 +1126,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 await client1.UnsubscribeFromChannelsAsync("C");
                 await client2.UnsubscribeFromChannelsAsync("C");
-                await Task.Delay(100);
+                await Task.Delay(500);
 
                 client2.PostChat("#4 hello to C", channel: "C");
 
