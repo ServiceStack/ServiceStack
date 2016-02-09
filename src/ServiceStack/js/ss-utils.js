@@ -363,6 +363,24 @@
         var url = $.ss.eventSource.url;
         $.ss.eventSourceUrl = url.substring(0, Math.min(url.indexOf('?'), url.length)) + "?channels=" + channels.join(',');
     };
+    $.ss.updateSubscriberInfo = function(subscribe, unsubscribe) {
+        var channels = [];
+        for (var i in $.ss.eventChannels) {
+            var c = $.ss.eventChannels[i];
+            if (unsubscribe == null || $.inArray(c, unsubscribe) === -1) {
+                channels.push(c);
+            }
+        }
+        if (subscribe) {
+            for (var i in subscribe) {
+                var c = subscribe[i];
+                if ($.inArray(c, channels) === -1) {
+                    channels.push(c);
+                }
+            }
+        }
+        $.ss.updateChannels(channels);
+    };
     $.ss.subscribeToChannels = function (channels, cb, cbError) {
         return $.ss.updateSubscriber({ SubscribeChannels: channels.join(',') }, cb, cbError);
     };
@@ -377,8 +395,8 @@
             url: $.ss.updateSubscriberUrl,
             data: data,
             dataType: "json",
-            success: function(r) {
-                $.ss.updateChannels((r.channels || '').split(','));
+            success: function (r) {
+                $.updateSubscriberInfo(data.SubscribeChannels, data.UnsubscribeChannels);
                 if (cb != null)
                     cb(r);
             },
