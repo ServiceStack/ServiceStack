@@ -363,17 +363,19 @@
         var url = $.ss.eventSource.url;
         $.ss.eventSourceUrl = url.substring(0, Math.min(url.indexOf('?'), url.length)) + "?channels=" + channels.join(',');
     };
-    $.ss.updateSubscriberInfo = function(subscribe, unsubscribe) {
+    $.ss.updateSubscriberInfo = function (subscribe, unsubscribe) {
+        var sub = typeof subscribe == "string" ? subscribe.split(',') : subscribe;
+        var unsub = typeof unsubscribe == "string" ? unsubscribe.split(',') : unsubscribe;
         var channels = [];
         for (var i in $.ss.eventChannels) {
             var c = $.ss.eventChannels[i];
-            if (unsubscribe == null || $.inArray(c, unsubscribe) === -1) {
+            if (unsub == null || $.inArray(c, unsub) === -1) {
                 channels.push(c);
             }
         }
-        if (subscribe) {
-            for (var i in subscribe) {
-                var c = subscribe[i];
+        if (sub) {
+            for (var i in sub) {
+                var c = sub[i];
                 if ($.inArray(c, channels) === -1) {
                     channels.push(c);
                 }
@@ -396,11 +398,12 @@
             data: data,
             dataType: "json",
             success: function (r) {
-                $.updateSubscriberInfo(data.SubscribeChannels, data.UnsubscribeChannels);
+                $.ss.updateSubscriberInfo(data.SubscribeChannels, data.UnsubscribeChannels);
+                r.channels = $.ss.eventChannels;
                 if (cb != null)
                     cb(r);
             },
-            error: function(e) {
+            error: function (e) {
                 $.ss.reconnectServerEvents({ errorArgs: arguments });
                 if (cbError != null)
                     cbError(e);
