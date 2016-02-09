@@ -1043,8 +1043,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(client1.Channels, Is.EquivalentTo(new[] {"A" }));
 
                 client2.PostChat("#1 hello to B", channel: "B");
-
-                await Task.Delay(1000);
+                await Task.Delay(500);
 
                 Assert.That(msgs1.Count, Is.EqualTo(0));
                 Assert.That(msgs2.Count, Is.EqualTo(1));
@@ -1054,6 +1053,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 client2.PostChat("#2 hello to B", channel: "B");
                 client2.PostChat("#3 hello to C", channel: "C");
+                await Task.Delay(500);
 
                 Assert.That(msgs1.Count, Is.EqualTo(1));
                 Assert.That(msgs2.Count, Is.EqualTo(2));
@@ -1069,8 +1069,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 await Task.Delay(500);
 
                 client2.PostChat("#4 hello to C", channel: "C");
-
-                await Task.Delay(1000);
+                await Task.Delay(500);
 
                 Assert.That(msgs1.Count, Is.EqualTo(2));
                 Assert.That(msgs2.Count, Is.EqualTo(3));
@@ -1103,8 +1102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(client1.Channels, Is.EquivalentTo(new[] { "A","B","C" }));
 
                 client2.PostChat("#1 hello to B", channel: "B");
-
-                await Task.Delay(1000);
+                await Task.Delay(500);
 
                 Assert.That(msgs1.Count, Is.EqualTo(1));
                 Assert.That(msgs2.Count, Is.EqualTo(1));
@@ -1114,6 +1112,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 client2.PostChat("#2 hello to B", channel: "B");
                 client2.PostChat("#3 hello to C", channel: "C");
+                await Task.Delay(500);
 
                 Assert.That(msgs1.Count, Is.EqualTo(2));
                 Assert.That(msgs2.Count, Is.EqualTo(3));
@@ -1129,8 +1128,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 await Task.Delay(500);
 
                 client2.PostChat("#4 hello to C", channel: "C");
-
-                await Task.Delay(1000);
+                await Task.Delay(500);
 
                 Assert.That(msgs1.Count, Is.EqualTo(2));
                 Assert.That(msgs2.Count, Is.EqualTo(3));
