@@ -331,15 +331,6 @@ namespace ServiceStack
         public string Id { get; set; }
     }
 
-    [Exclude(Feature.Soap)]
-    [Route("/event-subscribers/{Id}", "POST")]
-    public class UpdateEventSubscriber : IReturn<List<Dictionary<string, string>>>
-    {
-        public string Id { get; set; }
-        public string[] SubscribeChannels { get; set; }
-        public string[] UnsubscribeChannels { get; set; }
-    }
-
     [DefaultRequest(typeof(UnRegisterEventSubscriber))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class ServerEventsUnRegisterService : Service
@@ -378,7 +369,7 @@ namespace ServiceStack
             if (request.SubscribeChannels != null)
                 ServerEvents.SubscribeToChannels(subscription.SubscriptionId, request.SubscribeChannels);
 
-            return subscription.Meta;
+            return new UpdateEventSubscriberResponse();
         }
     }
 
@@ -793,7 +784,7 @@ namespace ServiceStack
             return expired.Count;
         }
 
-        public string[] SubscribeToChannels(string subscriptionId, string[] channels)
+        public void SubscribeToChannels(string subscriptionId, string[] channels)
         {
             if (subscriptionId == null)
                 throw new ArgumentNullException("subscriptionId");
@@ -801,11 +792,8 @@ namespace ServiceStack
                 throw new ArgumentNullException("channels");
 
             var sub = GetSubscription(subscriptionId);
-            if (sub == null)
-                return null;
-
-            if (channels.Length == 0)
-                return sub.Channels;
+            if (sub == null || channels.Length == 0)
+                return;
 
             lock (sub)
             {
@@ -824,11 +812,9 @@ namespace ServiceStack
                 if (NotifyChannelOfSubscriptions && NotifyUpdate != null)
                     NotifyUpdate(sub);
             }
-
-            return sub.Channels;
         }
 
-        public string[] UnsubscribeFromChannels(string subscriptionId, string[] channels)
+        public void UnsubscribeFromChannels(string subscriptionId, string[] channels)
         {
             if (subscriptionId == null)
                 throw new ArgumentNullException("subscriptionId");
@@ -836,11 +822,8 @@ namespace ServiceStack
                 throw new ArgumentNullException("channels");
 
             var sub = GetSubscription(subscriptionId);
-            if (sub == null)
-                return null;
-
-            if (channels.Length == 0)
-                return sub.Channels;
+            if (sub == null || channels.Length == 0)
+                return;
 
             lock (sub)
             {
@@ -860,8 +843,6 @@ namespace ServiceStack
                 if (NotifyChannelOfSubscriptions && NotifyUpdate != null)
                     NotifyUpdate(sub);
             }
-
-            return sub.Channels;
         }
 
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
@@ -1048,9 +1029,9 @@ namespace ServiceStack
 
         int RemoveExpiredSubscriptions();
 
-        string[] SubscribeToChannels(string subscriptionId, string[] channels);
+        void SubscribeToChannels(string subscriptionId, string[] channels);
 
-        string[] UnsubscribeFromChannels(string subscriptionId, string[] channels);
+        void UnsubscribeFromChannels(string subscriptionId, string[] channels);
 
         // Client API's
         List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels);
