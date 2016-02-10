@@ -26,7 +26,10 @@ namespace ServiceStack.Host.Handlers
         public string Host { get; set; }
 
         [DataMember]
-        public DateTime Date { get; set; }
+        public string HostType { get; set; }
+
+        [DataMember]
+        public string Date { get; set; }
 
         [DataMember]
         public string ServiceName { get; set; }
@@ -81,6 +84,9 @@ namespace ServiceStack.Host.Handlers
 
         [DataMember]
         public string VirtualAppRelativePathRoot { get; set; }
+
+        [DataMember]
+        public string RootDirectoryPath { get; set; }
 
         [DataMember]
         public string CurrentDirectory { get; set; }
@@ -257,12 +263,14 @@ namespace ServiceStack.Host.Handlers
         {
             int virtualPathCount = 0;
             int.TryParse(httpReq.QueryString["virtualPathCount"], out virtualPathCount);
+            var hostType = HostContext.AppHost.GetType();
 
             var response = new RequestInfoResponse
             {
-                Usage = "append '?debug=requestinfo' to any querystring",
+                Usage = "append '?debug=requestinfo' to any querystring. Optional params: virtualPathCount",
                 Host = HostContext.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + HostContext.ServiceName,
-                Date = DateTime.UtcNow,
+                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType != null ? hostType.BaseType.Name : hostType.Name),
+                Date = DateTime.UtcNow.ToString("yy-MM-dd HH:mm:ss"),
                 ServiceName = HostContext.ServiceName,
                 HandlerFactoryPath = HostContext.Config.HandlerFactoryPath,
                 UserHostAddress = httpReq.UserHostAddress,
@@ -271,6 +279,7 @@ namespace ServiceStack.Host.Handlers
                 WebHostUrl = HostContext.Config.WebHostUrl,
                 ApplicationBaseUrl = httpReq.GetBaseUrl(),
                 ResolveAbsoluteUrl = HostContext.AppHost.ResolveAbsoluteUrl("~/resolve", httpReq),
+                RootDirectoryPath = HostContext.VirtualFileSources.RootDirectory.RealPath,
                 StripApplicationVirtualPath = HostContext.Config.StripApplicationVirtualPath,
                 CurrentDirectory = Directory.GetCurrentDirectory(),
                 RawUrl = httpReq.RawUrl,
