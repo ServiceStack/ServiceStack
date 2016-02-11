@@ -641,7 +641,7 @@ namespace ServiceStack
         {
             CookieContainer = new CookieContainer();
             HttpClient = null;
-            GetHttpClient();
+            HttpClient = GetHttpClient();
         }
 
         public Dictionary<string, string> GetCookieValues()
