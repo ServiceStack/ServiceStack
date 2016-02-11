@@ -641,7 +641,7 @@ namespace ServiceStack
         {
             CookieContainer = new CookieContainer();
             HttpClient = null;
-            GetHttpClient();
+            HttpClient = GetHttpClient();
         }
 
         public Dictionary<string, string> GetCookieValues()
@@ -651,7 +651,7 @@ namespace ServiceStack
 
         public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
         {
-            this.SetCookie(HttpClient.BaseAddress, name, value,
+            this.SetCookie(GetHttpClient().BaseAddress, name, value,
                 expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : (DateTime?)null);
         }
 
