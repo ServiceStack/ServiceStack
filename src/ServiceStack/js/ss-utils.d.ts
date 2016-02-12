@@ -20,6 +20,7 @@ declare namespace ssutils {
         splitOnFirst: (s: string, delimiter:string) => string[];
         splitOnLast: (s: string, delimiter: string) => string[];
         getSelection: () => string;
+        combinePaths: (...paths:string[]) => string;
         queryString: (url: string) => { [index: string]: string };
         createUrl: (route: string, args?: any) => string;
         humanize: (s: string) => string;

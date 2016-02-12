@@ -44,6 +44,24 @@
             : document.selection && document.selection.type != "Control"
                 ? document.selection.createRange().text : "";
     };
+    $.ss.combinePaths = function() {
+        var parts = [], i, l;
+        for (i = 0, l = arguments.length; i < l; i++) {
+            var arg = arguments[i];
+            parts = arg.indexOf("://") === -1
+                ? parts.concat(arg.split("/"))
+                : parts.concat(arg.lastIndexOf("/") === arg.length-1 ? arg.substring(0, arg.length-1) : arg);
+        }
+        var paths = [];
+        for (i = 0, l = parts.length; i < l; i++) {
+            var part = parts[i];
+            if (!part || part === ".") continue;
+            if (part === "..") paths.pop();
+            else paths.push(part);
+        }
+        if (parts[0] === "") paths.unshift("");
+        return paths.join("/") || (paths.length ? "/" : ".");
+    };
     $.ss.queryString = function (url) {
         if (!url) return {};
         var pairs = $.ss.splitOnFirst(url, '?')[1].split('&');
