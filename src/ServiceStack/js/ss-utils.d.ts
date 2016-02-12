@@ -22,7 +22,8 @@ declare namespace ssutils {
         getSelection: () => string;
         combinePaths: (...paths:string[]) => string;
         queryString: (url: string) => { [index: string]: string };
-        createUrl: (route: string, args?: any) => string;
+        createPath: (route: string, args: any) => string;
+        createUrl: (route: string, args: any) => string;
         humanize: (s: string) => string;
         parseResponseStatus: (json: string, defaultMsg?: string) => any;
         postJSON: (url: string, data: Object | String, success?: Function, error?: Function) => any;

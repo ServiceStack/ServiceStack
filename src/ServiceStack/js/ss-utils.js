@@ -81,8 +81,7 @@
         }
         return o;
     };
-    $.ss.createUrl = function (route, args) {
-        if (!args) args = {};
+    $.ss.createPath = function (route, args) {
         var argKeys = {};
         for (var k in args) {
             argKeys[k.toLowerCase()] = k;
@@ -101,6 +100,14 @@
             }
             if (url.length > 0) url += '/';
             url += p;
+        }
+        return url;
+    };
+    $.ss.createUrl = function(route, args) {
+        var url = $.ss.createPath(route, args);
+        for (var k in args) {
+            url += url.indexOf('?') >= 0 ? '&' : '?';
+            url += k + "=" + encodeURIComponent(args[k]);
         }
         return url;
     };
