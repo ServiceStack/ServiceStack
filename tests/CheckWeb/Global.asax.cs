@@ -36,6 +36,7 @@ namespace CheckWeb
         {
             var nativeTypes = this.GetPlugin<NativeTypesFeature>();
             nativeTypes.MetadataTypesConfig.ExportTypes.Add(typeof(DayOfWeek));
+            nativeTypes.MetadataTypesConfig.IgnoreTypes.Add(typeof(IgnoreInMetadataConfig));
 
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
