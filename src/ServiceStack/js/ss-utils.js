@@ -119,6 +119,14 @@
     function toCamelCase(key) {
         return !key ? key : key.charAt(0).toLowerCase() + key.substring(1);
     }
+    $.ss.normalize = function (dto, into, deep) {
+        if (typeof dto != "object") return dto;
+        if (!into) into = {};
+        for (var k in dto) {
+            into[k.toLowerCase().replace(/_/g, '')] = deep ? normalize(dto[k]) : dto[k];
+        }
+        return into;
+    };
     function sanitize(status) {
         if (status["errors"])
             return status;
@@ -134,7 +142,6 @@
         });
         return to;
     }
-
     $.ss.parseResponseStatus = function (json, defaultMsg) {
         try {
             var err = JSON.parse(json);
