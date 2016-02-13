@@ -122,6 +122,7 @@ namespace ServiceStack
 
             this.AutoQueryViewerConfig = new AutoQueryViewerConfig
             {
+                Formats = new[] { "json", "xml", "csv" },
                 ImplicitConventions = new List<Property>
                 {
                     new Property { Name = "=", Value = "%"},
@@ -354,6 +355,10 @@ namespace ServiceStack
         /// Icon for this ServiceStack Instance (shown in Home Services list)
         /// </summary>
         public string ServiceIconUrl { get; set; }
+        /// <summary>
+        /// The different Content Type formats to display
+        /// </summary>
+        public string[] Formats { get; set; }
 
         /// <summary>
         /// Whether to publish this Service to the public Services registry
