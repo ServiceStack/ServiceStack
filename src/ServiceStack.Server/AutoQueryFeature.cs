@@ -511,10 +511,7 @@ namespace ServiceStack
 
             response.Types.AddRange(types);
 
-            return new HttpResult(response)
-            {
-                ResultScope = () => JsConfig.With(emitCamelCaseNames:true, emitLowercaseUnderscoreNames:false)
-            };
+            return response;
         }
     }
 
