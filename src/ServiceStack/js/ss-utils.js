@@ -119,13 +119,24 @@
     function toCamelCase(key) {
         return !key ? key : key.charAt(0).toLowerCase() + key.substring(1);
     }
-    $.ss.normalize = function (dto, into, deep) {
-        if (typeof dto != "object") return dto;
-        if (!into) into = {};
-        for (var k in dto) {
-            into[k.toLowerCase().replace(/_/g, '')] = deep ? normalize(dto[k]) : dto[k];
+    $.ss.normalizeKey = function (key) {
+        return typeof key == "string" ? key.toLowerCase().replace(/_/g, '') : key;
+    };
+    $.ss.normalize = function (dto, deep) {
+        if ($.isArray(dto)) {
+            if (!deep) return dto;
+            var to = [];
+            for (var i = 0; i < dto.length; i++) {
+                to[i] = $.ss.normalize(dto[i], deep);
+            }
+            return to;
         }
-        return into;
+        if (typeof dto != "object") return dto;
+        var o = {};
+        for (var k in dto) {
+            o[$.ss.normalizeKey(k)] = deep ? $.ss.normalize(dto[k], deep) : dto[k];
+        }
+        return o;
     };
     function sanitize(status) {
         if (status["errors"])
