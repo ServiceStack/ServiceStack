@@ -359,6 +359,10 @@ namespace ServiceStack
         /// The different Content Type formats to display
         /// </summary>
         public string[] Formats { get; set; }
+        /// <summary>
+        /// The configured MaxLimit
+        /// </summary>
+        public int? MaxLimit { get; set; }
 
         /// <summary>
         /// Whether to publish this Service to the public Services registry
@@ -459,6 +463,8 @@ namespace ServiceStack
 
             if (config.ServiceName == null)
                 config.ServiceName = HostContext.ServiceName;
+
+            config.MaxLimit = feature.MaxLimit;
 
             var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata { BaseUrl = Request.GetBaseUrl() });
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
