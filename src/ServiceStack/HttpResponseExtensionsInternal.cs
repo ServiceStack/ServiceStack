@@ -241,7 +241,8 @@ namespace ServiceStack
                         response.ContentType += ContentFormat.Utf8Suffix;
                     }
 
-                    using (resultScope ?? JsConfig.CreateScope(request.QueryString[Keywords.JsConfig]))
+                    using (resultScope)
+                    using (JsConfig.CreateScope(request.QueryString[Keywords.JsConfig]))
                     {
                         var disposableResult = result as IDisposable;
                         if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
