@@ -2,7 +2,7 @@
 
 namespace ServiceStack.DataAnnotations
 {
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Enum | AttributeTargets.Property)]
     public class EnumAsIntAttribute : AttributeBase
     {
     }
