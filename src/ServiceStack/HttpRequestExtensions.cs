@@ -543,7 +543,19 @@ namespace ServiceStack
             foreach (var name in request.QueryString.AllKeys)
             {
                 if (name == null) continue; //thank you ASP.NET
-                map[name] = request.QueryString[name];
+
+                var values = request.QueryString.GetValues(name);
+                if (values.Length == 1)
+                {
+                    map[name] = values[0];
+                }
+                else
+                {
+                    for (var i = 0; i < values.Length; i++)
+                    {
+                        map[name + (i == 0 ? "" : "#" + i)] = values[i];
+                    }
+                }
             }
 
             if ((request.Verb == HttpMethods.Post || request.Verb == HttpMethods.Put)
@@ -552,7 +564,19 @@ namespace ServiceStack
                 foreach (var name in request.FormData.AllKeys)
                 {
                     if (name == null) continue; //thank you ASP.NET
-                    map[name] = request.FormData[name];
+
+                    var values = request.FormData.GetValues(name);
+                    if (values.Length == 1)
+                    {
+                        map[name] = values[0];
+                    }
+                    else
+                    {
+                        for (var i = 0; i < values.Length; i++)
+                        {
+                            map[name + (i == 0 ? "" : "#" + i)] = values[i];
+                        }
+                    }
                 }
             }
 

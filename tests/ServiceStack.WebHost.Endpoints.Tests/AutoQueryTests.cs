@@ -762,6 +762,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_execute_multiple_conditions_with_same_param_name()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
+                .AddQueryParam("FirstName", "Jim")
+                .AddQueryParam("FirstName", "Jim")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].LastName, Is.EqualTo("Morrison"));
+
+            response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
+                .AddQueryParam("FirstNameStartsWith", "Jim")
+                .AddQueryParam("FirstNameStartsWith", "Jimi")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].LastName, Is.EqualTo("Hendrix"));
+        }
+
+        [Test]
         public void Can_execute_implicit_IsNull_condition()
         {
             var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars?DateDied=")
