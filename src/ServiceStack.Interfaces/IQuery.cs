@@ -12,6 +12,7 @@ namespace ServiceStack
         string OrderBy { get; set; }
         string OrderByDesc { get; set; }
         string Include { get; set; }
+        string Fields { get; set; }
     }
 
     public interface IQuery<From> : IQuery { }
@@ -84,6 +85,9 @@ namespace ServiceStack
         public virtual string Include { get; set; }
 
         [DataMember(Order = 6)]
+        public virtual string Fields { get; set; }
+
+        [DataMember(Order = 7)]
         public virtual Dictionary<string, string> Meta { get; set; }
     }
 
