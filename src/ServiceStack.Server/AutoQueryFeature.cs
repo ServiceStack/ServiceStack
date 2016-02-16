@@ -800,7 +800,7 @@ namespace ServiceStack
                 q.Where("1=0"); //Empty OR queries should be empty
             }
 
-            if (!string.IsNullOrEmpty(model.Fields))
+            if (model.Fields != null && model.Fields != string.Empty)
             {
                 var fields = model.Fields.Split(',')
                     .Where(x => x.Trim().Length > 0)

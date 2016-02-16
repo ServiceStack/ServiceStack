@@ -143,7 +143,7 @@ namespace ServiceStack.Host
                 if (dtoFromBinder != null)
                     return HostContext.AppHost.ApplyRequestConverters(httpReq, dtoFromBinder);
 
-                var requestParams = httpReq.GetRequestParams();
+                var requestParams = httpReq.GetRequestParams().MergeRequestParams();
                 return HostContext.AppHost.ApplyRequestConverters(httpReq,
                     CreateRequest(httpReq, restPath, requestParams));
             }

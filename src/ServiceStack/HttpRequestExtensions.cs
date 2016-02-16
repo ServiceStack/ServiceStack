@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
@@ -582,6 +583,18 @@ namespace ServiceStack
 
             return map;
         }
+
+        public static Dictionary<string, string> MergeRequestParams(this Dictionary<string, string> map)
+        {
+            var duplicateKeys = map.Keys.Where(x => x.IndexOf('#') >= 0).ToList();
+            foreach (var duplicateKey in duplicateKeys)
+            {
+                var key = duplicateKey.SplitOnFirst('#')[0];
+                map[key] = map[key] + "," + map[duplicateKey];
+                map.Remove(duplicateKey);
+            }
+            return map;
+        } 
 
         public static string GetQueryStringContentType(this IRequest httpReq)
         {
