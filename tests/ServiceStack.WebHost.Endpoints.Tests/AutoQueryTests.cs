@@ -1470,6 +1470,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
             Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
         }
+
+        [Test]
+        public void Can_select_partial_list_of_fields()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
+                .AddQueryParam("Age", "27")
+                .AddQueryParam("Fields", "Id,FirstName,Age")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            response.PrintDump();
+
+            Assert.That(response.Results.All(x => x.Id > 0));
+            Assert.That(response.Results.All(x => x.FirstName != null));
+            Assert.That(response.Results.All(x => x.LastName == null));
+            Assert.That(response.Results.Any(x => x.Age > 0));
+            Assert.That(response.Results.All(x => x.DateDied == null));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+        }
+
+        [Test]
+        public void Can_select_partial_list_of_fields_from_joined_table()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbums")
+                .AddQueryParam("Age", "27")
+                .AddQueryParam("fields", "FirstName,Age,RockstarAlbumName")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<CustomRockstar>>();
+
+            response.PrintDump();
+
+            Assert.That(response.Results.All(x => x.FirstName != null));
+            Assert.That(response.Results.All(x => x.LastName == null));
+            Assert.That(response.Results.All(x => x.Age > 0));
+            Assert.That(response.Results.All(x => x.RockstarAlbumName != null));
+        }
     }
 
     public static class AutoQueryExtensions

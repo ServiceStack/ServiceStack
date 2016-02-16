@@ -800,6 +800,15 @@ namespace ServiceStack
                 q.Where("1=0"); //Empty OR queries should be empty
             }
 
+            if (!string.IsNullOrEmpty(model.Fields))
+            {
+                var fields = model.Fields.Split(',')
+                    .Where(x => x.Trim().Length > 0)
+                    .Map(x => x.Trim());
+
+                q.Select(fields.ToArray());
+            }
+
             return q;
         }
 

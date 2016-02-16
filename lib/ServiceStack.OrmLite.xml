@@ -73,6 +73,14 @@
             raw Select expression: "Select SomeField1, SomeField2 from SomeTable"
             </param>
         </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select(System.String[])">
+            <summary>
+            Set the specified selectExpression using matching fields.
+            </summary>
+            <param name='fields'>
+            Matching Fields: "SomeField1, SomeField2"
+            </param>
+        </member>
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
             <summary>
             Fields to be selected.
