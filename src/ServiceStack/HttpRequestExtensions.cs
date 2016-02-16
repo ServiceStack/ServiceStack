@@ -537,6 +537,9 @@ namespace ServiceStack
             return false;
         }
 
+        /// <summary>
+        /// Duplicate Params are given a unique key by appending a #1 suffix
+        /// </summary>
         public static Dictionary<string, string> GetRequestParams(this IRequest request)
         {
             var map = new Dictionary<string, string>();
@@ -584,15 +587,29 @@ namespace ServiceStack
             return map;
         }
 
-        public static Dictionary<string, string> MergeRequestParams(this Dictionary<string, string> map)
+        /// <summary>
+        /// Duplicate params have their values joined together in a comma-delimited string
+        /// </summary>
+        public static Dictionary<string, string> GetFlattenedRequestParams(this IRequest request)
         {
-            var duplicateKeys = map.Keys.Where(x => x.IndexOf('#') >= 0).ToList();
-            foreach (var duplicateKey in duplicateKeys)
+            var map = new Dictionary<string, string>();
+
+            foreach (var name in request.QueryString.AllKeys)
             {
-                var key = duplicateKey.SplitOnFirst('#')[0];
-                map[key] = map[key] + "," + map[duplicateKey];
-                map.Remove(duplicateKey);
+                if (name == null) continue; //thank you ASP.NET
+                map[name] = request.QueryString[name];
             }
+
+            if ((request.Verb == HttpMethods.Post || request.Verb == HttpMethods.Put)
+                && request.FormData != null)
+            {
+                foreach (var name in request.FormData.AllKeys)
+                {
+                    if (name == null) continue; //thank you ASP.NET
+                    map[name] = request.FormData[name];
+                }
+            }
+
             return map;
         } 
 
