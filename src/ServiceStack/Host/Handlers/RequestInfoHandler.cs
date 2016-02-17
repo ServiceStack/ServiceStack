@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Web;
 using System.Web.Hosting;
@@ -126,6 +127,15 @@ namespace ServiceStack.Host.Handlers
 
         [DataMember]
         public string ResponseContentType { get; set; }
+
+        [DataMember]
+        public string RequestAttributes { get; set; }
+
+        [DataMember]
+        public string Ipv4Addresses { get; set; }
+
+        [DataMember]
+        public string Ipv6Addresses { get; set; }
 
         [DataMember]
         public string ErrorCode { get; set; }
@@ -265,6 +275,22 @@ namespace ServiceStack.Host.Handlers
             int.TryParse(httpReq.QueryString["virtualPathCount"], out virtualPathCount);
             var hostType = HostContext.AppHost.GetType();
 
+            var ipv4Addr = "";
+            foreach (var entry in ServiceStackHandlerBase.NetworkInterfaceIpv4Addresses)
+            {
+                if (ipv4Addr.Length > 0)
+                    ipv4Addr += ", ";
+                ipv4Addr += new IPAddress(entry.Key) + "/" + new IPAddress(entry.Value);
+            }
+
+            var ipv6Address = "";
+            foreach (var addr in ServiceStackHandlerBase.NetworkInterfaceIpv6Addresses)
+            {
+                if (ipv6Address.Length > 0)
+                    ipv6Address += ", ";
+                ipv6Address += new IPAddress(addr);
+            }
+
             var response = new RequestInfoResponse
             {
                 Usage = "append '?debug=requestinfo' to any querystring. Optional params: virtualPathCount",
@@ -292,6 +318,9 @@ namespace ServiceStack.Host.Handlers
                 ContentLength = httpReq.ContentLength,
                 OperationName = httpReq.OperationName,
                 ResponseContentType = httpReq.ResponseContentType,
+                RequestAttributes = httpReq.GetAttributes().ToString(),
+                Ipv4Addresses = ipv4Addr,
+                Ipv6Addresses = ipv6Address,
                 PluginsLoaded = HostContext.AppHost.PluginsLoaded,
                 StartUpErrors = HostContext.AppHost.StartUpErrors,
                 LastRequestInfo = LastRequestInfo,
