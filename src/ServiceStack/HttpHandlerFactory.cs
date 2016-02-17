@@ -66,7 +66,7 @@ namespace ServiceStack
                             StaticFileHandler.SetDefaultFile(file.VirtualPath, file.ReadAllBytes(), file.LastModified);
 
                             if (DefaultHttpHandler == null)
-                                DefaultHttpHandler = new StaticFileHandler { VirtualNode = file };
+                                DefaultHttpHandler = new StaticFileHandler(file);
                         }
                     }
                     WebHostRootFileNames.Add(fileNameLower);
