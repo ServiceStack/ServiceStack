@@ -242,7 +242,7 @@ namespace ServiceStack
                     }
 
                     using (resultScope)
-                    using (JsConfig.CreateScope(request.QueryString[Keywords.JsConfig]))
+                    using (HostContext.Config.AllowJsConfig ? JsConfig.CreateScope(request.QueryString[Keywords.JsConfig]) : null)
                     {
                         var disposableResult = result as IDisposable;
                         if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))

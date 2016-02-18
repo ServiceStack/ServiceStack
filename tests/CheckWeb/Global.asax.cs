@@ -43,6 +43,7 @@ namespace CheckWeb
             {
                 //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Html },
+                //AllowJsConfig = false,
 
                 // Set to return JSON if no request content type is defined
                 // e.g. text/html or application/json

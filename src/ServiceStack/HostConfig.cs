@@ -106,6 +106,7 @@ namespace ServiceStack
                 DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
                 MetadataVisibility = RequestAttributes.Any,
                 Return204NoContentForEmptyResponse = true,
+                AllowJsConfig = true,
                 AllowPartialResponses = true,
                 AllowAclUrlReservation = true,
                 AddRedirectParamsToQueryString = false,
@@ -187,6 +188,7 @@ namespace ServiceStack
             this.MetadataVisibility = instance.MetadataVisibility;
             this.Return204NoContentForEmptyResponse = instance.Return204NoContentForEmptyResponse;
             this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
+            this.AllowJsConfig = instance.AllowJsConfig;
             this.AllowPartialResponses = instance.AllowPartialResponses;
             this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
             this.FallbackRestPath = instance.FallbackRestPath;
@@ -266,6 +268,7 @@ namespace ServiceStack
 
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
         public bool Return204NoContentForEmptyResponse { get; set; }
+        public bool AllowJsConfig { get; set; }
         public bool AllowPartialResponses { get; set; }
         public bool AllowNonHttpOnlyCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
