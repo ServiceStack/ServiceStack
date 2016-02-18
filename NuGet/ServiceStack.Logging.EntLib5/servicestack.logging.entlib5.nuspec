@@ -16,7 +16,7 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>servicestack log logging nlog</tags>
     <language>en-US</language>
-    <copyright>Copyright 2015 Service Stack</copyright>
+    <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
       <dependency id="EnterpriseLibrary.Logging" version="5.0.505.1" />
       <dependency id="ServiceStack.Interfaces" version="4.0" />

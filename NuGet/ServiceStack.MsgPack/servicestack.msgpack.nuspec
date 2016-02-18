@@ -15,7 +15,7 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>MsgPack MessagePack Message Pack Fast Binary Serializer Format ContentType REST Web Services ServiceStack</tags>
     <language>en-US</language>
-    <copyright>Copyright 2015 Service Stack</copyright>
+    <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
       <dependency id="ServiceStack.Client" version="4.0" />
       <dependency id="MsgPack.Cli" version="0.6.7" />
