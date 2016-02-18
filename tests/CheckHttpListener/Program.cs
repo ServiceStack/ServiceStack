@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Threading;
 using Funq;
@@ -102,9 +103,7 @@ namespace CheckHttpListener
 
             var hostConfig = new HostConfig
             {
-#if DEBUG || STAGING || UAT
                 DebugMode = true,
-#endif
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Csv },                
             };
 
@@ -209,6 +208,8 @@ namespace CheckHttpListener
             var post1 = client.Post(new TestRequest());
             var post2 = client.Post(new TestRequest());
             var response = "First response: {0}, Second Response: {1}".Fmt(post1, post2);
+
+            Process.Start("http://127.0.0.1:1234/");
 
             Console.Out.WriteLine(response);
             Console.Read();

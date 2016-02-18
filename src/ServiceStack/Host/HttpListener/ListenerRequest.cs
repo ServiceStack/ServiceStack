@@ -94,7 +94,12 @@ namespace ServiceStack.Host.HttpListener
 
         public string UserHostAddress
         {
-            get { return request.UserHostAddress; }
+            get
+            {
+                return request.RemoteEndPoint != null 
+                    ? request.RemoteEndPoint.Address.ToString() 
+                    : request.UserHostAddress;
+            }
         }
 
         public string XForwardedFor
