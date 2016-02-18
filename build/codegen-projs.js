@@ -42,6 +42,7 @@ var SIGN_PROJS = [
     '../src/ServiceStack.Api.Swagger/ServiceStack.Api.Swagger.csproj',
     '../src/ServiceStack.Authentication.OAuth2/ServiceStack.Authentication.OAuth2.csproj',
     '../src/ServiceStack.Mvc/ServiceStack.Mvc.csproj',
+    '../../Admin/src/ServiceStack.Admin/ServiceStack.Admin.csproj',
     '../src/ServiceStack/ServiceStack.csproj'
 ];
 var SIGN_REPLACE_TEXTS = {
@@ -49,10 +50,13 @@ var SIGN_REPLACE_TEXTS = {
     '<HintPath>..\\..\\lib\\ServiceStack.Common.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Common.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.Redis.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Redis.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.OrmLite.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.OrmLite.dll</HintPath>',
+    '<HintPath>..\\..\\lib\\ServiceStack.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.dll</HintPath>',
+    '<HintPath>..\\..\\lib\\ServiceStack.Server.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Server.dll</HintPath>',
     '<HintPath>..\\..\\lib\\net45\\ServiceStack.OrmLite.dll</HintPath>': '<HintPath>..\\..\\lib\\net45\\signed\\ServiceStack.OrmLite.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.OrmLite.SqlServer.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.OrmLite.SqlServer.dll</HintPath>',
     '<ProjectReference Include="..\\ServiceStack.Common\\ServiceStack.Common.csproj">': '<ProjectReference Include="..\\ServiceStack.Common\\ServiceStack.Common.Signed.csproj">',
     '<ProjectReference Include="..\\ServiceStack.Client\\ServiceStack.Client.csproj">': '<ProjectReference Include="..\\ServiceStack.Client\\ServiceStack.Client.Signed.csproj">',
+    '<ProjectReference Include="..\\ServiceStack.Server\\ServiceStack.Server.csproj">': '<ProjectReference Include="..\\ServiceStack.Server\\ServiceStack.Server.Signed.csproj">',
     '<ProjectReference Include="..\\ServiceStack\\ServiceStack.csproj">': '<ProjectReference Include="..\\ServiceStack\\ServiceStack.Signed.csproj">'
 };
 
