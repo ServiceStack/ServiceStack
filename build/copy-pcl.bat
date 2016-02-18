@@ -3,7 +3,7 @@ SET MSBUILD=C:\Windows\Microsoft.NET\Framework\v3.5\MSBuild.exe
 REM SET BUILD=Debug
 SET BUILD=Release
 
-COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\bin\Pcl\ServiceStack.Text.* ..\lib\pcl
+COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\bin\Pcl\ServiceStack.Text.dll ..\lib\pcl
 COPY ..\src\ServiceStack.Client\bin\Pcl\ServiceStack.Client.* ..\lib\pcl
 
 COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\PclExport.Net40.cs ..\src\ServiceStack.Pcl.Android
