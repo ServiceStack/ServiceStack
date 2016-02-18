@@ -24,7 +24,6 @@ namespace ServiceStack
                     typeof(ApiResponseAttribute),
                     typeof(ApiMemberAttribute),
                     typeof(StringLengthAttribute),
-                    typeof(DefaultAttribute),
                     typeof(IgnoreAttribute),
                     typeof(IgnoreDataMemberAttribute),
                     typeof(MetaAttribute),

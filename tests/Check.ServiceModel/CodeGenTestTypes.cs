@@ -148,6 +148,7 @@ namespace Check.ServiceModel.Operations
         [Required]
         [Range(1, 10)]
         [Default(5)]
+        [DataMember]
         public int Id { get; set; }
 
         [Range(1.0, 10.0)]
