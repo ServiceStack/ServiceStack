@@ -496,6 +496,19 @@ namespace ServiceStack
             return null;
         }
 
+        public virtual bool AllowCookie(string cookieName)
+        {
+            if (!Config.AllowCookies)
+                return false;
+
+            if (!Config.AllowSessionCookies)
+                return cookieName != SessionFeature.SessionId
+                    && cookieName != SessionFeature.PermanentSessionId
+                    && cookieName != SessionFeature.SessionOptionsKey;
+
+            return true;
+        }
+
         public virtual IRequest TryGetCurrentRequest()
         {
             return null;
