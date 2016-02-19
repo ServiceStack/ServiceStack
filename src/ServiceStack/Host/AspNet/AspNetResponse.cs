@@ -161,6 +161,9 @@ namespace ServiceStack.Host.AspNet
 
         public void SetCookie(Cookie cookie)
         {
+            if (!HostContext.Config.AllowCookies)
+                return;
+
             var httpCookie = cookie.ToHttpCookie();
             response.SetCookie(httpCookie);            
         }

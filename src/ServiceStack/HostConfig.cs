@@ -102,6 +102,8 @@ namespace ServiceStack
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
                 OnlySendSessionCookiesSecurely = false,
                 AllowSessionIdsInHttpParams = false,
+                AllowCookies = true,
+                AllowSessionCookies = true,
                 RestrictAllCookiesToDomain = null,
                 DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
                 MetadataVisibility = RequestAttributes.Any,
@@ -183,6 +185,8 @@ namespace ServiceStack
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
             this.OnlySendSessionCookiesSecurely = instance.OnlySendSessionCookiesSecurely;
             this.AllowSessionIdsInHttpParams = instance.AllowSessionIdsInHttpParams;
+            this.AllowCookies = instance.AllowCookies;
+            this.AllowSessionCookies = instance.AllowSessionCookies;
             this.RestrictAllCookiesToDomain = instance.RestrictAllCookiesToDomain;
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
@@ -264,6 +268,8 @@ namespace ServiceStack
 
         public bool OnlySendSessionCookiesSecurely { get; set; }
         public bool AllowSessionIdsInHttpParams { get; set; }
+        public bool AllowSessionCookies { get; set; }
+        public bool AllowCookies { get; set; }
         public string RestrictAllCookiesToDomain { get; set; }
 
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }

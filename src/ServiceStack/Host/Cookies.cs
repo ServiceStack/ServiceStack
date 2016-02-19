@@ -21,6 +21,9 @@ namespace ServiceStack.Host
         /// </summary>
         public void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
+            if (!HostContext.Config.AllowCookies || !HostContext.Config.AllowSessionCookies)
+                return;
+
             var cookie = new Cookie(cookieName, cookieValue, RootPath) {
                 Expires = DateTime.UtcNow.AddYears(20)
             };
@@ -36,6 +39,9 @@ namespace ServiceStack.Host
         /// </summary>
         public void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
+            if (!HostContext.Config.AllowCookies || !HostContext.Config.AllowSessionCookies)
+                return;
+
             var cookie = new Cookie(cookieName, cookieValue, RootPath);
             if (secureOnly != null)
             {
