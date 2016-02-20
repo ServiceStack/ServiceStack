@@ -496,11 +496,8 @@ namespace ServiceStack
             return null;
         }
 
-        public virtual bool AllowCookie(string cookieName)
+        public virtual bool AllowSetCookie(IRequest req, string cookieName)
         {
-            if (!Config.AllowCookies)
-                return false;
-
             if (!Config.AllowSessionCookies)
                 return cookieName != SessionFeature.SessionId
                     && cookieName != SessionFeature.PermanentSessionId
