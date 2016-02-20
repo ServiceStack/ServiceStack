@@ -123,19 +123,19 @@ namespace ServiceStack
             this.AutoQueryViewerConfig = new AutoQueryViewerConfig
             {
                 Formats = new[] { "json", "xml", "csv" },
-                ImplicitConventions = new List<Property>
+                ImplicitConventions = new List<AutoQueryConvention>
                 {
-                    new Property { Name = "=", Value = "%"},
-                    new Property { Name = "!=", Value = "%!"},
-                    new Property { Name = ">=", Value = ">%"},
-                    new Property { Name = ">", Value = "%>"},
-                    new Property { Name = "<=", Value = "%<"},
-                    new Property { Name = "<", Value = "<%"},
-                    new Property { Name = "In", Value = "%In"},
-                    new Property { Name = "Between", Value = "%Between"},
-                    new Property { Name = "Starts With", Value = "%StartsWith"},
-                    new Property { Name = "Contains", Value = "%Contains"},
-                    new Property { Name = "Ends With", Value = "%EndsWith"},
+                    new AutoQueryConvention { Name = "=", Value = "%" },
+                    new AutoQueryConvention { Name = "!=", Value = "%!" },
+                    new AutoQueryConvention { Name = ">=", Value = ">%" },
+                    new AutoQueryConvention { Name = ">", Value = "%>" },
+                    new AutoQueryConvention { Name = "<=", Value = "%<" },
+                    new AutoQueryConvention { Name = "<", Value = "<%" },
+                    new AutoQueryConvention { Name = "In", Value = "%In" },
+                    new AutoQueryConvention { Name = "Between", Value = "%Between" },
+                    new AutoQueryConvention { Name = "Starts With", Value = "%StartsWith", Types = "string" },
+                    new AutoQueryConvention { Name = "Contains", Value = "%Contains", Types = "string" },
+                    new AutoQueryConvention { Name = "Ends With", Value = "%EndsWith", Types = "string" },
                 }
             };
         }
@@ -375,7 +375,7 @@ namespace ServiceStack
         /// <summary>
         /// List of different Search Filters available
         /// </summary>
-        public List<Property> ImplicitConventions { get; set; }
+        public List<AutoQueryConvention> ImplicitConventions { get; set; }
 
         /// <summary>
         /// The Column which should be selected by default
@@ -423,6 +423,13 @@ namespace ServiceStack
     [Exclude(Feature.Soap)]
     [Route("/autoquery/metadata")]
     public class AutoQueryMetadata : IReturn<AutoQueryMetadataResponse> { }
+
+    public class AutoQueryConvention
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+        public string Types { get; set; }
+    }
 
     public class AutoQueryOperation
     {

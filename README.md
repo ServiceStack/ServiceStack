@@ -22,14 +22,13 @@ as well as XSD/WSDL for [SOAP endpoints](https://github.com/ServiceStack/Service
 [Redis MQ](https://github.com/ServiceStack/ServiceStack/wiki/Messaging-and-Redis) and
 [Amazon SQS](https://github.com/ServiceStack/ServiceStack.Aws#sqsmqserver) MQ hosts. 
 
-Its design and simplicity focus offers an unparalleled suite of productivity features that can be declaratively enabled without code, 
-from creating fully queryable Web API's for 
+Its design and simplicity focus offers an unparalleled suite of productivity features that can be declaratively enabled 
+without code, from creating fully queryable Web API's with just a single Typed Request DTO with
+[Auto Query](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) supporting 
 [every major RDBMS](https://github.com/ServiceStack/ServiceStack.OrmLite#8-flavours-of-ormlite-is-on-nuget) 
-with just a single Typed Request DTO using
-[Auto Query](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) 
-to enabling
+to the built-in support for
 [Auto Batched Requests](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Batched-Requests) 
-and
+or effortlessly enabling
 [Encrypted Messaging](https://github.com/ServiceStack/ServiceStack/wiki/Encrypted-Messaging) 
 for all your existing services via a [Plugin](https://github.com/ServiceStack/ServiceStack/wiki/Plugins).
 
