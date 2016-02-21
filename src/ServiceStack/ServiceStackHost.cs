@@ -43,6 +43,8 @@ namespace ServiceStack
         public DateTime? ReadyAt { get; set; }
         public bool TestMode { get; set; }
 
+        public Assembly[] ServiceAssemblies { get; private set; }
+
         public bool HasStarted
         {
             get { return ReadyAt != null; }
@@ -60,6 +62,7 @@ namespace ServiceStack
             ServiceName = serviceName;
             AppSettings = new AppSettings();
             Container = new Container { DefaultOwner = Owner.External };
+            ServiceAssemblies = assembliesWithServices;
             ServiceController = CreateServiceController(assembliesWithServices);
 
             ContentTypes = Host.ContentTypes.Instance;
