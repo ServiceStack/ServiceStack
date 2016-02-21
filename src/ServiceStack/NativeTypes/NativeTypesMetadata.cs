@@ -104,14 +104,13 @@ namespace ServiceStack.NativeTypes
             var ignoreNamespaces = config.IgnoreTypesInNamespaces ?? new List<string>();
             var exportTypes = config.ExportTypes ?? new HashSet<Type>();
 
-            var userSession = req.GetSession();
-
+            var userSession = req.GetSession(reload:true);
             foreach (var operation in meta.Operations)
             {
                 if (!meta.IsVisible(req, operation))
                     continue;
 
-                if (!meta.IsAuthorized(operation, userSession))
+                if (!meta.IsAuthorized(operation, req, userSession))
                     continue;
 
                 if (opTypes.Contains(operation.RequestType))

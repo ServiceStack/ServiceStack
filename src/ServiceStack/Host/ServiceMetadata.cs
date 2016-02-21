@@ -216,13 +216,13 @@ namespace ServiceStack.Host
             return GetAllOperationNames();
         }
 
-        public bool IsAuthorized(Operation operation, IAuthSession session)
+        public bool IsAuthorized(Operation operation, IRequest req, IAuthSession session)
         {
             if (HostContext.Config.ShowUnauthorizedMetadata)
                 return true;
 
-            if (session == null)
-                session = new AuthUserSession();
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
 
             if (operation.RequiresAuthentication && !session.IsAuthenticated)
                 return false;
@@ -236,7 +236,7 @@ namespace ServiceStack.Host
             if (!operation.RequiresAnyRole.IsEmpty() && !operation.RequiresAnyRole.Any(session.HasRole))
                 return false;
 
-            if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(session.HasRole))
+            if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(session.HasPermission))
                 return false;
 
             return true;
