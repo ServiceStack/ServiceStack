@@ -513,13 +513,14 @@ namespace ServiceStack
                 }
             }
 
-            var types = metadataTypes.Types.Where(x => includeTypeNames.Contains(x.Name));
+            var allTypes = metadataTypes.GetAllTypes();
+            var types = allTypes.Where(x => includeTypeNames.Contains(x.Name)).ToList();
 
             //Add referenced types to type name search
             types.SelectMany(x => x.GetReferencedTypeNames()).Each(x => includeTypeNames.Add(x));
 
             //Only need to seek 1-level deep in AutoQuery's (db.LoadSelect)
-            types = metadataTypes.Types.Where(x => includeTypeNames.Contains(x.Name));
+            types = allTypes.Where(x => includeTypeNames.Contains(x.Name)).ToList();
 
             response.Types.AddRange(types);
 
