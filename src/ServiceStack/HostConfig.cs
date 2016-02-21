@@ -104,7 +104,6 @@ namespace ServiceStack
                 AllowSessionIdsInHttpParams = false,
                 AllowSessionCookies = true,
                 RestrictAllCookiesToDomain = null,
-                ShowUnauthorizedMetadata = false,
                 DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0),
                 MetadataVisibility = RequestAttributes.Any,
                 Return204NoContentForEmptyResponse = true,
@@ -187,7 +186,6 @@ namespace ServiceStack
             this.AllowSessionIdsInHttpParams = instance.AllowSessionIdsInHttpParams;
             this.AllowSessionCookies = instance.AllowSessionCookies;
             this.RestrictAllCookiesToDomain = instance.RestrictAllCookiesToDomain;
-            this.ShowUnauthorizedMetadata = instance.ShowUnauthorizedMetadata;
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
             this.Return204NoContentForEmptyResponse = instance.Return204NoContentForEmptyResponse;
@@ -270,7 +268,6 @@ namespace ServiceStack
         public bool AllowSessionIdsInHttpParams { get; set; }
         public bool AllowSessionCookies { get; set; }
         public string RestrictAllCookiesToDomain { get; set; }
-        public bool ShowUnauthorizedMetadata { get; set; }
 
         public TimeSpan DefaultJsonpCacheExpiration { get; set; }
         public bool Return204NoContentForEmptyResponse { get; set; }

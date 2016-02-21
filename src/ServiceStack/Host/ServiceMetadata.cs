@@ -218,9 +218,6 @@ namespace ServiceStack.Host
 
         public bool IsAuthorized(Operation operation, IRequest req, IAuthSession session)
         {
-            if (HostContext.Config.ShowUnauthorizedMetadata)
-                return true;
-
             if (HostContext.HasValidAuthSecret(req))
                 return true;
 
