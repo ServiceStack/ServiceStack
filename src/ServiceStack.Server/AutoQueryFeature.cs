@@ -429,6 +429,19 @@ namespace ServiceStack
     [Route("/autoquery/metadata")]
     public class AutoQueryMetadata : IReturn<AutoQueryMetadataResponse> { }
 
+    public class AutoQueryViewerUserInfo
+    {
+        /// <summary>
+        /// Returns true if the User Is Authenticated
+        /// </summary>
+        public bool IsAuthenticated { get; set; }
+
+        /// <summary>
+        /// How many queries are available to this user
+        /// </summary>
+        public int QueryCount { get; set; }
+    }
+
     public class AutoQueryConvention
     {
         public string Name { get; set; }
@@ -446,6 +459,8 @@ namespace ServiceStack
     public class AutoQueryMetadataResponse
     {
         public AutoQueryViewerConfig Config { get; set; }
+
+        public AutoQueryViewerUserInfo UserInfo { get; set; }
 
         public List<AutoQueryOperation> Operations { get; set; }
 
@@ -476,13 +491,20 @@ namespace ServiceStack
             if (config.ServiceName == null)
                 config.ServiceName = HostContext.ServiceName;
 
-            config.MaxLimit = feature.MaxLimit;
+            if (config.MaxLimit == null)
+                config.MaxLimit = feature.MaxLimit;
+
+            var userSession = Request.GetSession();
 
             var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata { BaseUrl = Request.GetBaseUrl() });
-            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig, 
+                op => HostContext.Metadata.IsAuthorized(op, Request, userSession));
 
             var response = new AutoQueryMetadataResponse {
-                Config = feature.AutoQueryViewerConfig,
+                Config = config,
+                UserInfo = new AutoQueryViewerUserInfo {
+                    IsAuthenticated = userSession.IsAuthenticated,
+                },
                 Operations = new List<AutoQueryOperation>(),
                 Types = new List<MetadataType>(),
             };
@@ -523,6 +545,8 @@ namespace ServiceStack
             types = allTypes.Where(x => includeTypeNames.Contains(x.Name)).ToList();
 
             response.Types.AddRange(types);
+
+            response.UserInfo.QueryCount = response.Operations.Count;
 
             return response;
         }
