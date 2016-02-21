@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
@@ -213,6 +214,32 @@ namespace ServiceStack.Host
         public List<string> GetOperationNamesForMetadata(IRequest httpReq, Format format)
         {
             return GetAllOperationNames();
+        }
+
+        public bool IsAuthorized(Operation operation, IAuthSession session)
+        {
+            if (HostContext.Config.ShowUnauthorizedMetadata)
+                return true;
+
+            if (session == null)
+                session = new AuthUserSession();
+
+            if (operation.RequiresAuthentication && !session.IsAuthenticated)
+                return false;
+
+            if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(session.HasRole))
+                return false;
+
+            if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(session.HasPermission))
+                return false;
+
+            if (!operation.RequiresAnyRole.IsEmpty() && !operation.RequiresAnyRole.Any(session.HasRole))
+                return false;
+
+            if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(session.HasRole))
+                return false;
+
+            return true;
         }
 
         public bool IsVisible(IRequest httpReq, Operation operation)

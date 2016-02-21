@@ -104,9 +104,14 @@ namespace ServiceStack.NativeTypes
             var ignoreNamespaces = config.IgnoreTypesInNamespaces ?? new List<string>();
             var exportTypes = config.ExportTypes ?? new HashSet<Type>();
 
+            var userSession = req.GetSession();
+
             foreach (var operation in meta.Operations)
             {
                 if (!meta.IsVisible(req, operation))
+                    continue;
+
+                if (!meta.IsAuthorized(operation, userSession))
                     continue;
 
                 if (opTypes.Contains(operation.RequestType))
@@ -941,5 +946,19 @@ namespace ServiceStack.NativeTypes
 
             return attr;
         }
+
+        public static List<MetadataType> GetAllTypes(this MetadataTypes metadata)
+        {
+            var map = new Dictionary<string, MetadataType>();
+            foreach (var op in metadata.Operations)
+            {
+                if (!(op.Request.Namespace ?? "").StartsWith("System"))
+                    map[op.Request.Name] = op.Request;
+                if (op.Response != null && !(op.Response.Namespace ?? "").StartsWith("System"))
+                    map[op.Response.Name] = op.Response;
+            }
+            metadata.Types.Each(x => map[x.Name] = x);
+            return map.Values.ToList();
+        } 
     }
 }
