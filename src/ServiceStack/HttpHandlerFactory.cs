@@ -78,13 +78,16 @@ namespace ServiceStack
                 }
 
                 if (!string.IsNullOrEmpty(config.DefaultRedirectPath))
+                {
                     DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.DefaultRedirectPath };
+                    NonRootModeDefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.DefaultRedirectPath };
+                }
 
                 if (DefaultHttpHandler == null && !string.IsNullOrEmpty(config.MetadataRedirectPath))
+                {
                     DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.MetadataRedirectPath };
-
-                if (!string.IsNullOrEmpty(config.MetadataRedirectPath))
                     NonRootModeDefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.MetadataRedirectPath };
+                }
 
                 if (DefaultHttpHandler == null)
                     DefaultHttpHandler = NotFoundHttpHandler;

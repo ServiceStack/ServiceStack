@@ -14,6 +14,7 @@ namespace CheckWebApi
             SetConfig(new HostConfig
             {
                 HandlerFactoryPath = "api",
+                DefaultRedirectPath = "docs"
             });
         }
     }
