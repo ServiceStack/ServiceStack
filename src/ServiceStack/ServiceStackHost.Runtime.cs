@@ -580,7 +580,7 @@ namespace ServiceStack
 
         public virtual IDbConnection GetDbConnection(IRequest req = null)
         {
-            var dbFactory = TryResolve<IDbConnectionFactory>();
+            var dbFactory = Container.TryResolve<IDbConnectionFactory>();
 
             ConnectionInfo connInfo;
             if (req != null && (connInfo = req.GetItem(Keywords.DbInfo) as ConnectionInfo) != null)
@@ -604,7 +604,7 @@ namespace ServiceStack
 
         public virtual IRedisClient GetRedisClient(IRequest req = null)
         {
-            return TryResolve<IRedisClientsManager>().GetClient();
+            return Container.TryResolve<IRedisClientsManager>().GetClient();
         }
 
         public virtual ICacheClient GetCacheClient(IRequest req)
@@ -612,9 +612,14 @@ namespace ServiceStack
             return this.GetCacheClient();
         }
 
+        public virtual MemoryCacheClient GetMemoryCacheClient(IRequest req)
+        {
+            return Container.TryResolve<MemoryCacheClient>();
+        }
+
         public virtual IMessageProducer GetMessageProducer(IRequest req = null)
         {
-            return TryResolve<IMessageFactory>().CreateMessageProducer();
+            return Container.TryResolve<IMessageFactory>().CreateMessageProducer();
         }
     }
 

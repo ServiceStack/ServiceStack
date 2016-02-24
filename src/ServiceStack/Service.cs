@@ -82,6 +82,12 @@ namespace ServiceStack
             get { return cache ?? HostContext.AppHost.GetCacheClient(Request); }
         }
 
+        private MemoryCacheClient localCache;
+        public virtual MemoryCacheClient LocalCache
+        {
+            get { return LocalCache ?? HostContext.AppHost.GetMemoryCacheClient(Request); }
+        }
+
         private IDbConnection db;
         public virtual IDbConnection Db
         {
