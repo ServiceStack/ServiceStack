@@ -17,8 +17,7 @@ namespace ServiceStack
         public string DefaultSearchField { get; set; }
         public string DefaultSearchType { get; set; }
         public string DefaultSearchText { get; set; }
-        public string SummaryFields { get; set; }
-        public string DetailFields { get; set; }
+        public string DefaultFields { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
