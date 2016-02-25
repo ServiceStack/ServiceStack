@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 
 namespace ServiceStack
 {
-	public interface IRestClientAsync : IDisposable
-	{
-		void SetCredentials(string userName, string password);
+    public interface IRestClientAsync : IDisposable
+    {
+        void SetCredentials(string userName, string password);
 
         Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto);
         Task<TResponse> GetAsync<TResponse>(object requestDto);
@@ -30,9 +30,9 @@ namespace ServiceStack
         Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto);
         Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto);
         Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto);
-	    Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request);
+        Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request);
 
         void CancelAsync();
-	}
+    }
 
 }

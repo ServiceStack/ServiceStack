@@ -62,7 +62,6 @@ namespace PclTest.Android
             //http://developer.android.com/tools/devices/emulator.html
             var client = new JsonServiceClient("http://10.0.2.2:81/");
             var gateway = new SharedGateway("http://10.0.2.2:81/");
-            LogManager.LogFactory = new LogFactory(AddMessage);
 
             btnGoSync.Click += delegate
             {
@@ -121,21 +120,17 @@ namespace PclTest.Android
                     lblResults.Text = ex.ToString();
                 }
             };
+
+            LogManager.LogFactory = new LogFactory(AddMessage);
         }
 
         void AddMessage(string message)
         {
-            RunOnUiThread(() => {
+            RunOnUiThread(() =>
+            {
                 lblResults.Text = "{0}  {1}\n".Fmt(DateTime.Now.ToLongTimeString(), message) + lblResults.Text;
             });
         }
-
-        private static ServerEventsClient serverEventsClient = null;
-        static ServerEventConnect connectMsg = null;
-        static List<ServerEventMessage> msgs = new List<ServerEventMessage>();
-        static List<ServerEventMessage> commands = new List<ServerEventMessage>();
-        static List<System.Exception> errors = new List<System.Exception>();
-        static string lastText = "";
 
         class LogFactory : ILogFactory 
         {
@@ -156,6 +151,13 @@ namespace PclTest.Android
                 return new GenericLog(typeName) { OnMessage = OnMessage };
             }
         }
+
+        private static ServerEventsClient serverEventsClient = null;
+        static ServerEventConnect connectMsg = null;
+        static List<ServerEventMessage> msgs = new List<ServerEventMessage>();
+        static List<ServerEventMessage> commands = new List<ServerEventMessage>();
+        static List<System.Exception> errors = new List<System.Exception>();
+        static string lastText = "";
 
         private void ConnectServerEvents()
         {

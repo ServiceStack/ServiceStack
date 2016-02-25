@@ -43,6 +43,8 @@ namespace ServiceStack
         public DateTime? ReadyAt { get; set; }
         public bool TestMode { get; set; }
 
+        public Assembly[] ServiceAssemblies { get; private set; }
+
         public bool HasStarted
         {
             get { return ReadyAt != null; }
@@ -60,6 +62,7 @@ namespace ServiceStack
             ServiceName = serviceName;
             AppSettings = new AppSettings();
             Container = new Container { DefaultOwner = Owner.External };
+            ServiceAssemblies = assembliesWithServices;
             ServiceController = CreateServiceController(assembliesWithServices);
 
             ContentTypes = Host.ContentTypes.Instance;
@@ -518,8 +521,11 @@ namespace ServiceStack
                 if (Container.Exists<IRedisClientsManager>())
                     Container.Register(c => c.Resolve<IRedisClientsManager>().GetCacheClient());
                 else
-                    Container.Register<ICacheClient>(new MemoryCacheClient());
+                    Container.Register<ICacheClient>(ServiceExtensions.DefaultCache);
             }
+
+            if (!Container.Exists<MemoryCacheClient>())
+                Container.Register(ServiceExtensions.DefaultCache);
 
             if (Container.Exists<IMessageService>()
                 && !Container.Exists<IMessageFactory>())
@@ -695,19 +701,19 @@ namespace ServiceStack
 
         public virtual string ResolvePhysicalPath(string virtualPath, IRequest httpReq)
         {
-            return VirtualPathProvider.CombineVirtualPath(VirtualPathProvider.RootDirectory.RealPath, virtualPath);
+            return VirtualFileSources.CombineVirtualPath(VirtualFileSources.RootDirectory.RealPath, virtualPath);
         }
 
         public virtual IVirtualFile ResolveVirtualFile(string virtualPath, IRequest httpReq)
         {
-            return VirtualPathProvider.GetFile(virtualPath);
+            return VirtualFileSources.GetFile(virtualPath);
         }
 
         public virtual IVirtualDirectory ResolveVirtualDirectory(string virtualPath, IRequest httpReq)
         {
-            return virtualPath == VirtualPathProvider.VirtualPathSeparator
-                ? VirtualPathProvider.RootDirectory
-                : VirtualPathProvider.GetDirectory(virtualPath);
+            return virtualPath == VirtualFileSources.VirtualPathSeparator
+                ? VirtualFileSources.RootDirectory
+                : VirtualFileSources.GetDirectory(virtualPath);
         }
 
         public virtual IVirtualNode ResolveVirtualNode(string virtualPath, IRequest httpReq)

@@ -61,7 +61,8 @@
     <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
     <Compile Include="PclExport.Net40.cs" />
     <Compile Include="PclExportClient.Mac.cs" />
-    <Compile Include="Pcl.Dynamic.cs" />
+    <Compile Include="PclExportClient.Net40.cs" />
+    <Compile Include="Pcl.Dynamic.cs" />    
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
   <ItemGroup>

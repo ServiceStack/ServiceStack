@@ -3,6 +3,7 @@
 
 #if NETFX_CORE
 using System;
+using System.IO;
 using System.Threading;
 using ServiceStack.Pcl;
 using ServiceStack.Web;
@@ -40,6 +41,17 @@ namespace ServiceStack
         {
             Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
                 Windows.UI.Core.CoreDispatcherPriority.Normal, () => fn());
+        }
+
+        public override void CloseReadStream(Stream stream)
+        {
+            stream.Dispose();
+        }
+
+        public override void CloseWriteStream(Stream stream)
+        {
+            stream.Flush();
+            stream.Dispose();
         }
     }
 

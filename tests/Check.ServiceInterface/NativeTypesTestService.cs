@@ -255,6 +255,31 @@ namespace Check.ServiceInterface
         {
             return request.GetType().Name;
         }
+
+        public object Any(ExcludeMetadata request)
+        {
+            return request;
+        }
+
+        public object Any(RestrictLocalhost request)
+        {
+            return request;
+        }
+
+        public object Any(RestrictInternal request)
+        {
+            return request;
+        }
+
+        public object Any(RestrictExternal request)
+        {
+            return request;
+        }
+
+        public object Any(IgnoreInMetadataConfig request)
+        {
+            return request;
+        }
     }
 
     public class GetUserSession : IReturn<CustomUserSession>

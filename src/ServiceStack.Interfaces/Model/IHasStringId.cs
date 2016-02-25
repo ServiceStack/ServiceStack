@@ -3,5 +3,5 @@
 
 namespace ServiceStack.Model
 {
-	public interface IHasStringId : IHasId<string> {}
+    public interface IHasStringId : IHasId<string> { }
 }

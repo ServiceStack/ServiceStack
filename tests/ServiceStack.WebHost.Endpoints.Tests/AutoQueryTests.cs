@@ -18,17 +18,70 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public AutoQueryAppHost()
             : base("AutoQuery", typeof(AutoQueryService).Assembly) { }
 
+        public const string SqlServerNamedConnection = "SqlServer";
+        public const string SqlServerConnString = "Server=localhost;Database=test;User Id=test;Password=test;";
+        public const string SqlServerProvider = "SqlServer2012";
+
+        public static string SqliteFileConnString = "~/App_Data/autoquery.sqlite".MapProjectPath();
+
         public override void Configure(Container container)
         {
-            container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+            var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
+            container.Register<IDbConnectionFactory>(dbFactory);
+
+            dbFactory.RegisterConnection(SqlServerNamedConnection, SqlServerConnString, SqlServer2012Dialect.Provider);
+            dbFactory.RegisterDialectProvider(SqlServerProvider, SqlServer2012Dialect.Provider);
+
+            using (var db = dbFactory.OpenDbConnection(SqlServerNamedConnection))
+            {
+                db.DropAndCreateTable<NamedRockstar>();
+
+                db.Insert(new NamedRockstar {
+                    Id = 1,
+                    FirstName = "Microsoft",
+                    LastName = "SQL Server",
+                    Age = 27,
+                    DateOfBirth = new DateTime(1989,1,1),
+                    LivingStatus = LivingStatus.Alive,
+                });
+            }
+
+            using (var db = dbFactory.OpenDbConnectionString(SqliteFileConnString))
+            {
+                db.DropAndCreateTable<Rockstar>();
+                db.Insert(new Rockstar {
+                    Id = 1,
+                    FirstName = "Sqlite",
+                    LastName = "File DB",
+                    Age = 16,
+                    DateOfBirth = new DateTime(2000, 8, 1),
+                    LivingStatus = LivingStatus.Alive,
+                });
+            }
+
+            //GlobalRequestFilters.Add((req, res, dto) =>
+            //{
+            //    var changeDb = dto as IChangeDb;
+            //    if (changeDb == null) return;
+
+            //    req.Items[Keywords.DbInfo] = new ConnectionInfo
+            //    {
+            //        NamedConnection = changeDb.NamedConnection,
+            //        ConnectionString = changeDb.ConnectionString,
+            //        ProviderName = changeDb.ProviderName,
+            //    };
+            //});
+
+            // Equivalent to above:
+            RegisterTypedRequestFilter<IChangeDb>((req, res, dto) =>
+                req.Items[Keywords.DbInfo] = dto.ConvertTo<ConnectionInfo>());
 
             //container.Register<IDbConnectionFactory>(
-            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;"),
+            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;",
             //        SqlServerDialect.Provider));
 
             //container.Register<IDbConnectionFactory>(
-            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;"),
+            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;",
             //        SqlServer2012Dialect.Provider));
 
             //container.Register<IDbConnectionFactory>(
@@ -51,11 +104,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 db.InsertAll(SeedMovies);
 
                 db.DropAndCreateTable<AllFields>();
-                db.Insert(new AllFields {
+                db.Insert(new AllFields
+                {
                     Id = 1,
                     NullableId = 2,
                     Byte = 3,
-                    DateTime = new DateTime(2001,01,01),
+                    DateTime = new DateTime(2001, 01, 01),
                     NullableDateTime = new DateTime(2002, 02, 02),
                     Decimal = 4,
                     Double = 5.5,
@@ -73,8 +127,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 });
 
                 db.DropAndCreateTable<Adhoc>();
-                db.InsertAll(SeedRockstars.Map(x => new Adhoc {
-                    Id = x.Id, FirstName = x.FirstName, LastName = x.LastName
+                db.InsertAll(SeedRockstars.Map(x => new Adhoc
+                {
+                    Id = x.Id,
+                    FirstName = x.FirstName,
+                    LastName = x.LastName
                 }));
             }
 
@@ -154,7 +211,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			new Movie { ImdbId = "tt0109830", Title = "Forrest Gump", Score = 8.8m, Director = "Robert Zemeckis", ReleaseDate = new DateTime(1996,07,06), TagLine = "Forrest Gump, while not intelligent, has accidentally been present at many historic moments, but his true love, Jenny Curran, eludes him.", Genres = new List<string>{"Drama","Romance"}, Rating = "PG-13", },
         };
     }
-    
+
+    [Alias("Rockstar")]
+    [NamedConnection("SqlServer")]
+    public class NamedRockstar : Rockstar { }
+
+    [Route("/query/namedrockstars")]
+    public class QueryNamedRockstars : QueryBase<NamedRockstar>
+    {
+        public int? Age { get; set; }
+    }
+
     [Route("/query/rockstars")]
     public class QueryRockstars : QueryBase<Rockstar>
     {
@@ -474,6 +541,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public interface IChangeDb
+    {
+        string NamedConnection { get; set; }
+        string ConnectionString { get; set; }
+        string ProviderName { get; set; }
+    }
+
+    [Route("/querychangedb")]
+    public class QueryChangeDb : QueryBase<Rockstar>, IChangeDb
+    {
+        public string NamedConnection { get; set; }
+        public string ConnectionString { get; set; }
+        public string ProviderName { get; set; }
+    }
+
+    [Route("/changedb")]
+    public class ChangeDb : IReturn<ChangeDbResponse>, IChangeDb
+    {
+        public string NamedConnection { get; set; }
+        public string ConnectionString { get; set; }
+        public string ProviderName { get; set; }
+    }
+
+    public class ChangeDbResponse
+    {
+        public List<Rockstar> Results { get; set; }
+    }
+
+    public class DynamicDbServices : Service
+    {
+        public object Any(ChangeDb request)
+        {
+            return new ChangeDbResponse { Results = Db.Select<Rockstar>() };
+        }
+    }
+
     [TestFixture]
     public class AutoQueryTests
     {
@@ -514,6 +617,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
+        }
+
+        [Test]
+        public void Can_execute_basic_query_NamedRockstar()
+        {
+            var response = client.Get(new QueryNamedRockstars());
+
+            Assert.That(response.Offset, Is.EqualTo(0));
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].LastName, Is.EqualTo("SQL Server"));
         }
 
         [Test]
@@ -645,6 +759,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Results[0].LastName, Is.EqualTo("Morrison"));
+        }
+
+        [Test]
+        public void Can_execute_multiple_conditions_with_same_param_name()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
+                .AddQueryParam("FirstName", "Jim")
+                .AddQueryParam("FirstName", "Jim")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].LastName, Is.EqualTo("Morrison"));
+
+            response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
+                .AddQueryParam("FirstNameStartsWith", "Jim")
+                .AddQueryParam("FirstNameStartsWith", "Jimi")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].LastName, Is.EqualTo("Hendrix"));
         }
 
         [Test]
@@ -1277,6 +1415,96 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Meta["SixTimesTwo"], Is.EqualTo("12"));
             Assert.That(response.Meta["Subtract(6,2)"], Is.EqualTo("4"));
             Assert.That(response.Meta["TheDivide"], Is.EqualTo("3"));
+        }
+
+        [Test]
+        public void Sending_empty_ChangeDb_returns_default_info()
+        {
+            var response = client.Get(new ChangeDb());
+            Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
+
+            var aqResponse = client.Get(new QueryChangeDb());
+            Assert.That(aqResponse.Results.Count, Is.EqualTo(TotalRockstars));
+        }
+
+        [Test]
+        public void Can_ChangeDb_with_Named_Connection()
+        {
+            var response = client.Get(new ChangeDb { NamedConnection = AutoQueryAppHost.SqlServerNamedConnection });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Microsoft"));
+
+            var aqResponse = client.Get(new QueryChangeDb { NamedConnection = AutoQueryAppHost.SqlServerNamedConnection });
+            Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
+            Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
+        }
+
+        [Test]
+        public void Can_ChangeDb_with_ConnectionString()
+        {
+            var response = client.Get(new ChangeDb { ConnectionString = AutoQueryAppHost.SqliteFileConnString });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Sqlite"));
+
+            var aqResponse = client.Get(new QueryChangeDb { ConnectionString = AutoQueryAppHost.SqliteFileConnString });
+            Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
+            Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Sqlite"));
+        }
+
+        [Test]
+        public void Can_ChangeDb_with_ConnectionString_and_Provider()
+        {
+            var response = client.Get(new ChangeDb
+            {
+                ConnectionString = AutoQueryAppHost.SqlServerConnString,
+                ProviderName = AutoQueryAppHost.SqlServerProvider,
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Microsoft"));
+
+            var aqResponse = client.Get(new QueryChangeDb
+            {
+                ConnectionString = AutoQueryAppHost.SqlServerConnString,
+                ProviderName = AutoQueryAppHost.SqlServerProvider,
+            });
+            Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
+            Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
+        }
+
+        [Test]
+        public void Can_select_partial_list_of_fields()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
+                .AddQueryParam("Age", "27")
+                .AddQueryParam("Fields", "Id,FirstName,Age")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            response.PrintDump();
+
+            Assert.That(response.Results.All(x => x.Id > 0));
+            Assert.That(response.Results.All(x => x.FirstName != null));
+            Assert.That(response.Results.All(x => x.LastName == null));
+            Assert.That(response.Results.Any(x => x.Age > 0));
+            Assert.That(response.Results.All(x => x.DateDied == null));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+        }
+
+        [Test]
+        public void Can_select_partial_list_of_fields_from_joined_table()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbums")
+                .AddQueryParam("Age", "27")
+                .AddQueryParam("fields", "FirstName,Age,RockstarAlbumName")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<CustomRockstar>>();
+
+            response.PrintDump();
+
+            Assert.That(response.Results.All(x => x.FirstName != null));
+            Assert.That(response.Results.All(x => x.LastName == null));
+            Assert.That(response.Results.All(x => x.Age > 0));
+            Assert.That(response.Results.All(x => x.RockstarAlbumName != null));
         }
     }
 

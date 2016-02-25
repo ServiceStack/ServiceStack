@@ -5,18 +5,25 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Web;
 using System.Xml;
 using ServiceStack.Auth;
+using ServiceStack.Caching;
+using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Redis;
+using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 
@@ -413,6 +420,13 @@ namespace ServiceStack
             return false;
         }
 
+        public virtual Exception ResolveResponseException(Exception ex)
+        {
+            return Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
+                ? ex.InnerException
+                : ex;
+        }
+
         public virtual void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
         {
             var argEx = ex as ArgumentException;
@@ -424,12 +438,34 @@ namespace ServiceStack
                     ? argEx.Message.Substring(0, paramMsgIndex)
                     : argEx.Message;
 
+                if (responseStatus.Errors == null)
+                    responseStatus.Errors = new List<ResponseError>();
+
                 responseStatus.Errors.Add(new ResponseError
                 {
                     ErrorCode = ex.GetType().Name,
                     FieldName = argEx.ParamName,
                     Message = errorMsg,
                 });
+                return;
+            }
+
+            var serializationEx = ex as SerializationException;
+            if (serializationEx != null)
+            {
+                var errors = serializationEx.Data["errors"] as List<RequestBindingError>;
+                if (errors != null)
+                {
+                    if (responseStatus.Errors == null)
+                        responseStatus.Errors = new List<ResponseError>();
+
+                    responseStatus.Errors = errors.Select(e => new ResponseError
+                    {
+                        ErrorCode = ex.GetType().Name,
+                        FieldName = e.PropertyName,
+                        Message = e.PropertyValueString != null ? "'{0}' is an Invalid value for '{1}'".Fmt(e.PropertyValueString, e.PropertyName) : "Invalid Value for '{0}'".Fmt(e.PropertyName)
+                    }).ToList();
+                }
             }
         }
 
@@ -458,6 +494,16 @@ namespace ServiceStack
                     .Fmt(session.Id, withSessionId));
             }
             return null;
+        }
+
+        public virtual bool AllowSetCookie(IRequest req, string cookieName)
+        {
+            if (!Config.AllowSessionCookies)
+                return cookieName != SessionFeature.SessionId
+                    && cookieName != SessionFeature.PermanentSessionId
+                    && cookieName != SessionFeature.SessionOptionsKey;
+
+            return true;
         }
 
         public virtual IRequest TryGetCurrentRequest()
@@ -530,6 +576,50 @@ namespace ServiceStack
             {
                 HostContext.CompleteRequest(req);
             }
+        }
+
+        public virtual IDbConnection GetDbConnection(IRequest req = null)
+        {
+            var dbFactory = Container.TryResolve<IDbConnectionFactory>();
+
+            ConnectionInfo connInfo;
+            if (req != null && (connInfo = req.GetItem(Keywords.DbInfo) as ConnectionInfo) != null)
+            {
+                var dbFactoryExtended = dbFactory as IDbConnectionFactoryExtended;
+                if (dbFactoryExtended == null)
+                    throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
+
+                if (connInfo.ConnectionString != null && connInfo.ProviderName != null)
+                    return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString, connInfo.ProviderName);
+
+                if (connInfo.ConnectionString != null)
+                    return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString);
+
+                if (connInfo.NamedConnection != null)
+                    return dbFactoryExtended.OpenDbConnection(connInfo.NamedConnection);
+            }
+
+            return dbFactory.OpenDbConnection();
+        }
+
+        public virtual IRedisClient GetRedisClient(IRequest req = null)
+        {
+            return Container.TryResolve<IRedisClientsManager>().GetClient();
+        }
+
+        public virtual ICacheClient GetCacheClient(IRequest req)
+        {
+            return this.GetCacheClient();
+        }
+
+        public virtual MemoryCacheClient GetMemoryCacheClient(IRequest req)
+        {
+            return Container.TryResolve<MemoryCacheClient>();
+        }
+
+        public virtual IMessageProducer GetMessageProducer(IRequest req = null)
+        {
+            return Container.TryResolve<IMessageFactory>().CreateMessageProducer();
         }
     }
 

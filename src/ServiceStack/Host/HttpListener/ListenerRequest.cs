@@ -94,7 +94,12 @@ namespace ServiceStack.Host.HttpListener
 
         public string UserHostAddress
         {
-            get { return request.UserHostAddress; }
+            get
+            {
+                return request.RemoteEndPoint != null 
+                    ? request.RemoteEndPoint.Address.ToString() 
+                    : request.UserHostAddress;
+            }
         }
 
         public string XForwardedFor
@@ -335,12 +340,12 @@ namespace ServiceStack.Host.HttpListener
                         return httpFiles = new IHttpFile[0];
 
                     httpFiles = new IHttpFile[files.Count];
-                    for (var i = 0; i < files.Count; i++)
+                    for (int i = 0; i < files.Count; i++)
                     {
                         var reqFile = files[i];
-
                         httpFiles[i] = new HttpFile
                         {
+                            Name = files.AllKeys[i],
                             ContentType = reqFile.ContentType,
                             ContentLength = reqFile.ContentLength,
                             FileName = reqFile.FileName,

@@ -129,6 +129,9 @@ namespace ServiceStack.Auth
                     UserId = session.UserAuthId,
                     UserName = userName,
                     SessionId = session.Id,
+                    DisplayName = session.DisplayName
+                        ?? session.UserName
+                        ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim(),
                     ReferrerUrl = referrerUrl
                 };
             }

@@ -99,6 +99,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             AssertResponse<FileUploadResponse>((HttpWebResponse)webResponse, r =>
             {
                 var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+                Assert.That(r.Name, Is.EqualTo("file"));
                 Assert.That(r.FileName, Is.EqualTo(uploadFile.Name));
                 Assert.That(r.ContentLength, Is.EqualTo(uploadFile.Length));
                 Assert.That(r.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadFile.Name)));
@@ -119,6 +120,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            Assert.That(response.Name, Is.EqualTo("file"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
             Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadFile.Name)));
@@ -136,6 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/fileuploads", uploadFile, request);
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            Assert.That(response.Name, Is.EqualTo("upload"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
             Assert.That(response.Contents, Is.EqualTo(expectedContents));
@@ -156,6 +159,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 uploadFile, request);
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            Assert.That(response.Name, Is.EqualTo("upload"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
             Assert.That(response.Contents, Is.EqualTo(expectedContents));
@@ -173,6 +177,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/fileuploads", uploadFile, request);
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            Assert.That(response.Name, Is.EqualTo("upload"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
             Assert.That(response.Contents, Is.EqualTo(expectedContents));
@@ -235,6 +240,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
                 Assert.That(isFilterCalled);
+                Assert.That(response.Name, Is.EqualTo("file"));
                 Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
                 Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
                 Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadFile.Name)));
@@ -269,6 +275,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     var expectedContents = new StreamReader(fileStream).ReadToEnd();
 
                     Assert.That(isFilterCalled);
+                    Assert.That(response.Name, Is.EqualTo("file"));
                     Assert.That(response.FileName, Is.EqualTo(fileName));
                     Assert.That(response.ContentLength, Is.EqualTo(fileStream.Length));
                     Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName)));
@@ -304,6 +311,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     var expectedContents = new StreamReader(fileStream).ReadToEnd();
 
                     Assert.That(isFilterCalled);
+                    Assert.That(response.Name, Is.EqualTo("file"));
                     Assert.That(response.FileName, Is.EqualTo(fileName));
                     Assert.That(response.ContentLength, Is.EqualTo(fileStream.Length));
                     Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName)));

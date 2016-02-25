@@ -139,24 +139,13 @@ namespace ServiceStack.Host
         {
             using (Profiler.Current.Step("Deserialize Request"))
             {
-                try
-                {
-                    var dtoFromBinder = GetCustomRequestFromBinder(httpReq, restPath.RequestType);
-                    if (dtoFromBinder != null)
-                        return HostContext.AppHost.ApplyRequestConverters(httpReq, dtoFromBinder);
+                var dtoFromBinder = GetCustomRequestFromBinder(httpReq, restPath.RequestType);
+                if (dtoFromBinder != null)
+                    return HostContext.AppHost.ApplyRequestConverters(httpReq, dtoFromBinder);
 
-                    var requestParams = httpReq.GetRequestParams();
-                    return HostContext.AppHost.ApplyRequestConverters(httpReq, 
-                        CreateRequest(httpReq, restPath, requestParams));
-                }
-                catch (SerializationException e)
-                {
-                    throw new RequestBindingException("Unable to bind request", e);
-                }
-                catch (ArgumentException e)
-                {
-                    throw new RequestBindingException("Unable to bind request", e);
-                }
+                var requestParams = httpReq.GetFlattenedRequestParams();
+                return HostContext.AppHost.ApplyRequestConverters(httpReq,
+                    CreateRequest(httpReq, restPath, requestParams));
             }
         }
 

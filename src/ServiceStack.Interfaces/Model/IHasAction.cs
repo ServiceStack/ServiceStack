@@ -3,8 +3,8 @@
 
 namespace ServiceStack.Model
 {
-	public interface IHasAction
-	{
-		string Action { get; }
-	}
+    public interface IHasAction
+    {
+        string Action { get; }
+    }
 }

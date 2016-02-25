@@ -12,18 +12,9 @@ namespace ServiceStack.Server.Tests
         {
             base.OnBeforeEachTest();
 
-            Container.Register(c => new GreetService
-            {
-                MessageFactory = c.Resolve<IMessageFactory>()
-            });
-            Container.Register(c => new AlwaysFailService
-            {
-                MessageFactory = c.Resolve<IMessageFactory>()
-            });
-            Container.Register(c => new UnRetryableFailService
-            {
-                MessageFactory = c.Resolve<IMessageFactory>()
-            });
+            Container.Register(c => new GreetService());
+            Container.Register(c => new AlwaysFailService());
+            Container.Register(c => new UnRetryableFailService());
         }
 
         [Test]

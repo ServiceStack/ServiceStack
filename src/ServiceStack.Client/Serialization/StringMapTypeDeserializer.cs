@@ -61,37 +61,39 @@ namespace ServiceStack.Serialization
                 var attr = propertyInfo.FirstAttribute<DataMemberAttribute>();
                 if (attr != null && attr.Name != null)
                 {
-                    propertySetterMap[attr.Name] = propertySerializer;                    
+                    propertySetterMap[attr.Name] = propertySerializer;
                 }
                 propertySetterMap[propertyInfo.Name] = propertySerializer;
             }
 
-	        if (JsConfig.IncludePublicFields)
-	        {
-		        foreach (var fieldInfo in type.GetSerializableFields())
-		        {
-			        var fieldSetFn = JsvDeserializeType.GetSetFieldMethod(type, fieldInfo);
-			        var fieldType = fieldInfo.FieldType;
-			        var fieldParseStringFn = JsvReader.GetParseFn(fieldType);
-			        var fieldSerializer = new PropertySerializerEntry(fieldSetFn, fieldParseStringFn) {PropertyType = fieldType};
+            if (JsConfig.IncludePublicFields)
+            {
+                foreach (var fieldInfo in type.GetSerializableFields())
+                {
+                    var fieldSetFn = JsvDeserializeType.GetSetFieldMethod(type, fieldInfo);
+                    var fieldType = fieldInfo.FieldType;
+                    var fieldParseStringFn = JsvReader.GetParseFn(fieldType);
+                    var fieldSerializer = new PropertySerializerEntry(fieldSetFn, fieldParseStringFn) { PropertyType = fieldType };
 
-			        propertySetterMap[fieldInfo.Name] = fieldSerializer;
-		        }
-	        }
-
+                    propertySetterMap[fieldInfo.Name] = fieldSerializer;
+                }
+            }
         }
 
         public object PopulateFromMap(object instance, IDictionary<string, string> keyValuePairs, List<string> ignoredWarningsOnPropertyNames = null)
         {
+            var errors = new List<RequestBindingError>();
+
             string propertyName = null;
             string propertyTextValue = null;
             PropertySerializerEntry propertySerializerEntry = null;
 
-            try
-            {
-                if (instance == null) instance = type.CreateInstance();
+            if (instance == null)
+                instance = type.CreateInstance();
 
-                foreach (var pair in keyValuePairs.Where(x => !string.IsNullOrEmpty(x.Value)))
+            foreach (var pair in keyValuePairs.Where(x => !string.IsNullOrEmpty(x.Value)))
+            {
+                try
                 {
                     propertyName = pair.Key;
                     propertyTextValue = pair.Value;
@@ -110,7 +112,8 @@ namespace ServiceStack.Serialization
                         }
 
                         var ignoredProperty = propertyName.ToLowerInvariant();
-                        if (ignoredWarningsOnPropertyNames == null || !ignoredWarningsOnPropertyNames.Contains(ignoredProperty))
+                        if (ignoredWarningsOnPropertyNames == null ||
+                            !ignoredWarningsOnPropertyNames.Contains(ignoredProperty))
                         {
                             Log.WarnFormat("Property '{0}' does not exist on type '{1}'", ignoredProperty, type.FullName);
                         }
@@ -119,14 +122,15 @@ namespace ServiceStack.Serialization
 
                     if (propertySerializerEntry.PropertySetFn == null)
                     {
-                        Log.WarnFormat("Could not set value of read-only property '{0}' on type '{1}'", propertyName, type.FullName);
+                        Log.WarnFormat("Could not set value of read-only property '{0}' on type '{1}'", propertyName,
+                                       type.FullName);
                         continue;
                     }
 
-                    if (propertySerializerEntry.PropertyType == typeof(bool))
+                    if (propertySerializerEntry.PropertyType == typeof (bool))
                     {
                         //InputExtensions.cs#530 MVC Checkbox helper emits extra hidden input field, generating 2 values, first is the real value
-                        propertyTextValue = propertyTextValue.SplitOnFirst(',').First(); 
+                        propertyTextValue = propertyTextValue.SplitOnFirst(',').First();
                     }
 
                     var value = propertySerializerEntry.PropertyParseStringFn(propertyTextValue);
@@ -138,28 +142,43 @@ namespace ServiceStack.Serialization
                     }
                     propertySerializerEntry.PropertySetFn(instance, value);
                 }
-                return instance;
+                catch (Exception ex)
+                {
+                    var error = new RequestBindingError();
 
+                    if (propertyName != null)
+                        error.PropertyName = propertyName;
+
+                    if (propertyTextValue != null)
+                        error.PropertyValueString = propertyTextValue;
+
+                    if (propertySerializerEntry != null && propertySerializerEntry.PropertyType != null)
+                        error.PropertyType = propertySerializerEntry.PropertyType;
+
+                    errors.Add(error);
+                }
             }
-            catch (Exception ex)
+
+            if (errors.Count > 0)
             {
-                var serializationException = new SerializationException("KeyValueDataContractDeserializer: Error converting to type: " + ex.Message, ex);
-                if (propertyName != null) {
-                    serializationException.Data.Add("propertyName", propertyName);
-                }
-                if (propertyTextValue != null) {
-                    serializationException.Data.Add("propertyValueString", propertyTextValue);
-                }
-                if (propertySerializerEntry != null && propertySerializerEntry.PropertyType != null) {
-                    serializationException.Data.Add("propertyType", propertySerializerEntry.PropertyType);
-                }
+                var serializationException = new SerializationException("Unable to bind to request '{0}'".Fmt(type.Name));
+                serializationException.Data.Add("errors", errors);
                 throw serializationException;
             }
+
+            return instance;
         }
 
         public object CreateFromMap(IDictionary<string, string> keyValuePairs)
         {
             return PopulateFromMap(null, keyValuePairs, null);
         }
+    }
+
+    public class RequestBindingError
+    {
+        public string PropertyName { get; set; }
+        public string PropertyValueString { get; set; }
+        public Type PropertyType { get; set; }
     }
 }

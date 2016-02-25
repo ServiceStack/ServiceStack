@@ -86,7 +86,7 @@ namespace ServiceStack
             var toReturn = ex;
             if (timedOut)
             {
-                toReturn = ex.CreateTimeoutException("The request timed out");
+                toReturn = PclExportClient.Instance.CreateTimeoutException(ex, "The request timed out");
             }
 
             if (UseSynchronizationContext != null)
@@ -99,7 +99,7 @@ namespace ServiceStack
 
         public void StartTimer(TimeSpan timeOut)
         {
-            this.Timer = this.CreateTimer(timeOut);
+            this.Timer = PclExportClient.Instance.CreateTimer(this.TimedOut, timeOut, this);
         }
 
         public void StopTimer()

@@ -11,10 +11,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-#if NETFX_CORE
-using Windows.System.Threading;
-#endif
-
 namespace ServiceStack
 {
     public interface ITimer : IDisposable
@@ -26,39 +22,6 @@ namespace ServiceStack
 
     internal static class AsyncUtils
     {
-        public static Exception CreateTimeoutException(this Exception ex, string errorMsg)
-        {
-#if SL5 || PCL
-            return new WebException("The request timed out", ex, WebExceptionStatus.RequestCanceled, null);
-#else
-            return new WebException("The request timed out", ex, WebExceptionStatus.Timeout, null);
-#endif
-        }
-
-        internal static ITimer CreateTimer<TResponse>(this AsyncState<TResponse> state, TimeSpan timeOut)
-        {
-            return PclExportClient.Instance.CreateTimer(state.TimedOut, timeOut, state);
-        }
-
-        internal static void EndReadStream(this Stream stream)
-        {
-#if NETFX_CORE || WP
-            stream.Dispose();
-#else
-            stream.Close();
-#endif
-        }
-
-        internal static void EndWriteStream(this Stream stream)
-        {
-#if NETFX_CORE || WP
-                stream.Flush();
-                stream.Dispose();
-#else
-            stream.Close();
-#endif
-        }
-
         internal static HttpWebRequest CreateHttpWebRequest(this AsyncServiceClient client, string requestUri)
         {
             var webRequest = PclExport.Instance.CreateWebRequest(requestUri, 
@@ -78,15 +41,6 @@ namespace ServiceStack
             }
 
             return webRequest;
-        }
-
-        public static bool IsWebException(this WebException webEx)
-        {
-            return webEx != null && webEx.Response != null
-#if !(SL5 || PCL)
-                && webEx.Status == WebExceptionStatus.ProtocolError
-#endif
-            ;
         }
     }
 

@@ -23,6 +23,12 @@ namespace ServiceStack.Api.Swagger
 
         public string LogoUrl { get; set; }
 
+        public Action<SwaggerResourcesResponse> ResourcesResponseFilter { get; set; }
+
+        public Action<SwaggerApiDeclaration> ApiDeclarationFilter { get; set; }
+
+        public Action<SwaggerOperation> OperationFilter { get; set; }
+
         public Action<SwaggerModel> ModelFilter { get; set; }
 
         public Action<SwaggerProperty> ModelPropertyFilter { get; set; }
@@ -45,9 +51,13 @@ namespace ServiceStack.Api.Swagger
             if (ResourceFilterPattern != null)
                 SwaggerResourcesService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
 
+            SwaggerResourcesService.ResourcesResponseFilter = ResourcesResponseFilter;
+
             SwaggerApiService.UseCamelCaseModelPropertyNames = UseCamelCaseModelPropertyNames;
             SwaggerApiService.UseLowercaseUnderscoreModelPropertyNames = UseLowercaseUnderscoreModelPropertyNames;
             SwaggerApiService.DisableAutoDtoInBodyParam = DisableAutoDtoInBodyParam;
+            SwaggerApiService.ApiDeclarationFilter = ApiDeclarationFilter;
+            SwaggerApiService.OperationFilter = OperationFilter;
             SwaggerApiService.ModelFilter = ModelFilter;
             SwaggerApiService.ModelPropertyFilter = ModelPropertyFilter;
 
@@ -70,13 +80,13 @@ namespace ServiceStack.Api.Swagger
                     case "/swagger-ui":
                     case "/swagger-ui/":
                     case "/swagger-ui/default.html":
-                        indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui/index.html");
-                        patchFile = appHost.VirtualPathProvider.GetFile("/swagger-ui/patch.js");
+                        indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui/index.html");
+                        patchFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch.js");
                         break;
                     case "/swagger-ui-bootstrap":
                     case "/swagger-ui-bootstrap/":
                     case "/swagger-ui-bootstrap/index.html":
-                        indexFile = appHost.VirtualPathProvider.GetFile("/swagger-ui-bootstrap/index.html");
+                        indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui-bootstrap/index.html");
                         break;
                     default:
                         indexFile = null;

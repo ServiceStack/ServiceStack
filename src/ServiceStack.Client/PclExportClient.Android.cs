@@ -6,6 +6,7 @@ using System;
 using System.Collections.Specialized;
 using System.Threading;
 using Android.OS;
+using System.Net;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -33,6 +34,17 @@ namespace ServiceStack
             Provider.UiHandler = new Handler(Looper.MainLooper);
 
             return Provider;
+        }
+
+        public override ITimer CreateTimer(TimerCallback cb, TimeSpan timeOut, object state)
+        {
+            return new AsyncTimer(new
+                System.Threading.Timer(s => cb(s), state, (int)timeOut.TotalMilliseconds, Timeout.Infinite));
+        }
+
+        public override Exception CreateTimeoutException(Exception ex, string errorMsg)
+        {
+            return new WebException("The request timed out", ex, WebExceptionStatus.Timeout, null);
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using Moq;
 using NUnit.Framework;
 using ServiceStack.Host;
@@ -41,12 +40,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		    try
 		    {
     		    handler.ProcessRequestAsync(request, response, string.Empty).Wait();
-                Assert.Fail("Should throw RequestBindingException");
+                Assert.Fail("Should throw ArgumentException");
 		    }
 		    catch (AggregateException aex)
 		    {
                 Assert.That(aex.InnerExceptions.Count, Is.EqualTo(1));
-                Assert.That(aex.InnerException is RequestBindingException);
+                Assert.That(aex.InnerException.GetType().Name, Is.EqualTo("ArgumentException"));
 		    }
 		}
 
@@ -65,14 +64,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 handler.ProcessRequestAsync(request, response, string.Empty).Wait();
-                Assert.Fail("Should throw RequestBindingException");
+                Assert.Fail("Should throw SerializationException");
             }
             catch (AggregateException aex)
             {
                 Assert.That(aex.InnerExceptions.Count, Is.EqualTo(1));
-                Assert.That(aex.InnerException is RequestBindingException);
+                Assert.That(aex.InnerException.GetType().Name, Is.EqualTo("SerializationException"));
             }
-		}
+        }
 
         private IHttpRequest ConfigureRequest(string path)
         {

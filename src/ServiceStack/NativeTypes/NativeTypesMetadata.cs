@@ -70,9 +70,9 @@ namespace ServiceStack.NativeTypes
             return to;
         }
 
-        public MetadataTypes GetMetadataTypes(IRequest req, MetadataTypesConfig config = null)
+        public MetadataTypes GetMetadataTypes(IRequest req, MetadataTypesConfig config = null, Func<Operation, bool> predicate = null)
         {
-            return GetMetadataTypesGenerator(config).GetMetadataTypes(req);
+            return GetMetadataTypesGenerator(config).GetMetadataTypes(req, predicate);
         }
 
         internal MetadataTypesGenerator GetMetadataTypesGenerator(MetadataTypesConfig config)
@@ -92,7 +92,7 @@ namespace ServiceStack.NativeTypes
             this.config = config;
         }
 
-        public MetadataTypes GetMetadataTypes(IRequest req)
+        public MetadataTypes GetMetadataTypes(IRequest req, Func<Operation, bool> predicate = null)
         {
             var metadata = new MetadataTypes
             {
@@ -106,6 +106,9 @@ namespace ServiceStack.NativeTypes
 
             foreach (var operation in meta.Operations)
             {
+                if (predicate != null && !predicate(operation))
+                    continue;
+
                 if (!meta.IsVisible(req, operation))
                     continue;
 
@@ -941,5 +944,19 @@ namespace ServiceStack.NativeTypes
 
             return attr;
         }
+
+        public static List<MetadataType> GetAllTypes(this MetadataTypes metadata)
+        {
+            var map = new Dictionary<string, MetadataType>();
+            foreach (var op in metadata.Operations)
+            {
+                if (!(op.Request.Namespace ?? "").StartsWith("System"))
+                    map[op.Request.Name] = op.Request;
+                if (op.Response != null && !(op.Response.Namespace ?? "").StartsWith("System"))
+                    map[op.Response.Name] = op.Response;
+            }
+            metadata.Types.Each(x => map[x.Name] = x);
+            return map.Values.ToList();
+        } 
     }
 }

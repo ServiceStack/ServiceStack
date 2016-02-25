@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
+using MySql.Data.MySqlClient.Memcached;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -264,7 +265,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async void Can_connect_to_ServerEventsStream()
         {
-            using (var client = CreateServerEventsClient().Start())
+            using (var client = CreateServerEventsClient())
             {
                 var task = client.Connect();
                 var connectMsg = await task.WaitAsync();
@@ -279,7 +280,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async void Does_fire_onJoin_events()
         {
-            using (var client = CreateServerEventsClient().Start())
+            using (var client = CreateServerEventsClient())
             {
                 var taskConnect = client.Connect();
                 var taskMsg = client.WaitForNextCommand();
@@ -296,7 +297,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async void Does_fire_onJoin_events_for_multiple_Channels()
         {
             var channels = new[] { "A", "B", "C" };
-            using (var client = CreateServerEventsClient(channels).Start())
+            using (var client = CreateServerEventsClient(channels))
             {
                 var taskConnect = client.Connect();
 
@@ -1021,6 +1022,124 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(leaveB.Count, Is.EqualTo(0));
             }
         }
+
+        [Test]
+        public async Task Can_subscribe_to_channels_whilst_connected()
+        {
+            var msgs1 = new List<ServerEventMessage>();
+            var msgs2 = new List<ServerEventMessage>();
+
+            using (var client1 = CreateServerEventsClient("A"))
+            using (var client2 = CreateServerEventsClient("B"))
+            {
+                client1.OnMessage = msgs1.Add;
+                client2.OnMessage = msgs2.Add;
+
+                await Task.WhenAll(
+                    client1.Connect(),
+                    client2.Connect()
+                );
+
+                Assert.That(client1.Channels, Is.EquivalentTo(new[] {"A" }));
+
+                client2.PostChat("#1 hello to B", channel: "B");
+                await Task.Delay(500);
+
+                Assert.That(msgs1.Count, Is.EqualTo(0));
+                Assert.That(msgs2.Count, Is.EqualTo(1));
+
+                await client1.SubscribeToChannelsAsync("B");
+                await Task.Delay(500);
+
+                client2.PostChat("#2 hello to B", channel: "B");
+                client2.PostChat("#3 hello to C", channel: "C");
+                await Task.Delay(500);
+
+                Assert.That(msgs1.Count, Is.EqualTo(1));
+                Assert.That(msgs2.Count, Is.EqualTo(2));
+
+                Assert.That(client1.Channels, Is.EquivalentTo(new[] { "A", "B" }));
+                Assert.That(client2.Channels, Is.EquivalentTo(new[] { "B" }));
+
+                Assert.That(client1.EventStreamUri, Is.StringEnding("?channels=A,B"));
+                Assert.That(client2.EventStreamUri, Is.StringEnding("?channels=B"));
+
+                await client1.SubscribeToChannelsAsync("C");
+                await client2.SubscribeToChannelsAsync("C");
+                await Task.Delay(500);
+
+                client2.PostChat("#4 hello to C", channel: "C");
+                await Task.Delay(500);
+
+                Assert.That(msgs1.Count, Is.EqualTo(2));
+                Assert.That(msgs2.Count, Is.EqualTo(3));
+
+                Assert.That(client1.Channels, Is.EquivalentTo(new[] { "A", "B", "C" }));
+                Assert.That(client2.Channels, Is.EquivalentTo(new[] { "B", "C" }));
+
+                Assert.That(client1.EventStreamUri, Is.StringEnding("?channels=A,B,C"));
+                Assert.That(client2.EventStreamUri, Is.StringEnding("?channels=B,C"));
+            }
+        }
+
+        [Test]
+        public async Task Can_unsubscribe_from_channels_whilst_connected()
+        {
+            var msgs1 = new List<ServerEventMessage>();
+            var msgs2 = new List<ServerEventMessage>();
+
+            using (var client1 = CreateServerEventsClient("A","B","C"))
+            using (var client2 = CreateServerEventsClient("B","C"))
+            {
+                client1.OnMessage = msgs1.Add;
+                client2.OnMessage = msgs2.Add;
+
+                await Task.WhenAll(
+                    client1.Connect(),
+                    client2.Connect()
+                );
+
+                Assert.That(client1.Channels, Is.EquivalentTo(new[] { "A","B","C" }));
+
+                client2.PostChat("#1 hello to B", channel: "B");
+                await Task.Delay(500);
+
+                Assert.That(msgs1.Count, Is.EqualTo(1));
+                Assert.That(msgs2.Count, Is.EqualTo(1));
+
+                await client1.UnsubscribeFromChannelsAsync("B");
+                await Task.Delay(500);
+
+                client2.PostChat("#2 hello to B", channel: "B");
+                client2.PostChat("#3 hello to C", channel: "C");
+                await Task.Delay(500);
+
+                Assert.That(msgs1.Count, Is.EqualTo(2));
+                Assert.That(msgs2.Count, Is.EqualTo(3));
+
+                Assert.That(client1.Channels, Is.EquivalentTo(new[] { "A", "C" }));
+                Assert.That(client2.Channels, Is.EquivalentTo(new[] { "B", "C" }));
+
+                Assert.That(client1.EventStreamUri, Is.StringEnding("?channels=A,C"));
+                Assert.That(client2.EventStreamUri, Is.StringEnding("?channels=B,C"));
+
+                await client1.UnsubscribeFromChannelsAsync("C");
+                await client2.UnsubscribeFromChannelsAsync("C");
+                await Task.Delay(500);
+
+                client2.PostChat("#4 hello to C", channel: "C");
+                await Task.Delay(500);
+
+                Assert.That(msgs1.Count, Is.EqualTo(2));
+                Assert.That(msgs2.Count, Is.EqualTo(3));
+
+                Assert.That(client1.Channels, Is.EquivalentTo(new[] { "A" }));
+                Assert.That(client2.Channels, Is.EquivalentTo(new[] { "B" }));
+
+                Assert.That(client1.EventStreamUri, Is.StringEnding("?channels=A"));
+                Assert.That(client2.EventStreamUri, Is.StringEnding("?channels=B"));
+            }
+        }
     }
 
     class Conf
@@ -1115,6 +1234,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 Assert.That(chatMsg, Is.Not.Null);
                 Assert.That(chatMsg.Message, Is.EqualTo("msg2"));
+            }
+        }
+
+        [Test]
+        public async void Channels_updated_after_Restart()
+        {
+            using (var client = new ServerEventsClient(Conf.AbsoluteBaseUri, "home"))
+            {
+                Assert.That(client.EventStreamUri.EndsWith("home"));
+
+                await client.AuthenticateAsync(new Authenticate
+                {
+                    provider = CustomCredentialsAuthProvider.Name,
+                    UserName = "user",
+                    Password = "pass",
+                });
+
+                client.Start();
+                client.Channels = new[] {"Foo", "Bar"};
+                client.Restart();
+
+                Thread.Sleep(10); // Wait for SleepBackOffMultiplier to continue
+
+                Assert.That(client.EventStreamUri.EndsWith("Foo,Bar"));
             }
         }
     }

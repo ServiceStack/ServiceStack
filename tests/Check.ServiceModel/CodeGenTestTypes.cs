@@ -148,6 +148,7 @@ namespace Check.ServiceModel.Operations
         [Required]
         [Range(1, 10)]
         [Default(5)]
+        [DataMember]
         public int Id { get; set; }
 
         [Range(1.0, 10.0)]
@@ -578,6 +579,36 @@ namespace Check.ServiceModel.Types
     }
 
     public class ExcludeTestNested
+    {
+        public int Id { get; set; }
+    }
+
+
+    [Exclude(Feature.Metadata)]
+    public class ExcludeMetadata : IReturn<ExcludeMetadata>
+    {
+        public int Id { get; set; }
+    }
+
+    [Restrict(LocalhostOnly = true)]
+    public class RestrictLocalhost : IReturn<RestrictLocalhost>
+    {
+        public int Id { get; set; }
+    }
+
+    [Restrict(InternalOnly = true)]
+    public class RestrictInternal : IReturn<RestrictInternal>
+    {
+        public int Id { get; set; }
+    }
+
+    [Restrict(ExternalOnly = true)]
+    public class RestrictExternal : IReturn<RestrictExternal>
+    {
+        public int Id { get; set; }
+    }
+
+    public class IgnoreInMetadataConfig : IReturn<IgnoreInMetadataConfig>
     {
         public int Id { get; set; }
     }

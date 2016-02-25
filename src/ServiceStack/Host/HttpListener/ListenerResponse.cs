@@ -167,6 +167,9 @@ namespace ServiceStack.Host.HttpListener
 
         public void SetCookie(Cookie cookie)
         {
+            if (!HostContext.AppHost.AllowSetCookie(Request, cookie.Name))
+                return;
+
             var cookieStr = cookie.AsHeaderValue();
             response.Headers.Add(HttpHeaders.SetCookie, cookieStr);            
         }

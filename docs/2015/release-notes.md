@@ -1,3 +1,7 @@
+## Go to [2016 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/release-notes.md)
+
+---
+
 # v4.0.50 Release Notes
 
 This is primarily a bug fix release to 
@@ -4149,7 +4153,7 @@ Setting `Config.AllowSessionIdsInHttpParams=true` will allow clients to specify 
 The [SSE-polyfills Chat Demo](http://chat.servicestack.net/default_ieshim) has an example of adding the Current Session Id on the [JavaScript SSE EventSource Url](https://github.com/ServiceStackApps/Chat/blob/master/src/Chat/default_ieshim.cshtml#L93):
 
 ```js
-var source = new EventSource('/event-stream?channels=@channels&ss-id=@(base.GetSession().Id));
+var source = new EventSource('/event-stream?channels=@channels&ss-id=@(base.GetSession().Id)');
 ```
 
 ### In Process Authenticated Requests

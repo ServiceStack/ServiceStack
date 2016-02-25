@@ -242,6 +242,7 @@ namespace ServiceStack
                     }
 
                     using (resultScope)
+                    using (HostContext.Config.AllowJsConfig ? JsConfig.CreateScope(request.QueryString[Keywords.JsConfig]) : null)
                     {
                         var disposableResult = result as IDisposable;
                         if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
@@ -353,6 +354,8 @@ namespace ServiceStack
             string contentType, string operationName, string errorMessage, Exception ex, int statusCode)
         {
             var errorDto = ex.ToErrorResponse();
+            HostContext.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
+
             if (HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto))
                 return EmptyTask;
 

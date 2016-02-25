@@ -15,6 +15,8 @@
         public static string SoapMessage = "SoapMessage";
         public static string Route = "__route";
         public static string InvokeVerb = "__verb";
+        public static string DbInfo = "__dbinfo";
+        public static string JsConfig = "jsconfig";
     }
 
     public static class LocalizedStrings

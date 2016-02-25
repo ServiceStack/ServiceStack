@@ -30,6 +30,7 @@
 
 /*** REMINDER: Keep this file in sync with ServiceStack.Text/Pcl.NameValueCollection.cs ***/
 
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -1756,6 +1757,26 @@ namespace ServiceStack
         {
             Instance = instance;
             Instance.UiContext = SynchronizationContext.Current;
+        }
+
+        public virtual Exception CreateTimeoutException(Exception ex, string errorMsg)
+        {
+            return new WebException("The request timed out", ex, WebExceptionStatus.RequestCanceled, null);
+        }
+
+        public virtual void CloseReadStream(Stream stream)
+        {
+            stream.Close();
+        }
+
+        public virtual void CloseWriteStream(Stream stream)
+        {
+            stream.Close();
+        }
+
+        public virtual bool IsWebException(WebException webEx)
+        {
+            return webEx != null && webEx.Response != null;
         }
     }
 

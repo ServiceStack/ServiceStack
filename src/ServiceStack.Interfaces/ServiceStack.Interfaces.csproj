@@ -80,6 +80,7 @@
     <Compile Include="DataAnnotations\ComputeAttribute.cs" />
     <Compile Include="DataAnnotations\CustomFieldAttribute.cs" />
     <Compile Include="DataAnnotations\DescriptionAttribute.cs" />
+    <Compile Include="DataAnnotations\EnumAsIntAttribute.cs" />
     <Compile Include="DataAnnotations\ExcludeAttribute.cs" />
     <Compile Include="DataAnnotations\PostCreateTableAttribute.cs" />
     <Compile Include="DataAnnotations\PostDropTableAttribute.cs" />
@@ -316,6 +317,7 @@
     <Compile Include="ApiResponse.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="SwaggerType.cs" />
+    <Compile Include="NamedConnectionAttribute.cs" />
     <Compile Include="Web\INameValueCollection.cs" />
     <Compile Include="Web\IRequiresRequestStream.cs" />
     <Compile Include="RequestAttributes.cs">

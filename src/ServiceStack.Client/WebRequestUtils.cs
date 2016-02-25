@@ -197,7 +197,6 @@ namespace ServiceStack
 
         internal static void AddAuthInfo(this WebRequest client, string userName, string password, AuthenticationInfo authInfo)
         {
-
             if ("basic".Equals(authInfo.method))
             {
                 client.AddBasicAuth(userName, password); // FIXME AddBasicAuth ignores the server provided Realm property. Potential Bug.
@@ -230,7 +229,6 @@ namespace ServiceStack
 
             string md5rraw = ha1 + ":" + authInfo.nonce + ":" + ncUse + ":" + authInfo.cnonce + ":" + authInfo.qop + ":" + ha2;
             string response = CalculateMD5Hash(md5rraw);
-
 
             string header =
                 "Digest username=\"" + userName + "\", realm=\"" + authInfo.realm + "\", nonce=\"" + authInfo.nonce + "\", uri=\"" +
@@ -324,7 +322,5 @@ namespace ServiceStack
 
             return propertyInfo.GetProperty(response) as ResponseStatus;
         }
-
     }
-
 }

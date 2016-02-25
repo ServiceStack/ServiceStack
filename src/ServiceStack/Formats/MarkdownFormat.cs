@@ -107,7 +107,7 @@ namespace ServiceStack.Formats
                 this.ReplaceTokens["~/"] = webHostUrl.WithTrailingSlash();
 
             if (VirtualPathProvider == null)
-                VirtualPathProvider = AppHost.VirtualPathProvider;
+                VirtualPathProvider = AppHost.VirtualFileSources;
 
             RegisterMarkdownPages(appHost.Config.WebHostPhysicalPath);
 

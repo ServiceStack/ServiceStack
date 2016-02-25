@@ -800,9 +800,12 @@ namespace ServiceStack
             RegisterTypeForAot<Guid>();
             RegisterTypeForAot<TimeSpan>();
             RegisterTypeForAot<DateTime>();
-            RegisterTypeForAot<DateTime?>();
-            RegisterTypeForAot<TimeSpan?>();
+            RegisterTypeForAot<DateTimeOffset>();
+
             RegisterTypeForAot<Guid?>();
+            RegisterTypeForAot<TimeSpan?>();
+            RegisterTypeForAot<DateTime?>();
+            RegisterTypeForAot<DateTimeOffset?>();
         }
 
         [Preserve]

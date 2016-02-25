@@ -429,25 +429,25 @@ namespace ServiceStack.Razor
         private ICacheClient cache;
         public ICacheClient Cache
         {
-            get { return cache ?? (cache = AppHost.GetCacheClient()); }
+            get { return cache ?? (cache = HostContext.AppHost.GetCacheClient(Request)); }
         }
 
         private IDbConnection db;
         public IDbConnection Db
         {
-            get { return db ?? (db = Get<IDbConnectionFactory>().OpenDbConnection()); }
+            get { return db ?? (db = HostContext.AppHost.GetDbConnection(Request)); }
         }
 
         private IRedisClient redis;
         public IRedisClient Redis
         {
-            get { return redis ?? (redis = Get<IRedisClientsManager>().GetClient()); }
+            get { return redis ?? (redis = HostContext.AppHost.GetRedisClient(Request)); }
         }
 
         private IMessageProducer messageProducer;
         public virtual IMessageProducer MessageProducer
         {
-            get { return messageProducer ?? (messageProducer = Get<IMessageFactory>().CreateMessageProducer()); }
+            get { return messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request)); }
         }
 
         private ISessionFactory sessionFactory;

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -79,6 +81,7 @@ namespace ServiceStack
             {
                 NotifyJoin = HandleOnJoin,
                 NotifyLeave = HandleOnLeave,
+                NotifyUpdate = HandleOnUpdate,
                 NotifyHeartbeat = HandleOnHeartbeat,
                 Serialize = HandleSerialize,
             };
@@ -142,6 +145,15 @@ namespace ServiceStack
             RemoveSubscriptionFromRedis(info);
 
             NotifyChannels(sub.Channels, "cmd.onLeave", sub.Meta);
+        }
+
+        void HandleOnUpdate(IEventSubscription sub)
+        {
+            using (var redis = clientsManager.GetClient())
+            {
+                StoreSubscriptionInfo(redis, sub.GetInfo());
+            }
+            NotifyChannels(sub.Channels, "cmd.onUpdate", sub.Meta);
         }
 
         void HandleOnHeartbeat(IEventSubscription sub)
@@ -301,6 +313,34 @@ namespace ServiceStack
             return local.RemoveExpiredSubscriptions();
         }
 
+        public void SubscribeToChannels(string subscriptionId, string[] channels)
+        {
+            var info = GetSubscriptionInfo(subscriptionId);
+            if (info == null)
+                return;
+
+            NotifyRedis("subscribe.id." + subscriptionId, null, channels.Join(","));
+        }
+
+        public void UnsubscribeFromChannels(string subscriptionId, string[] channels)
+        {
+            var info = GetSubscriptionInfo(subscriptionId);
+            if (info == null)
+                return;
+
+            using (var redis = clientsManager.GetClient())
+            using (var trans = redis.CreateTransaction())
+            {
+                foreach (var channel in channels)
+                {
+                    trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.ChannelSet.Fmt(channel), subscriptionId));
+                }
+                trans.Commit();
+            }
+
+            NotifyRedis("unsubscribe.id." + subscriptionId, null, channels.Join(","));
+        }
+
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
         {
             using (var redis = clientsManager.GetClient())
@@ -458,6 +498,24 @@ namespace ServiceStack
                         case "session":
                             local.NotifySession(who, selector, msg, channel);
                             break;
+                    }
+                    break;
+
+                case "subscribe":
+                    if (tokens[1] == "id" && parts.Length == 2)
+                    {
+                        var id = tokens.Length > 2 ? tokens[2] : null;
+                        var channelsList = parts[1].FromJson<string>();
+                        local.SubscribeToChannels(id, channelsList.Split(','));
+                    }
+                    break;
+
+                case "unsubscribe":
+                    if (tokens[1] == "id" && parts.Length == 2)
+                    {
+                        var id = tokens.Length > 2 ? tokens[2] : null;
+                        var channelsList = parts[1].FromJson<string>();
+                        local.UnsubscribeFromChannels(id, channelsList.Split(','));
                     }
                     break;
 

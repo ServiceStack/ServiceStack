@@ -18,13 +18,25 @@ XML,
 [ProtoBuf](https://github.com/ServiceStack/ServiceStack/wiki/Protobuf-format) and 
 [MsgPack](https://github.com/ServiceStack/ServiceStack/wiki/MessagePack-Format)) 
 as well as XSD/WSDL for [SOAP endpoints](https://github.com/ServiceStack/ServiceStack/wiki/SOAP-support) and 
-[Rabbit MQ](https://github.com/ServiceStack/ServiceStack/wiki/Rabbit-MQ) and 
-[Redis MQ](https://github.com/ServiceStack/ServiceStack/wiki/Messaging-and-Redis) hosts. 
+[Rabbit MQ](https://github.com/ServiceStack/ServiceStack/wiki/Rabbit-MQ), 
+[Redis MQ](https://github.com/ServiceStack/ServiceStack/wiki/Messaging-and-Redis) and
+[Amazon SQS](https://github.com/ServiceStack/ServiceStack.Aws#sqsmqserver) MQ hosts. 
+
+Its design and simplicity focus offers an unparalleled suite of productivity features that can be declaratively enabled 
+without code, from creating fully queryable Web API's with just a single Typed Request DTO with
+[Auto Query](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) supporting 
+[every major RDBMS](https://github.com/ServiceStack/ServiceStack.OrmLite#8-flavours-of-ormlite-is-on-nuget) 
+to the built-in support for
+[Auto Batched Requests](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Batched-Requests) 
+or effortlessly enabling
+[Encrypted Messaging](https://github.com/ServiceStack/ServiceStack/wiki/Encrypted-Messaging) 
+for all your existing services via a [Plugin](https://github.com/ServiceStack/ServiceStack/wiki/Plugins).
 
 Your same Services also serve as the Controller in ServiceStack's [Smart Razor Views](http://razor.servicestack.net/)
 reducing the effort to serve both 
 [Web and Single Page Apps](https://github.com/ServiceStackApps/LiveDemos) as well as 
-[Rich Desktop and Mobile Clients](https://github.com/ServiceStackApps/HelloMobile).
+[Rich Desktop and Mobile Clients](https://github.com/ServiceStackApps/HelloMobile) that are able to deliver instant interactive 
+experiences using ServiceStack's real-time [Server Events](https://github.com/ServiceStack/ServiceStack/wiki/Server-Events).
 
 ServiceStack Services also maximize productivity for consumers providing an 
 [instant end-to-end typed API without code-gen](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) enabling
@@ -70,11 +82,12 @@ native iOS and OSX Applications - directly from within Xcode!
 #### [Android Studio integration with ServiceStackIDEA](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference)
 
 Providing [an instant Native Typed API in Java](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference) 
-including idiomatic Java Generic Service Clients supporting Sync and Async Requests by levaraging Android's AsyncTasks to enable the creation of services-rich and responsive native Java Mobile Apps on the Android platform - directly from within Android Studio!
+and [Kotlin](https://github.com/ServiceStack/ServiceStack/wiki/Kotlin-Add-ServiceStack-Reference)
+including idiomatic Java Generic Service Clients supporting Sync and Async Requests by levaraging Android's AsyncTasks to enable the creation of services-rich and responsive native Java or Kotlin Mobile Apps on the Android platform - directly from within Android Studio!
 
 #### [IntelliJ integration with ServiceStackIDEA](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference#install-servicestack-idea-from-the-plugin-repository)
 
-The ServiceStack IDEA plugin is installable directly from IntelliJ's Plugin repository and enables seamless integration with IntelliJ Java Maven projects for genearting a Typed API to quickly and effortlessly consume remote ServiceStack Web Services from pure cross-platform Java Clients.
+The ServiceStack IDEA plugin is installable directly from IntelliJ's Plugin repository and enables seamless integration with IntelliJ Java Maven projects for genearting a Typed API to quickly and effortlessly consume remote ServiceStack Web Services from pure cross-platform Java or Kotlin Clients.
 
 #### [Eclipse integration with ServiceStackEclipse](https://github.com/ServiceStack/ServiceStack.Java/tree/master/src/ServiceStackEclipse#eclipse-integration-with-servicestack)
 
@@ -235,6 +248,14 @@ Same code also works with [PCL Clients in Xamarin iOS/Android, Windows Store App
 [VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference) can re-use same 
 [.NET Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) and DTO's
 
+### [Calling from Swift](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference#jsonserviceclientswift)
+
+```java
+var client = JsonServiceClient(baseUrl: BaseUri)
+
+let response = client.get(GetCustomers())
+```
+
 ### [Calling from Java](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference#jsonserviceclient-usage)
 
 ```java
@@ -243,12 +264,12 @@ JsonServiceClient client = new JsonServiceClient(BaseUri);
 GetCustomersResponse all = client.get(new GetCustomers());
 ```
 
-### [Calling from Swift](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference#jsonserviceclientswift)
+### [Calling from Kotlin](https://github.com/ServiceStack/ServiceStack/wiki/Kotlin-Add-ServiceStack-Reference#jsonserviceclient-usage)
 
-```java
-var client = JsonServiceClient(baseUrl: BaseUri)
+```kotlin
+val client = JsonServiceClient(BaseUri)
 
-let response = client.get(GetCustomers())
+val response = client.get(GetCustomers())
 ```
 
 ### [Calling from jQuery using TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference)

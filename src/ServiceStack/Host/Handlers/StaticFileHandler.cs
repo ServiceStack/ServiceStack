@@ -53,6 +53,16 @@ namespace ServiceStack.Host.Handlers
             RequestName = GetType().Name; //Always allow StaticFileHandlers
         }
 
+        public StaticFileHandler(IVirtualFile virtualFile) : this()
+        {
+            VirtualNode = virtualFile;
+        }
+
+        public StaticFileHandler(IVirtualDirectory virtualDir) : this()
+        {
+            VirtualNode = virtualDir;
+        }
+
         public override void ProcessRequest(HttpContextBase context)
         {
             var httpReq = context.ToRequest(GetType().GetOperationName());

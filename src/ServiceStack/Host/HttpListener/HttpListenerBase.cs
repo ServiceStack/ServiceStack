@@ -107,7 +107,7 @@ namespace ServiceStack.Host.HttpListener
                 return;
 
             if (this.Listener == null)
-                Listener = new System.Net.HttpListener();
+                Listener = CreateHttpListener();
 
             foreach (var urlBase in urlBases)
             {
@@ -145,6 +145,11 @@ namespace ServiceStack.Host.HttpListener
             }
 
             ThreadPool.QueueUserWorkItem(listenCallback);
+        }
+
+        protected virtual System.Net.HttpListener CreateHttpListener()
+        {
+            return new System.Net.HttpListener();
         }
 
         private bool IsListening

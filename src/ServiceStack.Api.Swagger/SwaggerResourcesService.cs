@@ -66,6 +66,8 @@ namespace ServiceStack.Api.Swagger
         private readonly Regex resourcePathCleanerRegex = new Regex(@"/[^\/\{]*", RegexOptions.Compiled);
         internal static Regex resourceFilterRegex;
 
+        internal static Action<SwaggerResourcesResponse> ResourcesResponseFilter { get; set; }
+
         internal const string RESOURCE_PATH = "/resource";
 
         public object Get(SwaggerResources request)
@@ -99,6 +101,9 @@ namespace ServiceStack.Api.Swagger
             }
 
             result.Apis = result.Apis.OrderBy(a => a.Path).ToList();
+
+            if (ResourcesResponseFilter != null)
+                ResourcesResponseFilter(result);
 
             return new HttpResult(result) {
                 ResultScope = () => JsConfig.With(includeNullValues:false)

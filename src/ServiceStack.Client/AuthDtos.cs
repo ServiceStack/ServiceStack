@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Auth;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
 {
@@ -169,6 +170,26 @@ namespace ServiceStack
         public TimeSpan Elapsed { get; set; }
 
         [DataMember(Order = 3)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Exclude(Feature.Soap)]
+    [DataContract]
+    [Route("/event-subscribers/{Id}", "POST")]
+    public class UpdateEventSubscriber : IReturn<UpdateEventSubscriberResponse>
+    {
+        [DataMember(Order = 1)]
+        public string Id { get; set; }
+        [DataMember(Order = 2)]
+        public string[] SubscribeChannels { get; set; }
+        [DataMember(Order = 3)]
+        public string[] UnsubscribeChannels { get; set; }
+    }
+
+    [DataContract]
+    public class UpdateEventSubscriberResponse
+    {
+        [DataMember(Order = 1)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 }

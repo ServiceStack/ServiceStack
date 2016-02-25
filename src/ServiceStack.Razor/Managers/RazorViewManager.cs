@@ -285,7 +285,7 @@ namespace ServiceStack.Razor.Managers
 
         public virtual bool IsWatchedFile(IVirtualFile file)
         {
-            return this.Config.RazorFileExtension.EndsWithIgnoreCase(file.Extension);
+            return file != null && this.Config.RazorFileExtension.EndsWithIgnoreCase(file.Extension);
         }
 
         public virtual bool IsWatchedFile(string fileName)

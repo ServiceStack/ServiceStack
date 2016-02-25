@@ -58,6 +58,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     [Route("/throw404")]
     public class Throw404 { }
 
+    [Route("/throw404description")]
+    public class Throw404Description { }
+
     [Route("/throwcustom404")]
     public class ThrowCustom404 { }
 
@@ -120,6 +123,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public object Any(Throw404 request)
         {
             throw HttpError.NotFound("Custom Status Description");
+        }
+
+        public object Any(Throw404Description request)
+        {
+            throw new HttpError(HttpStatusCode.NotFound) {
+                StatusDescription = "Custom Status Description"
+            };
         }
 
         public object Any(ThrowCustom404 request)

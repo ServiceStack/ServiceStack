@@ -16,7 +16,7 @@ ServiceStack is a modern, high-performance, code-first web service framework pro
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
     <language>en-US</language>
-    <copyright>Copyright 2015 Service Stack</copyright>
+    <copyright>Copyright 2016 Service Stack</copyright>
 	  <dependencies>
       <dependency id="WebActivator" version="1.5" />
       <dependency id="ServiceStack.Mvc" version="4.0" />

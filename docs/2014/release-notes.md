@@ -5215,10 +5215,6 @@ We're happy to announce that after months of intense development, v4-beta of Ser
 
 As [announced in August](https://plus.google.com/+DemisBellot/posts/g8TcZaE7bv9) to ensure it's continued development, ServiceStack has moved to a self-sustaining commercial model for commercial usage of ServiceStack from **v4+ onwards**. It's the first time we've been able to commit full-time resources to the project and is what has ensured continued investment and enabled v4 to be possible, with even more exciting features in the pipeline and roadmap for 2014.
 
-## [Introductory Offer](https://servicestack.net/pricing)
-
-For our early supporters we're launching the new [servicestack.net](https://servicestack.net) website with [attractive introductory pricing](https://servicestack.net/pricing) available during the beta between **33-40% off** royalty-free/per-developer perpetual licensing and **20% off** our unlimited-developers/per-core subscriptions. There's also an additional **60 days free** maintenance and updates covering the beta period, available in 2013. These discounts are intended to be grandfathered-in and carried over for any future renewals, making the v4-beta the best time to get ServiceStack. For US Customers we also have free ServiceStack T-Shirts and stickers whilst stocks last - If you'd like them, add your preferred T-Shirt sizes in the Order notes.
-
 #### Free Usage for Small and OSS Projects
 
 We're also happy to announce that v4 includes [free quotas](https://servicestack.net/download#free-quotas) allowing the free usage of all of ServiceStack for small projects and evaluation purposes. Whilst OSS projects are able to use the source code on GitHub under the [AGPL/FOSS License Exception](https://github.com/ServiceStack/ServiceStack/blob/master/license.txt), and the older [v3 of ServiceStack](https://github.com/ServiceStackV3/ServiceStackV3) continues to be available under the [BSD license](https://github.com/ServiceStack/ServiceStack/blob/v3/LICENSE).

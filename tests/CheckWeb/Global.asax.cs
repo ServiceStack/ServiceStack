@@ -36,12 +36,14 @@ namespace CheckWeb
         {
             var nativeTypes = this.GetPlugin<NativeTypesFeature>();
             nativeTypes.MetadataTypesConfig.ExportTypes.Add(typeof(DayOfWeek));
+            nativeTypes.MetadataTypesConfig.IgnoreTypes.Add(typeof(IgnoreInMetadataConfig));
 
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
             {
                 //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Html },
+                //AllowJsConfig = false,
 
                 // Set to return JSON if no request content type is defined
                 // e.g. text/html or application/json
@@ -96,6 +98,9 @@ namespace CheckWeb
                     SqlServerDialect.Provider) {
                         ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
                     });
+
+
+            this.GlobalHtmlErrorHttpHandler = new RazorHandler("GlobalErrorHandler.cshtml");
 
             //JavaGenerator.AddGsonImport = true;
         }

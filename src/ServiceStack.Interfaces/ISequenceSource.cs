@@ -5,8 +5,8 @@
     /// </summary>
     public interface ISequenceSource : IRequiresSchema
     {
-        long Increment(string key, int amount = 1);
+        long Increment(string key, long amount = 1);
 
-        void Reset(string key, int startingAt = 0);
+        void Reset(string key, long startingAt = 0);
     }
 }

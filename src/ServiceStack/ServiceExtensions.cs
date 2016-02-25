@@ -60,9 +60,15 @@ namespace ServiceStack
 
         public static ICacheClient GetCacheClient(this IResolver service)
         {
-            return service.TryResolve<ICacheClient>()
-                ?? (service.TryResolve<IRedisClientsManager>() != null ? service.TryResolve<IRedisClientsManager>().GetCacheClient() : null)
-                ?? DefaultCache;
+            var cache = service.TryResolve<ICacheClient>();
+            if (cache != null)
+                return cache;
+
+            var redisManager = service.TryResolve<IRedisClientsManager>();
+            if (redisManager != null)
+                return redisManager.GetCacheClient();
+
+            return DefaultCache;
         }
 
         public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn = null)

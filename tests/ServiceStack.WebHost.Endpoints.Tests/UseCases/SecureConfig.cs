@@ -68,6 +68,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    public class HelloOneWay : IReturnVoid
+    {
+        internal static string LastName;
+
+        public string Name { get; set; }
+    }
+
     public class SecureServices : Service
     {
         public object Get(GetSecure request)
@@ -112,6 +119,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public object Any(LargeMessage request)
         {
             return request;
+        }
+
+        public void Any(HelloOneWay request)
+        {
+            HelloOneWay.LastName = request.Name;
         }
     }
 }

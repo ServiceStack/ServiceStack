@@ -370,12 +370,12 @@ namespace ServiceStack.Host.AspNet
                 if (httpFiles == null)
                 {
                     httpFiles = new IHttpFile[request.Files.Count];
-                    for (var i = 0; i < request.Files.Count; i++)
+                    for (int i = 0; i < request.Files.Count; i++)
                     {
                         var reqFile = request.Files[i];
-
                         httpFiles[i] = new HttpFile
                         {
+                            Name = request.Files.AllKeys[i],
                             ContentType = reqFile.ContentType,
                             ContentLength = reqFile.ContentLength,
                             FileName = reqFile.FileName,

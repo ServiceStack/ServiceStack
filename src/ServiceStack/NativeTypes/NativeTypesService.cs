@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.FSharp;
 using ServiceStack.NativeTypes.Java;
@@ -100,7 +102,7 @@ namespace ServiceStack.NativeTypes
     {
         MetadataTypesConfig GetConfig(NativeTypesBase req);
 
-        MetadataTypes GetMetadataTypes(IRequest req, MetadataTypesConfig config = null);
+        MetadataTypes GetMetadataTypes(IRequest req, MetadataTypesConfig config = null, Func<Operation, bool> predicate = null);
     }
 
 

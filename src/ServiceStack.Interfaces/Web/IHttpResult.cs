@@ -7,32 +7,32 @@ using System.Net;
 
 namespace ServiceStack.Web
 {
-	public interface IHttpResult : IHasOptions
-	{
+    public interface IHttpResult : IHasOptions
+    {
         /// <summary>
         /// The HTTP Response Status
         /// </summary>
         int Status { get; set; }
 
-		/// <summary>
-		/// The HTTP Response Status Code
-		/// </summary>
-		HttpStatusCode StatusCode { get; set; }
+        /// <summary>
+        /// The HTTP Response Status Code
+        /// </summary>
+        HttpStatusCode StatusCode { get; set; }
 
         /// <summary>
         /// The HTTP Status Description
         /// </summary>
         string StatusDescription { get; set; }
 
-		/// <summary>
-		/// The HTTP Response ContentType
-		/// </summary>
-		string ContentType { get; set; }
+        /// <summary>
+        /// The HTTP Response ContentType
+        /// </summary>
+        string ContentType { get; set; }
 
-		/// <summary>
-		/// Additional HTTP Headers
-		/// </summary>
-		Dictionary<string, string> Headers { get; }
+        /// <summary>
+        /// Additional HTTP Headers
+        /// </summary>
+        Dictionary<string, string> Headers { get; }
 
         /// <summary>
         /// Additional HTTP Cookies
@@ -44,15 +44,15 @@ namespace ServiceStack.Web
         /// </summary>
         object Response { get; set; }
 
-		/// <summary>
-		/// if not provided, get's injected by ServiceStack
-		/// </summary>
-		IContentTypeWriter ResponseFilter { get; set; }
+        /// <summary>
+        /// if not provided, get's injected by ServiceStack
+        /// </summary>
+        IContentTypeWriter ResponseFilter { get; set; }
 
-		/// <summary>
-		/// Holds the request call context
-		/// </summary>
-		IRequest RequestContext { get; set; }
+        /// <summary>
+        /// Holds the request call context
+        /// </summary>
+        IRequest RequestContext { get; set; }
 
         /// <summary>
         /// The padding length written with the body, to be added to ContentLength of body

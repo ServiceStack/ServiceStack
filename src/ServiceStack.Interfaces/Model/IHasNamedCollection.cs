@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Model
 {
-	public interface IHasNamedCollection<T> : IHasNamed<ICollection<T>>
-	{
-	}
+    public interface IHasNamedCollection<T> : IHasNamed<ICollection<T>>
+    {
+    }
 }

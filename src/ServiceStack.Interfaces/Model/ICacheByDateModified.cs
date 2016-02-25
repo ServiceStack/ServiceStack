@@ -5,8 +5,8 @@ using System;
 
 namespace ServiceStack.Model
 {
-	public interface ICacheByDateModified
-	{
-		DateTime? LastModified { get; }
-	}
+    public interface ICacheByDateModified
+    {
+        DateTime? LastModified { get; }
+    }
 }

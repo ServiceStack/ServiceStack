@@ -73,6 +73,14 @@
             raw Select expression: "Select SomeField1, SomeField2 from SomeTable"
             </param>
         </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select(System.String[])">
+            <summary>
+            Set the specified selectExpression using matching fields.
+            </summary>
+            <param name='fields'>
+            Matching Fields: "SomeField1, SomeField2"
+            </param>
+        </member>
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
             <summary>
             Fields to be selected.
@@ -135,7 +143,7 @@
             </summary>
             <returns></returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.SqlExpression`1.Update(System.Collections.Generic.IList{System.String})" -->
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.SqlExpression`1.Update(System.Collections.Generic.List{System.String})" -->
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Update``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
             <summary>
             Fields to be updated.
@@ -163,7 +171,7 @@
             objectWithProperties
             </typeparam>
         </member>
-        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert(System.Collections.Generic.IList{System.String})">
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.Insert(System.Collections.Generic.List{System.String})">
             <summary>
             fields to be inserted.
             </summary>
@@ -299,7 +307,7 @@
             <para>db.Select&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Single``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Object)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Single``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression)">
             <summary>
             Returns results from using an SqlExpression lambda. E.g:
             <para>db.Single(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
@@ -351,10 +359,22 @@
             <para>db.LoadSelect&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Func{``0,System.Object})">
+            <summary>
+            Returns results with references from using a LINQ Expression. E.g:
+            <para>db.LoadSelect&lt;Person&gt;(x =&gt; x.Age &gt; 40, include: x => new { x.PrimaryAddress })</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}},System.String[])">
             <summary>
             Returns results with references from using an SqlExpression lambda. E.g:
             <para>db.LoadSelect&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}},System.Func{``0,System.Object})">
+            <summary>
+            Returns results with references from using an SqlExpression lambda. E.g:
+            <para>db.LoadSelect&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &gt; 40), include: x => new { x.PrimaryAddress })</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0},System.String[])">
@@ -363,7 +383,18 @@
             <para>db.LoadSelect(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0},System.Func{``0,System.Object})">
+            <summary>
+            Returns results with references from using an SqlExpression lambda. E.g:
+            <para>db.LoadSelect(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40), include: x => new { x.PrimaryAddress })</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``2(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``1},System.String[])">
+            <summary>
+            Project results with references from a number of joined tables into a different model
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.LoadSelect``2(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``1},System.Func{``0,System.Object})">
             <summary>
             Project results with references from a number of joined tables into a different model
             </summary>
@@ -638,6 +669,12 @@
             <summary>
             Returns a lazyily loaded stream of results using a parameterized query. E.g:
             <para>db.SelectLazy&lt;Person&gt;("Age &gt; @age", new { age = 40 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SelectLazy``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Returns a lazyily loaded stream of results using a parameterized query. E.g:
+            <para>db.SelectLazy(db.From&lt;Person&gt;().Where(x =&gt; x == 40))</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SelectLazyFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
@@ -1077,6 +1114,12 @@
             </summary>
             <returns>number of rows affected</returns>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.ExecuteSql(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Execute any arbitrary raw SQL with db params.
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Insert``1(System.Data.IDbConnection,``0,System.Boolean)">
             <summary>
             Insert 1 POCO, use selectIdentity to retrieve the last insert AutoIncrement id (if any). E.g:
@@ -1250,11 +1293,6 @@
             <summary>
             Populates the related references with the instance primary key and saves them. Uses '(T)Id' naming convention. E.g:
             <para>db.SaveReferences(customer, customer.Orders)</para> 
-            </summary>
-        </member>
-        <member name="P:ServiceStack.OrmLite.OrmLiteConfig.UseParameterizeSqlExpressions">
-            <summary>
-            Only used in Oracle or SqlServer DialectProvider
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.OrmLiteConnection">

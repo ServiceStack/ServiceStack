@@ -178,7 +178,6 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Ticks since this MiniProfiler was started.
         /// </summary>
-		[DataMember(Order = 13)]
 		internal long ElapsedTicks { get { return _sw.ElapsedTicks; } }
 
         /// <summary>
@@ -187,7 +186,7 @@ namespace ServiceStack.MiniProfiler
         /// <remarks>
         /// Is used when storing the Profiler in SqlStorage
         /// </remarks>
-        [DataMember(Order = 14)]
+        [DataMember(Order = 13)]
         public string Json { get; set; }
 
         /// <summary>

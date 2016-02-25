@@ -3,8 +3,8 @@
 
 namespace ServiceStack.Model
 {
-	public interface ICacheByEtag
-	{
-		string Etag { get; }
-	}
+    public interface ICacheByEtag
+    {
+        string Etag { get; }
+    }
 }

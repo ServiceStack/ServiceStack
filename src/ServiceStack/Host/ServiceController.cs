@@ -59,13 +59,6 @@ namespace ServiceStack.Host
 
         public string DefaultOperationsNamespace { get; set; }
 
-        private IResolver resolver;
-        public IResolver Resolver
-        {
-            get { return resolver ?? Service.GlobalResolver; }
-            set { resolver = value; }
-        }
-
         public Func<IEnumerable<Type>> ResolveServicesFn { get; set; }
 
         private ContainerResolveCache typeFactory;
