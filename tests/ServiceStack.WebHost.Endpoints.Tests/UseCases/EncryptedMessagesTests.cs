@@ -72,6 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         protected abstract IJsonServiceClient CreateClient();
+
         [Test]
         public void Can_Send_Encrypted_Message_with_ServiceClients()
         {
@@ -81,6 +82,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var response = encryptedClient.Send(new HelloSecure { Name = "World" });
 
             Assert.That(response.Result, Is.EqualTo("Hello, World!"));
+        }
+
+        [Test]
+        public void Can_Send_Encrypted_OneWay_Message_with_ServiceClients()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get(new GetPublicKey()));
+
+            encryptedClient.Send(new HelloOneWay { Name = "World" });
+
+            Assert.That(HelloOneWay.LastName, Is.EqualTo("World"));
         }
 
         [Test]

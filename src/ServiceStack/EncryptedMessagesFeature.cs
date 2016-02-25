@@ -189,10 +189,12 @@ namespace ServiceStack
                     return null;
                 }
 
+                if (response == null) 
+                    return new EncryptedMessageResponse();
+
                 var responseBodyBytes = response.ToJson().ToUtf8Bytes();
                 var encryptedBytes = AesUtils.Encrypt(responseBodyBytes, (byte[])oCryptKey, (byte[])oIv);
                 var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, (byte[])oAuthKey, (byte[])oIv);
-
                 var encResponse = new EncryptedMessageResponse
                 {
                     EncryptedBody = Convert.ToBase64String(authEncryptedBytes)
