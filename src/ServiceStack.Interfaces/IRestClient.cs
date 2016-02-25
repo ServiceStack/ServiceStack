@@ -45,5 +45,7 @@ namespace ServiceStack
         TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType);
         TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload");
         TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request, string fieldName = "upload");
+        TResponse PostFilesWithRequest<TResponse>(List<Stream> filesToUpload, List<string> fileNames, object request, string fieldName = "upload");
+        TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, List<Stream> filesToUpload, List<string> fileNames, object request, string fieldName = "upload");
     }
 }
