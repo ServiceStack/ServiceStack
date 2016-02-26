@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Net;
 using NUnit.Framework;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -65,6 +66,64 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
                 Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
             }
         }
+
+        [Test]
+        public void Does_handle_304_NotModified_Response()
+        {
+            var client = new JsonServiceClient(BaseUrl);
+            try
+            {
+                var response = client.Get(new EchoCustomResponse
+                {
+                    StatusCode = (int)HttpStatusCode.NotModified,
+                    StatusDescription = "NotModified",
+                    Body = "NOT MODIFIED"
+                });
+
+                Assert.Fail("304 Throws");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ErrorCode, Is.EqualTo("NotModified"));
+            }
+        }
+
+        [Test]
+        public void Does_handle_304_NotModified_Response_JsonHttpClient()
+        {
+            var client = new JsonHttpClient(BaseUrl);
+            try
+            {
+                var response = client.Get(new EchoCustomResponse
+                {
+                    StatusCode = (int)HttpStatusCode.NotModified,
+                    StatusDescription = "NotModified",
+                    Body = "NOT MODIFIED"
+                });
+
+                Assert.Fail("304 Throws");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ErrorCode, Is.EqualTo("NotModified"));
+            }
+        }
+
+        [Test]
+        public void Does_handle_304_NotModified_Response_HttpUtils()
+        {
+            var url = BaseUrl.CombineWith("/customresponse/304?StatusDescription=NotModified&Body=NOT+MODIFIED");
+            try
+            {
+                var response = url.GetStringFromUrl();
+
+                Assert.Fail("304 Throws");
+            }
+            catch (WebException ex)
+            {
+                Assert.That(ex.GetStatus().Value, Is.EqualTo(HttpStatusCode.NotModified));
+            }
+        }
     }
 
     [Route("/error")]
@@ -113,6 +172,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
         {
             return new ActionError();
         }
+
+        public string Any(EchoCustomResponse request)
+        {
+            base.Response.StatusCode = request.StatusCode;
+            base.Response.StatusDescription = request.StatusDescription;
+            base.Response.ContentType = request.ContentType ?? MimeTypes.PlainText;
+
+            if (request.Body != null)
+                base.Response.Write(request.Body);
+
+            base.Response.EndRequest(skipHeaders:true);
+
+            return request.Body;
+        }
     }
 
     public class ErrorResponse : IHasResponseStatus
@@ -141,4 +214,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+
+    [Route("/customresponse/{StatusCode}")]
+    public class EchoCustomResponse : IReturn<string>
+    {
+        public int StatusCode { get; set; }
+        public string StatusDescription { get; set; }
+        public string ContentType { get; set; }
+        public string Body { get; set; }
+    }
 }
