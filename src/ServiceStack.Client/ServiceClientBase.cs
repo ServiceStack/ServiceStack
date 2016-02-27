@@ -1400,6 +1400,93 @@ namespace ServiceStack
             return Send<HttpWebResponse>(HttpMethods.Head, ResolveUrl(HttpMethods.Head, relativeOrAbsoluteUrl), null);
         }
 
+        public virtual TResponse PostFilesWithRequest<TResponse>(List<Stream> filesToUpload, List<string> fileNames, object request, string fieldName = "upload")
+        {
+            return PostFilesWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), filesToUpload, fileNames, request, fieldName);
+        }
+
+        public virtual TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, List<Stream> filesToUpload, List<string> fileNames, object request, string fieldName = "upload")
+        {
+            int fileCount = 0;
+            long currentStreamPosition = 0;
+
+            var requestUri = ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl);
+            
+            Func<WebRequest> createWebRequest = () =>
+            {
+                var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
+
+                var queryString = QueryStringSerializer.SerializeToString(request);
+
+                var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
+                var boundary = "----------------------------" + Guid.NewGuid().ToString("N");
+                webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
+                boundary = "--" + boundary;
+                var newLine = "\r\n";
+                using (var outputStream = PclExport.Instance.GetRequestStream(webRequest))
+                {
+                    foreach (var key in nameValueCollection.AllKeys)
+                    {
+                        outputStream.Write(boundary + newLine);
+                        outputStream.Write("Content-Disposition: form-data;name=\"{0}\"{1}".FormatWith(key, newLine));
+                        outputStream.Write("Content-Type: text/plain;charset=utf-8{0}{1}".FormatWith(newLine, newLine));
+                        outputStream.Write(nameValueCollection[key] + newLine);
+                    }
+                    foreach (var file in filesToUpload)
+                    {
+                        currentStreamPosition = file.Position;
+                        fileCount++;
+                        outputStream.Write(boundary + newLine);
+                        var fileName = fileNames != null && fileNames.Count >= fileCount ? fileNames[fileCount - 1] : "upload{0}".Fmt(fileCount) ;
+                        outputStream.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}Content-Type: application/octet-stream{3}{4}".FormatWith("{0}{1}".Fmt(fieldName,fileCount), fileName, newLine, newLine, newLine));
+                        var buffer = new byte[4096];
+                        int byteCount;
+                        int bytesWritten = 0;
+                        while ((byteCount = file.Read(buffer, 0, 4096)) > 0)
+                        {
+                            outputStream.Write(buffer, 0, byteCount);
+
+                            if (OnUploadProgress != null)
+                            {
+                                bytesWritten += byteCount;
+                                OnUploadProgress(bytesWritten, file.Length);
+                            }
+                        }
+                        outputStream.Write(newLine);
+                        outputStream.Write(boundary );
+                        outputStream.Write(fileCount < filesToUpload.Count ? newLine : "--");
+                    }
+                }
+
+                return webRequest;
+            };
+
+            try
+            {
+                var webRequest = createWebRequest();
+                var webResponse = PclExport.Instance.GetResponse(webRequest);
+                return HandleResponse<TResponse>(webResponse);
+            }
+            catch (Exception ex)
+            {
+                TResponse response;
+
+                // restore original position before retry
+                filesToUpload[fileCount-1].Seek(currentStreamPosition, SeekOrigin.Begin);
+
+                if (!HandleResponseException(
+                    ex, request, requestUri, createWebRequest,
+                    c => PclExport.Instance.GetResponse(c),
+                    out response))
+                {
+                    throw;
+                }
+
+                return response;
+            }
+        }
+
+
         public virtual TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
         {
             return PostFileWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, fileName, request, fieldName);
@@ -1478,6 +1565,7 @@ namespace ServiceStack
             }
         }
 
+    
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
             var currentStreamPosition = fileToUpload.Position;
