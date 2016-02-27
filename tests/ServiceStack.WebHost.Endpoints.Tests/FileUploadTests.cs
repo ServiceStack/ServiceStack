@@ -220,8 +220,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             using (var stream2 = uploadFile.OpenRead())
             {
                 var response = client.PostFilesWithRequest<MultipleFileUploadResponse>(
-                    ListeningOn + "/multi-fileuploads?CustomerId=123&CustomerName=Foo,Bar",
-                    request,
+                    new MultipleFileUpload { CustomerId = 123, CustomerName = "Foo,Bar" },
                     new[] {
                         new UploadFile("upload1.html", stream1),
                         new UploadFile("upload2.html", stream2),
