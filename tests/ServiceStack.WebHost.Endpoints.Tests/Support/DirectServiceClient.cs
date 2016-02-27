@@ -470,5 +470,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         {
             throw new NotImplementedException();
         }
+
+        public TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

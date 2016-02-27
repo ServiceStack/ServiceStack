@@ -168,6 +168,47 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_POST_upload_multiple_files_using_ServiceClient_with_request_and_QueryString()
+        {
+            IServiceClient client = new JsonServiceClient(ListeningOn);
+
+            var request = new FileUpload();
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+
+            using (var stream1 = uploadFile.OpenRead())
+            using (var stream2 = uploadFile.OpenRead())
+            {
+                var response = client.PostFilesWithRequest<MultipleFileUploadResponse>(
+                    ListeningOn + "/multi-fileuploads?CustomerId=123&CustomerName=Foo,Bar",
+                    request,
+                    new[] {
+                        new UploadFile("upload1.html", stream1),
+                        new UploadFile("upload2.html", stream2),
+                    });
+
+                var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+
+                Assert.That(response.Results.Count, Is.EqualTo(2));
+
+                var file1 = response.Results[0];
+                Assert.That(file1.Name, Is.EqualTo("upload0"));
+                Assert.That(file1.FileName, Is.EqualTo("upload1.html"));
+                Assert.That(file1.ContentLength, Is.EqualTo(uploadFile.Length));
+                Assert.That(file1.Contents, Is.EqualTo(expectedContents));
+                Assert.That(file1.CustomerName, Is.EqualTo("Foo,Bar"));
+                Assert.That(file1.CustomerId, Is.EqualTo(123));
+
+                var file2 = response.Results[1];
+                Assert.That(file2.Name, Is.EqualTo("upload1"));
+                Assert.That(file2.FileName, Is.EqualTo("upload2.html"));
+                Assert.That(file2.ContentLength, Is.EqualTo(uploadFile.Length));
+                Assert.That(file2.Contents, Is.EqualTo(expectedContents));
+                Assert.That(file2.CustomerName, Is.EqualTo("Foo,Bar"));
+                Assert.That(file2.CustomerId, Is.EqualTo(123));
+            }
+        }
+
+        [Test]
         public void Can_POST_upload_file_using_ServiceClient_with_request_containing_utf8_chars()
         {
             var client = new JsonServiceClient(ListeningOn);

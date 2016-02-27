@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 
@@ -53,6 +54,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public DateTime CreatedDate { get; set; }
     }
 
+    [Route("/multi-fileuploads", HttpMethods.Post)]
+    public class MultipleFileUpload : IReturn<MultipleFileUploadResponse>
+    {
+        public string RelativePath { get; set; }
+        public string CustomerName { get; set; }
+        public int? CustomerId { get; set; }
+        public DateTime CreatedDate { get; set; }
+    }
+
+    public class MultipleFileUploadResponse : IHasResponseStatus
+    {
+        public List<FileUploadResponse> Results { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
     public class FileUploadService : Service
     {
         public object Get(FileUpload request)
@@ -99,5 +115,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
                 CreatedDate = request.CreatedDate
             };
         }
+
+        public object Post(MultipleFileUpload request)
+        {
+            return new MultipleFileUploadResponse
+            {
+                Results = this.Request.Files.Map(file => new FileUploadResponse
+                {
+                    Name = file.Name,
+                    FileName = file.FileName,
+                    ContentLength = file.ContentLength,
+                    ContentType = file.ContentType,
+                    Contents = new StreamReader(file.InputStream).ReadToEnd(),
+                    CustomerId = request.CustomerId,
+                    CustomerName = request.CustomerName,
+                    CreatedDate = request.CreatedDate
+                })
+            };
+        }
+
     }
 }

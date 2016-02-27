@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Reflection;
+using System.Web.UI.WebControls;
 using ServiceStack.Auth;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
@@ -1400,18 +1401,20 @@ namespace ServiceStack
             return Send<HttpWebResponse>(HttpMethods.Head, ResolveUrl(HttpMethods.Head, relativeOrAbsoluteUrl), null);
         }
 
-        public virtual TResponse PostFilesWithRequest<TResponse>(List<Stream> filesToUpload, List<string> fileNames, object request, string fieldName = "upload")
+        public virtual TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
         {
-            return PostFilesWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), filesToUpload, fileNames, request, fieldName);
+            return PostFilesWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray());
         }
 
-        public virtual TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, List<Stream> filesToUpload, List<string> fileNames, object request, string fieldName = "upload")
+        public virtual TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
         {
-            int fileCount = 0;
-            long currentStreamPosition = 0;
+            return PostFilesWithRequest<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray());
+        }
 
-            var requestUri = ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl);
-            
+        private TResponse PostFilesWithRequest<TResponse>(string requestUri, object request, UploadFile[] files)
+        {
+            var fileCount = 0;
+            long currentStreamPosition = 0;
             Func<WebRequest> createWebRequest = () =>
             {
                 var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
@@ -1432,29 +1435,34 @@ namespace ServiceStack
                         outputStream.Write("Content-Type: text/plain;charset=utf-8{0}{1}".FormatWith(newLine, newLine));
                         outputStream.Write(nameValueCollection[key] + newLine);
                     }
-                    foreach (var file in filesToUpload)
+
+                    var buffer = new byte[4096];
+                    for (fileCount = 0; fileCount < files.Length; fileCount++)
                     {
-                        currentStreamPosition = file.Position;
-                        fileCount++;
+                        var file = files[fileCount];
+                        currentStreamPosition = file.Stream.Position;
                         outputStream.Write(boundary + newLine);
-                        var fileName = fileNames != null && fileNames.Count >= fileCount ? fileNames[fileCount - 1] : "upload{0}".Fmt(fileCount) ;
-                        outputStream.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}Content-Type: application/octet-stream{3}{4}".FormatWith("{0}{1}".Fmt(fieldName,fileCount), fileName, newLine, newLine, newLine));
-                        var buffer = new byte[4096];
+                        var fileName = file.FileName ?? "upload{0}".Fmt(fileCount);
+                        var fieldName = file.FieldName ?? "upload{0}".Fmt(fileCount);
+                        outputStream.Write(string.Format(
+                            "Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}Content-Type: application/octet-stream{3}{4}",
+                                fieldName, fileName, newLine, newLine, newLine));
+
                         int byteCount;
                         int bytesWritten = 0;
-                        while ((byteCount = file.Read(buffer, 0, 4096)) > 0)
+                        while ((byteCount = file.Stream.Read(buffer, 0, 4096)) > 0)
                         {
                             outputStream.Write(buffer, 0, byteCount);
 
                             if (OnUploadProgress != null)
                             {
                                 bytesWritten += byteCount;
-                                OnUploadProgress(bytesWritten, file.Length);
+                                OnUploadProgress(bytesWritten, file.Stream.Length);
                             }
                         }
                         outputStream.Write(newLine);
-                        outputStream.Write(boundary );
-                        outputStream.Write(fileCount < filesToUpload.Count ? newLine : "--");
+                        outputStream.Write(boundary);
+                        outputStream.Write(fileCount < files.Length ? newLine : "--");
                     }
                 }
 
@@ -1472,7 +1480,7 @@ namespace ServiceStack
                 TResponse response;
 
                 // restore original position before retry
-                filesToUpload[fileCount-1].Seek(currentStreamPosition, SeekOrigin.Begin);
+                files[fileCount - 1].Stream.Seek(currentStreamPosition, SeekOrigin.Begin);
 
                 if (!HandleResponseException(
                     ex, request, requestUri, createWebRequest,
@@ -1485,7 +1493,6 @@ namespace ServiceStack
                 return response;
             }
         }
-
 
         public virtual TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
         {

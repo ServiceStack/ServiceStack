@@ -866,6 +866,16 @@ namespace ServiceStack
             return GetSyncResponse(PostFileWithRequestAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, request, fileName));
         }
 
+        public TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
+        {
+            throw new NotImplementedException();
+        }
+
         public TResponse Send<TResponse>(object request)
         {
             return GetSyncResponse(SendAsync<TResponse>(request));

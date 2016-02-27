@@ -543,6 +543,16 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
+            public TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
+            {
+                throw new NotImplementedException();
+            }
+
+            public TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
+            {
+                throw new NotImplementedException();
+            }
+
             public int Version { get; set; }
             public string SessionId { get; set; }
         }
