@@ -910,7 +910,7 @@ namespace ServiceStack
             }
 
             return SendAsync<TResponse>(HttpMethods.Post, requestUri, content)
-                .ContinueWith(t => { disposables.ForEach(x => x.Dispose()); return t.Result; },
+                .ContinueWith(t => { foreach (var d in disposables) d.Dispose(); return t.Result; },
                 TaskContinuationOptions.ExecuteSynchronously);
         }
 
