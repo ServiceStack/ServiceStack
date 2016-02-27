@@ -157,7 +157,8 @@ namespace ServiceStack
                 if (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "OPTIONS" || httpMethod == "HEAD")
                 {
                     var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
-                    predefinedRoute += "?" + RestRoute.GetQueryString(requestDto, queryProperties);
+                    if (queryProperties.Count > 0)
+                        predefinedRoute += "?" + RestRoute.GetQueryString(requestDto, queryProperties);
                 }
 
                 return urlFilter == null ? predefinedRoute : urlFilter.ToUrl(predefinedRoute);
