@@ -866,14 +866,52 @@ namespace ServiceStack
             return GetSyncResponse(PostFileWithRequestAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, request, fileName));
         }
 
-        public TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
+        public virtual TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
         {
-            throw new NotImplementedException();
+            return GetSyncResponse(PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray()));
         }
 
-        public TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
+        public virtual TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
         {
-            throw new NotImplementedException();
+            return GetSyncResponse(PostFilesWithRequestAsync<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray()));
+        }
+
+        public Task<TResponse> PostFilesWithRequestAsync<TResponse>(string requestUri, object request, UploadFile[] files)
+        {
+            var queryString = QueryStringSerializer.SerializeToString(request);
+            var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
+
+            var content = new MultipartFormDataContent();
+
+            foreach (string key in nameValueCollection)
+            {
+                var value = nameValueCollection[key];
+                content.Add(new StringContent(value), "\"{0}\"".Fmt(key));
+            }
+
+            var disposables = new List<IDisposable> { content };
+
+            for (int i = 0; i < files.Length; i++)
+            {
+                var file = files[i];
+                var fileBytes = file.Stream.ReadFully();
+                var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
+                disposables.Add(fileContent);
+                var fieldName = file.FieldName ?? "upload{0}".Fmt(i);
+                var fileName = file.FileName ?? "upload{0}".Fmt(i);
+                fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+                {
+                    Name = fieldName,
+                    FileName = fileName,
+                };
+                fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MimeTypes.GetMimeType(fileName));
+
+                content.Add(fileContent, fileName, fileName);
+            }
+
+            return SendAsync<TResponse>(HttpMethods.Post, requestUri, content)
+                .ContinueWith(t => { disposables.ForEach(x => x.Dispose()); return t.Result; },
+                TaskContinuationOptions.ExecuteSynchronously);
         }
 
         public TResponse Send<TResponse>(object request)
