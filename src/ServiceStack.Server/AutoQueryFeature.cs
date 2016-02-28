@@ -43,6 +43,7 @@ namespace ServiceStack
         public bool EnableRawSqlFilters { get; set; }
         public bool EnableAutoQueryViewer { get; set; }
         public AutoQueryViewerConfig AutoQueryViewerConfig { get; set; }
+        public Action<AutoQueryMetadataResponse> MetadataFilter { get; set; }
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
@@ -547,6 +548,9 @@ namespace ServiceStack
             response.Types.AddRange(types);
 
             response.UserInfo.QueryCount = response.Operations.Count;
+
+            if (feature.MetadataFilter != null)
+                feature.MetadataFilter(response);
 
             return response;
         }
