@@ -577,6 +577,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class ChangeConnectionInfo : IReturn<ChangeDbResponse> { }
+    public class QueryChangeConnectionInfo : QueryBase<Rockstar> { }
+
+    [ConnectionInfo(NamedConnection = AutoQueryAppHost.SqlServerNamedConnection)]
+    public class NamedConnectionServices : Service
+    {
+        public IAutoQuery AutoQuery { get; set; }
+
+        public object Any(ChangeConnectionInfo request)
+        {
+            return new ChangeDbResponse { Results = Db.Select<Rockstar>() };
+        }
+
+        public object Any(QueryChangeConnectionInfo query)
+        {
+            return AutoQuery.Execute(query, AutoQuery.CreateQuery(query, Request));
+        }
+    }
+
     [TestFixture]
     public class AutoQueryTests
     {
@@ -1467,6 +1486,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 ConnectionString = AutoQueryAppHost.SqlServerConnString,
                 ProviderName = AutoQueryAppHost.SqlServerProvider,
             });
+            Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
+            Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
+        }
+
+        [Test]
+        public void Can_Change_Named_Connection_with_ConnectionInfoAttribute()
+        {
+            var response = client.Get(new ChangeConnectionInfo());
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Microsoft"));
+
+            var aqResponse = client.Get(new QueryChangeConnectionInfo());
             Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
             Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
         }

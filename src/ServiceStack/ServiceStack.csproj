@@ -98,6 +98,7 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="ConnectionInfo.cs" />
+    <Compile Include="ConnectionInfoAttribute.cs" />
     <Compile Include="FluentValidation\Internal\CollectionPropertyRule.cs" />
     <Compile Include="Host\Handlers\StaticContentHandler.cs" />
     <Compile Include="NativeTypes\Kotlin\KotlinGenerator.cs" />
