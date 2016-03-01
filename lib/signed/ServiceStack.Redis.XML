@@ -96,6 +96,12 @@
             Creates a new instance of the Redis Client from NewFactoryFn. 
             </summary>
         </member>
+        <member name="M:ServiceStack.Redis.RedisClient.StoreAsHash``1(``0)">
+            <summary>
+            Store object fields as a dictionary of values in a Hash value.
+            Conversion to Dictionary can be customized with RedisClient.ConvertToHashFn
+            </summary>
+        </member>
         <member name="M:ServiceStack.Redis.RedisClient.UrnKey``1(``0)">
             <summary>
             Returns key with automatic object id detection in provided value with <typeparam name="T">generic type</typeparam>.
@@ -222,9 +228,171 @@
             Redis command that does not get queued
             </summary>
         </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.ClientFactory">
+            <summary>
+            Factory used to Create `RedisClient` instances
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.DefaultConnectTimeout">
+            <summary>
+            The default RedisClient Socket ConnectTimeout (default -1, None)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.DefaultSendTimeout">
+            <summary>
+            The default RedisClient Socket SendTimeout (default -1, None)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.DefaultReceiveTimeout">
+            <summary>
+            The default RedisClient Socket ReceiveTimeout (default -1, None)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.DefaultIdleTimeOutSecs">
+            <summary>
+            Default Idle TimeOut before a connection is considered to be stale (default 240 secs)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.DefaultRetryTimeout">
+            <summary>
+            The default RetryTimeout for auto retry of failed operations (default 3000ms)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.DefaultMaxPoolSize">
+            <summary>
+            Default Max Pool Size for Pooled Redis Client Managers (default none)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.BackOffMultiplier">
+            <summary>
+            The BackOff multiplier failed Auto Retries starts from (default 10ms)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.BufferLength">
+            <summary>
+            The Byte Buffer Size to combine Redis Operations within (default 1450 bytes)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.BufferPoolMaxSize">
+            <summary>
+            The Byte Buffer Size for Operations to use a byte buffer pool (default 500kb)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.VerifyMasterConnections">
+            <summary>
+            Whether Connections to Master hosts should be verified they're still master instances (default true)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.HostLookupTimeoutMs">
+            <summary>
+            The ConnectTimeout on clients used to find the next available host (default 200ms)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.AssumeServerVersion">
+            <summary>
+            Skip ServerVersion Checks by specifying Min Version number, e.g: 2.8.12 => 2812, 2.9.1 => 2910
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.DeactivatedClientsExpiry">
+            <summary>
+            How long to hold deactivated clients for before disposing their connection (default 1 min)
+            Dispose of deactivated Clients immediately with TimeSpan.Zero
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.DisableVerboseLogging">
+            <summary>
+            Whether Debug Logging should log detailed Redis operations (default false)
+            </summary>
+        </member>
         <member name="M:ServiceStack.Redis.RedisConfig.Reset">
             <summary>
             Resets Redis Config and Redis Stats back to default values
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.RedisManagerFactory">
+            <summary>
+            Change to use a different IRedisClientsManager 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.HostFilter">
+            <summary>
+            Configure the Redis Connection String to use for a Redis Client Host
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.RedisManager">
+            <summary>
+            The configured Redis Client Manager this Sentinel managers
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.OnFailover">
+            <summary>
+            Fired when Sentinel fails over the Redis Client Manager to a new master
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.OnWorkerError">
+            <summary>
+            Fired when the Redis Sentinel Worker connection fails
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.OnSentinelMessageReceived">
+            <summary>
+            Fired when the Sentinel worker receives a message from the Sentinel Subscription
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.IpAddressMap">
+            <summary>
+            Map the internal IP's returned by Sentinels to its external IP
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.ScanForOtherSentinels">
+            <summary>
+            Whether to routinely scan for other sentinel hosts (default true)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.RefreshSentinelHostsAfter">
+            <summary>
+            What interval to scan for other sentinel hosts (default 10 mins)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.WaitBetweenFailedHosts">
+            <summary>
+            How long to wait after failing before connecting to next redis instance (default 250ms)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.MaxWaitBetweenFailedHosts">
+            <summary>
+            How long to retry connecting to hosts before throwing (default 60 secs)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.WaitBeforeForcingMasterFailover">
+            <summary>
+            How long to wait after consecutive failed connection attempts to master before forcing 
+            a Sentinel to failover the current master (default 60 secs)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.SentinelWorkerConnectTimeoutMs">
+            <summary>
+            The Max Connection time for Sentinel Worker (default 100ms)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.SentinelWorkerReceiveTimeoutMs">
+            <summary>
+            The Max TCP Socket Receive time for Sentinel Worker (default 100ms)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.SentinelWorkerSendTimeoutMs">
+            <summary>
+            The Max TCP Socket Send time for Sentinel Worker (default 100ms)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.ResetWhenSubjectivelyDown">
+            <summary>
+            Reset client connections when Sentinel reports redis instance is subjectively down (default true)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisSentinel.ResetWhenObjectivelyDown">
+            <summary>
+            Reset client connections when Sentinel reports redis instance is objectively down (default true)
             </summary>
         </member>
         <member name="M:ServiceStack.Redis.RedisSentinel.Start">
@@ -321,6 +489,11 @@
         <member name="P:ServiceStack.Redis.RedisStats.TotalRetryTimedout">
             <summary>
             Number of times a Retry Request failed after exceeding RetryTimeout
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisStats.TotalPendingDeactivatedClients">
+            <summary>
+            Total number of deactivated clients that are pending being disposed
             </summary>
         </member>
         <member name="T:ServiceStack.Redis.ShardedConnectionPool">
