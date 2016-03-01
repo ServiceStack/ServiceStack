@@ -220,6 +220,16 @@ The Fields still need to be defined on the Response DTO as this feature doesn't 
 DTO Schema, only which fields are populated. This does change the underlying RDBMS SELECT that's executed, 
 also benefiting from reduced bandwidth between your RDBMS and App Server.
 
+A useful [JSON customization](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/release-notes.md#customize-json-responses-on-the-fly) 
+that you can add when specifying custom fields is `ExcludeDefaultValues`, e.g:
+
+    /query?Fields=Id,Name,Description,JoinTableId&jsconfig=ExcludeDefaultValues
+
+Which will remove any value type fields with a **default value** from the JSON response, e.g:
+    
+ - http://github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At
+ - http://github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At&jsconfig=ExcludeDefaultValues
+
 ### Multiple Conditions
 
 Previously unsupported, AutoQuery now allows specifying multiple conditions with the same name, e.g:
