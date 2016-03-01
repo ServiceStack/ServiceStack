@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -209,9 +210,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_POST_upload_multiple_files_using_ServiceClient_with_request_and_QueryString_JsonHttpClient()
+        public async Task Can_POST_upload_multiple_files_using_ServiceClient_with_request_and_QueryString_JsonHttpClient()
         {
-            IServiceClient client = new JsonHttpClient(ListeningOn);
+            var client = new JsonHttpClient(ListeningOn);
 
             var request = new FileUpload();
             var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
@@ -219,7 +220,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             using (var stream1 = uploadFile.OpenRead())
             using (var stream2 = uploadFile.OpenRead())
             {
-                var response = client.PostFilesWithRequest<MultipleFileUploadResponse>(
+                var response = await client.PostFilesWithRequestAsync<MultipleFileUploadResponse>(
                     new MultipleFileUpload { CustomerId = 123, CustomerName = "Foo,Bar" },
                     new[] {
                         new UploadFile("upload1.html", stream1),
