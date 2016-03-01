@@ -227,8 +227,8 @@ that you can add when specifying custom fields is `ExcludeDefaultValues`, e.g:
 
 Which will remove any value type fields with a **default value** from the JSON response, e.g:
     
- - http://github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At
- - http://github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At&jsconfig=ExcludeDefaultValues
+ - [github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At](http://github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At)
+ - [github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At&jsconfig=ExcludeDefaultValues](http://github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At&jsconfig=ExcludeDefaultValues)
 
 ### Multiple Conditions
 
