@@ -79,13 +79,13 @@ namespace ServiceStack
         private ICacheClient cache;
         public virtual ICacheClient Cache
         {
-            get { return cache ?? HostContext.AppHost.GetCacheClient(Request); }
+            get { return cache ?? (cache = HostContext.AppHost.GetCacheClient(Request)); }
         }
 
         private MemoryCacheClient localCache;
         public virtual MemoryCacheClient LocalCache
         {
-            get { return LocalCache ?? HostContext.AppHost.GetMemoryCacheClient(Request); }
+            get { return localCache ?? (localCache = HostContext.AppHost.GetMemoryCacheClient(Request)); }
         }
 
         private IDbConnection db;
