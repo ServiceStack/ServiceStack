@@ -172,16 +172,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_POST_upload_multiple_files_using_ServiceClient_with_request_and_QueryString()
         {
             IServiceClient client = new JsonServiceClient(ListeningOn);
-
-            var request = new FileUpload();
             var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
 
             using (var stream1 = uploadFile.OpenRead())
             using (var stream2 = uploadFile.OpenRead())
             {
                 var response = client.PostFilesWithRequest<MultipleFileUploadResponse>(
-                    ListeningOn + "/multi-fileuploads?CustomerId=123&CustomerName=Foo,Bar",
-                    request,
+                    ListeningOn + "/multi-fileuploads?CustomerId=123",
+                    new MultipleFileUpload { CustomerName = "Foo,Bar" },
                     new[] {
                         new UploadFile("upload1.html", stream1),
                         new UploadFile("upload2.html", stream2),
@@ -213,8 +211,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Can_POST_upload_multiple_files_using_ServiceClient_with_request_and_QueryString_JsonHttpClient()
         {
             var client = new JsonHttpClient(ListeningOn);
-
-            var request = new FileUpload();
             var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
 
             using (var stream1 = uploadFile.OpenRead())
