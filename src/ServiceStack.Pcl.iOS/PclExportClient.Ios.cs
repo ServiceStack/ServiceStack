@@ -4,7 +4,6 @@
 #if __IOS__
 using System;
 using System.Collections.Specialized;
-using System.Net;
 using System.Threading;
 using System.Net;
 using ServiceStack.Web;

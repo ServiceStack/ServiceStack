@@ -13,7 +13,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-#if !(ANDROID || __IOS__)
+#if !(ANDROID || __IOS__ || __MAC__)
     using System.Web;
 
     public class Net40PclExportClient : PclExportClient
