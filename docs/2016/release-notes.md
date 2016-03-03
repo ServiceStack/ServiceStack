@@ -515,9 +515,9 @@ public interface IServerEvents
 }
 ```
 
-## [TypeScript React App (Beta)](https://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7)
+## [TypeScript React App (beta)](https://github.com/ServiceStackApps/typescript-react-template/)
 
-[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/typescript-react-jspm-banner.png)](https://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7)
+[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/typescript-react-jspm-banner.png)](https://github.com/ServiceStackApps/typescript-react-template/)
 
 We've spent a fair amount of time researching the JavaScript ecosystem to discover what we believe offers VS.NET 
 developers the most optimal balance of power, simplicity and tooling to build and maintain large JavaScript Apps. 
@@ -555,6 +555,9 @@ We've integrated these powerful combinations of technologies and packaged it in 
 [ServiceStackVS VS.NET Extension](https://github.com/ServiceStack/ServiceStackVS):
 
 ![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/typescript-react-jspm-template.png)
+
+To learn more about this template and explore its different features. please see the 
+[in-depth typescript-react-template guide](https://github.com/ServiceStackApps/typescript-react-template/).
 
 ## [TypeScript Redux](https://github.com/ServiceStackApps/typescript-redux)
 
