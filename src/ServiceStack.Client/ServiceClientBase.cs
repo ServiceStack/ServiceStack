@@ -509,8 +509,10 @@ namespace ServiceStack
 
             try
             {
-                var webResponse = PclExport.Instance.GetResponse(client);
-                return HandleResponse<List<TResponse>>(webResponse);
+                using (var webResponse = PclExport.Instance.GetResponse(client))
+                {
+                    return HandleResponse<List<TResponse>>(webResponse);
+                }
             }
             catch (Exception ex)
             {
@@ -556,15 +558,17 @@ namespace ServiceStack
 
             try
             {
-                var webResponse = PclExport.Instance.GetResponse(client);
-                var response = HandleResponse<TResponse>(webResponse);
-
-                if (ResultsFilterResponse != null)
+                using (var webResponse = PclExport.Instance.GetResponse(client))
                 {
-                    ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
-                }
+                    var response = HandleResponse<TResponse>(webResponse);
 
-                return response;
+                    if (ResultsFilterResponse != null)
+                    {
+                        ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
+                    }
+
+                    return response;
+                }
             }
             catch (Exception ex)
             {
@@ -608,8 +612,10 @@ namespace ServiceStack
                     if (OnAuthenticationRequired != null)
                         OnAuthenticationRequired(client);
 
-                    var webResponse = getResponse(client);
-                    response = HandleResponse<TResponse>(webResponse);
+                    using (var webResponse = getResponse(client))
+                    {
+                        response = HandleResponse<TResponse>(webResponse);
+                    }
 
                     return true;
                 }
@@ -1139,15 +1145,17 @@ namespace ServiceStack
 
             try
             {
-                var webResponse = PclExport.Instance.GetResponse(client);
-                var response = HandleResponse<TResponse>(webResponse);
-
-                if (ResultsFilterResponse != null)
+                using (var webResponse = PclExport.Instance.GetResponse(client))
                 {
-                    ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
-                }
+                    var response = HandleResponse<TResponse>(webResponse);
 
-                return response;
+                    if (ResultsFilterResponse != null)
+                    {
+                        ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
+                    }
+
+                    return response;
+                }
             }
             catch (Exception ex)
             {
@@ -1471,8 +1479,10 @@ namespace ServiceStack
             try
             {
                 var webRequest = createWebRequest();
-                var webResponse = PclExport.Instance.GetResponse(webRequest);
-                return HandleResponse<TResponse>(webResponse);
+                using (var webResponse = PclExport.Instance.GetResponse(webRequest))
+                {
+                    return HandleResponse<TResponse>(webResponse);
+                }
             }
             catch (Exception ex)
             {
@@ -1549,8 +1559,10 @@ namespace ServiceStack
             try
             {
                 var webRequest = createWebRequest();
-                var webResponse = PclExport.Instance.GetResponse(webRequest);
-                return HandleResponse<TResponse>(webResponse);
+                using (var webResponse = PclExport.Instance.GetResponse(webRequest))
+                {
+                    return HandleResponse<TResponse>(webResponse);
+                }
             }
             catch (Exception ex)
             {
@@ -1582,8 +1594,10 @@ namespace ServiceStack
             {
                 var webRequest = createWebRequest();
                 webRequest.UploadFile(fileToUpload, fileName, mimeType);
-                var webResponse = PclExport.Instance.GetResponse(webRequest);
-                return HandleResponse<TResponse>(webResponse);
+                using (var webResponse = PclExport.Instance.GetResponse(webRequest))
+                {
+                    return HandleResponse<TResponse>(webResponse);
+                }
             }
             catch (Exception ex)
             {
@@ -1624,7 +1638,6 @@ namespace ServiceStack
                 return (TResponse)(object)webResponse.GetResponseStream();
             }
 
-            using (webResponse)
             using (var responseStream = webResponse.GetResponseStream())
             {
                 if (typeof(TResponse) == typeof(string))
