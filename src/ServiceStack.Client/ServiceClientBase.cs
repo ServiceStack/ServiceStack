@@ -557,12 +557,15 @@ namespace ServiceStack
             try
             {
                 var webResponse = PclExport.Instance.GetResponse(client);
-                var response = HandleResponse<TResponse>(webResponse);
+                ApplyWebResponseFilters(webResponse);
 
+                var response = GetResponse<TResponse>(webResponse);
                 if (ResultsFilterResponse != null)
                 {
                     ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
                 }
+
+                DisposeIfRequired<TResponse>(webResponse);
 
                 return response;
             }
@@ -1140,12 +1143,15 @@ namespace ServiceStack
             try
             {
                 var webResponse = PclExport.Instance.GetResponse(client);
-                var response = HandleResponse<TResponse>(webResponse);
+                ApplyWebResponseFilters(webResponse);
 
+                var response = GetResponse<TResponse>(webResponse);
                 if (ResultsFilterResponse != null)
                 {
                     ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
                 }
+
+                DisposeIfRequired<TResponse>(webResponse);
 
                 return response;
             }
@@ -1614,8 +1620,26 @@ namespace ServiceStack
         {
             ApplyWebResponseFilters(webResponse);
 
+            var response = GetResponse<TResponse>(webResponse);
+            DisposeIfRequired<TResponse>(webResponse);
+
+            return response;            
+        }
+
+        private static void DisposeIfRequired<TResponse>(WebResponse webResponse)
+        {
+            if (typeof(TResponse) == typeof(HttpWebResponse) && webResponse is HttpWebResponse)
+                return;
+            if (typeof(TResponse) == typeof(Stream))
+                return;
+
+            using (webResponse) {}
+        }
+
+        private TResponse GetResponse<TResponse>(WebResponse webResponse)
+        {
             //Callee Needs to dispose of response manually
-            if (typeof(TResponse) == typeof(HttpWebResponse) && (webResponse is HttpWebResponse))
+            if (typeof(TResponse) == typeof(HttpWebResponse) && webResponse is HttpWebResponse)
             {
                 return (TResponse)Convert.ChangeType(webResponse, typeof(TResponse), null);
             }
@@ -1624,7 +1648,6 @@ namespace ServiceStack
                 return (TResponse)(object)webResponse.GetResponseStream();
             }
 
-            using (webResponse)
             using (var responseStream = webResponse.GetResponseStream())
             {
                 if (typeof(TResponse) == typeof(string))
