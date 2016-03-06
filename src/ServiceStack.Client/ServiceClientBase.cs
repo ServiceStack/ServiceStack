@@ -1642,7 +1642,7 @@ namespace ServiceStack
             using (webResponse) {}
         }
 
-        private TResponse GetResponse<TResponse>(WebResponse webResponse)
+        protected TResponse GetResponse<TResponse>(WebResponse webResponse)
         {
             //Callee Needs to dispose of response manually
             if (typeof(TResponse) == typeof(HttpWebResponse) && webResponse is HttpWebResponse)
