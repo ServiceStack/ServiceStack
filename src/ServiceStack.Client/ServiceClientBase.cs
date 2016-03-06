@@ -1201,11 +1201,17 @@ namespace ServiceStack
             Send<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
+        /// </summary>
         public virtual HttpWebResponse Get(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
+        /// </summary>
         public virtual HttpWebResponse Get(string relativeOrAbsoluteUrl)
         {
             return Send<HttpWebResponse>(HttpMethods.Get, ResolveUrl(HttpMethods.Get, relativeOrAbsoluteUrl), null);
