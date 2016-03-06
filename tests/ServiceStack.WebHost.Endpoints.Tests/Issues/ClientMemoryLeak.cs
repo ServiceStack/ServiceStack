@@ -3,6 +3,7 @@ using System.Reflection;
 using Funq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Net;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Issues
@@ -86,6 +87,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
             {
                 var response = client.Get<LeakRequest>("/leak/request" + i);
                 Assert.That(response.Name, Is.EqualTo("request" + i));
+                elapsedTicks.Add(sw.ElapsedTicks);
+            }
+
+            for (int i = 0; i < 10001; i += 1000)
+            {
+                "Elapsed Time: {0} ticks for Request at: #{1}".Print(
+                    elapsedTicks[i + 1] - elapsedTicks[i], i);
+            }
+        }
+
+        [Test]
+        public void Run_GET_url_HttpWebResponse_in_loop()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            client.Get(new LeakRequest { Name = "warmup" });
+
+            var sw = Stopwatch.StartNew();
+            var elapsedTicks = new List<double> { sw.ElapsedMilliseconds };
+
+            for (int i = 0; i < 10001; i++)
+            {
+                using (HttpWebResponse response = client.Get("/leak/request" + i))
+                {
+                    response.Close();
+                }
                 elapsedTicks.Add(sw.ElapsedTicks);
             }
 
