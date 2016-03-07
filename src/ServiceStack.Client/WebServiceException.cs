@@ -14,7 +14,7 @@ namespace ServiceStack
     [Serializable]
 #endif
     public class WebServiceException
-        : Exception
+        : Exception, IHasStatusCode
     {
         public WebServiceException() { }
         public WebServiceException(string message) : base(message) { }
