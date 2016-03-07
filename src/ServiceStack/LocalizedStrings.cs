@@ -27,6 +27,7 @@
         public const string Redirect = "redirect";
         public const string AssignRoles = "assignroles";
         public const string UnassignRoles = "unassignroles";
+        public const string NotModified = "Not Modified";
     }
 
     public static class ErrorMessages

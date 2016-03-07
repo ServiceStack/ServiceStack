@@ -137,6 +137,18 @@ namespace ServiceStack
 
         public List<Cookie> Cookies { get; private set; }
 
+        public string ETag { get; set; }
+
+        public TimeSpan? Age { get; set; }
+
+        public TimeSpan? MaxAge { get; set; }
+
+        public DateTime? Expires { get; set; }
+
+        public DateTime? LastModified { get; set; }
+
+        public CacheControl CacheControl { get; set; }
+
         public Func<IDisposable> ResultScope { get; set; }
 
         private bool allowsPartialResponse;
@@ -151,14 +163,6 @@ namespace ServiceStack
                     this.Headers.Remove(HttpHeaders.AcceptRanges);
             }
             get { return allowsPartialResponse; }
-        }
-
-        public DateTime LastModified
-        {
-            set
-            {
-                this.Headers[HttpHeaders.LastModified] = value.ToUniversalTime().ToString("r");
-            }
         }
 
         public string Location
@@ -439,6 +443,22 @@ namespace ServiceStack
             };
         }
 
+        public static HttpResult NotModified(string description=null, 
+            CacheControl? cacheControl = null, 
+            TimeSpan? maxAge = null, 
+            string eTag = null, 
+            DateTime? lastModified=null)
+        {
+            return new HttpResult(HttpStatusCode.NotModified, 
+                description ?? HostContext.ResolveLocalizedString(LocalizedStrings.NotModified))
+            {
+                ETag = eTag,
+                LastModified = lastModified,
+                MaxAge = maxAge,
+                CacheControl = cacheControl.GetValueOrDefault(CacheControl.None),
+            };
+        }
+
         private void DisposeStream()
         {
             try
@@ -450,6 +470,17 @@ namespace ServiceStack
             }
             catch { /*ignore*/ }
         }
+    }
+    
+    [Flags]
+    public enum CacheControl : long
+    {
+        None = 0,
+        Public = 1 << 0,
+        Private = 1 << 1,
+        NoCache = 1 << 2,
+        NoStore = 1 << 3,
+        MustRevalidate = 1 << 4,
     }
 
     public static class HttpResultExtensions

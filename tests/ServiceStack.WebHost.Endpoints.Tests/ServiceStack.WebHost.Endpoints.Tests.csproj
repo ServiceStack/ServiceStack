@@ -180,6 +180,7 @@
     <Compile Include="AutoQueryTests.cs" />
     <Compile Include="BufferedRequestTests.cs" />
     <Compile Include="CachedServiceTests.cs" />
+    <Compile Include="CacheFeatureTests.cs" />
     <Compile Include="CancellableRequestTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="Config.cs" />
