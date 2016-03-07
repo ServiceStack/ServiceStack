@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using ServiceStack.Html;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -32,8 +33,8 @@ namespace ServiceStack
             if (httpResult == null)
                 return;
 
-            if (httpResult.StatusCode != HttpStatusCode.OK && 
-                httpResult.StatusCode != HttpStatusCode.NotModified)
+            if ((req.Verb != HttpMethods.Get && req.Verb != HttpMethods.Head) ||
+                (httpResult.StatusCode != HttpStatusCode.OK && httpResult.StatusCode != HttpStatusCode.NotModified))
                 return;
 
             if (httpResult.LastModified != null)

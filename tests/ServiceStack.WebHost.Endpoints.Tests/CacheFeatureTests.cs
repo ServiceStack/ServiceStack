@@ -52,6 +52,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_not_set_Etag_and_Default_MaxAge_on_POST()
+        {
+            var client = GetClient();
+            client.ResponseFilter = res => {
+                Assert.That(res.Headers[HttpHeaders.ETag], Is.Null);
+                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
+            };
+
+            var request = new SetCache { ETag = "etag" };
+            var response = client.Post(request);
+
+            Assert.That(response, Is.EqualTo(request));
+        }
+
+        [Test]
         public void Does_set_LastModified_and_Default_MaxAge()
         {
             var client = GetClient();
