@@ -37,7 +37,7 @@ namespace ServiceStack
                 httpResult.Headers[HttpHeaders.LastModified] = httpResult.LastModified.Value.ToUniversalTime().ToString("r");
 
             if (httpResult.ETag != null)
-                httpResult.Headers[HttpHeaders.ETag] = httpResult.ETag;
+                httpResult.Headers[HttpHeaders.ETag] = httpResult.ETag.Quoted();
 
             if (httpResult.Expires != null)
                 httpResult.Headers[HttpHeaders.Expires] = httpResult.Expires.Value.ToUniversalTime().ToString("r");
@@ -97,7 +97,10 @@ namespace ServiceStack
 
         public static bool ETagMatch(this IRequest req, string eTag)
         {
-            return eTag != null && eTag == req.Headers[HttpHeaders.IfNoneMatch];
+            if (string.IsNullOrEmpty(eTag))
+                return false;
+
+            return eTag.Quoted() == req.Headers[HttpHeaders.IfNoneMatch].Quoted();
         }
 
         public static bool NotModifiedSince(this IRequest req, DateTime? lastModified)

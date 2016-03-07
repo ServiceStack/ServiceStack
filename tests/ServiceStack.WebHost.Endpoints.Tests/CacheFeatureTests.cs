@@ -40,7 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = GetClient();
             client.ResponseFilter = res =>
             {
-                Assert.That(res.Headers[HttpHeaders.ETag], Is.EqualTo("etag"));
+                Assert.That(res.Headers[HttpHeaders.ETag], Is.EqualTo("etag".Quoted()));
                 Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=3600"));
             };
 
@@ -74,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.ResponseFilter = res =>
             {
                 Assert.That(res.Headers[HttpHeaders.Age], Is.EqualTo("864000"));
-                Assert.That(res.Headers[HttpHeaders.ETag], Is.EqualTo("etag"));
+                Assert.That(res.Headers[HttpHeaders.ETag], Is.EqualTo("etag".Quoted()));
                 Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=86400, public, no-store, must-revalidate"));
             };
 
@@ -95,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetClient();
             client.RequestFilter = req =>
-                req.Headers[HttpHeaders.IfNoneMatch] = "etag";
+                req.Headers[HttpHeaders.IfNoneMatch] = "etag".Quoted();
 
             client.ResponseFilter = res =>
                 Assert.That(res.ContentLength, Is.EqualTo(0));
@@ -117,11 +117,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetClient();
             client.RequestFilter = req =>
-                req.Headers[HttpHeaders.IfNoneMatch] = "etag";
+                req.Headers[HttpHeaders.IfNoneMatch] = "etag".Quoted();
 
             client.ResponseFilter = res =>
             {
-                Assert.That(res.Headers[HttpHeaders.ETag], Is.EqualTo("etag-alt"));
+                Assert.That(res.Headers[HttpHeaders.ETag], Is.EqualTo("etag-alt".Quoted()));
                 Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=3600"));
             };
                 
@@ -177,7 +177,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetClient();
             client.RequestFilter = req =>
-                req.Headers[HttpHeaders.IfNoneMatch] = "etag";
+                req.Headers[HttpHeaders.IfNoneMatch] = "etag".Quoted();
 
             client.ResponseFilter = res => {
                 Assert.That(res.ContentLength, Is.EqualTo(0));
@@ -201,7 +201,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetClient();
             client.RequestFilter = req =>
-                req.Headers[HttpHeaders.IfNoneMatch] = "etag";
+                req.Headers[HttpHeaders.IfNoneMatch] = "etag".Quoted();
 
             client.ResponseFilter = res =>
                 Assert.That(res.Headers[HttpHeaders.Age], Is.EqualTo("86400"));
@@ -274,7 +274,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return base.Equals(other);
         }
     }
-    
+
+    public class CachedRequest : CacheRequestBase, IReturn<CachedRequest>, IEquatable<CachedRequest>
+    {
+        public bool Equals(CachedRequest other)
+        {
+            return base.Equals(other);
+        }
+    }
+
     public class CacheEtagServices : Service
     {
         public object Any(SetCache request)
@@ -304,6 +312,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 LastModified = request.LastModified,
                 CacheControl = request.CacheControl.GetValueOrDefault(CacheControl.None),
             };
+        }
+
+        public object Any(CachedRequest request)
+        {
+            return Request.ToOptimizedResultUsingCache(Cache, 
+                Request.QueryString.ToString(), 
+                () => request);
         }
     }
 }
