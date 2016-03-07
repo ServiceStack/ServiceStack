@@ -215,6 +215,16 @@
             <c>WebServiceException</c> containing the parsed DTO. Then override Send to handle that exception.
             </summary>
         </member>
+        <member name="M:ServiceStack.ServiceClientBase.Get(System.Object)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.Get(System.String)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
+            </summary>
+        </member>
         <member name="M:ServiceStack.StreamExt.Compress(System.String,System.String)">
             <summary>
             Compresses the specified text using the default compression method: Deflate
