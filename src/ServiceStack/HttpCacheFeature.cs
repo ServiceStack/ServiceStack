@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
-using System.Web;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -13,9 +13,12 @@ namespace ServiceStack
 
         public Func<string, string> CacheControlFilter { get; set; }
 
+        public bool AddLastModifiedToOptimizedCaches { get; set; }
+
         public HttpCacheFeature()
         {
             DefaultMaxAge = TimeSpan.FromHours(1);
+            AddLastModifiedToOptimizedCaches = true;
         }
 
         public void Register(IAppHost appHost)
@@ -132,6 +135,11 @@ namespace ServiceStack
         public static bool HasValidCache(this IRequest req, string eTag, DateTime? lastModified)
         {
             return req.ETagMatch(eTag) || req.NotModifiedSince(lastModified);
+        }
+
+        public static bool ShouldAddLastModifiedToOptimizedCaches(this HttpCacheFeature feature)
+        {
+            return feature != null && feature.AddLastModifiedToOptimizedCaches;
         }
     }
 }

@@ -49,6 +49,17 @@ namespace ServiceStack
             get { return this.Headers; }
         }
 
+        public DateTime? LastModified
+        {
+            set
+            {
+                if (value == null)
+                    return;
+
+                this.Headers[HttpHeaders.LastModified] = value.Value.ToUniversalTime().ToString("r");
+            }
+        }
+
         public CompressedResult(byte[] contents)
             : this(contents, CompressionTypes.Deflate)
         { }

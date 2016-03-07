@@ -10,9 +10,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(typeof(CacheFeatureTests).Name, typeof(CacheEtagServices).Assembly) {}
+                : base(typeof(CacheFeatureTests).Name, typeof(CacheEtagServices).Assembly)
+            { }
 
-            public override void Configure(Container container) {}
+            public override void Configure(Container container) { }
         }
 
         private readonly ServiceStackHost appHost;
@@ -124,7 +125,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(res.Headers[HttpHeaders.ETag], Is.EqualTo("etag-alt".Quoted()));
                 Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=3600"));
             };
-                
+
             var request = new SetCache { ETag = "etag-alt" };
             var response = client.Get(request);
             Assert.That(response, Is.EqualTo(request));
@@ -139,7 +140,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.RequestFilter = req =>
                 req.IfModifiedSince = request.LastModified.Value;
 
-            client.ResponseFilter = res => {
+            client.ResponseFilter = res =>
+            {
                 Assert.That(res.ContentLength, Is.EqualTo(0));
                 Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=3600"));
             };
@@ -179,7 +181,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.RequestFilter = req =>
                 req.Headers[HttpHeaders.IfNoneMatch] = "etag".Quoted();
 
-            client.ResponseFilter = res => {
+            client.ResponseFilter = res =>
+            {
                 Assert.That(res.ContentLength, Is.EqualTo(0));
                 Assert.That(res.Headers[HttpHeaders.Age], Is.Null); //short-circuit
             };
@@ -214,6 +217,52 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Get(request);
 
             Assert.That(response, Is.EqualTo(request));
+        }
+
+        [Test]
+        public void ToOptimizedResult_does_populate_LastModified()
+        {
+            var client = GetClient();
+
+            client.ResponseFilter = req =>
+                Assert.That(DateTime.Parse(req.Headers[HttpHeaders.LastModified]).ToUniversalTime(),
+                    Is.EqualTo(DateTime.UtcNow).Within(TimeSpan.FromMinutes(1)));
+
+            var request = new CachedRequest { ETag = "etag" };
+            var response = client.Get(request);
+            Assert.That(response, Is.EqualTo(request));
+
+            response = client.Get(request);
+            Assert.That(response, Is.EqualTo(request));
+        }
+
+        [Test]
+        public void ToOptimizedResult_throws_304_when_not_ModifiedSince()
+        {
+            var client = GetClient();
+
+            DateTime? lastModified = null;
+
+            client.ResponseFilter = req =>
+                lastModified = DateTime.Parse(req.Headers[HttpHeaders.LastModified]);
+
+            var request = new CachedRequest { Age = TimeSpan.FromHours(1) };
+            var response = client.Get(request);
+            Assert.That(response, Is.EqualTo(request));
+
+            try
+            {
+                client.RequestFilter = req =>
+                    req.IfModifiedSince = lastModified.Value;
+
+                response = client.Get(request);
+                Assert.Fail("Should throw 304 NotModified");
+            }
+            catch (Exception ex)
+            {
+                if (!ex.IsNotModified())
+                    throw;
+            }
         }
     }
 
@@ -316,8 +365,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(CachedRequest request)
         {
-            return Request.ToOptimizedResultUsingCache(Cache, 
-                Request.QueryString.ToString(), 
+            return Request.ToOptimizedResultUsingCache(Cache,
+                Request.QueryString.ToString(),
                 () => request);
         }
     }
