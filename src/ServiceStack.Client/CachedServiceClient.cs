@@ -144,7 +144,7 @@ namespace ServiceStack
             if (existingResultsFilterResponse != null)
                 existingResultsFilterResponse(webRes, response, httpMethod, requestUri, request);
 
-            if (httpMethod != HttpMethods.Get || response == null)
+            if (httpMethod != HttpMethods.Get || response == null || webRes == null)
                 return;
 
             var eTag = webRes.Headers[HttpHeaders.ETag];

@@ -328,8 +328,9 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
+                var webEx = ex as WebException;
                 var firstCall = Interlocked.Increment(ref requestState.RequestCount) == 1;
-                if (firstCall && WebRequestUtils.ShouldAuthenticate(ex as WebException, this.UserName, this.Password))
+                if (firstCall && WebRequestUtils.ShouldAuthenticate(webEx, this.UserName, this.Password))
                 {
                     try
                     {
@@ -352,6 +353,19 @@ namespace ServiceStack
                         HandleResponseError(ex, requestState);
                     }
                     return;
+                }
+
+                if (webEx.IsNotModified())
+                {
+                    if (NotModifiedFilter != null && webEx.Response != null)
+                    {
+                        var cachedResponse = NotModifiedFilter(webEx.Response, requestState.Url, typeof(T));
+                        if (cachedResponse is T)
+                        {
+                            requestState.OnSuccess((T)cachedResponse);
+                            return;
+                        }
+                    }
                 }
 
                 HandleResponseError(ex, requestState);
@@ -470,7 +484,7 @@ namespace ServiceStack
             var webEx = exception as WebException;
             if (PclExportClient.Instance.IsWebException(webEx))
             {
-                var errorResponse = ((HttpWebResponse)webEx.Response);
+                var errorResponse = (HttpWebResponse)webEx.Response;
                 Log.Error(webEx);
                 if (Log.IsDebugEnabled)
                 {
