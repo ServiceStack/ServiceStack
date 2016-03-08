@@ -55,7 +55,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_not_set_Etag_and_Default_MaxAge_on_POST()
         {
             var client = GetClient();
-            client.ResponseFilter = res => {
+            client.ResponseFilter = res =>
+            {
                 Assert.That(res.Headers[HttpHeaders.ETag], Is.Null);
                 Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
             };
@@ -278,6 +279,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 if (!ex.IsNotModified())
                     throw;
             }
+        }
+
+        [Test]
+        public void CachedServiceClient_does_return_cached_ETag_Requests()
+        {
+            var client = new CachedServiceClient(GetClient());
+
+            var request = new SetCache { ETag = "etag" };
+
+            var response = client.Get(request);
+            Assert.That(client.CacheHits, Is.EqualTo(0));
+            Assert.That(response, Is.EqualTo(request));
+
+            response = client.Get(request);
+            Assert.That(client.CacheHits, Is.EqualTo(1));
+            Assert.That(response, Is.EqualTo(request));
+        }
+
+        [Test]
+        public void CachedServiceClient_does_return_cached_LastModified_Requests()
+        {
+            var client = new CachedServiceClient(GetClient());
+
+            var request = new SetCache { LastModified = new DateTime(2016, 1, 1, 0, 0, 0) };
+
+            var response = client.Get(request);
+            Assert.That(client.CacheHits, Is.EqualTo(0));
+            Assert.That(response, Is.EqualTo(request));
+
+            response = client.Get(request);
+            Assert.That(client.CacheHits, Is.EqualTo(1));
+            Assert.That(response, Is.EqualTo(request));
+        }
+
+        [Test]
+        public void CachedServiceClient_does_return_cached_ToOptimizedResults()
+        {
+            var client = new CachedServiceClient(GetClient());
+
+            var request = new CachedRequest { Age = TimeSpan.FromHours(1) };
+            var response = client.Get(request);
+            Assert.That(client.CacheHits, Is.EqualTo(0));
+            Assert.That(response, Is.EqualTo(request));
+
+            response = client.Get(request);
+            Assert.That(client.CacheHits, Is.EqualTo(1));
+            Assert.That(response, Is.EqualTo(request));
         }
     }
 

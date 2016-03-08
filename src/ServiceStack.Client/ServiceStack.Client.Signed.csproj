@@ -67,6 +67,7 @@
     <Compile Include="AsyncServiceClient.cs" />
     <Compile Include="AsyncUtils.cs" />
     <Compile Include="AuthDtos.cs" />
+    <Compile Include="CachedServiceClient.cs" />
     <Compile Include="ClientFactory.cs" />
     <Compile Include="ContentFormat.cs" />
     <Compile Include="CryptUtils.cs" />
