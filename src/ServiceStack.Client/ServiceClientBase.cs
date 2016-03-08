@@ -420,6 +420,23 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Called with requestUri, ResponseType when server returns 304 NotModified
+        /// </summary>
+        public NotModifiedFilterDelegate notModifiedFilter;
+        public NotModifiedFilterDelegate NotModifiedFilter
+        {
+            get
+            {
+                return notModifiedFilter;
+            }
+            set
+            {
+                notModifiedFilter = value;
+                asyncClient.NotModifiedFilter = value;
+            }
+        }
+
+        /// <summary>
         /// The response action is called once the server response is available.
         /// It will allow you to access raw response information. 
         /// Note that you should NOT consume the response stream as this is handled by ServiceStack
@@ -600,9 +617,10 @@ namespace ServiceStack
         protected virtual bool HandleResponseException<TResponse>(Exception ex, object request, string requestUri,
             Func<WebRequest> createWebRequest, Func<WebRequest, WebResponse> getResponse, out TResponse response)
         {
+            var webEx = ex as WebException;
             try
             {
-                if (WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password))
+                if (WebRequestUtils.ShouldAuthenticate(webEx, this.UserName, this.Password))
                 {
                     var client = createWebRequest();
 
@@ -626,6 +644,19 @@ namespace ServiceStack
                 // by the following method.
                 ThrowResponseTypeException<TResponse>(request, subEx, requestUri);
                 throw;
+            }
+
+            if (webEx.IsNotModified())
+            {
+                if (NotModifiedFilter != null && webEx.Response != null)
+                {
+                    var cachedResponse = NotModifiedFilter(webEx.Response, requestUri, typeof(TResponse));
+                    if (cachedResponse is TResponse)
+                    {
+                        response = (TResponse)cachedResponse;
+                        return true;
+                    }
+                }
             }
 
             // If this doesn't throw, the calling method 
@@ -1855,4 +1886,6 @@ namespace ServiceStack
     public delegate object ResultsFilterDelegate(Type responseType, string httpMethod, string requestUri, object request);
 
     public delegate void ResultsFilterResponseDelegate(WebResponse webResponse, object response, string httpMethod, string requestUri, object request);
+
+    public delegate object NotModifiedFilterDelegate(WebResponse webResponse, string requestUri, Type responseType);
 }

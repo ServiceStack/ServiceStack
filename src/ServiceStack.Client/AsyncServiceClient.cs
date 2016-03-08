@@ -82,6 +82,11 @@ namespace ServiceStack
         /// </summary>
         public ResultsFilterResponseDelegate ResultsFilterResponse { get; set; }
 
+        /// <summary>
+        /// Called with requestUri, ResponseType when server returns 304 NotModified
+        /// </summary>
+        public NotModifiedFilterDelegate NotModifiedFilter { get; set; }
+
         public string BaseUri { get; set; }
         public bool DisableAutoCompression { get; set; }
 
@@ -324,7 +329,7 @@ namespace ServiceStack
             catch (Exception ex)
             {
                 var firstCall = Interlocked.Increment(ref requestState.RequestCount) == 1;
-                if (firstCall && WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password))
+                if (firstCall && WebRequestUtils.ShouldAuthenticate(ex as WebException, this.UserName, this.Password))
                 {
                     try
                     {

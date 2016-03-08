@@ -137,14 +137,13 @@ namespace ServiceStack
             return null;
         }
 
-        internal static bool ShouldAuthenticate(Exception ex, string userName, string password)
+        internal static bool ShouldAuthenticate(WebException webEx, string userName, string password)
         {
-            var webEx = ex as WebException;
-            return (webEx != null
-                    && webEx.Response != null
-                    && ((HttpWebResponse)webEx.Response).StatusCode == HttpStatusCode.Unauthorized
-                    && !string.IsNullOrEmpty(userName)
-                    && !string.IsNullOrEmpty(password));
+            return webEx != null
+                   && webEx.Response != null
+                   && ((HttpWebResponse)webEx.Response).StatusCode == HttpStatusCode.Unauthorized
+                   && !string.IsNullOrEmpty(userName)
+                   && !string.IsNullOrEmpty(password);
         }
 
         internal static void AddBasicAuth(this WebRequest client, string userName, string password)
