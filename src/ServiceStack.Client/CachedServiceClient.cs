@@ -219,7 +219,7 @@ namespace ServiceStack
             cache = new ConcurrentDictionary<string, CacheEntry>();
         }
 
-        public void RemoveCachesOlderThan(TimeSpan age)
+        public int RemoveCachesOlderThan(TimeSpan age)
         {
             var keysToRemove = new List<string>();
             var now = DateTime.UtcNow;
@@ -236,9 +236,11 @@ namespace ServiceStack
                 if (cache.TryRemove(key, out ignore))
                     Interlocked.Increment(ref cachesRemoved);
             }
+
+            return keysToRemove.Count;
         }
 
-        public void RemoveExpiredCachesOlderThan(TimeSpan age)
+        public int RemoveExpiredCachesOlderThan(TimeSpan age)
         {
             var keysToRemove = new List<string>();
             var now = DateTime.UtcNow;
@@ -255,6 +257,8 @@ namespace ServiceStack
                 if (cache.TryRemove(key, out ignore))
                     Interlocked.Increment(ref cachesRemoved);
             }
+
+            return keysToRemove.Count;
         }
 
         public void Dispose()
