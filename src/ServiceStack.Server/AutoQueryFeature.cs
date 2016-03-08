@@ -188,7 +188,7 @@ namespace ServiceStack
             var scannedTypes = LoadFromAssemblies.SelectMany(x => x.GetTypes());
 
             var misingRequestTypes = scannedTypes
-                .Where(x => x.HasInterface(typeof(IQuery)))
+                .Where(x => x.HasInterface(typeof(IQueryDb)))
                 .Where(x => !appHost.Metadata.OperationsMap.ContainsKey(x))
                 .ToList();
 

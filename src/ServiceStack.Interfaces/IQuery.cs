@@ -15,8 +15,14 @@ namespace ServiceStack
         string Fields { get; set; }
     }
 
-    public interface IQuery<From> : IQuery { }
-    public interface IQuery<From,Into> : IQuery { }
+    public interface IQueryDb : IQuery {}
+    public interface IQueryMemory : IQuery {}
+
+    public interface IQuery<From> : IQueryDb { }
+    public interface IQuery<From, Into> : IQueryDb { }
+
+    public interface IQueryMemory<From> : IQueryMemory { }
+    public interface IQueryMemory<From, Into> : IQueryMemory { }
 
     public interface IJoin { }
     public interface IJoin<Source, Join1> : IJoin { }
@@ -67,7 +73,7 @@ namespace ServiceStack
         public int ValueArity { get; set; }
     }
 
-    public abstract class QueryBase : IQuery
+    public abstract class QueryBase : IQueryDb
     {
         [DataMember(Order = 1)]
         public virtual int? Skip { get; set; }
