@@ -396,6 +396,8 @@
         });
     };
 
+    $.ss.eventSourceStop = false;
+    $.ss.eventOptions = {};
     $.ss.eventReceivers = {};
     $.ss.eventChannels = [];
     $.ss.eventSourceUrl = null;
@@ -454,6 +456,7 @@
         });
     };
     $.ss.reconnectServerEvents = function (opt) {
+        if ($.ss.eventSourceStop) return;
         opt = opt || {};
         var hold = $.ss.eventSource;
         var es = new EventSource(opt.url || $.ss.eventSourceUrl || hold.url);
@@ -476,7 +479,7 @@
     };
     $.fn.handleServerEvents = function (opt) {
         $.ss.eventSource = this[0];
-        opt = opt || {};
+        $.ss.eventOptions = opt = opt || {};
         if (opt.handlers) {
             $.extend($.ss.handlers, opt.handlers);
         }
@@ -518,6 +521,7 @@
                                 var stopFn = $.ss.handlers["onStop"];
                                 if (stopFn != null)
                                     stopFn.apply($.ss.eventSource);
+                                $.ss.reconnectServerEvents({ errorArgs: { error:'CLOSED' } });
                                 return;
                             }
                             $.ajax({
