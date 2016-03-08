@@ -57,6 +57,17 @@ namespace ServiceStack
                     return;
 
                 this.Headers[HttpHeaders.LastModified] = value.Value.ToUniversalTime().ToString("r");
+
+                var feature = HostContext.GetPlugin<HttpCacheFeature>();
+                if (feature != null)
+                {
+                    var cacheControl = "max-age=" + feature.DefaultMaxAge.TotalSeconds;
+                    if (feature.CacheControlFilter != null)
+                        cacheControl = feature.CacheControlFilter(cacheControl);
+
+                    if (cacheControl != null)
+                        this.Headers[HttpHeaders.CacheControl] = cacheControl;
+                }
             }
         }
 
