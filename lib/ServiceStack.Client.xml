@@ -50,6 +50,11 @@
             The ResultsFilterResponse is called before returning the response allowing responses to be cached.
             </summary>
         </member>
+        <member name="P:ServiceStack.AsyncServiceClient.NotModifiedFilter">
+            <summary>
+            Called with requestUri, ResponseType when server returns 304 NotModified
+            </summary>
+        </member>
         <member name="T:ServiceStack.RsaUtils">
             <summary>
             Useful .NET Encryption Utils from:
@@ -194,6 +199,11 @@
         <member name="F:ServiceStack.ServiceClientBase.resultsFilterResponse">
             <summary>
             The ResultsFilterResponse is called before returning the response allowing responses to be cached.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.ServiceClientBase.notModifiedFilter">
+            <summary>
+            Called with requestUri, ResponseType when server returns 304 NotModified
             </summary>
         </member>
         <member name="P:ServiceStack.ServiceClientBase.responseFilter">
