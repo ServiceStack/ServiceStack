@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
-using ServiceStack.Html;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -104,7 +102,7 @@ namespace ServiceStack
             if (string.IsNullOrEmpty(eTag))
                 return false;
 
-            return eTag.Quoted() == req.Headers[HttpHeaders.IfNoneMatch].Quoted();
+            return eTag.StripWeakRef().Quoted() == req.Headers[HttpHeaders.IfNoneMatch].StripWeakRef().Quoted();
         }
 
         public static bool NotModifiedSince(this IRequest req, DateTime? lastModified)
@@ -141,6 +139,13 @@ namespace ServiceStack
         public static bool ShouldAddLastModifiedToOptimizedCaches(this HttpCacheFeature feature)
         {
             return feature != null && feature.AddLastModifiedToOptimizedCaches;
+        }
+
+        internal static string StripWeakRef(this string eTag)
+        {
+            return eTag != null && eTag.StartsWith("W/")
+                ? eTag.Substring(2) 
+                : eTag;
         }
     }
 }
