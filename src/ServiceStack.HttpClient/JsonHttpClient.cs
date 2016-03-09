@@ -31,6 +31,7 @@ namespace ServiceStack
 
         public ResultsFilterHttpDelegate ResultsFilter { get; set; }
         public ResultsFilterHttpResponseDelegate ResultsFilterResponse { get; set; }
+        public NotModifiedFilterHttpDelegate NotModifiedFilter { get; set; }
 
         public const string DefaultHttpMethod = HttpMethods.Post;
         public static string DefaultUserAgent = "ServiceStack .NET HttpClient " + Env.ServiceStackVersion;
@@ -126,17 +127,17 @@ namespace ServiceStack
             if (HttpMessageHandler == null && GlobalHttpMessageHandlerFactory != null)
                 HttpMessageHandler = GlobalHttpMessageHandlerFactory();
 
+            var handler = HttpMessageHandler ?? new HttpClientHandler
+            {
+                UseCookies = true,
+                CookieContainer = CookieContainer,
+                UseDefaultCredentials = true,
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+            };
+
             var baseUri = BaseUri != null ? new Uri(BaseUri) : null;
 
-            return HttpClient = HttpMessageHandler != null
-                ? new HttpClient(HttpMessageHandler) { BaseAddress = baseUri }
-                : new HttpClient(new HttpClientHandler {
-                        UseCookies = true,
-                        CookieContainer = CookieContainer, 
-                        UseDefaultCredentials = true
-                    }) {
-                        BaseAddress = baseUri
-                    };
+            return HttpClient = new HttpClient(handler) { BaseAddress = baseUri };
         }
 
         public void AddHeader(string name, string value)
@@ -230,6 +231,13 @@ namespace ServiceStack
                 {
                     var httpRes = responseTask.Result;
                     ApplyWebResponseFilters(httpRes);
+
+                    if (httpRes.StatusCode == HttpStatusCode.NotModified && NotModifiedFilter != null)
+                    {
+                        var cachedResponse = NotModifiedFilter(httpRes, absoluteUrl, typeof(TResponse));
+                        if (cachedResponse is TResponse)
+                            return Task.FromResult((TResponse)cachedResponse);
+                    }
 
                     if (typeof(TResponse) == typeof(byte[]))
                     {
@@ -959,6 +967,8 @@ namespace ServiceStack
     public delegate object ResultsFilterHttpDelegate(Type responseType, string httpMethod, string requestUri, object request);
 
     public delegate void ResultsFilterHttpResponseDelegate(HttpResponseMessage webResponse, object response, string httpMethod, string requestUri, object request);
+
+    public delegate object NotModifiedFilterHttpDelegate(HttpResponseMessage webResponse, string requestUri, Type responseType);
 
     public static class JsonHttpClientUtils
     {
