@@ -63,12 +63,14 @@ namespace ServiceStack
                 else if (cache.HasFlag(CacheControl.Private))
                     cacheHeader.Add("private");
 
+                if (cache.HasFlag(CacheControl.MustRevalidate))
+                    cacheHeader.Add("must-revalidate");
                 if (cache.HasFlag(CacheControl.NoCache))
                     cacheHeader.Add("no-cache");
                 if (cache.HasFlag(CacheControl.NoStore))
                     cacheHeader.Add("no-store");
-                if (cache.HasFlag(CacheControl.MustRevalidate))
-                    cacheHeader.Add("must-revalidate");
+                if (cache.HasFlag(CacheControl.NoTransform))
+                    cacheHeader.Add("no-transform");
             }
 
             if (cacheHeader.Count > 0)

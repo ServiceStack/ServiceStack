@@ -478,9 +478,10 @@ namespace ServiceStack
         None = 0,
         Public = 1 << 0,
         Private = 1 << 1,
-        NoCache = 1 << 2,
-        NoStore = 1 << 3,
-        MustRevalidate = 1 << 4,
+        MustRevalidate = 1 << 2,
+        NoCache = 1 << 3,
+        NoStore = 1 << 4,
+        NoTransform = 1 << 5,
     }
 
     public static class HttpResultExtensions
