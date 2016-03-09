@@ -1778,6 +1778,13 @@ namespace ServiceStack
         {
             return webEx != null && webEx.Response != null;
         }
+
+        public virtual void SetIfModifiedSince(HttpWebRequest webReq, DateTime lastModified)
+        {
+#if !PCL
+            webReq.IfModifiedSince = lastModified;
+#endif
+        }
     }
 
 #if PCL

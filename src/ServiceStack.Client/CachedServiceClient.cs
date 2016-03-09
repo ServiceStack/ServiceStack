@@ -102,7 +102,7 @@ namespace ServiceStack
                     webReq.Headers[HttpRequestHeader.IfNoneMatch] = entry.ETag;
 
                 if (entry.LastModified != null)
-                    webReq.IfModifiedSince = entry.LastModified.Value;
+                    PclExportClient.Instance.SetIfModifiedSince(webReq, entry.LastModified.Value);
             }
         }
 
@@ -146,7 +146,7 @@ namespace ServiceStack
                 return;
 
             var eTag = webRes.Headers[HttpHeaders.ETag];
-            var lastModifiedStr = webRes.Headers[HttpResponseHeader.LastModified];
+            var lastModifiedStr = webRes.Headers[HttpHeaders.LastModified];
 
             if (eTag == null && lastModifiedStr == null)
                 return;
@@ -164,11 +164,11 @@ namespace ServiceStack
             }
 
             long secs;
-            var ageStr = webRes.Headers[HttpResponseHeader.Age];
+            var ageStr = webRes.Headers[HttpHeaders.Age];
             if (ageStr != null && long.TryParse(ageStr, out secs))
                 entry.Age = TimeSpan.FromSeconds(secs);
 
-            var cacheControl = webRes.Headers[HttpResponseHeader.CacheControl];
+            var cacheControl = webRes.Headers[HttpHeaders.CacheControl];
             if (cacheControl != null)
             {
                 var parts = cacheControl.Split(',');
