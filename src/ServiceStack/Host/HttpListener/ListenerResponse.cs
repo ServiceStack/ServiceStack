@@ -55,6 +55,11 @@ namespace ServiceStack.Host.HttpListener
             response.AddHeader(name, value);
         }
 
+        public string GetHeader(string name)
+        {
+            return response.Headers[name];
+        }
+
         public void Redirect(string url)
         {
             response.Redirect(url);

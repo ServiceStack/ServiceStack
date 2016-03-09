@@ -37,6 +37,11 @@ namespace ServiceStack.Testing
             this.Headers.Add(name, value);
         }
 
+        public string GetHeader(string name)
+        {
+            return this.Headers[name];
+        }
+
         public void Redirect(string url)
         {
             this.Headers.Add(HttpHeaders.Location, url.MapServerPath());

@@ -165,6 +165,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 this.Headers.Add(name, value);
             }
 
+            public string GetHeader(string name)
+            {
+                string value;
+                this.Headers.TryGetValue(name, out value);
+                return value;
+            }
+
             public void Redirect(string url)
             {
                 this.Headers[HttpHeaders.Location] = url;

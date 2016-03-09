@@ -26,6 +26,8 @@ namespace ServiceStack.Web
 
         void AddHeader(string name, string value);
 
+        string GetHeader(string name);
+
         void Redirect(string url);
 
         Stream OutputStream { get; }

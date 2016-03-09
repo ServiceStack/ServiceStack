@@ -39,6 +39,13 @@ namespace ServiceStack.Host
             Headers[name] = value;
         }
 
+        public string GetHeader(string name)
+        {
+            string value;
+            this.Headers.TryGetValue(name, out value);
+            return value;
+        }
+
         public void Redirect(string url)
         {
         }
