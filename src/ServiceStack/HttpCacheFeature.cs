@@ -47,7 +47,7 @@ namespace ServiceStack
             if (httpResult.Age != null)
                 httpResult.Headers[HttpHeaders.Age] = httpResult.Age.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
-            if (httpResult.Headers[HttpHeaders.CacheControl] == null)
+            if (!httpResult.Headers.ContainsKey(HttpHeaders.CacheControl))
             {
                 var maxAge = httpResult.MaxAge;
                 if (maxAge == null && (httpResult.LastModified != null || httpResult.ETag != null))
