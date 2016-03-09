@@ -177,7 +177,6 @@
     <Compile Include="AttributeFiltersTest.cs" />
     <Compile Include="AuthDigestTests.cs" />
     <Compile Include="AuthTests.cs" />
-    <Compile Include="AutoQueryMemoryTests.cs" />
     <Compile Include="AutoQueryTests.cs" />
     <Compile Include="BufferedRequestTests.cs" />
     <Compile Include="CachedServiceClientTests.cs" />
