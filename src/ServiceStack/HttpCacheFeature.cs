@@ -47,40 +47,43 @@ namespace ServiceStack
             if (httpResult.Age != null)
                 httpResult.Headers[HttpHeaders.Age] = httpResult.Age.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
-            var maxAge = httpResult.MaxAge;
-            if (maxAge == null && (httpResult.LastModified != null || httpResult.ETag != null))
-                maxAge = DefaultMaxAge;
-
-            var cacheHeader = new List<string>();
-            if (maxAge != null)
-                cacheHeader.Add("max-age=" + maxAge.Value.TotalSeconds);
-
-            if (httpResult.CacheControl != CacheControl.None)
+            if (httpResult.Headers[HttpHeaders.CacheControl] == null)
             {
-                var cache = httpResult.CacheControl;
-                if (cache.HasFlag(CacheControl.Public))
-                    cacheHeader.Add("public");
-                else if (cache.HasFlag(CacheControl.Private))
-                    cacheHeader.Add("private");
+                var maxAge = httpResult.MaxAge;
+                if (maxAge == null && (httpResult.LastModified != null || httpResult.ETag != null))
+                    maxAge = DefaultMaxAge;
 
-                if (cache.HasFlag(CacheControl.MustRevalidate))
-                    cacheHeader.Add("must-revalidate");
-                if (cache.HasFlag(CacheControl.NoCache))
-                    cacheHeader.Add("no-cache");
-                if (cache.HasFlag(CacheControl.NoStore))
-                    cacheHeader.Add("no-store");
-                if (cache.HasFlag(CacheControl.NoTransform))
-                    cacheHeader.Add("no-transform");
-            }
+                var cacheHeader = new List<string>();
+                if (maxAge != null)
+                    cacheHeader.Add("max-age=" + maxAge.Value.TotalSeconds);
 
-            if (cacheHeader.Count > 0)
-            {
-                var cacheControl = cacheHeader.ToArray().Join(", ");
-                if (CacheControlFilter != null)
-                    cacheControl = CacheControlFilter(cacheControl);
+                if (httpResult.CacheControl != CacheControl.None)
+                {
+                    var cache = httpResult.CacheControl;
+                    if (cache.HasFlag(CacheControl.Public))
+                        cacheHeader.Add("public");
+                    else if (cache.HasFlag(CacheControl.Private))
+                        cacheHeader.Add("private");
 
-                if (cacheControl != null)
-                    httpResult.Headers[HttpHeaders.CacheControl] = cacheControl;
+                    if (cache.HasFlag(CacheControl.MustRevalidate))
+                        cacheHeader.Add("must-revalidate");
+                    if (cache.HasFlag(CacheControl.NoCache))
+                        cacheHeader.Add("no-cache");
+                    if (cache.HasFlag(CacheControl.NoStore))
+                        cacheHeader.Add("no-store");
+                    if (cache.HasFlag(CacheControl.NoTransform))
+                        cacheHeader.Add("no-transform");
+                }
+
+                if (cacheHeader.Count > 0)
+                {
+                    var cacheControl = cacheHeader.ToArray().Join(", ");
+                    if (CacheControlFilter != null)
+                        cacheControl = CacheControlFilter(cacheControl);
+
+                    if (cacheControl != null)
+                        httpResult.Headers[HttpHeaders.CacheControl] = cacheControl;
+                }
             }
 
             if (req.ETagMatch(httpResult.ETag) || req.NotModifiedSince(httpResult.LastModified))
