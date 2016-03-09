@@ -93,7 +93,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(res.Headers[HttpHeaders.Age], Is.EqualTo("864000"));
                 Assert.That(res.Headers[HttpHeaders.ETag], Is.EqualTo("etag".Quoted()));
-                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=86400, public, no-store, must-revalidate"));
+                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=86400, public, must-revalidate, no-store"));
             };
 
             var request = new SetCache
