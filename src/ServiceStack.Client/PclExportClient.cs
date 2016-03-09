@@ -1781,7 +1781,7 @@ namespace ServiceStack
 
         public virtual void SetIfModifiedSince(HttpWebRequest webReq, DateTime lastModified)
         {
-#if !PCL
+#if !(PCL || SL5)
             webReq.IfModifiedSince = lastModified;
 #endif
         }
