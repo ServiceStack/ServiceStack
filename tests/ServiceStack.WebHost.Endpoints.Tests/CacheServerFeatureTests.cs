@@ -1,6 +1,7 @@
 ﻿using System;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -17,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         private readonly ServiceStackHost appHost;
-        protected CacheServerFeatureTests()
+        public CacheServerFeatureTests()
         {
             appHost = new AppHost()
                 .Init()
@@ -240,8 +241,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetClient();
 
-            client.ResponseFilter = req =>
-                Assert.That(DateTime.Parse(req.Headers[HttpHeaders.LastModified]).ToUniversalTime(),
+            client.ResponseFilter = res =>
+                Assert.That(DateTime.Parse(res.Headers[HttpHeaders.LastModified]).ToUniversalTime(),
                     Is.EqualTo(DateTime.UtcNow).Within(TimeSpan.FromMinutes(1)));
 
             var request = new CachedRequest { ETag = "etag" };
@@ -259,8 +260,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             DateTime? lastModified = null;
 
-            client.ResponseFilter = req =>
-                lastModified = DateTime.Parse(req.Headers[HttpHeaders.LastModified]);
+            client.ResponseFilter = res =>
+                lastModified = DateTime.Parse(res.Headers[HttpHeaders.LastModified]);
 
             var request = new CachedRequest { Age = TimeSpan.FromHours(1) };
             var response = client.Get(request);
