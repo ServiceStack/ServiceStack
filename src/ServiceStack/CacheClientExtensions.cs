@@ -81,6 +81,9 @@ namespace ServiceStack
                     if (cacheClient.HasValidCache(request, cacheKeySerializedZip, checkModifiedSince, out lastModified))
                         return HttpResult.NotModified();
 
+                    if (request.Response.GetHeader(HttpHeaders.CacheControl) != null)
+                        lastModified = null;
+
                     var compressedResult = cacheClient.Get<byte[]>(cacheKeySerializedZip);
                     if (compressedResult != null)
                     {
@@ -165,6 +168,7 @@ namespace ServiceStack
                 if (doCompression)
                 {
                     var lastModified = HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedCaches()
+                        && request.Response.GetHeader(HttpHeaders.CacheControl) == null
                         ? DateTime.UtcNow
                         : (DateTime?)null;
 
