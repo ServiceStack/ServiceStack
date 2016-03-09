@@ -40,10 +40,12 @@
     <Compile Include="AsyncServiceClient.cs" />
     <Compile Include="AsyncUtils.cs" />
     <Compile Include="AuthDtos.cs" />
+    <Compile Include="CachedServiceClient.cs" />
     <Compile Include="ClientFactory.cs" />
     <Compile Include="ContentFormat.cs" />
     <Compile Include="CryptUtils.cs" />
     <Compile Include="EncryptedServiceClient.cs" />
+    <Compile Include="HttpCacheEntry.cs" />
     <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
     <Compile Include="PclExportClient.Xbox.cs" />
     <Compile Include="PclExportClient.Wp.cs" />
@@ -101,13 +103,16 @@
   <!--ItemGroup,Content-->
   <!--ItemGroup,None-->
   <ItemGroup>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+  <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+    <Project>{55942102-033A-4DA8-A6AF-1DB7B2F34A2D}</Project>
+    <Name>ServiceStack.Interfaces</Name>
+  </ProjectReference>
+</ItemGroup>
+<ItemGroup>
+  <Reference Include="ServiceStack.Text">
+    <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
+  </Reference>
+</ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

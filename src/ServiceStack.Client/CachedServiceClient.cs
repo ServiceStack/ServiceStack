@@ -9,7 +9,21 @@ using System.Threading.Tasks;
 
 namespace ServiceStack
 {
-    public class CachedServiceClient : IServiceClient
+    public interface ICachedServiceClient : IServiceClient
+    {
+        int CacheCount { get; }
+        long CacheHits { get; }
+        long NotModifiedHits { get; }
+        long CachesCreated { get; }
+        long CachesRemoved { get; }
+
+        void ClearCache();
+        void SetCache(ConcurrentDictionary<string, HttpCacheEntry> cache);
+        int RemoveCachesOlderThan(TimeSpan age);
+        int RemoveExpiredCachesOlderThan(TimeSpan age);
+    }
+
+    public class CachedServiceClient : ICachedServiceClient
     {
         public TimeSpan? ClearCachesOlderThan { get; set; }
         public TimeSpan? ClearExpiredCachesOlderThan { get; set; }
@@ -45,36 +59,20 @@ namespace ServiceStack
             get { return cachesRemoved; }
         }
 
-        class CacheEntry
-        {
-            public CacheEntry(object response)
-            {
-                Response = response;
-                Created = DateTime.UtcNow;
-            }
-
-            public DateTime Created;
-            public string ETag;
-            public DateTime? LastModified;
-            public bool MustRevalidate;
-            public TimeSpan Age;
-            public TimeSpan MaxAge;
-            public DateTime Expires;
-            public object Response;
-
-            public bool ShouldRevalidate()
-            {
-                return MustRevalidate || DateTime.UtcNow > Expires;
-            }
-        }
-
-        private ConcurrentDictionary<string, CacheEntry> cache = new ConcurrentDictionary<string, CacheEntry>();
+        private ConcurrentDictionary<string, HttpCacheEntry> cache = new ConcurrentDictionary<string, HttpCacheEntry>();
 
         private readonly Action<HttpWebRequest> existingRequestFilter;
         private readonly ResultsFilterDelegate existingResultsFilter;
         private readonly ResultsFilterResponseDelegate existingResultsFilterResponse;
 
         private readonly ServiceClientBase client;
+
+        public CachedServiceClient(ServiceClientBase client, ConcurrentDictionary<string, HttpCacheEntry> cache)
+            : this(client)
+        {
+            if (cache != null)
+                this.cache = cache;
+        }
 
         public CachedServiceClient(ServiceClientBase client)
         {
@@ -97,7 +95,7 @@ namespace ServiceStack
             if (existingRequestFilter != null)
                 existingRequestFilter(webReq);
 
-            CacheEntry entry;
+            HttpCacheEntry entry;
             if (webReq.Method == HttpMethods.Get && cache.TryGetValue(webReq.RequestUri.ToString(), out entry))
             {
                 if (entry.ETag != null)
@@ -114,7 +112,7 @@ namespace ServiceStack
                 ? existingResultsFilter(responseType, httpMethod, requestUri, request)
                 : null;
 
-            CacheEntry entry;
+            HttpCacheEntry entry;
             if (httpMethod == HttpMethods.Get && cache.TryGetValue(requestUri, out entry))
             {
                 if (!entry.ShouldRevalidate())
@@ -129,7 +127,7 @@ namespace ServiceStack
 
         public object OnNotModifiedFilter(WebResponse webRes, string requestUri, Type responseType)
         {
-            CacheEntry entry;
+            HttpCacheEntry entry;
             if (cache.TryGetValue(requestUri, out entry))
             {
                 Interlocked.Increment(ref notModifiedHits);
@@ -153,7 +151,7 @@ namespace ServiceStack
             if (eTag == null && lastModifiedStr == null)
                 return;
 
-            var entry = new CacheEntry(response)
+            var entry = new HttpCacheEntry(response)
             {
                 ETag = eTag,
             };
@@ -216,7 +214,15 @@ namespace ServiceStack
 
         public void ClearCache()
         {
-            cache = new ConcurrentDictionary<string, CacheEntry>();
+            SetCache(new ConcurrentDictionary<string, HttpCacheEntry>());
+        }
+
+        public void SetCache(ConcurrentDictionary<string, HttpCacheEntry> cache)
+        {
+            if (cache == null)
+                throw new ArgumentNullException("cache");
+
+            this.cache = cache;
         }
 
         public int RemoveCachesOlderThan(TimeSpan age)
@@ -232,7 +238,7 @@ namespace ServiceStack
 
             foreach (var key in keysToRemove)
             {
-                CacheEntry ignore;
+                HttpCacheEntry ignore;
                 if (cache.TryRemove(key, out ignore))
                     Interlocked.Increment(ref cachesRemoved);
             }
@@ -253,7 +259,7 @@ namespace ServiceStack
 
             foreach (var key in keysToRemove)
             {
-                CacheEntry ignore;
+                HttpCacheEntry ignore;
                 if (cache.TryRemove(key, out ignore))
                     Interlocked.Increment(ref cachesRemoved);
             }
@@ -601,6 +607,11 @@ namespace ServiceStack
         public static IServiceClient WithCache(this ServiceClientBase client)
         {
             return new CachedServiceClient(client);
+        }
+
+        public static IServiceClient WithCache(this ServiceClientBase client, ConcurrentDictionary<string, HttpCacheEntry> cache)
+        {
+            return new CachedServiceClient(client, cache);
         }
     }
 }
