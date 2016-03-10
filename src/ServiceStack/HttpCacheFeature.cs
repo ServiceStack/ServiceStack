@@ -12,12 +12,12 @@ namespace ServiceStack
 
         public Func<string, string> CacheControlFilter { get; set; }
 
-        public bool AddLastModifiedToOptimizedCaches { get; set; }
+        public string CacheControlForOptimizedResults { get; set; }
 
         public HttpCacheFeature()
         {
             DefaultMaxAge = TimeSpan.FromHours(1);
-            AddLastModifiedToOptimizedCaches = true;
+            CacheControlForOptimizedResults = "max-age=0, must-revalidate";
         }
 
         public void Register(IAppHost appHost)
@@ -141,9 +141,9 @@ namespace ServiceStack
             return req.ETagMatch(eTag) || req.NotModifiedSince(lastModified);
         }
 
-        public static bool ShouldAddLastModifiedToOptimizedCaches(this HttpCacheFeature feature)
+        public static bool ShouldAddLastModifiedToOptimizedResults(this HttpCacheFeature feature)
         {
-            return feature != null && feature.AddLastModifiedToOptimizedCaches;
+            return feature != null && feature.CacheControlForOptimizedResults != null;
         }
 
         internal static string StripWeakRef(this string eTag)
