@@ -15,14 +15,14 @@ namespace ServiceStack
         string Fields { get; set; }
     }
 
-    public interface IQueryDb : IQuery {}
-    public interface IQueryMemory : IQuery {}
+    public interface IQueryDb : IQuery { }
+    public interface IQueryData : IQuery { }
 
     public interface IQuery<From> : IQueryDb { }
     public interface IQuery<From, Into> : IQueryDb { }
 
-    public interface IQueryMemory<From> : IQueryMemory { }
-    public interface IQueryMemory<From, Into> : IQueryMemory { }
+    public interface IQueryData<From> : IQueryData { }
+    public interface IQueryData<From, Into> : IQueryData { }
 
     public interface IJoin { }
     public interface IJoin<Source, Join1> : IJoin { }
@@ -51,7 +51,7 @@ namespace ServiceStack
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class QueryAttribute : AttributeBase
     {
-        public QueryAttribute() {}
+        public QueryAttribute() { }
 
         public QueryAttribute(QueryTerm defaultTerm)
         {
@@ -73,7 +73,7 @@ namespace ServiceStack
         public int ValueArity { get; set; }
     }
 
-    public abstract class QueryBase : IQueryDb
+    public abstract class QueryBase : IQuery
     {
         [DataMember(Order = 1)]
         public virtual int? Skip { get; set; }
@@ -100,6 +100,10 @@ namespace ServiceStack
     public abstract class QueryBase<T> : QueryBase, IQuery<T>, IReturn<QueryResponse<T>> { }
 
     public abstract class QueryBase<From, Into> : QueryBase, IQuery<From, Into>, IReturn<QueryResponse<Into>> { }
+
+    public abstract class QueryData<T> : QueryBase, IQueryData<T>, IReturn<QueryResponse<T>> { }
+
+    public abstract class QueryData<From, Into> : QueryBase, IQueryData<From, Into>, IReturn<QueryResponse<Into>> { }
 
     public interface IQueryResponse : IHasResponseStatus, IMeta
     {
