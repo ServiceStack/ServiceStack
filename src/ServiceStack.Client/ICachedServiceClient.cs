@@ -1,3 +1,4 @@
+#if !SL5
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -36,5 +37,5 @@ namespace ServiceStack
             };
         }
     }
-
 }
+#endif
