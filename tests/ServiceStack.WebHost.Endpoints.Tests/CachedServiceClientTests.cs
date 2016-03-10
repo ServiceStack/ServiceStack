@@ -157,7 +157,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response, Is.EqualTo(request));
 
             response = client.Get(request);
-            Assert.That(client.NotModifiedHits + client.CacheHits, Is.EqualTo(1));
+            Assert.That(client.NotModifiedHits, Is.EqualTo(1));
             Assert.That(response, Is.EqualTo(request));
         }
 
@@ -172,8 +172,59 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response, Is.EqualTo(request));
 
             response = await client.GetAsync(request);
-            Assert.That(client.NotModifiedHits + client.CacheHits, Is.EqualTo(1));
+            Assert.That(client.NotModifiedHits, Is.EqualTo(1));
             Assert.That(response, Is.EqualTo(request));
+        }
+
+        [Test]
+        public void CachedServiceClient_does_return_cached_after_FailedResponse()
+        {
+            var client = GetCachedServiceClient();
+            FailsAfterOnce.Count = 0;
+
+            var request = new FailsAfterOnce { ETag = "etag", MaxAge = TimeSpan.FromSeconds(0) };
+            var response = client.Get(request);
+            Assert.That(client.ErrorFallbackHits, Is.EqualTo(0));
+            Assert.That(response, Is.EqualTo(request));
+
+            response = client.Get(request);
+            Assert.That(client.ErrorFallbackHits, Is.EqualTo(1));
+            Assert.That(response, Is.EqualTo(request));
+        }
+
+        [Test]
+        public async Task CachedServiceClient_does_return_cached_after_FailedResponse_Async()
+        {
+            var client = GetCachedServiceClient();
+            FailsAfterOnce.Count = 0;
+
+            var request = new FailsAfterOnce { ETag = "etag", MaxAge = TimeSpan.FromSeconds(0) };
+            var response = await client.GetAsync(request);
+            Assert.That(client.ErrorFallbackHits, Is.EqualTo(0));
+            Assert.That(response, Is.EqualTo(request));
+
+            response = await client.GetAsync(request);
+            Assert.That(client.ErrorFallbackHits, Is.EqualTo(1));
+            Assert.That(response, Is.EqualTo(request));
+        }
+
+        [Test]
+        public void CachedServiceClient_does_not_return_NoCache_after_FailedResponse()
+        {
+            var client = GetCachedServiceClient();
+            FailsAfterOnce.Count = 0;
+
+            var request = new FailsAfterOnce { ETag = "etag", CacheControl = CacheControl.NoCache };
+            var response = client.Get(request);
+            Assert.That(client.ErrorFallbackHits, Is.EqualTo(0));
+            Assert.That(response, Is.EqualTo(request));
+
+            try
+            {
+                client.Get(request);
+                Assert.Fail("Should throw");
+            }
+            catch (Exception) {}
         }
     }
 }

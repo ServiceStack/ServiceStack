@@ -17,7 +17,7 @@ namespace ServiceStack
         public HttpCacheFeature()
         {
             DefaultMaxAge = TimeSpan.FromHours(1);
-            CacheControlForOptimizedResults = "max-age=0, must-revalidate";
+            CacheControlForOptimizedResults = "max-age=0";
         }
 
         public void Register(IAppHost appHost)

@@ -10,6 +10,7 @@ namespace ServiceStack
         int CacheCount { get; }
         long CacheHits { get; }
         long NotModifiedHits { get; }
+        long ErrorFallbackHits { get; }
         long CachesAdded { get; }
         long CachesRemoved { get; }
 
@@ -32,6 +33,7 @@ namespace ServiceStack
                 { "CacheCount", client.CacheCount + "" },
                 { "CacheHits", client.CacheHits + "" },
                 { "NotModifiedHits", client.NotModifiedHits + "" },
+                { "ErrorFallbackHits", client.ErrorFallbackHits + "" },
                 { "CachesAdded", client.CachesAdded + "" },
                 { "CachesRemoved", client.CachesRemoved + "" },
             };

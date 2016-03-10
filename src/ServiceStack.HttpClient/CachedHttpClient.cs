@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -34,6 +35,12 @@ namespace ServiceStack
             get { return notModifiedHits; }
         }
 
+        private long errorFallbackHits;
+        public long ErrorFallbackHits
+        {
+            get { return errorFallbackHits; }
+        }
+
         private long cachesAdded;
         public long CachesAdded
         {
@@ -51,6 +58,7 @@ namespace ServiceStack
         private readonly Action<HttpRequestMessage> existingRequestFilter;
         private readonly ResultsFilterHttpDelegate existingResultsFilter;
         private readonly ResultsFilterHttpResponseDelegate existingResultsFilterResponse;
+        private ExceptionFilterHttpDelegate existingExceptionFilter;
 
         private readonly JsonHttpClient client;
 
@@ -70,11 +78,12 @@ namespace ServiceStack
             existingRequestFilter = client.RequestFilter;
             existingResultsFilter = client.ResultsFilter;
             existingResultsFilterResponse = client.ResultsFilterResponse;
+            existingExceptionFilter = client.ExceptionFilter;
 
             client.RequestFilter = OnRequestFilter;
             client.ResultsFilter = OnResultsFilter;
             client.ResultsFilterResponse = OnResultsFilterResponse;
-            client.NotModifiedFilter = OnNotModifiedFilter;
+            client.ExceptionFilter = OnExceptionFilter;
         }
 
         private void OnRequestFilter(HttpRequestMessage webReq)
@@ -114,13 +123,28 @@ namespace ServiceStack
             return ret;
         }
 
-        public object OnNotModifiedFilter(HttpResponseMessage webRes, string requestUri, Type responseType)
+        public object OnExceptionFilter(HttpResponseMessage webRes, string requestUri, Type responseType)
         {
+            if (existingExceptionFilter != null)
+            {
+                var response = existingExceptionFilter(webRes, requestUri, responseType);
+                if (response != null)
+                    return response;
+            }
+
             HttpCacheEntry entry;
             if (cache.TryGetValue(requestUri, out entry))
             {
-                Interlocked.Increment(ref notModifiedHits);
-                return entry.Response;
+                if (webRes.StatusCode == HttpStatusCode.NotModified)
+                {
+                    Interlocked.Increment(ref notModifiedHits);
+                    return entry.Response;
+                }
+                if (entry.CanUseCacheOnError())
+                {
+                    Interlocked.Increment(ref errorFallbackHits);
+                    return entry.Response;
+                }
             }
 
             return null;
@@ -142,6 +166,7 @@ namespace ServiceStack
             var entry = new HttpCacheEntry(response)
             {
                 ETag = eTag,
+                ContentLength = webRes.Content.Headers.ContentLength
             };
 
             if (webRes.Content.Headers.LastModified != null)
@@ -161,7 +186,7 @@ namespace ServiceStack
                 entry.MustRevalidate = cacheControl.MustRevalidate;
                 entry.NoCache = cacheControl.NoCache;
 
-                entry.Expires = entry.Created + entry.MaxAge;
+                entry.SetMaxAge(entry.MaxAge);
                 cache[requestUri] = entry;
                 Interlocked.Increment(ref cachesAdded);
 

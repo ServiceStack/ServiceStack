@@ -366,6 +366,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class FailsAfterOnce : CacheRequestBase, IReturn<FailsAfterOnce>, IEquatable<FailsAfterOnce>
+    {
+        internal static int Count = 0;
+
+        public bool Equals(FailsAfterOnce other)
+        {
+            return base.Equals(other);
+        }
+    }
+
     public class CacheEtagServices : Service
     {
         public object Any(SetCache request)
@@ -402,6 +412,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return Request.ToOptimizedResultUsingCache(Cache,
                 Request.QueryString.ToString(),
                 () => request);
+        }
+
+        public object Any(FailsAfterOnce request)
+        {
+            if (FailsAfterOnce.Count++ > 0)
+                throw new Exception("Can only be called once");
+
+            return new HttpResult(request)
+            {
+                Age = request.Age,
+                ETag = request.ETag,
+                MaxAge = request.MaxAge,
+                Expires = request.Expires,
+                LastModified = request.LastModified,
+                CacheControl = request.CacheControl.GetValueOrDefault(CacheControl.None),
+            };
         }
     }
 }

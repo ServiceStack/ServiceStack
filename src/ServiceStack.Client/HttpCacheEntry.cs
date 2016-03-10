@@ -18,17 +18,30 @@ namespace ServiceStack
         public TimeSpan? Age { get; set; }
         public TimeSpan MaxAge { get; set; }
         public DateTime Expires { get; set; }
+        public long? ContentLength { get; set; }
         public object Response { get; set; }
 
-        public void InitMaxAge(TimeSpan maxAge)
+        public void SetMaxAge(TimeSpan maxAge)
         {
             MaxAge = maxAge;
-            Expires = Created + maxAge;
+            Expires = maxAge > TimeSpan.Zero 
+                ? Created + maxAge
+                : Created - TimeSpan.FromSeconds(1); //auto expire
+        }
+
+        public bool HasExpired()
+        {
+            return DateTime.UtcNow > Expires;
+        }
+
+        public bool CanUseCacheOnError()
+        {
+            return !NoCache && !(MustRevalidate && HasExpired());
         }
 
         public bool ShouldRevalidate()
         {
-            return NoCache || DateTime.UtcNow > Expires; //always implies MustRevalidate
+            return NoCache || HasExpired(); //always implies MustRevalidate
         }
     }
 }

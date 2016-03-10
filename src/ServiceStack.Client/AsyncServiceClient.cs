@@ -85,7 +85,7 @@ namespace ServiceStack
         /// <summary>
         /// Called with requestUri, ResponseType when server returns 304 NotModified
         /// </summary>
-        public NotModifiedFilterDelegate NotModifiedFilter { get; set; }
+        public ExceptionFilterDelegate ExceptionFilter { get; set; }
 
         public string BaseUri { get; set; }
         public bool DisableAutoCompression { get; set; }
@@ -355,16 +355,13 @@ namespace ServiceStack
                     return;
                 }
 
-                if (webEx.IsNotModified())
+                if (ExceptionFilter != null && webEx != null && webEx.Response != null)
                 {
-                    if (NotModifiedFilter != null && webEx.Response != null)
+                    var cachedResponse = ExceptionFilter(webEx, webEx.Response, requestState.Url, typeof(T));
+                    if (cachedResponse is T)
                     {
-                        var cachedResponse = NotModifiedFilter(webEx.Response, requestState.Url, typeof(T));
-                        if (cachedResponse is T)
-                        {
-                            requestState.OnSuccess((T)cachedResponse);
-                            return;
-                        }
+                        requestState.OnSuccess((T)cachedResponse);
+                        return;
                     }
                 }
 

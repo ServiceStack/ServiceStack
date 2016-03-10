@@ -31,7 +31,7 @@ namespace ServiceStack
 
         public ResultsFilterHttpDelegate ResultsFilter { get; set; }
         public ResultsFilterHttpResponseDelegate ResultsFilterResponse { get; set; }
-        public NotModifiedFilterHttpDelegate NotModifiedFilter { get; set; }
+        public ExceptionFilterHttpDelegate ExceptionFilter { get; set; }
 
         public const string DefaultHttpMethod = HttpMethods.Post;
         public static string DefaultUserAgent = "ServiceStack .NET HttpClient " + Env.ServiceStackVersion;
@@ -232,9 +232,9 @@ namespace ServiceStack
                     var httpRes = responseTask.Result;
                     ApplyWebResponseFilters(httpRes);
 
-                    if (httpRes.StatusCode == HttpStatusCode.NotModified && NotModifiedFilter != null)
+                    if (!httpRes.IsSuccessStatusCode && ExceptionFilter != null)
                     {
-                        var cachedResponse = NotModifiedFilter(httpRes, absoluteUrl, typeof(TResponse));
+                        var cachedResponse = ExceptionFilter(httpRes, absoluteUrl, typeof(TResponse));
                         if (cachedResponse is TResponse)
                             return Task.FromResult((TResponse)cachedResponse);
                     }
@@ -968,7 +968,7 @@ namespace ServiceStack
 
     public delegate void ResultsFilterHttpResponseDelegate(HttpResponseMessage webResponse, object response, string httpMethod, string requestUri, object request);
 
-    public delegate object NotModifiedFilterHttpDelegate(HttpResponseMessage webResponse, string requestUri, Type responseType);
+    public delegate object ExceptionFilterHttpDelegate(HttpResponseMessage webResponse, string requestUri, Type responseType);
 
     public static class JsonHttpClientUtils
     {

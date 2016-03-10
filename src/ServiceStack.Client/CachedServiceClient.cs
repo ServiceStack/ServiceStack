@@ -33,6 +33,12 @@ namespace ServiceStack
             get { return notModifiedHits; }
         }
 
+        private long errorFallbackHits;
+        public long ErrorFallbackHits
+        {
+            get { return errorFallbackHits; }
+        }
+
         private long cachesAdded;
         public long CachesAdded
         {
@@ -50,6 +56,7 @@ namespace ServiceStack
         private readonly Action<HttpWebRequest> existingRequestFilter;
         private readonly ResultsFilterDelegate existingResultsFilter;
         private readonly ResultsFilterResponseDelegate existingResultsFilterResponse;
+        private readonly ExceptionFilterDelegate existingExceptionFilter;
 
         private readonly ServiceClientBase client;
 
@@ -69,11 +76,12 @@ namespace ServiceStack
             existingRequestFilter = client.RequestFilter;
             existingResultsFilter = client.ResultsFilter;
             existingResultsFilterResponse = client.ResultsFilterResponse;
+            existingExceptionFilter = client.ExceptionFilter;
 
             client.RequestFilter = OnRequestFilter;
             client.ResultsFilter = OnResultsFilter;
             client.ResultsFilterResponse = OnResultsFilterResponse;
-            client.NotModifiedFilter = OnNotModifiedFilter;
+            client.ExceptionFilter = OnExceptionFilter;
         }
 
         private void OnRequestFilter(HttpWebRequest webReq)
@@ -111,15 +119,29 @@ namespace ServiceStack
             return ret;
         }
 
-        public object OnNotModifiedFilter(WebResponse webRes, string requestUri, Type responseType)
+        public object OnExceptionFilter(WebException webEx, WebResponse webRes, string requestUri, Type responseType)
         {
+            if (existingExceptionFilter != null)
+            {
+                var response = existingExceptionFilter(webEx, webRes, requestUri, responseType);
+                if (response != null)
+                    return response;
+            }
+
             HttpCacheEntry entry;
             if (cache.TryGetValue(requestUri, out entry))
             {
-                Interlocked.Increment(ref notModifiedHits);
-                return entry.Response;
+                if (webEx.IsNotModified())
+                {
+                    Interlocked.Increment(ref notModifiedHits);
+                    return entry.Response;
+                }
+                if (entry.CanUseCacheOnError())
+                {
+                    Interlocked.Increment(ref errorFallbackHits);
+                    return entry.Response;
+                }
             }
-
             return null;
         }
 
@@ -140,6 +162,7 @@ namespace ServiceStack
             var entry = new HttpCacheEntry(response)
             {
                 ETag = eTag,
+                ContentLength = webRes.ContentLength >= 0 ? webRes.ContentLength : (long?)null,
             };
 
             if (lastModifiedStr != null)
@@ -179,7 +202,7 @@ namespace ServiceStack
                     }
                 }
 
-                entry.Expires = entry.Created + entry.MaxAge;
+                entry.SetMaxAge(entry.MaxAge);
                 cache[requestUri] = entry;
                 Interlocked.Increment(ref cachesAdded);
 

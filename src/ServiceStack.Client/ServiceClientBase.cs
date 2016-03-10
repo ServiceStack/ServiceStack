@@ -422,17 +422,17 @@ namespace ServiceStack
         /// <summary>
         /// Called with requestUri, ResponseType when server returns 304 NotModified
         /// </summary>
-        public NotModifiedFilterDelegate notModifiedFilter;
-        public NotModifiedFilterDelegate NotModifiedFilter
+        public ExceptionFilterDelegate exceptionFilter;
+        public ExceptionFilterDelegate ExceptionFilter
         {
             get
             {
-                return notModifiedFilter;
+                return exceptionFilter;
             }
             set
             {
-                notModifiedFilter = value;
-                asyncClient.NotModifiedFilter = value;
+                exceptionFilter = value;
+                asyncClient.ExceptionFilter = value;
             }
         }
 
@@ -646,16 +646,13 @@ namespace ServiceStack
                 throw;
             }
 
-            if (webEx.IsNotModified())
+            if (ExceptionFilter != null && webEx != null && webEx.Response != null)
             {
-                if (NotModifiedFilter != null && webEx.Response != null)
+                var cachedResponse = ExceptionFilter(webEx, webEx.Response, requestUri, typeof(TResponse));
+                if (cachedResponse is TResponse)
                 {
-                    var cachedResponse = NotModifiedFilter(webEx.Response, requestUri, typeof(TResponse));
-                    if (cachedResponse is TResponse)
-                    {
-                        response = (TResponse)cachedResponse;
-                        return true;
-                    }
+                    response = (TResponse)cachedResponse;
+                    return true;
                 }
             }
 
@@ -1887,5 +1884,5 @@ namespace ServiceStack
 
     public delegate void ResultsFilterResponseDelegate(WebResponse webResponse, object response, string httpMethod, string requestUri, object request);
 
-    public delegate object NotModifiedFilterDelegate(WebResponse webResponse, string requestUri, Type responseType);
+    public delegate object ExceptionFilterDelegate(WebException webEx, WebResponse webResponse, string requestUri, Type responseType);
 }
