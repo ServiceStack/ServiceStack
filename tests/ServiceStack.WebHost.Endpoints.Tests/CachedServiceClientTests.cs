@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -54,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetCachedServiceClient();
 
-            var request = new SetCache { ETag = "etag", CacheControl = CacheControl.MustRevalidate };
+            var request = new SetCache { ETag = "etag", CacheControl = CacheControl.NoCache };
 
             var response = client.Get(request);
             Assert.That(client.NotModifiedHits, Is.EqualTo(0));
@@ -70,7 +71,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetCachedServiceClient();
 
-            var request = new SetCache { ETag = "etag", CacheControl = CacheControl.MustRevalidate };
+            var request = new SetCache { ETag = "etag", CacheControl = CacheControl.NoCache };
 
             var response = await client.GetAsync(request);
             Assert.That(client.NotModifiedHits, Is.EqualTo(0));
@@ -152,11 +153,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var request = new CachedRequest { Age = TimeSpan.FromHours(1) };
             var response = client.Get(request);
-            Assert.That(client.CacheHits, Is.EqualTo(0));
+            Assert.That(client.NotModifiedHits, Is.EqualTo(0));
             Assert.That(response, Is.EqualTo(request));
 
             response = client.Get(request);
-            Assert.That(client.CacheHits, Is.EqualTo(1));
+            Assert.That(client.NotModifiedHits + client.CacheHits, Is.EqualTo(1));
             Assert.That(response, Is.EqualTo(request));
         }
 
@@ -167,11 +168,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var request = new CachedRequest { Age = TimeSpan.FromHours(1) };
             var response = await client.GetAsync(request);
-            Assert.That(client.CacheHits, Is.EqualTo(0));
+            Assert.That(client.NotModifiedHits, Is.EqualTo(0));
             Assert.That(response, Is.EqualTo(request));
 
             response = await client.GetAsync(request);
-            Assert.That(client.CacheHits, Is.EqualTo(1));
+            Assert.That(client.NotModifiedHits + client.CacheHits, Is.EqualTo(1));
             Assert.That(response, Is.EqualTo(request));
         }
     }

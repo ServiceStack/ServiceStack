@@ -9,20 +9,6 @@ using System.Threading.Tasks;
 
 namespace ServiceStack
 {
-    public interface ICachedServiceClient : IServiceClient
-    {
-        int CacheCount { get; }
-        long CacheHits { get; }
-        long NotModifiedHits { get; }
-        long CachesCreated { get; }
-        long CachesRemoved { get; }
-
-        void ClearCache();
-        void SetCache(ConcurrentDictionary<string, HttpCacheEntry> cache);
-        int RemoveCachesOlderThan(TimeSpan age);
-        int RemoveExpiredCachesOlderThan(TimeSpan age);
-    }
-
     public class CachedServiceClient : ICachedServiceClient
     {
         public TimeSpan? ClearCachesOlderThan { get; set; }
@@ -47,10 +33,10 @@ namespace ServiceStack
             get { return notModifiedHits; }
         }
 
-        private long cachesCreated;
-        public long CachesCreated
+        private long cachesAdded;
+        public long CachesAdded
         {
-            get { return cachesCreated; }
+            get { return cachesAdded; }
         }
 
         private long cachesRemoved;
@@ -188,33 +174,26 @@ namespace ServiceStack
                             entry.MustRevalidate = true;
                             break;
                         case "no-cache":
-                            return; //don't cache
+                            entry.NoCache = true;
+                            break;
                     }
                 }
 
-                if (entry.MaxAge > TimeSpan.FromSeconds(0))
-                {
-                    entry.Expires = entry.Created + entry.MaxAge;
-                    cache[requestUri] = entry;
-                    Interlocked.Increment(ref cachesCreated);
+                entry.Expires = entry.Created + entry.MaxAge;
+                cache[requestUri] = entry;
+                Interlocked.Increment(ref cachesAdded);
 
-                    var runCleanupAfterEvery = CleanCachesWhenCountExceeds;
-                    if (cachesCreated % runCleanupAfterEvery == 0 && 
-                        cache.Count > CleanCachesWhenCountExceeds)
-                    {
-                        if (ClearExpiredCachesOlderThan != null)
-                            RemoveExpiredCachesOlderThan(ClearExpiredCachesOlderThan.Value);
-                        if (ClearCachesOlderThan != null)
-                            RemoveCachesOlderThan(ClearCachesOlderThan.Value);
-                    }
+                var runCleanupAfterEvery = CleanCachesWhenCountExceeds;
+                if (cachesAdded % runCleanupAfterEvery == 0 &&
+                    cache.Count > CleanCachesWhenCountExceeds)
+                {
+                    if (ClearExpiredCachesOlderThan != null)
+                        RemoveExpiredCachesOlderThan(ClearExpiredCachesOlderThan.Value);
+                    if (ClearCachesOlderThan != null)
+                        RemoveCachesOlderThan(ClearCachesOlderThan.Value);
                 }
             }
 
-        }
-
-        public void ClearCache()
-        {
-            SetCache(new ConcurrentDictionary<string, HttpCacheEntry>());
         }
 
         public void SetCache(ConcurrentDictionary<string, HttpCacheEntry> cache)

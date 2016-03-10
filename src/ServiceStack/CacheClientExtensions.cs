@@ -37,7 +37,7 @@ namespace ServiceStack
         {
             lastModified = null;
 
-            if (!HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedCaches())
+            if (!HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedResults())
                 return false;
 
             var ticks = cacheClient.Get<long>(DateCacheKey(cacheKey));
@@ -167,7 +167,7 @@ namespace ServiceStack
                 bool doCompression = compressionType != null;
                 if (doCompression)
                 {
-                    var lastModified = HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedCaches()
+                    var lastModified = HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedResults()
                         && request.Response.GetHeader(HttpHeaders.CacheControl) == null
                         ? DateTime.UtcNow
                         : (DateTime?)null;

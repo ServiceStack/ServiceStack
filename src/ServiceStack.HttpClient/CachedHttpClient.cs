@@ -34,10 +34,10 @@ namespace ServiceStack
             get { return notModifiedHits; }
         }
 
-        private long cachesCreated;
-        public long CachesCreated
+        private long cachesAdded;
+        public long CachesAdded
         {
-            get { return cachesCreated; }
+            get { return cachesAdded; }
         }
 
         private long cachesRemoved;
@@ -159,29 +159,22 @@ namespace ServiceStack
                     entry.MaxAge = cacheControl.MaxAge.Value;
 
                 entry.MustRevalidate = cacheControl.MustRevalidate;
+                entry.NoCache = cacheControl.NoCache;
 
-                if (entry.MaxAge > TimeSpan.FromSeconds(0))
+                entry.Expires = entry.Created + entry.MaxAge;
+                cache[requestUri] = entry;
+                Interlocked.Increment(ref cachesAdded);
+
+                var runCleanupAfterEvery = CleanCachesWhenCountExceeds;
+                if (cachesAdded % runCleanupAfterEvery == 0 &&
+                    cache.Count > CleanCachesWhenCountExceeds)
                 {
-                    entry.Expires = entry.Created + entry.MaxAge;
-                    cache[requestUri] = entry;
-                    Interlocked.Increment(ref cachesCreated);
-
-                    var runCleanupAfterEvery = CleanCachesWhenCountExceeds;
-                    if (cachesCreated % runCleanupAfterEvery == 0 &&
-                        cache.Count > CleanCachesWhenCountExceeds)
-                    {
-                        if (ClearExpiredCachesOlderThan != null)
-                            RemoveExpiredCachesOlderThan(ClearExpiredCachesOlderThan.Value);
-                        if (ClearCachesOlderThan != null)
-                            RemoveCachesOlderThan(ClearCachesOlderThan.Value);
-                    }
+                    if (ClearExpiredCachesOlderThan != null)
+                        RemoveExpiredCachesOlderThan(ClearExpiredCachesOlderThan.Value);
+                    if (ClearCachesOlderThan != null)
+                        RemoveCachesOlderThan(ClearCachesOlderThan.Value);
                 }
             }
-        }
-
-        public void ClearCache()
-        {
-            SetCache(new ConcurrentDictionary<string, HttpCacheEntry>());
         }
 
         public void SetCache(ConcurrentDictionary<string, HttpCacheEntry> cache)
