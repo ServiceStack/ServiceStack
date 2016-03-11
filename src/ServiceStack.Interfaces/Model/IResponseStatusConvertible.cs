@@ -8,10 +8,4 @@ namespace ServiceStack.Model
     {
         ResponseStatus ToResponseStatus();
     }
-
-    //Allow Exceptions to Customize HTTP StatusCode returned
-    public interface IHasStatusCode
-    {
-        int StatusCode { get; }
-    }
 }
