@@ -61,6 +61,19 @@ namespace ServiceStack
         public QueryTerm DefaultTerm { get; set; }
     }
 
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    public class QueryDataAttribute : AttributeBase
+    {
+        public QueryDataAttribute() { }
+
+        public QueryDataAttribute(QueryTerm defaultTerm)
+        {
+            DefaultTerm = defaultTerm;
+        }
+
+        public QueryTerm DefaultTerm { get; set; }
+    }
+
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class QueryFieldAttribute : AttributeBase
     {
@@ -71,6 +84,14 @@ namespace ServiceStack
         public string ValueFormat { get; set; }
         public ValueStyle ValueStyle { get; set; }
         public int ValueArity { get; set; }
+    }
+
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class QueryDataFieldAttribute : AttributeBase
+    {
+        public QueryTerm Term { get; set; }
+        public string Condition { get; set; }
+        public string Field { get; set; }
     }
 
     public abstract class QueryBase : IQuery
