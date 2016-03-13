@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using ServiceStack.Text;
 
 namespace ServiceStack
@@ -12,6 +14,8 @@ namespace ServiceStack
     }
     public class GreaterEqualCondition : QueryCondition
     {
+        public static GreaterEqualCondition Instance = new GreaterEqualCondition();
+
         public override bool Match(object a, object b)
         {
             return CompareTo(a, b) >= 0;
@@ -26,6 +30,8 @@ namespace ServiceStack
     }
     public class LessEqualCondition : QueryCondition
     {
+        public static LessEqualCondition Instance = new LessEqualCondition();
+
         public override bool Match(object a, object b)
         {
             return CompareTo(a, b) <= 0;
@@ -47,18 +53,39 @@ namespace ServiceStack
             return string.Compare(aString, bString, StringComparison.InvariantCultureIgnoreCase) == 0;
         }
     }
-    public class InCollectionCondition : QueryCondition, IQueryMultipleValues
+    public class InCollectionCondition : QueryCondition, IQueryMultiple
     {
+        public static InCollectionCondition Instance = new InCollectionCondition();
+
         public override bool Match(object a, object b)
         {
+            var bValues = b as IEnumerable;
+            if (bValues == null)
+                return EqualsCondition.Instance.Match(a, b);
+
+            foreach (var item in bValues)
+            {
+                if (EqualsCondition.Instance.Match(a, item))
+                    return true;
+            }
+
             return false;
         }
     }
-    public class InBetweenCondition : QueryCondition, IQueryMultipleValues
+    public class InBetweenCondition : QueryCondition, IQueryMultiple
     {
         public override bool Match(object a, object b)
         {
-            return false;
+            var bValues = b as IEnumerable;
+            if (bValues == null)
+                throw new ArgumentException("InBetweenCondition must be queried with multiple values");
+
+            var bList = bValues.Map(x => x);
+            if (bList.Count != 2)
+                throw new ArgumentException("InBetweenCondition expected 2 values, got {0} instead.".Fmt(bList.Count));
+
+            return GreaterEqualCondition.Instance.Match(a, bList[0]) &&
+                   LessEqualCondition.Instance.Match(a, bList[1]);
         }
     }
     public class StartsWithCondition : QueryCondition
@@ -107,7 +134,7 @@ namespace ServiceStack
         }
     }
 
-    public interface IQueryMultipleValues {}
+    public interface IQueryMultiple {}
 
     public abstract class QueryCondition
     {

@@ -65,6 +65,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
+    public class QueryDataFieldRockstars : QueryData<Rockstar>
+    {
+        public string FirstName { get; set; } //default to 'AND FirstName = {Value}'
+
+        public string[] FirstNames { get; set; } //Collections default to 'FirstName IN ({Values})
+
+        [QueryDataField(Condition = "GreaterEqualCondition")]
+        public int? Age { get; set; }
+
+        [QueryDataField(Condition = "CaseInsensitiveEqualCondition", Field = "FirstName")]
+        public string FirstNameCaseInsensitive { get; set; }
+
+        [QueryDataField(Condition = "StartsWithCondition", Field = "FirstName")]
+        public string FirstNameStartsWith { get; set; }
+
+        [QueryDataField(Condition = "EndsWithCondition", Field = "LastName")]
+        public string LastNameEndsWith { get; set; }
+
+        [QueryDataField(Condition = "InBetweenCondition", Field = "FirstName")]
+        public string[] FirstNameBetween { get; set; }
+
+        [QueryDataField(Term = QueryTerm.Or, Condition = "CaseInsensitiveEqualCondition", Field = "LastName")]
+        public string OrLastName { get; set; }
+    }
+
     [DataContract]
     [Route("/adhocdata-rockstars")]
     public class QueryDataAdhocRockstars : QueryData<Rockstar>
@@ -281,6 +306,39 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(response.Total, Is.EqualTo(2));
             Assert.That(response.Results.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Can_execute_custom_QueryFields()
+        {
+            QueryResponse<Rockstar> response;
+            response = client.Get(new QueryDataFieldRockstars { FirstName = "Jim" });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+
+            response = client.Get(new QueryDataFieldRockstars { FirstNames = new[] { "Jim", "Kurt" } });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = client.Get(new QueryDataFieldRockstars { FirstNameCaseInsensitive = "jim" });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+
+            response = client.Get(new QueryDataFieldRockstars { FirstNameStartsWith = "Jim" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = client.Get(new QueryDataFieldRockstars { LastNameEndsWith = "son" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = client.Get(new QueryDataFieldRockstars { FirstNameBetween = new[] { "A", "F" } });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = client.Get(new QueryDataFieldRockstars
+            {
+                LastNameEndsWith = "son",
+                OrLastName = "Hendrix"
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = client.Get(new QueryDataFieldRockstars { Age = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(4));
         }
     }
 }

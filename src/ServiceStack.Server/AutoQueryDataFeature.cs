@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,13 +51,29 @@ namespace ServiceStack
 
         public ConcurrentDictionary<Type, Func<QueryDataContext, IQueryDataSource>> DataSources { get; private set; }
 
-        public static QueryCondition GreaterThanOrEqualCondition = new GreaterEqualCondition();
-        public static QueryCondition GreaterThanCondition =        new GreaterCondition();
-        public static QueryCondition LessThanCondition =           new LessCondition();
-        public static QueryCondition LessThanOrEqualCondition =    new LessEqualCondition();
-        public static QueryCondition NotEqualCondition =           new NotEqualCondition();
+        public static string GreaterThanOrEqualCondition = typeof(GreaterEqualCondition).Name;
+        public static string GreaterThanCondition        = typeof(GreaterCondition).Name;
+        public static string LessThanCondition           = typeof(LessCondition).Name;
+        public static string LessThanOrEqualCondition    = typeof(LessEqualCondition).Name;
+        public static string NotEqualCondition           = typeof(NotEqualCondition).Name;
 
-        public Dictionary<string, QueryCondition> ImplicitConventions = new Dictionary<string, QueryCondition> 
+        public Dictionary<string, QueryCondition> Conditions = new Dictionary<string, QueryCondition>
+        {
+            { typeof(GreaterEqualCondition).Name, new GreaterEqualCondition() },
+            { typeof(GreaterCondition).Name, new GreaterCondition() },
+            { typeof(LessCondition).Name, new LessCondition() },
+            { typeof(LessEqualCondition).Name, new LessEqualCondition() },
+            { typeof(NotEqualCondition).Name, new NotEqualCondition() },
+
+            { typeof(CaseInsensitiveEqualCondition).Name, new CaseInsensitiveEqualCondition() },
+            { typeof(InCollectionCondition).Name, new InCollectionCondition() },
+            { typeof(InBetweenCondition).Name, new InBetweenCondition() },
+            { typeof(StartsWithCondition).Name, new StartsWithCondition() },
+            { typeof(ContainsCondition).Name, new ContainsCondition() },
+            { typeof(EndsWithCondition).Name, new EndsWithCondition() },
+        }; 
+
+        public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
         {
             {"%Above%",         GreaterThanCondition},
             {"Begin%",          GreaterThanCondition},
@@ -93,18 +110,18 @@ namespace ServiceStack
             {"%<",              LessThanOrEqualCondition},
             {"<%",              LessThanCondition},
 
-            {"%Like%",          new CaseInsensitiveEqualCondition()},
-            {"%In",             new InCollectionCondition()},
-            {"%Ids",            new InCollectionCondition()},
-            {"%Between%",       new InBetweenCondition()},
+            {"%Like%",          typeof(CaseInsensitiveEqualCondition).Name },
+            {"%In",             typeof(InCollectionCondition).Name },
+            {"%Ids",            typeof(InCollectionCondition).Name },
+            {"%Between%",       typeof(InBetweenCondition).Name },
 
-            {"%StartsWith",     new StartsWithCondition()},
-            {"%Contains",       new ContainsCondition()},
-            {"%EndsWith",       new EndsWithCondition()},
+            {"%StartsWith",     typeof(StartsWithCondition).Name },
+            {"%Contains",       typeof(ContainsCondition).Name },
+            {"%EndsWith",       typeof(EndsWithCondition).Name },
         };
 
-        public Dictionary<string, QueryCondition> StartsWithConventions = new Dictionary<string, QueryCondition>();
-        public Dictionary<string, QueryCondition> EndsWithConventions = new Dictionary<string, QueryCondition>();
+        public Dictionary<string, QueryDataField> StartsWithConventions = new Dictionary<string, QueryDataField>();
+        public Dictionary<string, QueryDataField> EndsWithConventions = new Dictionary<string, QueryDataField>();
 
         public AutoQueryDataFeature()
         {
@@ -125,11 +142,31 @@ namespace ServiceStack
             foreach (var entry in ImplicitConventions)
             {
                 var key = entry.Key.Trim('%');
-                var query = entry.Value;
+                var conditionName = entry.Value;
+                QueryCondition query;
+                if (!Conditions.TryGetValue(conditionName, out query))
+                    throw new NotSupportedException("No Condition registered with name '{0}'".Fmt(conditionName));
+
                 if (entry.Key.EndsWith("%"))
-                    StartsWithConventions[key] = query;
+                {
+                    StartsWithConventions[key] = new QueryDataField
+                    {
+                        Term = QueryTerm.And,
+                        Condition = conditionName,
+                        QueryCondition = query,
+                        Field = key,
+                    };
+                }
                 if (entry.Key.StartsWith("%"))
-                    EndsWithConventions[key] = query;
+                {
+                    EndsWithConventions[key] = new QueryDataField
+                    {
+                        Term = QueryTerm.And,
+                        Condition = conditionName,
+                        QueryCondition = query,
+                        Field = key,
+                    };
+                }
             }
 
             appHost.GetContainer().Register<IAutoQueryData>(c =>
@@ -154,8 +191,8 @@ namespace ServiceStack
                     LoadFromAssemblies.Add(x);
             });
 
-            //if (EnableAutoQueryViewer)
-            //    appHost.RegisterService<AutoQueryMetadataService>();
+            if (EnableAutoQueryViewer && appHost.GetPlugin<AutoQueryMetadataFeature>() == null)
+                appHost.LoadPlugin(new AutoQueryMetadataFeature());
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)
@@ -273,16 +310,28 @@ namespace ServiceStack
 
         public IEnumerable<T> Apply<T>(IEnumerable<T> source, IEnumerable<T> original)
         {
-            var to = new List<T>();
-
-            foreach (var item in source)
+            if (Term != QueryTerm.Or)
             {
-                var fieldValue = GetFieldValue(item);
-                if (Condition.Match(fieldValue, Value))
-                    to.Add(item);
+                var to = new List<T>();
+                foreach (var item in source)
+                {
+                    var fieldValue = GetFieldValue(item);
+                    if (Condition.Match(fieldValue, Value))
+                        to.Add(item);
+                }
+                return to;
             }
-
-            return to;
+            else
+            {
+                var to = new List<T>(source);
+                foreach (var item in original)
+                {
+                    var fieldValue = GetFieldValue(item);
+                    if (Condition.Match(fieldValue, Value))
+                        to.Add(item);
+                }
+                return to;
+            }
         }
     }
 
@@ -428,8 +477,8 @@ namespace ServiceStack
         bool EnableUntypedQueries { get; set; }
         bool OrderByPrimaryKeyOnLimitQuery { get; set; }
         HashSet<string> IgnoreProperties { get; set; }
-        Dictionary<string, QueryCondition> StartsWithConventions { get; set; }
-        Dictionary<string, QueryCondition> EndsWithConventions { get; set; }
+        Dictionary<string, QueryDataField> StartsWithConventions { get; set; }
+        Dictionary<string, QueryDataField> EndsWithConventions { get; set; }
     }
 
     public class AutoQueryData : IAutoQueryData, IAutoQueryDataOptions, IDisposable
@@ -439,8 +488,8 @@ namespace ServiceStack
         public bool OrderByPrimaryKeyOnLimitQuery { get; set; }
         public string RequiredRoleForRawSqlFilters { get; set; }
         public HashSet<string> IgnoreProperties { get; set; }
-        public Dictionary<string, QueryCondition> StartsWithConventions { get; set; }
-        public Dictionary<string, QueryCondition> EndsWithConventions { get; set; }
+        public Dictionary<string, QueryDataField> StartsWithConventions { get; set; }
+        public Dictionary<string, QueryDataField> EndsWithConventions { get; set; }
 
         public virtual IQueryDataSource Db { get; set; }
         public Dictionary<Type, QueryDataFilterDelegate> QueryFilters { get; set; }
@@ -672,6 +721,14 @@ namespace ServiceStack
             IDataQuery query);
     }
 
+    public class QueryDataField
+    {
+        public QueryTerm Term { get; set; }
+        public string Condition { get; set; }
+        public string Field { get; set; }
+        public QueryCondition QueryCondition { get; set; }
+    }
+
     public class TypedQueryData<QueryModel, From> : ITypedQueryData
     {
         private static ILog log = LogManager.GetLogger(typeof(AutoQueryDataFeature));
@@ -682,19 +739,20 @@ namespace ServiceStack
         static readonly Dictionary<string, Func<object, object>> FromPropertyGetters =
             new Dictionary<string, Func<object, object>>();
 
-        static readonly Dictionary<string, QueryCondition> QueryFieldMap =
-            new Dictionary<string, QueryCondition>();
+        static readonly Dictionary<string, QueryDataField> QueryFieldMap =
+            new Dictionary<string, QueryDataField>();
 
         static TypedQueryData()
         {
+            var feature = HostContext.GetPlugin<AutoQueryDataFeature>();
             foreach (var pi in typeof(QueryModel).GetPublicProperties())
             {
                 var fn = pi.GetValueGetter(typeof(QueryModel));
                 RequestPropertyGetters[pi.Name] = fn;
 
-                //var queryAttr = pi.FirstAttribute<QueryFieldAttribute>();
-                //if (queryAttr != null)
-                //    QueryFieldMap[pi.Name] = queryAttr.Init();
+                var queryAttr = pi.FirstAttribute<QueryDataFieldAttribute>();
+                if (queryAttr != null)
+                    QueryFieldMap[pi.Name] = queryAttr.ToField(pi, feature);
             }
 
             foreach (var pi in typeof(From).GetPublicProperties())
@@ -811,18 +869,27 @@ namespace ServiceStack
             {
                 var name = entry.Key.SplitOnFirst('#')[0];
 
-                QueryCondition condition;
-                QueryFieldMap.TryGetValue(name, out condition);
-
-                //if (condition != null && condition.Field != null)
-                //    name = condition.Field;
+                QueryDataField attr;
+                if (QueryFieldMap.TryGetValue(name, out attr))
+                {
+                    if (attr.Field != null)
+                        name = attr.Field;
+                }
 
                 var match = GetQueryMatch(q, name, options, aliases);
                 if (match == null)
                     continue;
 
-                if (condition == null)
-                    condition = match.Condition;
+                if (attr == null)
+                    attr = match.QueryField;
+
+                if (attr != null)
+                {
+                    if (attr.Term == QueryTerm.Or)
+                        defaultTerm = QueryTerm.Or;
+                    else if (attr.Term == QueryTerm.And)
+                        defaultTerm = QueryTerm.And;
+                }
 
                 var value = entry.Value(model);
                 if (value == null)
@@ -830,12 +897,15 @@ namespace ServiceStack
 
                 dynamicParams.Remove(entry.Key);
 
-                AddCondition(q, defaultTerm, match.FieldDef, value, condition);
+                AddCondition(q, defaultTerm, match.FieldDef, value, attr != null ? attr.QueryCondition : null);
             }
         }
 
         private static void AddCondition(DataQuery<From> q, QueryTerm defaultTerm, PropertyInfo property, object value, QueryCondition condition)
         {
+            var isMultiple = condition is IQueryMultiple
+                || (value is IEnumerable && !(value is string));
+
             if (condition != null)
             {
                 if (condition.Term == QueryTerm.Or)
@@ -843,8 +913,14 @@ namespace ServiceStack
                 else if (condition.Term == QueryTerm.And)
                     defaultTerm = QueryTerm.And;
             }
+            else
+            {
+                condition = !isMultiple
+                    ? (QueryCondition) EqualsCondition.Instance
+                    : InCollectionCondition.Instance;
+            }
 
-            q.AddCondition(defaultTerm, condition ?? EqualsCondition.Instance, property, FromPropertyGetters[property.Name], value);
+            q.AddCondition(defaultTerm, condition, property, FromPropertyGetters[property.Name], value);
         }
 
         private static void AppendUntypedQueries(DataQuery<From> q, Dictionary<string, string> dynamicParams, QueryTerm defaultTerm, IAutoQueryDataOptions options, Dictionary<string, string> aliases)
@@ -863,7 +939,7 @@ namespace ServiceStack
                     ? entry.Value
                     : null;
                 var fieldType = match.FieldDef.PropertyType;
-                var isMultiple = condition is IQueryMultipleValues
+                var isMultiple = condition is IQueryMultiple
                     || string.Compare(name, match.FieldDef.Name + Pluralized, StringComparison.OrdinalIgnoreCase) == 0;
                 
                 var value = strValue == null ? 
@@ -882,14 +958,16 @@ namespace ServiceStack
 
         class MatchQuery
         {
-            public MatchQuery(Tuple<Type, PropertyInfo> match, QueryCondition condition)
+            public MatchQuery(Tuple<Type, PropertyInfo> match, QueryDataField queryField)
             {
                 ModelDef = match.Item1;
                 FieldDef = match.Item2;
-                Condition = condition;
+                QueryField = queryField;
+                Condition = queryField != null ? queryField.QueryCondition : null;
             }
             public readonly Type ModelDef;
             public readonly PropertyInfo FieldDef;
+            public readonly QueryDataField QueryField;
             public readonly QueryCondition Condition;
         }
 
@@ -973,26 +1051,26 @@ namespace ServiceStack
 
     public static class AutoQueryDataExtensions
     {
-        //public static QueryFieldAttribute Init(this QueryFieldAttribute query)
-        //{
-        //    query.ValueStyle = ValueStyle.Single;
-        //    if (query.Template == null || query.ValueFormat != null) return query;
+        public static QueryDataField ToField(this QueryDataFieldAttribute attr, PropertyInfo pi, AutoQueryDataFeature feature)
+        {
+            var to = new QueryDataField
+            {
+                Term = attr.Term,
+                Field = attr.Field,
+                Condition = attr.Condition,
+            };
 
-        //    var i = 0;
-        //    while (query.Template.Contains("{Value" + (i + 1) + "}")) i++;
-        //    if (i > 0)
-        //    {
-        //        query.ValueStyle = ValueStyle.Multiple;
-        //        query.ValueArity = i;
-        //    }
-        //    else
-        //    {
-        //        query.ValueStyle = !query.Template.Contains("{Values}")
-        //            ? ValueStyle.Single
-        //            : ValueStyle.List;
-        //    }
-        //    return query;
-        //}
+            if (attr.Condition != null)
+            {
+                QueryCondition queryCondition;
+                if (!feature.Conditions.TryGetValue(attr.Condition, out queryCondition))
+                    throw new NotSupportedException("No Condition registered with name '{0}' on [QueryDataField({1})]".Fmt(attr.Condition, attr.Field ?? pi.Name));
+
+                to.QueryCondition = queryCondition;
+            }
+
+            return to;
+        }
 
         public static DataQuery<From> CreateQuery<From>(this IAutoQueryData autoQuery, IQueryData<From> model, IRequest request)
         {
