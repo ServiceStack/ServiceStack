@@ -88,8 +88,19 @@ namespace ServiceStack
             return aString.EndsWith(bString, StringComparison.InvariantCultureIgnoreCase);
         }
     }
-    public class FalseCondition : QueryCondition
+    public class EqualsCondition : QueryCondition
     {
+        public static EqualsCondition Instance = new EqualsCondition();
+
+        public override bool Match(object a, object b)
+        {
+            return CompareTo(a, b) == 0;
+        }
+    }
+    public class AlwaysFalseCondition : QueryCondition
+    {
+        public static AlwaysFalseCondition Instance = new AlwaysFalseCondition();
+
         public override bool Match(object a, object b)
         {
             return false;

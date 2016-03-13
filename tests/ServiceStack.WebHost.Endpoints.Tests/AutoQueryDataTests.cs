@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
 
@@ -38,6 +39,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class QueryDataOverridedRockstars : QueryData<Rockstar>
     {
         public int? Age { get; set; }
+    }
+
+    [DataContract]
+    [Route("/adhocdata-rockstars")]
+    public class QueryDataAdhocRockstars : QueryData<Rockstar>
+    {
+        [DataMember(Name = "first_name")]
+        public string FirstName { get; set; }
     }
 
     public class AutoQueryDataService : Service
@@ -95,6 +104,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Can_execute_AdhocRockstars_query()
+        {
+            var request = new QueryDataAdhocRockstars { FirstName = "Jimi" };
+
+            Assert.That(request.ToGetUrl(), Is.EqualTo("/adhocdata-rockstars?first_name=Jimi"));
+
+            var response = client.Get(request);
+
+            Assert.That(response.Offset, Is.EqualTo(0));
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo(request.FirstName));
         }
     }
 }

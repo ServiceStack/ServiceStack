@@ -260,7 +260,30 @@ namespace ServiceStack
         public QueryTerm Term { get; set; }
         public QueryCondition Condition { get; set; }
         public PropertyInfo Field { get; set; }
+        public Func<object, object> FieldGetter { get; set; }
         public object Value { get; set; }
+
+        public object GetFieldValue(object instance)
+        {
+            if (Field == null || FieldGetter == null)
+                return null;
+
+            return FieldGetter(instance);
+        }
+
+        public IEnumerable<T> Apply<T>(IEnumerable<T> source, IEnumerable<T> original)
+        {
+            var to = new List<T>();
+
+            foreach (var item in source)
+            {
+                var fieldValue = GetFieldValue(item);
+                if (Condition.Match(fieldValue, Value))
+                    to.Add(item);
+            }
+
+            return to;
+        }
     }
 
     public class DataQuery<T> : IDataQuery
@@ -337,13 +360,14 @@ namespace ServiceStack
             return this;
         }
 
-        public virtual DataQuery<T> AddCondition(QueryTerm term, QueryCondition condition, PropertyInfo field, object value)
+        public virtual DataQuery<T> AddCondition(QueryTerm term, QueryCondition condition, PropertyInfo field, Func<object, object> fieldGetter, object value)
         {
             this.Conditions.Add(new ConditionExpression
             {
                 Term = term,
                 Condition = condition,
                 Field = field,
+                FieldGetter = fieldGetter,
                 Value = value,
             });
             return this;
@@ -594,13 +618,20 @@ namespace ServiceStack
             return new DataQuery<T>(context);
         }
 
-        public List<Into> LoadSelect<Into, From>(DataQuery<From> q)
+        public IEnumerable<T> GetFilteredData<From>(IEnumerable<T> data, DataQuery<From> q)
         {
             var source = data;
-            if (q.Offset != null)
-                source = source.Skip(q.Offset.Value);
-            if (q.Rows != null)
-                source = source.Take(q.Rows.Value);
+            foreach (var condition in q.Conditions)
+            {
+                source = condition.Apply(source, data);
+            }
+            return source;
+        } 
+
+        public List<Into> LoadSelect<Into, From>(DataQuery<From> q)
+        {
+            var source = GetFilteredData(data, q);
+            source = ApplyLimits(source, q.Offset, q.Rows);
 
             var rows = typeof(From) == typeof(Into)
                 ? source.Map(x => (Into)x)
@@ -609,9 +640,19 @@ namespace ServiceStack
             return rows;
         }
 
+        private static IEnumerable<T> ApplyLimits(IEnumerable<T> source, int? skip, int? take)
+        {
+            if (skip != null)
+                source = source.Skip(skip.Value);
+            if (take != null)
+                source = source.Take(take.Value);
+            return source;
+        }
+
         public int Count<T>(DataQuery<T> q)
         {
-            return data.Count();
+            var source = GetFilteredData(data, q);
+            return source.Count();
         }
 
         public void Dispose() {}
@@ -634,7 +675,10 @@ namespace ServiceStack
     {
         private static ILog log = LogManager.GetLogger(typeof(AutoQueryDataFeature));
 
-        static readonly Dictionary<string, Func<object, object>> PropertyGetters =
+        static readonly Dictionary<string, Func<object, object>> RequestPropertyGetters =
+            new Dictionary<string, Func<object, object>>();
+
+        static readonly Dictionary<string, Func<object, object>> FromPropertyGetters =
             new Dictionary<string, Func<object, object>>();
 
         static readonly Dictionary<string, QueryCondition> QueryFieldMap =
@@ -645,11 +689,17 @@ namespace ServiceStack
             foreach (var pi in typeof(QueryModel).GetPublicProperties())
             {
                 var fn = pi.GetValueGetter(typeof(QueryModel));
-                PropertyGetters[pi.Name] = fn;
+                RequestPropertyGetters[pi.Name] = fn;
 
                 //var queryAttr = pi.FirstAttribute<QueryFieldAttribute>();
                 //if (queryAttr != null)
                 //    QueryFieldMap[pi.Name] = queryAttr.Init();
+            }
+
+            foreach (var pi in typeof(From).GetPublicProperties())
+            {
+                var fn = pi.GetValueGetter(typeof(From));
+                FromPropertyGetters[pi.Name] = fn;
             }
         }
 
@@ -687,7 +737,7 @@ namespace ServiceStack
 
             if (defaultTerm == QueryTerm.Or && !q.HasConditions)
             {
-                q.AddCondition(defaultTerm, new FalseCondition(), null, null); //Empty OR queries should be empty
+                q.AddCondition(defaultTerm, AlwaysFalseCondition.Instance, null, null, null); //Empty OR queries should be empty
             }
 
             if (!string.IsNullOrEmpty(request.Fields))
@@ -756,7 +806,7 @@ namespace ServiceStack
 
         private static void AppendTypedQueries(DataQuery<From> q, IQuery model, Dictionary<string, string> dynamicParams, QueryTerm defaultTerm, IAutoQueryDataOptions options, Dictionary<string, string> aliases)
         {
-            foreach (var entry in PropertyGetters)
+            foreach (var entry in RequestPropertyGetters)
             {
                 var name = entry.Key.SplitOnFirst('#')[0];
 
@@ -793,7 +843,7 @@ namespace ServiceStack
                     defaultTerm = QueryTerm.And;
             }
 
-            q.AddCondition(defaultTerm, condition, property, value);
+            q.AddCondition(defaultTerm, condition ?? EqualsCondition.Instance, property, FromPropertyGetters[property.Name], value);
         }
 
         private static void AppendUntypedQueries(DataQuery<From> q, Dictionary<string, string> dynamicParams, QueryTerm defaultTerm, IAutoQueryDataOptions options, Dictionary<string, string> aliases)
