@@ -35,6 +35,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
+    public class QueryDataOverridedRockstars : QueryData<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    public class AutoQueryDataService : Service
+    {
+        public IAutoQueryData AutoQuery { get; set; }
+
+        //Override with custom impl
+        public object Any(QueryDataOverridedRockstars dto)
+        {
+            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
+            q.Take(1);
+            return AutoQuery.Execute(dto, q);
+        }
+    }
+
     [TestFixture]
     public class AutoQueryDataTests
     {
@@ -67,6 +85,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
+        }
+
+        [Test]
+        public void Can_execute_overridden_basic_query()
+        {
+            var response = client.Get(new QueryDataOverridedRockstars());
+
+            Assert.That(response.Offset, Is.EqualTo(0));
+            Assert.That(response.Total, Is.EqualTo(TotalRockstars));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
         }
     }
 }

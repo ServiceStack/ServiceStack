@@ -41,7 +41,6 @@ namespace ServiceStack
         public HashSet<string> IgnoreProperties { get; set; }
         public HashSet<Assembly> LoadFromAssemblies { get; set; } 
         public int? MaxLimit { get; set; }
-        public string UseNamedConnection { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableAutoQueryViewer { get; set; }
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
@@ -144,7 +143,6 @@ namespace ServiceStack
                     ResponseFilters = ResponseFilters,
                     StartsWithConventions = StartsWithConventions,
                     EndsWithConventions = EndsWithConventions,
-                    UseNamedConnection = UseNamedConnection,
                 })
                 .ReusedWithin(ReuseScope.None);
 
@@ -257,35 +255,51 @@ namespace ServiceStack
         }
     }
 
+    public class ConditionExpression
+    {
+        public QueryTerm Term { get; set; }
+        public QueryCondition Condition { get; set; }
+        public PropertyInfo Field { get; set; }
+        public object Value { get; set; }
+    }
+
     public class DataQuery<T> : IDataQuery
     {
         private QueryDataContext context;
 
         public IQueryData Request { get; private set; }
         public Dictionary<string, string> DynamicParams { get; private set; }
+        public List<ConditionExpression> Conditions { get; set; }
+        public int? Offset { get; set; }
+        public int? Rows { get; set; }
 
         public DataQuery(QueryDataContext context)
         {
             this.context = context;
             this.Request = context.Request;
             this.DynamicParams = context.DynamicParams;
+            this.Conditions = new List<ConditionExpression>();
         }
 
-        public virtual int? Offset { get; }
-
-        public virtual bool HasConditions { get; set; }
+        public virtual bool HasConditions
+        {
+            get { return Conditions.Count > 0; }
+        }
 
         public virtual DataQuery<T> Limit(int? skip, int? take)
         {
+            this.Offset = skip;
+            this.Rows = take;
             return this;
         }
+
+        public DataQuery<T> Take(int take)
+        {
+            this.Rows = take;
+            return this;
+        } 
 
         public virtual IDataQuery Select(string[] fields)
-        {
-            return this;
-        }
-
-        public virtual DataQuery<T> Select(string fields)
         {
             return this;
         }
@@ -296,11 +310,6 @@ namespace ServiceStack
             return pi != null
                 ? Tuple.Create(typeof(T), pi)
                 : null;
-        }
-
-        public virtual string GetQuotedColumnName(Type modelDef, PropertyInfo fieldDef)
-        {
-            return fieldDef.Name;
         }
 
         public virtual DataQuery<T> OrderByFields(params string[] fieldNames)
@@ -328,8 +337,15 @@ namespace ServiceStack
             return this;
         }
 
-        public virtual DataQuery<T> AddCondition(QueryTerm term, QueryCondition condition, PropertyInfo field, params object[] conditionParams)
+        public virtual DataQuery<T> AddCondition(QueryTerm term, QueryCondition condition, PropertyInfo field, object value)
         {
+            this.Conditions.Add(new ConditionExpression
+            {
+                Term = term,
+                Condition = condition,
+                Field = field,
+                Value = value,
+            });
             return this;
         }
 
@@ -337,25 +353,15 @@ namespace ServiceStack
         {
             return this;
         }
-
-        public virtual DataQuery<T> Where(string @where)
-        {
-            return this;
-        }
-
-        public virtual DataQuery<T> WhereInvalidate()
-        {
-            return this;
-        }
     }
 
     public interface IAutoQueryData
     {
-        DataQuery<From> CreateQuery<From>(IQueryData<From> request, Dictionary<string, string> dynamicParams, IRequest req = null);
+        DataQuery<From> CreateQuery<From>(IQueryData<From> request, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null);
 
         QueryResponse<From> Execute<From>(IQueryData<From> request, DataQuery<From> q);
 
-        DataQuery<From> CreateQuery<From, Into>(IQueryData<From, Into> request, Dictionary<string, string> dynamicParams, IRequest req = null);
+        DataQuery<From> CreateQuery<From, Into>(IQueryData<From, Into> request, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null);
 
         QueryResponse<Into> Execute<From, Into>(IQueryData<From, Into> request, DataQuery<From> q);
     }
@@ -411,7 +417,6 @@ namespace ServiceStack
         public Dictionary<string, QueryCondition> StartsWithConventions { get; set; }
         public Dictionary<string, QueryCondition> EndsWithConventions { get; set; }
 
-        public string UseNamedConnection { get; set; }
         public virtual IQueryDataSource Db { get; set; }
         public Dictionary<Type, QueryDataFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDataFilterContext>> ResponseFilters { get; set; }
@@ -521,8 +526,11 @@ namespace ServiceStack
             return Db = dataSourceFactory(ctx);
         }
 
-        public DataQuery<From> CreateQuery<From>(IQueryData<From> request, Dictionary<string, string> dynamicParams, IRequest req = null)
+        public DataQuery<From> CreateQuery<From>(IQueryData<From> request, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null)
         {
+            if (db != null)
+                this.Db = db;
+
             var ctx = new QueryDataContext(request, dynamicParams);
             var typedQuery = GetTypedQuery(request.GetType(), typeof(From));
             return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(ctx), request, dynamicParams, this));
@@ -534,8 +542,11 @@ namespace ServiceStack
             return ResponseFilter(typedQuery.Execute<From>(Db, q), q, request);
         }
 
-        public DataQuery<From> CreateQuery<From, Into>(IQueryData<From, Into> request, Dictionary<string, string> dynamicParams, IRequest req = null)
+        public DataQuery<From> CreateQuery<From, Into>(IQueryData<From, Into> request, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null)
         {
+            if (db != null)
+                this.Db = db;
+
             var ctx = new QueryDataContext(request, dynamicParams);
             var typedQuery = GetTypedQuery(request.GetType(), typeof(From));
             return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(ctx), request, dynamicParams, this));
@@ -585,9 +596,17 @@ namespace ServiceStack
 
         public List<Into> LoadSelect<Into, From>(DataQuery<From> q)
         {
-            return typeof(From) == typeof(Into)
-                ? data.Map(x => (Into)x)
-                : data.Map(x => x.ConvertTo<Into>());
+            var source = data;
+            if (q.Offset != null)
+                source = source.Skip(q.Offset.Value);
+            if (q.Rows != null)
+                source = source.Take(q.Rows.Value);
+
+            var rows = typeof(From) == typeof(Into)
+                ? source.Map(x => (Into)x)
+                : source.Map(x => x.ConvertTo<Into>());
+
+            return rows;
         }
 
         public int Count<T>(DataQuery<T> q)
@@ -668,7 +687,7 @@ namespace ServiceStack
 
             if (defaultTerm == QueryTerm.Or && !q.HasConditions)
             {
-                q.WhereInvalidate(); //Empty OR queries should be empty
+                q.AddCondition(defaultTerm, new FalseCondition(), null, null); //Empty OR queries should be empty
             }
 
             if (!string.IsNullOrEmpty(request.Fields))
@@ -793,7 +812,7 @@ namespace ServiceStack
                     ? entry.Value
                     : null;
                 var fieldType = match.FieldDef.PropertyType;
-                var isMultiple = condition is IHasMultipleValues
+                var isMultiple = condition is IQueryMultipleValues
                     || string.Compare(name, match.FieldDef.Name + Pluralized, StringComparison.OrdinalIgnoreCase) == 0;
                 
                 var value = strValue == null ? 

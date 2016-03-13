@@ -47,14 +47,14 @@ namespace ServiceStack
             return string.Compare(aString, bString, StringComparison.InvariantCultureIgnoreCase) == 0;
         }
     }
-    public class InCollectionCondition : QueryCondition, IHasMultipleValues
+    public class InCollectionCondition : QueryCondition, IQueryMultipleValues
     {
         public override bool Match(object a, object b)
         {
             return false;
         }
     }
-    public class InBetweenCondition : QueryCondition, IHasMultipleValues
+    public class InBetweenCondition : QueryCondition, IQueryMultipleValues
     {
         public override bool Match(object a, object b)
         {
@@ -88,8 +88,15 @@ namespace ServiceStack
             return aString.EndsWith(bString, StringComparison.InvariantCultureIgnoreCase);
         }
     }
+    public class FalseCondition : QueryCondition
+    {
+        public override bool Match(object a, object b)
+        {
+            return false;
+        }
+    }
 
-    public interface IHasMultipleValues {}
+    public interface IQueryMultipleValues {}
 
     public abstract class QueryCondition
     {
