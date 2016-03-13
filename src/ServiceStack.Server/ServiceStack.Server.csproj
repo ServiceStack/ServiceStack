@@ -100,6 +100,7 @@
     <Compile Include="Auth\OrmLiteAuthRepository.cs" />
     <Compile Include="AutoQueryDataConditions.cs" />
     <Compile Include="AutoQueryDataFeature.cs" />
+    <Compile Include="AutoQueryMetadataFeature.cs" />
     <Compile Include="Caching\OrmLiteCacheClient.cs" />
     <Compile Include="Configuration\OrmLiteAppSettings.cs" />
     <Compile Include="AutoQueryFeature.cs" />
