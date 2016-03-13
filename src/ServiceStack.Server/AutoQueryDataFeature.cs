@@ -329,7 +329,8 @@ namespace ServiceStack
 
         public virtual Tuple<Type, PropertyInfo> FirstMatchingField(string field)
         {
-            var pi = typeof(T).GetProperty(field);
+            var pi = typeof(T).GetProperties()
+                .FirstOrDefault(x => string.Equals(x.Name, field, StringComparison.InvariantCultureIgnoreCase));
             return pi != null
                 ? Tuple.Create(typeof(T), pi)
                 : null;

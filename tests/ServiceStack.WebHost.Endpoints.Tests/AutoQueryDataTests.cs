@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -13,7 +15,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public override void Configure(Container container)
         {
             Plugins.Add(new AutoQueryDataFeature()
-                .AddDataSource(ctx => new QueryDataSource<Rockstar>(ctx, GetRockstars())));
+                .AddDataSource(ctx => new QueryDataSource<Rockstar>(ctx, GetRockstars()))
+                .AddDataSource(ctx => new QueryDataSource<Adhoc>(ctx, GetAdhoc()))
+            );
         }
 
         public static Rockstar[] GetRockstars()
@@ -28,6 +32,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 50, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1958, 08, 29), DateDied = new DateTime(2009, 06, 05), },
             };
         }
+
+        public static List<Adhoc> GetAdhoc()
+        {
+            return GetRockstars().Map(x => new Adhoc
+            {
+                Id = x.Id,
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+            });
+        }
     }
 
     [Route("/querydata/rockstars")]
@@ -36,7 +50,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
+    public class QueryDataCustomRockstars : QueryData<Rockstar, CustomRockstar>
+    {
+        public int? Age { get; set; }
+    }
+
     public class QueryDataOverridedRockstars : QueryData<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    public class QueryDataOverridedCustomRockstars : QueryData<Rockstar, CustomRockstar>
     {
         public int? Age { get; set; }
     }
@@ -49,12 +73,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string FirstName { get; set; }
     }
 
+    [DataContract]
+    [Route("/adhocdata")]
+    public class QueryDataAdhoc : QueryData<Adhoc> { }
+
     public class AutoQueryDataService : Service
     {
         public IAutoQueryData AutoQuery { get; set; }
 
         //Override with custom impl
         public object Any(QueryDataOverridedRockstars dto)
+        {
+            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
+            q.Take(1);
+            return AutoQuery.Execute(dto, q);
+        }
+
+        public object Any(QueryDataOverridedCustomRockstars dto)
         {
             var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
             q.Take(1);
@@ -119,6 +154,133 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Results[0].FirstName, Is.EqualTo(request.FirstName));
+        }
+
+        [Test]
+        public void Can_execute_Adhoc_query_alias()
+        {
+            var response = Config.ListeningOn.CombineWith("adhocdata")
+                .AddQueryParam("first_name", "Jimi")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Adhoc>>();
+
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Jimi"));
+        }
+
+        [Test]
+        public void Can_execute_Adhoc_query_convention()
+        {
+            var response = Config.ListeningOn.CombineWith("adhocdata")
+                .AddQueryParam("last_name", "Hendrix")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Adhoc>>();
+            Assert.That(response.Results.Count, Is.EqualTo(7));
+
+            JsConfig.EmitLowercaseUnderscoreNames = true;
+            response = Config.ListeningOn.CombineWith("adhocdata")
+                .AddQueryParam("last_name", "Hendrix")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Adhoc>>();
+            JsConfig.Reset();
+
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Jimi"));
+        }
+
+        [Test]
+        public void Can_execute_explicit_equality_condition_on_overridden_CustomRockstar()
+        {
+            var response = client.Get(new QueryDataOverridedCustomRockstars { Age = 27 });
+
+            Assert.That(response.Total, Is.EqualTo(3));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Can_execute_basic_query_with_limits()
+        {
+            var response = client.Get(new QueryDataRockstars { Skip = 2 });
+            Assert.That(response.Offset, Is.EqualTo(2));
+            Assert.That(response.Total, Is.EqualTo(TotalRockstars));
+            Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars - 2));
+
+            response = client.Get(new QueryDataRockstars { Take = 2 });
+            Assert.That(response.Offset, Is.EqualTo(0));
+            Assert.That(response.Total, Is.EqualTo(TotalRockstars));
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = client.Get(new QueryDataRockstars { Skip = 2, Take = 2 });
+            Assert.That(response.Offset, Is.EqualTo(2));
+            Assert.That(response.Total, Is.EqualTo(TotalRockstars));
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Can_execute_explicit_equality_condition()
+        {
+            var response = client.Get(new QueryDataRockstars { Age = 27 });
+
+            Assert.That(response.Total, Is.EqualTo(3));
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_execute_explicit_equality_condition_on_CustomRockstar()
+        {
+            var response = client.Get(new QueryDataCustomRockstars { Age = 27 });
+
+            Assert.That(response.Total, Is.EqualTo(3));
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_execute_implicit_equality_condition()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryDataRockstars")
+                .AddQueryParam("FirstName", "Jim")
+                .AddQueryParam("LivingStatus", "Dead")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].LastName, Is.EqualTo("Morrison"));
+        }
+
+        [Test]
+        public void Can_execute_multiple_conditions_with_same_param_name()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryDataRockstars")
+                .AddQueryParam("FirstName", "Jim")
+                .AddQueryParam("FirstName", "Jim")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].LastName, Is.EqualTo("Morrison"));
+
+            response = Config.ListeningOn.CombineWith("json/reply/QueryDataRockstars")
+                .AddQueryParam("FirstNameStartsWith", "Jim")
+                .AddQueryParam("FirstNameStartsWith", "Jimi")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].LastName, Is.EqualTo("Hendrix"));
+        }
+
+        [Test]
+        public void Can_execute_implicit_IsNull_condition()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryDataRockstars?DateDied=")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            Assert.That(response.Total, Is.EqualTo(2));
+            Assert.That(response.Results.Count, Is.EqualTo(2));
         }
     }
 }
