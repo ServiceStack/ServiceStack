@@ -978,7 +978,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .GetProperty("Age")
                 .AddAttributes(new QueryFieldAttribute { Operand = ">=" });
 
-            var response = client.Get(new QueryFieldRockstars { Age = 42 });
+            var response = client.Get(new QueryFieldRockstarsDynamic { Age = 42 });
             Assert.That(response.Results.Count, Is.EqualTo(4));
         }
 

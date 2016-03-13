@@ -90,6 +90,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string OrLastName { get; set; }
     }
 
+    public class QueryDataFieldRockstarsDynamic : QueryData<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    public class QueryDataRockstarsFilter : QueryData<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
     [DataContract]
     [Route("/adhocdata-rockstars")]
     public class QueryDataAdhocRockstars : QueryData<Rockstar>
@@ -338,6 +348,49 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(3));
 
             response = client.Get(new QueryDataFieldRockstars { Age = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void Can_execute_combination_of_QueryFields()
+        {
+            QueryResponse<Rockstar> response;
+
+            response = client.Get(new QueryDataFieldRockstars
+            {
+                FirstNameStartsWith = "Jim",
+                LastNameEndsWith = "son",
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+
+            response = client.Get(new QueryDataFieldRockstars
+            {
+                FirstNameStartsWith = "Jim",
+                OrLastName = "Cobain",
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Does_escape_values()
+        {
+            QueryResponse<Rockstar> response;
+
+            response = client.Get(new QueryDataFieldRockstars
+            {
+                FirstNameStartsWith = "Jim'\"",
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Does_allow_adding_attributes_dynamically()
+        {
+            typeof(QueryDataFieldRockstarsDynamic)
+                .GetProperty("Age")
+                .AddAttributes(new QueryDataFieldAttribute { Condition = "GreaterEqualCondition" });
+
+            var response = client.Get(new QueryDataFieldRockstarsDynamic { Age = 42 });
             Assert.That(response.Results.Count, Is.EqualTo(4));
         }
     }
