@@ -20,7 +20,7 @@ namespace ServiceStack
 {
     public interface IDataQuery
     {
-        IQueryData Request { get; }
+        IQueryData Dto { get; }
         Dictionary<string, string> DynamicParams { get; }
 
         int? Offset { get; }
@@ -328,7 +328,7 @@ namespace ServiceStack
                 foreach (var item in original)
                 {
                     var fieldValue = GetFieldValue(item);
-                    if (Condition.Match(fieldValue, Value))
+                    if (Condition.Match(fieldValue, Value) && !to.Contains(item))
                         to.Add(item);
                 }
                 return to;
@@ -340,7 +340,7 @@ namespace ServiceStack
     {
         private QueryDataContext context;
 
-        public IQueryData Request { get; private set; }
+        public IQueryData Dto { get; private set; }
         public Dictionary<string, string> DynamicParams { get; private set; }
         public List<ConditionExpression> Conditions { get; set; }
         public int? Offset { get; set; }
@@ -349,7 +349,7 @@ namespace ServiceStack
         public DataQuery(QueryDataContext context)
         {
             this.context = context;
-            this.Request = context.Request;
+            this.Dto = context.Dto;
             this.DynamicParams = context.DynamicParams;
             this.Conditions = new List<ConditionExpression>();
         }
@@ -655,13 +655,13 @@ namespace ServiceStack
 
     public class QueryDataContext
     {
-        public QueryDataContext(IQueryData request, Dictionary<string, string> dynamicParams)
+        public QueryDataContext(IQueryData dto, Dictionary<string, string> dynamicParams)
         {
-            this.Request = request;
+            this.Dto = dto;
             this.DynamicParams = dynamicParams;
         }
 
-        public IQueryData Request { get; private set; }
+        public IQueryData Dto { get; private set; }
         public Dictionary<string, string> DynamicParams { get; private set; }
     }
 
@@ -684,8 +684,12 @@ namespace ServiceStack
         public IEnumerable<T> GetFilteredData<From>(IEnumerable<T> data, DataQuery<From> q)
         {
             var source = data;
-            foreach (var condition in q.Conditions)
+            for (var i = 0; i < q.Conditions.Count; i++)
             {
+                var condition = q.Conditions[i];
+                if (i == 0)
+                    condition.Term = QueryTerm.And; //First condition always filters
+
                 source = condition.Apply(source, data);
             }
             return source;
@@ -951,10 +955,20 @@ namespace ServiceStack
                 var strValue = !string.IsNullOrEmpty(entry.Value)
                     ? entry.Value
                     : null;
-                var fieldType = match.FieldDef.PropertyType;
+                var fieldType = Nullable.GetUnderlyingType(match.FieldDef.PropertyType)
+                    ?? match.FieldDef.PropertyType;
+
                 var isMultiple = condition is IQueryMultiple
+                    || (fieldType.HasInterface(typeof(IEnumerable)) && fieldType != typeof(string))
                     || string.Compare(name, match.FieldDef.Name + Pluralized, StringComparison.OrdinalIgnoreCase) == 0;
-                
+
+                if (condition == null)
+                {
+                    condition = !isMultiple
+                        ? (QueryCondition)EqualsCondition.Instance
+                        : InCollectionCondition.Instance;
+                }
+
                 var value = strValue == null ? 
                       null 
                     : isMultiple ? 

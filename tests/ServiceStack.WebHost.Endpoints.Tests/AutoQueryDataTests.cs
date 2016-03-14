@@ -119,6 +119,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
+    [QueryData(QueryTerm.Or)]
+    [Route("/OrDataRockstars")]
+    public class QueryDataOrRockstars : QueryData<Rockstar>
+    {
+        public int? Age { get; set; }
+        public string FirstName { get; set; }
+    }
+
+    [Route("/OrDataRockstarsFields")]
+    public class QueryDataOrRockstarsFields : QueryData<Rockstar>
+    {
+        [QueryDataField(Term = QueryTerm.Or)]
+        public string FirstName { get; set; }
+
+        [QueryDataField(Term = QueryTerm.Or)]
+        public string LastName { get; set; }
+    }
+
+    [QueryData(QueryTerm.Or)]
+    public class QueryDataGetRockstars : QueryData<Rockstar>
+    {
+        public int[] Ids { get; set; }
+        public List<int> Ages { get; set; }
+        public List<string> FirstNames { get; set; }
+        public int[] IdsBetween { get; set; }
+    }
+
     [DataContract]
     [Route("/adhocdata-rockstars")]
     public class QueryDataAdhocRockstars : QueryData<Rockstar>
@@ -425,6 +452,76 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             response = client.Get(new QueryDataRockstarsIFilter { Age = 27 });
             Assert.That(response.Results.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Can_execute_OR_QueryFilters()
+        {
+            var response = client.Get(new QueryDataOrRockstars { Age = 42, FirstName = "Jim" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = Config.ListeningOn.CombineWith("OrDataRockstars")
+                .AddQueryParam("Age", "27")
+                .AddQueryParam("FirstName", "Kurt")
+                .AddQueryParam("LastName", "Hendrix")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_execute_OR_QueryFilters_Fields()
+        {
+            var response = client.Get(new QueryDataOrRockstarsFields
+            {
+                FirstName = "Jim",
+                LastName = "Vedder",
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = Config.ListeningOn.CombineWith("OrDataRockstarsFields")
+                .AddQueryParam("FirstName", "Kurt")
+                .AddQueryParam("LastName", "Hendrix")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Can_execute_implicit_conventions()
+        {
+            var baseUrl = Config.ListeningOn.CombineWith("json/reply/QueryDataRockstars");
+
+            var response = baseUrl.AddQueryParam("AgeOlderThan", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = baseUrl.AddQueryParam("AgeGreaterThanOrEqualTo", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+
+            response = baseUrl.AddQueryParam("AgeGreaterThan", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = baseUrl.AddQueryParam("GreaterThanAge", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = baseUrl.AddQueryParam("AgeNotEqualTo", 27).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+
+            response = baseUrl.AddQueryParam(">Age", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+            response = baseUrl.AddQueryParam("Age>", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = baseUrl.AddQueryParam("<Age", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = baseUrl.AddQueryParam("Age<", 42).AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+            response = baseUrl.AddQueryParam("Age!", "27").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+
+            response = baseUrl.AddQueryParam("FirstNameStartsWith", "jim").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            response = baseUrl.AddQueryParam("LastNameEndsWith", "son").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            response = baseUrl.AddQueryParam("LastNameContains", "e").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
         }
     }
 }
