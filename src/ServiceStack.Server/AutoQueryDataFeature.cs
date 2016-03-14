@@ -338,6 +338,9 @@ namespace ServiceStack
 
     public class DataQuery<T> : IDataQuery
     {
+        static readonly Dictionary<string, Func<object, object>> PropertyGetters =
+            new Dictionary<string, Func<object, object>>();
+
         private QueryDataContext context;
 
         public IQueryData Dto { get; private set; }
@@ -346,12 +349,32 @@ namespace ServiceStack
         public int? Offset { get; set; }
         public int? Rows { get; set; }
 
+        static DataQuery()
+        {
+            foreach (var pi in typeof(T).GetPublicProperties())
+            {
+                var fn = pi.GetValueGetter(typeof(T));
+                PropertyGetters[pi.Name] = fn;
+            }
+        }
+
         public DataQuery(QueryDataContext context)
         {
             this.context = context;
             this.Dto = context.Dto;
             this.DynamicParams = context.DynamicParams;
             this.Conditions = new List<ConditionExpression>();
+        }
+
+        Func<object, object> GetPropertyGetter(PropertyInfo pi)
+        {
+            if (pi == null)
+                return null;
+
+            Func<object, object> fn;
+            return PropertyGetters.TryGetValue(pi.Name, out fn) 
+                ? fn 
+                : pi.GetValueGetter();
         }
 
         public virtual bool HasConditions
@@ -411,14 +434,14 @@ namespace ServiceStack
             return this;
         }
 
-        public virtual DataQuery<T> AddCondition(QueryTerm term, QueryCondition condition, PropertyInfo field, Func<object, object> fieldGetter, object value)
+        public virtual DataQuery<T> AddCondition(QueryTerm term, QueryCondition condition, PropertyInfo field, object value)
         {
             this.Conditions.Add(new ConditionExpression
             {
                 Term = term,
                 Condition = condition,
                 Field = field,
-                FieldGetter = fieldGetter,
+                FieldGetter = GetPropertyGetter(field),
                 Value = value,
             });
             return this;
@@ -427,13 +450,13 @@ namespace ServiceStack
         public virtual DataQuery<T> And(Expression<Func<T, object>> fieldExpr, QueryCondition condition, object value)
         {
             var pi = fieldExpr.ToPropertyInfo();
-            return AddCondition(QueryTerm.And, condition, pi, pi.GetValueGetter(), value);
+            return AddCondition(QueryTerm.And, condition, pi, value);
         }
 
         public virtual DataQuery<T> Or(Expression<Func<T, object>> fieldExpr, QueryCondition condition, object value)
         {
             var pi = fieldExpr.ToPropertyInfo();
-            return AddCondition(QueryTerm.Or, condition, pi, pi.GetValueGetter(), value);
+            return AddCondition(QueryTerm.Or, condition, pi, value);
         }
 
         public virtual DataQuery<T> From(string @from)
@@ -753,9 +776,6 @@ namespace ServiceStack
         static readonly Dictionary<string, Func<object, object>> RequestPropertyGetters =
             new Dictionary<string, Func<object, object>>();
 
-        static readonly Dictionary<string, Func<object, object>> FromPropertyGetters =
-            new Dictionary<string, Func<object, object>>();
-
         static readonly Dictionary<string, QueryDataField> QueryFieldMap =
             new Dictionary<string, QueryDataField>();
 
@@ -770,12 +790,6 @@ namespace ServiceStack
                 var queryAttr = pi.FirstAttribute<QueryDataFieldAttribute>();
                 if (queryAttr != null)
                     QueryFieldMap[pi.Name] = queryAttr.ToField(pi, feature);
-            }
-
-            foreach (var pi in typeof(From).GetPublicProperties())
-            {
-                var fn = pi.GetValueGetter(typeof(From));
-                FromPropertyGetters[pi.Name] = fn;
             }
         }
 
@@ -813,7 +827,7 @@ namespace ServiceStack
 
             if (defaultTerm == QueryTerm.Or && !q.HasConditions)
             {
-                q.AddCondition(defaultTerm, AlwaysFalseCondition.Instance, null, null, null); //Empty OR queries should be empty
+                q.AddCondition(defaultTerm, AlwaysFalseCondition.Instance, null, null); //Empty OR queries should be empty
             }
 
             if (!string.IsNullOrEmpty(request.Fields))
@@ -937,7 +951,7 @@ namespace ServiceStack
                     : InCollectionCondition.Instance;
             }
 
-            q.AddCondition(defaultTerm, condition, property, FromPropertyGetters[property.Name], value);
+            q.AddCondition(defaultTerm, condition, property, value);
         }
 
         private static void AppendUntypedQueries(DataQuery<From> q, Dictionary<string, string> dynamicParams, QueryTerm defaultTerm, IAutoQueryDataOptions options, Dictionary<string, string> aliases)
