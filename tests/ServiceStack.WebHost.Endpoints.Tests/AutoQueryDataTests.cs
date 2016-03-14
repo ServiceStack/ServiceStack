@@ -4,7 +4,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
+using List = NHibernate.Mapping.List;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -18,6 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Plugins.Add(new AutoQueryDataFeature()
                 .AddDataSource(ctx => new QueryDataSource<Rockstar>(ctx, GetRockstars()))
                 .AddDataSource(ctx => new QueryDataSource<Adhoc>(ctx, GetAdhoc()))
+                .AddDataSource(ctx => new QueryDataSource<Movie>(ctx, GetMovies()))
                 .RegisterQueryFilter<QueryDataRockstarsFilter, Rockstar>((q, dto, req) =>
                     q.And(x => x.LastName, new EndsWithCondition(), "son")
                 )
@@ -51,6 +54,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 FirstName = x.FirstName,
                 LastName = x.LastName,
             });
+        }
+
+        public static Movie[] GetMovies()
+        {
+            return new[] {
+                new Movie { Id = 1, ImdbId = "tt0111161", Title = "The Shawshank Redemption", Score = 9.2m, Director = "Frank Darabont", ReleaseDate = new DateTime(1995,2,17), TagLine = "Fear can hold you prisoner. Hope can set you free.", Genres = new List<string>{"Crime","Drama"}, Rating = "R", },
+                new Movie { Id = 2, ImdbId = "tt0068646", Title = "The Godfather", Score = 9.2m, Director = "Francis Ford Coppola", ReleaseDate = new DateTime(1972,3,24), TagLine = "An offer you can't refuse.", Genres = new List<string> {"Crime","Drama", "Thriller"}, Rating = "R", },
+                new Movie { Id = 3, ImdbId = "tt1375666", Title = "Inception", Score = 9.2m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2010,7,16), TagLine = "Your mind is the scene of the crime", Genres = new List<string>{"Action", "Mystery", "Sci-Fi", "Thriller"}, Rating = "PG-13", },
+                new Movie { Id = 4, ImdbId = "tt0071562", Title = "The Godfather: Part II", Score = 9.0m, Director = "Francis Ford Coppola", ReleaseDate = new DateTime(1974,12,20), Genres = new List<string> {"Crime","Drama", "Thriller"}, Rating = "R", },
+                new Movie { Id = 5, ImdbId = "tt0060196", Title = "The Good, the Bad and the Ugly", Score = 9.0m, Director = "Sergio Leone", ReleaseDate = new DateTime(1967,12,29), TagLine = "They formed an alliance of hate to steal a fortune in dead man's gold", Genres = new List<string>{"Adventure","Western"}, Rating = "R", },
+                new Movie { Id = 6, ImdbId = "tt0114709", Title = "Toy Story", Score = 8.3m, Director = "John Lasseter", ReleaseDate = new DateTime(1995,11,22), TagLine = "A cowboy doll is profoundly threatened and jealous when a new spaceman figure supplants him as top toy in a boy's room.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
+                new Movie { Id = 7, ImdbId = "tt2294629", Title = "Frozen", Score = 7.8m, Director = "Chris Buck", ReleaseDate = new DateTime(2013,11,27), TagLine = "Fearless optimist Anna teams up with Kristoff in an epic journey, encountering Everest-like conditions, and a hilarious snowman named Olaf", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "PG", },
+                new Movie { Id = 8, ImdbId = "tt1453405", Title = "Monsters University", Score = 7.4m, Director = "Dan Scanlon", ReleaseDate = new DateTime(2013,06,21), TagLine = "A look at the relationship between Mike and Sulley during their days at Monsters University -- when they weren't necessarily the best of friends.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
+                new Movie { Id = 9, ImdbId = "tt0468569", Title = "The Dark Knight", Score = 9.0m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2008,07,18), TagLine = "When Batman, Gordon and Harvey Dent launch an assault on the mob, they let the clown out of the box, the Joker, bent on turning Gotham on itself and bringing any heroes down to his level.", Genres = new List<string>{"Action","Crime","Drama"}, Rating = "PG-13", },
+                new Movie { Id = 10, ImdbId = "tt0109830", Title = "Forrest Gump", Score = 8.8m, Director = "Robert Zemeckis", ReleaseDate = new DateTime(1996,07,06), TagLine = "Forrest Gump, while not intelligent, has accidentally been present at many historic moments, but his true love, Jenny Curran, eludes him.", Genres = new List<string>{"Drama","Romance"}, Rating = "PG-13", },
+            };
         }
     }
 
@@ -178,6 +197,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [DataContract]
     [Route("/adhocdata")]
     public class QueryDataAdhoc : QueryData<Adhoc> { }
+
+    [Route("/moviesdata/search")]
+    [QueryData(QueryTerm.And)] //Default
+    public class SearchDataMovies : QueryData<Movie> { }
+
+    [Route("/moviesdata")]
+    [QueryData(QueryTerm.Or)]
+    public class QueryDataMovies : QueryData<Movie>
+    {
+        public int[] Ids { get; set; }
+        public string[] ImdbIds { get; set; }
+        public string[] Ratings { get; set; }
+    }
+
+    public class StreamDataMovies : QueryData<Movie>
+    {
+        public string[] Ratings { get; set; }
+    }
 
     public class AutoQueryDataService : Service
     {
@@ -613,6 +650,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             response = baseUrl.AddQueryParam("IdsBetween", "1,3").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_query_Movie_Ratings()
+        {
+            var response = client.Get(new QueryDataMovies { Ratings = new[] { "G", "PG-13" } });
+            Assert.That(response.Results.Count, Is.EqualTo(5));
+
+            var url = Config.ListeningOn + "moviesdata?ratings=G,PG-13";
+            response = url.AsJsonInto<Movie>();
+            Assert.That(response.Results.Count, Is.EqualTo(5));
+
+            response = client.Get(new QueryDataMovies
+            {
+                Ids = new[] { 1, 2 },
+                ImdbIds = new[] { "tt0071562", "tt0060196" },
+                Ratings = new[] { "G", "PG-13" }
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(9));
+
+            url = Config.ListeningOn + "moviesdata?ratings=G,PG-13&ids=1,2&imdbIds=tt0071562,tt0060196";
+            response = url.AsJsonInto<Movie>();
+            Assert.That(response.Results.Count, Is.EqualTo(9));
+        }
+
+        [Test]
+        public void Can_StreamMovies()
+        {
+            var results = client.GetLazy(new StreamDataMovies()).ToList();
+            Assert.That(results.Count, Is.EqualTo(10));
+
+            results = client.GetLazy(new StreamDataMovies { Ratings = new[] { "G", "PG-13" } }).ToList();
+            Assert.That(results.Count, Is.EqualTo(5));
+        }
+
+        [Test]
+        public void Does_implicitly_OrderBy_PrimaryKey_when_limits_is_specified()
+        {
+            var movies = client.Get(new SearchDataMovies { Take = 100 });
+            var ids = movies.Results.Map(x => x.Id);
+            var orderedIds = ids.OrderBy(x => x);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            var rockstars = client.Get(new SearchDataMovies { Take = 100 });
+            ids = rockstars.Results.Map(x => x.Id);
+            orderedIds = ids.OrderBy(x => x);
+            Assert.That(ids, Is.EqualTo(orderedIds));
         }
     }
 }
