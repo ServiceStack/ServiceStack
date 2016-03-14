@@ -217,19 +217,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class NamedRockstar : Rockstar { }
 
     [Route("/query/namedrockstars")]
-    public class QueryNamedRockstars : QueryBase<NamedRockstar>
+    public class QueryNamedRockstars : QueryDb<NamedRockstar>
     {
         public int? Age { get; set; }
     }
 
     [Route("/query/rockstars")]
-    public class QueryRockstars : QueryBase<Rockstar>
+    public class QueryRockstars : QueryDb<Rockstar>
     {
         public int? Age { get; set; }
         //public LivingStatus? LivingStatus { get; set; }
     }
 
-    public class QueryRockstarsConventions : QueryBase<Rockstar>
+    public class QueryRockstarsConventions : QueryDb<Rockstar>
     {
         public DateTime? DateOfBirthGreaterThan { get; set; }
         public DateTime? DateDiedLessThan { get; set; }
@@ -246,29 +246,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? RockstarIdOnOrAfter { get; set; }
     }
 
-    public class QueryCustomRockstars : QueryBase<Rockstar, CustomRockstar>
+    public class QueryCustomRockstars : QueryDb<Rockstar, CustomRockstar>
     {
         public int? Age { get; set; }
     }
 
     [Route("/customrockstars")]
-    public class QueryRockstarAlbums : QueryBase<Rockstar, CustomRockstar>, IJoin<Rockstar, RockstarAlbum>
+    public class QueryRockstarAlbums : QueryDb<Rockstar, CustomRockstar>, IJoin<Rockstar, RockstarAlbum>
     {
         public int? Age { get; set; }
         public string RockstarAlbumName { get; set; }
     }
 
-    public class QueryRockstarAlbumsImplicit : QueryBase<Rockstar, CustomRockstar>, IJoin<Rockstar, RockstarAlbum>
+    public class QueryRockstarAlbumsImplicit : QueryDb<Rockstar, CustomRockstar>, IJoin<Rockstar, RockstarAlbum>
     {
     }
 
-    public class QueryRockstarAlbumsLeftJoin : QueryBase<Rockstar, CustomRockstar>, ILeftJoin<Rockstar, RockstarAlbum>
+    public class QueryRockstarAlbumsLeftJoin : QueryDb<Rockstar, CustomRockstar>, ILeftJoin<Rockstar, RockstarAlbum>
     {
         public int? Age { get; set; }
         public string AlbumName { get; set; }
     }
 
-    public class QueryMultiJoinRockstar : QueryBase<Rockstar, CustomRockstar>, 
+    public class QueryMultiJoinRockstar : QueryDb<Rockstar, CustomRockstar>, 
         IJoin<Rockstar, RockstarAlbum>,
         IJoin<Rockstar, RockstarGenre>
     {
@@ -279,82 +279,82 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 
 
-    public class QueryOverridedRockstars : QueryBase<Rockstar>
+    public class QueryOverridedRockstars : QueryDb<Rockstar>
     {
         public int? Age { get; set; }
     }
 
-    public class QueryOverridedCustomRockstars : QueryBase<Rockstar, CustomRockstar>
+    public class QueryOverridedCustomRockstars : QueryDb<Rockstar, CustomRockstar>
     {
         public int? Age { get; set; }
     }
 
-    public class QueryFieldRockstars : QueryBase<Rockstar>
+    public class QueryFieldRockstars : QueryDb<Rockstar>
     {
         public string FirstName { get; set; } //default to 'AND FirstName = {Value}'
 
         public string[] FirstNames { get; set; } //Collections default to 'FirstName IN ({Values})
 
-        [QueryField(Operand = ">=")]
+        [QueryDbField(Operand = ">=")]
         public int? Age { get; set; }
 
-        [QueryField(Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "FirstName")]
+        [QueryDbField(Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "FirstName")]
         public string FirstNameCaseInsensitive { get; set; }
 
-        [QueryField(Template = "{Field} LIKE {Value}", Field = "FirstName", ValueFormat = "{0}%")]
+        [QueryDbField(Template = "{Field} LIKE {Value}", Field = "FirstName", ValueFormat = "{0}%")]
         public string FirstNameStartsWith { get; set; }
 
-        [QueryField(Template = "{Field} LIKE {Value}", Field = "LastName", ValueFormat = "%{0}")]
+        [QueryDbField(Template = "{Field} LIKE {Value}", Field = "LastName", ValueFormat = "%{0}")]
         public string LastNameEndsWith { get; set; }
 
-        [QueryField(Template = "{Field} BETWEEN {Value1} AND {Value2}", Field = "FirstName")]
+        [QueryDbField(Template = "{Field} BETWEEN {Value1} AND {Value2}", Field = "FirstName")]
         public string[] FirstNameBetween { get; set; }
 
-        [QueryField(Term = QueryTerm.Or, Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
+        [QueryDbField(Term = QueryTerm.Or, Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
         public string OrLastName { get; set; }
     }
 
-    public class QueryFieldRockstarsDynamic : QueryBase<Rockstar>
+    public class QueryFieldRockstarsDynamic : QueryDb<Rockstar>
     {
         public int? Age { get; set; }
     }
 
-    public class QueryRockstarsFilter : QueryBase<Rockstar>
+    public class QueryRockstarsFilter : QueryDb<Rockstar>
     {
         public int? Age { get; set; }
     }
 
-    public class QueryCustomRockstarsFilter : QueryBase<Rockstar, CustomRockstar>
+    public class QueryCustomRockstarsFilter : QueryDb<Rockstar, CustomRockstar>
     {
         public int? Age { get; set; }
     }
 
     public interface IFilterRockstars { }
-    public class QueryRockstarsIFilter : QueryBase<Rockstar>, IFilterRockstars
+    public class QueryRockstarsIFilter : QueryDb<Rockstar>, IFilterRockstars
     {
         public int? Age { get; set; }
     }
 
-    [Query(QueryTerm.Or)]
+    [QueryDb(QueryTerm.Or)]
     [Route("/OrRockstars")]
-    public class QueryOrRockstars : QueryBase<Rockstar>
+    public class QueryOrRockstars : QueryDb<Rockstar>
     {
         public int? Age { get; set; }
         public string FirstName { get; set; }
     }
 
     [Route("/OrRockstarsFields")]
-    public class QueryOrRockstarsFields : QueryBase<Rockstar>
+    public class QueryOrRockstarsFields : QueryDb<Rockstar>
     {
-        [QueryField(Term = QueryTerm.Or)]
+        [QueryDbField(Term = QueryTerm.Or)]
         public string FirstName { get; set; }
 
-        [QueryField(Term = QueryTerm.Or)]
+        [QueryDbField(Term = QueryTerm.Or)]
         public string LastName { get; set; }
     }
 
-    [Query(QueryTerm.Or)]
-    public class QueryGetRockstars : QueryBase<Rockstar>
+    [QueryDb(QueryTerm.Or)]
+    public class QueryGetRockstars : QueryDb<Rockstar>
     {
         public int[] Ids { get; set; }
         public List<int> Ages { get; set; }
@@ -362,8 +362,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int[] IdsBetween { get; set; }
     }
 
-    [Query(QueryTerm.Or)]
-    public class QueryGetRockstarsDynamic : QueryBase<Rockstar> {}
+    [QueryDb(QueryTerm.Or)]
+    public class QueryGetRockstarsDynamic : QueryDb<Rockstar> {}
 
     public class RockstarAlbum
     {
@@ -390,7 +390,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string RockstarGenreName { get; set; }
     }
 
-    public class QueryCustomRockstarsSchema : QueryBase<Rockstar, CustomRockstarSchema>
+    public class QueryCustomRockstarsSchema : QueryDb<Rockstar, CustomRockstarSchema>
     {
         public int? Age { get; set; }
     }
@@ -406,12 +406,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [Route("/movies/search")]
-    [Query(QueryTerm.And)] //Default
-    public class SearchMovies : QueryBase<Movie> {}
+    [QueryDb(QueryTerm.And)] //Default
+    public class SearchMovies : QueryDb<Movie> {}
 
     [Route("/movies")]
-    [Query(QueryTerm.Or)]
-    public class QueryMovies : QueryBase<Movie>
+    [QueryDb(QueryTerm.Or)]
+    public class QueryMovies : QueryDb<Movie>
     {
         public int[] Ids { get; set; }
         public string[] ImdbIds { get; set; }
@@ -432,19 +432,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<string> Genres { get; set; }
     }
 
-    public class StreamMovies : QueryBase<Movie>
+    public class StreamMovies : QueryDb<Movie>
     {
         public string[] Ratings { get; set; }
     }
 
-    public class QueryUnknownRockstars : QueryBase<Rockstar>
+    public class QueryUnknownRockstars : QueryDb<Rockstar>
     {
         public int UnknownInt { get; set; }
         public string UnknownProperty { get; set; }
 
     }
     [Route("/query/rockstar-references")]
-    public class QueryRockstarsWithReferences : QueryBase<RockstarReference>
+    public class QueryRockstarsWithReferences : QueryDb<RockstarReference>
     {
         public int? Age { get; set; }
     }
@@ -461,7 +461,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<RockstarAlbum> Albums { get; set; } 
     }
 
-    public class QueryAllFields : QueryBase<AllFields>
+    public class QueryAllFields : QueryDb<AllFields>
     {
         public virtual Guid Guid { get; set; }
     }
@@ -504,7 +504,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [DataContract]
     [Route("/adhoc-rockstars")]
-    public class QueryAdhocRockstars : QueryBase<Rockstar>
+    public class QueryAdhocRockstars : QueryDb<Rockstar>
     {
         [DataMember(Name = "first_name")]
         public string FirstName { get; set; }
@@ -512,7 +512,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [DataContract]
     [Route("/adhoc")]
-    public class QueryAdhoc : QueryBase<Adhoc> {}
+    public class QueryAdhoc : QueryDb<Adhoc> {}
 
     public class AutoQueryService : Service
     {
@@ -549,7 +549,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [Route("/querychangedb")]
-    public class QueryChangeDb : QueryBase<Rockstar>, IChangeDb
+    public class QueryChangeDb : QueryDb<Rockstar>, IChangeDb
     {
         public string NamedConnection { get; set; }
         public string ConnectionString { get; set; }
@@ -578,7 +578,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     public class ChangeConnectionInfo : IReturn<ChangeDbResponse> { }
-    public class QueryChangeConnectionInfo : QueryBase<Rockstar> { }
+    public class QueryChangeConnectionInfo : QueryDb<Rockstar> { }
 
     [ConnectionInfo(NamedConnection = AutoQueryAppHost.SqlServerNamedConnection)]
     public class NamedConnectionServices : Service
@@ -976,7 +976,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             typeof(QueryFieldRockstarsDynamic)
                 .GetProperty("Age")
-                .AddAttributes(new QueryFieldAttribute { Operand = ">=" });
+                .AddAttributes(new QueryDbFieldAttribute { Operand = ">=" });
 
             var response = client.Get(new QueryFieldRockstarsDynamic { Age = 42 });
             Assert.That(response.Results.Count, Is.EqualTo(4));

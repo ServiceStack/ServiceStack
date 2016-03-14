@@ -6,6 +6,12 @@ using ServiceStack.DataAnnotations;
 
 namespace Check.ServiceInterface
 {
+    [Route("/querydata/rockstars")]
+    public class QueryDataRockstars : QueryData<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
     [Route("/query/rockstars")]
     public class QueryRockstars : QueryBase<Rockstar>
     {
@@ -67,22 +73,22 @@ namespace Check.ServiceInterface
 
         public string[] FirstNames { get; set; } //Collections default to 'FirstName IN ({Values})
 
-        [QueryField(Operand = ">=")]
+        [QueryDbField(Operand = ">=")]
         public int? Age { get; set; }
 
-        [QueryField(Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "FirstName")]
+        [QueryDbField(Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "FirstName")]
         public string FirstNameCaseInsensitive { get; set; }
 
-        [QueryField(Template = "{Field} LIKE {Value}", Field = "FirstName", ValueFormat = "{0}%")]
+        [QueryDbField(Template = "{Field} LIKE {Value}", Field = "FirstName", ValueFormat = "{0}%")]
         public string FirstNameStartsWith { get; set; }
 
-        [QueryField(Template = "{Field} LIKE {Value}", Field = "LastName", ValueFormat = "%{0}")]
+        [QueryDbField(Template = "{Field} LIKE {Value}", Field = "LastName", ValueFormat = "%{0}")]
         public string LastNameEndsWith { get; set; }
 
-        [QueryField(Template = "{Field} BETWEEN {Value1} AND {Value2}", Field = "FirstName")]
+        [QueryDbField(Template = "{Field} BETWEEN {Value1} AND {Value2}", Field = "FirstName")]
         public string[] FirstNameBetween { get; set; }
 
-        [QueryField(Term = QueryTerm.Or, Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
+        [QueryDbField(Term = QueryTerm.Or, Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
         public string OrLastName { get; set; }
     }
 
@@ -107,7 +113,7 @@ namespace Check.ServiceInterface
         public int? Age { get; set; }
     }
 
-    [Query(QueryTerm.Or)]
+    [QueryDb(QueryTerm.Or)]
     [Route("/OrRockstars")]
     public class QueryOrRockstars : QueryBase<Rockstar>
     {
@@ -115,7 +121,7 @@ namespace Check.ServiceInterface
         public string FirstName { get; set; }
     }
 
-    [Query(QueryTerm.Or)]
+    [QueryDb(QueryTerm.Or)]
     public class QueryGetRockstars : QueryBase<Rockstar>
     {
         public int[] Ids { get; set; }
@@ -124,7 +130,7 @@ namespace Check.ServiceInterface
         public int[] IdsBetween { get; set; }
     }
 
-    [Query(QueryTerm.Or)]
+    [QueryDb(QueryTerm.Or)]
     public class QueryGetRockstarsDynamic : QueryBase<Rockstar> { }
 
     public class RockstarAlbum
@@ -152,11 +158,11 @@ namespace Check.ServiceInterface
     }
 
     [Route("/movies/search")]
-    [Query(QueryTerm.And)] //Default
+    [QueryDb(QueryTerm.And)] //Default
     public class SearchMovies : QueryBase<Movie> { }
 
     [Route("/movies")]
-    [Query(QueryTerm.Or)]
+    [QueryDb(QueryTerm.Or)]
     public class QueryMovies : QueryBase<Movie>
     {
         public int[] Ids { get; set; }
