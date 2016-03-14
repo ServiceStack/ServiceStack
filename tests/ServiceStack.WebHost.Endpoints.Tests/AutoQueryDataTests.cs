@@ -19,6 +19,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .AddDataSource(ctx => new QueryDataSource<Rockstar>(ctx, GetRockstars()))
                 .AddDataSource(ctx => new QueryDataSource<Adhoc>(ctx, GetAdhoc()))
                 .AddDataSource(ctx => new QueryDataSource<Movie>(ctx, GetMovies()))
+                .AddDataSource(ctx => new QueryDataSource<AllFields>(ctx, GetAllFields()))
                 .RegisterQueryFilter<QueryDataRockstarsFilter, Rockstar>((q, dto, req) =>
                     q.And(x => x.LastName, new EndsWithCondition(), "son")
                 )
@@ -67,6 +68,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 new Movie { Id = 8, ImdbId = "tt1453405", Title = "Monsters University", Score = 7.4m, Director = "Dan Scanlon", ReleaseDate = new DateTime(2013,06,21), TagLine = "A look at the relationship between Mike and Sulley during their days at Monsters University -- when they weren't necessarily the best of friends.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
                 new Movie { Id = 9, ImdbId = "tt0468569", Title = "The Dark Knight", Score = 9.0m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2008,07,18), TagLine = "When Batman, Gordon and Harvey Dent launch an assault on the mob, they let the clown out of the box, the Joker, bent on turning Gotham on itself and bringing any heroes down to his level.", Genres = new List<string>{"Action","Crime","Drama"}, Rating = "PG-13", },
                 new Movie { Id = 10, ImdbId = "tt0109830", Title = "Forrest Gump", Score = 8.8m, Director = "Robert Zemeckis", ReleaseDate = new DateTime(1996,07,06), TagLine = "Forrest Gump, while not intelligent, has accidentally been present at many historic moments, but his true love, Jenny Curran, eludes him.", Genres = new List<string>{"Drama","Romance"}, Rating = "PG-13", },
+            };
+        }
+
+        public static AllFields[] GetAllFields()
+        {
+            return new[]
+            {
+                new AllFields
+                {
+                    Id = 1,
+                    NullableId = 2,
+                    Byte = 3,
+                    DateTime = new DateTime(2001, 01, 01),
+                    NullableDateTime = new DateTime(2002, 02, 02),
+                    Decimal = 4,
+                    Double = 5.5,
+                    Float = 6.6f,
+                    Guid = new Guid("3EE6865A-4149-4940-B7A2-F952E0FEFC5E"),
+                    NullableGuid = new Guid("7A2FDDD8-4BB0-4735-8230-A6AC79088489"),
+                    Long = 7,
+                    Short = 8,
+                    String = "string",
+                    TimeSpan = TimeSpan.FromHours(1),
+                    NullableTimeSpan = TimeSpan.FromDays(1),
+                    UInt = 9,
+                    ULong = 10,
+                    UShort = 11,
+                }
             };
         }
     }
@@ -212,6 +241,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class StreamDataMovies : QueryData<Movie>
     {
         public string[] Ratings { get; set; }
+    }
+
+    public class QueryDataUnknownRockstars : QueryData<Rockstar>
+    {
+        public int UnknownInt { get; set; }
+        public string UnknownProperty { get; set; }
+
+    }
+
+    public class QueryDataAllFields : QueryData<AllFields>
+    {
+        public virtual Guid Guid { get; set; }
     }
 
     public class AutoQueryDataService : Service
@@ -745,6 +786,50 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             orderedIds = movies.Results.OrderByDescending(x => x.Rating)
                 .ThenByDescending(x => x.ImdbId).Map(x => x.ImdbId);
             Assert.That(ids, Is.EqualTo(orderedIds));
+        }
+
+        [Test]
+        public void Can_consume_as_CSV()
+        {
+            var url = Config.ListeningOn + "moviesdata/search.csv?ratings=G,PG-13";
+            var csv = url.GetStringFromUrl();
+            var headers = csv.SplitOnFirst('\n')[0].Trim();
+            Assert.That(headers, Is.EqualTo("Id,ImdbId,Title,Rating,Score,Director,ReleaseDate,TagLine,Genres"));
+            csv.Print();
+
+            url = Config.ListeningOn + "querydata/rockstars.csv?Age=27";
+            csv = url.GetStringFromUrl();
+            headers = csv.SplitOnFirst('\n')[0].Trim();
+            Assert.That(headers, Is.EqualTo("Id,FirstName,LastName,Age,DateOfBirth,DateDied,LivingStatus"));
+            csv.Print();
+        }
+
+        [Test]
+        public void Does_not_query_Ignored_properties()
+        {
+            var response = client.Get(new QueryDataUnknownRockstars
+            {
+                UnknownProperty = "Foo",
+                UnknownInt = 1,
+            });
+
+            Assert.That(response.Offset, Is.EqualTo(0));
+            Assert.That(response.Total, Is.EqualTo(TotalRockstars));
+            Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
+        }
+
+        [Test]
+        public void Can_Query_AllFields_Guid()
+        {
+            var guid = new Guid("3EE6865A-4149-4940-B7A2-F952E0FEFC5E");
+            var response = client.Get(new QueryDataAllFields
+            {
+                Guid = guid
+            });
+
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+
+            Assert.That(response.Results[0].Guid, Is.EqualTo(guid));
         }
     }
 }

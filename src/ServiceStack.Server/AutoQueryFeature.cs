@@ -109,7 +109,7 @@ namespace ServiceStack
 
         public AutoQueryFeature()
         {
-            IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "OrderBy", "OrderByDesc", "_select", "_from", "_join", "_where" }, 
+            IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "OrderBy", "OrderByDesc", "Fields", "_select", "_from", "_join", "_where" }, 
                 StringComparer.OrdinalIgnoreCase);
             IllegalSqlFragmentTokens = new HashSet<string>();
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);

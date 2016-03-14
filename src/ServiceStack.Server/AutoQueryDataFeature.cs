@@ -127,7 +127,7 @@ namespace ServiceStack
 
         public AutoQueryDataFeature()
         {
-            IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "OrderBy", "OrderByDesc" }, 
+            IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "OrderBy", "OrderByDesc", "Fields" }, 
                 StringComparer.OrdinalIgnoreCase);
             AutoQueryServiceBaseType = typeof(AutoQueryDataServiceBase);
             QueryFilters = new Dictionary<Type, QueryDataFilterDelegate>();
