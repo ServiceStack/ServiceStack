@@ -17,6 +17,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Plugins.Add(new AutoQueryDataFeature()
                 .AddDataSource(ctx => new QueryDataSource<Rockstar>(ctx, GetRockstars()))
                 .AddDataSource(ctx => new QueryDataSource<Adhoc>(ctx, GetAdhoc()))
+                .RegisterQueryFilter<QueryDataRockstarsFilter, Rockstar>((q, dto, req) =>
+                    q.And(x => x.LastName, new EndsWithCondition(), "son")
+                )
+                .RegisterQueryFilter<QueryDataCustomRockstarsFilter, Rockstar>((q, dto, req) =>
+                    q.And(x => x.LastName, new EndsWithCondition(), "son")
+                )
+                .RegisterQueryFilter<IFilterRockstars, Rockstar>((q, dto, req) =>
+                    q.And(x => x.LastName, new EndsWithCondition(), "son")
+                )
             );
         }
 
@@ -96,6 +105,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     public class QueryDataRockstarsFilter : QueryData<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    public class QueryDataCustomRockstarsFilter : QueryData<Rockstar, CustomRockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    public class QueryDataRockstarsIFilter : QueryData<Rockstar>, IFilterRockstars
     {
         public int? Age { get; set; }
     }
@@ -392,6 +411,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response = client.Get(new QueryDataFieldRockstarsDynamic { Age = 42 });
             Assert.That(response.Results.Count, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void Does_execute_typed_QueryFilters()
+        {
+            // QueryFilter appends additional: x => x.LastName.EndsWith("son")
+            var response = client.Get(new QueryDataRockstarsFilter { Age = 27 });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+
+            var custom = client.Get(new QueryDataCustomRockstarsFilter { Age = 27 });
+            Assert.That(custom.Results.Count, Is.EqualTo(1));
+
+            response = client.Get(new QueryDataRockstarsIFilter { Age = 27 });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
         }
     }
 }

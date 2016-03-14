@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
@@ -26,7 +27,7 @@ namespace ServiceStack
         IDataQuery Select(string[] fields);
     }
 
-    public delegate IDataQuery QueryDataFilterDelegate(IQueryData request, IDataQuery q);
+    public delegate IDataQuery QueryDataFilterDelegate(IDataQuery q, IQueryData dto, IRequest req);
 
     public class QueryDataFilterContext
     {
@@ -258,10 +259,10 @@ namespace ServiceStack
             return servicesType;
         }
 
-        public AutoQueryDataFeature RegisterQueryFilter<Request, From>(Func<Request, DataQuery<From>, DataQuery<From>> filterFn)
+        public AutoQueryDataFeature RegisterQueryFilter<Request, From>(Func<DataQuery<From>, Request, IRequest, DataQuery<From>> filterFn)
         {
-            QueryFilters[typeof(Request)] = (request, q) =>
-                filterFn((Request)request, (DataQuery<From>)q);
+            QueryFilters[typeof(Request)] = (q, dto, req) =>
+                filterFn((DataQuery<From>)q, (Request)dto, req);
 
             return this;
         }
@@ -423,6 +424,18 @@ namespace ServiceStack
             return this;
         }
 
+        public virtual DataQuery<T> And(Expression<Func<T, object>> fieldExpr, QueryCondition condition, object value)
+        {
+            var pi = fieldExpr.ToPropertyInfo();
+            return AddCondition(QueryTerm.And, condition, pi, pi.GetValueGetter(), value);
+        }
+
+        public virtual DataQuery<T> Or(Expression<Func<T, object>> fieldExpr, QueryCondition condition, object value)
+        {
+            var pi = fieldExpr.ToPropertyInfo();
+            return AddCondition(QueryTerm.Or, condition, pi, pi.GetValueGetter(), value);
+        }
+
         public virtual DataQuery<T> From(string @from)
         {
             return this;
@@ -431,11 +444,11 @@ namespace ServiceStack
 
     public interface IAutoQueryData
     {
-        DataQuery<From> CreateQuery<From>(IQueryData<From> request, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null);
+        DataQuery<From> CreateQuery<From>(IQueryData<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null);
 
         QueryResponse<From> Execute<From>(IQueryData<From> request, DataQuery<From> q);
 
-        DataQuery<From> CreateQuery<From, Into>(IQueryData<From, Into> request, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null);
+        DataQuery<From> CreateQuery<From, Into>(IQueryData<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null);
 
         QueryResponse<Into> Execute<From, Into>(IQueryData<From, Into> request, DataQuery<From> q);
     }
@@ -524,15 +537,15 @@ namespace ServiceStack
             return defaultValue;
         }
 
-        public DataQuery<From> Filter<From>(IQueryData request, IDataQuery q)
+        public DataQuery<From> Filter<From>(IDataQuery q, IQueryData dto, IRequest req)
         {
             if (QueryFilters == null)
                 return (DataQuery<From>)q;
 
             QueryDataFilterDelegate filterFn = null;
-            if (!QueryFilters.TryGetValue(request.GetType(), out filterFn))
+            if (!QueryFilters.TryGetValue(dto.GetType(), out filterFn))
             {
-                foreach (var type in request.GetType().GetInterfaces())
+                foreach (var type in dto.GetType().GetInterfaces())
                 {
                     if (QueryFilters.TryGetValue(type, out filterFn))
                         break;
@@ -540,7 +553,7 @@ namespace ServiceStack
             }
 
             if (filterFn != null)
-                return (DataQuery<From>)(filterFn(request, q) ?? q);
+                return (DataQuery<From>)(filterFn(q, dto, req) ?? q);
 
             return (DataQuery<From>)q;
         }
@@ -600,14 +613,14 @@ namespace ServiceStack
             return Db = dataSourceFactory(ctx);
         }
 
-        public DataQuery<From> CreateQuery<From>(IQueryData<From> request, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null)
+        public DataQuery<From> CreateQuery<From>(IQueryData<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null)
         {
             if (db != null)
                 this.Db = db;
 
-            var ctx = new QueryDataContext(request, dynamicParams);
-            var typedQuery = GetTypedQuery(request.GetType(), typeof(From));
-            return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(ctx), request, dynamicParams, this));
+            var ctx = new QueryDataContext(dto, dynamicParams);
+            var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
+            return Filter<From>(typedQuery.CreateQuery(GetDb<From>(ctx), dto, dynamicParams, this), dto, req);
         }
 
         public QueryResponse<From> Execute<From>(IQueryData<From> request, DataQuery<From> q)
@@ -616,14 +629,14 @@ namespace ServiceStack
             return ResponseFilter(typedQuery.Execute<From>(Db, q), q, request);
         }
 
-        public DataQuery<From> CreateQuery<From, Into>(IQueryData<From, Into> request, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null)
+        public DataQuery<From> CreateQuery<From, Into>(IQueryData<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null)
         {
             if (db != null)
                 this.Db = db;
 
-            var ctx = new QueryDataContext(request, dynamicParams);
-            var typedQuery = GetTypedQuery(request.GetType(), typeof(From));
-            return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(ctx), request, dynamicParams, this));
+            var ctx = new QueryDataContext(dto, dynamicParams);
+            var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
+            return Filter<From>(typedQuery.CreateQuery(GetDb<From>(ctx), dto, dynamicParams, this), dto, req);
         }
 
         public QueryResponse<Into> Execute<From, Into>(IQueryData<From, Into> request, DataQuery<From> q)

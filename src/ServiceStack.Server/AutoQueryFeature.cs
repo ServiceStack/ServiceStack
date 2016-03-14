@@ -19,7 +19,7 @@ using ServiceStack.OrmLite;
 
 namespace ServiceStack
 {
-    public delegate ISqlExpression QueryFilterDelegate(IRequest request, ISqlExpression sqlExpression, IQuery model);
+    public delegate ISqlExpression QueryFilterDelegate(ISqlExpression q, IQueryDb dto, IRequest req);
 
     public class QueryFilterContext
     {
@@ -223,10 +223,10 @@ namespace ServiceStack
             return servicesType;
         }
 
-        public AutoQueryFeature RegisterQueryFilter<Request, From>(Func<IRequest, SqlExpression<From>, Request, SqlExpression<From>> filterFn)
+        public AutoQueryFeature RegisterQueryFilter<Request, From>(Func<SqlExpression<From>, Request, IRequest, SqlExpression<From>> filterFn)
         {
-            QueryFilters[typeof(Request)] = (req, expression, model) =>
-                filterFn(req, (SqlExpression<From>)expression, (Request)model);
+            QueryFilters[typeof(Request)] = (q, dto, req) =>
+                filterFn((SqlExpression<From>)q, (Request)dto, req);
 
             return this;
         }
@@ -322,11 +322,11 @@ namespace ServiceStack
 
     public interface IAutoQuery
     {
-        SqlExpression<From> CreateQuery<From>(IQueryDb<From> model, Dictionary<string, string> dynamicParams, IRequest request = null);
+        SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
 
         QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query);
 
-        SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> model, Dictionary<string, string> dynamicParams, IRequest request = null);
+        SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
 
         QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query);
     }
@@ -420,15 +420,15 @@ namespace ServiceStack
             return defaultValue;
         }
 
-        public SqlExpression<From> Filter<From>(IRequest request, ISqlExpression expr, IQuery model)
+        public SqlExpression<From> Filter<From>(ISqlExpression q, IQueryDb dto, IRequest req)
         {
             if (QueryFilters == null)
-                return (SqlExpression<From>)expr;
+                return (SqlExpression<From>)q;
 
             QueryFilterDelegate filterFn = null;
-            if (!QueryFilters.TryGetValue(model.GetType(), out filterFn))
+            if (!QueryFilters.TryGetValue(dto.GetType(), out filterFn))
             {
-                foreach (var type in model.GetType().GetInterfaces())
+                foreach (var type in dto.GetType().GetInterfaces())
                 {
                     if (QueryFilters.TryGetValue(type, out filterFn))
                         break;
@@ -436,9 +436,9 @@ namespace ServiceStack
             }
 
             if (filterFn != null)
-                return (SqlExpression<From>)(filterFn(request, expr, model) ?? expr);
+                return (SqlExpression<From>)(filterFn(q, dto, req) ?? q);
 
-            return (SqlExpression<From>)expr;
+            return (SqlExpression<From>)q;
         }
 
         public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> sqlExpression, IQuery model)
@@ -501,10 +501,10 @@ namespace ServiceStack
             return Db;
         }
 
-        public SqlExpression<From> CreateQuery<From>(IQueryDb<From> model, Dictionary<string, string> dynamicParams, IRequest request = null)
+        public SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null)
         {
-            var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(request), model, dynamicParams, this), model);
+            var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
+            return Filter<From>(typedQuery.CreateQuery(GetDb<From>(req), dto, dynamicParams, this), dto, req);
         }
 
         public QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query)
@@ -513,10 +513,10 @@ namespace ServiceStack
             return ResponseFilter(typedQuery.Execute<From>(GetDb<From>(), query), query, model);
         }
 
-        public SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> model, Dictionary<string, string> dynamicParams, IRequest request = null)
+        public SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null)
         {
-            var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(request), model, dynamicParams, this), model);
+            var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
+            return Filter<From>(typedQuery.CreateQuery(GetDb<From>(req), dto, dynamicParams, this), dto, req);
         }
 
         public QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query)

@@ -161,13 +161,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         }        
                     }
                 }
-                .RegisterQueryFilter<QueryRockstarsFilter, Rockstar>((req, q, dto) =>
+                .RegisterQueryFilter<QueryRockstarsFilter, Rockstar>((q, dto, req) =>
                     q.And(x => x.LastName.EndsWith("son"))
                 )
-                .RegisterQueryFilter<QueryCustomRockstarsFilter, Rockstar>((req, q, dto) =>
+                .RegisterQueryFilter<QueryCustomRockstarsFilter, Rockstar>((q, dto, req) =>
                     q.And(x => x.LastName.EndsWith("son"))
                 )
-                .RegisterQueryFilter<IFilterRockstars, Rockstar>((req, q, dto) =>
+                .RegisterQueryFilter<IFilterRockstars, Rockstar>((q, dto, req) =>
                     q.And(x => x.LastName.EndsWith("son"))
                 );
 
