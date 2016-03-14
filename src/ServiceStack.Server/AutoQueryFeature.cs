@@ -25,9 +25,12 @@ namespace ServiceStack
     {
         public IDbConnection Db { get; set; }
         public List<Command> Commands { get; set; }
-        public IQuery Request { get; set; }
+        public IQueryDb Dto { get; set; }
         public ISqlExpression SqlExpression { get; set; }
         public IQueryResponse Response { get; set; }
+
+        [Obsolete("Use Dto")]
+        public IQueryDb Request { get { return Dto; } }
     }
 
     public class AutoQueryFeature : IPlugin, IPostInitPlugin
@@ -441,11 +444,11 @@ namespace ServiceStack
             return (SqlExpression<From>)q;
         }
 
-        public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> sqlExpression, IQuery model)
+        public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> sqlExpression, IQueryDb dto)
         {
             response.Meta = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
-            var commands = model.Include.ParseCommands();
+            var commands = dto.Include.ParseCommands();
 
             var totalCountRequested = commands.Any(x =>
                 "COUNT".EqualsIgnoreCase(x.Name) && 
@@ -458,7 +461,7 @@ namespace ServiceStack
             {
                 Db = Db,
                 Commands = commands,
-                Request = model,
+                Dto = dto,
                 SqlExpression = sqlExpression,
                 Response = response,
             };
@@ -530,7 +533,7 @@ namespace ServiceStack
     {
         ISqlExpression CreateQuery(
             IDbConnection db,
-            IQuery model,
+            IQueryDb dto,
             Dictionary<string, string> dynamicParams,
             IAutoQueryOptions options=null);
 
@@ -564,7 +567,7 @@ namespace ServiceStack
 
         public ISqlExpression CreateQuery(
             IDbConnection db,
-            IQuery model,
+            IQueryDb dto,
             Dictionary<string, string> dynamicParams,
             IAutoQueryOptions options=null)
         {
@@ -573,14 +576,14 @@ namespace ServiceStack
 
             if (options != null && options.EnableSqlFilters)
             {
-                AppendSqlFilters(q, model, dynamicParams, options);
+                AppendSqlFilters(q, dto, dynamicParams, options);
             }
 
-            AppendJoins(q, model);
+            AppendJoins(q, dto);
 
-            AppendLimits(q, model, options);
+            AppendLimits(q, dto, options);
 
-            var dtoAttr = model.GetType().FirstAttribute<QueryDbAttribute>();
+            var dtoAttr = dto.GetType().FirstAttribute<QueryDbAttribute>();
             var defaultTerm = dtoAttr != null && dtoAttr.DefaultTerm == QueryTerm.Or ? "OR" : "AND";
 
             var aliases = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
@@ -592,7 +595,7 @@ namespace ServiceStack
                 aliases[attr.Name] = pi.Name;
             }
 
-            AppendTypedQueries(q, model, dynamicParams, defaultTerm, options, aliases);
+            AppendTypedQueries(q, dto, dynamicParams, defaultTerm, options, aliases);
 
             if (options != null && options.EnableUntypedQueries)
             {
@@ -604,9 +607,9 @@ namespace ServiceStack
                 q.Where("1=0"); //Empty OR queries should be empty
             }
 
-            if (!string.IsNullOrEmpty(model.Fields))
+            if (!string.IsNullOrEmpty(dto.Fields))
             {
-                var fields = model.Fields.Split(',')
+                var fields = dto.Fields.Split(',')
                     .Where(x => x.Trim().Length > 0)
                     .Map(x => x.Trim());
 
@@ -616,7 +619,7 @@ namespace ServiceStack
             return q;
         }
 
-        private void AppendSqlFilters(SqlExpression<From> q, IQuery model, Dictionary<string, string> dynamicParams, IAutoQueryOptions options)
+        private void AppendSqlFilters(SqlExpression<From> q, IQueryDb dto, Dictionary<string, string> dynamicParams, IAutoQueryOptions options)
         {
             string select, from, where;
 
@@ -647,36 +650,36 @@ namespace ServiceStack
 
         private static readonly char[] FieldSeperators = new[] {',', ';'};
 
-        private static void AppendLimits(SqlExpression<From> q, IQuery model, IAutoQueryOptions options)
+        private static void AppendLimits(SqlExpression<From> q, IQueryDb dto, IAutoQueryOptions options)
         {
             var maxLimit = options != null ? options.MaxLimit : null;
-            var take = model.Take ?? maxLimit;
+            var take = dto.Take ?? maxLimit;
             if (take > maxLimit)
                 take = maxLimit;
-            q.Limit(model.Skip, take);
+            q.Limit(dto.Skip, take);
 
-            if (model.OrderBy != null)
+            if (dto.OrderBy != null)
             {
-                var fieldNames = model.OrderBy.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
+                var fieldNames = dto.OrderBy.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
                 q.OrderByFields(fieldNames);
             }
-            else if (model.OrderByDesc != null)
+            else if (dto.OrderByDesc != null)
             {
-                var fieldNames = model.OrderByDesc.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
+                var fieldNames = dto.OrderByDesc.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
                 q.OrderByFieldsDescending(fieldNames);
             }
-            else if ((model.Skip != null || model.Take != null)
+            else if ((dto.Skip != null || dto.Take != null)
                 && (options != null && options.OrderByPrimaryKeyOnLimitQuery))
             {
                 q.OrderByFields(typeof(From).GetModelMetadata().PrimaryKey);
             }
         }
 
-        private static void AppendJoins(SqlExpression<From> q, IQuery model)
+        private static void AppendJoins(SqlExpression<From> q, IQueryDb dto)
         {
-            if (model is IJoin)
+            if (dto is IJoin)
             {
-                var dtoInterfaces = model.GetType().GetInterfaces();
+                var dtoInterfaces = dto.GetType().GetInterfaces();
                 foreach(var innerJoin in dtoInterfaces.Where(x => x.Name.StartsWith("IJoin`")))
                 {
                     var joinTypes = innerJoin.GetGenericArguments();
@@ -697,7 +700,7 @@ namespace ServiceStack
             }
         }
 
-        private static void AppendTypedQueries(SqlExpression<From> q, IQuery model, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options, Dictionary<string, string> aliases)
+        private static void AppendTypedQueries(SqlExpression<From> q, IQueryDb dto, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options, Dictionary<string, string> aliases)
         {
             foreach (var entry in PropertyGetters)
             {
@@ -717,7 +720,7 @@ namespace ServiceStack
                     implicitQuery = match.ImplicitQuery;
                 var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
 
-                var value = entry.Value(model);
+                var value = entry.Value(dto);
                 if (value == null)
                     continue;
 
