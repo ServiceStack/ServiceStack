@@ -20,8 +20,6 @@ namespace ServiceStack
 
         public override bool Match(object a, object b)
         {
-            if (a == null || b == null)
-                return a == b;
             return CompareTo(a, b) >= 0;
         }
     }
@@ -29,8 +27,6 @@ namespace ServiceStack
     {
         public override bool Match(object a, object b)
         {
-            if (a == null || b == null)
-                return false;
             return CompareTo(a, b) < 0;
         }
     }
@@ -40,8 +36,6 @@ namespace ServiceStack
 
         public override bool Match(object a, object b)
         {
-            if (a == null || b == null)
-                return a == b;
             return CompareTo(a, b) <= 0;
         }
     }
@@ -141,6 +135,15 @@ namespace ServiceStack
             return false;
         }
     }
+    public class OrderByCondition : QueryCondition
+    {
+        public static OrderByCondition Instance = new OrderByCondition();
+
+        public override bool Match(object a, object b)
+        {
+            return true;
+        }
+    }
 
     public interface IQueryMultiple {}
 
@@ -156,9 +159,9 @@ namespace ServiceStack
             {
                 return a == null && b == null
                     ? 0
-                    : a == null
-                        ? -1
-                        : 1;
+                    : a == null //NULL is lowest in RDBMS
+                        ? 1
+                        : -1;
             }
 
             if (a.GetType() == b.GetType())

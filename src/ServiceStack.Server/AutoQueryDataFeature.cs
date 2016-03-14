@@ -10,6 +10,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 
 using Funq;
+using ServiceStack.DataAnnotations;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Reflection;
 using ServiceStack.Text;
@@ -33,7 +34,7 @@ namespace ServiceStack
     {
         public IQueryDataSource Db { get; set; }
         public List<Command> Commands { get; set; }
-        public IQuery Request { get; set; }
+        public IQueryData Dto { get; set; }
         public IDataQuery Query { get; set; }
         public IQueryResponse Response { get; set; }
     }
@@ -336,26 +337,91 @@ namespace ServiceStack
         }
     }
 
+    public abstract class FilterExpression
+    {
+        public abstract IEnumerable<T> Apply<T>(IEnumerable<T> source);
+    }
+
+    public class OrderByExpression : FilterExpression
+    {
+        public string[] FieldNames { get; private set; }
+        public Func<object, object>[] FieldGetters { get; private set; }
+        public bool[] OrderAsc { get; private set; }
+
+        public OrderByExpression(string fieldName, Func<object, object> fieldGetter, bool orderAsc = true)
+            : this(new[] { fieldName }, new[] { fieldGetter }, new []{ orderAsc }) { }
+
+        public OrderByExpression(string[] fieldNames, Func<object, object>[] fieldGetters, bool[] orderAsc)
+        {
+            this.FieldNames = fieldNames;
+            this.FieldGetters = fieldGetters;
+            this.OrderAsc = orderAsc;
+        }
+
+        class OrderByComparator<T> : IComparer<T>
+        {
+            readonly Func<object, object>[] getters;
+            readonly bool[] orderAsc;
+
+            public OrderByComparator(Func<object, object>[] getters, bool[] orderAsc)
+            {
+                this.getters = getters;
+                this.orderAsc = orderAsc;
+            }
+
+            public int Compare(T x, T y)
+            {
+                for (int i = 0; i < getters.Length; i++)
+                {
+                    var getter = getters[i];
+                    var xVal = getter(x);
+                    var yVal = getter(y);
+                    var cmp = OrderByCondition.Instance.CompareTo(xVal, yVal);
+                    if (cmp != 0)
+                        return orderAsc[i] ? cmp : cmp * -1;
+                }
+
+                return 0;
+            }
+        }
+
+        public override IEnumerable<T> Apply<T>(IEnumerable<T> source)
+        {
+            var to = source.ToList();
+            to.Sort(new OrderByComparator<T>(FieldGetters, OrderAsc));
+            return to;
+        }
+    }
+
     public class DataQuery<T> : IDataQuery
     {
         static readonly Dictionary<string, Func<object, object>> PropertyGetters =
-            new Dictionary<string, Func<object, object>>();
+            new Dictionary<string, Func<object, object>>(StringComparer.InvariantCultureIgnoreCase);
+
+        private static PropertyInfo PrimaryKey;
 
         private QueryDataContext context;
 
         public IQueryData Dto { get; private set; }
         public Dictionary<string, string> DynamicParams { get; private set; }
         public List<ConditionExpression> Conditions { get; set; }
+        public OrderByExpression OrderBy { get; set; } 
         public int? Offset { get; set; }
         public int? Rows { get; set; }
 
         static DataQuery()
         {
-            foreach (var pi in typeof(T).GetPublicProperties())
+            var pis = typeof(T).GetPublicProperties();
+            foreach (var pi in pis)
             {
                 var fn = pi.GetValueGetter(typeof(T));
                 PropertyGetters[pi.Name] = fn;
             }
+
+            PrimaryKey = pis.FirstOrDefault(x => x.HasAttribute<PrimaryKeyAttribute>())
+                ?? pis.FirstOrDefault(x => x.HasAttribute<AutoIncrementAttribute>())
+                ?? pis.FirstOrDefault(x => x.Name == IdUtils.IdField)
+                ?? pis.FirstOrDefault();
         }
 
         public DataQuery(QueryDataContext context)
@@ -375,6 +441,14 @@ namespace ServiceStack
             return PropertyGetters.TryGetValue(pi.Name, out fn) 
                 ? fn 
                 : pi.GetValueGetter();
+        }
+
+        Func<object, object> GetPropertyGetter(string name)
+        {
+            Func<object, object> fn;
+            return PropertyGetters.TryGetValue(name, out fn)
+                ? fn
+                : null;
         }
 
         public virtual bool HasConditions
@@ -411,16 +485,47 @@ namespace ServiceStack
 
         public virtual DataQuery<T> OrderByFields(params string[] fieldNames)
         {
-            return this;
+            return OrderByFieldsImpl(fieldNames, x => x[0] != '-');
         }
 
         public virtual DataQuery<T> OrderByFieldsDescending(params string[] fieldNames)
         {
+            return OrderByFieldsImpl(fieldNames, x => x[0] == '-');
+        }
+
+        DataQuery<T> OrderByFieldsImpl(string[] fieldNames, Func<string,bool> orderFn)
+        {
+            var getters = new List<Func<object, object>>();
+            var orderAscs = new List<bool>();
+            var fields = new List<string>();
+
+            foreach (var fieldName in fieldNames)
+            {
+                if (string.IsNullOrEmpty(fieldName))
+                    continue;
+
+                var getter = GetPropertyGetter(fieldName.TrimStart('-'));
+                if (getter == null)
+                    continue;
+
+                var orderAsc = orderFn(fieldName);
+
+                fields.Add(fieldName);
+                getters.Add(getter);
+                orderAscs.Add(orderAsc);
+            }
+
+            if (getters.Count > 0)
+            {
+                OrderBy = new OrderByExpression(fields.ToArray(), getters.ToArray(), orderAscs.ToArray());
+            }
+
             return this;
         }
 
         public virtual DataQuery<T> OrderByPrimaryKey()
         {
+            OrderBy = new OrderByExpression(PrimaryKey.Name, GetPropertyGetter(PrimaryKey));
             return this;
         }
 
@@ -581,11 +686,11 @@ namespace ServiceStack
             return (DataQuery<From>)q;
         }
 
-        public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, DataQuery<From> expr, IQuery model)
+        public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, DataQuery<From> expr, IQueryData dto)
         {
             response.Meta = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
-            var commands = model.Include.ParseCommands();
+            var commands = dto.Include.ParseCommands();
 
             var totalCountRequested = commands.Any(x =>
                 "COUNT".EqualsIgnoreCase(x.Name) && 
@@ -598,7 +703,7 @@ namespace ServiceStack
             {
                 Db = Db,
                 Commands = commands,
-                Request = model,
+                Dto = dto,
                 Query = expr,
                 Response = response,
             };
@@ -704,7 +809,7 @@ namespace ServiceStack
             return new DataQuery<T>(context);
         }
 
-        public IEnumerable<T> GetFilteredData<From>(IEnumerable<T> data, DataQuery<From> q)
+        public IEnumerable<T> ApplyConditions<From>(IEnumerable<T> data, DataQuery<From> q)
         {
             var source = data;
             for (var i = 0; i < q.Conditions.Count; i++)
@@ -720,7 +825,8 @@ namespace ServiceStack
 
         public List<Into> LoadSelect<Into, From>(DataQuery<From> q)
         {
-            var source = GetFilteredData(data, q);
+            var source = ApplyConditions(data, q);
+            source = ApplySorting(source, q);
             source = ApplyLimits(source, q.Offset, q.Rows);
 
             var rows = typeof(From) == typeof(Into)
@@ -728,6 +834,11 @@ namespace ServiceStack
                 : source.Map(x => x.ConvertTo<Into>());
 
             return rows;
+        }
+
+        private static IEnumerable<T> ApplySorting<From>(IEnumerable<T> source, DataQuery<From> q)
+        {
+            return q.OrderBy != null ? q.OrderBy.Apply(source) : source;
         }
 
         private static IEnumerable<T> ApplyLimits(IEnumerable<T> source, int? skip, int? take)
@@ -741,7 +852,7 @@ namespace ServiceStack
 
         public int Count<T>(DataQuery<T> q)
         {
-            var source = GetFilteredData(data, q);
+            var source = ApplyConditions(data, q);
             return source.Count();
         }
 
@@ -844,36 +955,36 @@ namespace ServiceStack
 
         private static readonly char[] FieldSeperators = new[] {',', ';'};
 
-        private static void AppendLimits(DataQuery<From> q, IQuery model, IAutoQueryDataOptions options)
+        private static void AppendLimits(DataQuery<From> q, IQueryData dto, IAutoQueryDataOptions options)
         {
-            var maxLimit = options != null ? options.MaxLimit : null;
-            var take = model.Take ?? maxLimit;
-            if (take > maxLimit)
-                take = maxLimit;
-            q.Limit(model.Skip, take);
-
-            if (model.OrderBy != null)
+            if (dto.OrderBy != null)
             {
-                var fieldNames = model.OrderBy.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
+                var fieldNames = dto.OrderBy.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
                 q.OrderByFields(fieldNames);
             }
-            else if (model.OrderByDesc != null)
+            else if (dto.OrderByDesc != null)
             {
-                var fieldNames = model.OrderByDesc.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
+                var fieldNames = dto.OrderByDesc.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
                 q.OrderByFieldsDescending(fieldNames);
             }
-            else if ((model.Skip != null || model.Take != null)
+            else if ((dto.Skip != null || dto.Take != null)
                 && (options != null && options.OrderByPrimaryKeyOnLimitQuery))
             {
                 q.OrderByPrimaryKey();
             }
+
+            var maxLimit = options != null ? options.MaxLimit : null;
+            var take = dto.Take ?? maxLimit;
+            if (take > maxLimit)
+                take = maxLimit;
+            q.Limit(dto.Skip, take);
         }
 
-        private static void AppendJoins(DataQuery<From> q, IQuery model)
+        private static void AppendJoins(DataQuery<From> q, IQueryData dto)
         {
-            if (model is IJoin)
+            if (dto is IJoin)
             {
-                var dtoInterfaces = model.GetType().GetInterfaces();
+                var dtoInterfaces = dto.GetType().GetInterfaces();
                 foreach(var innerJoin in dtoInterfaces.Where(x => x.Name.StartsWith("IJoin`")))
                 {
                     var joinTypes = innerJoin.GetGenericArguments();
@@ -894,7 +1005,7 @@ namespace ServiceStack
             }
         }
 
-        private static void AppendTypedQueries(DataQuery<From> q, IQuery model, Dictionary<string, string> dynamicParams, QueryTerm defaultTerm, IAutoQueryDataOptions options, Dictionary<string, string> aliases)
+        private static void AppendTypedQueries(DataQuery<From> q, IQueryData dto, Dictionary<string, string> dynamicParams, QueryTerm defaultTerm, IAutoQueryDataOptions options, Dictionary<string, string> aliases)
         {
             foreach (var entry in RequestPropertyGetters)
             {
@@ -922,7 +1033,7 @@ namespace ServiceStack
                         defaultTerm = QueryTerm.And;
                 }
 
-                var value = entry.Value(model);
+                var value = entry.Value(dto);
                 if (value == null)
                     continue;
 
