@@ -120,6 +120,7 @@
     <Compile Include="ExecExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ExpressionUtils.cs" />
     <Compile Include="IntExtensions.cs" />
     <Compile Include="Logging\ConsoleLogFactory.cs" />
     <Compile Include="Logging\ConsoleLogger.cs" />
