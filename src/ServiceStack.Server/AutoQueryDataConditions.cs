@@ -9,6 +9,8 @@ namespace ServiceStack
     {
         public override bool Match(object a, object b)
         {
+            if (a == null || b == null)
+                return false;
             return CompareTo(a, b) > 0;
         }
     }
@@ -18,6 +20,8 @@ namespace ServiceStack
 
         public override bool Match(object a, object b)
         {
+            if (a == null || b == null)
+                return a == b;
             return CompareTo(a, b) >= 0;
         }
     }
@@ -25,6 +29,8 @@ namespace ServiceStack
     {
         public override bool Match(object a, object b)
         {
+            if (a == null || b == null)
+                return false;
             return CompareTo(a, b) < 0;
         }
     }
@@ -34,6 +40,8 @@ namespace ServiceStack
 
         public override bool Match(object a, object b)
         {
+            if (a == null || b == null)
+                return a == b;
             return CompareTo(a, b) <= 0;
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
@@ -57,6 +58,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class QueryDataRockstars : QueryData<Rockstar>
     {
         public int? Age { get; set; }
+    }
+
+    public class QueryDataRockstarsConventions : QueryData<Rockstar>
+    {
+        public DateTime? DateOfBirthGreaterThan { get; set; }
+        public DateTime? DateDiedLessThan { get; set; }
+        public int[] Ids { get; set; }
+        public int? AgeOlderThan { get; set; }
+        public int? AgeGreaterThanOrEqualTo { get; set; }
+        public int? AgeGreaterThan { get; set; }
+        public int? GreaterThanAge { get; set; }
+        public string FirstNameStartsWith { get; set; }
+        public string LastNameEndsWith { get; set; }
+        public string LastNameContains { get; set; }
+        public string RockstarAlbumNameContains { get; set; }
+        public int? RockstarIdAfter { get; set; }
+        public int? RockstarIdOnOrAfter { get; set; }
     }
 
     public class QueryDataCustomRockstars : QueryData<Rockstar, CustomRockstar>
@@ -145,6 +163,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<string> FirstNames { get; set; }
         public int[] IdsBetween { get; set; }
     }
+
+    [QueryData(QueryTerm.Or)]
+    public class QueryDataGetRockstarsDynamic : QueryData<Rockstar> { }
 
     [DataContract]
     [Route("/adhocdata-rockstars")]
@@ -521,6 +542,76 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = baseUrl.AddQueryParam("LastNameEndsWith", "son").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(2));
             response = baseUrl.AddQueryParam("LastNameContains", "e").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_execute_Explicit_conventions()
+        {
+            QueryResponse<Rockstar> response;
+            response = client.Get(new QueryDataRockstarsConventions { Ids = new[] { 1, 2, 3 } });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = client.Get(new QueryDataRockstarsConventions { AgeOlderThan = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = client.Get(new QueryDataRockstarsConventions { AgeGreaterThanOrEqualTo = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+
+            response = client.Get(new QueryDataRockstarsConventions { AgeGreaterThan = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = client.Get(new QueryDataRockstarsConventions { GreaterThanAge = 42 });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = client.Get(new QueryDataRockstarsConventions { FirstNameStartsWith = "Jim" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            response = client.Get(new QueryDataRockstarsConventions { LastNameEndsWith = "son" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            response = client.Get(new QueryDataRockstarsConventions { LastNameContains = "e" });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = client.Get(new QueryDataRockstarsConventions { DateOfBirthGreaterThan = new DateTime(1960, 01, 01) });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            response = client.Get(new QueryDataRockstarsConventions { DateDiedLessThan = new DateTime(1980, 01, 01) });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_execute_In_OR_Queries()
+        {
+            QueryResponse<Rockstar> response;
+            response = client.Get(new QueryDataGetRockstars());
+            Assert.That(response.Results.Count, Is.EqualTo(0));
+
+            response = client.Get(new QueryDataGetRockstars { Ids = new[] { 1, 2, 3 } });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = client.Get(new QueryDataGetRockstars { Ages = new[] { 42, 44 }.ToList() });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = client.Get(new QueryDataGetRockstars { FirstNames = new[] { "Jim", "Kurt" }.ToList() });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = client.Get(new QueryDataGetRockstars { IdsBetween = new[] { 1, 3 } });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_execute_In_OR_Queries_with_implicit_conventions()
+        {
+            var baseUrl = Config.ListeningOn.CombineWith("json/reply/QueryDataGetRockstarsDynamic");
+
+            QueryResponse<Rockstar> response;
+            response = baseUrl.AddQueryParam("Ids", "1,2,3").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+
+            response = baseUrl.AddQueryParam("Ages", "42, 44").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = baseUrl.AddQueryParam("FirstNames", "Jim,Kurt").AsJsonInto<Rockstar>();
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = baseUrl.AddQueryParam("IdsBetween", "1,3").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(3));
         }
     }
