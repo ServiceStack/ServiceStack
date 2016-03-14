@@ -4,9 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
-using List = NHibernate.Mapping.List;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -696,6 +694,56 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var rockstars = client.Get(new SearchDataMovies { Take = 100 });
             ids = rockstars.Results.Map(x => x.Id);
             orderedIds = ids.OrderBy(x => x);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+        }
+
+        [Test]
+        public void Can_OrderBy_queries()
+        {
+            var movies = client.Get(new SearchDataMovies { Take = 100, OrderBy = "ImdbId" });
+            var ids = movies.Results.Map(x => x.ImdbId);
+            var orderedIds = ids.OrderBy(x => x).ToList();
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            movies = client.Get(new SearchDataMovies { Take = 100, OrderBy = "Rating,ImdbId" });
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderBy(x => x.Rating).ThenBy(x => x.ImdbId).Map(x => x.ImdbId);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            movies = client.Get(new SearchDataMovies { Take = 100, OrderByDesc = "ImdbId" });
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = ids.OrderByDescending(x => x).ToList();
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            movies = client.Get(new SearchDataMovies { Take = 100, OrderByDesc = "Rating,ImdbId" });
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderByDescending(x => x.Rating)
+                .ThenByDescending(x => x.ImdbId).Map(x => x.ImdbId);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            movies = client.Get(new SearchDataMovies { Take = 100, OrderBy = "Rating,-ImdbId" });
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderBy(x => x.Rating)
+                .ThenByDescending(x => x.ImdbId).Map(x => x.ImdbId);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            movies = client.Get(new SearchDataMovies { Take = 100, OrderByDesc = "Rating,-ImdbId" });
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderByDescending(x => x.Rating)
+                .ThenBy(x => x.ImdbId).Map(x => x.ImdbId);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            var url = Config.ListeningOn + "moviesdata/search?take=100&orderBy=Rating,ImdbId";
+            movies = url.AsJsonInto<Movie>();
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderBy(x => x.Rating).ThenBy(x => x.ImdbId).Map(x => x.ImdbId);
+            Assert.That(ids, Is.EqualTo(orderedIds));
+
+            url = Config.ListeningOn + "moviesdata/search?take=100&orderByDesc=Rating,ImdbId";
+            movies = url.AsJsonInto<Movie>();
+            ids = movies.Results.Map(x => x.ImdbId);
+            orderedIds = movies.Results.OrderByDescending(x => x.Rating)
+                .ThenByDescending(x => x.ImdbId).Map(x => x.ImdbId);
             Assert.That(ids, Is.EqualTo(orderedIds));
         }
     }
