@@ -775,7 +775,7 @@ namespace ServiceStack
 
             AppendLimits(q, request, options);
 
-            var dtoAttr = request.GetType().FirstAttribute<QueryAttribute>();
+            var dtoAttr = request.GetType().FirstAttribute<QueryDataAttribute>();
             var defaultTerm = dtoAttr != null && dtoAttr.DefaultTerm == QueryTerm.Or ? QueryTerm.Or : QueryTerm.And;
 
             var aliases = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);

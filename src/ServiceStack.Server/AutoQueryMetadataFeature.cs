@@ -193,13 +193,19 @@ namespace ServiceStack
                 config.ServiceName = HostContext.ServiceName;
 
             var autoQuery = HostContext.GetPlugin<AutoQueryFeature>();
-            if (config.MaxLimit == null)
-                config.MaxLimit = autoQuery.MaxLimit;
+            if (autoQuery != null)
+            {
+                if (config.MaxLimit == null)
+                    config.MaxLimit = autoQuery.MaxLimit;
+            }
 
-            //Use smallest MaxLimit
             var autoQueryData = HostContext.GetPlugin<AutoQueryDataFeature>();
-            if (config.MaxLimit == null || config.MaxLimit > autoQueryData.MaxLimit)
-                config.MaxLimit = autoQueryData.MaxLimit;
+            if (autoQueryData != null)
+            {
+                //Use smallest MaxLimit
+                if (config.MaxLimit == null || config.MaxLimit > autoQueryData.MaxLimit)
+                    config.MaxLimit = autoQueryData.MaxLimit;
+            }
 
             var userSession = Request.GetSession();
 
@@ -221,7 +227,8 @@ namespace ServiceStack
             foreach (var op in metadataTypes.Operations)
             {
                 if (op.Request.Inherits != null 
-                    && (op.Request.Inherits.Name.StartsWith("QueryBase`") || 
+                    && (op.Request.Inherits.Name.StartsWith("QueryBase`") ||
+                        op.Request.Inherits.Name.StartsWith("QueryDb`") || 
                         op.Request.Inherits.Name.StartsWith("QueryData`"))
                     )
                 {

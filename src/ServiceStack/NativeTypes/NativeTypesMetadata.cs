@@ -231,7 +231,10 @@ namespace ServiceStack.NativeTypes
                     ? type.BaseType.GetGenericTypeDefinition()
                     : null;
 
-                if (!ignoreTypeFn(type.BaseType) || genericBaseTypeDef == typeof(QueryBase<,>))
+                if (!ignoreTypeFn(type.BaseType) || 
+                    genericBaseTypeDef == typeof(QueryBase<,>) ||
+                    genericBaseTypeDef == typeof(QueryDb<,>) ||
+                    genericBaseTypeDef == typeof(QueryData<,>))
                 {
                     if (genericBaseTypeDef != null)
                     {

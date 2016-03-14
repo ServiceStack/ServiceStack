@@ -18,8 +18,8 @@ namespace ServiceStack
     public interface IQueryDb : IQuery { }
     public interface IQueryData : IQuery { }
 
-    public interface IQuery<From> : IQueryDb { }
-    public interface IQuery<From, Into> : IQueryDb { }
+    public interface IQueryDb<From> : IQueryDb { }
+    public interface IQueryDb<From, Into> : IQueryDb { }
 
     public interface IQueryData<From> : IQueryData { }
     public interface IQueryData<From, Into> : IQueryData { }
@@ -49,11 +49,11 @@ namespace ServiceStack
     }
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class QueryAttribute : AttributeBase
+    public class QueryDbAttribute : AttributeBase
     {
-        public QueryAttribute() { }
+        public QueryDbAttribute() { }
 
-        public QueryAttribute(QueryTerm defaultTerm)
+        public QueryDbAttribute(QueryTerm defaultTerm)
         {
             DefaultTerm = defaultTerm;
         }
@@ -75,7 +75,7 @@ namespace ServiceStack
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class QueryFieldAttribute : AttributeBase
+    public class QueryDbFieldAttribute : AttributeBase
     {
         public QueryTerm Term { get; set; }
         public string Operand { get; set; }
@@ -118,12 +118,31 @@ namespace ServiceStack
         public virtual Dictionary<string, string> Meta { get; set; }
     }
 
-    public abstract class QueryBase<T> : QueryBase, IQuery<T>, IReturn<QueryResponse<T>> { }
 
-    public abstract class QueryBase<From, Into> : QueryBase, IQuery<From, Into>, IReturn<QueryResponse<Into>> { }
+    [Obsolete("Use [QueryDb]")]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    public class QueryAttribute : AttributeBase { }
+
+    [Obsolete("Use [QueryDb]")]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class QueryFieldAttribute : AttributeBase { }
+
+    [Obsolete("Use QueryDb")]
+    public abstract class QueryBase<T> : QueryBase, IQueryDb<T>, IReturn<QueryResponse<T>> { }
+
+    [Obsolete("Use QueryDb")]
+    public abstract class QueryBase<From, Into> : QueryBase, IQueryDb<From, Into>, IReturn<QueryResponse<Into>> { }
+
+    [Obsolete("Use IQueryDb<From>")]
+    public interface IQuery<From> : IQueryDb { }
+    [Obsolete("Use IQueryDb<From,Into>")]
+    public interface IQuery<From, Into> : IQueryDb { }
+
+
+    public abstract class QueryDb<T> : QueryBase, IQueryDb<T>, IReturn<QueryResponse<T>> { }
+    public abstract class QueryDb<From, Into> : QueryBase, IQueryDb<From, Into>, IReturn<QueryResponse<Into>> { }
 
     public abstract class QueryData<T> : QueryBase, IQueryData<T>, IReturn<QueryResponse<T>> { }
-
     public abstract class QueryData<From, Into> : QueryBase, IQueryData<From, Into>, IReturn<QueryResponse<Into>> { }
 
     public interface IQueryResponse : IHasResponseStatus, IMeta

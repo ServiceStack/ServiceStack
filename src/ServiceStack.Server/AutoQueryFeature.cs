@@ -94,14 +94,14 @@ namespace ServiceStack
             {"%Between%",       "{Field} BETWEEN {Value1} AND {Value2}"},
         };
 
-        public Dictionary<string, QueryFieldAttribute> StartsWithConventions =
-            new Dictionary<string, QueryFieldAttribute>();
+        public Dictionary<string, QueryDbFieldAttribute> StartsWithConventions =
+            new Dictionary<string, QueryDbFieldAttribute>();
 
-        public Dictionary<string, QueryFieldAttribute> EndsWithConventions = new Dictionary<string, QueryFieldAttribute>
+        public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions = new Dictionary<string, QueryDbFieldAttribute>
         {
-            { "StartsWith", new QueryFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "{0}%" }},
-            { "Contains", new QueryFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}%" }},
-            { "EndsWith", new QueryFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}" }},
+            { "StartsWith", new QueryDbFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "{0}%" }},
+            { "Contains", new QueryDbFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}%" }},
+            { "EndsWith", new QueryDbFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}" }},
         };
 
         public AutoQueryFeature()
@@ -124,7 +124,7 @@ namespace ServiceStack
             {
                 var key = entry.Key.Trim('%');
                 var fmt = entry.Value;
-                var query = new QueryFieldAttribute { Template = fmt }.Init();
+                var query = new QueryDbFieldAttribute { Template = fmt }.Init();
                 if (entry.Key.EndsWith("%"))
                     StartsWithConventions[key] = query;
                 if (entry.Key.StartsWith("%"))
@@ -188,10 +188,10 @@ namespace ServiceStack
 
             foreach (var requestType in misingRequestTypes)
             {
-                var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQuery<,>));
+                var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
                 var hasExplicitInto = genericDef != null;
                 if (genericDef == null)
-                    genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQuery<>));
+                    genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<>));
                 if (genericDef == null)
                     continue;
 
@@ -208,8 +208,8 @@ namespace ServiceStack
                 var genericMi = mi.MakeGenericMethod(genericArgs);
 
                 var queryType = hasExplicitInto
-                    ? typeof(IQuery<,>).MakeGenericType(genericArgs)
-                    : typeof(IQuery<>).MakeGenericType(genericArgs);
+                    ? typeof(IQueryDb<,>).MakeGenericType(genericArgs)
+                    : typeof(IQueryDb<>).MakeGenericType(genericArgs);
 
                 il.Emit(OpCodes.Nop);
                 il.Emit(OpCodes.Ldarg_0);
@@ -322,20 +322,20 @@ namespace ServiceStack
 
     public interface IAutoQuery
     {
-        SqlExpression<From> CreateQuery<From>(IQuery<From> model, Dictionary<string, string> dynamicParams, IRequest request = null);
+        SqlExpression<From> CreateQuery<From>(IQueryDb<From> model, Dictionary<string, string> dynamicParams, IRequest request = null);
 
-        QueryResponse<From> Execute<From>(IQuery<From> model, SqlExpression<From> query);
+        QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query);
 
-        SqlExpression<From> CreateQuery<From, Into>(IQuery<From, Into> model, Dictionary<string, string> dynamicParams, IRequest request = null);
+        SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> model, Dictionary<string, string> dynamicParams, IRequest request = null);
 
-        QueryResponse<Into> Execute<From, Into>(IQuery<From, Into> model, SqlExpression<From> query);
+        QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query);
     }
 
     public abstract class AutoQueryServiceBase : Service
     {
         public IAutoQuery AutoQuery { get; set; }
 
-        public virtual object Exec<From>(IQuery<From> dto)
+        public virtual object Exec<From>(IQueryDb<From> dto)
         {
             SqlExpression<From> q;
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
@@ -348,7 +348,7 @@ namespace ServiceStack
             }
         }
 
-        public virtual object Exec<From, Into>(IQuery<From, Into> dto)
+        public virtual object Exec<From, Into>(IQueryDb<From, Into> dto)
         {
             SqlExpression<From> q;
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
@@ -370,8 +370,8 @@ namespace ServiceStack
         bool OrderByPrimaryKeyOnLimitQuery { get; set; }
         HashSet<string> IgnoreProperties { get; set; }
         HashSet<string> IllegalSqlFragmentTokens { get; set; }
-        Dictionary<string, QueryFieldAttribute> StartsWithConventions { get; set; }
-        Dictionary<string, QueryFieldAttribute> EndsWithConventions { get; set; }
+        Dictionary<string, QueryDbFieldAttribute> StartsWithConventions { get; set; }
+        Dictionary<string, QueryDbFieldAttribute> EndsWithConventions { get; set; }
     }
 
     public class AutoQuery : IAutoQuery, IAutoQueryOptions, IDisposable
@@ -383,8 +383,8 @@ namespace ServiceStack
         public string RequiredRoleForRawSqlFilters { get; set; }
         public HashSet<string> IgnoreProperties { get; set; }
         public HashSet<string> IllegalSqlFragmentTokens { get; set; }
-        public Dictionary<string, QueryFieldAttribute> StartsWithConventions { get; set; }
-        public Dictionary<string, QueryFieldAttribute> EndsWithConventions { get; set; }
+        public Dictionary<string, QueryDbFieldAttribute> StartsWithConventions { get; set; }
+        public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions { get; set; }
 
         public string UseNamedConnection { get; set; }
         public virtual IDbConnection Db { get; set; }
@@ -501,25 +501,25 @@ namespace ServiceStack
             return Db;
         }
 
-        public SqlExpression<From> CreateQuery<From>(IQuery<From> model, Dictionary<string, string> dynamicParams, IRequest request = null)
+        public SqlExpression<From> CreateQuery<From>(IQueryDb<From> model, Dictionary<string, string> dynamicParams, IRequest request = null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
             return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(request), model, dynamicParams, this), model);
         }
 
-        public QueryResponse<From> Execute<From>(IQuery<From> model, SqlExpression<From> query)
+        public QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
             return ResponseFilter(typedQuery.Execute<From>(GetDb<From>(), query), query, model);
         }
 
-        public SqlExpression<From> CreateQuery<From, Into>(IQuery<From, Into> model, Dictionary<string, string> dynamicParams, IRequest request = null)
+        public SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> model, Dictionary<string, string> dynamicParams, IRequest request = null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
             return Filter<From>(request, typedQuery.CreateQuery(GetDb<From>(request), model, dynamicParams, this), model);
         }
 
-        public QueryResponse<Into> Execute<From, Into>(IQuery<From, Into> model, SqlExpression<From> query)
+        public QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
             return ResponseFilter(typedQuery.Execute<Into>(GetDb<From>(), query), query, model);
@@ -546,8 +546,8 @@ namespace ServiceStack
         static readonly Dictionary<string, Func<object, object>> PropertyGetters =
             new Dictionary<string, Func<object, object>>();
 
-        static readonly Dictionary<string, QueryFieldAttribute> QueryFieldMap =
-            new Dictionary<string, QueryFieldAttribute>();
+        static readonly Dictionary<string, QueryDbFieldAttribute> QueryFieldMap =
+            new Dictionary<string, QueryDbFieldAttribute>();
 
         static TypedQuery()
         {
@@ -556,7 +556,7 @@ namespace ServiceStack
                 var fn = pi.GetValueGetter(typeof(QueryModel));
                 PropertyGetters[pi.Name] = fn;
 
-                var queryAttr = pi.FirstAttribute<QueryFieldAttribute>();
+                var queryAttr = pi.FirstAttribute<QueryDbFieldAttribute>();
                 if (queryAttr != null)
                     QueryFieldMap[pi.Name] = queryAttr.Init();
             }
@@ -580,7 +580,7 @@ namespace ServiceStack
 
             AppendLimits(q, model, options);
 
-            var dtoAttr = model.GetType().FirstAttribute<QueryAttribute>();
+            var dtoAttr = model.GetType().FirstAttribute<QueryDbAttribute>();
             var defaultTerm = dtoAttr != null && dtoAttr.DefaultTerm == QueryTerm.Or ? "OR" : "AND";
 
             var aliases = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
@@ -703,7 +703,7 @@ namespace ServiceStack
             {
                 var name = entry.Key.SplitOnFirst('#')[0];
 
-                QueryFieldAttribute implicitQuery;
+                QueryDbFieldAttribute implicitQuery;
                 QueryFieldMap.TryGetValue(name, out implicitQuery);
 
                 if (implicitQuery != null && implicitQuery.Field != null)
@@ -727,7 +727,7 @@ namespace ServiceStack
             }
         }
 
-        private static void AddCondition(SqlExpression<From> q, string defaultTerm, string quotedColumn, object value, QueryFieldAttribute implicitQuery)
+        private static void AddCondition(SqlExpression<From> q, string defaultTerm, string quotedColumn, object value, QueryDbFieldAttribute implicitQuery)
         {
             var seq = value as IEnumerable;
             if (value is string)
@@ -830,7 +830,7 @@ namespace ServiceStack
 
         class MatchQuery
         {
-            public MatchQuery(Tuple<ModelDefinition,FieldDefinition> match, QueryFieldAttribute implicitQuery)
+            public MatchQuery(Tuple<ModelDefinition,FieldDefinition> match, QueryDbFieldAttribute implicitQuery)
             {
                 ModelDef = match.Item1;
                 FieldDef = match.Item2;
@@ -838,7 +838,7 @@ namespace ServiceStack
             }
             public readonly ModelDefinition ModelDef;
             public readonly FieldDefinition FieldDef;
-            public readonly QueryFieldAttribute ImplicitQuery;
+            public readonly QueryDbFieldAttribute ImplicitQuery;
         }
 
         private const string Pluralized = "s";
@@ -921,7 +921,7 @@ namespace ServiceStack
 
     public static class AutoQueryExtensions
     {
-        public static QueryFieldAttribute Init(this QueryFieldAttribute query)
+        public static QueryDbFieldAttribute Init(this QueryDbFieldAttribute query)
         {
             query.ValueStyle = ValueStyle.Single;
             if (query.Template == null || query.ValueFormat != null) return query;
@@ -942,12 +942,12 @@ namespace ServiceStack
             return query;
         }
 
-        public static SqlExpression<From> CreateQuery<From>(this IAutoQuery autoQuery, IQuery<From> model, IRequest request)
+        public static SqlExpression<From> CreateQuery<From>(this IAutoQuery autoQuery, IQueryDb<From> model, IRequest request)
         {
             return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
         }
 
-        public static SqlExpression<From> CreateQuery<From, Into>(this IAutoQuery autoQuery, IQuery<From, Into> model, IRequest request)
+        public static SqlExpression<From> CreateQuery<From, Into>(this IAutoQuery autoQuery, IQueryDb<From, Into> model, IRequest request)
         {
             return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
         }
