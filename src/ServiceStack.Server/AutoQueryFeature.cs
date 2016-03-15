@@ -21,7 +21,7 @@ namespace ServiceStack
 {
     public delegate ISqlExpression QueryFilterDelegate(ISqlExpression q, IQueryDb dto, IRequest req);
 
-    public class QueryFilterContext
+    public class QueryDbFilterContext
     {
         public IDbConnection Db { get; set; }
         public List<Command> Commands { get; set; }
@@ -46,7 +46,7 @@ namespace ServiceStack
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
-        public List<Action<QueryFilterContext>> ResponseFilters { get; set; }
+        public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
 
         public const string GreaterThanOrEqualFormat = "{Field} >= {Value}";
         public const string GreaterThanFormat =        "{Field} > {Value}";
@@ -114,7 +114,7 @@ namespace ServiceStack
             IllegalSqlFragmentTokens = new HashSet<string>();
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
-            ResponseFilters = new List<Action<QueryFilterContext>> { IncludeAggregates };
+            ResponseFilters = new List<Action<QueryDbFilterContext>> { IncludeAggregates };
             EnableUntypedQueries = true;
             EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
@@ -239,7 +239,7 @@ namespace ServiceStack
             "AVG", "COUNT", "FIRST", "LAST", "MAX", "MIN", "SUM"
         };
 
-        public void IncludeAggregates(QueryFilterContext ctx)
+        public void IncludeAggregates(QueryDbFilterContext ctx)
         {
             var commands = ctx.Commands;
             if (commands.Count == 0)
@@ -392,7 +392,7 @@ namespace ServiceStack
         public string UseNamedConnection { get; set; }
         public virtual IDbConnection Db { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
-        public List<Action<QueryFilterContext>> ResponseFilters { get; set; }
+        public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
 
         public virtual void Dispose()
         {
@@ -457,7 +457,7 @@ namespace ServiceStack
             if (!totalCountRequested)
                 commands.Add(new Command { Name = "COUNT", Args = { "*" }});
 
-            var ctx = new QueryFilterContext
+            var ctx = new QueryDbFilterContext
             {
                 Db = Db,
                 Commands = commands,

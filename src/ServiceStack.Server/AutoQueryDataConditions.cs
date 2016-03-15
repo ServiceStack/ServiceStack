@@ -50,8 +50,8 @@ namespace ServiceStack
     {
         public override bool Match(object a, object b)
         {
-            var aString = CoerceString(a);
-            var bString = CoerceString(b);
+            var aString = CompareTypeUtils.CoerceString(a);
+            var bString = CompareTypeUtils.CoerceString(b);
             return string.Compare(aString, bString, StringComparison.InvariantCultureIgnoreCase) == 0;
         }
     }
@@ -94,8 +94,8 @@ namespace ServiceStack
     {
         public override bool Match(object a, object b)
         {
-            var aString = CoerceString(a);
-            var bString = CoerceString(b);
+            var aString = CompareTypeUtils.CoerceString(a);
+            var bString = CompareTypeUtils.CoerceString(b);
             return aString.StartsWith(bString, StringComparison.InvariantCultureIgnoreCase);
         }
     }
@@ -103,8 +103,8 @@ namespace ServiceStack
     {
         public override bool Match(object a, object b)
         {
-            var aString = CoerceString(a);
-            var bString = CoerceString(b);
+            var aString = CompareTypeUtils.CoerceString(a);
+            var bString = CompareTypeUtils.CoerceString(b);
             return aString.IndexOf(bString, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
     }
@@ -112,8 +112,8 @@ namespace ServiceStack
     {
         public override bool Match(object a, object b)
         {
-            var aString = CoerceString(a);
-            var bString = CoerceString(b);
+            var aString = CompareTypeUtils.CoerceString(a);
+            var bString = CompareTypeUtils.CoerceString(b);
             return aString.EndsWith(bString, StringComparison.InvariantCultureIgnoreCase);
         }
     }
@@ -135,15 +135,6 @@ namespace ServiceStack
             return false;
         }
     }
-    public class OrderByCondition : QueryCondition
-    {
-        public static OrderByCondition Instance = new OrderByCondition();
-
-        public override bool Match(object a, object b)
-        {
-            return true;
-        }
-    }
 
     public interface IQueryMultiple {}
 
@@ -154,6 +145,14 @@ namespace ServiceStack
         public abstract bool Match(object a, object b);
 
         public virtual int CompareTo(object a, object b)
+        {
+            return CompareTypeUtils.CompareTo(a, b);
+        }
+    }
+
+    public static class CompareTypeUtils
+    {
+        public static int CompareTo(object a, object b)
         {
             if (a == null || b == null)
             {
@@ -192,23 +191,70 @@ namespace ServiceStack
             return string.Compare(aString, bString, StringComparison.Ordinal);
         }
 
-        public virtual long? CoerceLong(object o)
+        public static long? CoerceLong(object o)
         {
             return (long?)(o.GetType().IsIntegerType()
                 ? Convert.ChangeType(o, TypeCode.Int64)
                 : null);
         }
 
-        public virtual double? CoerceDouble(object o)
+        public static double? CoerceDouble(object o)
         {
             return (long?)(o.GetType().IsRealNumberType()
                 ? Convert.ChangeType(o, TypeCode.Double)
                 : null);
         }
 
-        public virtual string CoerceString(object o)
+        public static string CoerceString(object o)
         {
             return TypeSerializer.SerializeToString(o);
+        }
+
+        public static object Add(object a, object b)
+        {
+            var aLong = CoerceLong(a);
+            if (aLong != null)
+            {
+                var bLong = CoerceLong(b);
+                return aLong + bLong ?? aLong;
+            }
+
+            var aDouble = CoerceDouble(a);
+            if (aDouble != null)
+            {
+                var bDouble = CoerceDouble(b);
+                return aDouble + bDouble ?? aDouble;
+            }
+
+            var aString = CoerceString(a);
+            var bString = CoerceString(b);
+            return aString + bString;
+        }
+
+        public static object Min(object a, object b)
+        {
+            if (a == null)
+                return b;
+
+            return CompareTo(a, b) > 0 ? b : a;
+        }
+
+        public static object Max(object a, object b)
+        {
+            if (a == null)
+                return b;
+
+            return CompareTo(a, b) < 0 ? b : a;
+        }
+
+        public static object Aggregate(IEnumerable source, Func<object, object, object> fn, object seed = null)
+        {
+            var acc = seed;
+            foreach (var item in source)
+            {
+                acc = fn(acc, item);
+            }
+            return acc;
         }
     }
 }

@@ -131,7 +131,7 @@ namespace ServiceStack
                 StringComparer.OrdinalIgnoreCase);
             AutoQueryServiceBaseType = typeof(AutoQueryDataServiceBase);
             QueryFilters = new Dictionary<Type, QueryDataFilterDelegate>();
-            ResponseFilters = new List<Action<QueryDataFilterContext>>();
+            ResponseFilters = new List<Action<QueryDataFilterContext>> { IncludeAggregates };
             EnableUntypedQueries = true;
             EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
@@ -292,6 +292,37 @@ namespace ServiceStack
             DataSources.TryGetValue(type, out source);
             return source;
         }
+
+        public void IncludeAggregates(QueryDataFilterContext ctx)
+        {
+            var commands = ctx.Commands;
+            if (commands.Count == 0)
+                return;
+
+            var aggregateCommands = new List<Command>();
+            foreach (var cmd in commands)
+            {
+                if (cmd.Args.Count == 0)
+                    cmd.Args.Add("*");
+
+                var result = ctx.Db.SelectAggregate(ctx.Query, cmd.Name, cmd.Args);
+                if (result == null)
+                    continue;
+
+                var hasAlias = !string.IsNullOrWhiteSpace(cmd.Suffix);
+                var alias = cmd.ToString();
+                if (hasAlias)
+                {
+                    alias = cmd.Suffix.TrimStart();
+                    if (alias.StartsWithIgnoreCase("as "))
+                        alias = alias.Substring("as ".Length);
+                }
+
+                ctx.Response.Meta[alias] = result.ToString();
+            }
+
+            ctx.Commands.RemoveAll(aggregateCommands.Contains);
+        }
     }
 
     public class ConditionExpression
@@ -376,7 +407,7 @@ namespace ServiceStack
                     var getter = getters[i];
                     var xVal = getter(x);
                     var yVal = getter(y);
-                    var cmp = OrderByCondition.Instance.CompareTo(xVal, yVal);
+                    var cmp = CompareTypeUtils.CompareTo(xVal, yVal);
                     if (cmp != 0)
                         return orderAsc[i] ? cmp : cmp * -1;
                 }
@@ -432,7 +463,7 @@ namespace ServiceStack
             this.Conditions = new List<ConditionExpression>();
         }
 
-        Func<object, object> GetPropertyGetter(PropertyInfo pi)
+        public Func<object, object> GetPropertyGetter(PropertyInfo pi)
         {
             if (pi == null)
                 return null;
@@ -443,8 +474,11 @@ namespace ServiceStack
                 : pi.GetValueGetter();
         }
 
-        Func<object, object> GetPropertyGetter(string name)
+        public Func<object, object> GetPropertyGetter(string name)
         {
+            if (name == null)
+                return null;
+
             Func<object, object> fn;
             return PropertyGetters.TryGetValue(name, out fn)
                 ? fn
@@ -779,6 +813,8 @@ namespace ServiceStack
         DataQuery<T> From<T>();
         List<Into> LoadSelect<Into, From>(DataQuery<From> q);
         int Count<T>(DataQuery<T> q);
+
+        object SelectAggregate(IDataQuery q, string name, IEnumerable<string> args);
     }
 
     public class QueryDataContext
@@ -854,6 +890,75 @@ namespace ServiceStack
         {
             var source = ApplyConditions(data, q);
             return source.Count();
+        }
+
+        public object SelectAggregate(IDataQuery q, string name, IEnumerable<string> args)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            name = name.ToUpper();
+            if (name != "COUNT" && name != "MIN" && name != "MAX" && name != "AVG" && name != "SUM" 
+                && name != "FIRST" && name != "LAST")
+                return null;
+
+            var query = (DataQuery<T>)q;
+
+            var argsArray = args.ToArray();
+            var firstArg = argsArray.FirstOrDefault();
+            string modifier = null;
+            if (firstArg != null && firstArg.StartsWithIgnoreCase("DISTINCT "))
+            {
+                modifier = "DISTINCT";
+                firstArg = firstArg.Substring(modifier.Length + 1);
+            }
+
+            if (name == "COUNT" && (firstArg == null || firstArg == "*"))
+                return ApplyConditions(data, query).Count();
+
+            var firstGetter = query.GetPropertyGetter(firstArg);
+            if (firstGetter == null)
+                return null;
+
+            var source = ApplyConditions(data, query);
+
+            switch (name)
+            {
+                case "COUNT":
+                    if (modifier == "DISTINCT")
+                    {
+                        var results = new HashSet<object>();
+                        foreach (var item in source)
+                        {
+                            results.Add(firstGetter(item));
+                        }
+                        return results.Count;
+                    }
+
+                    return CompareTypeUtils.Aggregate(source, 
+                        (acc, next) => CompareTypeUtils.Add(acc, firstGetter(next)), 0);
+
+                case "MIN":
+                    return CompareTypeUtils.Aggregate(source,
+                        (acc, next) => CompareTypeUtils.Min(acc, firstGetter(next)));
+
+                case "MAX":
+                    return CompareTypeUtils.Aggregate(source,
+                        (acc, next) => CompareTypeUtils.Max(acc, firstGetter(next)));
+
+                case "SUM":
+                    object sum = null;
+                    foreach (var item in source)
+                    {
+                        var value = firstGetter(item);
+                        sum = sum == null 
+                            ? value 
+                            : CompareTypeUtils.Add(sum, value);
+                    }
+                    return sum;
+            }
+
+            return null;
         }
 
         public void Dispose() {}
