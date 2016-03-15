@@ -831,5 +831,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(response.Results[0].Guid, Is.EqualTo(guid));
         }
+
+        [Test]
+        public void Does_populate_Total()
+        {
+            var response = client.Get(new QueryDataRockstars());
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Meta, Is.Null);
+
+            response = client.Get(new QueryDataRockstars { Include = "COUNT" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+
+            response = client.Get(new QueryDataRockstars { Include = "COUNT(*)" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+
+            response = client.Get(new QueryDataRockstars { Include = "COUNT(DISTINCT LivingStatus)" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+
+            response = client.Get(new QueryDataRockstars { Include = "Count(*), Min(Age), Max(Age), Sum(Id)" });
+            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+        }
     }
 }
