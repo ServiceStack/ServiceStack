@@ -890,11 +890,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new QueryDataRockstars { Include = "MIN(Age)" });
             Assert.That(response.Meta["MIN(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
 
-            response = client.Get(new QueryDataRockstars { Include = "Count(*), Min(Age), Max(Age), Sum(Id)" });
+            response = client.Get(new QueryDataRockstars { Include = "Count(*), Min(Age), Max(Age), Sum(Id), Avg(Age), First(Id), Last(Id)", OrderBy = "Id" });
             Assert.That(response.Meta["Count(*)"], Is.EqualTo(response.Results.Count.ToString()));
             Assert.That(response.Meta["Min(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
             Assert.That(response.Meta["Max(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Max().ToString()));
             Assert.That(response.Meta["Sum(Id)"], Is.EqualTo(response.Results.Map(x => x.Id).Sum().ToString()));
+            Assert.That(response.Meta["Avg(Age)"], Is.EqualTo(response.Results.Average(x => x.Age).ToString()));
+            Assert.That(response.Meta["First(Id)"], Is.EqualTo(response.Results.First().Id.ToString()));
+            Assert.That(response.Meta["Last(Id)"], Is.EqualTo(response.Results.Last().Id.ToString()));
         }
 
         [Test]

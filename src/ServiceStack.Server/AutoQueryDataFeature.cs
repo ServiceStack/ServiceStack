@@ -920,7 +920,7 @@ namespace ServiceStack
             if (firstGetter == null)
                 return null;
 
-            var source = ApplyConditions(data, query);
+            var source = ApplyConditions(data, query).ToArray();
 
             switch (name)
             {
@@ -947,15 +947,18 @@ namespace ServiceStack
                         (acc, next) => CompareTypeUtils.Max(acc, firstGetter(next)));
 
                 case "SUM":
-                    object sum = null;
-                    foreach (var item in source)
-                    {
-                        var value = firstGetter(item);
-                        sum = sum == null 
-                            ? value 
-                            : CompareTypeUtils.Add(sum, value);
-                    }
-                    return sum;
+                    return CompareTypeUtils.Sum(source.Map(x => firstGetter(x)));
+
+                case "AVG":
+                    object sum = CompareTypeUtils.Sum(source.Map(x => firstGetter(x)));
+                    var sumDouble = (double)Convert.ChangeType(sum, TypeCode.Double);
+                    return sumDouble / source.Length;
+
+                case "FIRST":
+                    return source.Length > 0 ? firstGetter(source[0]) : null;
+
+                case "LAST":
+                    return source.Length > 0 ? firstGetter(source[source.Length -1]) : null;
             }
 
             return null;

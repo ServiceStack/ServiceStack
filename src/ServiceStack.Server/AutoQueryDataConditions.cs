@@ -247,6 +247,18 @@ namespace ServiceStack
             return CompareTo(a, b) < 0 ? b : a;
         }
 
+        public static object Sum(IEnumerable values)
+        {
+            object sum = null;
+            foreach (var value in values)
+            {
+                sum = sum == null
+                    ? value
+                    : Add(sum, value);
+            }
+            return sum;
+        }
+
         public static object Aggregate(IEnumerable source, Func<object, object, object> fn, object seed = null)
         {
             var acc = seed;
