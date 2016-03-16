@@ -426,9 +426,6 @@ namespace ServiceStack
 
     public class DataQuery<T> : IDataQuery
     {
-        static readonly Dictionary<string, Func<object, object>> PropertyGetters =
-            new Dictionary<string, Func<object, object>>(StringComparer.InvariantCultureIgnoreCase);
-
         private static PropertyInfo PrimaryKey;
 
         private QueryDataContext context;
@@ -437,18 +434,13 @@ namespace ServiceStack
         public Dictionary<string, string> DynamicParams { get; private set; }
         public List<ConditionExpression> Conditions { get; set; }
         public OrderByExpression OrderBy { get; set; } 
+        public string[] OnlyFields { get; set; }
         public int? Offset { get; set; }
         public int? Rows { get; set; }
 
         static DataQuery()
         {
-            var pis = typeof(T).GetPublicProperties();
-            foreach (var pi in pis)
-            {
-                var fn = pi.GetValueGetter(typeof(T));
-                PropertyGetters[pi.Name] = fn;
-            }
-
+            var pis = TypeReflector<T>.PublicPropertyInfos;
             PrimaryKey = pis.FirstOrDefault(x => x.HasAttribute<PrimaryKeyAttribute>())
                 ?? pis.FirstOrDefault(x => x.HasAttribute<AutoIncrementAttribute>())
                 ?? pis.FirstOrDefault(x => x.Name == IdUtils.IdField)
@@ -461,28 +453,6 @@ namespace ServiceStack
             this.Dto = context.Dto;
             this.DynamicParams = context.DynamicParams;
             this.Conditions = new List<ConditionExpression>();
-        }
-
-        public Func<object, object> GetPropertyGetter(PropertyInfo pi)
-        {
-            if (pi == null)
-                return null;
-
-            Func<object, object> fn;
-            return PropertyGetters.TryGetValue(pi.Name, out fn) 
-                ? fn 
-                : pi.GetValueGetter();
-        }
-
-        public Func<object, object> GetPropertyGetter(string name)
-        {
-            if (name == null)
-                return null;
-
-            Func<object, object> fn;
-            return PropertyGetters.TryGetValue(name, out fn)
-                ? fn
-                : null;
         }
 
         public virtual bool HasConditions
@@ -505,6 +475,10 @@ namespace ServiceStack
 
         public virtual IDataQuery Select(string[] fields)
         {
+            this.OnlyFields = fields == null || fields.Length == 0
+                ? null //All Fields
+                : fields;
+
             return this;
         }
 
@@ -538,7 +512,7 @@ namespace ServiceStack
                 if (string.IsNullOrEmpty(fieldName))
                     continue;
 
-                var getter = GetPropertyGetter(fieldName.TrimStart('-'));
+                var getter = TypeReflector<T>.GetPropertyGetter(fieldName.TrimStart('-'));
                 if (getter == null)
                     continue;
 
@@ -559,7 +533,7 @@ namespace ServiceStack
 
         public virtual DataQuery<T> OrderByPrimaryKey()
         {
-            OrderBy = new OrderByExpression(PrimaryKey.Name, GetPropertyGetter(PrimaryKey));
+            OrderBy = new OrderByExpression(PrimaryKey.Name, TypeReflector<T>.GetPublicGetter(PrimaryKey));
             return this;
         }
 
@@ -580,7 +554,7 @@ namespace ServiceStack
                 Term = term,
                 Condition = condition,
                 Field = field,
-                FieldGetter = GetPropertyGetter(field),
+                FieldGetter = TypeReflector<T>.GetPublicGetter(field),
                 Value = value,
             });
             return this;
@@ -840,12 +814,12 @@ namespace ServiceStack
             this.data = data;
         }
 
-        public DataQuery<T> From<T>()
+        public virtual DataQuery<T> From<T>()
         {
             return new DataQuery<T>(context);
         }
 
-        public IEnumerable<T> ApplyConditions<From>(IEnumerable<T> data, DataQuery<From> q)
+        public virtual IEnumerable<T> ApplyConditions<From>(IEnumerable<T> data, DataQuery<From> q)
         {
             var source = data;
             for (var i = 0; i < q.Conditions.Count; i++)
@@ -859,17 +833,40 @@ namespace ServiceStack
             return source;
         } 
 
-        public List<Into> LoadSelect<Into, From>(DataQuery<From> q)
+        public virtual List<Into> LoadSelect<Into, From>(DataQuery<From> q)
         {
             var source = ApplyConditions(data, q);
             source = ApplySorting(source, q);
             source = ApplyLimits(source, q.Offset, q.Rows);
 
-            var rows = typeof(From) == typeof(Into)
-                ? source.Map(x => (Into)x)
-                : source.Map(x => x.ConvertTo<Into>());
+            var to = new List<Into>();
 
-            return rows;
+            foreach (var item in source)
+            {
+                var into = typeof(From) == typeof(Into) && q.OnlyFields == null
+                    ? (Into)(object)item
+                    : item.ConvertTo<Into>();
+
+                to.Add(into);
+
+                if (q.OnlyFields == null)
+                    continue;
+
+                foreach (var pi in TypeReflector<Into>.PublicPropertyInfos)
+                {
+                    if (q.OnlyFields.Contains(pi.Name))
+                        continue;
+
+                    var setter = TypeReflector<Into>.GetPublicSetter(pi);
+                    if (setter == null)
+                        continue;
+
+                    var defaultValue = pi.PropertyType.GetDefaultValue();
+                    setter(item, defaultValue);
+                }
+            }
+
+            return to;
         }
 
         private static IEnumerable<T> ApplySorting<From>(IEnumerable<T> source, DataQuery<From> q)
@@ -886,13 +883,13 @@ namespace ServiceStack
             return source;
         }
 
-        public int Count<T>(DataQuery<T> q)
+        public virtual int Count<T>(DataQuery<T> q)
         {
             var source = ApplyConditions(data, q);
             return source.Count();
         }
 
-        public object SelectAggregate(IDataQuery q, string name, IEnumerable<string> args)
+        public virtual object SelectAggregate(IDataQuery q, string name, IEnumerable<string> args)
         {
             if (name == null)
                 throw new ArgumentNullException("name");
@@ -916,7 +913,7 @@ namespace ServiceStack
             if (name == "COUNT" && (firstArg == null || firstArg == "*"))
                 return ApplyConditions(data, query).Count();
 
-            var firstGetter = query.GetPropertyGetter(firstArg);
+            var firstGetter = TypeReflector<T>.GetPropertyGetter(firstArg);
             if (firstGetter == null)
                 return null;
 
@@ -964,7 +961,7 @@ namespace ServiceStack
             return null;
         }
 
-        public void Dispose() {}
+        public virtual void Dispose() {}
     }
 
     public interface ITypedQueryData

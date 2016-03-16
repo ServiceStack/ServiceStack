@@ -944,5 +944,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Meta["Subtract(6,2)"], Is.EqualTo("4"));
             Assert.That(response.Meta["TheDivide"], Is.EqualTo("3"));
         }
+
+        [Test]
+        public void Can_select_partial_list_of_fields()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryDataRockstars")
+                .AddQueryParam("Age", "27")
+                .AddQueryParam("Fields", "Id,FirstName,Age")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            response.PrintDump();
+
+            Assert.That(response.Results.All(x => x.Id > 0));
+            Assert.That(response.Results.All(x => x.FirstName != null));
+            Assert.That(response.Results.All(x => x.LastName == null));
+            Assert.That(response.Results.Any(x => x.Age > 0));
+            Assert.That(response.Results.All(x => x.DateDied == null));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+        }
     }
 }

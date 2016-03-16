@@ -1534,8 +1534,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<CustomRockstar>>();
 
-            response.PrintDump();
-
             Assert.That(response.Results.All(x => x.FirstName != null));
             Assert.That(response.Results.All(x => x.LastName == null));
             Assert.That(response.Results.All(x => x.Age > 0));
