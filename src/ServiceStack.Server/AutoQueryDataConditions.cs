@@ -96,6 +96,8 @@ namespace ServiceStack
         {
             var aString = CompareTypeUtils.CoerceString(a);
             var bString = CompareTypeUtils.CoerceString(b);
+            if (aString == null || bString == null)
+                return false;
             return aString.StartsWith(bString, StringComparison.InvariantCultureIgnoreCase);
         }
     }
@@ -105,6 +107,8 @@ namespace ServiceStack
         {
             var aString = CompareTypeUtils.CoerceString(a);
             var bString = CompareTypeUtils.CoerceString(b);
+            if (aString == null || bString == null)
+                return false;
             return aString.IndexOf(bString, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
     }
@@ -114,6 +118,8 @@ namespace ServiceStack
         {
             var aString = CompareTypeUtils.CoerceString(a);
             var bString = CompareTypeUtils.CoerceString(b);
+            if (aString == null || bString == null)
+                return false;
             return aString.EndsWith(bString, StringComparison.InvariantCultureIgnoreCase);
         }
     }
