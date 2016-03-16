@@ -68,17 +68,8 @@
     <Compile Include="..\ServiceStack.Server\Auth\OrmLiteAuthRepository.cs">
       <Link>Auth\OrmLiteAuthRepository.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Server\AutoQueryDataConditions.cs">
-      <Link>AutoQueryDataConditions.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Server\AutoQueryDataFeature.cs">
-      <Link>AutoQueryDataFeature.cs</Link>
-    </Compile>
     <Compile Include="..\ServiceStack.Server\AutoQueryFeature.cs">
       <Link>AutoQueryFeature.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Server\AutoQueryMetadataFeature.cs">
-      <Link>AutoQueryMetadataFeature.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Server\Caching\OrmLiteCacheClient.cs">
       <Link>Caching\OrmLiteCacheClient.cs</Link>
