@@ -19,7 +19,7 @@ using ServiceStack.OrmLite;
 
 namespace ServiceStack
 {
-    public delegate ISqlExpression QueryFilterDelegate(ISqlExpression q, IQueryDb dto, IRequest req);
+    public delegate void QueryFilterDelegate(ISqlExpression q, IQueryDb dto, IRequest req);
 
     public class QueryDbFilterContext
     {
@@ -160,7 +160,7 @@ namespace ServiceStack
             });
 
             if (EnableAutoQueryViewer && appHost.GetPlugin<AutoQueryMetadataFeature>() == null)
-                appHost.LoadPlugin(new AutoQueryMetadataFeature());
+                appHost.LoadPlugin(new AutoQueryMetadataFeature { MaxLimit = MaxLimit });
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)
@@ -226,7 +226,7 @@ namespace ServiceStack
             return servicesType;
         }
 
-        public AutoQueryFeature RegisterQueryFilter<Request, From>(Func<SqlExpression<From>, Request, IRequest, SqlExpression<From>> filterFn)
+        public AutoQueryFeature RegisterQueryFilter<Request, From>(Action<SqlExpression<From>, Request, IRequest> filterFn)
         {
             QueryFilters[typeof(Request)] = (q, dto, req) =>
                 filterFn((SqlExpression<From>)q, (Request)dto, req);
@@ -439,7 +439,7 @@ namespace ServiceStack
             }
 
             if (filterFn != null)
-                return (SqlExpression<From>)(filterFn(q, dto, req) ?? q);
+                filterFn(q, dto, req);
 
             return (SqlExpression<From>)q;
         }

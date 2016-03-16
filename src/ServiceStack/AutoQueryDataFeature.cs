@@ -32,16 +32,16 @@ namespace ServiceStack
 
         Tuple<Type, PropertyInfo> FirstMatchingField(string name);
 
-        IDataQuery Select(string[] fields);
-        IDataQuery Join(Type joinType, Type type);
-        IDataQuery LeftJoin(Type joinType, Type type);
-        IDataQuery And(string field, IQueryCondition condition, string value);
-        IDataQuery Or(string field, IQueryCondition condition, string value);
-        IDataQuery AddCondition(QueryTerm defaultTerm, IQueryCondition condition, PropertyInfo field, object value);
-        IDataQuery OrderByFields(string[] fieldNames);
-        IDataQuery OrderByFieldsDescending(string[] fieldNames);
-        IDataQuery OrderByPrimaryKey();
-        IDataQuery Limit(int? skip, int? take);
+        void Select(string[] fields);
+        void Join(Type joinType, Type type);
+        void LeftJoin(Type joinType, Type type);
+        void And(string field, QueryCondition condition, string value);
+        void Or(string field, QueryCondition condition, string value);
+        void AddCondition(QueryTerm defaultTerm, PropertyInfo field, QueryCondition condition, object value);
+        void OrderByFields(string[] fieldNames);
+        void OrderByFieldsDescending(string[] fieldNames);
+        void OrderByPrimaryKey();
+        void Limit(int? skip, int? take);
     }
 
     public interface IQueryDataSource<T> : IQueryDataSource {}
@@ -61,7 +61,7 @@ namespace ServiceStack
         public IRequest Request { get; set; }
     }
 
-    public delegate IDataQuery QueryDataFilterDelegate(IDataQuery q, IQueryData dto, IRequest req);
+    public delegate void QueryDataFilterDelegate(IDataQuery q, IQueryData dto, IRequest req);
 
     public class QueryDataFilterContext
     {
@@ -227,7 +227,7 @@ namespace ServiceStack
             });
 
             if (EnableAutoQueryViewer && appHost.GetPlugin<AutoQueryMetadataFeature>() == null)
-                appHost.LoadPlugin(new AutoQueryMetadataFeature());
+                appHost.LoadPlugin(new AutoQueryMetadataFeature { MaxLimit = MaxLimit });
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)
@@ -293,7 +293,7 @@ namespace ServiceStack
             return servicesType;
         }
 
-        public AutoQueryDataFeature RegisterQueryFilter<Request>(Func<IDataQuery, Request, IRequest, IDataQuery> filterFn)
+        public AutoQueryDataFeature RegisterQueryFilter<Request>(Action<IDataQuery, Request, IRequest> filterFn)
         {
             QueryFilters[typeof(Request)] = (q, dto, req) =>
                 filterFn(q, (Request)dto, req);
@@ -361,7 +361,7 @@ namespace ServiceStack
     public class ConditionExpression
     {
         public QueryTerm Term { get; set; }
-        public IQueryCondition Condition { get; set; }
+        public QueryCondition Condition { get; set; }
         public PropertyInfo Field { get; set; }
         public Func<object, object> FieldGetter { get; set; }
         public object Value { get; set; }
@@ -493,26 +493,22 @@ namespace ServiceStack
             get { return Conditions.Count > 0; }
         }
 
-        public virtual IDataQuery Limit(int? skip, int? take)
+        public virtual void Limit(int? skip, int? take)
         {
             this.Offset = skip;
             this.Rows = take;
-            return this;
         }
 
-        public DataQuery<T> Take(int take)
+        public void Take(int take)
         {
             this.Rows = take;
-            return this;
         } 
 
-        public virtual IDataQuery Select(string[] fields)
+        public virtual void Select(string[] fields)
         {
             this.OnlyFields = fields == null || fields.Length == 0
                 ? null //All Fields
                 : fields;
-
-            return this;
         }
 
         public virtual Tuple<Type, PropertyInfo> FirstMatchingField(string field)
@@ -524,17 +520,17 @@ namespace ServiceStack
                 : null;
         }
 
-        public virtual IDataQuery OrderByFields(params string[] fieldNames)
+        public virtual void OrderByFields(params string[] fieldNames)
         {
-            return OrderByFieldsImpl(fieldNames, x => x[0] != '-');
+            OrderByFieldsImpl(fieldNames, x => x[0] != '-');
         }
 
-        public virtual IDataQuery OrderByFieldsDescending(params string[] fieldNames)
+        public virtual void OrderByFieldsDescending(params string[] fieldNames)
         {
-            return OrderByFieldsImpl(fieldNames, x => x[0] == '-');
+            OrderByFieldsImpl(fieldNames, x => x[0] == '-');
         }
 
-        DataQuery<T> OrderByFieldsImpl(string[] fieldNames, Func<string,bool> orderFn)
+        void OrderByFieldsImpl(string[] fieldNames, Func<string,bool> orderFn)
         {
             var getters = new List<Func<object, object>>();
             var orderAscs = new List<bool>();
@@ -560,52 +556,41 @@ namespace ServiceStack
             {
                 OrderBy = new OrderByExpression(fields.ToArray(), getters.ToArray(), orderAscs.ToArray());
             }
-
-            return this;
         }
 
-        public virtual IDataQuery OrderByPrimaryKey()
+        public virtual void OrderByPrimaryKey()
         {
             OrderBy = new OrderByExpression(PrimaryKey.Name, TypeReflector<T>.GetPublicGetter(PrimaryKey));
-            return this;
         }
 
-        public virtual IDataQuery Join(Type joinType, Type type)
+        public virtual void Join(Type joinType, Type type)
         {
-            return this;
         }
 
-        public virtual IDataQuery LeftJoin(Type joinType, Type type)
+        public virtual void LeftJoin(Type joinType, Type type)
         {
-            return this;
         }
 
-        public virtual IDataQuery AddCondition(QueryTerm term, IQueryCondition condition, PropertyInfo field, object value)
+        public virtual void AddCondition(QueryTerm term, PropertyInfo field, QueryCondition condition, object value)
         {
             this.Conditions.Add(new ConditionExpression
             {
                 Term = term,
-                Condition = condition,
                 Field = field,
                 FieldGetter = TypeReflector<T>.GetPublicGetter(field),
+                Condition = condition,
                 Value = value,
             });
-            return this;
         }
 
-        public virtual IDataQuery And(string field, IQueryCondition condition, string value)
+        public virtual void And(string field, QueryCondition condition, string value)
         {
-            return AddCondition(QueryTerm.And, condition, TypeReflector<T>.GetPublicProperty(field), value);
+            AddCondition(QueryTerm.And, TypeReflector<T>.GetPublicProperty(field), condition, value);
         }
 
-        public virtual IDataQuery Or(string field, IQueryCondition condition, string value)
+        public virtual void Or(string field, QueryCondition condition, string value)
         {
-            return AddCondition(QueryTerm.Or, condition, TypeReflector<T>.GetPublicProperty(field), value);
-        }
-
-        public virtual IDataQuery From(string @from)
-        {
-            return this;
+            AddCondition(QueryTerm.Or, TypeReflector<T>.GetPublicProperty(field), condition, value);
         }
     }
 
@@ -720,7 +705,7 @@ namespace ServiceStack
             }
 
             if (filterFn != null)
-                return (DataQuery<From>)(filterFn(q, dto, req) ?? q);
+                filterFn(q, dto, req);
 
             return (DataQuery<From>)q;
         }
@@ -822,7 +807,7 @@ namespace ServiceStack
             this.data = data;
         }
 
-        public override IEnumerable<T> GetDataSource()
+        public override IEnumerable<T> GetDataSource(IDataQuery q)
         {
             return data;
         }
@@ -842,7 +827,7 @@ namespace ServiceStack
             return new DataQuery<T>(context);
         }
 
-        public abstract IEnumerable<T> GetDataSource();
+        public abstract IEnumerable<T> GetDataSource(IDataQuery q);
 
         public virtual IEnumerable<T> ApplyConditions(IEnumerable<T> data, IEnumerable<ConditionExpression> conditions)
         {
@@ -861,7 +846,7 @@ namespace ServiceStack
 
         public virtual List<Into> LoadSelect<Into, From>(IDataQuery q)
         {
-            var data = GetDataSource();
+            var data = GetDataSource(q);
             var source = ApplyConditions(data, q.Conditions);
             source = ApplySorting(source, q.OrderBy);
             source = ApplyLimits(source, q.Offset, q.Rows);
@@ -874,7 +859,7 @@ namespace ServiceStack
                     ? (Into)(object)item
                     : item.ConvertTo<Into>();
 
-                //ConvertTo<T> short-circuits to instance cast when types match
+                //ConvertTo<T> short-circuits to instance cast when types match, we to mutate a copy instead
                 if (typeof(From) == typeof(Into) && q.OnlyFields != null) 
                 {
                     into = typeof(Into).CreateInstance<Into>();
@@ -919,7 +904,7 @@ namespace ServiceStack
 
         public virtual int Count(IDataQuery q)
         {
-            var source = ApplyConditions(GetDataSource(), q.Conditions);
+            var source = ApplyConditions(GetDataSource(q), q.Conditions);
             return source.Count();
         }
 
@@ -945,13 +930,13 @@ namespace ServiceStack
             }
 
             if (name == "COUNT" && (firstArg == null || firstArg == "*"))
-                return ApplyConditions(GetDataSource(), query.Conditions).Count();
+                return ApplyConditions(GetDataSource(q), query.Conditions).Count();
 
             var firstGetter = TypeReflector<T>.GetPublicGetter(firstArg);
             if (firstGetter == null)
                 return null;
 
-            var source = ApplyConditions(GetDataSource(), query.Conditions).ToArray();
+            var source = ApplyConditions(GetDataSource(q), query.Conditions).ToArray();
 
             switch (name)
             {
@@ -1077,7 +1062,7 @@ namespace ServiceStack
 
             if (defaultTerm == QueryTerm.Or && !q.HasConditions)
             {
-                q.AddCondition(defaultTerm, AlwaysFalseCondition.Instance, null, null); //Empty OR queries should be empty
+                q.AddCondition(defaultTerm, null, AlwaysFalseCondition.Instance, null); //Empty OR queries should be empty
             }
 
             if (!string.IsNullOrEmpty(request.Fields))
@@ -1201,7 +1186,7 @@ namespace ServiceStack
                     : InCollectionCondition.Instance;
             }
 
-            q.AddCondition(defaultTerm, condition, property, value);
+            q.AddCondition(defaultTerm, property, condition, value);
         }
 
         private static void AppendUntypedQueries(IDataQuery q, Dictionary<string, string> dynamicParams, QueryTerm defaultTerm, IAutoQueryDataOptions options, Dictionary<string, string> aliases)
@@ -1378,16 +1363,16 @@ namespace ServiceStack
             return new MemoryDataSource<T>(ctx, soruce);
         }
 
-        public static IDataQuery And<T>(this IDataQuery q, Expression<Func<T, object>> fieldExpr, IQueryCondition condition, object value)
+        public static void And<T>(this IDataQuery q, Expression<Func<T, object>> fieldExpr, QueryCondition condition, object value)
         {
             var pi = fieldExpr.ToPropertyInfo();
-            return q.AddCondition(QueryTerm.And, condition, pi, value);
+            q.AddCondition(QueryTerm.And, pi, condition, value);
         }
 
-        public static IDataQuery Or<T>(this IDataQuery q, Expression<Func<T, object>> fieldExpr, IQueryCondition condition, object value)
+        public static void Or<T>(this IDataQuery q, Expression<Func<T, object>> fieldExpr, QueryCondition condition, object value)
         {
             var pi = fieldExpr.ToPropertyInfo();
-            return q.AddCondition(QueryTerm.Or, condition, pi, value);
+            q.AddCondition(QueryTerm.Or, pi, condition, value);
         }
     }
 }

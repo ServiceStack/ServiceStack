@@ -103,6 +103,9 @@
     <Compile Include="AspNet\ServiceStackPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="AutoQueryDataConditions.cs" />
+    <Compile Include="AutoQueryDataFeature.cs" />
+    <Compile Include="AutoQueryMetadataFeature.cs" />
     <Compile Include="ConnectionInfo.cs" />
     <Compile Include="ConnectionInfoAttribute.cs" />
     <Compile Include="FluentValidation\Internal\CollectionPropertyRule.cs" />

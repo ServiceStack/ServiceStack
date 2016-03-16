@@ -10,6 +10,7 @@ namespace ServiceStack
     {
         public AutoQueryViewerConfig AutoQueryViewerConfig { get; set; }
         public Action<AutoQueryMetadataResponse> MetadataFilter { get; set; }
+        public int? MaxLimit { get; set; }
 
         public AutoQueryMetadataFeature()
         {
@@ -40,6 +41,9 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
+            if (MaxLimit != null)
+                AutoQueryViewerConfig.MaxLimit = MaxLimit;
+
             appHost.RegisterService<AutoQueryMetadataService>();
         }
     }
@@ -191,21 +195,6 @@ namespace ServiceStack
 
             if (config.ServiceName == null)
                 config.ServiceName = HostContext.ServiceName;
-
-            var autoQuery = HostContext.GetPlugin<AutoQueryFeature>();
-            if (autoQuery != null)
-            {
-                if (config.MaxLimit == null)
-                    config.MaxLimit = autoQuery.MaxLimit;
-            }
-
-            var autoQueryData = HostContext.GetPlugin<AutoQueryDataFeature>();
-            if (autoQueryData != null)
-            {
-                //Use smallest MaxLimit
-                if (config.MaxLimit == null || config.MaxLimit > autoQueryData.MaxLimit)
-                    config.MaxLimit = autoQueryData.MaxLimit;
-            }
 
             var userSession = Request.GetSession();
 
