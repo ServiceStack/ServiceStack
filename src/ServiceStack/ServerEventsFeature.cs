@@ -60,18 +60,20 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            var broker = new MemoryServerEvents
-            {
-                IdleTimeout = IdleTimeout,
-                HouseKeepingInterval = HouseKeepingInterval,
-                OnSubscribe = OnSubscribe,
-                OnUnsubscribe = OnUnsubscribe,
-                NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
-            };
             var container = appHost.GetContainer();
 
-            if (container.TryResolve<IServerEvents>() == null)
+            if (!container.Exists<IServerEvents>())
+            {
+                var broker = new MemoryServerEvents
+                {
+                    IdleTimeout = IdleTimeout,
+                    HouseKeepingInterval = HouseKeepingInterval,
+                    OnSubscribe = OnSubscribe,
+                    OnUnsubscribe = OnUnsubscribe,
+                    NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
+                };
                 container.Register<IServerEvents>(broker);
+            }
 
             appHost.RawHttpHandlers.Add(httpReq =>
                 httpReq.PathInfo.EndsWith(StreamPath)
