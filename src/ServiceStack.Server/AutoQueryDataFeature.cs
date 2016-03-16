@@ -843,9 +843,16 @@ namespace ServiceStack
 
             foreach (var item in source)
             {
-                var into = typeof(From) == typeof(Into) && q.OnlyFields == null
+                var into = typeof(From) == typeof(Into)
                     ? (Into)(object)item
                     : item.ConvertTo<Into>();
+
+                //ConvertTo<T> short-circuits to instance cast when types match
+                if (typeof(From) == typeof(Into) && q.OnlyFields != null) 
+                {
+                    into = typeof(Into).CreateInstance<Into>();
+                    into.PopulateWith(item);
+                }
 
                 to.Add(into);
 
@@ -862,7 +869,7 @@ namespace ServiceStack
                         continue;
 
                     var defaultValue = pi.PropertyType.GetDefaultValue();
-                    setter(item, defaultValue);
+                    setter(into, defaultValue);
                 }
             }
 
