@@ -39,10 +39,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         }        
                     }
                 }
-                .AddDataSource(ctx => new QueryDataSource<Rockstar>(ctx, GetRockstars()))
-                .AddDataSource(ctx => new QueryDataSource<Adhoc>(ctx, GetAdhoc()))
-                .AddDataSource(ctx => new QueryDataSource<Movie>(ctx, GetMovies()))
-                .AddDataSource(ctx => new QueryDataSource<AllFields>(ctx, GetAllFields()))
+                .AddDataSource(ctx => new QueryDataSource<Rockstar>(ctx, SeedRockstars))
+                .AddDataSource(ctx => new QueryDataSource<Adhoc>(ctx, SeedAdhoc))
+                .AddDataSource(ctx => new QueryDataSource<Movie>(ctx, SeedMovies))
+                .AddDataSource(ctx => new QueryDataSource<AllFields>(ctx, SeedAllFields))
                 .RegisterQueryFilter<QueryDataRockstarsFilter, Rockstar>((q, dto, req) =>
                     q.And(x => x.LastName, new EndsWithCondition(), "son")
                 )
@@ -55,72 +55,58 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             );
         }
 
-        public static Rockstar[] GetRockstars()
-        {
-            return new[] {
-                new Rockstar { Id = 1, FirstName = "Jimi", LastName = "Hendrix", LivingStatus = LivingStatus.Dead, Age = 27, DateOfBirth = new DateTime(1942, 11, 27), DateDied = new DateTime(1970, 09, 18), },
-                new Rockstar { Id = 2, FirstName = "Jim", LastName = "Morrison", Age = 27, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1943, 12, 08), DateDied = new DateTime(1971, 07, 03),  },
-                new Rockstar { Id = 3, FirstName = "Kurt", LastName = "Cobain", Age = 27, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1967, 02, 20), DateDied = new DateTime(1994, 04, 05), },
-                new Rockstar { Id = 4, FirstName = "Elvis", LastName = "Presley", Age = 42, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1935, 01, 08), DateDied = new DateTime(1977, 08, 16), },
-                new Rockstar { Id = 5, FirstName = "David", LastName = "Grohl", Age = 44, LivingStatus = LivingStatus.Alive, DateOfBirth = new DateTime(1969, 01, 14), },
-                new Rockstar { Id = 6, FirstName = "Eddie", LastName = "Vedder", Age = 48, LivingStatus = LivingStatus.Alive, DateOfBirth = new DateTime(1964, 12, 23), },
-                new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 50, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1958, 08, 29), DateDied = new DateTime(2009, 06, 05), },
-            };
-        }
+        public static Rockstar[] SeedRockstars =  new[] {
+            new Rockstar { Id = 1, FirstName = "Jimi", LastName = "Hendrix", LivingStatus = LivingStatus.Dead, Age = 27, DateOfBirth = new DateTime(1942, 11, 27), DateDied = new DateTime(1970, 09, 18), },
+            new Rockstar { Id = 2, FirstName = "Jim", LastName = "Morrison", Age = 27, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1943, 12, 08), DateDied = new DateTime(1971, 07, 03),  },
+            new Rockstar { Id = 3, FirstName = "Kurt", LastName = "Cobain", Age = 27, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1967, 02, 20), DateDied = new DateTime(1994, 04, 05), },
+            new Rockstar { Id = 4, FirstName = "Elvis", LastName = "Presley", Age = 42, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1935, 01, 08), DateDied = new DateTime(1977, 08, 16), },
+            new Rockstar { Id = 5, FirstName = "David", LastName = "Grohl", Age = 44, LivingStatus = LivingStatus.Alive, DateOfBirth = new DateTime(1969, 01, 14), },
+            new Rockstar { Id = 6, FirstName = "Eddie", LastName = "Vedder", Age = 48, LivingStatus = LivingStatus.Alive, DateOfBirth = new DateTime(1964, 12, 23), },
+            new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 50, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1958, 08, 29), DateDied = new DateTime(2009, 06, 05), },
+        };
 
-        public static List<Adhoc> GetAdhoc()
-        {
-            return GetRockstars().Map(x => new Adhoc
-            {
+        public static Adhoc[] SeedAdhoc = SeedRockstars.Map(x => new Adhoc {
                 Id = x.Id,
                 FirstName = x.FirstName,
                 LastName = x.LastName,
-            });
-        }
+            }).ToArray();
 
-        public static Movie[] GetMovies()
-        {
-            return new[] {
-                new Movie { Id = 1, ImdbId = "tt0111161", Title = "The Shawshank Redemption", Score = 9.2m, Director = "Frank Darabont", ReleaseDate = new DateTime(1995,2,17), TagLine = "Fear can hold you prisoner. Hope can set you free.", Genres = new List<string>{"Crime","Drama"}, Rating = "R", },
-                new Movie { Id = 2, ImdbId = "tt0068646", Title = "The Godfather", Score = 9.2m, Director = "Francis Ford Coppola", ReleaseDate = new DateTime(1972,3,24), TagLine = "An offer you can't refuse.", Genres = new List<string> {"Crime","Drama", "Thriller"}, Rating = "R", },
-                new Movie { Id = 3, ImdbId = "tt1375666", Title = "Inception", Score = 9.2m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2010,7,16), TagLine = "Your mind is the scene of the crime", Genres = new List<string>{"Action", "Mystery", "Sci-Fi", "Thriller"}, Rating = "PG-13", },
-                new Movie { Id = 4, ImdbId = "tt0071562", Title = "The Godfather: Part II", Score = 9.0m, Director = "Francis Ford Coppola", ReleaseDate = new DateTime(1974,12,20), Genres = new List<string> {"Crime","Drama", "Thriller"}, Rating = "R", },
-                new Movie { Id = 5, ImdbId = "tt0060196", Title = "The Good, the Bad and the Ugly", Score = 9.0m, Director = "Sergio Leone", ReleaseDate = new DateTime(1967,12,29), TagLine = "They formed an alliance of hate to steal a fortune in dead man's gold", Genres = new List<string>{"Adventure","Western"}, Rating = "R", },
-                new Movie { Id = 6, ImdbId = "tt0114709", Title = "Toy Story", Score = 8.3m, Director = "John Lasseter", ReleaseDate = new DateTime(1995,11,22), TagLine = "A cowboy doll is profoundly threatened and jealous when a new spaceman figure supplants him as top toy in a boy's room.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
-                new Movie { Id = 7, ImdbId = "tt2294629", Title = "Frozen", Score = 7.8m, Director = "Chris Buck", ReleaseDate = new DateTime(2013,11,27), TagLine = "Fearless optimist Anna teams up with Kristoff in an epic journey, encountering Everest-like conditions, and a hilarious snowman named Olaf", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "PG", },
-                new Movie { Id = 8, ImdbId = "tt1453405", Title = "Monsters University", Score = 7.4m, Director = "Dan Scanlon", ReleaseDate = new DateTime(2013,06,21), TagLine = "A look at the relationship between Mike and Sulley during their days at Monsters University -- when they weren't necessarily the best of friends.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
-                new Movie { Id = 9, ImdbId = "tt0468569", Title = "The Dark Knight", Score = 9.0m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2008,07,18), TagLine = "When Batman, Gordon and Harvey Dent launch an assault on the mob, they let the clown out of the box, the Joker, bent on turning Gotham on itself and bringing any heroes down to his level.", Genres = new List<string>{"Action","Crime","Drama"}, Rating = "PG-13", },
-                new Movie { Id = 10, ImdbId = "tt0109830", Title = "Forrest Gump", Score = 8.8m, Director = "Robert Zemeckis", ReleaseDate = new DateTime(1996,07,06), TagLine = "Forrest Gump, while not intelligent, has accidentally been present at many historic moments, but his true love, Jenny Curran, eludes him.", Genres = new List<string>{"Drama","Romance"}, Rating = "PG-13", },
-            };
-        }
+        public static Movie[] SeedMovies = new[] {
+            new Movie { Id = 1, ImdbId = "tt0111161", Title = "The Shawshank Redemption", Score = 9.2m, Director = "Frank Darabont", ReleaseDate = new DateTime(1995,2,17), TagLine = "Fear can hold you prisoner. Hope can set you free.", Genres = new List<string>{"Crime","Drama"}, Rating = "R", },
+            new Movie { Id = 2, ImdbId = "tt0068646", Title = "The Godfather", Score = 9.2m, Director = "Francis Ford Coppola", ReleaseDate = new DateTime(1972,3,24), TagLine = "An offer you can't refuse.", Genres = new List<string> {"Crime","Drama", "Thriller"}, Rating = "R", },
+            new Movie { Id = 3, ImdbId = "tt1375666", Title = "Inception", Score = 9.2m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2010,7,16), TagLine = "Your mind is the scene of the crime", Genres = new List<string>{"Action", "Mystery", "Sci-Fi", "Thriller"}, Rating = "PG-13", },
+            new Movie { Id = 4, ImdbId = "tt0071562", Title = "The Godfather: Part II", Score = 9.0m, Director = "Francis Ford Coppola", ReleaseDate = new DateTime(1974,12,20), Genres = new List<string> {"Crime","Drama", "Thriller"}, Rating = "R", },
+            new Movie { Id = 5, ImdbId = "tt0060196", Title = "The Good, the Bad and the Ugly", Score = 9.0m, Director = "Sergio Leone", ReleaseDate = new DateTime(1967,12,29), TagLine = "They formed an alliance of hate to steal a fortune in dead man's gold", Genres = new List<string>{"Adventure","Western"}, Rating = "R", },
+            new Movie { Id = 6, ImdbId = "tt0114709", Title = "Toy Story", Score = 8.3m, Director = "John Lasseter", ReleaseDate = new DateTime(1995,11,22), TagLine = "A cowboy doll is profoundly threatened and jealous when a new spaceman figure supplants him as top toy in a boy's room.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
+            new Movie { Id = 7, ImdbId = "tt2294629", Title = "Frozen", Score = 7.8m, Director = "Chris Buck", ReleaseDate = new DateTime(2013,11,27), TagLine = "Fearless optimist Anna teams up with Kristoff in an epic journey, encountering Everest-like conditions, and a hilarious snowman named Olaf", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "PG", },
+            new Movie { Id = 8, ImdbId = "tt1453405", Title = "Monsters University", Score = 7.4m, Director = "Dan Scanlon", ReleaseDate = new DateTime(2013,06,21), TagLine = "A look at the relationship between Mike and Sulley during their days at Monsters University -- when they weren't necessarily the best of friends.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
+            new Movie { Id = 9, ImdbId = "tt0468569", Title = "The Dark Knight", Score = 9.0m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2008,07,18), TagLine = "When Batman, Gordon and Harvey Dent launch an assault on the mob, they let the clown out of the box, the Joker, bent on turning Gotham on itself and bringing any heroes down to his level.", Genres = new List<string>{"Action","Crime","Drama"}, Rating = "PG-13", },
+            new Movie { Id = 10, ImdbId = "tt0109830", Title = "Forrest Gump", Score = 8.8m, Director = "Robert Zemeckis", ReleaseDate = new DateTime(1996,07,06), TagLine = "Forrest Gump, while not intelligent, has accidentally been present at many historic moments, but his true love, Jenny Curran, eludes him.", Genres = new List<string>{"Drama","Romance"}, Rating = "PG-13", },
+        };
 
-        public static AllFields[] GetAllFields()
-        {
-            return new[]
+        public static AllFields[] SeedAllFields = new[] {
+            new AllFields
             {
-                new AllFields
-                {
-                    Id = 1,
-                    NullableId = 2,
-                    Byte = 3,
-                    DateTime = new DateTime(2001, 01, 01),
-                    NullableDateTime = new DateTime(2002, 02, 02),
-                    Decimal = 4,
-                    Double = 5.5,
-                    Float = 6.6f,
-                    Guid = new Guid("3EE6865A-4149-4940-B7A2-F952E0FEFC5E"),
-                    NullableGuid = new Guid("7A2FDDD8-4BB0-4735-8230-A6AC79088489"),
-                    Long = 7,
-                    Short = 8,
-                    String = "string",
-                    TimeSpan = TimeSpan.FromHours(1),
-                    NullableTimeSpan = TimeSpan.FromDays(1),
-                    UInt = 9,
-                    ULong = 10,
-                    UShort = 11,
-                }
-            };
-        }
+                Id = 1,
+                NullableId = 2,
+                Byte = 3,
+                DateTime = new DateTime(2001, 01, 01),
+                NullableDateTime = new DateTime(2002, 02, 02),
+                Decimal = 4,
+                Double = 5.5,
+                Float = 6.6f,
+                Guid = new Guid("3EE6865A-4149-4940-B7A2-F952E0FEFC5E"),
+                NullableGuid = new Guid("7A2FDDD8-4BB0-4735-8230-A6AC79088489"),
+                Long = 7,
+                Short = 8,
+                String = "string",
+                TimeSpan = TimeSpan.FromHours(1),
+                NullableTimeSpan = TimeSpan.FromDays(1),
+                UInt = 9,
+                ULong = 10,
+                UShort = 11,
+            }
+        };
     }
 
     [Route("/querydata/rockstars")]
@@ -953,8 +939,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .AddQueryParam("Fields", "Id,FirstName,Age")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
-
-            response.PrintDump();
 
             Assert.That(response.Results.All(x => x.Id > 0));
             Assert.That(response.Results.All(x => x.FirstName != null));
