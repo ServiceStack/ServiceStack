@@ -39,10 +39,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         }        
                     }
                 }
-                .AddDataSource(ctx => new QueryDataSource<Rockstar>(ctx, SeedRockstars))
-                .AddDataSource(ctx => new QueryDataSource<Adhoc>(ctx, SeedAdhoc))
-                .AddDataSource(ctx => new QueryDataSource<Movie>(ctx, SeedMovies))
-                .AddDataSource(ctx => new QueryDataSource<AllFields>(ctx, SeedAllFields))
+                .AddDataSource(ctx => ctx.MemorySource(SeedRockstars))
+                .AddDataSource(ctx => ctx.MemorySource(SeedAdhoc))
+                .AddDataSource(ctx => ctx.MemorySource(SeedMovies))
+                .AddDataSource(ctx => ctx.MemorySource(SeedAllFields))
                 .RegisterQueryFilter<QueryDataRockstarsFilter, Rockstar>((q, dto, req) =>
                     q.And(x => x.LastName, new EndsWithCondition(), "son")
                 )
@@ -288,7 +288,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AutoQueryDataTests
     {
         private readonly ServiceStackHost appHost;
-        public IServiceClient client;
+        private readonly IServiceClient client;
 
         private static readonly int TotalRockstars = AutoQueryAppHost.SeedRockstars.Length;
         private static readonly int TotalAlbums = AutoQueryAppHost.SeedAlbums.Length;

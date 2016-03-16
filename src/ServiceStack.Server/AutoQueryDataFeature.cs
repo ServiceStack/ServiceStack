@@ -1345,5 +1345,10 @@ namespace ServiceStack
         {
             return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
         }
+
+        public static QueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, IEnumerable<T> soruce)
+        {
+            return new QueryDataSource<T>(ctx, soruce);
+        }
     }
 }
