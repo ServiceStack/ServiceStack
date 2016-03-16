@@ -143,8 +143,14 @@ namespace ServiceStack
     }
 
     public interface IQueryMultiple {}
+    public interface IQueryCondition
+    {
+        QueryTerm Term { get; }
+        bool Match(object a, object b);
+        int CompareTo(object a, object b);
+    }
 
-    public abstract class QueryCondition
+    public abstract class QueryCondition : IQueryCondition
     {
         public virtual QueryTerm Term { get; set; }
 

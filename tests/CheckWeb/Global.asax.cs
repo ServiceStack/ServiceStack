@@ -81,7 +81,7 @@ namespace CheckWeb
             Plugins.Add(new AutoQueryFeature());
 
             Plugins.Add(new AutoQueryDataFeature()
-                .AddDataSource(ctx => new QueryDataSource<Rockstar>(ctx, GetRockstars())));
+                .AddDataSource(ctx => ctx.MemorySource(GetRockstars())));
 
             Plugins.Add(new AdminFeature());
 

@@ -43,14 +43,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .AddDataSource(ctx => ctx.MemorySource(SeedAdhoc))
                 .AddDataSource(ctx => ctx.MemorySource(SeedMovies))
                 .AddDataSource(ctx => ctx.MemorySource(SeedAllFields))
-                .RegisterQueryFilter<QueryDataRockstarsFilter, Rockstar>((q, dto, req) =>
-                    q.And(x => x.LastName, new EndsWithCondition(), "son")
+                .RegisterQueryFilter<QueryDataRockstarsFilter>((q, dto, req) =>
+                    q.And<Rockstar>(x => x.LastName, new EndsWithCondition(), "son")
                 )
-                .RegisterQueryFilter<QueryDataCustomRockstarsFilter, Rockstar>((q, dto, req) =>
-                    q.And(x => x.LastName, new EndsWithCondition(), "son")
+                .RegisterQueryFilter<QueryDataCustomRockstarsFilter>((q, dto, req) =>
+                    q.And<Rockstar>(x => x.LastName, new EndsWithCondition(), "son")
                 )
-                .RegisterQueryFilter<IFilterRockstars, Rockstar>((q, dto, req) =>
-                    q.And(x => x.LastName, new EndsWithCondition(), "son")
+                .RegisterQueryFilter<IFilterRockstars>((q, dto, req) =>
+                    q.And<Rockstar>(x => x.LastName, new EndsWithCondition(), "son")
                 )
             );
         }
