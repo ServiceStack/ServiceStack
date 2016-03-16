@@ -93,7 +93,7 @@ namespace ServiceStack.Auth
                 var json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, Fields);
                 var obj = JsonObject.Parse(json);
                 tokens.UserId = obj.Get("id");
-                tokens.UserName = obj.Get("id");
+                tokens.UserName = obj.Get("id") ?? obj.Get("username");
                 tokens.DisplayName = obj.Get("name");
                 tokens.FirstName = obj.Get("first_name");
                 tokens.LastName = obj.Get("last_name");
