@@ -17,6 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             Plugins.Add(new AutoQueryDataFeature
                 {
+                    MaxLimit = 100,
                     ResponseFilters = {
                         ctx => {
                             var executedCmds = new List<Command>();
@@ -43,6 +44,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .AddDataSource(ctx => ctx.MemorySource(SeedAdhoc))
                 .AddDataSource(ctx => ctx.MemorySource(SeedMovies))
                 .AddDataSource(ctx => ctx.MemorySource(SeedAllFields))
+                .AddDataSource(ctx => ctx.MemorySource(SeedPagingTest))
                 .RegisterQueryFilter<QueryDataRockstarsFilter>((q, dto, req) =>
                     q.And<Rockstar>(x => x.LastName, new EndsWithCondition(), "son")
                 )
@@ -107,12 +109,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 UShort = 11,
             }
         };
+
+        public static PagingTest[] SeedPagingTest = 250.Times(i => new PagingTest { Id = i, Name = "Name" + i, Value = i % 2 }).ToArray();
     }
 
     [Route("/querydata/rockstars")]
     public class QueryDataRockstars : QueryData<Rockstar>
     {
         public int? Age { get; set; }
+    }
+
+    [Route("/querydata/pagingtest")]
+    public class QueryDataPagingTest : QueryData<PagingTest>
+    {
+        public int? Id { get; set; }
+        public string Name { get; set; }
+        public int? Value { get; set; }
     }
 
     public class QueryDataRockstarsConventions : QueryData<Rockstar>
@@ -306,6 +318,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
+        }
+
+        public List<Rockstar> Rockstars
+        {
+            get { return AutoQueryDataAppHost.SeedRockstars.ToList(); }
+        }
+
+        public List<PagingTest> PagingTests
+        {
+            get { return AutoQueryDataAppHost.SeedPagingTest.ToList(); }
         }
 
         [Test]
@@ -845,77 +867,90 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_populate_Total()
         {
             var response = client.Get(new QueryDataRockstars());
-            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
             Assert.That(response.Meta, Is.Null);
 
             response = client.Get(new QueryDataRockstars { Include = "COUNT" });
-            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
 
             response = client.Get(new QueryDataRockstars { Include = "COUNT(*)" });
-            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
 
             response = client.Get(new QueryDataRockstars { Include = "COUNT(DISTINCT LivingStatus)" });
-            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
 
             response = client.Get(new QueryDataRockstars { Include = "Count(*), Min(Age), Max(Age), Sum(Id)" });
-            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
+
+            response = client.Get(new QueryDataRockstars { Age = 27, Include = "Count(*), Min(Age), Max(Age), Sum(Id)" });
+            Assert.That(response.Total, Is.EqualTo(Rockstars.Count(x => x.Age == 27)));
         }
 
         [Test]
         public void Can_Include_Aggregates_in_AutoQuery()
         {
             var response = client.Get(new QueryDataRockstars { Include = "COUNT" });
-            Assert.That(response.Meta["COUNT(*)"], Is.EqualTo(response.Results.Count.ToString()));
+            Assert.That(response.Meta["COUNT(*)"], Is.EqualTo(Rockstars.Count.ToString()));
 
             response = client.Get(new QueryDataRockstars { Include = "COUNT(*)" });
-            Assert.That(response.Meta["COUNT(*)"], Is.EqualTo(response.Results.Count.ToString()));
+            Assert.That(response.Meta["COUNT(*)"], Is.EqualTo(Rockstars.Count.ToString()));
 
             response = client.Get(new QueryDataRockstars { Include = "COUNT(DISTINCT LivingStatus)" });
             Assert.That(response.Meta["COUNT(DISTINCT LivingStatus)"], Is.EqualTo("2"));
 
             response = client.Get(new QueryDataRockstars { Include = "MIN(Age)" });
-            Assert.That(response.Meta["MIN(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
+            Assert.That(response.Meta["MIN(Age)"], Is.EqualTo(Rockstars.Map(x => x.Age).Min().ToString()));
 
             response = client.Get(new QueryDataRockstars { Include = "Count(*), Min(Age), Max(Age), Sum(Id), Avg(Age), First(Id), Last(Id)", OrderBy = "Id" });
-            Assert.That(response.Meta["Count(*)"], Is.EqualTo(response.Results.Count.ToString()));
-            Assert.That(response.Meta["Min(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
-            Assert.That(response.Meta["Max(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Max().ToString()));
-            Assert.That(response.Meta["Sum(Id)"], Is.EqualTo(response.Results.Map(x => x.Id).Sum().ToString()));
-            Assert.That(response.Meta["Avg(Age)"], Is.EqualTo(response.Results.Average(x => x.Age).ToString()));
-            Assert.That(response.Meta["First(Id)"], Is.EqualTo(response.Results.First().Id.ToString()));
-            Assert.That(response.Meta["Last(Id)"], Is.EqualTo(response.Results.Last().Id.ToString()));
+            Assert.That(response.Meta["Count(*)"], Is.EqualTo(Rockstars.Count.ToString()));
+            Assert.That(response.Meta["Min(Age)"], Is.EqualTo(Rockstars.Map(x => x.Age).Min().ToString()));
+            Assert.That(response.Meta["Max(Age)"], Is.EqualTo(Rockstars.Map(x => x.Age).Max().ToString()));
+            Assert.That(response.Meta["Sum(Id)"], Is.EqualTo(Rockstars.Map(x => x.Id).Sum().ToString()));
+            Assert.That(response.Meta["Avg(Age)"], Is.EqualTo(Rockstars.Average(x => x.Age).ToString()));
+            Assert.That(response.Meta["First(Id)"], Is.EqualTo(Rockstars.First().Id.ToString()));
+            Assert.That(response.Meta["Last(Id)"], Is.EqualTo(Rockstars.Last().Id.ToString()));
+
+            response = client.Get(new QueryDataRockstars { Age = 27, Include = "Count(*), Min(Age), Max(Age), Sum(Id), Avg(Age), First(Id), Last(Id)", OrderBy = "Id" });
+            var rockstars27 = Rockstars.Where(x => x.Age == 27).ToList();
+            Assert.That(response.Meta["Count(*)"], Is.EqualTo(rockstars27.Count.ToString()));
+            Assert.That(response.Meta["Min(Age)"], Is.EqualTo(rockstars27.Map(x => x.Age).Min().ToString()));
+            Assert.That(response.Meta["Max(Age)"], Is.EqualTo(rockstars27.Map(x => x.Age).Max().ToString()));
+            Assert.That(response.Meta["Sum(Id)"], Is.EqualTo(rockstars27.Map(x => x.Id).Sum().ToString()));
+            Assert.That(response.Meta["Avg(Age)"], Is.EqualTo(rockstars27.Average(x => x.Age).ToString()));
+            Assert.That(response.Meta["First(Id)"], Is.EqualTo(rockstars27.First().Id.ToString()));
+            Assert.That(response.Meta["Last(Id)"], Is.EqualTo(rockstars27.Last().Id.ToString()));
         }
 
         [Test]
         public void Does_ignore_unknown_aggregate_commands()
         {
             var response = client.Get(new QueryDataRockstars { Include = "FOO(1)" });
-            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
+            Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
             Assert.That(response.Meta, Is.Null);
 
             response = client.Get(new QueryDataRockstars { Include = "FOO(1), Min(Age), Bar('a') alias, Count(*), Baz(1,'foo')" });
-            Assert.That(response.Total, Is.EqualTo(response.Results.Count));
-            Assert.That(response.Meta["Min(Age)"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
-            Assert.That(response.Meta["Count(*)"], Is.EqualTo(response.Results.Count.ToString()));
+            Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
+            Assert.That(response.Meta["Min(Age)"], Is.EqualTo(Rockstars.Map(x => x.Age).Min().ToString()));
+            Assert.That(response.Meta["Count(*)"], Is.EqualTo(Rockstars.Count.ToString()));
         }
 
         [Test]
         public void Can_Include_Aggregates_in_AutoQuery_with_Aliases()
         {
             var response = client.Get(new QueryDataRockstars { Include = "COUNT(*) Count" });
-            Assert.That(response.Meta["Count"], Is.EqualTo(response.Results.Count.ToString()));
+            Assert.That(response.Meta["Count"], Is.EqualTo(Rockstars.Count.ToString()));
 
             response = client.Get(new QueryDataRockstars { Include = "COUNT(DISTINCT LivingStatus) as UniqueStatus" });
             Assert.That(response.Meta["UniqueStatus"], Is.EqualTo("2"));
 
             response = client.Get(new QueryDataRockstars { Include = "MIN(Age) MinAge" });
-            Assert.That(response.Meta["MinAge"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
+            Assert.That(response.Meta["MinAge"], Is.EqualTo(Rockstars.Map(x => x.Age).Min().ToString()));
 
             response = client.Get(new QueryDataRockstars { Include = "Count(*) count, Min(Age) min, Max(Age) max, Sum(Id) sum" });
-            Assert.That(response.Meta["count"], Is.EqualTo(response.Results.Count.ToString()));
-            Assert.That(response.Meta["min"], Is.EqualTo(response.Results.Map(x => x.Age).Min().ToString()));
-            Assert.That(response.Meta["max"], Is.EqualTo(response.Results.Map(x => x.Age).Max().ToString()));
-            Assert.That(response.Meta["sum"], Is.EqualTo(response.Results.Map(x => x.Id).Sum().ToString()));
+            Assert.That(response.Meta["count"], Is.EqualTo(Rockstars.Count.ToString()));
+            Assert.That(response.Meta["min"], Is.EqualTo(Rockstars.Map(x => x.Age).Min().ToString()));
+            Assert.That(response.Meta["max"], Is.EqualTo(Rockstars.Map(x => x.Age).Max().ToString()));
+            Assert.That(response.Meta["sum"], Is.EqualTo(Rockstars.Map(x => x.Id).Sum().ToString()));
         }
 
         [Test]
@@ -946,6 +981,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Any(x => x.Age > 0));
             Assert.That(response.Results.All(x => x.DateDied == null));
             Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+        }
+
+        [Test]
+        public void Does_return_MaxLimit_results()
+        {
+            QueryResponse<PagingTest> response;
+            response = client.Get(new QueryDataPagingTest());
+            Assert.That(response.Results.Count, Is.EqualTo(100));
+            Assert.That(response.Total, Is.EqualTo(PagingTests.Count));
+
+            response = client.Get(new QueryDataPagingTest { Skip = 200 });
+            Assert.That(response.Results.Count, Is.EqualTo(PagingTests.Skip(200).Count()));
+            Assert.That(response.Total, Is.EqualTo(PagingTests.Count));
+
+            response = client.Get(new QueryDataPagingTest { Value = 1 });
+            Assert.That(response.Results.Count, Is.EqualTo(100));
+            Assert.That(response.Total, Is.EqualTo(PagingTests.Count(x => x.Value == 1)));
         }
     }
 }

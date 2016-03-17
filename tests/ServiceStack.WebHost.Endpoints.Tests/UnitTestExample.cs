@@ -54,6 +54,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public bool Alive { get; set; }
     }
 
+    public class PagingTest
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Value { get; set; }
+    }
+
     // Implementation
     public class SimpleService : Service
     {
