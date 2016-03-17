@@ -123,7 +123,7 @@ namespace ServiceStack
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class QueryAttribute : AttributeBase { }
 
-    [Obsolete("Use [QueryDb]")]
+    [Obsolete("Use [QueryDbField]")]
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class QueryFieldAttribute : AttributeBase { }
 
