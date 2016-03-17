@@ -8,6 +8,14 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    public class AutoQueryDataMemoryTests : AutoQueryDataTests
+    {
+        public override ServiceStackHost CreateAppHost()
+        {
+            return new AutoQueryDataAppHost();
+        }
+    }
+
     public class AutoQueryDataAppHost : AppSelfHostBase
     {
         public AutoQueryDataAppHost()
@@ -297,7 +305,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [TestFixture]
-    public class AutoQueryDataTests
+    public abstract class AutoQueryDataTests
     {
         private readonly ServiceStackHost appHost;
         private readonly IServiceClient client;
@@ -305,9 +313,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private static readonly int TotalRockstars = AutoQueryAppHost.SeedRockstars.Length;
         private static readonly int TotalAlbums = AutoQueryAppHost.SeedAlbums.Length;
 
+        public abstract ServiceStackHost CreateAppHost();
+
         public AutoQueryDataTests()
         {
-            appHost = new AutoQueryDataAppHost()
+            appHost = CreateAppHost()
                 .Init()
                 .Start(Config.ListeningOn);
 
@@ -974,6 +984,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .AddQueryParam("Fields", "Id,FirstName,Age")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
+
+            Assert.That(response.Results.All(x => x.Id > 0));
+            Assert.That(response.Results.All(x => x.FirstName != null));
+            Assert.That(response.Results.All(x => x.LastName == null));
+            Assert.That(response.Results.Any(x => x.Age > 0));
+            Assert.That(response.Results.All(x => x.DateDied == null));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+        }
+
+        [Test]
+        public void Can_select_partial_list_of_fields_case_insensitive()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryDataRockstars")
+                .AddQueryParam("Age", "27")
+                .AddQueryParam("Fields", "id,firstname,age")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            response.PrintDump();
 
             Assert.That(response.Results.All(x => x.Id > 0));
             Assert.That(response.Results.All(x => x.FirstName != null));

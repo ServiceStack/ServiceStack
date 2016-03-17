@@ -1562,11 +1562,45 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_select_partial_list_of_fields_case_insensitive()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
+                .AddQueryParam("Age", "27")
+                .AddQueryParam("Fields", "id,firstname,age")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            response.PrintDump();
+
+            Assert.That(response.Results.All(x => x.Id > 0));
+            Assert.That(response.Results.All(x => x.FirstName != null));
+            Assert.That(response.Results.All(x => x.LastName == null));
+            Assert.That(response.Results.Any(x => x.Age > 0));
+            Assert.That(response.Results.All(x => x.DateDied == null));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+        }
+
+        [Test]
         public void Can_select_partial_list_of_fields_from_joined_table()
         {
             var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbums")
                 .AddQueryParam("Age", "27")
                 .AddQueryParam("fields", "FirstName,Age,RockstarAlbumName")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<CustomRockstar>>();
+
+            Assert.That(response.Results.All(x => x.FirstName != null));
+            Assert.That(response.Results.All(x => x.LastName == null));
+            Assert.That(response.Results.All(x => x.Age > 0));
+            Assert.That(response.Results.All(x => x.RockstarAlbumName != null));
+        }
+
+        [Test]
+        public void Can_select_partial_list_of_fields_from_joined_table_case_insensitive()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbums")
+                .AddQueryParam("Age", "27")
+                .AddQueryParam("fields", "firstname,age,rockstaralbumname")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<CustomRockstar>>();
 

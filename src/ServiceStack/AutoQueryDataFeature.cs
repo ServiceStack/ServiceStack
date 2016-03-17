@@ -25,7 +25,7 @@ namespace ServiceStack
         Dictionary<string, string> DynamicParams { get; }
         List<ConditionExpression> Conditions { get; }
         OrderByExpression OrderBy { get; }
-        string[] OnlyFields { get; }
+        HashSet<string> OnlyFields { get; }
         int? Offset { get; }
         int? Rows { get; }
         bool HasConditions { get; }
@@ -467,7 +467,7 @@ namespace ServiceStack
         public Dictionary<string, string> DynamicParams { get; private set; }
         public List<ConditionExpression> Conditions { get; set; }
         public OrderByExpression OrderBy { get; set; } 
-        public string[] OnlyFields { get; set; }
+        public HashSet<string> OnlyFields { get; set; }
         public int? Offset { get; set; }
         public int? Rows { get; set; }
 
@@ -508,7 +508,7 @@ namespace ServiceStack
         {
             this.OnlyFields = fields == null || fields.Length == 0
                 ? null //All Fields
-                : fields;
+                : new HashSet<string>(fields, StringComparer.OrdinalIgnoreCase);
         }
 
         public virtual Tuple<Type, PropertyInfo> FirstMatchingField(string field)
