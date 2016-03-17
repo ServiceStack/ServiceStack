@@ -5,8 +5,55 @@ using ServiceStack.Text;
 
 namespace ServiceStack
 {
+    public static class QueryConditionOperands
+    {
+        public new const string Equals = "=";
+        public const string NotEqual = "<>";
+        public const string LessEqual = "<=";
+        public const string Less = "<";
+        public const string Greater = ">";
+        public const string GreaterEqual = ">=";
+        public const string StartsWith = "STARTSWITH";
+        public const string Contains = "CONTAINS";
+        public const string EndsWith = "ENDSWITH";
+        public const string In = "IN";
+        public const string Like = "LIKE";
+        public const string False = "FALSE";
+    }
+
+    public class EqualsCondition : QueryCondition
+    {
+        public static EqualsCondition Instance = new EqualsCondition();
+
+        public EqualsCondition()
+        {
+            this.Operand = QueryConditionOperands.Equals;
+        }
+
+        public override bool Match(object a, object b)
+        {
+            return CompareTo(a, b) == 0;
+        }
+    }
+    public class NotEqualCondition : QueryCondition
+    {
+        public NotEqualCondition()
+        {
+            this.Operand = QueryConditionOperands.NotEqual;
+        }
+
+        public override bool Match(object a, object b)
+        {
+            return CompareTo(a, b) != 0;
+        }
+    }
     public class GreaterCondition : QueryCondition
     {
+        public GreaterCondition()
+        {
+            this.Operand = QueryConditionOperands.Greater;
+        }
+
         public override bool Match(object a, object b)
         {
             if (a == null || b == null)
@@ -18,6 +65,11 @@ namespace ServiceStack
     {
         public static GreaterEqualCondition Instance = new GreaterEqualCondition();
 
+        public GreaterEqualCondition()
+        {
+            this.Operand = QueryConditionOperands.GreaterEqual;
+        }
+
         public override bool Match(object a, object b)
         {
             return CompareTo(a, b) >= 0;
@@ -25,6 +77,11 @@ namespace ServiceStack
     }
     public class LessCondition : QueryCondition
     {
+        public LessCondition()
+        {
+            this.Operand = QueryConditionOperands.Less;
+        }
+
         public override bool Match(object a, object b)
         {
             return CompareTo(a, b) < 0;
@@ -34,20 +91,23 @@ namespace ServiceStack
     {
         public static LessEqualCondition Instance = new LessEqualCondition();
 
+        public LessEqualCondition()
+        {
+            this.Operand = QueryConditionOperands.LessEqual;
+        }
+
         public override bool Match(object a, object b)
         {
             return CompareTo(a, b) <= 0;
         }
     }
-    public class NotEqualCondition : QueryCondition
-    {
-        public override bool Match(object a, object b)
-        {
-            return CompareTo(a, b) != 0;
-        }
-    }
     public class CaseInsensitiveEqualCondition : QueryCondition
     {
+        public CaseInsensitiveEqualCondition()
+        {
+            this.Operand = QueryConditionOperands.Like;
+        }
+
         public override bool Match(object a, object b)
         {
             var aString = CompareTypeUtils.CoerceString(a);
@@ -58,6 +118,11 @@ namespace ServiceStack
     public class InCollectionCondition : QueryCondition, IQueryMultiple
     {
         public static InCollectionCondition Instance = new InCollectionCondition();
+
+        public InCollectionCondition()
+        {
+            this.Operand = QueryConditionOperands.In;
+        }
 
         public override bool Match(object a, object b)
         {
@@ -76,6 +141,11 @@ namespace ServiceStack
     }
     public class InBetweenCondition : QueryCondition, IQueryMultiple
     {
+        public InBetweenCondition()
+        {
+            this.Operand = "BETWEEN";
+        }
+
         public override bool Match(object a, object b)
         {
             var bValues = b as IEnumerable;
@@ -92,6 +162,11 @@ namespace ServiceStack
     }
     public class StartsWithCondition : QueryCondition
     {
+        public StartsWithCondition()
+        {
+            this.Operand = QueryConditionOperands.StartsWith;
+        }
+
         public override bool Match(object a, object b)
         {
             var aString = CompareTypeUtils.CoerceString(a);
@@ -103,6 +178,11 @@ namespace ServiceStack
     }
     public class ContainsCondition : QueryCondition
     {
+        public ContainsCondition()
+        {
+            this.Operand = QueryConditionOperands.Contains;
+        }
+
         public override bool Match(object a, object b)
         {
             var aString = CompareTypeUtils.CoerceString(a);
@@ -114,6 +194,11 @@ namespace ServiceStack
     }
     public class EndsWithCondition : QueryCondition
     {
+        public EndsWithCondition()
+        {
+            this.Operand = QueryConditionOperands.EndsWith;
+        }
+
         public override bool Match(object a, object b)
         {
             var aString = CompareTypeUtils.CoerceString(a);
@@ -123,18 +208,14 @@ namespace ServiceStack
             return aString.EndsWith(bString, StringComparison.InvariantCultureIgnoreCase);
         }
     }
-    public class EqualsCondition : QueryCondition
-    {
-        public static EqualsCondition Instance = new EqualsCondition();
-
-        public override bool Match(object a, object b)
-        {
-            return CompareTo(a, b) == 0;
-        }
-    }
     public class AlwaysFalseCondition : QueryCondition
     {
         public static AlwaysFalseCondition Instance = new AlwaysFalseCondition();
+
+        public AlwaysFalseCondition()
+        {
+            this.Operand = QueryConditionOperands.False;
+        }
 
         public override bool Match(object a, object b)
         {
@@ -146,7 +227,9 @@ namespace ServiceStack
 
     public abstract class QueryCondition
     {
-        public virtual QueryTerm Term { get; set; }
+        public string Operand { get; set; }
+
+        public QueryTerm Term { get; set; }
 
         public abstract bool Match(object a, object b);
 

@@ -361,7 +361,7 @@ namespace ServiceStack
     public class ConditionExpression
     {
         public QueryTerm Term { get; set; }
-        public QueryCondition Condition { get; set; }
+        public QueryCondition QueryCondition { get; set; }
         public PropertyInfo Field { get; set; }
         public Func<object, object> FieldGetter { get; set; }
         public object Value { get; set; }
@@ -382,7 +382,7 @@ namespace ServiceStack
                 foreach (var item in source)
                 {
                     var fieldValue = GetFieldValue(item);
-                    if (Condition.Match(fieldValue, Value))
+                    if (QueryCondition.Match(fieldValue, Value))
                         to.Add(item);
                 }
                 return to;
@@ -393,7 +393,7 @@ namespace ServiceStack
                 foreach (var item in original)
                 {
                     var fieldValue = GetFieldValue(item);
-                    if (Condition.Match(fieldValue, Value) && !to.Contains(item))
+                    if (QueryCondition.Match(fieldValue, Value) && !to.Contains(item))
                         to.Add(item);
                 }
                 return to;
@@ -578,7 +578,7 @@ namespace ServiceStack
                 Term = term,
                 Field = field,
                 FieldGetter = TypeReflector<T>.GetPublicGetter(field),
-                Condition = condition,
+                QueryCondition = condition,
                 Value = value,
             });
         }
