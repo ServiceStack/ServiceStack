@@ -49,6 +49,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     }
                 }
                 .AddDataSource(ctx => ctx.MemorySource(SeedRockstars))
+                .AddDataSource(ctx => ctx.MemorySource(SeedAlbums))
+                .AddDataSource(ctx => ctx.MemorySource(SeedGenres))
                 .AddDataSource(ctx => ctx.MemorySource(SeedAdhoc))
                 .AddDataSource(ctx => ctx.MemorySource(SeedMovies))
                 .AddDataSource(ctx => ctx.MemorySource(SeedAllFields))
@@ -73,6 +75,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             new Rockstar { Id = 5, FirstName = "David", LastName = "Grohl", Age = 44, LivingStatus = LivingStatus.Alive, DateOfBirth = new DateTime(1969, 01, 14), },
             new Rockstar { Id = 6, FirstName = "Eddie", LastName = "Vedder", Age = 48, LivingStatus = LivingStatus.Alive, DateOfBirth = new DateTime(1964, 12, 23), },
             new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 50, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1958, 08, 29), DateDied = new DateTime(2009, 06, 05), },
+        };
+
+        public static RockstarAlbum[] SeedAlbums = new[] {
+            new RockstarAlbum { RockstarId = 1, Name = "Electric Ladyland", Genre = "Funk" },
+            new RockstarAlbum { RockstarId = 3, Name = "Bleach", Genre = "Grunge" },
+            new RockstarAlbum { RockstarId = 3, Name = "Nevermind", Genre = "Grunge" },
+            new RockstarAlbum { RockstarId = 3, Name = "In Utero", Genre = "Grunge" },
+            new RockstarAlbum { RockstarId = 3, Name = "Incesticide", Genre = "Grunge" },
+            new RockstarAlbum { RockstarId = 3, Name = "MTV Unplugged in New York", Genre = "Acoustic" },
+            new RockstarAlbum { RockstarId = 5, Name = "Foo Fighters", Genre = "Grunge" },
+            new RockstarAlbum { RockstarId = 6, Name = "Into the Wild", Genre = "Folk" },
+        };
+
+        public static RockstarGenre[] SeedGenres = new[] {
+            new RockstarGenre { RockstarId = 1, Name = "Rock" },
+            new RockstarGenre { RockstarId = 3, Name = "Grunge" },
+            new RockstarGenre { RockstarId = 5, Name = "Alternative Rock" },
+            new RockstarGenre { RockstarId = 6, Name = "Folk Rock" },
         };
 
         public static Adhoc[] SeedAdhoc = SeedRockstars.Map(x => new Adhoc {
@@ -125,6 +145,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class QueryDataRockstars : QueryData<Rockstar>
     {
         public int? Age { get; set; }
+    }
+
+    [Route("/querydata/rockstaralbums")]
+    public class QueryDataRockstarAlbums : QueryData<RockstarAlbum>
+    {
+        public int? Id { get; set; }
+        public int? RockstarId { get; set; }
+        public string Name { get; set; }
+        public string Genre { get; set; }
     }
 
     [Route("/querydata/pagingtest")]
@@ -1048,6 +1077,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new QueryDataPagingTest { Value = 1 });
             Assert.That(response.Results.Count, Is.EqualTo(100));
             Assert.That(response.Total, Is.EqualTo(PagingTests.Count(x => x.Value == 1)));
+        }
+
+        [Test]
+        public void Can_query_on_ForeignKey()
+        {
+            
         }
     }
 }

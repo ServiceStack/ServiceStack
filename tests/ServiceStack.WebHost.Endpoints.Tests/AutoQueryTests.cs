@@ -187,10 +187,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         };
 
         public static RockstarAlbum[] SeedAlbums = new[] {
-            new RockstarAlbum { RockstarId = 1, Name = "Electric Ladyland" },    
-            new RockstarAlbum { RockstarId = 3, Name = "Nevermind" },    
-            new RockstarAlbum { RockstarId = 5, Name = "Foo Fighters" },    
-            new RockstarAlbum { RockstarId = 6, Name = "Into the Wild" },    
+            new RockstarAlbum { RockstarId = 1, Name = "Electric Ladyland", Genre = "Funk" },
+            new RockstarAlbum { RockstarId = 3, Name = "Bleach", Genre = "Grunge" },
+            new RockstarAlbum { RockstarId = 3, Name = "Nevermind", Genre = "Grunge" },
+            new RockstarAlbum { RockstarId = 3, Name = "In Utero", Genre = "Grunge" },
+            new RockstarAlbum { RockstarId = 3, Name = "Incesticide", Genre = "Grunge" },
+            new RockstarAlbum { RockstarId = 3, Name = "MTV Unplugged in New York", Genre = "Acoustic" },
+            new RockstarAlbum { RockstarId = 5, Name = "Foo Fighters", Genre = "Grunge" },
+            new RockstarAlbum { RockstarId = 6, Name = "Into the Wild", Genre = "Folk" },
         };
 
         public static RockstarGenre[] SeedGenres = new[] {
@@ -264,7 +268,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [Route("/customrockstars")]
-    public class QueryRockstarAlbums : QueryDb<Rockstar, CustomRockstar>, IJoin<Rockstar, RockstarAlbum>
+    public class QueryJoinedRockstarAlbums : QueryDb<Rockstar, CustomRockstar>, IJoin<Rockstar, RockstarAlbum>
     {
         public int? Age { get; set; }
         public string RockstarAlbumName { get; set; }
@@ -278,6 +282,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public int? Age { get; set; }
         public string AlbumName { get; set; }
+        public int? IdNotEqualTo { get; set; }
     }
 
     public class QueryMultiJoinRockstar : QueryDb<Rockstar, CustomRockstar>, 
@@ -381,8 +386,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         [AutoIncrement]
         public int Id { get; set; }
+        [References(typeof(Rockstar))]
         public int RockstarId { get; set; }
         public string Name { get; set; }
+        public string Genre { get; set; }
     }
 
     public class RockstarGenre
@@ -840,23 +847,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_query_with_JOIN_on_RockstarAlbums()
         {
-            var response = client.Get(new QueryRockstarAlbums());
+            var response = client.Get(new QueryJoinedRockstarAlbums());
             Assert.That(response.Total, Is.EqualTo(TotalAlbums));
             Assert.That(response.Results.Count, Is.EqualTo(TotalAlbums));
             var albumNames = response.Results.Select(x => x.RockstarAlbumName);
             Assert.That(albumNames, Is.EquivalentTo(new[] {
-                "Electric Ladyland", "Nevermind", "Foo Fighters", "Into the Wild"
+                "Electric Ladyland", "Bleach", "Nevermind", "In Utero", "Incesticide",
+                "MTV Unplugged in New York", "Foo Fighters", "Into the Wild",
             }));
 
-            response = client.Get(new QueryRockstarAlbums { Age = 27 });
-            Assert.That(response.Total, Is.EqualTo(2));
-            Assert.That(response.Results.Count, Is.EqualTo(2));
+            response = client.Get(new QueryJoinedRockstarAlbums { Age = 27 });
+            Assert.That(response.Total, Is.EqualTo(6));
+            Assert.That(response.Results.Count, Is.EqualTo(6));
             albumNames = response.Results.Select(x => x.RockstarAlbumName);
             Assert.That(albumNames, Is.EquivalentTo(new[] {
-                "Electric Ladyland", "Nevermind"
+                "Electric Ladyland", "Bleach", "Nevermind", "In Utero", "Incesticide",
+                "MTV Unplugged in New York",
             }));
 
-            response = client.Get(new QueryRockstarAlbums { RockstarAlbumName = "Nevermind" });
+            response = client.Get(new QueryJoinedRockstarAlbums { RockstarAlbumName = "Nevermind" });
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(1));
             albumNames = response.Results.Select(x => x.RockstarAlbumName);
@@ -871,10 +880,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(TotalAlbums));
             var albumNames = response.Results.Select(x => x.RockstarAlbumName);
             Assert.That(albumNames, Is.EquivalentTo(new[] {
-                "Electric Ladyland", "Nevermind", "Foo Fighters", "Into the Wild"
+                "Electric Ladyland", "Bleach", "Nevermind", "In Utero", "Incesticide",
+                "MTV Unplugged in New York", "Foo Fighters", "Into the Wild",
             }));
 
-            var genreNames = response.Results.Select(x => x.RockstarGenreName);
+            var genreNames = response.Results.Select(x => x.RockstarGenreName).Distinct();
             Assert.That(genreNames, Is.EquivalentTo(new[] {
                 "Rock", "Grunge", "Alternative Rock", "Folk Rock"
             }));
@@ -899,11 +909,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .AddQueryParam("Age", "27")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<CustomRockstar>>();
-            Assert.That(response.Total, Is.EqualTo(2));
-            Assert.That(response.Results.Count, Is.EqualTo(2));
+            Assert.That(response.Total, Is.EqualTo(6));
+            Assert.That(response.Results.Count, Is.EqualTo(6));
             var albumNames = response.Results.Select(x => x.RockstarAlbumName);
             Assert.That(albumNames, Is.EquivalentTo(new[] {
-                "Electric Ladyland", "Nevermind"
+                "Electric Ladyland", "Bleach", "Nevermind", "In Utero", "Incesticide",
+                "MTV Unplugged in New York"
             }));
 
             response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbumsImplicit")
@@ -919,12 +930,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_query_with_LEFTJOIN_on_RockstarAlbums()
         {
-            var response = client.Get(new QueryRockstarAlbumsLeftJoin());
-            Assert.That(response.Total, Is.EqualTo(TotalRockstars));
-            Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
+            var response = client.Get(new QueryRockstarAlbumsLeftJoin { IdNotEqualTo = 3 });
+            Assert.That(response.Total, Is.EqualTo(TotalRockstars - 1));
+            Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars - 1));
             var albumNames = response.Results.Where(x => x.RockstarAlbumName != null).Select(x => x.RockstarAlbumName);
             Assert.That(albumNames, Is.EquivalentTo(new[] {
-                "Electric Ladyland", "Nevermind", "Foo Fighters", "Into the Wild"
+                "Electric Ladyland", "Foo Fighters", "Into the Wild"
             }));
         }
 
@@ -1098,13 +1109,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_implicit_conventions_on_JOIN()
         {
-            var baseUrl = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbums");
+            var baseUrl = Config.ListeningOn.CombineWith("json/reply/QueryJoinedRockstarAlbums");
 
             var response = baseUrl.AddQueryParam("RockstarAlbumNameContains", "n").AsJsonInto<CustomRockstar>();
-            Assert.That(response.Results.Count, Is.EqualTo(3));
+            Assert.That(response.Results.Count, Is.EqualTo(6));
 
             response = baseUrl.AddQueryParam(">RockstarId", "3").AsJsonInto<CustomRockstar>();
-            Assert.That(response.Results.Count, Is.EqualTo(3));
+            Assert.That(response.Results.Count, Is.EqualTo(7));
             response = baseUrl.AddQueryParam("RockstarId>", "3").AsJsonInto<CustomRockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(2));
         }
@@ -1362,8 +1373,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(jim.Albums, Is.Null);
 
             var kurt = response.Results.First(x => x.FirstName == "Kurt");
-            Assert.That(kurt.Albums.Count, Is.EqualTo(1));
-            Assert.That(kurt.Albums[0].Name, Is.EqualTo("Nevermind"));
+            Assert.That(kurt.Albums.Count, Is.EqualTo(5));
         }
 
         [Test]
@@ -1590,7 +1600,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_select_partial_list_of_fields_from_joined_table()
         {
-            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbums")
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryJoinedRockstarAlbums")
                 .AddQueryParam("Age", "27")
                 .AddQueryParam("fields", "FirstName,Age,RockstarAlbumName")
                 .GetJsonFromUrl()
@@ -1605,7 +1615,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_select_partial_list_of_fields_from_joined_table_case_insensitive()
         {
-            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbums")
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryJoinedRockstarAlbums")
                 .AddQueryParam("Age", "27")
                 .AddQueryParam("fields", "firstname,age,rockstaralbumname")
                 .GetJsonFromUrl()
