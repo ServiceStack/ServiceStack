@@ -86,27 +86,32 @@ namespace ServiceStack
 
         public ConcurrentDictionary<Type, Func<QueryDataContext, IQueryDataSource>> DataSources { get; private set; }
 
-        public static string GreaterThanOrEqualCondition = typeof(GreaterEqualCondition).Name;
-        public static string GreaterThanCondition        = typeof(GreaterCondition).Name;
-        public static string LessThanCondition           = typeof(LessCondition).Name;
-        public static string LessThanOrEqualCondition    = typeof(LessEqualCondition).Name;
-        public static string NotEqualCondition           = typeof(NotEqualCondition).Name;
+        public static string GreaterThanOrEqualCondition = ConditionAlias.GreaterEqual;
+        public static string GreaterThanCondition        = ConditionAlias.Greater;
+        public static string LessThanCondition           = ConditionAlias.Less;
+        public static string LessThanOrEqualCondition    = ConditionAlias.LessEqual;
+        public static string NotEqualCondition           = ConditionAlias.NotEqual;
 
-        public Dictionary<string, QueryCondition> Conditions = new Dictionary<string, QueryCondition>
+        public List<QueryCondition> Conditions = new List<QueryCondition>
         {
-            { typeof(GreaterEqualCondition).Name, new GreaterEqualCondition() },
-            { typeof(GreaterCondition).Name, new GreaterCondition() },
-            { typeof(LessCondition).Name, new LessCondition() },
-            { typeof(LessEqualCondition).Name, new LessEqualCondition() },
-            { typeof(NotEqualCondition).Name, new NotEqualCondition() },
+            new EqualsCondition(),
+            new NotEqualCondition(),
+            new LessEqualCondition(),
+            new LessCondition(),
+            new GreaterCondition(),
+            new GreaterEqualCondition(),
 
-            { typeof(CaseInsensitiveEqualCondition).Name, new CaseInsensitiveEqualCondition() },
-            { typeof(InCollectionCondition).Name, new InCollectionCondition() },
-            { typeof(InBetweenCondition).Name, new InBetweenCondition() },
-            { typeof(StartsWithCondition).Name, new StartsWithCondition() },
-            { typeof(ContainsCondition).Name, new ContainsCondition() },
-            { typeof(EndsWithCondition).Name, new EndsWithCondition() },
-        }; 
+            new StartsWithCondition(),
+            new ContainsCondition(),
+            new EndsWithCondition(),
+
+            new InCollectionCondition(),
+            new InBetweenCondition(),
+            new CaseInsensitiveEqualCondition(),
+        };
+
+        public Dictionary<string, QueryCondition> ConditionsAliases = 
+            new Dictionary<string, QueryCondition>(StringComparer.OrdinalIgnoreCase);
 
         public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
         {
@@ -145,14 +150,14 @@ namespace ServiceStack
             {"%<",              LessThanOrEqualCondition},
             {"<%",              LessThanCondition},
 
-            {"%Like%",          typeof(CaseInsensitiveEqualCondition).Name },
-            {"%In",             typeof(InCollectionCondition).Name },
-            {"%Ids",            typeof(InCollectionCondition).Name },
-            {"%Between%",       typeof(InBetweenCondition).Name },
+            {"%Like%",          ConditionAlias.Like },
+            {"%In",             ConditionAlias.In },
+            {"%Ids",            ConditionAlias.In},
+            {"%Between%",       ConditionAlias.Between },
 
-            {"%StartsWith",     typeof(StartsWithCondition).Name },
-            {"%Contains",       typeof(ContainsCondition).Name },
-            {"%EndsWith",       typeof(EndsWithCondition).Name },
+            {"%StartsWith",     ConditionAlias.StartsWith },
+            {"%Contains",       ConditionAlias.Contains },
+            {"%EndsWith",       ConditionAlias.EndsWith },
         };
 
         public Dictionary<string, QueryDataField> StartsWithConventions = new Dictionary<string, QueryDataField>();
@@ -174,20 +179,25 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
+            foreach (var condition in Conditions)
+            {
+                ConditionsAliases[condition.Alias] = condition;
+            }
+
             foreach (var entry in ImplicitConventions)
             {
                 var key = entry.Key.Trim('%');
-                var conditionName = entry.Value;
+                var conditioAlias = entry.Value;
                 QueryCondition query;
-                if (!Conditions.TryGetValue(conditionName, out query))
-                    throw new NotSupportedException("No Condition registered with name '{0}'".Fmt(conditionName));
+                if (!ConditionsAliases.TryGetValue(conditioAlias, out query))
+                    throw new NotSupportedException("No Condition registered with name '{0}'".Fmt(conditioAlias));
 
                 if (entry.Key.EndsWith("%"))
                 {
                     StartsWithConventions[key] = new QueryDataField
                     {
                         Term = QueryTerm.And,
-                        Condition = conditionName,
+                        Condition = conditioAlias,
                         QueryCondition = query,
                         Field = key,
                     };
@@ -197,7 +207,7 @@ namespace ServiceStack
                     EndsWithConventions[key] = new QueryDataField
                     {
                         Term = QueryTerm.And,
-                        Condition = conditionName,
+                        Condition = conditioAlias,
                         QueryCondition = query,
                         Field = key,
                     };
@@ -888,12 +898,12 @@ namespace ServiceStack
             return to;
         }
 
-        private static IEnumerable<T> ApplySorting(IEnumerable<T> source, OrderByExpression orderBy)
+        public virtual IEnumerable<T> ApplySorting(IEnumerable<T> source, OrderByExpression orderBy)
         {
             return orderBy != null ? orderBy.Apply(source) : source;
         }
 
-        private static IEnumerable<T> ApplyLimits(IEnumerable<T> source, int? skip, int? take)
+        public virtual IEnumerable<T> ApplyLimits(IEnumerable<T> source, int? skip, int? take)
         {
             if (skip != null)
                 source = source.Skip(skip.Value);
@@ -930,7 +940,7 @@ namespace ServiceStack
             }
 
             if (name == "COUNT" && (firstArg == null || firstArg == "*"))
-                return ApplyConditions(GetDataSource(q), query.Conditions).Count();
+                return Count(q);
 
             var firstGetter = TypeReflector<T>.GetPublicGetter(firstArg);
             if (firstGetter == null)
@@ -1339,7 +1349,7 @@ namespace ServiceStack
             if (attr.Condition != null)
             {
                 QueryCondition queryCondition;
-                if (!feature.Conditions.TryGetValue(attr.Condition, out queryCondition))
+                if (!feature.ConditionsAliases.TryGetValue(attr.Condition, out queryCondition))
                     throw new NotSupportedException("No Condition registered with name '{0}' on [QueryDataField({1})]".Fmt(attr.Condition, attr.Field ?? pi.Name));
 
                 to.QueryCondition = queryCondition;

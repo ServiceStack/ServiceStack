@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Amazon.DynamoDBv2;
@@ -74,13 +75,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             switch (operand)
             {
-                case QueryConditionOperands.Equals:
-                case QueryConditionOperands.NotEqual:
-                case QueryConditionOperands.GreaterEqual:
-                case QueryConditionOperands.Greater:
-                case QueryConditionOperands.LessEqual:
-                case QueryConditionOperands.Less:
+                case ConditionAlias.Equals:
+                case ConditionAlias.NotEqual:
+                case ConditionAlias.GreaterEqual:
+                case ConditionAlias.Greater:
+                case ConditionAlias.LessEqual:
+                case ConditionAlias.Less:
                     return "{0} " + operand + " {1}";
+
+                case ConditionAlias.StartsWith:
+                    return "begins_with({0}, {1})";
+
                 default:
                     return null;
             }
@@ -107,20 +112,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return total.GetValueOrDefault(cache.Count());
         }
 
-        public IEnumerable<T> GetResults(ScanExpression scanExpr, int? take = null)
+        public override IEnumerable<T> ApplyLimits(IEnumerable<T> source, int? skip, int? take)
         {
-            if (take != null)
-                scanExpr.Limit = take.Value;
+            return source; //ignore, limits added in GetResults();
+        }
 
-            return db.Scan(scanExpr, r =>
+        public IEnumerable<T> GetResults(ScanExpression scanExpr, int? skip = null, int? take = null)
+        {
+            //invalidates total
+            //if (take != null)
+            //    scanExpr.Limit = take.Value;
+
+            var results = db.Scan(scanExpr, r =>
             {
                 if (total == null)
                     total = r.Count;
                 return r.ConvertAll<T>();
             });
+
+            if (skip != null)
+                results = results.Skip(skip.Value);
+
+            if (take != null)
+                results = results.Take(take.Value);
+
+            return results.ToList();
         }
 
-        public IEnumerable<T> GetResults(QueryExpression queryExpr, int? take = null)
+        public IEnumerable<T> GetResults(QueryExpression queryExpr, int? skip = null, int? take = null)
         {
             if (take != null)
                 queryExpr.Limit = take.Value;
@@ -139,16 +158,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return cache;
 
             var keyCondition = q.Conditions.FirstOrDefault(x =>
-                x.Field.Name.EqualsIgnoreCase(modelDef.HashKey.Name)
-                && x.QueryCondition.Operand == QueryConditionOperands.Equals);
+                x.Field != null && x.Field.Name.EqualsIgnoreCase(modelDef.HashKey.Name)
+                && x.QueryCondition.Alias == ConditionAlias.Equals);
 
             if (keyCondition == null)
             {
                 var scanExpr = db.FromScan<T>();
                 AddConditions(scanExpr, q);
-                return cache = q.Rows != null
-                    ? GetResults(scanExpr, q.Rows.Value + q.Offset.GetValueOrDefault(0)) //Limit applied on resultset
-                    : GetResults(scanExpr).ToList();
+                return cache = GetResults(scanExpr, q.Offset, q.Rows);
             }
 
             var rangeCondition = modelDef.RangeKey != null
@@ -159,12 +176,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var queryExpr = db.FromQuery<T>();
 
             var args = new Dictionary<string, object>();
-            var hashFmt = DynamoQueryConditions.GetExpressionFormat(keyCondition.QueryCondition.Operand);
+            var hashFmt = DynamoQueryConditions.GetExpressionFormat(keyCondition.QueryCondition.Alias);
             var dynamoFmt = string.Format(hashFmt, queryExpr.GetFieldLabel(modelDef.HashKey.Name), ":k1");
             args["k1"] = keyCondition.Value;
 
             var rangeFmt = rangeCondition != null
-                ? DynamoQueryConditions.GetExpressionFormat(rangeCondition.QueryCondition.Operand)
+                ? DynamoQueryConditions.GetExpressionFormat(rangeCondition.QueryCondition.Alias)
                 : null;
             if (rangeFmt != null)
             {
@@ -175,9 +192,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             AddConditions(queryExpr, q);
 
-            return cache = q.Rows != null
-                ? GetResults(queryExpr, q.Rows.Value + q.Offset.GetValueOrDefault(0)) //Limit applied on resultset
-                : GetResults(queryExpr).ToList();
+            return cache = GetResults(queryExpr, q.Offset, q.Rows);
         }
 
         public void AddConditions(IDynamoCommonQuery dynamoQ, IDataQuery q)
@@ -188,7 +203,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             foreach (var condition in q.Conditions)
             {
-                var fmt = DynamoQueryConditions.GetExpressionFormat(condition.QueryCondition.Operand);
+                var fmt = DynamoQueryConditions.GetExpressionFormat(condition.QueryCondition.Alias);
+                if (fmt == null && condition.Term == QueryTerm.Or && sb.Length > 0)
+                    throw new NotSupportedException("DynamoDB does not support OR {0} queries"
+                        .Fmt(condition.QueryCondition.Alias));
+
                 if (fmt == null)
                     continue;
 

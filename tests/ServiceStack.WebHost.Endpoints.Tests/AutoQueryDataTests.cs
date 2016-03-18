@@ -173,22 +173,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public string[] FirstNames { get; set; } //Collections default to 'FirstName IN ({Values})
 
-        [QueryDataField(Condition = "GreaterEqualCondition")]
+        [QueryDataField(Condition = ">=")]
         public int? Age { get; set; }
 
-        [QueryDataField(Condition = "CaseInsensitiveEqualCondition", Field = "FirstName")]
+        [QueryDataField(Condition = "Like", Field = "FirstName")]
         public string FirstNameCaseInsensitive { get; set; }
 
-        [QueryDataField(Condition = "StartsWithCondition", Field = "FirstName")]
+        [QueryDataField(Condition = "StartsWith", Field = "FirstName")]
         public string FirstNameStartsWith { get; set; }
 
-        [QueryDataField(Condition = "EndsWithCondition", Field = "LastName")]
+        [QueryDataField(Condition = "EndsWith", Field = "LastName")]
         public string LastNameEndsWith { get; set; }
 
-        [QueryDataField(Condition = "InBetweenCondition", Field = "FirstName")]
+        [QueryDataField(Condition = "Between", Field = "FirstName")]
         public string[] FirstNameBetween { get; set; }
 
-        [QueryDataField(Term = QueryTerm.Or, Condition = "CaseInsensitiveEqualCondition", Field = "LastName")]
+        [QueryDataField(Term = QueryTerm.Or, Condition = "Like", Field = "LastName")]
         public string OrLastName { get; set; }
     }
 
@@ -572,7 +572,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             typeof(QueryDataFieldRockstarsDynamic)
                 .GetProperty("Age")
-                .AddAttributes(new QueryDataFieldAttribute { Condition = "GreaterEqualCondition" });
+                .AddAttributes(new QueryDataFieldAttribute { Condition = ">=" });
 
             var response = client.Get(new QueryDataFieldRockstarsDynamic { Age = 42 });
             Assert.That(response.Results.Count, Is.EqualTo(4));
@@ -755,7 +755,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(9));
         }
 
-        [Test]
+        [Ignore,Test]
         public void Can_StreamMovies()
         {
             var results = client.GetLazy(new StreamDataMovies()).ToList();
