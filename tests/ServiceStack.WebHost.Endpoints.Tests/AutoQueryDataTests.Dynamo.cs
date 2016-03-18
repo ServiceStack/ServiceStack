@@ -5,13 +5,11 @@ using System.Linq;
 using System.Text;
 using Amazon.DynamoDBv2;
 using Funq;
-using NHibernate.Mapping;
 using NUnit.Framework;
 using ServiceStack.Aws.DynamoDb;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    //[Ignore]
     public class AutoQueryDataDynamoTests : AutoQueryDataTests
     {
         public override ServiceStackHost CreateAppHost()
@@ -136,10 +134,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public IEnumerable<T> GetResults(ScanExpression scanExpr, int? skip = null, int? take = null)
         {
-            //invalidates total
-            //if (take != null)
-            //    scanExpr.Limit = take.Value;
-
             var results = db.Scan(scanExpr, r =>
             {
                 if (total == null)

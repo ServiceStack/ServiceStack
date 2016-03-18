@@ -775,7 +775,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(9));
         }
 
-        [Ignore,Test]
+        [Test]
         public void Can_StreamMovies()
         {
             var results = client.GetLazy(new StreamDataMovies()).ToList();
@@ -919,7 +919,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_Include_Aggregates_in_AutoQuery()
         {
-            var response = client.Get(new QueryDataRockstars { Include = "COUNT" });
+            QueryResponse<Rockstar> response;
+            response = client.Get(new QueryDataRockstars { Include = "COUNT" });
             Assert.That(response.Meta["COUNT(*)"], Is.EqualTo(Rockstars.Count.ToString()));
 
             response = client.Get(new QueryDataRockstars { Include = "COUNT(*)" });

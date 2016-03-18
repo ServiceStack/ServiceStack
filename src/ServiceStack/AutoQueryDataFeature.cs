@@ -946,7 +946,11 @@ namespace ServiceStack
             if (firstGetter == null)
                 return null;
 
-            var source = ApplyConditions(GetDataSource(q), query.Conditions).ToArray();
+            var data = ApplyConditions(GetDataSource(q), query.Conditions);
+            if (name == "FIRST" || name == "LAST")
+                data = ApplySorting(data, q.OrderBy);
+
+            var source = data.ToArray();
 
             switch (name)
             {
