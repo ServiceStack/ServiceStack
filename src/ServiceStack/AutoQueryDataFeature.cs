@@ -86,12 +86,6 @@ namespace ServiceStack
 
         public ConcurrentDictionary<Type, Func<QueryDataContext, IQueryDataSource>> DataSources { get; private set; }
 
-        public static string GreaterThanOrEqualCondition = ConditionAlias.GreaterEqual;
-        public static string GreaterThanCondition        = ConditionAlias.Greater;
-        public static string LessThanCondition           = ConditionAlias.Less;
-        public static string LessThanOrEqualCondition    = ConditionAlias.LessEqual;
-        public static string NotEqualCondition           = ConditionAlias.NotEqual;
-
         public List<QueryCondition> Conditions = new List<QueryCondition>
         {
             new EqualsCondition(),
@@ -115,40 +109,41 @@ namespace ServiceStack
 
         public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
         {
-            {"%Above%",         GreaterThanCondition},
-            {"Begin%",          GreaterThanCondition},
-            {"%Beyond%",        GreaterThanCondition},
-            {"%Over%",          GreaterThanCondition},
-            {"%OlderThan",      GreaterThanCondition},
-            {"%After%",         GreaterThanCondition},
-            {"OnOrAfter%",      GreaterThanOrEqualCondition},
-            {"%From%",          GreaterThanOrEqualCondition},
-            {"Since%",          GreaterThanOrEqualCondition},
-            {"Start%",          GreaterThanOrEqualCondition},
-            {"%Higher%",        GreaterThanOrEqualCondition},
-            {">%",              GreaterThanOrEqualCondition},
-            {"%>",              GreaterThanCondition},
-            {"%!",              NotEqualCondition},
+            {"%Above%",         ConditionAlias.Greater},
+            {"Begin%",          ConditionAlias.Greater},
+            {"%Beyond%",        ConditionAlias.Greater},
+            {"%Over%",          ConditionAlias.Greater},
+            {"%OlderThan",      ConditionAlias.Greater},
+            {"%After%",         ConditionAlias.Greater},
+            {"OnOrAfter%",      ConditionAlias.GreaterEqual},
+            {"%From%",          ConditionAlias.GreaterEqual},
+            {"Since%",          ConditionAlias.GreaterEqual},
+            {"Start%",          ConditionAlias.GreaterEqual},
+            {"%Higher%",        ConditionAlias.GreaterEqual},
+            {">%",              ConditionAlias.GreaterEqual},
+            {"%>",              ConditionAlias.Greater},
+            {"%!",              ConditionAlias.NotEqual},
+            {"%<>",             ConditionAlias.NotEqual},
 
-            {"%GreaterThanOrEqualTo%", GreaterThanOrEqualCondition},
-            {"%GreaterThan%",          GreaterThanCondition},
-            {"%LessThan%",             LessThanCondition},
-            {"%LessThanOrEqualTo%",    LessThanOrEqualCondition},
-            {"%NotEqualTo",            NotEqualCondition},
+            {"%GreaterThanOrEqualTo%", ConditionAlias.GreaterEqual},
+            {"%GreaterThan%",          ConditionAlias.Greater},
+            {"%LessThan%",             ConditionAlias.Less},
+            {"%LessThanOrEqualTo%",    ConditionAlias.LessEqual},
+            {"%NotEqualTo",            ConditionAlias.NotEqual},
 
-            {"Behind%",         LessThanCondition},
-            {"%Below%",         LessThanCondition},
-            {"%Under%",         LessThanCondition},
-            {"%Lower%",         LessThanCondition},
-            {"%Before%",        LessThanCondition},
-            {"%YoungerThan",    LessThanCondition},
-            {"OnOrBefore%",     LessThanOrEqualCondition},
-            {"End%",            LessThanOrEqualCondition},
-            {"Stop%",           LessThanOrEqualCondition},
-            {"To%",             LessThanOrEqualCondition},
-            {"Until%",          LessThanOrEqualCondition},
-            {"%<",              LessThanOrEqualCondition},
-            {"<%",              LessThanCondition},
+            {"Behind%",         ConditionAlias.Less},
+            {"%Below%",         ConditionAlias.Less},
+            {"%Under%",         ConditionAlias.Less},
+            {"%Lower%",         ConditionAlias.Less},
+            {"%Before%",        ConditionAlias.Less},
+            {"%YoungerThan",    ConditionAlias.Less},
+            {"OnOrBefore%",     ConditionAlias.LessEqual},
+            {"End%",            ConditionAlias.LessEqual},
+            {"Stop%",           ConditionAlias.LessEqual},
+            {"To%",             ConditionAlias.LessEqual},
+            {"Until%",          ConditionAlias.LessEqual},
+            {"%<",              ConditionAlias.LessEqual},
+            {"<%",              ConditionAlias.Less},
 
             {"%Like%",          ConditionAlias.Like },
             {"%In",             ConditionAlias.In },
