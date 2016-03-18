@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Amazon.DynamoDBv2;
 using Funq;
+using NHibernate.Mapping;
 using NUnit.Framework;
 using ServiceStack.Aws.DynamoDb;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [Ignore]
+    //[Ignore]
     public class AutoQueryDataDynamoTests : AutoQueryDataTests
     {
         public override ServiceStackHost CreateAppHost()
@@ -85,6 +87,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 case ConditionAlias.StartsWith:
                     return "begins_with({0}, {1})";
+
+                default:
+                    return null;
+            }
+        }
+
+        internal static string GetMultiExpressionFormat(string operand)
+        {
+            switch (operand)
+            {
+                case ConditionAlias.In:
+                    return "{0} IN ({1})";
+
+                case ConditionAlias.Between:
+                    return "{0} BETWEEN {1} AND {2}";
 
                 default:
                     return null;
@@ -200,15 +217,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var dbConditions = new List<ConditionExpression>();
             var args = new Dictionary<string, object>();
             var sb = new StringBuilder();
+            var isMultipleWithOrTerm = q.Conditions.Any(x => x.Term == QueryTerm.Or) 
+                && q.Conditions.Count > 1;
 
             foreach (var condition in q.Conditions)
             {
                 var fmt = DynamoQueryConditions.GetExpressionFormat(condition.QueryCondition.Alias);
-                if (fmt == null && condition.Term == QueryTerm.Or && sb.Length > 0)
-                    throw new NotSupportedException("DynamoDB does not support OR {0} queries"
+                var multiFmt = DynamoQueryConditions.GetMultiExpressionFormat(condition.QueryCondition.Alias);
+
+                if (fmt == null && multiFmt == null && isMultipleWithOrTerm)
+                    throw new NotSupportedException("DynamoDB does not support {0} filter with multiple OR queries"
                         .Fmt(condition.QueryCondition.Alias));
 
-                if (fmt == null)
+                if (fmt == null && multiFmt == null)
                     continue;
 
                 dbConditions.Add(condition);
@@ -216,10 +237,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 if (sb.Length > 0)
                     sb.Append(condition.Term == QueryTerm.Or ? " OR " : " AND ");
 
-                var pId = "p" + args.Count;
-                args[pId] = condition.Value;
+                if (fmt != null)
+                {
+                    var pId = "p" + args.Count;
+                    args[pId] = condition.Value;
 
-                sb.Append(string.Format(fmt, dynamoQ.GetFieldLabel(condition.Field.Name), ":" + pId));
+                    sb.Append(string.Format(fmt, dynamoQ.GetFieldLabel(condition.Field.Name), ":" + pId));
+                }
+                else if (condition.QueryCondition.Alias == ConditionAlias.Between)
+                {
+                    var values = ((IEnumerable)condition.Value).Map(x => x);
+                    if (values.Count < 2)
+                        throw new ArgumentException("{0} BETWEEN must have 2 values".Fmt(condition.Field.Name));
+
+                    var pFrom = "p" + args.Count;
+                    args[pFrom] = values[0];
+                    var pTo = "p" + args.Count;
+                    args[pTo] = values[1];
+
+                    sb.Append(string.Format(multiFmt, dynamoQ.GetFieldLabel(condition.Field.Name), ":" + pFrom, ":" + pTo));
+                }
+                else
+                {
+                    var values = (IEnumerable)condition.Value;
+                    var sbIn = new StringBuilder();
+                    foreach (var value in values)
+                    {
+                        if (sbIn.Length > 0)
+                            sbIn.Append(",");
+
+                        var pArg = "p" + args.Count;
+                        args[pArg] = value;
+
+                        sbIn.Append(":" + pArg);
+                    }
+
+                    sb.Append(string.Format(multiFmt, dynamoQ.GetFieldLabel(condition.Field.Name), sbIn));
+                }
             }
 
             if (sb.Length > 0)

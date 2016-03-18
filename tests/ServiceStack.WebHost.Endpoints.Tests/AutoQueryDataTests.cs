@@ -188,7 +188,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [QueryDataField(Condition = "Between", Field = "FirstName")]
         public string[] FirstNameBetween { get; set; }
 
-        [QueryDataField(Term = QueryTerm.Or, Condition = "Like", Field = "LastName")]
+        [QueryDataField(Term = QueryTerm.Or, Condition = "=", Field = "LastName")]
         public string OrLastName { get; set; }
     }
 
@@ -338,6 +338,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<PagingTest> PagingTests
         {
             get { return AutoQueryDataAppHost.SeedPagingTest.ToList(); }
+        }
+
+        public bool IsDynamoDb
+        {
+            get { return appHost is AutoQueryDataDynamoAppHost; }
         }
 
         [Test]
@@ -524,10 +529,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new QueryDataFieldRockstars { FirstNameBetween = new[] { "A", "F" } });
             Assert.That(response.Results.Count, Is.EqualTo(3));
 
+            try
+            {
+                response = client.Get(new QueryDataFieldRockstars
+                {
+                    LastNameEndsWith = "son",
+                    OrLastName = "Hendrix"
+                });
+                Assert.That(response.Results.Count, Is.EqualTo(3));
+            }
+            catch (Exception ex)
+            {
+                if (!IsDynamoDb) //DynamoDb doesn't support EndsWith
+                    throw;
+            }
+
             response = client.Get(new QueryDataFieldRockstars
             {
-                LastNameEndsWith = "son",
-                OrLastName = "Hendrix"
+                FirstNameStartsWith = "Jim",
+                OrLastName = "Presley"
             });
             Assert.That(response.Results.Count, Is.EqualTo(3));
 
@@ -654,7 +674,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = baseUrl.AddQueryParam("Age!", "27").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(4));
 
-            response = baseUrl.AddQueryParam("FirstNameStartsWith", "jim").AsJsonInto<Rockstar>();
+            response = baseUrl.AddQueryParam("FirstNameStartsWith", "Jim").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(2));
             response = baseUrl.AddQueryParam("LastNameEndsWith", "son").AsJsonInto<Rockstar>();
             Assert.That(response.Results.Count, Is.EqualTo(2));
