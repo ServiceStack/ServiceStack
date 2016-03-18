@@ -204,6 +204,7 @@
     <Compile Include="CustomFormatTests.cs" />
     <Compile Include="HttpErrorSyncTests.cs" />
     <Compile Include="HttpHandlerTests.cs" />
+    <Compile Include="Issues\AutoQueryJoinReferenceId.cs" />
     <Compile Include="Issues\ClientMemoryLeak.cs" />
     <Compile Include="Issues\EmptyDtoIssue.cs" />
     <Compile Include="Issues\NetworkIssues.cs" />
