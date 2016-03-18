@@ -25,10 +25,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             base.Configure(container);
 
             container.Register(c => new PocoDynamo(
-                new AmazonDynamoDBClient("keyId", "key", new AmazonDynamoDBConfig {
+                new AmazonDynamoDBClient("keyId", "key", new AmazonDynamoDBConfig
+                {
                     ServiceURL = "http://localhost:8000",
                 }))
                 .RegisterTable<Rockstar>()
+                .RegisterTable<RockstarAlbum>()
                 .RegisterTable<Adhoc>()
                 .RegisterTable<Movie>()
                 .RegisterTable<AllFields>()
@@ -36,8 +38,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             );
 
             var dynamo = container.Resolve<IPocoDynamo>();
+            //dynamo.DeleteAllTables();
             dynamo.InitSchema();
             dynamo.PutItems(SeedRockstars);
+            dynamo.PutItems(SeedAlbums);
             dynamo.PutItems(SeedAdhoc);
             dynamo.PutItems(SeedMovies);
             dynamo.PutItems(SeedAllFields);
@@ -45,6 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var feature = this.GetPlugin<AutoQueryDataFeature>();
             feature.AddDataSource(ctx => ctx.DynamoDbSource<Rockstar>());
+            feature.AddDataSource(ctx => ctx.DynamoDbSource<RockstarAlbum>());
             feature.AddDataSource(ctx => ctx.DynamoDbSource<Adhoc>());
             feature.AddDataSource(ctx => ctx.DynamoDbSource<Movie>());
             feature.AddDataSource(ctx => ctx.DynamoDbSource<AllFields>());
@@ -134,33 +139,52 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public IEnumerable<T> GetResults(ScanExpression scanExpr, int? skip = null, int? take = null)
         {
-            var results = db.Scan(scanExpr, r =>
+            try
             {
-                if (total == null)
-                    total = r.Count;
-                return r.ConvertAll<T>();
-            });
+                var results = db.Scan(scanExpr, r =>
+                {
+                    if (total == null)
+                        total = r.Count;
+                    return r.ConvertAll<T>();
+                });
 
-            if (skip != null)
-                results = results.Skip(skip.Value);
+                if (skip != null)
+                    results = results.Skip(skip.Value);
 
-            if (take != null)
-                results = results.Take(take.Value);
+                if (take != null)
+                    results = results.Take(take.Value);
 
-            return results.ToList();
+                return results.ToList();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         public IEnumerable<T> GetResults(QueryExpression queryExpr, int? skip = null, int? take = null)
         {
-            if (take != null)
-                queryExpr.Limit = take.Value;
-
-            return db.Query(queryExpr, r =>
+            try
             {
-                if (total == null)
-                    total = r.Count;
-                return r.ConvertAll<T>();
-            });
+                var results = db.Query(queryExpr, r =>
+                {
+                    if (total == null)
+                        total = r.Count;
+                    return r.ConvertAll<T>();
+                });
+
+                if (skip != null)
+                    results = results.Skip(skip.Value);
+
+                if (take != null)
+                    results = results.Take(take.Value);
+
+                return results.ToList();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         public override IEnumerable<T> GetDataSource(IDataQuery q)
@@ -181,25 +205,57 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var rangeCondition = modelDef.RangeKey != null
                 ? q.Conditions.FirstOrDefault(x =>
-                    x.Field.Name.EqualsIgnoreCase(modelDef.RangeKey.Name))
+                    x.Field != null && x.Field.Name.EqualsIgnoreCase(modelDef.RangeKey.Name))
+                : null;
+            var rangeField = rangeCondition != null
+                ? modelDef.RangeKey.Name
                 : null;
 
             var queryExpr = db.FromQuery<T>();
 
             var args = new Dictionary<string, object>();
             var hashFmt = DynamoQueryConditions.GetExpressionFormat(keyCondition.QueryCondition.Alias);
-            var dynamoFmt = string.Format(hashFmt, queryExpr.GetFieldLabel(modelDef.HashKey.Name), ":k1");
-            args["k1"] = keyCondition.Value;
+            var dynamoFmt = string.Format(hashFmt, queryExpr.GetFieldLabel(modelDef.HashKey.Name), ":k0");
+            args["k0"] = keyCondition.Value;
 
-            var rangeFmt = rangeCondition != null
-                ? DynamoQueryConditions.GetExpressionFormat(rangeCondition.QueryCondition.Alias)
-                : null;
-            if (rangeFmt != null)
+            if (rangeCondition == null)
             {
-                dynamoFmt += " AND " + string.Format(hashFmt, queryExpr.GetFieldLabel(modelDef.RangeKey.Name), ":k2");
-                args["k2"] = rangeCondition.Value;
+                foreach (var index in modelDef.LocalIndexes)
+                {
+                    rangeCondition = q.Conditions.FirstOrDefault(x =>
+                        x.Field != null && x.Field.Name.EqualsIgnoreCase(index.RangeKey.Name));
+
+                    if (rangeCondition != null)
+                    {
+                        rangeField = index.RangeKey.Name;
+                        queryExpr.IndexName = index.Name;
+                        break;
+                    }
+                }
             }
+
+            if (rangeCondition != null)
+            {
+                var rangeFmt = DynamoQueryConditions.GetExpressionFormat(rangeCondition.QueryCondition.Alias);
+                if (rangeFmt != null)
+                {
+                    dynamoFmt += " AND " + string.Format(hashFmt, queryExpr.GetFieldLabel(rangeField), ":k1");
+                    args["k1"] = rangeCondition.Value;
+                }
+                else
+                {
+                    var multiFmt = DynamoQueryConditions.GetMultiExpressionFormat(rangeCondition.QueryCondition.Alias);
+                    if (multiFmt != null)
+                    {
+                        var multiExpr = GetMultiConditionExpression(queryExpr, rangeCondition, multiFmt, args, argPrefix: "k");
+                        dynamoFmt += " AND " + multiExpr;
+                    }
+                }
+            }
+
             queryExpr.KeyCondition(dynamoFmt, args);
+
+            q.Conditions.RemoveAll(x => x == keyCondition || x == rangeCondition);
 
             AddConditions(queryExpr, q);
 
@@ -208,10 +264,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public void AddConditions(IDynamoCommonQuery dynamoQ, IDataQuery q)
         {
+            if (q.Conditions.Count == 0)
+                return;
+
             var dbConditions = new List<ConditionExpression>();
             var args = new Dictionary<string, object>();
             var sb = new StringBuilder();
-            var isMultipleWithOrTerm = q.Conditions.Any(x => x.Term == QueryTerm.Or) 
+            var isMultipleWithOrTerm = q.Conditions.Any(x => x.Term == QueryTerm.Or)
                 && q.Conditions.Count > 1;
 
             foreach (var condition in q.Conditions)
@@ -238,35 +297,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                     sb.Append(string.Format(fmt, dynamoQ.GetFieldLabel(condition.Field.Name), ":" + pId));
                 }
-                else if (condition.QueryCondition.Alias == ConditionAlias.Between)
-                {
-                    var values = ((IEnumerable)condition.Value).Map(x => x);
-                    if (values.Count < 2)
-                        throw new ArgumentException("{0} BETWEEN must have 2 values".Fmt(condition.Field.Name));
-
-                    var pFrom = "p" + args.Count;
-                    args[pFrom] = values[0];
-                    var pTo = "p" + args.Count;
-                    args[pTo] = values[1];
-
-                    sb.Append(string.Format(multiFmt, dynamoQ.GetFieldLabel(condition.Field.Name), ":" + pFrom, ":" + pTo));
-                }
                 else
                 {
-                    var values = (IEnumerable)condition.Value;
-                    var sbIn = new StringBuilder();
-                    foreach (var value in values)
-                    {
-                        if (sbIn.Length > 0)
-                            sbIn.Append(",");
-
-                        var pArg = "p" + args.Count;
-                        args[pArg] = value;
-
-                        sbIn.Append(":" + pArg);
-                    }
-
-                    sb.Append(string.Format(multiFmt, dynamoQ.GetFieldLabel(condition.Field.Name), sbIn));
+                    var multiExpr = GetMultiConditionExpression(dynamoQ, condition, multiFmt, args);
+                    sb.Append(multiExpr);
                 }
             }
 
@@ -276,6 +310,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
 
             q.Conditions.RemoveAll(dbConditions.Contains);
+        }
+
+        private string GetMultiConditionExpression(IDynamoCommonQuery dynamoQ, ConditionExpression condition, string multiFmt, Dictionary<string, object> args, string argPrefix = "p")
+        {
+            if (multiFmt == null)
+                return null;
+
+            if (condition.QueryCondition.Alias == ConditionAlias.Between)
+            {
+                var values = ((IEnumerable)condition.Value).Map(x => x);
+                if (values.Count < 2)
+                    throw new ArgumentException("{0} BETWEEN must have 2 values".Fmt(condition.Field.Name));
+
+                var pFrom = argPrefix + args.Count;
+                args[pFrom] = values[0];
+                var pTo = argPrefix + args.Count;
+                args[pTo] = values[1];
+
+                return string.Format(multiFmt, dynamoQ.GetFieldLabel(condition.Field.Name), ":" + pFrom, ":" + pTo);
+            }
+            else
+            {
+                var values = (IEnumerable)condition.Value;
+                var sbIn = new StringBuilder();
+                foreach (var value in values)
+                {
+                    if (sbIn.Length > 0)
+                        sbIn.Append(",");
+
+                    var pArg = argPrefix + args.Count;
+                    args[pArg] = value;
+
+                    sbIn.Append(":" + pArg);
+                }
+
+                return string.Format(multiFmt, dynamoQ.GetFieldLabel(condition.Field.Name), sbIn);
+            }
         }
     }
 }

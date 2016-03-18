@@ -59,20 +59,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 });
             }
 
-            //GlobalRequestFilters.Add((req, res, dto) =>
-            //{
-            //    var changeDb = dto as IChangeDb;
-            //    if (changeDb == null) return;
-
-            //    req.Items[Keywords.DbInfo] = new ConnectionInfo
-            //    {
-            //        NamedConnection = changeDb.NamedConnection,
-            //        ConnectionString = changeDb.ConnectionString,
-            //        ProviderName = changeDb.ProviderName,
-            //    };
-            //});
-
-            // Equivalent to above:
             RegisterTypedRequestFilter<IChangeDb>((req, res, dto) =>
                 req.Items[Keywords.DbInfo] = dto.ConvertTo<ConnectionInfo>());
 
@@ -187,14 +173,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         };
 
         public static RockstarAlbum[] SeedAlbums = new[] {
-            new RockstarAlbum { RockstarId = 1, Name = "Electric Ladyland", Genre = "Funk" },
-            new RockstarAlbum { RockstarId = 3, Name = "Bleach", Genre = "Grunge" },
-            new RockstarAlbum { RockstarId = 3, Name = "Nevermind", Genre = "Grunge" },
-            new RockstarAlbum { RockstarId = 3, Name = "In Utero", Genre = "Grunge" },
-            new RockstarAlbum { RockstarId = 3, Name = "Incesticide", Genre = "Grunge" },
-            new RockstarAlbum { RockstarId = 3, Name = "MTV Unplugged in New York", Genre = "Acoustic" },
-            new RockstarAlbum { RockstarId = 5, Name = "Foo Fighters", Genre = "Grunge" },
-            new RockstarAlbum { RockstarId = 6, Name = "Into the Wild", Genre = "Folk" },
+            new RockstarAlbum { Id = 1, RockstarId = 1, Name = "Electric Ladyland", Genre = "Funk" },
+            new RockstarAlbum { Id = 2, RockstarId = 3, Name = "Bleach", Genre = "Grunge" },
+            new RockstarAlbum { Id = 3, RockstarId = 3, Name = "Nevermind", Genre = "Grunge" },
+            new RockstarAlbum { Id = 4, RockstarId = 3, Name = "In Utero", Genre = "Grunge" },
+            new RockstarAlbum { Id = 5, RockstarId = 3, Name = "Incesticide", Genre = "Grunge" },
+            new RockstarAlbum { Id = 6, RockstarId = 3, Name = "MTV Unplugged in New York", Genre = "Acoustic" },
+            new RockstarAlbum { Id = 7, RockstarId = 5, Name = "Foo Fighters", Genre = "Grunge" },
+            new RockstarAlbum { Id = 8, RockstarId = 6, Name = "Into the Wild", Genre = "Folk" },
         };
 
         public static RockstarGenre[] SeedGenres = new[] {
@@ -235,6 +221,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public int? Age { get; set; }
         //public LivingStatus? LivingStatus { get; set; }
+    }
+
+    [Route("/query/rockstaralbums")]
+    public class QueryRockstarAlbums : QueryDb<RockstarAlbum>
+    {
+        public int? Id { get; set; }
+        public int? RockstarId { get; set; }
+        public string Name { get; set; }
+        public string Genre { get; set; }
+        public int[] IdBetween { get; set; }
     }
 
     [Route("/query/pagingtest")]
@@ -389,6 +385,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [References(typeof(Rockstar))]
         public int RockstarId { get; set; }
         public string Name { get; set; }
+        [Index]
         public string Genre { get; set; }
     }
 
@@ -1642,6 +1639,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new QueryPagingTest { Value = 1 });
             Assert.That(response.Results.Count, Is.EqualTo(100));
             Assert.That(response.Total, Is.EqualTo(PagingTests.Count(x => x.Value == 1)));
+        }
+
+        [Test]
+        public void Can_query_on_ForeignKey_and_Index()
+        {
+            QueryResponse<RockstarAlbum> response;
+            response = client.Get(new QueryRockstarAlbums { RockstarId = 3 }); //Hash
+            Assert.That(response.Results.Count, Is.EqualTo(5));
+            Assert.That(response.Total, Is.EqualTo(5));
+
+            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Id = 3 }); //Hash + Range
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results[0].Name, Is.EqualTo("Nevermind"));
+
+            //Hash + Range BETWEEN
+            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, IdBetween = new[] { 2, 3 } });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            Assert.That(response.Total, Is.EqualTo(2));
+
+            //Hash + Range BETWEEN + Filter
+            response = client.Get(new QueryRockstarAlbums
+            {
+                RockstarId = 3,
+                IdBetween = new[] { 2, 3 },
+                Name = "Nevermind"
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results[0].Id, Is.EqualTo(3));
+
+            //Hash + LocalSecondaryIndex
+            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Genre = "Grunge" });
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+            Assert.That(response.Total, Is.EqualTo(4));
+
+            response.PrintDump();
         }
     }
 
