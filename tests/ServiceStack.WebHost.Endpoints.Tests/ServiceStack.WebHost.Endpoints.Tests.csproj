@@ -189,6 +189,7 @@
     <Compile Include="AttributeFiltersTest.cs" />
     <Compile Include="AuthDigestTests.cs" />
     <Compile Include="AuthTests.cs" />
+    <Compile Include="AutoQueryDataServiceTests.cs" />
     <Compile Include="AutoQueryDataTests.cs" />
     <Compile Include="AutoQueryDataTests.Dynamo.cs" />
     <Compile Include="AutoQueryTests.cs" />

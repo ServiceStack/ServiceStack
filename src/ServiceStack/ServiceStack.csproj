@@ -99,6 +99,7 @@
     </Compile>
     <Compile Include="AutoQueryDataConditions.cs" />
     <Compile Include="AutoQueryDataFeature.cs" />
+    <Compile Include="AutoQueryDataServiceSource.cs" />
     <Compile Include="AutoQueryMetadataFeature.cs" />
     <Compile Include="ConnectionInfo.cs" />
     <Compile Include="ConnectionInfoAttribute.cs" />
