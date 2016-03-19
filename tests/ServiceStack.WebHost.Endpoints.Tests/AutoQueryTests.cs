@@ -378,6 +378,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [QueryDb(QueryTerm.Or)]
     public class QueryGetRockstarsDynamic : QueryDb<Rockstar> {}
 
+    [References(typeof(RockstarAlbumGenreGlobalIndex))]
     public class RockstarAlbum
     {
         [AutoIncrement]
@@ -434,6 +435,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string[] Ratings { get; set; }
     }
 
+    [References(typeof(MovieTitleIndex))]
     public class Movie
     {
         [AutoIncrement]

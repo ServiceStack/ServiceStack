@@ -340,8 +340,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public abstract class AutoQueryDataTests
     {
-        private readonly ServiceStackHost appHost;
-        private readonly IServiceClient client;
+        public readonly ServiceStackHost appHost;
+        protected readonly IServiceClient client;
 
         private static readonly int TotalRockstars = AutoQueryAppHost.SeedRockstars.Length;
         private static readonly int TotalAlbums = AutoQueryAppHost.SeedAlbums.Length;
