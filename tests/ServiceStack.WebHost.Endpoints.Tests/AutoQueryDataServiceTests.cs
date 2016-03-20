@@ -46,17 +46,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 db.DropAndCreateTable<Movie>();
                 db.DropAndCreateTable<AllFields>();
                 db.DropAndCreateTable<PagingTest>();
+                db.DropAndCreateTable<RockstarGenre>();
                 db.InsertAll(SeedRockstars);
                 db.InsertAll(SeedAlbums);
                 db.InsertAll(SeedAdhoc);
                 db.InsertAll(SeedMovies);
                 db.InsertAll(SeedAllFields);
                 db.InsertAll(SeedPagingTest);
+                db.InsertAll(SeedGenres);
             }
 
             var feature = this.GetPlugin<AutoQueryDataFeature>();
             feature.AddDataSource(ctx => ctx.ServiceSource<Rockstar>(new GetAllRockstarData()));
-            feature.AddDataSource(ctx => ctx.ServiceSource<RockstarAlbum>(new GetAllRockstarAlbumsData()));
+            feature.AddDataSource(ctx => ctx.ServiceSource<RockstarAlbum>(ctx.Dto.ConvertTo<GetAllRockstarAlbumsData>()));
             feature.AddDataSource(ctx => ctx.ServiceSource<Adhoc>(new GetAllAdhocData()));
             feature.AddDataSource(ctx => ctx.ServiceSource<Movie>(new GetAllMoviesData()));
             feature.AddDataSource(ctx => ctx.ServiceSource<AllFields>(new GetAllFieldsData()));
@@ -68,14 +70,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class GetAllRockstarData {}
 
     //IReturn<T> -> List<RockstarAlbum>
-    public class GetAllRockstarAlbumsData : IReturn<List<RockstarAlbum>> {}
+    public class GetAllRockstarAlbumsData : IReturn<List<RockstarAlbum>>
+    {
+        public int? Id { get; set; }
+        public int? RockstarId { get; set; }
+        public string Name { get; set; }
+        public string Genre { get; set; }
+        public int[] IdBetween { get; set; }
+    }
 
     //Response DTO
-    public class GetAllAdhocData : IReturn<GetAllAdhocDataResponse> {}
+    public class GetAllAdhocData : IReturn<GetAllAdhocDataResponse> { }
     public class GetAllAdhocDataResponse
     {
         public DateTime Created { get; set; }
-        public List<Adhoc> Results { get; set; } 
+        public List<Adhoc> Results { get; set; }
     }
 
     //GET No IReturn<T> Task Response
@@ -86,11 +95,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class GetAllFieldsDataResponse
     {
         public DateTime Created { get; set; }
-        public List<AllFields> Results { get; set; } 
+        public List<AllFields> Results { get; set; }
     }
 
     //GET 
-    public class GetAllPagingTestData {}
+    public class GetAllPagingTestData { }
 
     public class DataQueryServices : Service
     {
@@ -101,7 +110,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(GetAllRockstarAlbumsData request)
         {
-            return Db.Select<RockstarAlbum>();
+            var q = Db.From<RockstarAlbum>();
+
+            if (request.IdBetween != null)
+                q.Where(x => x.Id >= request.IdBetween[0] && x.Id <= request.IdBetween[1]);
+
+            if (request.Name != null)
+                q.Where(x => x.Name == request.Name);
+
+            var results = Db.Select(q);
+            return results;
         }
 
         public object Any(GetAllAdhocData request)
@@ -112,7 +130,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
         }
 
-        public Task Any(GetAllMoviesData request)
+        public object Any(GetAllMoviesData request)
         {
             return Task.FromResult(Db.Select<Movie>());
         }
@@ -126,7 +144,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
         }
 
-        public List<PagingTest> Get(GetAllPagingTestData request)
+        public Task<List<PagingTest>> Get(GetAllPagingTestData request)
+        {
+            return Task.FromResult(Db.Select<PagingTest>());
+        }
+    }
+
     public class GetAllRockstarGenresData : QueryData<RockstarGenre>
     {
         public string Name { get; set; }
