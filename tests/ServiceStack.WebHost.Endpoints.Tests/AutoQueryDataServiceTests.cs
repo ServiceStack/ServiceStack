@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Funq;
+using NUnit.Framework;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
@@ -12,6 +14,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public override ServiceStackHost CreateAppHost()
         {
             return new AutoQueryDataServiceAppHost();
+        }
+
+        [Test]
+        public void Can_call_overidden_AutoQueryData_Service_with_custom_MemorySource()
+        {
+            var response = client.Get(new GetAllRockstarGenresData());
+            Assert.That(response.Total, Is.EqualTo(AutoQueryDataAppHost.SeedGenres.Length));
+            Assert.That(response.Results.Count, Is.EqualTo(AutoQueryDataAppHost.SeedGenres.Length));
+
+            response = client.Get(new GetAllRockstarGenresData { Name = "Grunge" });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].RockstarId, Is.EqualTo(3));
         }
     }
 
@@ -113,8 +127,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         public List<PagingTest> Get(GetAllPagingTestData request)
+    public class GetAllRockstarGenresData : QueryData<RockstarGenre>
+    {
+        public string Name { get; set; }
+    }
+
+    public class CustomDataQueryServices : Service
+    {
+        public IAutoQueryData AutoQuery { get; set; }
+
+        public object Any(GetAllRockstarGenresData requestDto)
         {
-            return Db.Select<PagingTest>();
+            var memorySource = new MemoryDataSource<RockstarGenre>(Db.Select<RockstarGenre>(), requestDto, Request);
+            var q = AutoQuery.CreateQuery(requestDto, Request, memorySource);
+            return AutoQuery.Execute(requestDto, q);
         }
     }
 }
