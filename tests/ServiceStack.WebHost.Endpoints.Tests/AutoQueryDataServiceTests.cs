@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Tests.Support;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -26,6 +29,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new GetAllRockstarGenresData { Name = "Grunge" });
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Results[0].RockstarId, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Does_Cache_third_party_api_ServiceSource()
+        {
+            GetGithubRepos.ApiCalls = 0;
+            QueryResponse<GithubRepo> response;
+            response = client.Get(new QueryGitHubRepos { Organization = "ServiceStack" });
+            Assert.That(response.Results.Count, Is.GreaterThan(20));
+            Assert.That(GetGithubRepos.ApiCalls, Is.EqualTo(1));
+
+            response = client.Get(new QueryGitHubRepos { Organization = "ServiceStack" });
+            Assert.That(response.Results.Count, Is.GreaterThan(20));
+            Assert.That(GetGithubRepos.ApiCalls, Is.EqualTo(1));
+
+            response = client.Get(new QueryGitHubRepos { User = "mythz" });
+            Assert.That(response.Results.Count, Is.GreaterThan(20));
+            Assert.That(GetGithubRepos.ApiCalls, Is.EqualTo(2));
+
+            response = client.Get(new QueryGitHubRepos { User = "mythz" });
+            Assert.That(response.Results.Count, Is.GreaterThan(20));
+            Assert.That(GetGithubRepos.ApiCalls, Is.EqualTo(2));
         }
     }
 
@@ -63,6 +88,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             feature.AddDataSource(ctx => ctx.ServiceSource<Movie>(new GetAllMoviesData()));
             feature.AddDataSource(ctx => ctx.ServiceSource<AllFields>(new GetAllFieldsData()));
             feature.AddDataSource(ctx => ctx.ServiceSource<PagingTest>(new GetAllPagingTestData()));
+            feature.AddDataSource(ctx => ctx.ServiceSource<PagingTest>(new GetAllPagingTestData()));
+            feature.AddDataSource(ctx => ctx.ServiceSource<GithubRepo>(ctx.Dto.ConvertTo<GetGithubRepos>(), 
+                HostContext.Cache, TimeSpan.FromMinutes(1)));
         }
     }
 
@@ -100,6 +128,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     //GET 
     public class GetAllPagingTestData { }
+
+    public class QueryGitHubRepos : QueryData<GithubRepo>
+    {
+        public string User { get; set; }
+        public string Organization { get; set; }
+
+        public string NameStartsWith { get; set; }
+        public string DescriptionContains { get; set; }
+        public int? Watchers_Count { get; set; }
+    }
+
+    public class GetGithubRepos : IReturn<List<GithubRepo>>
+    {
+        public static int ApiCalls = 0;
+
+        public string User { get; set; }
+        public string Organization { get; set; }
+    }
 
     public class DataQueryServices : Service
     {
@@ -147,6 +193,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public Task<List<PagingTest>> Get(GetAllPagingTestData request)
         {
             return Task.FromResult(Db.Select<PagingTest>());
+        }
+
+        public object Get(GetGithubRepos request)
+        {
+            if (request.User == null && request.Organization == null)
+                throw new ArgumentNullException("User");
+
+            var url = request.User != null
+                ? "https://api.github.com/users/{0}/repos".Fmt(request.User)
+                : "https://api.github.com/orgs/{0}/repos".Fmt(request.Organization);
+
+            Interlocked.Increment(ref GetGithubRepos.ApiCalls);
+
+            return url.GetJsonFromUrl(requestFilter:req => req.UserAgent = typeof(DataQueryServices).Name)
+                .FromJson<List<GithubRepo>>();
         }
     }
 

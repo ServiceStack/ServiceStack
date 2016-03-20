@@ -1,23 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ServiceStack.Caching;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
     public static class AutoQueryDataServiceSource
     {
-        public static QueryDataSource<T> ServiceSource<T>(this QueryDataContext ctx, object requestDto)
+        public static QueryDataSource<T> ServiceSource<T>(this QueryDataContext ctx, object requestDto, ICacheClient cache, TimeSpan expiresIn)
+        {
+            var cacheKey = requestDto.ToGetUrl();
+            var cachedResults = cache.Get<List<T>>(cacheKey);
+            if (cachedResults != null)
+                return new MemoryDataSource<T>(ctx, cachedResults);
+
+            var response = ServiceSource<T>(ctx, requestDto);
+            cache.Set(cacheKey, response.Data);
+            return response;
+        }
+
+        public static MemoryDataSource<T> ServiceSource<T>(this QueryDataContext ctx, object requestDto)
         {
             var response = HostContext.ServiceController.Execute(requestDto, ctx.Request);
-            var task = response as Task;
-            if (task != null)
-                response = task.GetResult();
-
-            var httpResult = response as IHttpResult;
-            if (httpResult != null)
-                response = httpResult.Response;
-
             var results = GetResults<T>(response);
             if (results == null)
                 throw new NotSupportedException("IEnumerable<{0}> could not be derived from Response {1} from Request {2}"
@@ -28,6 +33,14 @@ namespace ServiceStack
 
         public static IEnumerable<T> GetResults<T>(object response)
         {
+            var task = response as Task;
+            if (task != null)
+                response = task.GetResult();
+
+            var httpResult = response as IHttpResult;
+            if (httpResult != null)
+                response = httpResult.Response;
+
             var result = response as IEnumerable<T>;
             if (result != null)
                 return result;

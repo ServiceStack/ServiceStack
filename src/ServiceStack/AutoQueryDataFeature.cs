@@ -805,11 +805,11 @@ namespace ServiceStack
 
     public class MemoryDataSource<T> : QueryDataSource<T>
     {
-        private readonly IEnumerable<T> data;
+        public IEnumerable<T> Data { get; private set; }
 
         public MemoryDataSource(QueryDataContext context, IEnumerable<T> data) : base(context)
         {
-            this.data = data;
+            this.Data = data;
         }
 
         public MemoryDataSource(IEnumerable<T> data, IQueryData dto, IRequest req)
@@ -821,7 +821,7 @@ namespace ServiceStack
 
         public override IEnumerable<T> GetDataSource(IDataQuery q)
         {
-            return data;
+            return Data;
         }
     }
 
