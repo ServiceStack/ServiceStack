@@ -812,6 +812,13 @@ namespace ServiceStack
             this.data = data;
         }
 
+        public MemoryDataSource(IEnumerable<T> data, IQueryData dto, IRequest req)
+            : this(new QueryDataContext {
+                Dto = dto,
+                Request = req,
+                DynamicParams = req.GetRequestParams(),
+            }, data) {}
+
         public override IEnumerable<T> GetDataSource(IDataQuery q)
         {
             return data;
@@ -1357,14 +1364,14 @@ namespace ServiceStack
             return to;
         }
 
-        public static DataQuery<From> CreateQuery<From>(this IAutoQueryData autoQuery, IQueryData<From> model, IRequest request)
+        public static DataQuery<From> CreateQuery<From>(this IAutoQueryData autoQuery, IQueryData<From> model, IRequest request, IQueryDataSource db = null)
         {
-            return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
+            return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
         }
 
-        public static DataQuery<From> CreateQuery<From, Into>(this IAutoQueryData autoQuery, IQueryData<From, Into> model, IRequest request)
+        public static DataQuery<From> CreateQuery<From, Into>(this IAutoQueryData autoQuery, IQueryData<From, Into> model, IRequest request, IQueryDataSource db = null)
         {
-            return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
+            return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
         }
 
         public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, IEnumerable<T> soruce)
