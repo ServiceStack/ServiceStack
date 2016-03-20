@@ -6,6 +6,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Web;
 using Funq;
+using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Host.HttpListener;
@@ -180,6 +181,16 @@ namespace ServiceStack
         public static IVirtualPathProvider VirtualPathProvider
         {
             get { return AssertAppHost().VirtualFileSources; }
+        }
+
+        public static ICacheClient Cache
+        {
+            get { return TryResolve<ICacheClient>(); }
+        }
+
+        public static MemoryCacheClient LocalCache
+        {
+            get { return TryResolve<MemoryCacheClient>(); }
         }
 
         /// <summary>
