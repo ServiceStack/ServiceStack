@@ -467,6 +467,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? Age { get; set; }
     }
 
+    public class QueryCustomRockstarsReferences : QueryDb<RockstarReference>
+    {
+        public int? Age { get; set; }
+    }
+
     [Alias("Rockstar")]
     public class RockstarReference
     {
@@ -556,6 +561,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
             q.Take(2);
             return AutoQuery.Execute(dto, q);
+        }
+
+        public object Any(QueryCustomRockstarsReferences request)
+        {
+            var q = AutoQuery.CreateQuery(request, Request.GetRequestParams());
+            var response = new QueryResponse<RockstarReference>
+            {
+                Offset = q.Offset.GetValueOrDefault(0),
+                Results = Db.LoadSelect(q, include:new string[0]),
+                Total = (int)Db.Count(q),
+            };
+            return response;
         }
     }
 
@@ -1373,6 +1390,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var kurt = response.Results.First(x => x.FirstName == "Kurt");
             Assert.That(kurt.Albums.Count, Is.EqualTo(5));
+        }
+
+        [Test]
+        public void Can_Query_RockstarReference_without_References()
+        {
+            var response = client.Get(new QueryCustomRockstarsReferences
+            {
+                Age = 27
+            });
+
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            Assert.That(response.Results.All(x => x.Albums == null));
         }
 
         [Test]
