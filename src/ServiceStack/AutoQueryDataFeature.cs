@@ -1383,7 +1383,7 @@ namespace ServiceStack
         public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, Func<IEnumerable<T>> soruceFn, ICacheClient cache, TimeSpan? expiresIn=null, string cacheKey = null)
         {
             if (cacheKey == null)
-                cacheKey = typeof(T).Name;
+                cacheKey = "aqd:" + typeof(T).Name;
 
             var cachedResults = cache.Get<List<T>>(cacheKey);
             if (cachedResults != null)

@@ -11,7 +11,7 @@ namespace ServiceStack
         public static QueryDataSource<T> ServiceSource<T>(this QueryDataContext ctx, object requestDto, ICacheClient cache, TimeSpan? expiresIn=null, string cacheKey=null)
         {
             if (cacheKey == null)
-                cacheKey = requestDto.ToGetUrl();
+                cacheKey = "aqd:" + requestDto.ToGetUrl();
 
             var cachedResults = cache.Get<List<T>>(cacheKey);
             if (cachedResults != null)

@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new QueryServiceStackContributors { Take = 20 });
             Assert.That(response.Total, Is.GreaterThan(20));
             Assert.That(response.Results.Count, Is.EqualTo(20));
-            Assert.That(HostContext.LocalCache.Get<List<GithubContributor>>(typeof(GithubContributor).Name) != null);
+            Assert.That(HostContext.LocalCache.Get<List<GithubContributor>>("aqd:" + typeof(GithubContributor).Name) != null);
 
             response = client.Get(new QueryServiceStackContributors
             {
