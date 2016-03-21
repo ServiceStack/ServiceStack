@@ -8,15 +8,26 @@ namespace ServiceStack
 {
     public static class AutoQueryDataServiceSource
     {
-        public static QueryDataSource<T> ServiceSource<T>(this QueryDataContext ctx, object requestDto, ICacheClient cache, TimeSpan expiresIn)
+        public static QueryDataSource<T> ServiceSource<T>(this QueryDataContext ctx, object requestDto, ICacheClient cache, TimeSpan? expiresIn=null, string cacheKey=null)
         {
-            var cacheKey = requestDto.ToGetUrl();
+            if (cacheKey == null)
+                cacheKey = requestDto.ToGetUrl();
+
             var cachedResults = cache.Get<List<T>>(cacheKey);
             if (cachedResults != null)
                 return new MemoryDataSource<T>(ctx, cachedResults);
 
             var response = ServiceSource<T>(ctx, requestDto);
-            cache.Set(cacheKey, response.Data);
+            return response.CacheMemorySource(cache, cacheKey, expiresIn);
+        }
+
+        internal static QueryDataSource<T> CacheMemorySource<T>(this MemoryDataSource<T> response, ICacheClient cache, string cacheKey, TimeSpan? expiresIn)
+        {
+            if (expiresIn != null)
+                cache.Set(cacheKey, response.Data, expiresIn.Value);
+            else
+                cache.Set(cacheKey, response.Data);
+
             return response;
         }
 

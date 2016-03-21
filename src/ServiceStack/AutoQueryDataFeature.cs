@@ -10,6 +10,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 
 using Funq;
+using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Reflection;
@@ -1377,6 +1378,20 @@ namespace ServiceStack
         public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, IEnumerable<T> soruce)
         {
             return new MemoryDataSource<T>(ctx, soruce);
+        }
+
+        public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, Func<IEnumerable<T>> soruceFn, ICacheClient cache, TimeSpan? expiresIn=null, string cacheKey = null)
+        {
+            if (cacheKey == null)
+                cacheKey = typeof(T).Name;
+
+            var cachedResults = cache.Get<List<T>>(cacheKey);
+            if (cachedResults != null)
+                return new MemoryDataSource<T>(ctx, cachedResults);
+
+            var results = soruceFn();
+            var source = new MemoryDataSource<T>(ctx, results);
+            return source.CacheMemorySource(cache, cacheKey, expiresIn);
         }
 
         public static void And<T>(this IDataQuery q, Expression<Func<T, object>> fieldExpr, QueryCondition condition, object value)

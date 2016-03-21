@@ -63,6 +63,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.EqualTo(4));
             Assert.That(GetGithubRepos.ApiCalls, Is.EqualTo(2));
         }
+
+        [Test]
+        public void Does_Cache_MemorySource()
+        {
+            QueryResponse<GithubContributor> response;
+
+            response = client.Get(new QueryServiceStackContributors { Take = 20 });
+            Assert.That(response.Total, Is.GreaterThan(20));
+            Assert.That(response.Results.Count, Is.EqualTo(20));
+            Assert.That(HostContext.LocalCache.Get<List<GithubContributor>>(typeof(GithubContributor).Name) != null);
+
+            response = client.Get(new QueryServiceStackContributors
+            {
+                ContributionsAbove = 10,
+                Fields = "Login,Contributions"
+            });
+            Assert.That(response.Results.Count, Is.GreaterThan(10));
+            Assert.That(response.Results.All(c => c.Contributions > 10));
+            Assert.That(response.Results.All(c => c.Login != null));
+            Assert.That(response.Results.All(c => c.Id == 0));
+            Assert.That(response.Results.All(c => c.Type == null));
+        }
     }
 
     public class AutoQueryDataServiceAppHost : AutoQueryDataAppHost
@@ -102,6 +124,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             feature.AddDataSource(ctx => ctx.ServiceSource<PagingTest>(new GetAllPagingTestData()));
             feature.AddDataSource(ctx => ctx.ServiceSource<GithubRepo>(ctx.Dto.ConvertTo<GetGithubRepos>(), 
                 HostContext.Cache, TimeSpan.FromMinutes(1)));
+            feature.AddDataSource(ctx => ctx.MemorySource(
+                () => "https://api.github.com/repos/ServiceStack/ServiceStack/contributors"
+                    .GetJsonFromUrl(req => req.UserAgent="AutoQuery").FromJson<List<GithubContributor>>(),
+                HostContext.LocalCache, TimeSpan.FromMinutes(1)));
         }
     }
 
@@ -156,6 +182,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public string User { get; set; }
         public string Organization { get; set; }
+    }
+
+    public class QueryServiceStackContributors : QueryData<GithubContributor>
+    {
+        public int? ContributionsAbove { get; set; }
     }
 
     public class DataQueryServices : Service
@@ -217,7 +248,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Interlocked.Increment(ref GetGithubRepos.ApiCalls);
 
-            return url.GetJsonFromUrl(requestFilter:req => req.UserAgent = typeof(DataQueryServices).Name)
+            return url.GetJsonFromUrl(requestFilter:req => req.UserAgent = GetType().Name)
                 .FromJson<List<GithubRepo>>();
         }
     }
