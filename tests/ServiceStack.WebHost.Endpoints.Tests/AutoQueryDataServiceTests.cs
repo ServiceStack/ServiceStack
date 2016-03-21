@@ -40,16 +40,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.Count, Is.GreaterThan(20));
             Assert.That(GetGithubRepos.ApiCalls, Is.EqualTo(1));
 
-            response = client.Get(new QueryGitHubRepos { Organization = "ServiceStack" });
-            Assert.That(response.Results.Count, Is.GreaterThan(20));
+            response = client.Get(new QueryGitHubRepos { Organization = "ServiceStack",
+                NameStartsWith = "ServiceStack",
+                Fields = "Name,Description,Homepage,Language,Watchers_Count",
+                OrderByDesc = "Watchers_Count"
+            });
+            Assert.That(response.Results.Count, Is.LessThan(20));
+            Assert.That(response.Results.All(x => x.Id == 0));
+            Assert.That(response.Results.All(x => x.Name != null));
+            Assert.That(response.Results[0].Watchers_Count, Is.GreaterThan(3000));
             Assert.That(GetGithubRepos.ApiCalls, Is.EqualTo(1));
 
             response = client.Get(new QueryGitHubRepos { User = "mythz" });
             Assert.That(response.Results.Count, Is.GreaterThan(20));
             Assert.That(GetGithubRepos.ApiCalls, Is.EqualTo(2));
 
-            response = client.Get(new QueryGitHubRepos { User = "mythz" });
-            Assert.That(response.Results.Count, Is.GreaterThan(20));
+            response = client.Get(new QueryGitHubRepos { User = "mythz",
+                DescriptionContains = "101 LINQ Samples",
+                Take = 4,
+                OrderBy = "Name",
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(4));
             Assert.That(GetGithubRepos.ApiCalls, Is.EqualTo(2));
         }
     }
