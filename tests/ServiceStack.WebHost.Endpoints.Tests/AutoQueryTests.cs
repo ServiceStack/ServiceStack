@@ -1390,6 +1390,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var kurt = response.Results.First(x => x.FirstName == "Kurt");
             Assert.That(kurt.Albums.Count, Is.EqualTo(5));
+
+            response = client.Get(new QueryRockstarsWithReferences
+            {
+                Age = 27,
+                Fields = "Id,FirstName,Age"
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+            Assert.That(response.Results.All(x => x.Id > 0));
+            Assert.That(response.Results.All(x => x.LastName == null));
+            Assert.That(response.Results.All(x => x.Albums == null));
+
+            response = client.Get(new QueryRockstarsWithReferences
+            {
+                Age = 27,
+                Fields = "Id,FirstName,Age,Albums"
+            });
+            Assert.That(response.Results.Where(x => x.FirstName != "Jim").All(x => x.Albums != null));
         }
 
         [Test]
@@ -1399,7 +1416,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Age = 27
             });
-
             Assert.That(response.Results.Count, Is.EqualTo(3));
             Assert.That(response.Results.All(x => x.Albums == null));
         }

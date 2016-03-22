@@ -910,7 +910,7 @@ namespace ServiceStack
                 var response = new QueryResponse<Into>
                 {
                     Offset = q.Offset.GetValueOrDefault(0),
-                    Results = db.LoadSelect<Into, From>(q),
+                    Results = db.LoadSelect<Into, From>(q, include:q.OnlyFields),
                 };
 
                 return response;
