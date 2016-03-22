@@ -167,7 +167,7 @@ namespace ServiceStack
 
             if (VirtualFiles == null)
                 VirtualFiles = (pathProviders != null ? pathProviders.FirstOrDefault(x => x is FileSystemVirtualPathProvider) : null) as IVirtualFiles
-                    ?? GetFileSystemProvider();
+                    ?? GetVirtualFileSources().FirstOrDefault(x => x is FileSystemVirtualPathProvider) as IVirtualFiles;
 
             OnAfterInit();
 
@@ -218,12 +218,6 @@ namespace ServiceStack
                 .Map(x => new ResourceVirtualPathProvider(this, x)));
 
             return pathProviders;
-        }
-
-        public virtual IVirtualFiles GetFileSystemProvider()
-        {
-            var fs = GetVirtualFileSources().FirstOrDefault(x => x is FileSystemVirtualPathProvider);
-            return fs as IVirtualFiles;
         }
 
         public virtual ServiceStackHost Start(string urlBase)
