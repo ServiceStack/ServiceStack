@@ -11,8 +11,11 @@ namespace ServiceStack.Support
     {
         public byte[] GZip(string text)
         {
-            var buffer = Encoding.UTF8.GetBytes(text);
-            // Don't risk using non-MemoryStream's in incompatible Deflate/GZip classes
+            return GZip(Encoding.UTF8.GetBytes(text));
+        }
+
+        public byte[] GZip(byte[] buffer)
+        {
             using (var ms = new MemoryStream())
             using (var zipStream = new GZipStream(ms, CompressionMode.Compress))
             {
@@ -22,14 +25,19 @@ namespace ServiceStack.Support
                 return ms.ToArray();
             }
         }
-        
+
         public string GUnzip(byte[] gzBuffer)
+        {
+            var utf8Bytes = GUnzipBytes(gzBuffer);
+            return Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
+        }
+
+        public byte[] GUnzipBytes(byte[] gzBuffer)
         {
             using (var compressedStream = new MemoryStream(gzBuffer))
             using (var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress))
             {
-                var utf8Bytes = zipStream.ReadFully();
-                return Encoding.UTF8.GetString(utf8Bytes, 0, utf8Bytes.Length);
+                return zipStream.ReadFully();
             }
         }
 
