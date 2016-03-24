@@ -1,20 +1,52 @@
 ﻿using System;
-using ServiceStack.Caching;
 
 namespace ServiceStack
 {
     public class CacheInfo
     {
+        /// <summary>
+        /// The base CacheKey to be use store the response against
+        /// </summary>
         public string CacheKey { get; set; }
-        public DateTime? ExpiresAt { get; set; }
+
+        /// <summary>
+        /// How long to cache the resource for. Fallsback to HttpCacheFeature.DefaultExpiresIn
+        /// </summary>
         public TimeSpan? ExpiresIn { get; set; }
+
+        /// <summary>
+        /// The unique ETag returned for this resource clients can use to determine whether their local version has changed
+        /// </summary>
         public string ETag { get; set; }
+
+        /// <summary>
+        /// The Age for this resource returned to clients
+        /// </summary>
         public TimeSpan? Age { get; set; }
+
+        /// <summary>
+        /// The MaxAge returned to clients to indicate how long they can use their local cache before re-validating
+        /// </summary>
         public TimeSpan? MaxAge { get; set; }
-        public DateTime? Expires { get; set; }
+
+        /// <summary>
+        /// The LastModified date to use for the Cache and HTTP Header 
+        /// </summary>
         public DateTime? LastModified { get; set; }
+
+        /// <summary>
+        /// Cache-Control HTTP Headers
+        /// </summary>
         public CacheControl CacheControl { get; set; }
+
+        /// <summary>
+        /// Create unique cache per user
+        /// </summary>
         public bool VaryByUser { get; set; }
+
+        /// <summary>
+        /// Use HostContext.LocalCache or HostContext.Cache
+        /// </summary>
         public bool LocalCache { get; set; }
     }
 
@@ -30,7 +62,6 @@ namespace ServiceStack
                 ETag = httpResult.ETag,
                 Age = httpResult.Age,
                 MaxAge = httpResult.MaxAge,
-                Expires = httpResult.Expires,
                 LastModified = httpResult.LastModified,
                 CacheControl = httpResult.CacheControl,
             };

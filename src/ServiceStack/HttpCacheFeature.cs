@@ -108,9 +108,9 @@ namespace ServiceStack
 
                 if (encoding != null)
                 {
+                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
                     responseBytes = responseBytes.CompressBytes(encoding);
                     cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
-                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
                 }
             }
             else
@@ -140,8 +140,8 @@ namespace ServiceStack
                 var cacheControl = BuildCacheControlHeader(cacheInfo);
                 if (cacheControl != null)
                 {
-                    var lastModified = DateTime.UtcNow;
-                    cache.Set(cacheInfo.CacheKey, lastModified, expiresIn);
+                    var lastModified = cacheInfo.LastModified.GetValueOrDefault(DateTime.UtcNow);
+                    cache.Set("date:" + cacheInfo.CacheKey, lastModified, expiresIn);
                     res.AddHeaderLastModified(lastModified);
                     res.AddHeader(HttpHeaders.CacheControl, cacheControl);
                 }

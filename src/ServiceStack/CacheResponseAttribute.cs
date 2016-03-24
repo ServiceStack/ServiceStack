@@ -24,7 +24,7 @@ namespace ServiceStack
         public CacheControl CacheControl { get; set; }
 
         /// <summary>
-        /// Create unique caches per user
+        /// Create unique cache per user
         /// </summary>
         public bool VaryByUser { get; set; }
 
