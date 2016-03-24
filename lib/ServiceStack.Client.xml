@@ -50,7 +50,7 @@
             The ResultsFilterResponse is called before returning the response allowing responses to be cached.
             </summary>
         </member>
-        <member name="P:ServiceStack.AsyncServiceClient.NotModifiedFilter">
+        <member name="P:ServiceStack.AsyncServiceClient.ExceptionFilter">
             <summary>
             Called with requestUri, ResponseType when server returns 304 NotModified
             </summary>
@@ -201,7 +201,7 @@
             The ResultsFilterResponse is called before returning the response allowing responses to be cached.
             </summary>
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.notModifiedFilter">
+        <member name="F:ServiceStack.ServiceClientBase.exceptionFilter">
             <summary>
             Called with requestUri, ResponseType when server returns 304 NotModified
             </summary>
