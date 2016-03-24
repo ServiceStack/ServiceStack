@@ -15,7 +15,7 @@ namespace ServiceStack
     [Serializable]
 #endif
     public class WebServiceException
-        : Exception, IHasStatusCode, IResponseStatusConvertible
+        : Exception, IHasStatusCode, IHasStatusDescription, IResponseStatusConvertible
     {
         public WebServiceException() { }
         public WebServiceException(string message) : base(message) { }

@@ -205,7 +205,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new ThrowWebServiceException
             {
                 StatusCode = 400,
-                Message = "Original Message",
+                StatusDescription = "Original Message",
                 ResponseStatus = new ResponseStatus
                 {
                     ErrorCode = "ResponseStatus.ErrorCode",
@@ -220,6 +220,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(request.StatusCode.Value));
+                Assert.That(webEx.Message, Is.EqualTo(request.StatusDescription));
                 Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(request.ResponseStatus.ErrorCode));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo(request.ResponseStatus.Message));
             }

@@ -48,7 +48,10 @@ namespace ServiceStack
             this.ErrorCode = errorCode ?? statusCode.ToString();
             this.Status = statusCode;
             this.Headers = new Dictionary<string, string>();
-            this.StatusDescription = errorCode;
+            var hasStatusDesc = innerException as IHasStatusDescription;
+            this.StatusDescription = hasStatusDesc != null 
+                ? hasStatusDesc.StatusDescription 
+                : errorCode;
             this.Headers = new Dictionary<string, string>();
             this.Cookies = new List<Cookie>();
         }
