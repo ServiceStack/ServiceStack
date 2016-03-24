@@ -124,7 +124,7 @@ namespace ServiceStack
             return null;
         }
 
-        static string SerializeToString(IRequest request, object responseDto)
+        internal static string SerializeToString(this IRequest request, object responseDto)
         {
             var str = responseDto as string;
             return str ?? HostContext.ContentTypes.SerializeToString(request, responseDto);

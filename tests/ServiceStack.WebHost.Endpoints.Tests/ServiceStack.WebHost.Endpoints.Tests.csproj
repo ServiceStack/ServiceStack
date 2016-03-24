@@ -196,6 +196,7 @@
     <Compile Include="BufferedRequestTests.cs" />
     <Compile Include="CachedServiceClientTests.cs" />
     <Compile Include="CachedServiceTests.cs" />
+    <Compile Include="CacheResponseTests.cs" />
     <Compile Include="CacheServerFeatureTests.cs" />
     <Compile Include="CancellableRequestTests.cs" />
     <Compile Include="CompressionTests.cs" />

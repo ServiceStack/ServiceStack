@@ -107,6 +107,8 @@
     <Compile Include="AutoQueryDataFeature.cs" />
     <Compile Include="AutoQueryDataServiceSource.cs" />
     <Compile Include="AutoQueryMetadataFeature.cs" />
+    <Compile Include="CacheInfo.cs" />
+    <Compile Include="CacheResponseAttribute.cs" />
     <Compile Include="ConnectionInfo.cs" />
     <Compile Include="ConnectionInfoAttribute.cs" />
     <Compile Include="FluentValidation\Internal\CollectionPropertyRule.cs" />

@@ -259,7 +259,11 @@ namespace ServiceStack
                         if (responseText != null)
                         {
                             if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
-                            WriteTextToResponse(response, responseText, defaultContentType);
+
+                            if (response.ContentType == null || response.ContentType == MimeTypes.Html)
+                                response.ContentType = defaultContentType;
+                            response.Write(responseText);
+
                             if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
                             return TrueTask;
                         }
@@ -288,34 +292,7 @@ namespace ServiceStack
                 }
                 catch (Exception originalEx)
                 {
-                    HostContext.RaiseAndHandleUncaughtException(request, response, request.OperationName, originalEx);
-
-                    if (!HostContext.Config.WriteErrorsToResponse)
-                        return originalEx.AsTaskException<bool>();
-
-                    var errorMessage = String.Format(
-                    "Error occured while Processing Request: [{0}] {1}", originalEx.GetType().GetOperationName(), originalEx.Message);
-
-                    try
-                    {
-                        if (!response.IsClosed)
-                        {
-                            response.WriteErrorToResponse(
-                                request,
-                                defaultContentType,
-                                request.OperationName,
-                                errorMessage,
-                                originalEx,
-                                (int)HttpStatusCode.InternalServerError);
-                        }
-                    }
-                    catch (Exception writeErrorEx)
-                    {
-                        //Exception in writing to response should not hide the original exception
-                        Log.Info("Failed to write error to response: {0}", writeErrorEx);
-                        return originalEx.AsTaskException<bool>();
-                    }
-                    return TrueTask;
+                    return HandleResponseWriteException(originalEx, request, response, defaultContentType);
                 }
                 finally
                 {
@@ -324,23 +301,59 @@ namespace ServiceStack
             }
         }
 
-        public static void WriteTextToResponse(this IResponse response, string text, string defaultContentType)
+        internal static Task<bool> HandleResponseWriteException(this Exception originalEx, IRequest request, IResponse response, string defaultContentType)
         {
+            HostContext.RaiseAndHandleUncaughtException(request, response, request.OperationName, originalEx);
+
+            if (!HostContext.Config.WriteErrorsToResponse)
+                return originalEx.AsTaskException<bool>();
+
+            var errorMessage = string.Format(
+                "Error occured while Processing Request: [{0}] {1}", originalEx.GetType().GetOperationName(), originalEx.Message);
+
             try
             {
-                //ContentType='text/html' is the default for a HttpResponse
-                //Do not override if another has been set
-                if (response.ContentType == null || response.ContentType == MimeTypes.Html)
+                if (!response.IsClosed)
                 {
-                    response.ContentType = defaultContentType;
+                    response.WriteErrorToResponse(
+                        request,
+                        defaultContentType ?? request.ResponseContentType,
+                        request.OperationName,
+                        errorMessage,
+                        originalEx,
+                        (int)HttpStatusCode.InternalServerError);
                 }
+            }
+            catch (Exception writeErrorEx)
+            {
+                //Exception in writing to response should not hide the original exception
+                Log.Info("Failed to write error to response: {0}", writeErrorEx);
+                return originalEx.AsTaskException<bool>();
+            }
+            return TrueTask;
+        }
 
-                response.Write(text);
+        public static void WriteBytesToResponse(this IResponse res, byte[] responseBytes, string contentType)
+        {
+            res.ContentType = HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType)
+                ? contentType + ContentFormat.Utf8Suffix
+                : contentType;
+
+            res.ApplyGlobalResponseHeaders();
+            res.SetContentLength(responseBytes.Length);
+
+            try
+            {
+                res.OutputStream.Write(responseBytes, 0, responseBytes.Length);
+                res.Flush();
             }
             catch (Exception ex)
             {
-                Log.Error("Could not WriteTextToResponse: " + ex.Message, ex);
-                throw;
+                ex.HandleResponseWriteException(res.Request, res, contentType);
+            }
+            finally
+            {
+                res.EndRequest(skipHeaders: true);
             }
         }
 

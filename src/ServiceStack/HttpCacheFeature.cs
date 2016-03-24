@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using ServiceStack.Web;
 
@@ -9,6 +10,7 @@ namespace ServiceStack
     public class HttpCacheFeature : IPlugin
     {
         public TimeSpan DefaultMaxAge { get; set; }
+        public TimeSpan DefaultExpiresIn { get; set; }
 
         public Func<string, string> CacheControlFilter { get; set; }
 
@@ -17,6 +19,7 @@ namespace ServiceStack
         public HttpCacheFeature()
         {
             DefaultMaxAge = TimeSpan.FromHours(1);
+            DefaultExpiresIn = TimeSpan.FromMinutes(10);
             CacheControlForOptimizedResults = "max-age=0";
         }
 
@@ -27,9 +30,18 @@ namespace ServiceStack
 
         public void HandleCacheResponses(IRequest req, IResponse res, object response)
         {
+            var cacheInfo = req.GetItem(Keywords.CacheInfo) as CacheInfo;
+            if (cacheInfo != null && cacheInfo.CacheKey != null)
+            {
+                if (CacheAndWriteResponse(cacheInfo, req, res, response))
+                    return;
+            }
+
             var httpResult = response as HttpResult;
             if (httpResult == null)
                 return;
+
+            cacheInfo = httpResult.ToCacheInfo();
 
             if ((req.Verb != HttpMethods.Get && req.Verb != HttpMethods.Head) ||
                 (httpResult.StatusCode != HttpStatusCode.OK && httpResult.StatusCode != HttpStatusCode.NotModified))
@@ -47,49 +59,141 @@ namespace ServiceStack
             if (httpResult.Age != null)
                 httpResult.Headers[HttpHeaders.Age] = httpResult.Age.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
-            if (!httpResult.Headers.ContainsKey(HttpHeaders.CacheControl))
+            var alreadySpecifiedCacheControl = httpResult.Headers.ContainsKey(HttpHeaders.CacheControl);
+            if (!alreadySpecifiedCacheControl)
             {
-                var maxAge = httpResult.MaxAge;
-                if (maxAge == null && (httpResult.LastModified != null || httpResult.ETag != null))
-                    maxAge = DefaultMaxAge;
-
-                var cacheHeader = new List<string>();
-                if (maxAge != null)
-                    cacheHeader.Add("max-age=" + maxAge.Value.TotalSeconds);
-
-                if (httpResult.CacheControl != CacheControl.None)
-                {
-                    var cache = httpResult.CacheControl;
-                    if (cache.HasFlag(CacheControl.Public))
-                        cacheHeader.Add("public");
-                    else if (cache.HasFlag(CacheControl.Private))
-                        cacheHeader.Add("private");
-
-                    if (cache.HasFlag(CacheControl.MustRevalidate))
-                        cacheHeader.Add("must-revalidate");
-                    if (cache.HasFlag(CacheControl.NoCache))
-                        cacheHeader.Add("no-cache");
-                    if (cache.HasFlag(CacheControl.NoStore))
-                        cacheHeader.Add("no-store");
-                    if (cache.HasFlag(CacheControl.NoTransform))
-                        cacheHeader.Add("no-transform");
-                }
-
-                if (cacheHeader.Count > 0)
-                {
-                    var cacheControl = cacheHeader.ToArray().Join(", ");
-                    if (CacheControlFilter != null)
-                        cacheControl = CacheControlFilter(cacheControl);
-
-                    if (cacheControl != null)
-                        httpResult.Headers[HttpHeaders.CacheControl] = cacheControl;
-                }
+                var cacheControl = BuildCacheControlHeader(cacheInfo);
+                if (cacheControl != null)
+                    httpResult.Headers[HttpHeaders.CacheControl] = cacheControl;
             }
 
             if (req.ETagMatch(httpResult.ETag) || req.NotModifiedSince(httpResult.LastModified))
             {
                 res.EndNotModified();
             }
+        }
+
+        private bool CacheAndWriteResponse(CacheInfo cacheInfo, IRequest req, IResponse res, object response)
+        {
+            var httpResult = response as IHttpResult;
+            var dto = httpResult != null ? httpResult.Response : response;
+            if (dto == null || dto is IPartialWriter || dto is IStreamWriter)
+                return false;
+
+            var expiresIn = cacheInfo.ExpiresIn.GetValueOrDefault(DefaultExpiresIn);
+            var cache = cacheInfo.LocalCache ? HostContext.LocalCache : HostContext.Cache;
+
+            var responseBytes = dto as byte[];
+            if (responseBytes == null)
+            {
+                var rawStr = dto as string;
+                if (rawStr != null)
+                    responseBytes = rawStr.ToUtf8Bytes();
+                else
+                {
+                    var stream = dto as Stream;
+                    if (stream != null)
+                        responseBytes = stream.ReadFully();
+                }
+            }
+
+            var encoding = req.GetCompressionType();
+            var cacheKeyEncoded = encoding != null ? cacheInfo.CacheKey + "." + encoding : null;
+            if (responseBytes != null || req.ResponseContentType.IsBinary())
+            {
+                if (responseBytes == null)
+                    responseBytes = HostContext.ContentTypes.SerializeToBytes(req, dto);
+
+                cache.Set(cacheInfo.CacheKey, responseBytes, expiresIn);
+
+                if (encoding != null)
+                {
+                    responseBytes = responseBytes.CompressBytes(encoding);
+                    cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
+                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                }
+            }
+            else
+            {
+                var serializedDto = req.SerializeToString(dto);
+                if (req.ResponseContentType.MatchesContentType(MimeTypes.Json))
+                {
+                    var jsonp = req.GetJsonpCallback();
+                    if (jsonp != null)
+                        serializedDto = jsonp + "(" + serializedDto + ")";
+                }
+
+                responseBytes = serializedDto.ToUtf8Bytes();
+                cache.Set(cacheInfo.CacheKey, responseBytes, expiresIn);
+
+                if (encoding != null)
+                {
+                    responseBytes = responseBytes.CompressBytes(encoding);
+                    cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
+                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                }
+            }
+
+            var doHttpCaching = cacheInfo.MaxAge != null || cacheInfo.CacheControl != CacheControl.None;
+            if (doHttpCaching)
+            {
+                var cacheControl = BuildCacheControlHeader(cacheInfo);
+                if (cacheControl != null)
+                {
+                    var lastModified = DateTime.UtcNow;
+                    cache.Set(cacheInfo.CacheKey, lastModified, expiresIn);
+                    res.AddHeaderLastModified(lastModified);
+                    res.AddHeader(HttpHeaders.CacheControl, cacheControl);
+                }
+            }
+
+            if (httpResult != null)
+            {
+                foreach (var header in httpResult.Headers)
+                {
+                    res.AddHeader(header.Key, header.Value);
+                }
+            }
+
+            res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
+            return true;
+        }
+
+        private string BuildCacheControlHeader(CacheInfo cacheInfo)
+        {
+            var maxAge = cacheInfo.MaxAge;
+            if (maxAge == null && (cacheInfo.LastModified != null || cacheInfo.ETag != null))
+                maxAge = DefaultMaxAge;
+
+            var cacheHeader = new List<string>();
+            if (maxAge != null)
+                cacheHeader.Add("max-age=" + maxAge.Value.TotalSeconds);
+
+            if (cacheInfo.CacheControl != CacheControl.None)
+            {
+                var cache = cacheInfo.CacheControl;
+                if (cache.HasFlag(CacheControl.Public))
+                    cacheHeader.Add("public");
+                else if (cache.HasFlag(CacheControl.Private))
+                    cacheHeader.Add("private");
+
+                if (cache.HasFlag(CacheControl.MustRevalidate))
+                    cacheHeader.Add("must-revalidate");
+                if (cache.HasFlag(CacheControl.NoCache))
+                    cacheHeader.Add("no-cache");
+                if (cache.HasFlag(CacheControl.NoStore))
+                    cacheHeader.Add("no-store");
+                if (cache.HasFlag(CacheControl.NoTransform))
+                    cacheHeader.Add("no-transform");
+            }
+
+            if (cacheHeader.Count <= 0)
+                return null;
+
+            var cacheControl = cacheHeader.ToArray().Join(", ");
+            return CacheControlFilter != null 
+                ? CacheControlFilter(cacheControl) 
+                : cacheControl;
         }
     }
 

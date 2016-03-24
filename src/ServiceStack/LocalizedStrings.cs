@@ -16,6 +16,7 @@
         public static string Route = "__route";
         public static string InvokeVerb = "__verb";
         public static string DbInfo = "__dbinfo";
+        public static string CacheInfo = "__cacheinfo";
         public static string JsConfig = "jsconfig";
     }
 
@@ -67,6 +68,7 @@
         //Invalid State
         public static string ConstructorNotFoundForType = "Constructor not found for Type '{0}'";
         public static string ServiceNotFoundForType = "Service not found for Type '{0}'";
+        public static string CacheFeatureMustBeEnabled = "HttpCacheFeature Plugin must be registered to use {0}";
     }
 
     public static class HelpMessages
