@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using Check.ServiceModel;
 using Funq;
 using ServiceStack;
 using ServiceStack.Admin;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 
 namespace CheckHttpListener
 {
@@ -38,7 +41,43 @@ namespace CheckHttpListener
 
             Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
             Plugins.Add(new AdminFeature());
+
+            var msgs = new List<string>();
+            int count = 0;
+
+            var client = new ServerEventsClient("http://chat.servicestack.net", "home")
+            {
+                OnMessage = m =>
+                {
+                    try
+                    {
+                        lock (msgs)
+                        {
+                            msgs.Add(m.Dump());
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        msgs.Add("OnMessage Exception: " + ex.Message);
+                    }
+                }
+            }.Start();
+
+            timer = new Timer(_ =>
+            {
+                lock (msgs)
+                {
+                    for (; count < msgs.Count; count++)
+                    {
+                        Console.WriteLine(msgs[count]);
+                    }
+                }
+                timer.Change(1000, Timeout.Infinite);
+            }, null, 1000, Timeout.Infinite);
+
         }
+
+        Timer timer;
     }
 
     [Route("/query/rockstars")]
