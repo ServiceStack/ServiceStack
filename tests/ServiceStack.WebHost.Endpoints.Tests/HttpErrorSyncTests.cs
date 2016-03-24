@@ -196,6 +196,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(webEx.ResponseStatus.Errors[0].FieldName, Is.EqualTo("FieldName"));
             }
         }
+
+        [Test]
+        public void Does_preserve_WebServiceException()
+        {
+            var client = CreateClient(ListeningOn);
+
+            var request = new ThrowWebServiceException
+            {
+                StatusCode = 400,
+                Message = "Original Message",
+                ResponseStatus = new ResponseStatus
+                {
+                    ErrorCode = "ResponseStatus.ErrorCode",
+                    Message = "ResponseStatus.Message"
+                }
+            };
+
+            try
+            {
+                var response = client.Get<string>(request);
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo(request.StatusCode.Value));
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(request.ResponseStatus.ErrorCode));
+                Assert.That(webEx.ResponseStatus.Message, Is.EqualTo(request.ResponseStatus.Message));
+            }
+        }
     }
 
     public class Custom400Exception : Exception { }

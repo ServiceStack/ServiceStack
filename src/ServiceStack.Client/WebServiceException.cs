@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
+using ServiceStack.Model;
 using ServiceStack.Text;
 
 namespace ServiceStack
@@ -14,7 +15,7 @@ namespace ServiceStack
     [Serializable]
 #endif
     public class WebServiceException
-        : Exception, IHasStatusCode
+        : Exception, IHasStatusCode, IResponseStatusConvertible
     {
         public WebServiceException() { }
         public WebServiceException(string message) : base(message) { }
@@ -206,6 +207,11 @@ namespace ServiceStack
 
 
             return sb.ToString();
+        }
+
+        public ResponseStatus ToResponseStatus()
+        {
+            return ResponseStatus;
         }
     }
 }

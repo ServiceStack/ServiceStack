@@ -70,6 +70,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     [Route("/return404result")]
     public class Return404Result { }
 
+    [Route("/throwwebex")]
+    public class ThrowWebServiceException : IHasResponseStatus
+    {
+        public int? StatusCode { get; set; }
+        public string StatusDescription { get; set; }
+        public string Message { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
     public class Custom404Exception : Exception, IResponseStatusConvertible, IHasStatusCode
     {
         public Custom404Exception(string message) : base(message) {}
@@ -145,6 +154,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public object Any(Return404Result request)
         {
             return new HttpResult(HttpStatusCode.NotFound, "Custom Status Description");
+        }
+
+        public object Any(ThrowWebServiceException request)
+        {
+            throw new WebServiceException(request.Message ?? "Message")
+            {
+                StatusCode = request.StatusCode ?? 500,
+                StatusDescription = request.StatusDescription ?? "StatusDescription",                
+                ResponseDto = request,
+            };
         }
     }
 
