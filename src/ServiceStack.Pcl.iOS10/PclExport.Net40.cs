@@ -528,6 +528,9 @@ namespace ServiceStack
 
             try
             {
+                if (typeof(PclExport).Assembly.ManifestModule.Name != "ServiceStack.Text.dll")
+                    return; //Smart/Packaged Assembly
+
                 if (assemblyNames.Contains(accessType.Assembly.Location.SplitOnLast(Path.DirectorySeparatorChar).Last()))
                     return;
             }
