@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Amazon.DynamoDBv2;
 using Funq;
 using NUnit.Framework;
@@ -137,6 +135,45 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .ThenByDescending(x => x.ImdbId).Map(x => x.ImdbId);
             Assert.That(ids, Is.EqualTo(orderedIds));
         }
+
+        [Test]
+        public void Cached_DynamoQuery_does_cached_duplicate_requests_when_MaxAge()
+        {
+            var request = new QueryCacheMaxAgeDataRockstars();
+            var client = new CachedServiceClient(new JsonServiceClient(Config.ListeningOn));
+
+            var response = client.Get(request);
+            Assert.That(client.CacheHits, Is.EqualTo(0));
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstars.Count));
+
+            response = client.Get(request);
+            Assert.That(client.CacheHits, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstars.Count));
+
+            response = client.Get(new QueryCacheMaxAgeDataRockstars { Age = 27 });
+            Assert.That(client.CacheHits, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstars.Count(x => x.Age == 27)));
+        }
+
+        [Test]
+        public void Cached_DynamoQuery_does_return_NotModified_when_MustRevalidate()
+        {
+            var request = new QueryCacheMustRevalidateDataRockstars();
+            var client = new CachedServiceClient(new JsonServiceClient(Config.ListeningOn));
+
+            var response = client.Get(request);
+            Assert.That(client.NotModifiedHits, Is.EqualTo(0));
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstars.Count));
+
+            response = client.Get(request);
+            Assert.That(client.NotModifiedHits, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstars.Count));
+
+            response = client.Get(new QueryCacheMustRevalidateDataRockstars { Age = 27 });
+            Assert.That(client.CacheHits, Is.EqualTo(0));
+            Assert.That(client.NotModifiedHits, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstars.Count(x => x.Age == 27)));
+        }
     }
 
     public class AutoQueryDataDynamoAppHost : AutoQueryDataAppHost
@@ -232,4 +269,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int RockstarId { get; set; }
     }
 
+    [CacheResponse(Duration = 10, MaxAge = 10)]
+    [Route("/querydata/cachemaxage/rockstars")]
+    public class QueryCacheMaxAgeDataRockstars : QueryData<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    [CacheResponse(Duration = 10, MaxAge = 0, CacheControl = CacheControl.MustRevalidate)]
+    [Route("/querydata/cachemustrevalidate/rockstars")]
+    public class QueryCacheMustRevalidateDataRockstars : QueryData<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
 }
