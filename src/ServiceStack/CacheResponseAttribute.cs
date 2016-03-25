@@ -1,4 +1,5 @@
 using System;
+using ServiceStack.Html;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -33,8 +34,16 @@ namespace ServiceStack
         /// </summary>
         public bool LocalCache { get; set; }
 
+        public CacheResponseAttribute()
+        {
+            MaxAge = -1;
+        }
+
         public override void Execute(IRequest req, IResponse res, object requestDto)
         {
+            if (req.Verb != HttpMethods.Get && req.Verb != HttpMethods.Head)
+                return;
+
             var feature = HostContext.GetPlugin<HttpCacheFeature>();
             if (feature == null)
                 throw new NotSupportedException(ErrorMessages.CacheFeatureMustBeEnabled.Fmt("[CacheResponse]"));
@@ -88,7 +97,7 @@ namespace ServiceStack
             {
                 CacheKey = cacheKey,
                 ExpiresIn = Duration > 0 ? TimeSpan.FromSeconds(Duration) : (TimeSpan?) null,
-                MaxAge = MaxAge > 0 ? TimeSpan.FromSeconds(MaxAge) : (TimeSpan?)null,
+                MaxAge = MaxAge >= 0 ? TimeSpan.FromSeconds(MaxAge) : (TimeSpan?)null,
                 CacheControl = CacheControl,
                 VaryByUser = VaryByUser,
                 LocalCache = LocalCache,

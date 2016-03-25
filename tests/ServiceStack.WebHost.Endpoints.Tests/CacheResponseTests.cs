@@ -3,11 +3,12 @@ using System.Net;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/cache/serveronly/{Id}")]
-    public class ServerCacheOnly
+    public class ServerCacheOnly : ICacheDto
     {
         internal static int Count = 0;
 
@@ -16,12 +17,45 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [Route("/cache/servershort/{Id}")]
-    public class ServerCacheShort
+    public class ServerCacheShort : ICacheDto
     {
         internal static int Count = 0;
 
         public int Id { get; set; }
         public string Value { get; set; }
+    }
+
+    [Route("/cache/serversuser/{Id}")]
+    public class ServerCacheUser : ICacheDto
+    {
+        internal static int Count = 0;
+
+        public int Id { get; set; }
+        public string Value { get; set; }
+    }
+
+    [Route("/cache/clientmaxage/{Id}")]
+    public class ClientCacheMaxAge : IReturn<ClientCacheMaxAge>, ICacheDto
+    {
+        internal static int Count = 0;
+
+        public int Id { get; set; }
+        public string Value { get; set; }
+    }
+
+    [Route("/cache/clientmustrevalidate/{Id}")]
+    public class ClientCacheMustRevalidate : IReturn<ClientCacheMustRevalidate>, ICacheDto
+    {
+        internal static int Count = 0;
+
+        public int Id { get; set; }
+        public string Value { get; set; }
+    }
+
+    public interface ICacheDto
+    {
+        int Id { get; set; }
+        string Value { get; set; }
     }
 
     public class CacheResponseServices : Service
@@ -39,18 +73,39 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Interlocked.Increment(ref ServerCacheShort.Count);
             return request;
         }
+
+        [CacheResponse(Duration = 10, VaryByUser = true)]
+        public object Any(ServerCacheUser request)
+        {
+            Interlocked.Increment(ref ServerCacheUser.Count);
+            return request;
+        }
+
+        [CacheResponse(Duration = 10, MaxAge = 10)]
+        public object Any(ClientCacheMaxAge request)
+        {
+            Interlocked.Increment(ref ClientCacheMaxAge.Count);
+            return request;
+        }
+
+        [CacheResponse(Duration = 10, MaxAge = 0, CacheControl = CacheControl.MustRevalidate)]
+        public object Any(ClientCacheMustRevalidate request)
+        {
+            Interlocked.Increment(ref ClientCacheMustRevalidate.Count);
+            return request;
+        }
     }
 
+    [TestFixture]
     public class CacheResponseTests
     {
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(typeof(CacheServerFeatureTests).Name, typeof(CacheEtagServices).Assembly) {}
+                : base(typeof(CacheServerFeatureTests).Name, typeof(CacheEtagServices).Assembly)
+            { }
 
-            public override void Configure(Container container)
-            {                
-            }
+            public override void Configure(Container container) {}
         }
 
         private readonly ServiceStackHost appHost;
@@ -67,13 +122,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Dispose();
         }
 
-        private void AssertEquals(ServerCacheOnly actual, ServerCacheOnly expected)
-        {
-            Assert.That(actual.Id, Is.EqualTo(expected.Id));
-            Assert.That(actual.Value, Is.EqualTo(expected.Value));
-        }
-
-        private void AssertEquals(ServerCacheShort actual, ServerCacheShort expected)
+        private void AssertEquals(ICacheDto actual, ICacheDto expected)
         {
             Assert.That(actual.Id, Is.EqualTo(expected.Id));
             Assert.That(actual.Value, Is.EqualTo(expected.Value));
@@ -86,7 +135,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new ServerCacheOnly { Id = 1, Value = "foo" };
 
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(responseFilter: res => {
+                .GetJsonFromUrl(responseFilter: res =>
+                {
                     Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
                     Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
                 })
@@ -96,12 +146,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             AssertEquals(response, request);
 
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(responseFilter: res => {
+                .GetJsonFromUrl(responseFilter: res =>
+                {
                     Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
                     Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
                 })
                 .FromJson<ServerCacheOnly>();
 
+            Assert.That(ServerCacheOnly.Count, Is.EqualTo(1));
+            AssertEquals(response, request);
+
+            var client = new JsonServiceClient(Config.ListeningOn);
+            response = client.Get<ServerCacheOnly>(request);
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(1));
             AssertEquals(response, request);
         }
@@ -110,7 +166,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_vary_cache_by_QueryString()
         {
             ServerCacheOnly.Count = 0;
-            var request = new ServerCacheOnly { Id = 1, Value = "foo" };
+            var request = new ServerCacheOnly { Id = 2, Value = "foo" };
 
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .GetJsonFromUrl()
@@ -129,18 +185,47 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_vary_cache_by_UserSession()
+        {
+            ServerCacheOnly.Count = 0;
+            var request = new ServerCacheUser { Id = 3, Value = "foo" };
+
+            var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .GetJsonFromUrl(requestFilter:req => req.Headers.Add("X-ss-id","1"))
+                .FromJson<ServerCacheUser>();
+
+            Assert.That(ServerCacheUser.Count, Is.EqualTo(1));
+            AssertEquals(response, request);
+
+            response = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-ss-id", "1"))
+                .FromJson<ServerCacheUser>();
+
+            Assert.That(ServerCacheUser.Count, Is.EqualTo(1));
+            AssertEquals(response, request);
+
+            response = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-ss-id", "2"))
+                .FromJson<ServerCacheUser>();
+
+            Assert.That(ServerCacheUser.Count, Is.EqualTo(2));
+            AssertEquals(response, request);
+        }
+
+        [Test]
         public void Does_cache_different_content_types_and_encoding()
         {
             ServerCacheOnly.Count = 0;
-            var request = new ServerCacheOnly { Id = 2, Value = "bar" };
+            var request = new ServerCacheOnly { Id = 4, Value = "bar" };
             var url = Config.ListeningOn.CombineWith(request.ToGetUrl());
 
             ServerCacheOnly response;
 
             //JSON + Deflate
-            response = url.GetJsonFromUrl(responseFilter: res => {
-                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
-                })
+            response = url.GetJsonFromUrl(responseFilter: res =>
+            {
+                Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+            })
                 .FromJson<ServerCacheOnly>();
 
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(1));
@@ -176,12 +261,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .FromXml<ServerCacheOnly>();
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(3));
             AssertEquals(response, request);
+
+            //HTML + Deflate
+            var html = url.GetStringFromUrl(requestFilter:req => req.ContentType = MimeTypes.Html);
+            Assert.That(ServerCacheOnly.Count, Is.EqualTo(4));
+            Assert.That(html, Is.StringStarting("<!doctype html>"));
+            html = url.GetStringFromUrl(requestFilter: req => req.ContentType = MimeTypes.Html);
+            Assert.That(ServerCacheOnly.Count, Is.EqualTo(4));
+            Assert.That(html, Is.StringStarting("<!doctype html>"));
         }
 
         [Test]
         public void Cache_does_Expire()
         {
-            var request = new ServerCacheShort { Id = 1, Value = "foo" };
+            var request = new ServerCacheShort { Id = 5, Value = "foo" };
 
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .GetJsonFromUrl()
@@ -200,6 +293,46 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .FromJson<ServerCacheShort>();
 
             Assert.That(ServerCacheShort.Count, Is.EqualTo(2));
+            AssertEquals(response, request);
+        }
+
+        [Test]
+        public void Cached_client_does_return_local_cache_when_MaxAge()
+        {
+            ClientCacheMaxAge.Count = 0;
+            var request = new ClientCacheMaxAge { Id = 6, Value = "foo" };
+            var client = new CachedServiceClient(new JsonServiceClient(Config.ListeningOn));
+
+            ClientCacheMaxAge response;
+
+            response = client.Get(request);
+            Assert.That(ClientCacheMaxAge.Count, Is.EqualTo(1));
+            Assert.That(client.CacheHits, Is.EqualTo(0));
+            AssertEquals(response, request);
+
+            response = client.Get(request);
+            Assert.That(ClientCacheMaxAge.Count, Is.EqualTo(1));
+            Assert.That(client.CacheHits, Is.EqualTo(1));
+            AssertEquals(response, request);
+        }
+
+        [Test]
+        public void Cached_client_does_return_NotModified_when_MustRevalidate()
+        {
+            ClientCacheMaxAge.Count = 0;
+            var request = new ClientCacheMustRevalidate { Id = 7, Value = "foo" };
+            var client = new CachedServiceClient(new JsonServiceClient(Config.ListeningOn));
+
+            ClientCacheMustRevalidate response;
+
+            response = client.Get(request);
+            Assert.That(ClientCacheMustRevalidate.Count, Is.EqualTo(1));
+            Assert.That(client.NotModifiedHits, Is.EqualTo(0));
+            AssertEquals(response, request);
+
+            response = client.Get(request);
+            Assert.That(ClientCacheMustRevalidate.Count, Is.EqualTo(1));
+            Assert.That(client.NotModifiedHits, Is.EqualTo(1));
             AssertEquals(response, request);
         }
     }
