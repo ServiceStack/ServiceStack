@@ -70,7 +70,10 @@ namespace ServiceStack
                     { "Vary", "Accept" },
                     { "X-Powered-By", Env.ServerUserAgent },
                 },
-                IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "soap11"
+                },
                 AllowFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {
                     "js", "ts", "tsx", "jsx", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", "pdf",
