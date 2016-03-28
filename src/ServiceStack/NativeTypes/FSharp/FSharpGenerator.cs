@@ -11,10 +11,12 @@ namespace ServiceStack.NativeTypes.FSharp
     public class FSharpGenerator
     {
         readonly MetadataTypesConfig Config;
+        private readonly NativeTypesFeature feature;
 
         public FSharpGenerator(MetadataTypesConfig config)
         {
             Config = config;
+            feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
@@ -262,7 +264,7 @@ namespace ServiceStack.NativeTypes.FSharp
                     if (!type.IsInterface())
                     {
                         sb.AppendLine("member val {1}:{0} = {2} with get,set".Fmt(
-                            propType, prop.Name.SafeToken(), GetDefaultLiteral(prop)));
+                            propType, prop.Name.SafeToken(), GetDefaultLiteral(prop, type)));
                     }
                     else
                     {
@@ -295,10 +297,12 @@ namespace ServiceStack.NativeTypes.FSharp
             }
         }
 
-        private string GetDefaultLiteral(MetadataPropertyType prop)
+        private string GetDefaultLiteral(MetadataPropertyType prop, MetadataType type)
         {
             var propType = Type(prop.Type, prop.GenericArgs);
-            if (Config.InitializeCollections && prop.IsCollection())
+
+            var initCollections = feature.ShouldInitializeCollections(type, Config.InitializeCollections);
+            if (initCollections && prop.IsCollection())
             {
                 return prop.IsArray()
                     ? "[||]" 

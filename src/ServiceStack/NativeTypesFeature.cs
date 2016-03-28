@@ -12,6 +12,16 @@ namespace ServiceStack
 
         public static bool DisableTokenVerification { get; set; }
 
+        public Func<MetadataType, bool?> InitializeCollectionsForType { get; set; }
+
+        public static bool? DontInitializeAutoQueryCollections(MetadataType type)
+        {
+            return type.Inherits != null
+                && (type.Inherits.Name == "QueryBase`1" || type.Inherits.Name == "QueryDb`1" || type.Inherits.Name == "QueryData`1")
+                    ? false
+                    : (bool?)null;
+        }
+
         public NativeTypesFeature()
         {
             MetadataTypesConfig = new MetadataTypesConfig
@@ -79,6 +89,16 @@ namespace ServiceStack
                 new NativeTypesMetadata(appHost.Metadata, MetadataTypesConfig));
 
             appHost.RegisterService<NativeTypesService>();
+        }
+    }
+
+    internal static class NativeTypesFeatureExtensions
+    {
+        internal static bool ShouldInitializeCollections(this NativeTypesFeature feature, MetadataType type, bool defaultValue)
+        {
+            return feature.InitializeCollectionsForType != null
+                ? feature.InitializeCollectionsForType(type).GetValueOrDefault(defaultValue)
+                : defaultValue;
         }
     }
 }

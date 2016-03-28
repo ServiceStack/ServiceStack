@@ -10,11 +10,13 @@ namespace ServiceStack.NativeTypes.TypeScript
     public class TypeScriptGenerator
     {
         readonly MetadataTypesConfig Config;
+        readonly NativeTypesFeature feature;
         List<string> conflictTypeNames = new List<string>();
 
         public TypeScriptGenerator(MetadataTypesConfig config)
         {
             Config = config;
+            feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
         public static List<string> DefaultImports = new List<string>

@@ -12,10 +12,12 @@ namespace ServiceStack.NativeTypes.CSharp
     public class CSharpGenerator
     {
         readonly MetadataTypesConfig Config;
+        readonly NativeTypesFeature feature;
 
         public CSharpGenerator(MetadataTypesConfig config)
         {
             Config = config;
+            feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
@@ -296,11 +298,13 @@ namespace ServiceStack.NativeTypes.CSharp
         {
             if (type.IsInterface())
                 return;
-            if (Config.AddImplicitVersion == null && !Config.InitializeCollections)
+
+            var initCollections = feature.ShouldInitializeCollections(type, Config.InitializeCollections);
+            if (Config.AddImplicitVersion == null && !initCollections)
                 return;
 
             var collectionProps = new List<MetadataPropertyType>();
-            if (type.Properties != null && Config.InitializeCollections)
+            if (type.Properties != null && initCollections)
                 collectionProps = type.Properties.Where(x => x.IsCollection()).ToList();
 
             var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;

@@ -12,12 +12,14 @@ namespace ServiceStack.NativeTypes.Swift
     public class SwiftGenerator
     {
         readonly MetadataTypesConfig Config;
+        readonly NativeTypesFeature feature;
         readonly List<MetadataType> AllTypes;
         List<string> conflictTypeNames = new List<string>();
 
         public SwiftGenerator(MetadataTypesConfig config)
         {
             Config = config;
+            feature = HostContext.GetPlugin<NativeTypesFeature>();
             AllTypes = new List<MetadataType>();
         }
 
@@ -343,8 +345,9 @@ namespace ServiceStack.NativeTypes.Swift
                     sb.AppendLine("public var {0}:Int = {1}".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
                 }
 
+                var initCollections = feature.ShouldInitializeCollections(type, Config.InitializeCollections);
                 AddProperties(sb, type,
-                    initCollections: !type.IsInterface() && Config.InitializeCollections,
+                    initCollections: !type.IsInterface() && initCollections,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
 
