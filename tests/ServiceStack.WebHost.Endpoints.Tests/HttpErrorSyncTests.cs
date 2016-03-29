@@ -255,5 +255,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(new Custom401Exception().ToStatusCode(), Is.EqualTo(401));
             }
         }
+
+        [Test]
+        public void Does_map_Exception_to_ErrorCode()
+        {
+            using (new BasicAppHost
+            {
+                ConfigFilter = c =>
+                {
+                    c.MapExceptionToErrorCode[typeof(ArgumentException)] = "InvalidRequest";
+                }
+            }.Init())
+            {
+                Assert.That(new ArgumentException().ToErrorCode(), Is.EqualTo("InvalidRequest"));
+                Assert.That(new ArgumentNullException().ToErrorCode(), Is.EqualTo("ArgumentNullException"));
+            }
+        }
     }
 }
