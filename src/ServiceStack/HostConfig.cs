@@ -103,6 +103,7 @@ namespace ServiceStack
                     RouteNamingConvention.WithMatchingPropertyNames
                 },
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
+                MapExceptionToErrorCode = new Dictionary<Type, string>(),
                 OnlySendSessionCookiesSecurely = false,
                 AllowSessionIdsInHttpParams = false,
                 AllowSessionCookies = true,
@@ -185,6 +186,7 @@ namespace ServiceStack
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
             this.RouteNamingConventions = instance.RouteNamingConventions;
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
+            this.MapExceptionToErrorCode = instance.MapExceptionToErrorCode;
             this.OnlySendSessionCookiesSecurely = instance.OnlySendSessionCookiesSecurely;
             this.AllowSessionIdsInHttpParams = instance.AllowSessionIdsInHttpParams;
             this.AllowSessionCookies = instance.AllowSessionCookies;
@@ -266,6 +268,7 @@ namespace ServiceStack
         public List<RouteNamingConventionDelegate> RouteNamingConventions { get; set; }
 
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
+        public Dictionary<Type, string> MapExceptionToErrorCode { get; set; }
 
         public bool OnlySendSessionCookiesSecurely { get; set; }
         public bool AllowSessionIdsInHttpParams { get; set; }

@@ -317,6 +317,16 @@ namespace ServiceStack
 
         public static string ToErrorCode(this Exception ex)
         {
+            if (HostContext.Config != null)
+            {
+                var exType = ex.GetType();
+                foreach (var entry in HostContext.Config.MapExceptionToErrorCode)
+                {
+                    if (entry.Key == exType)
+                        return entry.Value;
+                }
+            }
+
             if (ex is HttpError) return ((HttpError)ex).ErrorCode;
             return ex.GetType().Name;
         }
