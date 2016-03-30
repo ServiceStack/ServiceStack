@@ -243,6 +243,11 @@
             <param name="compressionType">Type of the compression.</param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.StreamExt.CompressBytes(System.Byte[],System.String)">
+            <summary>
+            Compresses the specified text using the default compression method: Deflate
+            </summary>
+        </member>
         <member name="M:ServiceStack.StreamExt.Decompress(System.Byte[],System.String)">
             <summary>
             Decompresses the specified gz buffer using the default compression method: Inflate
@@ -250,6 +255,11 @@
             <param name="gzBuffer">The gz buffer.</param>
             <param name="compressionType">Type of the compression.</param>
             <returns></returns>
+        </member>
+        <member name="M:ServiceStack.StreamExt.DecompressBytes(System.Byte[],System.String)">
+            <summary>
+            Decompresses the specified gz buffer using the default compression method: Inflate
+            </summary>
         </member>
         <member name="T:ServiceStack.UrlExtensions">
             <summary>
