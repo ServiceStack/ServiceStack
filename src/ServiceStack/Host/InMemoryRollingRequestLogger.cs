@@ -94,7 +94,7 @@ namespace ServiceStack.Host
             if (!response.IsErrorResponse())
             {
                 if (EnableResponseTracking)
-                    entry.ResponseDto = response;
+                    entry.ResponseDto = response.GetResponseDto();
             }
             else
             {
