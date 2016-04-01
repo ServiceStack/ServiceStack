@@ -144,6 +144,11 @@ namespace ServiceStack
                     cache.Set("date:" + cacheInfo.CacheKey, lastModified, expiresIn);
                     res.AddHeaderLastModified(lastModified);
                     res.AddHeader(HttpHeaders.CacheControl, cacheControl);
+
+                    if (encoding != null)
+                        res.AddHeader(HttpHeaders.Vary, "Accept-Encoding");
+                    if (cacheInfo.VaryByUser)
+                        res.AddHeader(HttpHeaders.Vary, "Cookie");
                 }
             }
 
