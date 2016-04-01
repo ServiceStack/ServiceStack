@@ -236,6 +236,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int StatusCode { get { return 401; } }
     }
 
+    public class CustomErrorCodeException : Exception, IHasErrorCode
+    {
+        public string ErrorCode { get; set; }
+    }
+
     [TestFixture]
     public class ErrorStatusTests
     {
@@ -253,6 +258,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(new Custom400Exception().ToStatusCode(), Is.EqualTo(400));
                 Assert.That(new Custom400SubException().ToStatusCode(), Is.EqualTo(400));
                 Assert.That(new Custom401Exception().ToStatusCode(), Is.EqualTo(401));
+            }
+        }
+
+        [Test]
+        public void Does_map_Exception_to_ErrorCode()
+        {
+            using (new BasicAppHost().Init())
+            {
+                Assert.That(new CustomErrorCodeException().ToErrorCode(), Is.EqualTo("CustomErrorCodeException"));
+                Assert.That(new CustomErrorCodeException { ErrorCode = "ERR401" }.ToErrorCode(), Is.EqualTo("ERR401"));
             }
         }
     }

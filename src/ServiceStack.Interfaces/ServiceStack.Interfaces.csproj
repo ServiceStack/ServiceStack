@@ -139,6 +139,7 @@
     </Compile>
     <Compile Include="Data\OptimisticConcurrencyException.cs" />
     <Compile Include="ICompressor.cs" />
+    <Compile Include="IHasErrorCode.cs" />
     <Compile Include="IO\IVirtualFiles.cs" />
     <Compile Include="IO\IEndpoint.cs" />
     <Compile Include="IQuery.cs" />

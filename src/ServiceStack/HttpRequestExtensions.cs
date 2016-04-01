@@ -317,10 +317,10 @@ namespace ServiceStack
 
         public static string ToErrorCode(this Exception ex)
         {
-            if (ex is HttpError) return ((HttpError)ex).ErrorCode;
-            return ex.GetType().Name;
+            var hasErrorCode = ex as IHasErrorCode;
+            return (hasErrorCode != null ? hasErrorCode.ErrorCode : null)
+                ?? ex.GetType().Name;
         }
-
 
 
         /**

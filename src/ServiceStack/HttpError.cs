@@ -6,7 +6,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class HttpError : Exception, IHttpError, IResponseStatusConvertible
+    public class HttpError : Exception, IHttpError, IResponseStatusConvertible, IHasErrorCode
     {
         public HttpError() : this(null) { }
 
