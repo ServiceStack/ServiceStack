@@ -5,9 +5,22 @@ namespace ServiceStack
     public class CacheInfo
     {
         /// <summary>
-        /// The base CacheKey to be use store the response against
+        /// The CacheKey to be use store the response against
         /// </summary>
-        public string CacheKey { get; set; }
+        public string CacheKey
+        {
+            get { return KeyBase + KeyModifiers; }
+        }
+
+        /// <summary>
+        /// The base Cache Key used to cache the Service response
+        /// </summary>
+        public string KeyBase { get; set; }
+
+        /// <summary>
+        /// Additional CacheKey Modifiers used to cache different outputs for a single Service Response
+        /// </summary>
+        public string KeyModifiers { get; set; }
 
         /// <summary>
         /// How long to cache the resource for. Fallsback to HttpCacheFeature.DefaultExpiresIn

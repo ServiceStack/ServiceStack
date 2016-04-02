@@ -48,7 +48,8 @@ namespace ServiceStack
             if (feature == null)
                 throw new NotSupportedException(ErrorMessages.CacheFeatureMustBeEnabled.Fmt("[CacheResponse]"));
 
-            var cacheKey = "res:" + req.RawUrl + MimeTypes.GetExtension(req.ResponseContentType);
+            var keyBase = "res:" + req.RawUrl;
+            var keySuffix = MimeTypes.GetExtension(req.ResponseContentType);
 
             var modifiers = "";
             if (req.ResponseContentType == MimeTypes.Json)
@@ -62,8 +63,9 @@ namespace ServiceStack
                 modifiers += (modifiers.Length > 0 ? "+" : "") + "user:" + req.GetSessionId();
 
             if (modifiers.Length > 0)
-                cacheKey += "+" + modifiers;
+                keySuffix += "+" + modifiers;
 
+            var cacheKey = keyBase + keySuffix;
             var cacheKeyLastModified = "date:" + cacheKey;
             var cache = LocalCache ? HostContext.LocalCache : HostContext.Cache;
 
@@ -95,7 +97,8 @@ namespace ServiceStack
 
             req.Items[Keywords.CacheInfo] = new CacheInfo
             {
-                CacheKey = cacheKey,
+                KeyBase = keyBase,
+                KeyModifiers = keySuffix,
                 ExpiresIn = Duration > 0 ? TimeSpan.FromSeconds(Duration) : (TimeSpan?) null,
                 MaxAge = MaxAge >= 0 ? TimeSpan.FromSeconds(MaxAge) : (TimeSpan?)null,
                 CacheControl = CacheControl,
