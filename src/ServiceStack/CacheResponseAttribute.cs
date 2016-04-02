@@ -25,9 +25,14 @@ namespace ServiceStack
         public CacheControl CacheControl { get; set; }
 
         /// <summary>
-        /// Create unique cache per user
+        /// Vary cache per user
         /// </summary>
         public bool VaryByUser { get; set; }
+
+        /// <summary>
+        /// Vary cache for users in these roles
+        /// </summary>
+        public string[] VaryByRoles { get; set; }
 
         /// <summary>
         /// Use HostContext.LocalCache or HostContext.Cache
@@ -61,6 +66,19 @@ namespace ServiceStack
 
             if (VaryByUser)
                 modifiers += (modifiers.Length > 0 ? "+" : "") + "user:" + req.GetSessionId();
+
+            if (VaryByRoles != null && VaryByRoles.Length > 0)
+            {
+                var userSession = req.GetSession();
+                if (userSession != null)
+                {
+                    foreach (var role in VaryByRoles)
+                    {
+                        if (userSession.HasRole(role))
+                            modifiers += (modifiers.Length > 0 ? "+" : "") + "role:" + role;
+                    }
+                }
+            }
 
             if (modifiers.Length > 0)
                 keySuffix += "+" + modifiers;

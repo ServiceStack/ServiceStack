@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -27,6 +29,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [Route("/cache/serversuser/{Id}")]
     public class ServerCacheUser : ICacheDto
+    {
+        internal static int Count = 0;
+
+        public int Id { get; set; }
+        public string Value { get; set; }
+    }
+
+    [Route("/cache/serversroles/{Id}")]
+    public class ServerCacheRoles : ICacheDto
     {
         internal static int Count = 0;
 
@@ -81,6 +92,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return request;
         }
 
+        [CacheResponse(Duration = 10, VaryByRoles = new[]{ "RoleA", "RoleB" })]
+        public object Any(ServerCacheRoles request)
+        {
+            Interlocked.Increment(ref ServerCacheRoles.Count);
+            return request;
+        }
+
         [CacheResponse(Duration = 10, MaxAge = 10)]
         public object Any(ClientCacheMaxAge request)
         {
@@ -102,10 +120,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(typeof(CacheServerFeatureTests).Name, typeof(CacheEtagServices).Assembly)
-            { }
+                : base(typeof (CacheServerFeatureTests).Name, typeof (CacheEtagServices).Assembly) {}
 
-            public override void Configure(Container container) {}
+            public override void Configure(Container container)
+            {
+                PreRequestFilters.Add((req, res) =>
+                {
+                    var roleHeader = req.GetHeader("X-role");
+                    if (roleHeader == null)
+                        return;
+
+                    req.Items[Keywords.Session] = new AuthUserSession
+                    {
+                        UserAuthId = "1",
+                        UserAuthName = "test",
+                        Roles = new List<string> { roleHeader }
+                    };
+                });
+            }
         }
 
         private readonly ServiceStackHost appHost;
@@ -191,7 +223,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new ServerCacheUser { Id = 3, Value = "foo" };
 
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter:req => req.Headers.Add("X-ss-id","1"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-ss-id", "1"))
                 .FromJson<ServerCacheUser>();
 
             Assert.That(ServerCacheUser.Count, Is.EqualTo(1));
@@ -209,6 +241,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .FromJson<ServerCacheUser>();
 
             Assert.That(ServerCacheUser.Count, Is.EqualTo(2));
+            AssertEquals(response, request);
+        }
+
+        [Test]
+        public void Does_vary_cache_by_Role()
+        {
+            ServerCacheRoles.Count = 0;
+            var request = new ServerCacheRoles { Id = 3, Value = "foo" };
+
+            var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-role", "RoleA"))
+                .FromJson<ServerCacheRoles>();
+
+            Assert.That(ServerCacheRoles.Count, Is.EqualTo(1));
+            AssertEquals(response, request);
+
+            response = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-role", "RoleA"))
+                .FromJson<ServerCacheRoles>();
+
+            Assert.That(ServerCacheRoles.Count, Is.EqualTo(1));
+            AssertEquals(response, request);
+
+            response = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-role", "RoleB"))
+                .FromJson<ServerCacheRoles>();
+
+            Assert.That(ServerCacheRoles.Count, Is.EqualTo(2));
             AssertEquals(response, request);
         }
 

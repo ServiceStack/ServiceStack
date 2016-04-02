@@ -17,6 +17,7 @@
         public static string InvokeVerb = "__verb";
         public static string DbInfo = "__dbinfo";
         public static string CacheInfo = "__cacheinfo";
+        public static string Session = "__session";
         public static string JsConfig = "jsconfig";
     }
 
