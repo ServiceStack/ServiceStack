@@ -325,6 +325,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class ReplyAllCsvServiceClientTests : ReplyAllTests
+    {
+        public override IServiceClient CreateClient(string baseUri)
+        {
+            return new CsvServiceClient(baseUri);
+        }
+
+        public override IServiceClientAsync CreateClientAsync(string baseUri)
+        {
+            return new CsvServiceClient(baseUri);
+        }
+    }
+
     [TestFixture]
     public abstract class ReplyAllTests
     {
