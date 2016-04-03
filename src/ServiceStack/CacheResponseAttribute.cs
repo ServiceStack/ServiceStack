@@ -83,46 +83,65 @@ namespace ServiceStack
             if (modifiers.Length > 0)
                 keySuffix += "+" + modifiers;
 
-            var cacheKey = keyBase + keySuffix;
-            var cacheKeyLastModified = "date:" + cacheKey;
-            var cache = LocalCache ? HostContext.LocalCache : HostContext.Cache;
-
-            var doHttpCaching = MaxAge > 0 || CacheControl != CacheControl.None;
-            if (doHttpCaching)
-            {
-                var lastModified = cache.Get<DateTime?>(cacheKeyLastModified);
-                if (req.HasValidCache(lastModified))
-                {
-                    res.EndNotModified();
-                    return;
-                }
-            }
-
-            var encoding = req.GetCompressionType();
-
-            var responseBytes = encoding != null 
-                ? cache.Get<byte[]>(cacheKey + "." + encoding) 
-                : cache.Get<byte[]>(cacheKey);
-
-            if (responseBytes != null)
-            {
-                if (encoding != null)
-                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
-
-                res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
-                return;
-            }
-
-            req.Items[Keywords.CacheInfo] = new CacheInfo
+            var cacheInfo = new CacheInfo
             {
                 KeyBase = keyBase,
                 KeyModifiers = keySuffix,
-                ExpiresIn = Duration > 0 ? TimeSpan.FromSeconds(Duration) : (TimeSpan?) null,
+                ExpiresIn = Duration > 0 ? TimeSpan.FromSeconds(Duration) : (TimeSpan?)null,
                 MaxAge = MaxAge >= 0 ? TimeSpan.FromSeconds(MaxAge) : (TimeSpan?)null,
                 CacheControl = CacheControl,
                 VaryByUser = VaryByUser,
                 LocalCache = LocalCache,
             };
+
+            if (req.HasValidCache(cacheInfo))
+                return;
+
+            req.Items[Keywords.CacheInfo] = cacheInfo;
+        }
+    }
+
+    public static class CacheResponseExtensions
+    {
+        public static string LastModifiedKey(this CacheInfo cacheInfo)
+        {
+            return "date:" + cacheInfo.CacheKey;
+        }
+
+        public static bool HasValidCache(this IRequest req, CacheInfo cacheInfo)
+        {
+            if (cacheInfo == null)
+                return false;
+
+            var cache = cacheInfo.LocalCache ? HostContext.LocalCache : HostContext.Cache;
+
+            var doHttpCaching = cacheInfo.MaxAge != null || cacheInfo.CacheControl != CacheControl.None;
+            if (doHttpCaching)
+            {
+                var lastModified = cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
+                if (req.HasValidCache(lastModified))
+                {
+                    req.Response.EndNotModified();
+                    return true;
+                }
+            }
+
+            var encoding = req.GetCompressionType();
+
+            var responseBytes = encoding != null
+                ? cache.Get<byte[]>(cacheInfo.CacheKey + "." + encoding)
+                : cache.Get<byte[]>(cacheInfo.CacheKey);
+
+            if (responseBytes != null)
+            {
+                if (encoding != null)
+                    req.Response.AddHeader(HttpHeaders.ContentEncoding, encoding);
+
+                req.Response.WriteBytesToResponse(responseBytes, req.ResponseContentType);
+                return true;
+            }
+
+            return false;
         }
     }
 }

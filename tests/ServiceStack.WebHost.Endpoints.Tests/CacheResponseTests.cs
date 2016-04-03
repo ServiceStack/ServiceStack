@@ -63,6 +63,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Value { get; set; }
     }
 
+    [Route("/cache/serverscustomkey/{Id}")]
+    public class ServerCustomCacheKey : ICacheDto
+    {
+        internal static int Count = 0;
+
+        public int Id { get; set; }
+        public string Value { get; set; }
+    }
+
     public interface ICacheDto
     {
         int Id { get; set; }
@@ -110,6 +119,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(ClientCacheMustRevalidate request)
         {
             Interlocked.Increment(ref ClientCacheMustRevalidate.Count);
+            return request;
+        }
+
+        [CacheResponse(Duration = 10)]
+        public object Any(ServerCustomCacheKey request)
+        {
+            var cacheInfo = Request.GetItem(Keywords.CacheInfo) as CacheInfo;
+            if (cacheInfo != null)
+            {
+                cacheInfo.KeyBase += "::flag=" + (ServerCustomCacheKey.Count % 2 == 0);
+                if (Request.HasValidCache(cacheInfo))
+                    return null;
+            }
+
+            Interlocked.Increment(ref ServerCustomCacheKey.Count);
             return request;
         }
     }
@@ -393,6 +417,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(request);
             Assert.That(ClientCacheMustRevalidate.Count, Is.EqualTo(1));
             Assert.That(client.NotModifiedHits, Is.EqualTo(1));
+            AssertEquals(response, request);
+        }
+
+        [Test]
+        public void Does_cache_by_custom_CacheKey()
+        {
+            ServerCustomCacheKey.Count = 0;
+            var request = new ServerCustomCacheKey { Id = 8, Value = "foo" };
+
+            var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .GetJsonFromUrl()
+                .FromJson<ServerCustomCacheKey>();
+
+            Assert.That(ServerCustomCacheKey.Count, Is.EqualTo(1));
+            AssertEquals(response, request);
+
+            response = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .GetJsonFromUrl()
+                .FromJson<ServerCustomCacheKey>();
+
+            Assert.That(ServerCustomCacheKey.Count, Is.EqualTo(2));
+            AssertEquals(response, request);
+
+            response = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .GetJsonFromUrl()
+                .FromJson<ServerCustomCacheKey>();
+
+            Assert.That(ServerCustomCacheKey.Count, Is.EqualTo(2));
             AssertEquals(response, request);
         }
     }
