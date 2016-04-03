@@ -71,6 +71,10 @@ namespace ServiceStack.Host.Handlers
                     return EmptyTask;
 
                 var rawResponse = GetResponse(httpReq, request);
+
+                if (httpRes.IsClosed)
+                    return EmptyTask;
+
                 return HandleResponse(rawResponse, response =>
                 {
                     response = appHost.ApplyResponseConverters(httpReq, response);
