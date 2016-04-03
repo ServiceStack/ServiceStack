@@ -56,6 +56,36 @@ namespace ServiceStack.VirtualPath
             }
         }
 
+        public static void AppendFile(this IVirtualPathProvider pathProvider, string filePath, string textContents)
+        {
+            var writableFs = pathProvider as IVirtualFiles;
+            if (writableFs == null)
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.AppendFile(filePath, textContents);
+        }
+
+        public static void AppendFile(this IVirtualPathProvider pathProvider, string filePath, Stream stream)
+        {
+            var writableFs = pathProvider as IVirtualFiles;
+            if (writableFs == null)
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.AppendFile(filePath, stream);
+        }
+
+        public static void AppendFile(this IVirtualPathProvider pathProvider, string filePath, byte[] bytes)
+        {
+            var writableFs = pathProvider as IVirtualFiles;
+            if (writableFs == null)
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            using (var ms = MemoryStreamFactory.GetStream(bytes))
+            {
+                writableFs.AppendFile(filePath, ms);
+            }
+        }
+
         public static void WriteFile(this IVirtualPathProvider pathProvider, IVirtualFile file, string filePath = null)
         {
             var writableFs = pathProvider as IVirtualFiles;

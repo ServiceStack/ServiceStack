@@ -13,7 +13,7 @@ namespace ServiceStack.VirtualPath
     /// <summary>
     /// In Memory Virtual Path Provider.
     /// </summary>
-    public class InMemoryVirtualPathProvider : AbstractVirtualPathProviderBase, IWriteableVirtualPathProvider
+    public class InMemoryVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFiles, IWriteableVirtualPathProvider
     {
         public InMemoryVirtualPathProvider(IAppHost appHost)
             : base(appHost)
@@ -88,6 +88,44 @@ namespace ServiceStack.VirtualPath
         public void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null)
         {
             this.CopyFrom(files, toPath);
+        }
+
+        public void AppendFile(string filePath, string textContents)
+        {
+            filePath = SanitizePath(filePath);
+
+            var existingFile = GetFile(filePath);
+            var text = existingFile != null
+                ? existingFile.ReadAllText() + textContents
+                : textContents;
+
+            DeleteFile(filePath);
+
+            this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
+            {
+                FilePath = filePath,
+                TextContents = text,
+                FileLastModified = DateTime.UtcNow,
+            });
+        }
+
+        public void AppendFile(string filePath, Stream stream)
+        {
+            filePath = SanitizePath(filePath);
+
+            var existingFile = GetFile(filePath);
+            var bytes = existingFile != null
+                ? existingFile.ReadAllBytes().Combine(stream.ReadFully())
+                : stream.ReadFully();
+
+            DeleteFile(filePath);
+
+            this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
+            {
+                FilePath = filePath,
+                ByteContents = bytes,
+                FileLastModified = DateTime.UtcNow,
+            });
         }
 
         public void DeleteFile(string filePath)

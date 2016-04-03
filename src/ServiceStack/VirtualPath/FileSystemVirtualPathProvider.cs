@@ -74,6 +74,23 @@ namespace ServiceStack.VirtualPath
             this.CopyFrom(files, toPath);
         }
 
+        public void AppendFile(string filePath, string textContents)
+        {
+            var realFilePath = RootDir.RealPath.CombineWith(filePath);
+            EnsureDirectory(Path.GetDirectoryName(realFilePath));
+            File.AppendAllText(realFilePath, textContents);
+        }
+
+        public void AppendFile(string filePath, Stream stream)
+        {
+            var realFilePath = RootDir.RealPath.CombineWith(filePath);
+            EnsureDirectory(Path.GetDirectoryName(realFilePath));
+            using (var fs = new FileStream(realFilePath, FileMode.Append))
+            {
+                stream.WriteTo(fs);
+            }
+        }
+
         public void DeleteFile(string filePath)
         {
             var realFilePath = RootDir.RealPath.CombineWith(filePath);

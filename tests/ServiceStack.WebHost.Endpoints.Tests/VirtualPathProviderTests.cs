@@ -268,6 +268,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(pathProvider.GetAllFiles().ToList().Count, Is.EqualTo(0));
         }
 
+        [Test]
+        public void Does_append_to_file()
+        {
+            var pathProvider = GetPathProvider();
+            pathProvider.DeleteFile("original.txt");
+            pathProvider.WriteFile("original.txt", "original\n");
+
+            pathProvider.AppendFile("original.txt", "New Line1\n");
+            pathProvider.AppendFile("original.txt", "New Line2\n");
+
+            var contents = pathProvider.GetFile("original.txt").ReadAllText();
+            Assert.That(contents, Is.EqualTo("original\nNew Line1\nNew Line2\n"));
+        }
+
+        [Test]
+        public void Does_append_to_file_bytes()
+        {
+            var pathProvider = GetPathProvider();
+            pathProvider.DeleteFile("original.bin");
+            pathProvider.WriteFile("original.bin", "original\n".ToUtf8Bytes());
+
+            pathProvider.AppendFile("original.bin", "New Line1\n".ToUtf8Bytes());
+            pathProvider.AppendFile("original.bin", "New Line2\n".ToUtf8Bytes());
+
+            var contents = pathProvider.GetFile("original.bin").ReadAllBytes();
+            Assert.That(contents, Is.EquivalentTo("original\nNew Line1\nNew Line2\n".ToUtf8Bytes()));
+        }
+
         public void AssertContents(IVirtualDirectory dir,
             string[] expectedFilePaths, string[] expectedDirPaths)
         {
