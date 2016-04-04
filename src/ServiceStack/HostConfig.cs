@@ -132,7 +132,8 @@ namespace ServiceStack
                 XmlWriterSettings = new XmlWriterSettings
                 {
                     Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                }
+                },
+                FallbackRestPath = null,
             };
 
             if (config.HandlerFactoryPath == null)
