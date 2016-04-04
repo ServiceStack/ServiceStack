@@ -74,12 +74,11 @@ namespace ServiceStack.Common.Tests
                 }
             }.Init())
             {
-                var c = appHost.Container;
-                var dtoAValidator = (DtoARequestValidator)c.TryResolve<IValidator<DtoA>>();
+                var dtoAValidator = (DtoARequestValidator)appHost.TryResolve<IValidator<DtoA>>();
                 Assert.That(dtoAValidator, Is.Not.Null);
                 Assert.That(dtoAValidator.dtoBValidator, Is.Not.Null);
-                Assert.That(c.TryResolve<IValidator<DtoB>>(), Is.Not.Null);
-                Assert.That(c.TryResolve<IDtoBValidator>(), Is.Not.Null);
+                Assert.That(appHost.TryResolve<IValidator<DtoB>>(), Is.Not.Null);
+                Assert.That(appHost.TryResolve<IDtoBValidator>(), Is.Not.Null);
 
                 var result = dtoAValidator.Validate(new DtoA());
                 Assert.That(result.IsValid, Is.False);
