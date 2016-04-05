@@ -123,7 +123,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = new CsvServiceClient(Config.ListeningOn);
 
-            var dtos = 3.Times(CreateCsvItem);
+            var dtos = 3.Times(x => CreateCsvItem(x));
 
             var response = client.SendAll(dtos);
             Assert.That(response, Is.EquivalentTo(dtos));
@@ -139,7 +139,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = new CsvServiceClient(Config.ListeningOn);
 
-            var dtos = 3.Times(CreateCsvItem);
+            var dtos = 3.Times(x => CreateCsvItem(x));
 
             var response = client.Post(new CsvList(dtos));
             Assert.That(response, Is.EquivalentTo(dtos));
@@ -190,7 +190,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Id = 1,
                 Name = "Name",
-                Items = 3.Times(CreateCsvItem)
+                Items = 3.Times(x => CreateCsvItem(x))
             };
 
             var response = client.Post(dto);
