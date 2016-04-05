@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -29,23 +30,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         }
 
 		[Test]
-		[Ignore("Fails because CSV Deserializer is not implemented")]
-		public void Can_download_movies_in_Csv()
+		public async Task Can_download_movies_in_Csv()
 		{
-			var asyncClient = new AsyncServiceClient
-			{
-                ContentType = MimeTypes.Csv,
-				StreamSerializer = (r, o, s) => CsvSerializer.SerializeToStream(o, s),
-				StreamDeserializer = CsvSerializer.DeserializeFromStream,
-			};
+            var client = new CsvServiceClient(ServiceClientBaseUri);
 
-			MoviesResponse response = null;
-			asyncClient.SendAsync<MoviesResponse>(HttpMethods.Get, ServiceClientBaseUri + "/movies", null,
-												  r => response = r, FailOnAsyncError);
+            var response = await client.GetAsync<MoviesResponse>(new Movies());
 
-			Thread.Sleep(1000);
-
-			Assert.That(response, Is.Not.Null, "No response received");
+            Assert.That(response, Is.Not.Null, "No response received");
 		}
 
 		[Test]

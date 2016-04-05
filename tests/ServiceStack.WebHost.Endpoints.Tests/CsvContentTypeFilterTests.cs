@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Text;
@@ -71,21 +72,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(csvRows.Length, Is.EqualTo(HeaderRowCount + ResetMoviesService.Top5Movies.Count));
 		}
 
-		[Test][Ignore("Fails because CSV Deserializer is not implemented")]
-		public void Can_download_movies_in_Csv()
+		[Test]
+		public async Task Can_download_movies_in_Csv()
 		{
-			var asyncClient = new AsyncServiceClient
-			{
-                ContentType = MimeTypes.Csv,
-				StreamSerializer = (r,o,s) => CsvSerializer.SerializeToStream(o,s),
-				StreamDeserializer = CsvSerializer.DeserializeFromStream,
-			};
+			var client = new CsvServiceClient(ListeningOn);
 
-			MoviesResponse response = null;
-			asyncClient.SendAsync<MoviesResponse>(HttpMethods.Get, ListeningOn + "movies", null,
-				r => response = r, FailOnAsyncError);
-
-			Thread.Sleep(1000);
+			var response = await client.GetAsync<MoviesResponse>(new Movies());
 
 			Assert.That(response, Is.Not.Null, "No response received");
 		}
