@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         public void GetRequest()
         {
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
-            client.Headers.Add("Foo","abc123");
+            client.Headers.Add("Foo", "abc123");
             var response = client.Get(new CustomHeaders());
             Assert.That(response.Foo, Is.EqualTo("abc123"));
             Assert.That(response.Bar, Is.Null);

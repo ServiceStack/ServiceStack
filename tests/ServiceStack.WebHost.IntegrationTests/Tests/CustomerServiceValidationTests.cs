@@ -13,22 +13,22 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         private const string ListeningOn = Config.ServiceStackBaseUri;
 
         private string[] ExpectedPostErrorFields = new[] {
-			"Id",
-			"LastName",
-			"FirstName",
-			"Company",
-			"Address",
-			"Postcode",
-		};
+            "Id",
+            "LastName",
+            "FirstName",
+            "Company",
+            "Address",
+            "Postcode",
+        };
 
         private string[] ExpectedPostErrorCodes = new[] {
-			"NotEqual",
-			"ShouldNotBeEmpty",
-			"NotEmpty",
-			"NotNull",
-			"Length",
-			"Predicate",
-		};
+            "NotEqual",
+            "ShouldNotBeEmpty",
+            "NotEmpty",
+            "NotNull",
+            "Length",
+            "Predicate",
+        };
 
         Customers validRequest;
 
@@ -53,10 +53,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             get
             {
                 return new IServiceClient[] {
-					new JsonServiceClient(ListeningOn),
-					new JsvServiceClient(ListeningOn),
-					new XmlServiceClient(ListeningOn),
-				};
+                    new JsonServiceClient(ListeningOn),
+                    new JsvServiceClient(ListeningOn),
+                    new XmlServiceClient(ListeningOn),
+                };
             }
         }
 

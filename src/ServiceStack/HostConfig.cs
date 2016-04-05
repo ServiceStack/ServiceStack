@@ -72,7 +72,6 @@ namespace ServiceStack
                 },
                 IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    "soap11"
                 },
                 AllowFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {

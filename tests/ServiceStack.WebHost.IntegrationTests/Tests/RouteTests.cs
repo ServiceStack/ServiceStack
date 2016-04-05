@@ -26,7 +26,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             };
         }
     }
-    
+
     public class RouteInfoPathTests
     {
         [Test]

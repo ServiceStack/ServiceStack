@@ -13,12 +13,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             get
             {
                 return new IServiceClient[] {
-					new JsonServiceClient(Config.ServiceStackBaseUri),
-					new JsvServiceClient(Config.ServiceStackBaseUri),
-					new XmlServiceClient(Config.ServiceStackBaseUri),
-					new Soap11ServiceClient(Config.ServiceStackBaseUri),
-					new Soap12ServiceClient(Config.ServiceStackBaseUri)
-				};
+                    new JsonServiceClient(Config.ServiceStackBaseUri),
+                    new JsvServiceClient(Config.ServiceStackBaseUri),
+                    new XmlServiceClient(Config.ServiceStackBaseUri),
+                    new Soap11ServiceClient(Config.ServiceStackBaseUri),
+                    new Soap12ServiceClient(Config.ServiceStackBaseUri)
+                };
             }
         }
 
@@ -27,10 +27,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             get
             {
                 return new IRestClient[] {
-					new JsonServiceClient(Config.ServiceStackBaseUri),
-					new JsvServiceClient(Config.ServiceStackBaseUri),
-					new XmlServiceClient(Config.ServiceStackBaseUri),
-				};
+                    new JsonServiceClient(Config.ServiceStackBaseUri),
+                    new JsvServiceClient(Config.ServiceStackBaseUri),
+                    new XmlServiceClient(Config.ServiceStackBaseUri),
+                };
             }
         }
 

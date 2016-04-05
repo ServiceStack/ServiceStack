@@ -116,11 +116,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
     {
         private const string ListeningOn = Config.ServiceStackBaseUri + "/";
 
-        protected static IRestClient[] ServiceClients = 
-		{
-			new JsonServiceClient(ListeningOn),
-			new XmlServiceClient(ListeningOn),
-			new JsvServiceClient(ListeningOn)
+        protected static IRestClient[] ServiceClients =
+        {
+            new JsonServiceClient(ListeningOn),
+            new XmlServiceClient(ListeningOn),
+            new JsvServiceClient(ListeningOn)
 			//SOAP not supported in HttpListener
 			//new Soap11ServiceClient(ServiceClientBaseUri),
 			//new Soap12ServiceClient(ServiceClientBaseUri)
@@ -221,7 +221,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             try
             {
                 var json = PredefinedJsonUrl<ExceptionNoResponseStatus>().GetJsonFromUrl();
-				json.PrintDump();
+                json.PrintDump();
                 Assert.Fail("Should throw");
             }
             catch (WebException webEx)

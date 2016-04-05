@@ -136,7 +136,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
             var request = new FileUpload();
             var response = client.PostFileWithRequest<FileUploadResponse>(
-                Config.ServiceStackBaseUri + "/fileuploads?CustomerId=123&CustomerName=Foo,Bar", 
+                Config.ServiceStackBaseUri + "/fileuploads?CustomerId=123&CustomerName=Foo,Bar",
                 uploadFile, request);
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
