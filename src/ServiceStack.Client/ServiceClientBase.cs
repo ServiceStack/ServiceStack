@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Reflection;
+using System.Threading;
 using ServiceStack.Auth;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
@@ -904,9 +905,14 @@ namespace ServiceStack
             }
         }
 
+        public void Publish(object requestDto)
+        {
+            SendOneWay(requestDto);
+        }
+
         public void Publish<T>(T requestDto)
         {
-            Post(requestDto);
+            SendOneWay(requestDto);
         }
 
         public void Publish<T>(IMessage<T> message)
@@ -926,7 +932,7 @@ namespace ServiceStack
             if (message.Tag != null)
                 Headers.Set("X-Tag", message.Tag);
 
-            Post(requestDto);
+            SendOneWay(requestDto);
         }
 
         public static string GetExplicitMethod(object request)
@@ -990,6 +996,42 @@ namespace ServiceStack
             }
         }
 
+        public Task<TResponse> SendAsync<TResponse>(object request, CancellationToken token)
+        {
+            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
+            return asyncClient.SendAsync<TResponse>(httpMethod, ResolveUrl(httpMethod, requestUri), request, token);
+        }
+
+        public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token)
+        {
+            return SendAsync<TResponse>((object)requestDto, token);
+        }
+
+        public Task SendAsync(IReturnVoid requestDto, CancellationToken token)
+        {
+            return SendAsync<byte[]>(requestDto, token);
+        }
+
+        public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            return SendAllAsync(requests, default(CancellationToken));
+        }
+
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
+        {
+            var elType = requests.GetType().GetCollectionType();
+            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            return asyncClient.SendAsync<List<TResponse>>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
+        }
+
+        public Task PublishAsync(object request, CancellationToken token)
+        {
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
+            return asyncClient.SendAsync<byte[]>(httpMethod, ResolveUrl(httpMethod, requestUri), request, token);
+        }
+
         public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             return SendAsync<TResponse>((object)requestDto);
@@ -997,22 +1039,12 @@ namespace ServiceStack
 
         public virtual Task<TResponse> SendAsync<TResponse>(object request)
         {
-            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
-            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
-            return asyncClient.SendAsync<TResponse>(httpMethod, ResolveUrl(httpMethod, requestUri), request);
+            return SendAsync<TResponse>(request, default(CancellationToken));
         }
 
         public virtual Task<HttpWebResponse> SendAsync(IReturnVoid requestDto)
         {
             return SendAsync<HttpWebResponse>(requestDto);
-        }
-
-        public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
-        {
-            var elType = requests.GetType().GetCollectionType();
-            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
-
-            return asyncClient.SendAsync<List<TResponse>>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests);
         }
 
 

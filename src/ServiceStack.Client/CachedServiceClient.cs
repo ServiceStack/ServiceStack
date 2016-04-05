@@ -602,6 +602,36 @@ namespace ServiceStack
 
         public string SessionId { get; set; }
         public int Version { get; set; }
+
+        public void Publish(object requestDto)
+        {
+            client.Publish(requestDto);
+        }
+
+        public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token)
+        {
+            return client.SendAsync<TResponse>(requestDto, token);
+        }
+
+        public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token)
+        {
+            return client.SendAsync(requestDto, token);
+        }
+
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
+        {
+            return client.SendAllAsync(requests, token);
+        }
+
+        public Task SendAsync(IReturnVoid requestDto, CancellationToken token)
+        {
+            return client.SendAsync(requestDto, token);
+        }
+
+        public Task PublishAsync(object requestDto, CancellationToken token)
+        {
+            return client.PublishAsync(requestDto, token);
+        }
     }
 
     public static class CachedServiceClientExtensions

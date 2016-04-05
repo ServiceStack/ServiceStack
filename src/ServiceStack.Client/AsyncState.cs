@@ -47,6 +47,8 @@ namespace ServiceStack
 
         public ITimer Timer;
 
+        public CancellationToken Token;
+
         public Action<WebResponse> OnResponseInit;
 
         public Action<TResponse> OnSuccess;

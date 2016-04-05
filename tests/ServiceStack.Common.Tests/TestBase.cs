@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Host;
@@ -555,6 +556,36 @@ namespace ServiceStack.Common.Tests
 
             public int Version { get; set; }
             public string SessionId { get; set; }
+
+            public void Publish(object requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SendAsync(IReturnVoid requestDto, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task PublishAsync(object requestDto, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public object ExecutePath(string pathInfo)

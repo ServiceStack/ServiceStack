@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Host;
 using ServiceStack.Testing;
@@ -477,6 +478,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         }
 
         public TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Publish(object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SendAsync(IReturnVoid requestDto, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PublishAsync(object requestDto, CancellationToken token)
         {
             throw new NotImplementedException();
         }

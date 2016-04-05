@@ -1691,6 +1691,9 @@ namespace ServiceStack
  
         public virtual void AddHeader(WebRequest webReq, INameValueCollection headers)
         {
+            if (headers == null)
+                return;
+
             foreach (var name in headers.AllKeys)
             {
                 webReq.Headers[name] = headers[name];

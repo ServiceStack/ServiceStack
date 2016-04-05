@@ -148,6 +148,11 @@ namespace ServiceStack
 
         public void Send(IReturnVoid request)
         {
+            Publish(request);
+        }
+
+        public void Publish(object request)
+        {
             byte[] cryptKey, authKey, iv;
             AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
 
