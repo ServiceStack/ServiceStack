@@ -70,6 +70,7 @@
     <Compile Include="EncryptedServiceClient.cs" />
     <Compile Include="HttpCacheEntry.cs" />
     <Compile Include="ICachedServiceClient.cs" />
+    <Compile Include="CsvServiceClient.cs" />
     <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
     <Compile Include="PclExportClient.Xbox.cs" />
     <Compile Include="PclExportClient.Wp.cs" />

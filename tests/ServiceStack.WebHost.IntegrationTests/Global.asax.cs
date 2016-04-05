@@ -103,7 +103,8 @@ namespace ServiceStack.WebHost.IntegrationTests
                 Plugins.Add(new SessionFeature());
                 Plugins.Add(new ProtoBufFormat());
                 Plugins.Add(new RequestLogsFeature {
-                    RequestLogger = new RedisRequestLogger(container.Resolve<IRedisClientsManager>())
+                    //RequestLogger = new RedisRequestLogger(container.Resolve<IRedisClientsManager>())
+                    RequestLogger = new CsvRequestLogger(),
                 });
                 Plugins.Add(new SwaggerFeature {
                     //UseBootstrapTheme = true

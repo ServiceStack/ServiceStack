@@ -9,7 +9,7 @@ namespace ServiceStack.Host
 {
     public class InMemoryRollingRequestLogger : IRequestLogger
     {
-        private static int requestId = 0;
+        internal static long requestId = 0;
 
         public const int DefaultCapacity = 1000;
         protected readonly ConcurrentQueue<RequestLogEntry> logEntries = new ConcurrentQueue<RequestLogEntry>();

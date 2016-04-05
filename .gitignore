@@ -43,6 +43,7 @@ packages/
 release/latest/
 *.nupkg
 release/*
+requestlogs/
 
 *.DS_Store
 
