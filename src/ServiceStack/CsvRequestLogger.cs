@@ -13,7 +13,7 @@ namespace ServiceStack
 {
     public class CsvRequestLogger : InMemoryRollingRequestLogger
     {
-        private static ILog log = LogManager.GetLogger(typeof(CsvRequestLogger));
+        private static readonly ILog log = LogManager.GetLogger(typeof(CsvRequestLogger));
 
         readonly object semaphore = new object();
         private List<RequestLogEntry> logs = new List<RequestLogEntry>();
