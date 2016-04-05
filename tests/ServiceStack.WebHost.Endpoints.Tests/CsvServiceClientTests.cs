@@ -165,7 +165,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Id = 1,
                 Name = "Name",
-                Items = 3.Times(CreateCsvItem)
+                Items = 3.Times(x => CreateCsvItem(x))
             };
 
             var response = client.Post(dto);
