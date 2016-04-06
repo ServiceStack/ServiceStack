@@ -640,7 +640,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = GetClient();
 
             var request = new Secured { Name = "test" };
-            var authResponse = await client.SendAsync<AuthenticateResponse>(
+            var authResponse = await client.SendAsync(
                 new Authenticate
                 {
                     provider = CredentialsAuthProvider.Name,

@@ -472,30 +472,6 @@ namespace ServiceStack
             //}
         }
 
-        public T GetSyncResponse<T>(Task<T> task)
-        {
-            try
-            {
-                return task.Result;
-            }
-            catch (Exception ex)
-            {
-                throw ex.UnwrapIfSingleException();
-            }
-        }
-
-        public void WaitSyncResponse(Task task)
-        {
-            try
-            {
-                task.Wait();
-            }
-            catch (Exception ex)
-            {
-                throw ex.UnwrapIfSingleException();
-            }
-        }
-
         public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             return SendAsync<TResponse>((object)requestDto, default(CancellationToken));
@@ -543,7 +519,7 @@ namespace ServiceStack
 
         public virtual List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
-            return GetSyncResponse(SendAllAsync(requests));
+            return SendAllAsync(requests).GetSyncResponse();
         }
 
         public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
@@ -723,22 +699,22 @@ namespace ServiceStack
 
         public void Get(IReturnVoid request)
         {
-            WaitSyncResponse(GetAsync(request));
+            GetAsync(request).WaitSyncResponse();
         }
 
         public TResponse Get<TResponse>(IReturn<TResponse> request)
         {
-            return GetSyncResponse(GetAsync(request));
+            return GetAsync(request).GetSyncResponse();
         }
 
         public TResponse Get<TResponse>(object request)
         {
-            return GetSyncResponse(GetAsync<TResponse>(request));
+            return GetAsync<TResponse>(request).GetSyncResponse();
         }
 
         public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
         {
-            return GetSyncResponse(GetAsync<TResponse>(relativeOrAbsoluteUrl));
+            return GetAsync<TResponse>(relativeOrAbsoluteUrl).GetSyncResponse();
         }
 
         public IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
@@ -748,97 +724,97 @@ namespace ServiceStack
 
         public void Delete(IReturnVoid requestDto)
         {
-            WaitSyncResponse(DeleteAsync(requestDto));
+            DeleteAsync(requestDto).WaitSyncResponse();
         }
 
         public TResponse Delete<TResponse>(IReturn<TResponse> request)
         {
-            return GetSyncResponse(DeleteAsync(request));
+            return DeleteAsync(request).GetSyncResponse();
         }
 
         public TResponse Delete<TResponse>(object request)
         {
-            return GetSyncResponse(DeleteAsync<TResponse>(request));
+            return DeleteAsync<TResponse>(request).GetSyncResponse();
         }
 
         public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
         {
-            return GetSyncResponse(DeleteAsync<TResponse>(relativeOrAbsoluteUrl));
+            return DeleteAsync<TResponse>(relativeOrAbsoluteUrl).GetSyncResponse();
         }
 
         public void Post(IReturnVoid requestDto)
         {
-            WaitSyncResponse(PostAsync(requestDto));
+            PostAsync(requestDto).WaitSyncResponse();
         }
 
         public TResponse Post<TResponse>(IReturn<TResponse> request)
         {
-            return GetSyncResponse(PostAsync(request));
+            return PostAsync(request).GetSyncResponse();
         }
 
         public TResponse Post<TResponse>(object request)
         {
-            return GetSyncResponse(PostAsync<TResponse>(request));
+            return PostAsync<TResponse>(request).GetSyncResponse();
         }
 
         public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            return GetSyncResponse(PostAsync<TResponse>(relativeOrAbsoluteUrl, request));
+            return PostAsync<TResponse>(relativeOrAbsoluteUrl, request).GetSyncResponse();
         }
 
         public void Put(IReturnVoid requestDto)
         {
-            WaitSyncResponse(PutAsync(requestDto));
+            PutAsync(requestDto).WaitSyncResponse();
         }
 
         public TResponse Put<TResponse>(IReturn<TResponse> request)
         {
-            return GetSyncResponse(PutAsync(request));
+            return PutAsync(request).GetSyncResponse();
         }
 
         public TResponse Put<TResponse>(object request)
         {
-            return GetSyncResponse(PutAsync<TResponse>(request));
+            return PutAsync<TResponse>(request).GetSyncResponse();
         }
 
         public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            return GetSyncResponse(PutAsync<TResponse>(relativeOrAbsoluteUrl, request));
+            return PutAsync<TResponse>(relativeOrAbsoluteUrl, request).GetSyncResponse();
         }
 
         public void Patch(IReturnVoid request)
         {
-            WaitSyncResponse(SendAsync<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, request), null));
+            SendAsync<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, request), null).WaitSyncResponse();
         }
 
         public TResponse Patch<TResponse>(IReturn<TResponse> request)
         {
-            return GetSyncResponse(SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, request), request));
+            return SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, request), request).GetSyncResponse();
         }
 
         public TResponse Patch<TResponse>(object request)
         {
-            return GetSyncResponse(SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, request), request));
+            return SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, request), request).GetSyncResponse();
         }
 
         public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
-            return GetSyncResponse(SendAsync<TResponse>(HttpMethods.Patch, relativeOrAbsoluteUrl, request));
+            return SendAsync<TResponse>(HttpMethods.Patch, relativeOrAbsoluteUrl, request).GetSyncResponse();
         }
 
         public void CustomMethod(string httpVerb, IReturnVoid request)
         {
-            WaitSyncResponse(SendAsync<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, request), request));
+            SendAsync<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, request), request).WaitSyncResponse();
         }
 
         public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request)
         {
-            return GetSyncResponse(SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, request), request));
+            return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, request), request).GetSyncResponse();
         }
 
         public TResponse CustomMethod<TResponse>(string httpVerb, object request)
         {
-            return GetSyncResponse(SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, request), null));
+            return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, request), null).GetSyncResponse();
         }
 
         public Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null)
@@ -861,7 +837,7 @@ namespace ServiceStack
 
         public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
-            return GetSyncResponse(PostFileAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, mimeType));
+            return PostFileAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, mimeType).GetSyncResponse();
         }
 
         public Task<TResponse> PostFileWithRequestAsync<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
@@ -871,7 +847,7 @@ namespace ServiceStack
 
         public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
         {
-            return GetSyncResponse(PostFileWithRequestAsync<TResponse>(fileToUpload, fileName, request, fileName));
+            return PostFileWithRequestAsync<TResponse>(fileToUpload, fileName, request, fileName).GetSyncResponse();
         }
 
         public Task<TResponse> PostFileWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
@@ -906,17 +882,17 @@ namespace ServiceStack
         public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
                                                         object request, string fieldName = "upload")
         {
-            return GetSyncResponse(PostFileWithRequestAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, request, fileName));
+            return PostFileWithRequestAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, request, fileName).GetSyncResponse();
         }
 
         public virtual TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
         {
-            return GetSyncResponse(PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray()));
+            return PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray()).GetSyncResponse();
         }
 
         public virtual TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
         {
-            return GetSyncResponse(PostFilesWithRequestAsync<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray()));
+            return PostFilesWithRequestAsync<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray()).GetSyncResponse();
         }
 
         public virtual Task<TResponse> PostFilesWithRequestAsync<TResponse>(object request, IEnumerable<UploadFile> files)
@@ -969,7 +945,7 @@ namespace ServiceStack
 
         public TResponse Send<TResponse>(object request)
         {
-            return GetSyncResponse(SendAsync<TResponse>(request));
+            return SendAsync<TResponse>(request).GetSyncResponse();
         }
 
         public virtual TResponse Send<TResponse>(IReturn<TResponse> request)
@@ -1030,4 +1006,30 @@ namespace ServiceStack
         }
     }
 
+    internal static class InternalExtensions
+    {
+        public static T GetSyncResponse<T>(this Task<T> task)
+        {
+            try
+            {
+                return task.Result;
+            }
+            catch (Exception ex)
+            {
+                throw ex.UnwrapIfSingleException();
+            }
+        }
+
+        public static void WaitSyncResponse(this Task task)
+        {
+            try
+            {
+                task.Wait();
+            }
+            catch (Exception ex)
+            {
+                throw ex.UnwrapIfSingleException();
+            }
+        }
+    }
 }

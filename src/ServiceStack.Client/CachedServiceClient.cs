@@ -384,21 +384,6 @@ namespace ServiceStack
             client.CancelAsync();
         }
 
-        public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto)
-        {
-            return client.SendAsync(requestDto);
-        }
-
-        public Task<TResponse> SendAsync<TResponse>(object requestDto)
-        {
-            return client.SendAsync<TResponse>(requestDto);
-        }
-
-        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
-        {
-            return client.SendAllAsync(requests);
-        }
-
         public void SendOneWay(object requestDto)
         {
             client.SendOneWay(requestDto);
@@ -585,23 +570,10 @@ namespace ServiceStack
             return client.Send<TResponse>(request);
         }
 
-        public TResponse Send<TResponse>(IReturn<TResponse> request)
-        {
-            return client.Send(request);
-        }
-
-        public void Send(IReturnVoid request)
-        {
-            client.Send(request);
-        }
-
         public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
             return client.SendAll(requests);
         }
-
-        public string SessionId { get; set; }
-        public int Version { get; set; }
 
         public void Publish(object requestDto)
         {
@@ -613,25 +585,18 @@ namespace ServiceStack
             return client.SendAsync<TResponse>(requestDto, token);
         }
 
-        public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token)
-        {
-            return client.SendAsync(requestDto, token);
-        }
-
         public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
         {
             return client.SendAllAsync(requests, token);
-        }
-
-        public Task SendAsync(IReturnVoid requestDto, CancellationToken token)
-        {
-            return client.SendAsync(requestDto, token);
         }
 
         public Task PublishAsync(object requestDto, CancellationToken token)
         {
             return client.PublishAsync(requestDto, token);
         }
+
+        public string SessionId { get; set; }
+        public int Version { get; set; }
     }
 
     public static class CachedServiceClientExtensions

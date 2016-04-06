@@ -548,16 +548,6 @@ namespace ServiceStack
             }
         }
 
-        public virtual TResponse Send<TResponse>(IReturn<TResponse> request)
-        {
-            return Send<TResponse>((object)request);
-        }
-
-        public virtual void Send(IReturnVoid request)
-        {
-            SendOneWay(request);
-        }
-
         public virtual TResponse Send<TResponse>(object request)
         {
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
@@ -1008,16 +998,6 @@ namespace ServiceStack
             return SendAsync<TResponse>((object)requestDto, token);
         }
 
-        public Task SendAsync(IReturnVoid requestDto, CancellationToken token)
-        {
-            return SendAsync<byte[]>(requestDto, token);
-        }
-
-        public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
-        {
-            return SendAllAsync(requests, default(CancellationToken));
-        }
-
         public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
         {
             var elType = requests.GetType().GetCollectionType();
@@ -1030,11 +1010,6 @@ namespace ServiceStack
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
             var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
             return asyncClient.SendAsync<byte[]>(httpMethod, ResolveUrl(httpMethod, requestUri), request, token);
-        }
-
-        public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto)
-        {
-            return SendAsync<TResponse>((object)requestDto);
         }
 
         public virtual Task<TResponse> SendAsync<TResponse>(object request)

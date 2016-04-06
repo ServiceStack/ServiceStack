@@ -115,6 +115,7 @@
     <Compile Include="ServerEventsClient.cs" />
     <Compile Include="ServerEventsClient.Receiver.cs" />
     <Compile Include="ServiceClientBase.cs" />
+    <Compile Include="ServiceGatewayExtensions.cs" />
     <Compile Include="Soap11ServiceClient.cs" />
     <Compile Include="Soap12ServiceClient.cs" />
     <Compile Include="StreamExt.cs" />

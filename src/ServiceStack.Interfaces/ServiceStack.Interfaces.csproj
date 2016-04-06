@@ -441,9 +441,6 @@
     <Compile Include="IServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="IServiceClientAsync.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Web\IStreamWriter.cs">
       <SubType>Code</SubType>
     </Compile>

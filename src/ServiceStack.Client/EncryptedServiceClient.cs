@@ -113,6 +113,22 @@ namespace ServiceStack
             }
         }
 
+        public void Publish(object request)
+        {
+            byte[] cryptKey, authKey, iv;
+            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+
+            try
+            {
+                var encryptedMessage = CreateEncryptedMessage(request, request.GetType().Name, cryptKey, authKey, iv);
+                Client.SendOneWay(encryptedMessage);
+            }
+            catch (WebServiceException ex)
+            {
+                throw DecryptedException(ex, cryptKey, authKey);
+            }
+        }
+
         public EncryptedMessage CreateEncryptedMessage(object request, string operationName, byte[] cryptKey, byte[] authKey, byte[] iv, string verb = null)
         {
             this.PopulateRequestMetadata(request);
@@ -139,32 +155,6 @@ namespace ServiceStack
             };
             
             return encryptedMessage;
-        }
-
-        public TResponse Send<TResponse>(IReturn<TResponse> request)
-        {
-            return Send<TResponse>((object)request);
-        }
-
-        public void Send(IReturnVoid request)
-        {
-            Publish(request);
-        }
-
-        public void Publish(object request)
-        {
-            byte[] cryptKey, authKey, iv;
-            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
-
-            try
-            {
-                var encryptedMessage = CreateEncryptedMessage(request, request.GetType().Name, cryptKey, authKey, iv);
-                Client.SendOneWay(encryptedMessage);
-            }
-            catch (WebServiceException ex)
-            {
-                throw DecryptedException(ex, cryptKey, authKey);
-            }
         }
 
         public WebServiceException DecryptedException(WebServiceException ex, byte[] cryptKey, byte[] authKey)
