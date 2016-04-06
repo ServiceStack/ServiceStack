@@ -197,6 +197,11 @@ namespace ServiceStack
             return new EncryptedServiceClient(client, serverPublicKeyXml);
         }
 
+        public static void Send(this IEncryptedClient client, IReturnVoid request)
+        {
+            client.Publish(request);
+        }
+
         public static IEncryptedClient GetEncryptedClient(this IJsonServiceClient client, RSAParameters publicKey)
         {
             return new EncryptedServiceClient(client, publicKey);
