@@ -550,8 +550,21 @@ namespace ServiceStack
 
         public virtual TResponse Send<TResponse>(object request)
         {
-            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
-            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
+            if (request is IGet)
+                return Get<TResponse>(request);
+            if (request is IPost)
+                return Post<TResponse>(request);
+            if (request is IPut)
+                return Put<TResponse>(request);
+            if (request is IDelete)
+                return Delete<TResponse>(request);
+            if (request is IPatch)
+                return Patch<TResponse>(request);
+
+            var httpMethod = HttpMethod ?? DefaultHttpMethod;
+            var requestUri = ResolveUrl(httpMethod, UrlResolver == null 
+                ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
+                : Format + "/reply/" + request.GetType().Name);
 
             if (ResultsFilter != null)
             {
@@ -895,7 +908,7 @@ namespace ServiceStack
             }
         }
 
-        public void Publish(object requestDto)
+        public virtual void Publish(object requestDto)
         {
             SendOneWay(requestDto);
         }
@@ -986,16 +999,25 @@ namespace ServiceStack
             }
         }
 
-        public Task<TResponse> SendAsync<TResponse>(object request, CancellationToken token)
+        public virtual Task<TResponse> SendAsync<TResponse>(object request, CancellationToken token)
         {
-            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
-            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
-            return asyncClient.SendAsync<TResponse>(httpMethod, ResolveUrl(httpMethod, requestUri), request, token);
-        }
+            if (request is IGet)
+                return GetAsync<TResponse>(request);
+            if (request is IPost)
+                return PostAsync<TResponse>(request);
+            if (request is IPut)
+                return PutAsync<TResponse>(request);
+            if (request is IDelete)
+                return DeleteAsync<TResponse>(request);
+            if (request is IPatch)
+                return PatchAsync<TResponse>(request);
 
-        public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token)
-        {
-            return SendAsync<TResponse>((object)requestDto, token);
+            var httpMethod = HttpMethod ?? DefaultHttpMethod;
+            var requestUri = ResolveUrl(httpMethod, UrlResolver == null
+                 ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
+                 : Format + "/reply/" + request.GetType().Name);
+
+            return asyncClient.SendAsync<TResponse>(httpMethod, requestUri, request, token);
         }
 
         public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
@@ -1015,11 +1037,6 @@ namespace ServiceStack
         public virtual Task<TResponse> SendAsync<TResponse>(object request)
         {
             return SendAsync<TResponse>(request, default(CancellationToken));
-        }
-
-        public virtual Task<HttpWebResponse> SendAsync(IReturnVoid requestDto)
-        {
-            return SendAsync<HttpWebResponse>(requestDto);
         }
 
 

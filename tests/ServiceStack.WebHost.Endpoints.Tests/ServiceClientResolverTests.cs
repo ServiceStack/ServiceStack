@@ -8,6 +8,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class DummyFallback : IReturn<MockResponse> { }
 
+    [Route("/testsend")]
+    public class DummySendGet : IReturn<MockResponse>, IGet { }
+
     public class MockResponse
     {
         public string Url { get; set; }
@@ -60,6 +63,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             response = client.Post<MockResponse>("/dummy", new DummyRequest());
             Assert.That(response.Url, Is.EqualTo("http://111.111.111.111/api/dummy"));
+
+            response = client.Send(new DummyRequest());
+            Assert.That(response.Url, Is.EqualTo("http://111.111.111.111/api/json/reply/DummyRequest"));
         }
 
         [Test]
@@ -73,6 +79,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             response = await client.PutAsync<MockResponse>("/dummy", new DummyRequest());
             Assert.That(response.Url, Is.EqualTo("http://111.111.111.111/api/dummy"));
+
+            response = await client.SendAsync(new DummyRequest());
+            Assert.That(response.Url, Is.EqualTo("http://111.111.111.111/api/json/reply/DummyRequest"));
         }
 
         [Test]
@@ -84,6 +93,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response = client.Get(new DummyRequest());
             Assert.That(response.Url, Is.EqualTo("http://DummyRequest.example.org/api/test"));
+
+            response = client.Send(new DummySendGet());
+            Assert.That(response.Url, Is.EqualTo("http://DummySendGet.example.org/api/testsend"));
 
             response = client.Get(new DummyFallback());
             Assert.That(response.Url, Is.EqualTo("http://DummyFallback.example.org/api/json/reply/DummyFallback"));
@@ -101,6 +113,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response = await client.DeleteAsync(new DummyRequest());
             Assert.That(response.Url, Is.EqualTo("http://DummyRequest.example.org/api/test"));
+
+            response = await client.SendAsync(new DummySendGet());
+            Assert.That(response.Url, Is.EqualTo("http://DummySendGet.example.org/api/testsend"));
 
             response = await client.DeleteAsync(new DummyFallback());
             Assert.That(response.Url, Is.EqualTo("http://DummyFallback.example.org/api/json/reply/DummyFallback"));

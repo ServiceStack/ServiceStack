@@ -472,9 +472,19 @@ namespace ServiceStack
             //}
         }
 
-        public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto)
+        public virtual TResponse Send<TResponse>(object request)
         {
-            return SendAsync<TResponse>((object)requestDto, default(CancellationToken));
+            return SendAsync<TResponse>(request).GetSyncResponse();
+        }
+
+        public virtual List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        {
+            return SendAllAsync(requests, default(CancellationToken)).GetSyncResponse();
+        }
+
+        public virtual void Publish(object request)
+        {
+            PublishAsync(request, default(CancellationToken)).Wait();
         }
 
         public virtual Task<TResponse> SendAsync<TResponse>(object request)
@@ -482,31 +492,25 @@ namespace ServiceStack
             return SendAsync<TResponse>(request, default(CancellationToken));
         }
 
-        public virtual Task<HttpResponseMessage> SendAsync(IReturnVoid requestDto)
-        {
-            return SendAsync<HttpResponseMessage>(requestDto, default(CancellationToken));
-        }
-
-        public virtual Task SendAsync(IReturnVoid requestDto, CancellationToken token)
-        {
-            return SendAsync<byte[]>(requestDto, token);
-        }
-
         public virtual Task<TResponse> SendAsync<TResponse>(object request, CancellationToken token)
         {
-            var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
+            if (request is IGet)
+                return GetAsync<TResponse>(request);
+            if (request is IPost)
+                return PostAsync<TResponse>(request);
+            if (request is IPut)
+                return PutAsync<TResponse>(request);
+            if (request is IDelete)
+                return DeleteAsync<TResponse>(request);
+            if (request is IPatch)
+                return PatchAsync<TResponse>(request);
+
             var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
-            return SendAsync<TResponse>(httpMethod, ResolveUrl(httpMethod, requestUri), request, token);
-        }
+            var requestUri = ResolveUrl(httpMethod, UrlResolver == null
+                ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
+                : Format + "/reply/" + request.GetType().Name);
 
-        public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> request, CancellationToken token)
-        {
-            return SendAsync<TResponse>((object)request, token);
-        }
-
-        public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
-        {
-            return SendAllAsync(requests, default(CancellationToken));
+            return SendAsync<TResponse>(httpMethod, requestUri, request, token);
         }
 
         public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
@@ -517,10 +521,14 @@ namespace ServiceStack
             return SendAsync<List<TResponse>>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
         }
 
-        public virtual List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        public virtual Task PublishAsync(object request, CancellationToken token)
         {
-            return SendAllAsync(requests).GetSyncResponse();
+            var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
+            var absoluteUri = ToAbsoluteUrl(ResolveUrl(httpMethod, requestUri));
+            return SendAsync<byte[]>(httpMethod, absoluteUri, request, token);
         }
+
 
         public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
         {
@@ -607,6 +615,11 @@ namespace ServiceStack
         }
 
 
+        public Task<TResponse> PatchAsync<TResponse>(object requestDto)
+        {
+            return SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
+        }
+
 
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
@@ -648,19 +661,6 @@ namespace ServiceStack
         public void SendOneWay(object request)
         {
             PublishAsync(request, default(CancellationToken)).Wait();
-        }
-
-        public void Publish(object request)
-        {
-            PublishAsync(request, default(CancellationToken)).Wait();
-        }
-
-        public Task PublishAsync(object request, CancellationToken token)
-        {
-            var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
-            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
-            var absoluteUri = ToAbsoluteUrl(ResolveUrl(httpMethod, requestUri));
-            return SendAsync<byte[]>(httpMethod, absoluteUri, request, token);
         }
 
         public void SendOneWay(string relativeOrAbsoluteUrl, object request)
@@ -817,7 +817,7 @@ namespace ServiceStack
             return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, request), null).GetSyncResponse();
         }
 
-        public Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null)
+        public virtual Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null)
         {
             var content = new MultipartFormDataContent();
             var fileBytes = fileToUpload.ReadFully();
@@ -850,7 +850,7 @@ namespace ServiceStack
             return PostFileWithRequestAsync<TResponse>(fileToUpload, fileName, request, fileName).GetSyncResponse();
         }
 
-        public Task<TResponse> PostFileWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
+        public virtual Task<TResponse> PostFileWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
                                                         object request, string fieldName = "upload")
         {
             var queryString = QueryStringSerializer.SerializeToString(request);
@@ -885,27 +885,27 @@ namespace ServiceStack
             return PostFileWithRequestAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, request, fileName).GetSyncResponse();
         }
 
-        public virtual TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
+        public TResponse PostFilesWithRequest<TResponse>(object request, IEnumerable<UploadFile> files)
         {
             return PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray()).GetSyncResponse();
         }
 
-        public virtual TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
+        public TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
         {
             return PostFilesWithRequestAsync<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray()).GetSyncResponse();
         }
 
-        public virtual Task<TResponse> PostFilesWithRequestAsync<TResponse>(object request, IEnumerable<UploadFile> files)
+        public Task<TResponse> PostFilesWithRequestAsync<TResponse>(object request, IEnumerable<UploadFile> files)
         {
             return PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray());
         }
 
-        public virtual Task<TResponse> PostFilesWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
+        public Task<TResponse> PostFilesWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
         {
             return PostFilesWithRequestAsync<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray());
         }
 
-        public Task<TResponse> PostFilesWithRequestAsync<TResponse>(string requestUri, object request, UploadFile[] files)
+        public virtual Task<TResponse> PostFilesWithRequestAsync<TResponse>(string requestUri, object request, UploadFile[] files)
         {
             var queryString = QueryStringSerializer.SerializeToString(request);
             var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
@@ -941,21 +941,6 @@ namespace ServiceStack
             return SendAsync<TResponse>(HttpMethods.Post, requestUri, content)
                 .ContinueWith(t => { foreach (var d in disposables) d.Dispose(); return t.Result; },
                 TaskContinuationOptions.ExecuteSynchronously);
-        }
-
-        public TResponse Send<TResponse>(object request)
-        {
-            return SendAsync<TResponse>(request).GetSyncResponse();
-        }
-
-        public virtual TResponse Send<TResponse>(IReturn<TResponse> request)
-        {
-            return Send<TResponse>((object)request);
-        }
-
-        public virtual void Send(IReturnVoid request)
-        {
-            SendOneWay(request);
         }
 
 
