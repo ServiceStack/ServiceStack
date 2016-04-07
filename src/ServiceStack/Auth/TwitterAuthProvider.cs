@@ -15,7 +15,10 @@ namespace ServiceStack.Auth
         public static string Realm = "https://api.twitter.com/";
 
         public TwitterAuthProvider(IAppSettings appSettings)
-            : base(appSettings, Realm, Name) {}
+            : base(appSettings, Realm, Name)
+        {
+            this.AuthorizeUrl = appSettings.Get("oauth.twitter.AuthorizeUrl", Realm + "oauth/authenticate");
+        }
 
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
