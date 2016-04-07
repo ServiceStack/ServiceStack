@@ -50,6 +50,7 @@ namespace ServiceStack.Authentication.OAuth2
                 { "username", data["username"] }, 
                 { "name", data["full_name"] }, 
                 { "picture", data["profile_picture"] },
+                { AuthMetadataProvider.ProfileUrlKey, data["profile_picture"] },
             };
 
             return authInfo;
