@@ -160,6 +160,7 @@ namespace ServiceStack.Redis
         long ZAdd(string setId, double score, byte[] value);
         long ZAdd(string setId, long score, byte[] value);
         long ZRem(string setId, byte[] value);
+        long ZRem(string setId, byte[][] values);
         double ZIncrBy(string setId, double incrBy, byte[] value);
         double ZIncrBy(string setId, long incrBy, byte[] value);
         long ZRank(string setId, byte[] value);

@@ -235,6 +235,7 @@ namespace ServiceStack.Redis
         bool AddRangeToSortedSet(string setId, List<string> values, double score);
         bool AddRangeToSortedSet(string setId, List<string> values, long score);
         bool RemoveItemFromSortedSet(string setId, string value);
+        long RemoveItemsFromSortedSet(string setId, List<string> values);
         string PopItemWithLowestScoreFromSortedSet(string setId);
         string PopItemWithHighestScoreFromSortedSet(string setId);
         bool SortedSetContainsItem(string setId, string value);
