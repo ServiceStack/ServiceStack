@@ -233,6 +233,7 @@
     <Compile Include="ServerEventTests.cs" />
     <Compile Include="ServiceClientResolverTests.cs" />
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
+    <Compile Include="ServiceGatewayTests.cs" />
     <Compile Include="SessionTests.cs" />
     <Compile Include="Support\GithubGateway.cs" />
     <Compile Include="Support\Services\EchoService.cs" />

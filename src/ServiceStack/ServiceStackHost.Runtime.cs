@@ -621,6 +621,12 @@ namespace ServiceStack
         {
             return Container.TryResolve<IMessageFactory>().CreateMessageProducer();
         }
+
+        public virtual IServiceGateway GetServiceGateway(IRequest req)
+        {
+            return Container.TryResolve<IServiceGateway>()
+                ?? new InProcessServiceGateway(req);
+        }
     }
 
 }

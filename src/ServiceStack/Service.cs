@@ -92,6 +92,13 @@ namespace ServiceStack
             get { return sessionFactory ?? (sessionFactory = TryResolve<ISessionFactory>()) ?? new SessionFactory(Cache); }
         }
 
+
+        private IServiceGateway gateway;
+        public virtual IServiceGateway Gateway
+        {
+            get { return gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request)); }
+        }
+
         /// <summary>
         /// Cascading collection of virtual file sources, inc. Embedded Resources, File System, In Memory, S3
         /// </summary>

@@ -109,6 +109,7 @@
     <Compile Include="FluentValidation\Internal\CollectionPropertyRule.cs" />
     <Compile Include="Host\Handlers\StaticContentHandler.cs" />
     <Compile Include="HttpCacheFeature.cs" />
+    <Compile Include="InProcessServiceGateway.cs" />
     <Compile Include="NativeTypes\Kotlin\KotlinGenerator.cs" />
     <Compile Include="RequiresSchemaProviders.cs" />
     <Compile Include="CancellableRequestsFeature.cs" />
