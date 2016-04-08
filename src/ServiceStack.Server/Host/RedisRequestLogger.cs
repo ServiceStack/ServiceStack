@@ -41,12 +41,22 @@ namespace ServiceStack.Host
                     trans.QueueCommand(r => r.AddItemToSortedSet(SortedSetKey, key, nowScore));
                     trans.QueueCommand(r => r.Store(entry));
 
-                    if (loggerCapacity != null)
-                    {
-                        trans.QueueCommand(r => r.RemoveRangeFromSortedSet(SortedSetKey, 0, -loggerCapacity.Value - 1));
-                    }
-
                     trans.Commit();
+                }
+
+                if (loggerCapacity != null)
+                {
+                    var keys = redis.GetRangeFromSortedSet(SortedSetKey, 0, -loggerCapacity.Value - 1);
+                    if (keys.Count > 0)
+                    {
+                        using (var trans = redis.CreateTransaction())
+                        {
+                            trans.QueueCommand(r => r.RemoveAll(keys));
+                            trans.QueueCommand(r => r.RemoveItemsFromSortedSet(SortedSetKey, keys));
+
+                            trans.Commit();
+                        }
+                    }
                 }
             }
         }
