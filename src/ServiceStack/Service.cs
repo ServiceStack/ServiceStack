@@ -55,27 +55,6 @@ namespace ServiceStack
             get { return Request != null ? Request.Response : null; }
         }
 
-
-        [Obsolete("Db instance now resolved from AppHost.GetDbConnection(). This will be removed in future - declare own property if needed")]
-        public virtual IDbConnectionFactory DbFactory
-        {
-            get { return TryResolve<IDbConnectionFactory>(); }
-        }
-
-        [Obsolete("Redis instance now resolved from AppHost.GetCacheClient(). This will be removed in future - declare own property if needed")]
-        public virtual IRedisClientsManager RedisManager
-        {
-            get { return TryResolve<IRedisClientsManager>(); }
-        }
-
-        [Obsolete("MessageProducer instance now resolved from AppHost.GetMessageProducer(). This will be removed in future - declare own property if needed")]
-        private IMessageFactory messageFactory;
-        public virtual IMessageFactory MessageFactory
-        {
-            get { return messageFactory ?? (messageFactory = TryResolve<IMessageFactory>()); }
-        }
-
-
         private ICacheClient cache;
         public virtual ICacheClient Cache
         {
