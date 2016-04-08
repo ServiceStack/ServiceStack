@@ -494,16 +494,19 @@ namespace ServiceStack
 
         public virtual Task<TResponse> SendAsync<TResponse>(object request, CancellationToken token)
         {
-            if (request is IGet)
-                return GetAsync<TResponse>(request);
-            if (request is IPost)
-                return PostAsync<TResponse>(request);
-            if (request is IPut)
-                return PutAsync<TResponse>(request);
-            if (request is IDelete)
-                return DeleteAsync<TResponse>(request);
-            if (request is IPatch)
-                return PatchAsync<TResponse>(request);
+            if (request is IVerb)
+            {
+                if (request is IGet)
+                    return GetAsync<TResponse>(request);
+                if (request is IPost)
+                    return PostAsync<TResponse>(request);
+                if (request is IPut)
+                    return PutAsync<TResponse>(request);
+                if (request is IDelete)
+                    return DeleteAsync<TResponse>(request);
+                if (request is IPatch)
+                    return PatchAsync<TResponse>(request);
+            }
 
             var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
             var requestUri = ResolveUrl(httpMethod, UrlResolver == null

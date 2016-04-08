@@ -16,12 +16,13 @@ namespace ServiceStack
     //Not used or needed, here in-case someone wants to know what the correct signatures should be
 
     //Empty marker interfaces to enforce correct mappings
-    public interface IGet { }
-    public interface IPost { }
-    public interface IPut { }
-    public interface IDelete { }
-    public interface IPatch { }
-    public interface IOptions { }
+    public interface IVerb {}
+    public interface IGet : IVerb { }
+    public interface IPost : IVerb { }
+    public interface IPut : IVerb { }
+    public interface IDelete : IVerb { }
+    public interface IPatch : IVerb { }
+    public interface IOptions : IVerb { }
 
     public interface IAny<T>
     {

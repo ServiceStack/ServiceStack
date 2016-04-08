@@ -10,9 +10,9 @@ namespace ServiceStack
     /// </summary>
     public interface IServiceGateway
     {
-        TResponse Send<TResponse>(object request);
+        TResponse Send<TResponse>(object requestDto);
 
-        List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests);
+        List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requestDtos);
 
         void Publish(object requestDto);
     }
@@ -25,7 +25,7 @@ namespace ServiceStack
     {
         Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token);
 
-        Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token);
+        Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requestDtos, CancellationToken token);
 
         Task PublishAsync(object requestDto, CancellationToken token);
     }
