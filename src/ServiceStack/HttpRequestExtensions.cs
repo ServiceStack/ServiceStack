@@ -322,6 +322,17 @@ namespace ServiceStack
                 ?? ex.GetType().Name;
         }
 
+        public static WebServiceException ToWebServiceException(this HttpError error)
+        {
+            var to = new WebServiceException(error.Message, error.InnerException)
+            {
+                StatusCode = error.Status,
+                ResponseDto = error.Response,
+            };
+
+            return to;
+        }
+
 
         /**
          * 

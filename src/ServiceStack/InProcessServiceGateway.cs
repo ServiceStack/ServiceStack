@@ -49,6 +49,10 @@ namespace ServiceStack
         private TResponse ExecSync<TResponse>(object request)
         {
             var response = HostContext.ServiceController.Execute(request, req);
+            var error = response as HttpError;
+            if (error != null)
+                throw error.ToWebServiceException();
+
             var responseDto = response.GetResponseDto();
             return (TResponse)responseDto;
         }
@@ -133,7 +137,7 @@ namespace ServiceStack
                     toArray[i] = requestsArray[i];
                 }
 
-                var response = HostContext.ServiceController.Execute(toArray, req);
+                HostContext.ServiceController.Execute(toArray, req);
             }
             finally
             {

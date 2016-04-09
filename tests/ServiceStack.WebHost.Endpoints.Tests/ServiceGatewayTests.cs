@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Funq;
 using NUnit.Framework;
@@ -9,11 +10,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class SGSendSyncGetInternal : IReturn<SGSendSyncGetInternal>
     {
+        public bool Throw { get; set; }
         public string Value { get; set; }
     }
 
     public class SGSendSyncGetExternal : IReturn<SGSendSyncGetExternal>
     {
+        public bool Throw { get; set; }
         public string Value { get; set; }
     }
 
@@ -138,11 +141,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class SGSyncGetInternal : IReturn<SGSyncGetInternal>, IGet
     {
+        public bool Throw { get; set; }
         public string Value { get; set; }
     }
 
     public class SGSyncGetExternal : IReturn<SGSyncGetExternal>, IGet
     {
+        public bool Throw { get; set; }
         public string Value { get; set; }
     }
 
@@ -180,6 +185,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public object Get(SGSyncGetInternal request)
         {
+            if (request.Throw)
+                throw new ArgumentException("ERROR " + typeof(SGSendSyncGetInternal).Name);
+
             request.Value += "> GET " + typeof(SGSyncGetInternal).Name;
             return request;
         }
@@ -206,6 +214,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public object Get(SGSyncGetExternal request)
         {
+            if (request.Throw)
+                throw new ArgumentException("ERROR " + typeof(SGSyncGetExternal).Name);
+
             request.Value += "> GET " + typeof(SGSyncGetExternal).Name;
             return request;
         }
@@ -238,7 +249,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
 
             public IMessageQueueClient CreateMessageQueueClient() { return null; }
-            public void Dispose() {}
+            public void Dispose() { }
         }
 
         class MessageProducer : IMessageProducer
@@ -250,7 +261,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Messages.Add(messageBody);
             }
 
-            public void Publish<T>(IMessage<T> message) {}
+            public void Publish<T>(IMessage<T> message) { }
             public void Dispose() { }
         }
 
@@ -289,10 +300,44 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_throw_original_Exception_in_SGSendSyncInternal()
+        {
+            try
+            {
+                var response = client.Get(new SGSendSyncGetInternal { Value = "GET CLIENT", Throw = true });
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(400));
+                Assert.That(ex.StatusDescription, Is.EqualTo(typeof(ArgumentException).Name));
+                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("ERROR " + typeof(SGSendSyncGetInternal).Name));
+            }
+        }
+
+        [Test]
         public void Does_SGSendSyncGetExternal()
         {
             var response = client.Get(new SGSendSyncGetExternal { Value = "GET CLIENT" });
             Assert.That(response.Value, Is.EqualTo("GET CLIENT> GET SGSendSyncGetExternal> GET SGSyncGetExternal"));
+        }
+
+        [Test]
+        public void Does_throw_original_Exception_in_SGSendSyncGetExternal()
+        {
+            try
+            {
+                var response = client.Get(new SGSendSyncGetExternal { Value = "GET CLIENT", Throw = true });
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(400));
+                Assert.That(ex.StatusDescription, Is.EqualTo(typeof(ArgumentException).Name));
+                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("ERROR " + typeof(SGSyncGetExternal).Name));
+            }
         }
 
         [Test]
@@ -314,7 +359,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = client.Get(new SGSendAllSyncGetAnyInternal { Value = "GET CLIENT" });
             Assert.That(response.Map(x => x.Value), Is.EquivalentTo(
-                3.Times(i => "GET CLIENT> GET SGSendSyncGetAllInternal{0}> ANY SGSyncGetAnyInternal".Fmt(i))));
+                3.Times(i => "GET CLIENT> GET SGSendAllSyncGetAnyInternal{0}> ANY SGSyncGetAnyInternal".Fmt(i))));
         }
 
         [Test]
@@ -322,7 +367,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = client.Get(new SGSendAllSyncPostExternal { Value = "GET CLIENT" });
             Assert.That(response.Map(x => x.Value), Is.EquivalentTo(
-                3.Times(i => "GET CLIENT> GET SGSendSyncPostAllExternal{0}> POST SGSyncPostExternal".Fmt(i))));
+                3.Times(i => "GET CLIENT> GET SGSendAllSyncPostExternal{0}> POST SGSyncPostExternal".Fmt(i))));
         }
 
         [Test]
@@ -333,7 +378,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(MessageProducer.Messages.Count, Is.EqualTo(1));
             var response = MessageProducer.Messages[0] as SGSyncPostInternalVoid;
-            Assert.That(response.Value, Is.EqualTo("GET CLIENT> GET SGSendPostInternalVoid"));
+            Assert.That(response.Value, Is.EqualTo("GET CLIENT> GET SGPublishPostInternalVoid"));
         }
 
         [Test]
@@ -344,7 +389,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(MessageProducer.Messages.Count, Is.EqualTo(1));
             var response = MessageProducer.Messages[0] as SGSyncPostExternalVoid;
-            Assert.That(response.Value, Is.EqualTo("POST CLIENT> POST SGSendPostExternalVoid"));
+            Assert.That(response.Value, Is.EqualTo("POST CLIENT> POST SGPublishPostExternalVoid"));
         }
 
         [Test]
