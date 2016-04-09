@@ -469,6 +469,14 @@ namespace ServiceStack
             }
         }
 
+        public virtual void OnLogError(Type type, string message, Exception innerEx=null)
+        {
+            if (innerEx != null)
+                Log.Error(message, innerEx);
+            else
+                Log.Error(message);
+        }
+
         public virtual void OnSaveSession(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
         {
             if (httpReq == null) return;
