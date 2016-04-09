@@ -580,6 +580,11 @@ namespace ServiceStack
             client.Publish(requestDto);
         }
 
+        public void PublishAll(IEnumerable<object> requestDtos)
+        {
+            client.PublishAll(requestDtos);
+        }
+
         public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token)
         {
             return client.SendAsync<TResponse>(requestDto, token);
@@ -593,6 +598,11 @@ namespace ServiceStack
         public Task PublishAsync(object requestDto, CancellationToken token)
         {
             return client.PublishAsync(requestDto, token);
+        }
+
+        public Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token)
+        {
+            return client.PublishAllAsync(requestDtos, token);
         }
 
         public string SessionId { get; set; }

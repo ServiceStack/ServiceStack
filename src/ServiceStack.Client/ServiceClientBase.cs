@@ -916,6 +916,13 @@ namespace ServiceStack
             SendOneWay(requestDto);
         }
 
+        public void PublishAll(IEnumerable<object> requests)
+        {
+            var elType = requests.GetType().GetCollectionType();
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            SendOneWay(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests);
+        }
+
         public void Publish<T>(T requestDto)
         {
             SendOneWay(requestDto);
@@ -974,9 +981,7 @@ namespace ServiceStack
 
         public virtual void SendAllOneWay(IEnumerable<object> requests)
         {
-            var elType = requests.GetType().GetCollectionType();
-            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
-            SendOneWay(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests);
+            PublishAll(requests);
         }
 
         public virtual void SendOneWay(string httpMethod, string relativeOrAbsoluteUrl, object requestDto)
@@ -1039,8 +1044,14 @@ namespace ServiceStack
         public Task PublishAsync(object request, CancellationToken token)
         {
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
-            var httpMethod = GetExplicitMethod(request) ?? HttpMethod ?? DefaultHttpMethod;
-            return asyncClient.SendAsync<byte[]>(httpMethod, ResolveUrl(httpMethod, requestUri), request, token);
+            return asyncClient.SendAsync<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), request, token);
+        }
+
+        public Task PublishAllAsync(IEnumerable<object> requests, CancellationToken token)
+        {
+            var elType = requests.GetType().GetCollectionType();
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            return asyncClient.SendAsync<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
         }
 
         public virtual Task<TResponse> SendAsync<TResponse>(object request)

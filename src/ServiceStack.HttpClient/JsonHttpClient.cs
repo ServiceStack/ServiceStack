@@ -487,6 +487,11 @@ namespace ServiceStack
             PublishAsync(request, default(CancellationToken)).Wait();
         }
 
+        public void PublishAll(IEnumerable<object> requestDtos)
+        {
+            PublishAllAsync(requestDtos, default(CancellationToken)).Wait();
+        }
+
         public virtual Task<TResponse> SendAsync<TResponse>(object request)
         {
             return SendAsync<TResponse>(request, default(CancellationToken));
@@ -520,16 +525,20 @@ namespace ServiceStack
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
-
             return SendAsync<List<TResponse>>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
         }
 
         public virtual Task PublishAsync(object request, CancellationToken token)
         {
-            var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
-            var absoluteUri = ToAbsoluteUrl(ResolveUrl(httpMethod, requestUri));
-            return SendAsync<byte[]>(httpMethod, absoluteUri, request, token);
+            return SendAsync<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), request, token);
+        }
+
+        public Task PublishAllAsync(IEnumerable<object> requests, CancellationToken token)
+        {
+            var elType = requests.GetType().GetCollectionType();
+            var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            return SendAsync<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
         }
 
 

@@ -466,6 +466,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_send_PublishAll_HelloAllVoid()
+        {
+            var client = CreateClient(Config.AbsoluteBaseUri);
+
+            var requests = new[]
+            {
+                new HelloAllVoid { Name = "Foo" },
+                new HelloAllVoid { Name = "Bar" },
+                new HelloAllVoid { Name = "Baz" },
+            };
+
+            client.PublishAll(requests);
+        }
+
+        [Test]
         public void Can_send_multi_HelloAllVoidAsync()
         {
             var client = CreateClient(Config.AbsoluteBaseUri);
@@ -478,6 +493,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             client.SendAllOneWay(requests);
+        }
+
+        [Test]
+        public async Task Can_send_PublishAllAsync_HelloAllVoidAsync()
+        {
+            var client = CreateClient(Config.AbsoluteBaseUri);
+
+            var requests = new[]
+            {
+                new HelloAllVoidAsync { Name = "Foo" },
+                new HelloAllVoidAsync { Name = "Bar" },
+                new HelloAllVoidAsync { Name = "Baz" },
+            };
+
+            await client.PublishAllAsync(requests);
         }
 
         [Test]

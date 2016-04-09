@@ -113,5 +113,10 @@ namespace ServiceStack
                 ResetVerb(holdVerb);
             }
         }
+
+        public void PublishAll(IEnumerable<object> requestDtos)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -523,6 +523,11 @@ namespace ServiceStack.Common.Tests
                 SendOneWay(requestDto);
             }
 
+            public void PublishAll(IEnumerable<object> requestDtos)
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token)
             {
                 var tcs = new TaskCompletionSource<TResponse>();
@@ -546,6 +551,11 @@ namespace ServiceStack.Common.Tests
             public Task PublishAsync(object requestDto, CancellationToken token)
             {
                 return SendAsync<byte[]>(requestDto, token);
+            }
+
+            public Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token)
+            {
+                throw new NotImplementedException();
             }
         }
 

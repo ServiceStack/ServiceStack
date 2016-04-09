@@ -349,6 +349,11 @@ namespace ServiceStack
             SendOneWay(requestDto);
         }
 
+        public void PublishAll(IEnumerable<object> requestDtos)
+        {
+            throw new NotImplementedException();
+        }
+
         public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
         {
             throw new NotImplementedException();
@@ -713,6 +718,11 @@ namespace ServiceStack
         }
 
         public Task PublishAsync(object requestDto, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token)
         {
             throw new NotImplementedException();
         }

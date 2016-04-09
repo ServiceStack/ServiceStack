@@ -129,6 +129,23 @@ namespace ServiceStack
             }
         }
 
+        public void PublishAll(IEnumerable<object> requests)
+        {
+            byte[] cryptKey, authKey, iv;
+            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+
+            try
+            {
+                var elType = requests.GetType().GetCollectionType();
+                var encryptedMessage = CreateEncryptedMessage(requests, elType.Name + "[]", cryptKey, authKey, iv);
+                Client.SendOneWay(encryptedMessage);
+            }
+            catch (WebServiceException ex)
+            {
+                throw DecryptedException(ex, cryptKey, authKey);
+            }
+        }
+
         public EncryptedMessage CreateEncryptedMessage(object request, string operationName, byte[] cryptKey, byte[] authKey, byte[] iv, string verb = null)
         {
             this.PopulateRequestMetadata(request);

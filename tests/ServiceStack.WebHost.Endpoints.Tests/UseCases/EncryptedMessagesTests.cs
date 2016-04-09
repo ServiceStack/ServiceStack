@@ -273,6 +273,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         [Test]
+        public void Can_send_PublishAll_requests()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+
+            var names = new[] { "Foo", "Bar", "Baz" };
+            var requests = names.Map(x => new HelloSecure { Name = x });
+
+            encryptedClient.PublishAll(requests);
+        }
+
+        [Test]
         public void Can_Send_Encrypted_Message()
         {
             var client = CreateClient();
