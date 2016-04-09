@@ -116,7 +116,31 @@ namespace ServiceStack
 
         public void PublishAll(IEnumerable<object> requestDtos)
         {
-            throw new NotImplementedException();
+            var holdDto = req.Dto;
+            var holdAttrs = req.RequestAttributes;
+            string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+            try
+            {
+                req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
+                req.RequestAttributes &= ~RequestAttributes.Reply;
+                req.RequestAttributes |= RequestAttributes.OneWay;
+
+                var requestsArray = requestDtos.ToArray();
+                var elType = requestDtos.GetType().GetCollectionType();
+                var toArray = (object[])Array.CreateInstance(elType, requestsArray.Length);
+                for (int i = 0; i < requestsArray.Length; i++)
+                {
+                    toArray[i] = requestsArray[i];
+                }
+
+                var response = HostContext.ServiceController.Execute(toArray, req);
+            }
+            finally
+            {
+                req.Dto = holdDto;
+                req.RequestAttributes = holdAttrs;
+                ResetVerb(holdVerb);
+            }
         }
     }
 }
