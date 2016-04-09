@@ -624,7 +624,9 @@ namespace ServiceStack
 
         public virtual IServiceGateway GetServiceGateway(IRequest req)
         {
-            return Container.TryResolve<IServiceGateway>()
+            var factory = Container.TryResolve<IServiceGatewayFactory>();
+            return factory != null ? factory.GetServiceGateway(req) 
+                : Container.TryResolve<IServiceGateway>()
                 ?? new InProcessServiceGateway(req);
         }
     }

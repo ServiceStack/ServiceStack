@@ -149,6 +149,7 @@
     <Compile Include="IEncryptedClient.cs" />
     <Compile Include="ISequenceSource.cs" />
     <Compile Include="IServiceGateway.cs" />
+    <Compile Include="Web\IServiceGatewayFactory.cs" />
     <Compile Include="IUrlFilter.cs" />
     <Compile Include="Logging\GenericLogFactory.cs" />
     <Compile Include="Logging\GenericLogger.cs" />
