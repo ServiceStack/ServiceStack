@@ -477,9 +477,9 @@ namespace ServiceStack
             return SendAsync<TResponse>(request).GetSyncResponse();
         }
 
-        public virtual List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        public virtual List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
         {
-            return SendAllAsync(requests, default(CancellationToken)).GetSyncResponse();
+            return SendAllAsync<TResponse>(requests, default(CancellationToken)).GetSyncResponse();
         }
 
         public virtual void Publish(object request)
@@ -521,7 +521,7 @@ namespace ServiceStack
             return SendAsync<TResponse>(httpMethod, requestUri, request, token);
         }
 
-        public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
+        public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token)
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";

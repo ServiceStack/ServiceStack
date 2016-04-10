@@ -553,9 +553,9 @@ namespace ServiceStack
             return client.Send<TResponse>(request);
         }
 
-        public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        public List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
         {
-            return client.SendAll(requests);
+            return client.SendAll<TResponse>(requests);
         }
 
         public void Publish(object requestDto)
@@ -573,9 +573,9 @@ namespace ServiceStack
             return client.SendAsync<TResponse>(requestDto, token);
         }
 
-        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token)
         {
-            return client.SendAllAsync(requests, token);
+            return client.SendAllAsync<TResponse>(requests, token);
         }
 
         public Task PublishAsync(object requestDto, CancellationToken token)

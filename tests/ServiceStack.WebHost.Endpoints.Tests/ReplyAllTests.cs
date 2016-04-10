@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -376,7 +377,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = CreateClientAsync(Config.AbsoluteBaseUri);
 
             var request = new HelloAllAsync { Name = "Foo" };
-            var response = await client.SendAsync(request);
+            var response = await client.SendAsync<HelloAllResponse>(request);
             Assert.That(response.Result, Is.EqualTo("Hello, Foo!"));
         }
 

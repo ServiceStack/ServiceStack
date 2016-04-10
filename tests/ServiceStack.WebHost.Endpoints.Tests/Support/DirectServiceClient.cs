@@ -404,7 +404,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             return (TResponse)response;
         }
 
-        public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        public List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
         {
             throw new NotImplementedException();
         }
@@ -467,7 +467,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             }
         }
 
-        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token)
         {
             throw new NotImplementedException();
         }

@@ -72,7 +72,7 @@ namespace ServiceStack
             }
         }
 
-        public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requestDtos)
+        public List<TResponse> SendAll<TResponse>(IEnumerable<object> requestDtos)
         {
             var holdDto = req.Dto;
             string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;

@@ -17,39 +17,20 @@ namespace ServiceStack
             client.Send<byte[]>(request);
         }
 
-        public static Task<TResponse> SendAsync<TResponse>(this IServiceGatewayAsync client, object requestDto)
+        public static List<TResponse> SendAll<TResponse>(this IServiceGateway client, IEnumerable<IReturn<TResponse>> request)
         {
-            return client.SendAsync<TResponse>(requestDto, default(CancellationToken));
+            return client.SendAll<TResponse>(request);
         }
 
-        public static Task<List<TResponse>> SendAllAsync<TResponse>(this IServiceGatewayAsync client, IEnumerable<IReturn<TResponse>> requests)
-        {
-            return client.SendAllAsync(requests, default(CancellationToken));
-        }
-
-        public static Task<TResponse> SendAsync<TResponse>(this IServiceGatewayAsync client, IReturn<TResponse> requestDto, CancellationToken token = default(CancellationToken))
-        {
-            return client.SendAsync<TResponse>(requestDto, token);
-        }
-
-        public static Task SendAsync(this IServiceGatewayAsync client, IReturnVoid requestDto, CancellationToken token = default(CancellationToken))
-        {
-            return client.SendAsync<byte[]>(requestDto, token);
-        }
-
-        public static Task PublishAsync(this IServiceGatewayAsync client, object requestDto)
-        {
-            return client.PublishAsync(requestDto, default(CancellationToken));
-        }
-
-        public static Task PublishAllAsync(this IServiceGatewayAsync client, IEnumerable<object> requestDtos)
-        {
-            return client.PublishAllAsync(requestDtos, default(CancellationToken));
-        }
     }
 
     public static class ServiceGatewayAsyncWrappers
     {
+        public static Task<TResponse> SendAsync<TResponse>(this IServiceGateway client, IReturn<TResponse> requestDto, CancellationToken token = default(CancellationToken))
+        {
+            return client.SendAsync<TResponse>((object)requestDto, token);
+        }
+
         public static Task<TResponse> SendAsync<TResponse>(this IServiceGateway client, object requestDto, CancellationToken token = default(CancellationToken))
         {
             var nativeAsync = client as IServiceGatewayAsync;
@@ -64,6 +45,14 @@ namespace ServiceStack
             return nativeAsync != null
                 ? nativeAsync.SendAsync<byte[]>(requestDto, token)
                 : Task.Factory.StartNew(() => client.Send<byte[]>(requestDto), token);
+        }
+
+        public static Task<List<TResponse>> SendAllAsync<TResponse>(this IServiceGateway client, IEnumerable<IReturn<TResponse>> requestDtos, CancellationToken token = default(CancellationToken))
+        {
+            var nativeAsync = client as IServiceGatewayAsync;
+            return nativeAsync != null
+                ? nativeAsync.SendAllAsync<TResponse>(requestDtos, token)
+                : Task.Factory.StartNew(() => client.SendAll<TResponse>(requestDtos), token);
         }
 
         public static Task PublishAsync(this IServiceGateway client, object requestDto, CancellationToken token = default(CancellationToken))

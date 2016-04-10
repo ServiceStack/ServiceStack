@@ -354,7 +354,7 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        public List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
         {
             throw new NotImplementedException();
         }
@@ -668,7 +668,7 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests)
         {
             throw new NotImplementedException();
         }
@@ -707,7 +707,7 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
-        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token)
         {
             throw new NotImplementedException();
         }

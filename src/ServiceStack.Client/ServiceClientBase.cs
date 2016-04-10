@@ -519,7 +519,7 @@ namespace ServiceStack
             }
         }
 
-        public virtual List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        public virtual List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
@@ -1034,7 +1034,7 @@ namespace ServiceStack
             return asyncClient.SendAsync<TResponse>(httpMethod, requestUri, request, token);
         }
 
-        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token)
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";

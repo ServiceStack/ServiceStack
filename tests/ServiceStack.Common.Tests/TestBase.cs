@@ -513,7 +513,7 @@ namespace ServiceStack.Common.Tests
                 return (TResponse)response;
             }
 
-            public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+            public List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
             {
                 throw new NotImplementedException();
             }
@@ -543,7 +543,7 @@ namespace ServiceStack.Common.Tests
                 return tcs.Task;
             }
 
-            public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requests, CancellationToken token)
+            public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token)
             {
                 throw new NotImplementedException();
             }

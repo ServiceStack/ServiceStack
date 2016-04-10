@@ -84,7 +84,7 @@ namespace ServiceStack
             return Send<TResponse>(httpMethod, (object) request);
         }
 
-        public List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requests)
+        public List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
         {
             byte[] cryptKey, authKey, iv;
             AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
