@@ -1,3 +1,4 @@
+using System;
 using ServiceStack.Messaging;
 
 namespace ServiceStack.Web
@@ -29,13 +30,21 @@ namespace ServiceStack.Web
         object Execute(object requestDto, IRequest request);
 
         /// <summary>
+        /// Executes the DTO request under supplied context and option to Execute Request/Response Filters.
+        /// </summary>
+        object Execute(object requestDto, IRequest request, bool applyFilters);
+
+        /// <summary>
         /// Executes the DTO request with an empty RequestContext.
         /// </summary>
         object Execute(object requestDto);
 
-        /// <summary>
-        /// Executes the DTO request with the current HttpRequest.
-        /// </summary>
+        [Obsolete("Use Execute(IRequest, applyFilters:true)")]
         object Execute(IRequest request);
+
+        /// <summary>
+        /// Executes the DTO request with the current HttpRequest and option to Execute Request/Response Filters.
+        /// </summary>
+        object Execute(IRequest request, bool applyFilters);
     }
 }

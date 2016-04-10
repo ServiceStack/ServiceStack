@@ -142,7 +142,7 @@ namespace ServiceStack.Html
             if (viewName != null)
                 req.SetView(viewName);
 
-            var response = HostContext.ServiceController.Execute(req);
+            var response = HostContext.ServiceController.Execute(req, applyFilters:true);
 
             req.Response.WriteToResponse(req, response)
                 .Wait(); //unnecessary as results are sync anyway
