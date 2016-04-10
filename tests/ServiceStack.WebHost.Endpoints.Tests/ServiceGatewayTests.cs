@@ -5,6 +5,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -239,9 +240,109 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class ServiceGatewayTests
+    //AppHosts
+    public class MixedServiceGatewayTests : ServiceGatewayTests
     {
-        class MessageFactory : IMessageFactory
+        class MixedServiceGatewayFactory : IServiceGatewayFactory, IServiceGateway
+        {
+            private InProcessServiceGateway localGateway;
+
+            public IServiceGateway GetServiceGateway(IRequest request)
+            {
+                localGateway = new InProcessServiceGateway(request);
+                return this;
+            }
+
+            public IServiceGateway GetGateway(Type requestType)
+            {
+                var gateway = requestType.Name.Contains("External")
+                    ? new JsonServiceClient(Config.ListeningOn)
+                    : (IServiceGateway) localGateway;
+                return gateway;
+            }
+
+            public TResponse Send<TResponse>(object requestDto)
+            {
+                return GetGateway(requestDto.GetType()).Send<TResponse>(requestDto);
+            }
+
+            public List<TResponse> SendAll<TResponse>(IEnumerable<object> requestDtos)
+            {
+                return GetGateway(requestDtos.GetType().GetCollectionType()).SendAll<TResponse>(requestDtos);
+            }
+
+            public void Publish(object requestDto)
+            {
+                GetGateway(requestDto.GetType()).Publish(requestDto);
+            }
+
+            public void PublishAll(IEnumerable<object> requestDtos)
+            {
+                GetGateway(requestDtos.GetType().GetCollectionType()).PublishAll(requestDtos);
+            }
+        }
+
+        class MixedAppHost : AppSelfHostBase
+        {
+            public MixedAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
+
+            public override void Configure(Container container)
+            {
+                container.Register<IMessageFactory>(c => new MessageFactory());
+
+                container.Register<IServiceGatewayFactory>(x => new MixedServiceGatewayFactory())
+                    .ReusedWithin(ReuseScope.None);
+            }
+        }
+
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new MixedAppHost();
+        }
+    }
+
+    public class AllExternalServiceGatewayTests : ServiceGatewayTests
+    {
+        class AllExternalAppHost : AppSelfHostBase
+        {
+            public AllExternalAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
+
+            public override void Configure(Container container)
+            {
+                container.Register<IMessageFactory>(c => new MessageFactory());
+                container.Register<IServiceGateway>(c => new JsonServiceClient(Tests.Config.ListeningOn));
+            }
+        }
+
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new AllExternalAppHost();
+        }
+    }
+
+    //Tests
+    public class AllInternalServiceGatewayTests : ServiceGatewayTests
+    {
+        class AllInternalAppHost : AppSelfHostBase
+        {
+            public AllInternalAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
+
+            public override void Configure(Container container)
+            {
+                container.Register<IMessageFactory>(c => new MessageFactory());
+            }
+        }
+
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new AllInternalAppHost();
+        }
+    }
+
+
+    public abstract class ServiceGatewayTests
+    {
+        public class MessageFactory : IMessageFactory
         {
             public IMessageProducer CreateMessageProducer()
             {
@@ -252,7 +353,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public void Dispose() { }
         }
 
-        class MessageProducer : IMessageProducer
+        public class MessageProducer : IMessageProducer
         {
             public static List<object> Messages = new List<object>();
 
@@ -265,21 +366,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public void Dispose() { }
         }
 
-        class AppHost : AppSelfHostBase
-        {
-            public AppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
-
-            public override void Configure(Container container)
-            {
-                container.Register<IMessageFactory>(c => new MessageFactory());
-            }
-        }
+        protected abstract ServiceStackHost CreateAppHost();
 
         readonly IServiceClient client;
         private readonly ServiceStackHost appHost;
         public ServiceGatewayTests()
         {
-            appHost = new AppHost()
+            appHost = CreateAppHost()
                 .Init()
                 .Start(Config.ListeningOn);
 
