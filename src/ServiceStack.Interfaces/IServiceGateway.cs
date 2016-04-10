@@ -18,7 +18,7 @@ namespace ServiceStack
         /// <summary>
         /// Auto Batched Request/Reply Requests
         /// </summary>
-        List<TResponse> SendAll<TResponse>(IEnumerable<IReturn<TResponse>> requestDtos);
+        List<TResponse> SendAll<TResponse>(IEnumerable<object> requestDtos);
 
         /// <summary>
         /// OneWay Service
@@ -40,22 +40,22 @@ namespace ServiceStack
         /// <summary>
         /// Normal Request/Reply Services
         /// </summary>
-        Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token);
+        Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = default(CancellationToken));
 
         /// <summary>
         /// Auto Batched Request/Reply Requests
         /// </summary>
-        Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requestDtos, CancellationToken token);
+        Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requestDtos, CancellationToken token = default(CancellationToken));
 
         /// <summary>
         /// OneWay Service
         /// </summary>
-        Task PublishAsync(object requestDto, CancellationToken token);
+        Task PublishAsync(object requestDto, CancellationToken token = default(CancellationToken));
 
         /// <summary>
         /// Auto Batched OneWay Requests
         /// </summary>
-        Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token);
+        Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = default(CancellationToken));
     }
 }
 
