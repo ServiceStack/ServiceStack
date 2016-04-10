@@ -6,6 +6,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -78,8 +79,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         string Value { get; set; }
     }
 
+    public class HelloCache : IReturn<HelloResponse>
+    {
+        public string Name { get; set; }
+    }
+
     public class CacheResponseServices : Service
     {
+        [CacheResponse(Duration = 5000)]
+        public object Any(HelloCache request)
+        {
+            return new HelloResponse { Result = "Hello, {0}!".Fmt(request.Name) };
+        }
+
         [CacheResponse(Duration = 10)]
         public object Any(ServerCacheOnly request)
         {
@@ -353,6 +365,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             html = url.GetStringFromUrl(requestFilter: req => req.ContentType = MimeTypes.Html);
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(4));
             Assert.That(html, Is.StringStarting("<!doctype html>"));
+        }
+
+        [Test]
+        public void Can_execute_with_CompressionDisabled()
+        {
+            var client = new JsvServiceClient(Config.ListeningOn)
+            {
+                DisableAutoCompression = true,
+            };
+
+            var result = client.Get<ServerCacheOnly>(new ServerCacheOnly { Value = "Hello" });
+            Assert.That(result.Value, Is.EqualTo("Hello"));
+
+            var response = client.Get(new HelloCache { Name = "World" });
+            Assert.That(response.Result, Is.EqualTo("Hello, World!"));
         }
 
         [Test]
