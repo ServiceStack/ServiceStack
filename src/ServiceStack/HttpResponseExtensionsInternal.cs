@@ -381,10 +381,10 @@ namespace ServiceStack
                 httpRes.ContentType += ContentFormat.Utf8Suffix;
             }
 
+            httpRes.StatusCode = statusCode;
+
             if (errorMessage != null && (httpRes.StatusDescription == null || httpRes.StatusDescription == "OK"))
                 httpRes.StatusDescription = errorMessage;
-
-            httpRes.StatusCode = statusCode;
 
             var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
             if (serializer != null)
