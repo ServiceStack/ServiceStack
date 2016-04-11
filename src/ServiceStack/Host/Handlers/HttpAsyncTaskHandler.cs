@@ -167,7 +167,7 @@ namespace ServiceStack.Host.Handlers
         protected Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
-            Log.Error(errorMessage, ex);
+            HostContext.AppHost.OnLogError(typeof(HttpAsyncTaskHandler), errorMessage, ex);
 
             try
             {
