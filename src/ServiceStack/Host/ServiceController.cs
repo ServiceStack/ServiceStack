@@ -506,7 +506,12 @@ namespace ServiceStack.Host
                 AssertServiceRestrictions(requestType, req.RequestAttributes);
 
             var handlerFn = GetService(requestType);
-            return appHost.OnAfterExecute(req, requestDto, handlerFn(req, requestDto));
+            var response = appHost.OnAfterExecute(req, requestDto, handlerFn(req, requestDto));
+
+            var responseTask = response as Task;
+            return responseTask != null
+                ? responseTask.GetResult()
+                : response;
         }
 
         public object Execute(object requestDto, IRequest req, bool applyFilters)
@@ -524,6 +529,7 @@ namespace ServiceStack.Host
                 : response;
         }
 
+        [Obsolete("Use Execute(IRequest, applyFilters:true)")]
         public object Execute(IRequest req)
         {
             return Execute(req, applyFilters:true);
