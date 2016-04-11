@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -197,7 +198,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Post(SGAsyncPostInternal request)
         {
             request.Value += "> POST " + typeof(SGAsyncPostInternal).Name;
-            return request;
+            return Task.FromResult(request);
         }
 
         public object Any(SGAsyncGetAnyInternal request)
@@ -214,34 +215,125 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class ServiceGatewayExternalAsyncServices : Service
     {
-        public object Get(SGAsyncGetExternal request)
+        public async Task<object> Get(SGAsyncGetExternal request)
         {
+            await Task.Yield();
+
             if (request.Throw)
                 throw new ArgumentException("ERROR " + typeof(SGAsyncGetExternal).Name);
 
             request.Value += "> GET " + typeof(SGAsyncGetExternal).Name;
-            return request;
+            return await Task.FromResult(request);
         }
 
-        public object Post(SGAsyncPostExternal request)
+        public async Task<object> Post(SGAsyncPostExternal request)
         {
             request.Value += "> POST " + typeof(SGAsyncPostExternal).Name;
-            return request;
+            return await Task.FromResult(request);
         }
 
-        public object Any(SGAsyncGetAnyExternal request)
+        public Task Any(SGAsyncGetAnyExternal request)
         {
             request.Value += "> ANY " + typeof(SGAsyncGetAnyExternal).Name;
-            return request;
+            return Task.FromResult(request);
         }
 
-        public void Post(SGAsyncPostExternalVoid request)
+        public Task Post(SGAsyncPostExternalVoid request)
         {
             request.Value += "> POST " + typeof(SGAsyncPostExternalVoid).Name;
+            return Task.FromResult((object)null);
         }
     }
 
     //AppHosts
+    public class MixedServiceGatewayNativeAsyncTests : ServiceGatewayAsyncTests
+    {
+        class MixedServiceGatewayFactory : IServiceGatewayFactory, IServiceGateway, IServiceGatewayAsync
+        {
+            private InProcessServiceGateway localGateway;
+
+            public IServiceGateway GetServiceGateway(IRequest request)
+            {
+                localGateway = new InProcessServiceGateway(request);
+                return this;
+            }
+
+            IServiceGateway GetGateway(Type requestType)
+            {
+                var gateway = requestType.Name.Contains("External")
+                    ? new JsonServiceClient(Config.ListeningOn)
+                    : (IServiceGateway)localGateway;
+                return gateway;
+            }
+
+            public TResponse Send<TResponse>(object requestDto)
+            {
+                return GetGateway(requestDto.GetType()).Send<TResponse>(requestDto);
+            }
+
+            public List<TResponse> SendAll<TResponse>(IEnumerable<object> requestDtos)
+            {
+                return GetGateway(requestDtos.GetType().GetCollectionType()).SendAll<TResponse>(requestDtos);
+            }
+
+            public void Publish(object requestDto)
+            {
+                GetGateway(requestDto.GetType()).Publish(requestDto);
+            }
+
+            public void PublishAll(IEnumerable<object> requestDtos)
+            {
+                GetGateway(requestDtos.GetType().GetCollectionType()).PublishAll(requestDtos);
+            }
+
+            IServiceGatewayAsync GetGatewayAsync(Type requestType)
+            {
+                var gateway = requestType.Name.Contains("External")
+                    ? new JsonServiceClient(Config.ListeningOn)
+                    : (IServiceGatewayAsync)localGateway;
+                return gateway;
+            }
+
+            public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = new CancellationToken())
+            {
+                return GetGatewayAsync(requestDto.GetType()).SendAsync<TResponse>(requestDto, token);
+            }
+
+            public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requestDtos, CancellationToken token = new CancellationToken())
+            {
+                return GetGatewayAsync(requestDtos.GetType().GetCollectionType()).SendAllAsync<TResponse>(requestDtos, token);
+            }
+
+            public Task PublishAsync(object requestDto, CancellationToken token = new CancellationToken())
+            {
+                return GetGatewayAsync(requestDto.GetType()).PublishAsync(requestDto, token);
+            }
+
+            public Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = new CancellationToken())
+            {
+                return GetGatewayAsync(requestDtos.GetType().GetCollectionType()).PublishAllAsync(requestDtos, token);
+            }
+        }
+
+        class MixedAppHost : AppSelfHostBase
+        {
+            public MixedAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
+
+            public override void Configure(Container container)
+            {
+                container.Register<IMessageFactory>(c => new MessageFactory());
+
+                container.Register<IServiceGatewayFactory>(x => new MixedServiceGatewayFactory())
+                    .ReusedWithin(ReuseScope.None);
+            }
+        }
+
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new MixedAppHost();
+        }
+    }
+
     public class MixedServiceGatewayAsyncTests : ServiceGatewayAsyncTests
     {
         class MixedServiceGatewayFactory : IServiceGatewayFactory, IServiceGateway
@@ -411,18 +503,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_SGSendAsyncGetExternal()
+        public async Task Does_SGSendAsyncGetExternal()
         {
-            var response = client.Get(new SGSendAsyncGetExternal { Value = "GET CLIENT" });
+            var response = await client.GetAsync(new SGSendAsyncGetExternal { Value = "GET CLIENT" });
             Assert.That(response.Value, Is.EqualTo("GET CLIENT> GET SGSendAsyncGetExternal> GET SGAsyncGetExternal"));
         }
 
         [Test]
-        public void Does_throw_original_Exception_in_SGSendAsyncGetExternal()
+        public async Task Does_throw_original_Exception_in_SGSendAsyncGetExternal()
         {
             try
             {
-                var response = client.Get(new SGSendAsyncGetExternal { Value = "GET CLIENT", Throw = true });
+                var response = await client.GetAsync(new SGSendAsyncGetExternal { Value = "GET CLIENT", Throw = true });
             }
             catch (WebServiceException ex)
             {
@@ -442,9 +534,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_SGSendAsyncPostExternal()
+        public async Task Does_SGSendAsyncPostExternal()
         {
-            var response = client.Get(new SGSendAsyncPostExternal { Value = "GET CLIENT" });
+            var response = await client.GetAsync(new SGSendAsyncPostExternal { Value = "GET CLIENT" });
             Assert.That(response.Value, Is.EqualTo("GET CLIENT> GET SGSendAsyncPostExternal> POST SGAsyncPostExternal"));
         }
 
@@ -457,9 +549,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_SGSendAllAsyncPostExternal()
+        public async Task Does_SGSendAllAsyncPostExternal()
         {
-            var response = client.Get(new SGSendAllAsyncPostExternal { Value = "GET CLIENT" });
+            var response = await client.GetAsync(new SGSendAllAsyncPostExternal { Value = "GET CLIENT" });
             Assert.That(response.Map(x => x.Value), Is.EquivalentTo(
                 3.Times(i => "GET CLIENT> GET SGSendAllAsyncPostExternal{0}> POST SGAsyncPostExternal".Fmt(i))));
         }
@@ -476,10 +568,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_SGPublishAsyncPostExternalVoid()
+        public async Task Does_SGPublishAsyncPostExternalVoid()
         {
             MessageProducer.Messages.Clear();
-            client.Send(new SGPublishAsyncPostExternalVoid { Value = "POST CLIENT" });
+            await client.SendAsync(new SGPublishAsyncPostExternalVoid { Value = "POST CLIENT" });
 
             Assert.That(MessageProducer.Messages.Count, Is.EqualTo(1));
             var response = MessageProducer.Messages[0] as SGAsyncPostExternalVoid;
@@ -498,10 +590,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_SGPublishAllAsyncPostExternalVoid()
+        public async Task Does_SGPublishAllAsyncPostExternalVoid()
         {
             MessageProducer.Messages.Clear();
-            client.Send(new SGPublishAllAsyncPostExternalVoid { Value = "GET CLIENT" });
+            await client.SendAsync(new SGPublishAllAsyncPostExternalVoid { Value = "GET CLIENT" });
 
             Assert.That(MessageProducer.Messages.Count, Is.EqualTo(3));
             Assert.That(MessageProducer.Messages.Map(x => ((SGAsyncPostExternalVoid)x).Value), Is.EquivalentTo(

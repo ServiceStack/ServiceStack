@@ -8,7 +8,7 @@ using System;
 
 namespace ServiceStack
 {
-    public class InProcessServiceGateway : IServiceGateway
+    public class InProcessServiceGateway : IServiceGateway, IServiceGatewayAsync
     {
         private readonly IRequest req;
 
@@ -49,12 +49,27 @@ namespace ServiceStack
         private TResponse ExecSync<TResponse>(object request)
         {
             var response = HostContext.ServiceController.Execute(request, req);
+            var responseTask = response as Task;
+            if (responseTask != null)
+                response = responseTask.GetResult();
+
+            return ConvertToResponse<TResponse>(response);
+        }
+
+        private static TResponse ConvertToResponse<TResponse>(object response)
+        {
             var error = response as HttpError;
             if (error != null)
                 throw error.ToWebServiceException();
 
             var responseDto = response.GetResponseDto();
-            return (TResponse)responseDto;
+            return (TResponse) responseDto;
+        }
+
+        private Task<TResponse> ExecAsync<TResponse>(object request)
+        {
+            var responseTask = HostContext.ServiceController.ExecuteAsync(request, req, applyFilters:false);
+            return responseTask.ContinueWith(task => ConvertToResponse<TResponse>(task.Result));
         }
 
         public TResponse Send<TResponse>(object requestDto)
@@ -72,23 +87,41 @@ namespace ServiceStack
             }
         }
 
+        public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = new CancellationToken())
+        {
+            var holdDto = req.Dto;
+            var holdVerb = SetVerb(requestDto);
+
+            return ExecAsync<TResponse>(requestDto)
+                .ContinueWith(task => {
+                    req.Dto = holdDto;
+                    ResetVerb(holdVerb);
+                    return task.Result;
+                }, token);
+        }
+
+        private static object[] CreateTypedArray(IEnumerable<object> requestDtos)
+        {
+            var requestsArray = requestDtos.ToArray();
+            var elType = requestDtos.GetType().GetCollectionType();
+            var toArray = (object[])Array.CreateInstance(elType, requestsArray.Length);
+            for (int i = 0; i < requestsArray.Length; i++)
+            {
+                toArray[i] = requestsArray[i];
+            }
+            return toArray;
+        }
+
         public List<TResponse> SendAll<TResponse>(IEnumerable<object> requestDtos)
         {
             var holdDto = req.Dto;
             string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+            var typedArray = CreateTypedArray(requestDtos);
+            req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
+
             try
             {
-                req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
-
-                var requestsArray = requestDtos.ToArray();
-                var elType = requestDtos.GetType().GetCollectionType();
-                var toArray = (object[])Array.CreateInstance(elType, requestsArray.Length);
-                for (int i = 0; i < requestsArray.Length; i++)
-                {
-                    toArray[i] = requestsArray[i];
-                }
-
-                return ExecSync<TResponse[]>(toArray).ToList();
+                return ExecSync<TResponse[]>(typedArray).ToList();
             }
             finally
             {
@@ -97,17 +130,34 @@ namespace ServiceStack
             }
         }
 
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requestDtos, CancellationToken token = new CancellationToken())
+        {
+            var holdDto = req.Dto;
+            string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+            var typedArray = CreateTypedArray(requestDtos);
+            req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
+
+            return ExecAsync<TResponse[]>(typedArray)
+                .ContinueWith(task => 
+                {
+                    req.Dto = holdDto;
+                    ResetVerb(holdVerb);
+                    return task.Result.ToList();
+                }, token);
+        }
+
         public void Publish(object requestDto)
         {
             var holdDto = req.Dto;
             var holdAttrs = req.RequestAttributes;
             string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+
+            req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
+            req.RequestAttributes &= ~RequestAttributes.Reply;
+            req.RequestAttributes |= RequestAttributes.OneWay;
+
             try
             {
-                req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
-                req.RequestAttributes &= ~RequestAttributes.Reply;
-                req.RequestAttributes |= RequestAttributes.OneWay;
-
                 var response = HostContext.ServiceController.Execute(requestDto, req);
             }
             finally
@@ -118,26 +168,39 @@ namespace ServiceStack
             }
         }
 
+        public Task PublishAsync(object requestDto, CancellationToken token = new CancellationToken())
+        {
+            var holdDto = req.Dto;
+            var holdAttrs = req.RequestAttributes;
+            string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+
+            req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
+            req.RequestAttributes &= ~RequestAttributes.Reply;
+            req.RequestAttributes |= RequestAttributes.OneWay;
+
+            return HostContext.ServiceController.ExecuteAsync(requestDto, req, applyFilters: false)
+                .ContinueWith(task => 
+                {
+                    req.Dto = holdDto;
+                    req.RequestAttributes = holdAttrs;
+                    ResetVerb(holdVerb);
+                }, token);
+        }
+
         public void PublishAll(IEnumerable<object> requestDtos)
         {
             var holdDto = req.Dto;
             var holdAttrs = req.RequestAttributes;
             string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+
+            var typedArray = CreateTypedArray(requestDtos);
+            req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
+            req.RequestAttributes &= ~RequestAttributes.Reply;
+            req.RequestAttributes |= RequestAttributes.OneWay;
+
             try
             {
-                req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
-                req.RequestAttributes &= ~RequestAttributes.Reply;
-                req.RequestAttributes |= RequestAttributes.OneWay;
-
-                var requestsArray = requestDtos.ToArray();
-                var elType = requestDtos.GetType().GetCollectionType();
-                var toArray = (object[])Array.CreateInstance(elType, requestsArray.Length);
-                for (int i = 0; i < requestsArray.Length; i++)
-                {
-                    toArray[i] = requestsArray[i];
-                }
-
-                var response = HostContext.ServiceController.Execute(toArray, req);
+                var response = HostContext.ServiceController.Execute(typedArray, req);
             }
             finally
             {
@@ -145,6 +208,26 @@ namespace ServiceStack
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
             }
+        }
+
+        public Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = new CancellationToken())
+        {
+            var holdDto = req.Dto;
+            var holdAttrs = req.RequestAttributes;
+            string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+
+            var typedArray = CreateTypedArray(requestDtos);
+            req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
+            req.RequestAttributes &= ~RequestAttributes.Reply;
+            req.RequestAttributes |= RequestAttributes.OneWay;
+
+            return HostContext.ServiceController.ExecuteAsync(typedArray, req, applyFilters: false)
+                .ContinueWith(task =>
+                {
+                    req.Dto = holdDto;
+                    req.RequestAttributes = holdAttrs;
+                    ResetVerb(holdVerb);
+                }, token);
         }
     }
 }

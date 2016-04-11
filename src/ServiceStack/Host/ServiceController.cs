@@ -455,6 +455,11 @@ namespace ServiceStack.Host
                 response = taskResponse.GetResult();
             }
 
+            return ApplyResponseFiltersInternal(response, req);
+        }
+
+        private object ApplyResponseFiltersInternal(object response, IRequest req)
+        {
             response = appHost.ApplyResponseConverters(req, response);
 
             if (appHost.ApplyResponseFilters(req, req.Response, response))
@@ -568,26 +573,35 @@ namespace ServiceStack.Host
             var handlerFn = GetService(requestType);
             var response = handlerFn(req, requestDto);
 
-            var taskResponse = response as Task;
-            if (taskResponse != null)
+            var taskObj = response as Task<object>;
+            if (taskObj != null)
             {
-                return taskResponse.ContinueWith(x =>
+                return taskObj.ContinueWith(t =>
                 {
-                    var result = x.GetResult();
-                    if (applyFilters)
+                    var taskArray = t.Result as Task[];
+                    if (taskArray != null)
                     {
-                        result = appHost.ApplyResponseConverters(req, result);
+                        return Task.Factory.ContinueWhenAll(taskArray, tasks =>
+                        {
+                            object[] ret = null;
+                            for (int i = 0; i < tasks.Length; i++)
+                            {
+                                var tResult = tasks[i].GetResult();
+                                if (ret == null)
+                                    ret = (object[])Array.CreateInstance(tResult.GetType(), tasks.Length);
 
-                        if (appHost.ApplyResponseFilters(req, req.Response, result))
-                            return req.Response.Dto;
-
+                                ret[i] = ApplyResponseFiltersInternal(tResult, req);
+                            }
+                            return (object)ret;
+                        });
                     }
-                    return result;
-                });
+
+                    return ApplyResponseFiltersInternal(t.Result, req).AsTaskResult();
+                }).Unwrap();
             }
 
             return applyFilters
-                ? ApplyResponseFilters(response, req).AsTaskResult()
+                ? ApplyResponseFiltersInternal(response, req).AsTaskResult()
                 : response.AsTaskResult();
         }
 
@@ -670,7 +684,8 @@ namespace ServiceStack.Host
                         ? asyncResponse //don't re-execute first request
                         : (Task) handlerFn(req, dto);
 
-                    if (asyncResponses[i].GetResult() is Exception)
+                    var asyncResult = asyncResponses[i].GetResult();
+                    if (asyncResult is Exception)
                     {
                         req.SetAutoBatchCompletedHeader(i);
                         return firstAsyncError = asyncResponses[i];
