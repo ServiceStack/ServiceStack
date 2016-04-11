@@ -189,10 +189,6 @@ namespace ServiceStack.Mvc
         {
             get { return ServiceStackProvider.Redis; }
         }
-        public virtual IMessageFactory MessageFactory
-        {
-            get { return ServiceStackProvider.MessageFactory; }
-        }
         public virtual IMessageProducer MessageProducer
         {
             get { return ServiceStackProvider.MessageProducer; }

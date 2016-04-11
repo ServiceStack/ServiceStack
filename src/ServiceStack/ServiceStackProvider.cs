@@ -29,7 +29,6 @@ namespace ServiceStack
         ICacheClient Cache { get; }
         IDbConnection Db { get; }
         IRedisClient Redis { get; }
-        IMessageFactory MessageFactory { get; set; }
         IMessageProducer MessageProducer { get; }
         ISessionFactory SessionFactory { get; }
         ISession SessionBag { get; }
@@ -193,14 +192,6 @@ namespace ServiceStack
         public virtual IMessageProducer MessageProducer
         {
             get { return messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request)); }
-        }
-
-        private IMessageFactory messageFactory;
-        [Obsolete("Will remove in future, resolve directly from HostContext.TryResolve<IMessageFactory>()")]
-        public virtual IMessageFactory MessageFactory
-        {
-            get { return messageFactory ?? (messageFactory = TryResolve<IMessageFactory>()); }
-            set { messageFactory = value; }
         }
 
         private ISessionFactory sessionFactory;
