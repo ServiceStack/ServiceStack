@@ -382,11 +382,12 @@ namespace ServiceStack
             }
 
             var hold = httpRes.StatusDescription;
+            var hasDefaultStatusDescription = hold == null || hold == "OK";
+
             httpRes.StatusCode = statusCode;
 
-            httpRes.StatusDescription = errorMessage != null && (httpRes.StatusDescription == null || httpRes.StatusDescription == "OK")
-                ? errorMessage
-                : hold;
+            if (hasDefaultStatusDescription)
+                httpRes.StatusDescription = errorMessage ?? hold;
 
             var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
             if (serializer != null)
