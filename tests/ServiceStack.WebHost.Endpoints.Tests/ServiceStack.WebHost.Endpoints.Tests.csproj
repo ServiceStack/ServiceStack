@@ -233,6 +233,7 @@
     <Compile Include="ServerEventTests.cs" />
     <Compile Include="ServiceClientResolverTests.cs" />
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
+    <Compile Include="ServiceGatewayTestsAsync.cs" />
     <Compile Include="ServiceGatewayTests.cs" />
     <Compile Include="ServiceGatewayUsageTests.cs" />
     <Compile Include="SessionTests.cs" />

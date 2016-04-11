@@ -108,7 +108,7 @@ namespace ServiceStack
                 req.RequestAttributes &= ~RequestAttributes.Reply;
                 req.RequestAttributes |= RequestAttributes.OneWay;
 
-                HostContext.ServiceController.Execute(requestDto, req);
+                var response = HostContext.ServiceController.Execute(requestDto, req);
             }
             finally
             {
@@ -137,7 +137,7 @@ namespace ServiceStack
                     toArray[i] = requestsArray[i];
                 }
 
-                HostContext.ServiceController.Execute(toArray, req);
+                var response = HostContext.ServiceController.Execute(toArray, req);
             }
             finally
             {
