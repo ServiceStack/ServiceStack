@@ -31,11 +31,17 @@ namespace ServiceStack
         {
             try
             {
+                task.Wait();
+
                 return TypeAccessor.Create(task.GetType())[task, "Result"];
             }
             catch (TypeAccessException)
             {
                 return null; //return null for void Task's
+            }
+            catch (Exception ex)
+            {
+                throw ex.UnwrapIfSingleException();
             }
         }
     }

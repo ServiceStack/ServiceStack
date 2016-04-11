@@ -508,10 +508,7 @@ namespace ServiceStack.Host
             var handlerFn = GetService(requestType);
             var response = appHost.OnAfterExecute(req, requestDto, handlerFn(req, requestDto));
 
-            var responseTask = response as Task;
-            return responseTask != null
-                ? responseTask.GetResult()
-                : response;
+            return response;
         }
 
         public object Execute(object requestDto, IRequest req, bool applyFilters)
