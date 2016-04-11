@@ -327,6 +327,7 @@ namespace ServiceStack
             var to = new WebServiceException(error.Message, error.InnerException)
             {
                 StatusCode = error.Status,
+                StatusDescription = error.StatusDescription,
                 ResponseDto = error.Response,
             };
 
