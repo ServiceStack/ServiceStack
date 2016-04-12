@@ -266,6 +266,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return gateway;
             }
 
+            IServiceGatewayAsync GetGatewayAsync(Type requestType)
+            {
+                return (IServiceGatewayAsync)GetGateway(requestType);
+            }
+
             public TResponse Send<TResponse>(object requestDto)
             {
                 return GetGateway(requestDto.GetType()).Send<TResponse>(requestDto);
@@ -284,14 +289,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public void PublishAll(IEnumerable<object> requestDtos)
             {
                 GetGateway(requestDtos.GetType().GetCollectionType()).PublishAll(requestDtos);
-            }
-
-            IServiceGatewayAsync GetGatewayAsync(Type requestType)
-            {
-                var gateway = requestType.Name.Contains("External")
-                    ? new JsonServiceClient(Config.ListeningOn)
-                    : (IServiceGatewayAsync)localGateway;
-                return gateway;
             }
 
             public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = new CancellationToken())
