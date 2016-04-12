@@ -43,6 +43,7 @@ namespace ServiceStack
             return HostContext.ResolveService(this.Request, service);
         }
 
+        [Obsolete("Use Gateway")]
         public object ExecuteRequest(object requestDto)
         {
             return HostContext.ServiceController.Execute(requestDto, Request);
