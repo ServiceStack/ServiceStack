@@ -141,7 +141,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (cacheInfo != null)
             {
                 cacheInfo.KeyBase += "::flag=" + (ServerCustomCacheKey.Count % 2 == 0);
-                if (Request.HandledValidCache(cacheInfo))
+                if (Request.HandleValidCache(cacheInfo))
                     return null;
             }
 

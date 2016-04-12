@@ -94,7 +94,7 @@ namespace ServiceStack
                 LocalCache = LocalCache,
             };
 
-            if (req.HandledValidCache(cacheInfo))
+            if (req.HandleValidCache(cacheInfo))
                 return;
 
             req.Items[Keywords.CacheInfo] = cacheInfo;
@@ -108,7 +108,7 @@ namespace ServiceStack
             return "date:" + cacheInfo.CacheKey;
         }
 
-        public static bool HandledValidCache(this IRequest req, CacheInfo cacheInfo)
+        public static bool HandleValidCache(this IRequest req, CacheInfo cacheInfo)
         {
             if (cacheInfo == null)
                 return false;
