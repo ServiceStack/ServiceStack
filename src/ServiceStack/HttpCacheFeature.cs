@@ -164,7 +164,7 @@ namespace ServiceStack
             return true;
         }
 
-        private string BuildCacheControlHeader(CacheInfo cacheInfo)
+        public string BuildCacheControlHeader(CacheInfo cacheInfo)
         {
             var maxAge = cacheInfo.MaxAge;
             if (maxAge == null && (cacheInfo.LastModified != null || cacheInfo.ETag != null))

@@ -94,7 +94,7 @@ namespace ServiceStack
                 LocalCache = LocalCache,
             };
 
-            if (req.HasValidCache(cacheInfo))
+            if (req.HandledValidCache(cacheInfo))
                 return;
 
             req.Items[Keywords.CacheInfo] = cacheInfo;
@@ -108,20 +108,23 @@ namespace ServiceStack
             return "date:" + cacheInfo.CacheKey;
         }
 
-        public static bool HasValidCache(this IRequest req, CacheInfo cacheInfo)
+        public static bool HandledValidCache(this IRequest req, CacheInfo cacheInfo)
         {
             if (cacheInfo == null)
                 return false;
 
+            var res = req.Response;
             var cache = cacheInfo.LocalCache ? HostContext.LocalCache : HostContext.Cache;
+
+            DateTime? lastModified = null;
 
             var doHttpCaching = cacheInfo.MaxAge != null || cacheInfo.CacheControl != CacheControl.None;
             if (doHttpCaching)
             {
-                var lastModified = cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
+                lastModified = cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
                 if (req.HasValidCache(lastModified))
                 {
-                    req.Response.EndNotModified();
+                    res.EndNotModified();
                     return true;
                 }
             }
@@ -135,9 +138,21 @@ namespace ServiceStack
             if (responseBytes != null)
             {
                 if (encoding != null)
-                    req.Response.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                if (cacheInfo.VaryByUser)
+                    res.AddHeader(HttpHeaders.Vary, "Cookie");
 
-                req.Response.WriteBytesToResponse(responseBytes, req.ResponseContentType);
+                var cacheControl = HostContext.GetPlugin<HttpCacheFeature>().BuildCacheControlHeader(cacheInfo);
+                if (cacheControl != null)
+                    res.AddHeader(HttpHeaders.CacheControl, cacheControl);
+
+                if (lastModified == null && !doHttpCaching)
+                    lastModified = cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
+
+                if (lastModified != null)
+                    res.AddHeader(HttpHeaders.LastModified, lastModified.Value.ToUniversalTime().ToString("r"));
+
+                res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
                 return true;
             }
 
