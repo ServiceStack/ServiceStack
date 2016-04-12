@@ -437,6 +437,20 @@
                UPDATE "Person" SET "FirstName" = 'JJ'
              </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateIncrement``1(System.Data.IDbConnection,``0,ServiceStack.OrmLite.SqlExpression{``0})" -->
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateIncrement``2(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,``1}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+             <summary>
+             Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
+             Numeric fields generates an increment sql which is usefull to increment counters, etc...
+             avoiding concurrency conflicts
+             
+               db.UpdateIncrement(new Person { Age = 5 }, p => p.Age, p => p.LastName == "Hendrix");
+               UPDATE "Person" SET "Age" = "Age" + 5 WHERE ("LastName" = 'Hendrix')
+            
+               db.UpdateIncrement(new Person { Age = 5 }, p => p.FirstName);
+               UPDATE "Person" SET "Age" = "Age" + 5
+             </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateNonDefaults``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
             <summary>
             Updates all non-default values set on item matching the where condition (if any). E.g
