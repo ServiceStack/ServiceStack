@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Security.Policy;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
@@ -203,6 +204,19 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string Get { get; set; }
     }
 
+    [Route("/lists", "GET")]
+    public class GetLists : IReturn<GetLists>
+    {
+        public string Id { get; set; }
+    }
+
+    [Route("/lists", "POST")]
+    [Exclude(Feature.Metadata)]
+    public class CreateList : IReturn<CreateList>
+    {
+        public string Id { get; set; }
+    }
+
     public class SwaggerTestService : Service
     {
         public object Any(SwaggerTest request)
@@ -246,6 +260,16 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         }
 
         public object Any(PutSwaggerExample request)
+        {
+            return request;
+        }
+
+        public object Any(GetLists request)
+        {
+            return request;
+        }
+
+        public object Any(CreateList request)
         {
             return request;
         }

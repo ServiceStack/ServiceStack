@@ -207,7 +207,10 @@ namespace ServiceStack.Api.Swagger
             var meta = HostContext.Metadata;
             foreach (var key in map.Keys)
             {
-                paths.AddRange(map[key].Where(x => (x.Path == path || x.Path.StartsWith(path + "/") && meta.IsVisible(Request, Format.Json, x.RequestType.Name))));
+                var restPaths = map[key];
+                var selectedPaths = restPaths.Where( x => x.Path == path || x.Path.StartsWith(path + "/"));
+                var visiblePaths = selectedPaths.Where(x => meta.IsVisible(Request, Format.Json, x.RequestType.Name));
+                paths.AddRange(visiblePaths);
             }
 
             var models = new Dictionary<string, SwaggerModel>();
