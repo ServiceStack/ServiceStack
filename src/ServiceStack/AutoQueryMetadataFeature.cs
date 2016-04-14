@@ -10,11 +10,15 @@ namespace ServiceStack
     {
         public AutoQueryViewerConfig AutoQueryViewerConfig { get; set; }
         public Action<AutoQueryMetadataResponse> MetadataFilter { get; set; }
+        public List<Type> ExportTypes { get; set; } 
         public int? MaxLimit { get; set; }
 
         public AutoQueryMetadataFeature()
         {
             this.AutoQueryViewerConfig = GetAutoQueryViewerConfigDefaults();
+            this.ExportTypes = new List<Type> {
+                typeof(RequestLogEntry)
+            };
         }
 
         internal static AutoQueryViewerConfig GetAutoQueryViewerConfigDefaults()
@@ -199,6 +203,11 @@ namespace ServiceStack
             var userSession = Request.GetSession();
 
             var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata { BaseUrl = Request.GetBaseUrl() });
+            foreach (var type in feature.ExportTypes)
+            {
+                typesConfig.ExportTypes.Add(type);
+            }
+
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig, 
                 op => HostContext.Metadata.IsAuthorized(op, Request, userSession));
 
