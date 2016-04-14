@@ -185,11 +185,9 @@ namespace CheckWeb
         private void ConfigureView(Container container)
         {
             // Enable ServiceStack Razor
-            Plugins.Add(new RazorFormat
-            {
-                //MinifyHtml = true,
-                //UseAdvancedCompression = true,
-            });
+            var razor = new RazorFormat();
+            razor.Deny.RemoveAt(0);
+            Plugins.Add(razor);
 
             // Enable support for Swagger API browser
             Plugins.Add(new SwaggerFeature

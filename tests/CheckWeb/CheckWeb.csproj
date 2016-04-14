@@ -129,6 +129,8 @@
     <Content Include="TestError.cshtml" />
     <Content Include="GlobalErrorHandler.cshtml" />
     <Content Include="Views\TestErrorView.cshtml" />
+    <Content Include="folder\_new.cshtml" />
+    <Content Include="folder\new.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

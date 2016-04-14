@@ -86,12 +86,12 @@ namespace ServiceStack.Razor
             }
         }
 
-        static bool DenyPathsWithLeading_(string path)
+        public static bool DenyPathsWithLeading_(string path)
         {
             return Path.GetFileName(path).StartsWith("_");
         }
 
-        static bool DenyDirectAccessToViews(string path)
+        public static bool DenyDirectAccessToViews(string path)
         {
             return path.StartsWithIgnoreCase("/views");
         }
