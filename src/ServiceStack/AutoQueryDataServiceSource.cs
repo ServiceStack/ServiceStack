@@ -33,7 +33,7 @@ namespace ServiceStack
 
         public static MemoryDataSource<T> ServiceSource<T>(this QueryDataContext ctx, object requestDto)
         {
-            var response = HostContext.ServiceController.Execute(requestDto, ctx.Request);
+            var response = HostContext.AppHost.GetServiceGateway(ctx.Request).Send<T>(requestDto);
             var results = GetResults<T>(response);
             if (results == null)
                 throw new NotSupportedException("IEnumerable<{0}> could not be derived from Response {1} from Request {2}"
