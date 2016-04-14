@@ -16,6 +16,7 @@ using ServiceStack.OrmLite;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Redis;
 using ServiceStack.Api.Swagger;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Shared.Tests;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -32,7 +33,11 @@ namespace ServiceStack.WebHost.IntegrationTests
             : AppHostBase
         {
             public AppHost()
-                : base("ServiceStack WebHost IntegrationTests", typeof(Reverse).Assembly) {}
+                : base("ServiceStack WebHost IntegrationTests", typeof (Reverse).Assembly)
+            {
+                typeof(Authenticate)
+                    .AddAttributes(new ExcludeAttribute(Feature.Metadata));
+            }
 
             public override void Configure(Container container)
             {
@@ -116,7 +121,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                 });
                 Plugins.Add(new PostmanFeature());
                 Plugins.Add(new CorsFeature());
-                Plugins.Add(new AutoQueryFeature());
+                Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
 
                 container.RegisterValidators(typeof(CustomersValidator).Assembly);
 

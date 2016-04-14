@@ -146,7 +146,7 @@ namespace ServiceStack
                 if (cacheControl != null)
                     res.AddHeader(HttpHeaders.CacheControl, cacheControl);
 
-                if (lastModified == null && !doHttpCaching)
+                if (!doHttpCaching)
                     lastModified = cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
 
                 if (lastModified != null)

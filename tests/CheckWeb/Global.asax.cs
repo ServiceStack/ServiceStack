@@ -79,7 +79,7 @@ namespace CheckWeb
             // Configure ServiceStack Razor views.
             this.ConfigureView(container);
 
-            Plugins.Add(new AutoQueryFeature());
+            Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
 
             Plugins.Add(new AutoQueryDataFeature()
                 .AddDataSource(ctx => ctx.MemorySource(GetRockstars())));
@@ -88,6 +88,10 @@ namespace CheckWeb
 
             Plugins.Add(new PostmanFeature());
             Plugins.Add(new CorsFeature(allowedMethods: "GET, POST, PUT, DELETE, PATCH, OPTIONS"));
+
+            Plugins.Add(new RequestLogsFeature {
+                RequestLogger = new CsvRequestLogger(),
+            });
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
