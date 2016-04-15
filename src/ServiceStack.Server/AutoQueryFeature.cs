@@ -134,7 +134,7 @@ namespace ServiceStack
                     EndsWithConventions[key] = query;
             }
 
-            appHost.GetContainer().Register<IAutoQuery>(c =>
+            Func<AutoQuery> factory = () =>
                 new AutoQuery
                 {
                     IgnoreProperties = IgnoreProperties,                    
@@ -148,7 +148,11 @@ namespace ServiceStack
                     StartsWithConventions = StartsWithConventions,
                     EndsWithConventions = EndsWithConventions,
                     UseNamedConnection = UseNamedConnection,
-                })
+                };
+
+            appHost.GetContainer().Register<IAutoQuery>(c => factory())
+                .ReusedWithin(ReuseScope.None);
+            appHost.GetContainer().Register<IAutoQueryDb>(c => factory())
                 .ReusedWithin(ReuseScope.None);
 
             appHost.Metadata.GetOperationAssemblies()
@@ -323,6 +327,9 @@ namespace ServiceStack
         }
     }
 
+    public interface IAutoQueryDb : IAutoQuery {}
+
+    [Obsolete("Use IAutoQueryDb")]
     public interface IAutoQuery
     {
         SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
@@ -336,7 +343,7 @@ namespace ServiceStack
 
     public abstract class AutoQueryServiceBase : Service
     {
-        public IAutoQuery AutoQuery { get; set; }
+        public IAutoQueryDb AutoQuery { get; set; }
 
         public virtual object Exec<From>(IQueryDb<From> dto)
         {
@@ -377,7 +384,7 @@ namespace ServiceStack
         Dictionary<string, QueryDbFieldAttribute> EndsWithConventions { get; set; }
     }
 
-    public class AutoQuery : IAutoQuery, IAutoQueryOptions, IDisposable
+    public class AutoQuery : IAutoQueryDb, IAutoQueryOptions, IDisposable
     {
         public int? MaxLimit { get; set; }
         public bool EnableUntypedQueries { get; set; }

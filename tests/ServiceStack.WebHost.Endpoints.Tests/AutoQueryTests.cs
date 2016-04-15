@@ -539,7 +539,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class AutoQueryService : Service
     {
-        public IAutoQuery AutoQuery { get; set; }
+        public IAutoQueryDb AutoQuery { get; set; }
 
         //Override with custom impl
         public object Any(QueryOverridedRockstars dto)
@@ -618,7 +618,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [ConnectionInfo(NamedConnection = AutoQueryAppHost.SqlServerNamedConnection)]
     public class NamedConnectionServices : Service
     {
-        public IAutoQuery AutoQuery { get; set; }
+        public IAutoQueryDb AutoQuery { get; set; }
 
         public object Any(ChangeConnectionInfo request)
         {
