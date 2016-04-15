@@ -725,7 +725,9 @@ namespace ServiceStack.NativeTypes.Swift
             if (foundType != null)
                 return foundType;
 
-            if (typeName.Name == typeof(QueryBase).Name || typeName.Name == typeof(QueryBase<>).Name)
+            if (typeName.Name == typeof(QueryBase).Name || 
+                typeName.Name == typeof(QueryBase<>).Name || 
+                typeName.Name == typeof(QueryDb<>).Name)
                 return CreateType(typeof(QueryBase)); //Properties are on QueryBase
 
 

@@ -8,7 +8,7 @@ namespace Check.ServiceModel
         public string Name { get; set; }
     }
 
-    public class QueryPocoBase : QueryBase<OnlyDefinedInGenericType>
+    public class QueryPocoBase : QueryDb<OnlyDefinedInGenericType>
     {
         public int Id { get; set; }
     }
@@ -25,7 +25,7 @@ namespace Check.ServiceModel
         public string Name { get; set; }
     }
 
-    public class QueryPocoIntoBase : QueryBase<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>
+    public class QueryPocoIntoBase : QueryDb<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>
     {
         public int Id { get; set; }
     }

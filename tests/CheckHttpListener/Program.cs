@@ -81,7 +81,7 @@ namespace CheckHttpListener
     }
 
     [Route("/query/rockstars")]
-    public class QueryRockstars : QueryBase<Rockstar> { }
+    public class QueryRockstars : QueryDb<Rockstar> { }
 
     //public class Hello { }
 
