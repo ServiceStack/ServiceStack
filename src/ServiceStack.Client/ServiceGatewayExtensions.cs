@@ -29,7 +29,7 @@ namespace ServiceStack
             Func<IServiceGateway, object, object> sendFn;
             if (!LateBoundSendSyncFns.TryGetValue(resposneType, out sendFn))
             {
-                var mi = typeof(ServiceGatewayExtensions).GetMethod("SendObject", BindingFlags.Static | BindingFlags.NonPublic);
+                var mi = typeof(ServiceGatewayExtensions).GetStaticMethod("SendObject");
                 var genericMi = mi.MakeGenericMethod(resposneType);
                 LateBoundSendSyncFns[resposneType] = sendFn = (Func<IServiceGateway, object, object>)
                     genericMi.CreateDelegate(typeof(Func<IServiceGateway, object, object>));
@@ -42,7 +42,7 @@ namespace ServiceStack
             Func<IServiceGateway, object, CancellationToken, Task<object>> sendFn;
             if (!LateBoundSendAsyncFns.TryGetValue(resposneType, out sendFn))
             {
-                var mi = typeof(ServiceGatewayExtensions).GetMethod("SendObjectAsync", BindingFlags.Static | BindingFlags.NonPublic);
+                var mi = typeof(ServiceGatewayExtensions).GetStaticMethod("SendObjectAsync");
                 var genericMi = mi.MakeGenericMethod(resposneType);
                 LateBoundSendAsyncFns[resposneType] = sendFn = (Func<IServiceGateway, object, CancellationToken, Task<object>>)
                     genericMi.CreateDelegate(typeof(Func<IServiceGateway, object, CancellationToken, Task<object>>));
