@@ -69,13 +69,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             QueryResponse<GithubContributor> response;
 
-            response = client.Get(new QueryServiceStackContributors { Take = 20 });
+            response = client.Get(new QueryServiceStackContributors
+            {
+                Repo = "ServiceStack",
+                Take = 20
+            });
             Assert.That(response.Total, Is.GreaterThan(20));
             Assert.That(response.Results.Count, Is.EqualTo(20));
             Assert.That(HostContext.LocalCache.Get<List<GithubContributor>>("aqd:" + typeof(GithubContributor).Name) != null);
 
             response = client.Get(new QueryServiceStackContributors
             {
+                Repo = "ServiceStack",
                 ContributionsAbove = 10,
                 Fields = "Login,Contributions"
             });
@@ -125,7 +130,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             feature.AddDataSource(ctx => ctx.ServiceSource<GithubRepo>(ctx.Dto.ConvertTo<GetGithubRepos>(), 
                 HostContext.Cache, TimeSpan.FromMinutes(1)));
             feature.AddDataSource(ctx => ctx.MemorySource(
-                () => "https://api.github.com/repos/ServiceStack/ServiceStack/contributors"
+                () => "https://api.github.com/repos/ServiceStack/{0}/contributors"
+                         .Fmt(ctx.Request.GetParam("repo"))
                     .GetJsonFromUrl(req => req.UserAgent="AutoQuery").FromJson<List<GithubContributor>>(),
                 HostContext.LocalCache, TimeSpan.FromMinutes(1)));
         }
@@ -186,6 +192,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class QueryServiceStackContributors : QueryData<GithubContributor>
     {
+        public string Repo { get; set; }
         public int? ContributionsAbove { get; set; }
     }
 
