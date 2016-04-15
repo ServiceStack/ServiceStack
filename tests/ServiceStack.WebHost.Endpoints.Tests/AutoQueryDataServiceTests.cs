@@ -200,7 +200,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public object Any(GetAllRockstarData request)
         {
-            return Db.Select<Rockstar>();
+            return Db.Select<Rockstar>().AsTaskResult();
         }
 
         public object Any(GetAllRockstarAlbumsData request)
