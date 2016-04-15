@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,8 +29,18 @@ namespace ServiceStack
             {
                 var mi = typeof(ServiceGatewayExtensions).GetStaticMethod("SendObject");
                 var genericMi = mi.MakeGenericMethod(resposneType);
-                LateBoundSendSyncFns[resposneType] = sendFn = (Func<IServiceGateway, object, object>)
+                sendFn = (Func<IServiceGateway, object, object>)
                     genericMi.CreateDelegate(typeof(Func<IServiceGateway, object, object>));
+
+                Dictionary<Type, Func<IServiceGateway, object, object>> snapshot, newCache;
+                do
+                {
+                    snapshot = LateBoundSendSyncFns;
+                    newCache = new Dictionary<Type, Func<IServiceGateway, object, object>>(LateBoundSendSyncFns);
+                    newCache[resposneType] = sendFn;
+
+                } while (!ReferenceEquals(
+                    Interlocked.CompareExchange(ref LateBoundSendSyncFns, newCache, snapshot), snapshot));
             }
             return sendFn(client, request);
         }
@@ -44,8 +52,18 @@ namespace ServiceStack
             {
                 var mi = typeof(ServiceGatewayExtensions).GetStaticMethod("SendObjectAsync");
                 var genericMi = mi.MakeGenericMethod(resposneType);
-                LateBoundSendAsyncFns[resposneType] = sendFn = (Func<IServiceGateway, object, CancellationToken, Task<object>>)
+                sendFn = (Func<IServiceGateway, object, CancellationToken, Task<object>>)
                     genericMi.CreateDelegate(typeof(Func<IServiceGateway, object, CancellationToken, Task<object>>));
+
+                Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>> snapshot, newCache;
+                do
+                {
+                    snapshot = LateBoundSendAsyncFns;
+                    newCache = new Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>>(LateBoundSendAsyncFns);
+                    newCache[resposneType] = sendFn;
+
+                } while (!ReferenceEquals(
+                    Interlocked.CompareExchange(ref LateBoundSendAsyncFns, newCache, snapshot), snapshot));
             }
             return sendFn(client, request, token);
         }
@@ -63,16 +81,16 @@ namespace ServiceStack
             return resposneType;
         }
 
-        private static readonly ConcurrentDictionary<Type, Func<IServiceGateway, object, object>> LateBoundSendSyncFns =
-            new ConcurrentDictionary<Type, Func<IServiceGateway, object, object>>();
+        private static Dictionary<Type, Func<IServiceGateway, object, object>> LateBoundSendSyncFns =
+            new Dictionary<Type, Func<IServiceGateway, object, object>>();
 
         internal static object SendObject<TResponse>(IServiceGateway client, object request)
         {
             return client.Send<TResponse>(request);
         }
 
-        private static readonly ConcurrentDictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>> LateBoundSendAsyncFns =
-            new ConcurrentDictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>>();
+        private static Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>> LateBoundSendAsyncFns =
+            new Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>>();
 
         internal static Task<object> SendObjectAsync<TResponse>(IServiceGateway client, object request, CancellationToken token)
         {
