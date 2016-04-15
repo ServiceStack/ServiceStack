@@ -499,6 +499,10 @@ namespace ServiceStack
 
         public virtual Task<TResponse> SendAsync<TResponse>(object request, CancellationToken token)
         {
+            if (typeof(TResponse) == typeof(object))
+                return this.SendAsync(this.GetResponseType(request), request, token)
+                    .ContinueWith(t => (TResponse)t.Result, token);
+
             if (request is IVerb)
             {
                 if (request is IGet)

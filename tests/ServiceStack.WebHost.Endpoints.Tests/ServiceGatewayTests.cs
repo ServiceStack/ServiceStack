@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Messaging;
@@ -57,6 +58,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     public class SGPublishAllPostExternalVoid : IReturnVoid, IPost
+    {
+        public string Value { get; set; }
+    }
+
+    public class SGSendSyncGetSyncObjectInternal : IReturn<SGSendSyncGetSyncObjectInternal>
+    {
+        public string Value { get; set; }
+    }
+
+    public class SGSendSyncGetAsyncObjectExternal : IReturn<SGSendSyncGetAsyncObjectExternal>
     {
         public string Value { get; set; }
     }
@@ -138,6 +149,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Gateway.PublishAll(requests);
         }
+
+        public object Any(SGSendSyncGetSyncObjectInternal request)
+        {
+            request.Value += "> " + Request.Verb + " " + typeof(SGSendSyncGetSyncObjectInternal).Name;
+            return Gateway.Send<object>(request.ConvertTo<SGSyncGetSyncObjectInternal>());
+        }
+
+        public object Any(SGSendSyncGetAsyncObjectExternal request)
+        {
+            request.Value += "> " + Request.Verb + " " + typeof(SGSendSyncGetAsyncObjectExternal).Name;
+            return Gateway.SendAsync<object>(request.ConvertTo<SGSyncGetAsyncObjectExternal>());
+        }
     }
 
     public class SGSyncGetInternal : IReturn<SGSyncGetInternal>, IGet
@@ -182,6 +205,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Value { get; set; }
     }
 
+    public class SGSyncGetSyncObjectInternal : IReturn<SGSyncGetSyncObjectInternal>, IGet
+    {
+        public string Value { get; set; }
+    }
+
+    public class SGSyncGetAsyncObjectExternal : IReturn<SGSyncGetAsyncObjectExternal>, IGet
+    {
+        public string Value { get; set; }
+    }
+
     public class ServiceGatewayInternalServices : Service
     {
         public object Get(SGSyncGetInternal request)
@@ -208,6 +241,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Post(SGSyncPostInternalVoid request)
         {
             request.Value += "> POST " + typeof(SGSyncPostInternalVoid).Name;
+        }
+
+        public object Any(SGSyncGetSyncObjectInternal request)
+        {
+            request.Value += "> GET " + typeof(SGSyncGetSyncObjectInternal).Name;
+            return request;
         }
     }
 
@@ -237,6 +276,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Post(SGSyncPostExternalVoid request)
         {
             request.Value += "> POST " + typeof(SGSyncPostExternalVoid).Name;
+        }
+
+        public async Task<object> Any(SGSyncGetAsyncObjectExternal request)
+        {
+            await Task.Yield();
+            request.Value += "> GET " + typeof(SGSyncGetAsyncObjectExternal).Name;
+            return request;
         }
     }
 
@@ -505,6 +551,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(MessageProducer.Messages.Count, Is.EqualTo(3));
             Assert.That(MessageProducer.Messages.Map(x => ((SGSyncPostExternalVoid)x).Value), Is.EquivalentTo(
                 3.Times(i => "GET CLIENT> POST SGPublishAllPostExternalVoid{0}".Fmt(i))));
+        }
+
+        [Test]
+        public void Does_SGSendSyncGetSyncObjectInternal()
+        {
+            var response = client.Get(new SGSendSyncGetSyncObjectInternal { Value = "GET CLIENT" });
+            Assert.That(response.Value, Is.EqualTo("GET CLIENT> GET SGSendSyncGetSyncObjectInternal> GET SGSyncGetSyncObjectInternal"));
+        }
+
+        [Test]
+        public void Does_SGSendSyncGetAsyncObjectExternal()
+        {
+            var response = client.Get(new SGSendSyncGetAsyncObjectExternal { Value = "GET CLIENT" });
+            Assert.That(response.Value, Is.EqualTo("GET CLIENT> GET SGSendSyncGetAsyncObjectExternal> GET SGSyncGetAsyncObjectExternal"));
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,6 +24,60 @@ namespace ServiceStack
             return client.SendAll<TResponse>(request);
         }
 
+        public static object Send(this IServiceGateway client, Type resposneType, object request)
+        {
+            Func<IServiceGateway, object, object> sendFn;
+            if (!LateBoundSendSyncFns.TryGetValue(resposneType, out sendFn))
+            {
+                var mi = typeof(ServiceGatewayExtensions).GetMethod("SendObject", BindingFlags.Static | BindingFlags.NonPublic);
+                var genericMi = mi.MakeGenericMethod(resposneType);
+                LateBoundSendSyncFns[resposneType] = sendFn = (Func<IServiceGateway, object, object>)
+                    genericMi.CreateDelegate(typeof(Func<IServiceGateway, object, object>));
+            }
+            return sendFn(client, request);
+        }
+
+        public static Task<object> SendAsync(this IServiceGateway client, Type resposneType, object request, CancellationToken token=default(CancellationToken))
+        {
+            Func<IServiceGateway, object, CancellationToken, Task<object>> sendFn;
+            if (!LateBoundSendAsyncFns.TryGetValue(resposneType, out sendFn))
+            {
+                var mi = typeof(ServiceGatewayExtensions).GetMethod("SendObjectAsync", BindingFlags.Static | BindingFlags.NonPublic);
+                var genericMi = mi.MakeGenericMethod(resposneType);
+                LateBoundSendAsyncFns[resposneType] = sendFn = (Func<IServiceGateway, object, CancellationToken, Task<object>>)
+                    genericMi.CreateDelegate(typeof(Func<IServiceGateway, object, CancellationToken, Task<object>>));
+            }
+            return sendFn(client, request, token);
+        }
+
+        public static Type GetResponseType(this IServiceGateway client, object request)
+        {
+            if (request == null)
+                throw new ArgumentNullException("request");
+
+            var returnTypeDef = request.GetType().GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
+            if (returnTypeDef == null)
+                throw new ArgumentException("Late-bound Send<object> can only be called for Request DTO's implementing IReturn<T>");
+
+            var resposneType = returnTypeDef.GetGenericArguments()[0];
+            return resposneType;
+        }
+
+        private static readonly ConcurrentDictionary<Type, Func<IServiceGateway, object, object>> LateBoundSendSyncFns =
+            new ConcurrentDictionary<Type, Func<IServiceGateway, object, object>>();
+
+        internal static object SendObject<TResponse>(IServiceGateway client, object request)
+        {
+            return client.Send<TResponse>(request);
+        }
+
+        private static readonly ConcurrentDictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>> LateBoundSendAsyncFns =
+            new ConcurrentDictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>>();
+
+        internal static Task<object> SendObjectAsync<TResponse>(IServiceGateway client, object request, CancellationToken token)
+        {
+            return client.SendAsync<TResponse>(request, token).ContinueWith(x => (object)x.Result, token);
+        }
     }
 
     public static class ServiceGatewayAsyncWrappers
