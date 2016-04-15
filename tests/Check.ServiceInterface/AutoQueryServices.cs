@@ -215,7 +215,7 @@ namespace Check.ServiceInterface
 
     public class AutoQueryService : Service
     {
-        public IAutoQuery AutoQuery { get; set; }
+        public IAutoQueryDb AutoQuery { get; set; }
 
         //Override with custom impl
         public QueryResponse<Rockstar> Any(QueryRockstars dto)

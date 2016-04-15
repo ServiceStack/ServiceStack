@@ -134,10 +134,9 @@ namespace ServiceStack
                     EndsWithConventions[key] = query;
             }
 
-            Func<AutoQuery> factory = () =>
-                new AutoQuery
+            appHost.GetContainer().Register<IAutoQueryDb>(c => new AutoQuery
                 {
-                    IgnoreProperties = IgnoreProperties,                    
+                    IgnoreProperties = IgnoreProperties,
                     IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
                     MaxLimit = MaxLimit,
                     EnableUntypedQueries = EnableUntypedQueries,
@@ -148,11 +147,7 @@ namespace ServiceStack
                     StartsWithConventions = StartsWithConventions,
                     EndsWithConventions = EndsWithConventions,
                     UseNamedConnection = UseNamedConnection,
-                };
-
-            appHost.GetContainer().Register<IAutoQuery>(c => factory())
-                .ReusedWithin(ReuseScope.None);
-            appHost.GetContainer().Register<IAutoQueryDb>(c => factory())
+                })
                 .ReusedWithin(ReuseScope.None);
 
             appHost.Metadata.GetOperationAssemblies()
@@ -327,10 +322,10 @@ namespace ServiceStack
         }
     }
 
-    public interface IAutoQueryDb : IAutoQuery {}
-
     [Obsolete("Use IAutoQueryDb")]
-    public interface IAutoQuery
+    public interface IAutoQuery { }
+
+    public interface IAutoQueryDb
     {
         SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
 
@@ -952,12 +947,12 @@ namespace ServiceStack
             return query;
         }
 
-        public static SqlExpression<From> CreateQuery<From>(this IAutoQuery autoQuery, IQueryDb<From> model, IRequest request)
+        public static SqlExpression<From> CreateQuery<From>(this IAutoQueryDb autoQuery, IQueryDb<From> model, IRequest request)
         {
             return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
         }
 
-        public static SqlExpression<From> CreateQuery<From, Into>(this IAutoQuery autoQuery, IQueryDb<From, Into> model, IRequest request)
+        public static SqlExpression<From> CreateQuery<From, Into>(this IAutoQueryDb autoQuery, IQueryDb<From, Into> model, IRequest request)
         {
             return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
         }
