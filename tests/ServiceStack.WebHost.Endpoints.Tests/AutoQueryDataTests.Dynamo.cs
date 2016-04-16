@@ -18,6 +18,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_perform_SCAN_operation_when_not_querying_hash_key()
+        {
+            var response = client.Get(new QueryDataRockstarAlbums
+            {
+                Genre = "Grunge",
+            });
+
+            Assert.That(response.Results.Count, Is.EqualTo(5));
+            Assert.That(response.Results.Map(x => x.RockstarId).Distinct(), 
+                Is.EquivalentTo(new[] { 3, 5 }));
+        }
+
+        [Test]
         public void Can_query_on_ForeignKey_and_RockstarAlbumGenreIndex()
         {
             QueryResponse<RockstarAlbumGenreGlobalIndex> response;
