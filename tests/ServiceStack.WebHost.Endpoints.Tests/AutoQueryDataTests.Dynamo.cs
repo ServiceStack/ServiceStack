@@ -18,6 +18,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_perform_QUERY_operation_when_querying_hash_key()
+        {
+            var response = client.Get(new QueryDataRockstarAlbums
+            {
+                RockstarId = 3,
+                Genre = "Grunge",
+            });
+
+            Assert.That(response.Results.Count, Is.EqualTo(4));
+            Assert.That(response.Results.Map(x => x.RockstarId).Distinct(),
+                Is.EquivalentTo(new[] { 3 }));
+        }
+
+        [Test]
         public void Does_perform_SCAN_operation_when_not_querying_hash_key()
         {
             var response = client.Get(new QueryDataRockstarAlbums
@@ -26,7 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
 
             Assert.That(response.Results.Count, Is.EqualTo(5));
-            Assert.That(response.Results.Map(x => x.RockstarId).Distinct(), 
+            Assert.That(response.Results.Map(x => x.RockstarId).Distinct(),
                 Is.EquivalentTo(new[] { 3, 5 }));
         }
 
@@ -50,6 +64,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             //Hash + Range BETWEEN + Filter
             response = client.Get(new QueryDataRockstarAlbumGenreIndex
+            {
+                Genre = "Grunge",
+                IdBetween = new[] { 2, 3 },
+                Name = "Nevermind"
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results[0].Id, Is.EqualTo(3));
+
+            response.PrintDump();
+        }
+
+        [Test]
+        public void Can_query_on_ForeignKey_and_RockstarAlbumGenreIndex_Mapped()
+        {
+            QueryResponse<RockstarAlbum> response;
+            response = client.Get(new QueryDataRockstarAlbumGenreIndexMapped { Genre = "Grunge" }); //Hash
+            Assert.That(response.Results.Count, Is.EqualTo(5));
+            Assert.That(response.Total, Is.EqualTo(5));
+
+            response = client.Get(new QueryDataRockstarAlbumGenreIndexMapped { Genre = "Grunge", Id = 3 }); //Hash + Range
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Total, Is.EqualTo(1));
+            Assert.That(response.Results[0].Name, Is.EqualTo("Nevermind"));
+
+            //Hash + Range BETWEEN
+            response = client.Get(new QueryDataRockstarAlbumGenreIndexMapped { Genre = "Grunge", IdBetween = new[] { 2, 3 } });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+            Assert.That(response.Total, Is.EqualTo(2));
+
+            //Hash + Range BETWEEN + Filter
+            response = client.Get(new QueryDataRockstarAlbumGenreIndexMapped
             {
                 Genre = "Grunge",
                 IdBetween = new[] { 2, 3 },
@@ -262,6 +308,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [Route("/querydata/rockstaralbumindex")]
     public class QueryDataRockstarAlbumGenreIndex : QueryData<RockstarAlbumGenreGlobalIndex>
+    {
+        public int? Id { get; set; }
+        public int? RockstarId { get; set; }
+        public string Name { get; set; }
+        public string Genre { get; set; }
+        public int[] IdBetween { get; set; }
+    }
+
+    [Route("/querydata/rockstaralbumindex/mapped")]
+    public class QueryDataRockstarAlbumGenreIndexMapped : QueryData<RockstarAlbumGenreGlobalIndex, RockstarAlbum>
     {
         public int? Id { get; set; }
         public int? RockstarId { get; set; }
