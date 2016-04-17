@@ -190,6 +190,8 @@ namespace ServiceStack
                     cacheHeader.Add("no-store");
                 if (cache.HasFlag(CacheControl.NoTransform))
                     cacheHeader.Add("no-transform");
+                if (cache.HasFlag(CacheControl.ProxyRevalidate))
+                    cacheHeader.Add("proxy-revalidate");
             }
 
             if (cacheHeader.Count <= 0)

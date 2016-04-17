@@ -482,6 +482,7 @@ namespace ServiceStack
         NoCache = 1 << 3,
         NoStore = 1 << 4,
         NoTransform = 1 << 5,
+        ProxyRevalidate = 1 << 6,
     }
 
     public static class HttpResultExtensions
