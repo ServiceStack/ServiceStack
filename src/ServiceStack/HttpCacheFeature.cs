@@ -18,7 +18,7 @@ namespace ServiceStack
 
         public HttpCacheFeature()
         {
-            DefaultMaxAge = TimeSpan.FromHours(1);
+            DefaultMaxAge = TimeSpan.FromMinutes(10);
             DefaultExpiresIn = TimeSpan.FromMinutes(10);
             CacheControlForOptimizedResults = "max-age=0";
         }

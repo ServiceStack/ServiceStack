@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -43,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.ResponseFilter = res =>
             {
                 Assert.That(res.Headers[HttpHeaders.ETag], Is.EqualTo("etag".Quoted()));
-                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=3600"));
+                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=600"));
             };
 
             var request = new SetCache { ETag = "etag" };
@@ -77,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.ResponseFilter = res =>
             {
                 Assert.That(res.Headers[HttpHeaders.LastModified], Is.EqualTo(request.LastModified.Value.ToUniversalTime().ToString("r")));
-                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=3600"));
+                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=600"));
             };
 
             var response = client.Get(request);
@@ -140,7 +143,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.ResponseFilter = res =>
             {
                 Assert.That(res.Headers[HttpHeaders.ETag], Is.EqualTo("etag-alt".Quoted()));
-                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=3600"));
+                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=600"));
             };
 
             var request = new SetCache { ETag = "etag-alt" };
@@ -185,7 +188,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 req.IfModifiedSince = request.LastModified.Value + TimeSpan.FromSeconds(1);
 
             client.ResponseFilter = res =>
-                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=3600"));
+                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=600"));
 
             var response = client.Get(request);
             Assert.That(response, Is.EqualTo(request));
