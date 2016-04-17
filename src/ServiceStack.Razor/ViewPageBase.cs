@@ -410,6 +410,13 @@ namespace ServiceStack.Razor
             return service;
         }
 
+        private IServiceGateway gateway;
+        public virtual IServiceGateway Gateway
+        {
+            get { return gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request)); }
+        }
+
+        [Obsolete("Use Gateway")]
         public virtual object ExecuteService<T>(Func<T, object> fn)
         {
             var service = ResolveService<T>();

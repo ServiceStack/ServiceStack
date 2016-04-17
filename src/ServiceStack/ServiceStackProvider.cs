@@ -33,14 +33,23 @@ namespace ServiceStack
         ISessionFactory SessionFactory { get; }
         ISession SessionBag { get; }
         bool IsAuthenticated { get; }
-        T TryResolve<T>();
-        T ResolveService<T>();
-        object Execute(object requestDto);
-        TResponse Execute<TResponse>(IReturn<TResponse> requestDto);
-        object Execute(IRequest request);
         IAuthSession GetSession(bool reload = false);
         TUserSession SessionAs<TUserSession>();
         void ClearSession();
+        T TryResolve<T>();
+        T ResolveService<T>();
+
+        IServiceGateway Gateway { get; }
+
+        object Execute(IRequest request);
+
+        [Obsolete("Use Gateway")]
+        object Execute(object requestDto);
+
+        [Obsolete("Use Gateway")]
+        TResponse Execute<TResponse>(IReturn<TResponse> requestDto);
+
+        [Obsolete("Use Gateway")]
         void PublishMessage<T>(T message);
     }
 
@@ -138,6 +147,12 @@ namespace ServiceStack
         {
             var service = TryResolve<T>();
             return HostContext.ResolveService(Request, service);
+        }
+
+        private IServiceGateway gateway;
+        public virtual IServiceGateway Gateway
+        {
+            get { return gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request)); }
         }
 
         public object Execute(object requestDto)

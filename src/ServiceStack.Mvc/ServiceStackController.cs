@@ -205,26 +205,6 @@ namespace ServiceStack.Mvc
         {
             get { return ServiceStackProvider.IsAuthenticated; }
         }
-        protected virtual T TryResolve<T>()
-        {
-            return ServiceStackProvider.TryResolve<T>();
-        }
-        protected virtual T ResolveService<T>()
-        {
-            return ServiceStackProvider.ResolveService<T>();
-        }
-        protected virtual object Execute(object requestDto)
-        {
-            return ServiceStackProvider.Execute(requestDto);
-        }
-        protected virtual TResponse Execute<TResponse>(IReturn<TResponse> requestDto)
-        {
-            return ServiceStackProvider.Execute(requestDto);
-        }
-        protected virtual object ForwardRequestToServiceStack(IRequest request = null)
-        {
-            return ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
-        }
         protected virtual IAuthSession GetSession(bool reload = true)
         {
             return ServiceStackProvider.GetSession(reload);
@@ -241,6 +221,34 @@ namespace ServiceStack.Mvc
         {
             ServiceStackProvider.ClearSession();
         }
+        protected virtual T TryResolve<T>()
+        {
+            return ServiceStackProvider.TryResolve<T>();
+        }
+        protected virtual T ResolveService<T>()
+        {
+            return ServiceStackProvider.ResolveService<T>();
+        }
+        protected virtual object ForwardRequestToServiceStack(IRequest request = null)
+        {
+            return ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
+        }
+
+        public virtual IServiceGateway Gateway
+        {
+            get { return ServiceStackProvider.Gateway; }
+        }
+        [Obsolete("Use Gateway")]
+        protected virtual object Execute(object requestDto)
+        {
+            return ServiceStackProvider.Execute(requestDto);
+        }
+        [Obsolete("Use Gateway")]
+        protected virtual TResponse Execute<TResponse>(IReturn<TResponse> requestDto)
+        {
+            return ServiceStackProvider.Execute(requestDto);
+        }
+        [Obsolete("Use Gateway")]
         protected virtual void PublishMessage<T>(T message)
         {
             ServiceStackProvider.PublishMessage(message);
