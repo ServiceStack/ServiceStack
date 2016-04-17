@@ -215,6 +215,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Cached_DynamoQuery_does_cached_duplicate_requests_when_MaxAge_Custom_Cached()
+        {
+            var request = new CustomQueryCacheMaxAgeDataRockstars();
+            var client = new CachedServiceClient(new JsonServiceClient(Config.ListeningOn));
+
+            var response = client.Get(request);
+            Assert.That(client.CacheHits, Is.EqualTo(0));
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstars.Count));
+
+            response = client.Get(request);
+            Assert.That(client.CacheHits, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstars.Count));
+
+            response = client.Get(new CustomQueryCacheMaxAgeDataRockstars { Age = 27 });
+            Assert.That(client.CacheHits, Is.EqualTo(1));
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstars.Count(x => x.Age == 27)));
+        }
+
+        [Test]
         public void Cached_DynamoQuery_does_return_NotModified_when_MustRevalidate()
         {
             var request = new QueryCacheMustRevalidateDataRockstars();
@@ -350,5 +369,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class QueryCacheMustRevalidateDataRockstars : QueryData<Rockstar>
     {
         public int? Age { get; set; }
+    }
+
+    [Route("/custom/querydata/cachemaxage/rockstars")]
+    public class CustomQueryCacheMaxAgeDataRockstars : QueryData<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    [CacheResponse(Duration = 10, MaxAge = 10)]
+    public class MyCachedAutoQueryServices : Service
+    {
+        public IAutoQueryData AutoQuery { get; set; }
+
+        public object Any(CustomQueryCacheMaxAgeDataRockstars query)
+        {
+            return AutoQuery.Execute(query, AutoQuery.CreateQuery(query, Request));
+        }
     }
 }
