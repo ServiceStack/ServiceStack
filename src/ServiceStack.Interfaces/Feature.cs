@@ -28,5 +28,7 @@ namespace ServiceStack
         Razor        = 1 << 12,
         ProtoBuf     = 1 << 13,
         MsgPack      = 1 << 14,
+
+        ServiceDiscovery = 1 << 15,
     }
 }
