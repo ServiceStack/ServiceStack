@@ -1,7 +1,7 @@
-See [servicestack.net/features](http://servicestack.net/features) for an overview and the [Release Notes](https://servicestack.net/release-notes) for latest features.
+See [servicestack.net/features](https://servicestack.net/features) for an overview and the [Release Notes](https://servicestack.net/release-notes) for latest features.
 
-Join the [ServiceStack Google+ Community](https://plus.google.com/u/0/communities/112445368900682590445) or
-follow [@ServiceStack](http://twitter.com/servicestack) for project updates. 
+Join the [ServiceStack Google+ Community](https://plus.google.com/communities/112445368900682590445) or
+follow [@ServiceStack](https://twitter.com/servicestack) for project updates. 
 
 ### Simple, Fast, Versatile and full-featured Services Framework
 
@@ -69,7 +69,7 @@ Providing [C# Native Types](https://github.com/ServiceStack/ServiceStack/wiki/CS
 support for developing iOS and Android mobile Apps using 
 [Xamarin.iOS](https://github.com/ServiceStackApps/HelloMobile#xamarinios-client) and 
 [Xamarin.Android](https://github.com/ServiceStackApps/HelloMobile#xamarinandroid-client) with 
-[Xamarin Studio](http://xamarin.com/studio) on OSX. The **ServiceStackXS** plugin also provides a rich web service 
+[Xamarin Studio](https://www.xamarin.com/studio) on OSX. The **ServiceStackXS** plugin also provides a rich web service 
 development experience developing Client applications with 
 [Mono Develop on Linux](https://github.com/ServiceStack/ServiceStack/wiki/CSharp-Add-ServiceStack-Reference#xamarin-studio-for-linux)
 
@@ -309,7 +309,7 @@ That's all the application code required to create and consume a simple database
 
 ## Download
 
-If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to: 
+If you have [NuGet](http://www.nuget.org/) installed, the easiest way to get started is to: 
 
 ### [Install ServiceStack via NuGet](https://servicestack.net/download).
 
@@ -338,12 +338,12 @@ Each library is released under its respective licence:
   - [Mono](https://github.com/mono/mono) [(License)](https://github.com/mono/mono/blob/master/LICENSE)
   - [Funq IOC](http://funq.codeplex.com) [(License)](http://funq.codeplex.com/license)
   - [Fluent Validation](http://fluentvalidation.codeplex.com) [(License)](http://fluentvalidation.codeplex.com/license)
-  - [Mini Profiler](http://code.google.com/p/mvc-mini-profiler/) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
-  - [Dapper](http://code.google.com/p/dapper-dot-net/) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [Mini Profiler](https://code.google.com/archive/p/mvc-mini-profiler) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [Dapper](https://code.google.com/archive/p/dapper-dot-net) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
   - [TweetStation's OAuth library](https://github.com/migueldeicaza/TweetStation) [(License)](https://github.com/migueldeicaza/TweetStation/blob/master/LICENSE)
-  - [MarkdownSharp](http://code.google.com/p/markdownsharp/) [(License)](http://opensource.org/licenses/mit-license.php)
+  - [MarkdownSharp](https://code.google.com/archive/p/markdownsharp) [(License)](https://opensource.org/licenses/mit-license.php)
   - [MarkdownDeep](https://github.com/toptensoftware/markdowndeep) [(License)](http://www.toptensoftware.com/markdowndeep/license)
-  - [HtmlCompressor](https://code.google.com/p/htmlcompressor/) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [HtmlCompressor](https://code.google.com/archive/p/htmlcompressor) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
   - [JSMin](https://github.com/douglascrockford/JSMin/blob/master/jsmin.c) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
   - [RecyclableMemoryStream](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream) [(License)](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream/blob/master/LICENSE)
 
@@ -357,7 +357,7 @@ Similar Open source .NET projects for developing or accessing web services inclu
 
 ## Find out More
 
-Follow [@ServiceStack](http://twitter.com/ServiceStack) and 
+Follow [@ServiceStack](https://twitter.com/ServiceStack) and 
 [+ServiceStack](https://plus.google.com/u/0/communities/112445368900682590445) for project updates.
 
 -----
