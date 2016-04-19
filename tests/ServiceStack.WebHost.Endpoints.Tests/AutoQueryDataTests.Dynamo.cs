@@ -252,6 +252,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(client.NotModifiedHits, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(Rockstars.Count(x => x.Age == 27)));
         }
+
+        [Test]
+        public void Does_throw_on_SCAN_when_not_allowScans()
+        {
+            var results = client.Get(new QueryScannedTable { Id = 1 });
+
+            Assert.Throws<WebServiceException>(() => 
+                client.Get(new QueryScannedTable { Name = "foo" })
+            );
+        }
     }
 
     public class AutoQueryDataDynamoAppHost : AutoQueryDataAppHost
@@ -271,6 +281,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .RegisterTable<Movie>()
                 .RegisterTable<AllFields>()
                 .RegisterTable<PagingTest>()
+                .RegisterTable<ScannedTable>()
             );
 
             var dynamo = container.Resolve<IPocoDynamo>();
@@ -292,7 +303,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             feature.AddDataSource(ctx => ctx.DynamoDbSource<MovieTitleIndex>());
             feature.AddDataSource(ctx => ctx.DynamoDbSource<AllFields>());
             feature.AddDataSource(ctx => ctx.DynamoDbSource<PagingTest>());
+            feature.AddDataSource(ctx => ctx.DynamoDbSource<ScannedTable>(allowScans: false));
         }
+    }
+
+    public class ScannedTable
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class QueryScannedTable : QueryData<ScannedTable>
+    {
+        public int? Id { get; set; }
+        public string Name { get; set; }
     }
 
     [Route("/moviesdataindex/search")]
