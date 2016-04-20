@@ -278,8 +278,15 @@ namespace ServiceStack.Razor.Managers
 
         public virtual RazorPage GetPartialPage(IHttpRequest httpReq, string partialName)
         {
+            var normalizedPathInfo = httpReq.PathInfo;
+            if (!httpReq.RawUrl.EndsWith("/"))
+                normalizedPathInfo = normalizedPathInfo.ParentDirectory();
+
+            normalizedPathInfo = normalizedPathInfo.CombineWith(partialName).TrimStart('/');
+
             // Look for partial from same directory or view page
-            return GetContentPage(httpReq.GetDirectoryPath().CombineWith(partialName)) 
+            return GetContentPage(normalizedPathInfo)
+                ?? GetContentPage(normalizedPathInfo.CombineWith(RazorFormat.Instance.DefaultPageName))
                 ?? GetViewPage(partialName);
         }
 
