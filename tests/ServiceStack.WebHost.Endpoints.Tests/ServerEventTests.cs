@@ -824,6 +824,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     clientABCD.Connect()
                 );
 
+                var channelAsubscribers = clientA.GetChannelSubscribers();
+                Assert.That(channelAsubscribers.Count, Is.EqualTo(4));
+
+                var channelABsubscribers = clientA.GetChannelSubscribers();
+                Assert.That(channelABsubscribers.Count, Is.EqualTo(4));
+
                 "Publishing Msg Batch #1 ...".Print();
                 clientA.PostChat("#1 hello to A", channel: "A");
                 clientA.PostChat("#2 hello to B", channel: "B");
@@ -923,6 +929,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(joinA.Count, Is.EqualTo(2));  //A + [(A) B]
                 Assert.That(joinB.Count, Is.EqualTo(2));  //B + [A (B)]
                 Assert.That(joinAB.Count, Is.EqualTo(2)); //[(A) B] + [A (B)]
+
+                var channelAsubscribers = clientA.GetChannelSubscribers();
+                Assert.That(channelAsubscribers.Count, Is.EqualTo(2));
+
+                var channelBsubscribers = clientB.GetChannelSubscribers();
+                Assert.That(channelBsubscribers.Count, Is.EqualTo(2));
+
+                var channelABsubscribers = clientAB.GetChannelSubscribers();
+                Assert.That(channelABsubscribers.Count, Is.EqualTo(3));
+
 
                 var usersA = clientA.ServiceClient.Get(new GetEventSubscribers { Channels = new[] { "A" } });
                 var usersB = clientA.ServiceClient.Get(new GetEventSubscribers { Channels = new[] { "B" } });

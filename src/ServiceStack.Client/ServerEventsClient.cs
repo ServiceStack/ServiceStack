@@ -50,6 +50,16 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    public class ServerEventUser : IMeta
+    {
+        public string UserId { get; set; }
+        public string DisplayName { get; set; }
+        public string ProfileUrl { get; set; }
+        public string[] Channels { get; set; }
+
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
     public partial class ServerEventsClient : IDisposable
     {
         private static ILog log = LogManager.GetLogger(typeof(ServerEventsClient));
@@ -726,6 +736,44 @@ namespace ServiceStack
                     return null;
                 });
         }
+
+        public static List<ServerEventUser> GetChannelSubscribers(this ServerEventsClient client)
+        {
+            var response = client.ServiceClient.Get(new GetEventSubscribers { Channels = client.Channels });
+            return response.ConvertAll(x => x.ToServerEventUser());
+        }
+
+        public static Task<List<ServerEventUser>> GetChannelSubscribersAsync(this ServerEventsClient client)
+        {
+            var responseTask = client.ServiceClient.GetAsync(new GetEventSubscribers { Channels = client.Channels });
+            return responseTask.ContinueWith(task => task.Result.ConvertAll(x => x.ToServerEventUser()));
+        }
+
+        internal static ServerEventUser ToServerEventUser(this Dictionary<string, string> map)
+        {
+            var channels = map.Get("channels");
+            var to = new ServerEventUser
+            {
+                UserId = map.Get("userId"),
+                DisplayName = map.Get("displayName"),
+                ProfileUrl = map.Get("profileUrl"),
+                Channels = !string.IsNullOrEmpty(channels) ? channels.Split(',') : null,
+            };
+
+            foreach (var entry in map)
+            {
+                if (entry.Key == "userId" || entry.Key == "displayName" || 
+                    entry.Key == "profileUrl" || entry.Key == "channels")
+                    continue;
+
+                if (to.Meta == null)
+                    to.Meta = new Dictionary<string, string>();
+
+                to.Meta[entry.Key] = entry.Value;
+            }
+
+            return to;
+        } 
 
         public static T Populate<T>(this T dst, ServerEventMessage src, Dictionary<string, string> msg) where T : ServerEventMessage
         {
