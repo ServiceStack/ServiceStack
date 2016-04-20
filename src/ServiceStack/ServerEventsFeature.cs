@@ -299,13 +299,6 @@ namespace ServiceStack
         }
     }
 
-    [Exclude(Feature.Soap)]
-    public class GetEventSubscribers : IReturn<List<Dictionary<string, string>>>
-    {
-        public string[] Channel { get; set; } //deprecated
-        public string[] Channels { get; set; }
-    }
-
     [DefaultRequest(typeof(GetEventSubscribers))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class ServerEventsSubscribersService : Service
@@ -316,8 +309,10 @@ namespace ServiceStack
         {
             var channels = new List<string>();
 
-            if (request.Channel != null)
-                channels.AddRange(request.Channel);
+            var deprecatedChannels = Request.QueryString["channel"];
+            if (!string.IsNullOrEmpty(deprecatedChannels))
+                channels.AddRange(deprecatedChannels.Split(','));
+
             if (request.Channels != null)
                 channels.AddRange(request.Channels);
 

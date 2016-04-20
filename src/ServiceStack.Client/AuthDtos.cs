@@ -192,4 +192,10 @@ namespace ServiceStack
         [DataMember(Order = 1)]
         public ResponseStatus ResponseStatus { get; set; }
     }
+
+    [Exclude(Feature.Soap)]
+    public class GetEventSubscribers : IReturn<List<Dictionary<string, string>>>
+    {
+        public string[] Channels { get; set; }
+    }
 }
