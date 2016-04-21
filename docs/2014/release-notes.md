@@ -8,7 +8,7 @@ We're ending 2014 with a short release cycle primarily focused on a polished and
 
 ## New [TechStacks](http://techstacks.io) LiveDemo!
 
-We've been gradually refining our modern [AngularJS](https://github.com/ServiceStack/ServiceStackVS/blob/master/angular-spa.md) and [React](https://github.com/ServiceStackApps/Chat-React) Single Page App VS.NET templates which represents what we believe to be the optimal formula for developing future .NET-based JS Apps - utilizing a best-of-breed node.js, npm, bower, grunt/gulp build system.
+We've been gradually refining our modern [AngularJS](https://github.com/ServiceStack/ServiceStackVS/blob/master/docs/angular-spa.md) and [React](https://github.com/ServiceStackApps/Chat-React) Single Page App VS.NET templates which represents what we believe to be the optimal formula for developing future .NET-based JS Apps - utilizing a best-of-breed node.js, npm, bower, grunt/gulp build system.
 
 To this end we're developing new Single Page Apps alongside to further refine these VS.NET templates and demonstrate their potential in using the pre-configured Grunt tasks to manage the full iterative client/server building, optimization and deployment dev workflows. 
 
@@ -423,7 +423,7 @@ More examples of Auto Batched Requests and its behavior can be found in the [Rep
 
 ## New [ReactJS App Template](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project)!
 
-The new ServiceStackVS **ReactJS App** template shares the same approach for developing modern Single Page Apps in VS.NET as the existing [AngularJS App](https://github.com/ServiceStack/ServiceStackVS/blob/master/angular-spa.md) template by leveraging the **node.js** ecosystem for managing all aspects of Client App development utilizing the best-in-class libraries:
+The new ServiceStackVS **ReactJS App** template shares the same approach for developing modern Single Page Apps in VS.NET as the existing [AngularJS App](https://github.com/ServiceStack/ServiceStackVS/blob/master/docs/angular-spa.md) template by leveraging the **node.js** ecosystem for managing all aspects of Client App development utilizing the best-in-class libraries:
 
  - [npm](https://www.npmjs.org/) to manage node.js dependencies (bower, grunt, gulp)
  - [Bower](http://bower.io/) for managing client dependencies (angular, jquery, bootstrap, etc)
@@ -432,10 +432,10 @@ The new ServiceStackVS **ReactJS App** template shares the same approach for dev
 
 The templates conveniently pre-configures the above libraries into a working out-of-the-box solution, including high-level grunt tasks to take care of the full-dev-cycle of **building**, **packaging** and **deploying** your app:
 
- - **[01-run-tests](https://github.com/ServiceStack/ServiceStackVS/blob/angular-spa-template/angular-spa.md#01-run-tests)** - Runs Karma JavaScript Unit Tests
- - **[02-package-server](https://github.com/ServiceStack/ServiceStackVS/blob/angular-spa-template/angular-spa.md#02-package-server)** - Uses msbuild to build the application and copies server artefacts to `/wwwroot`
- - **[03-package-client](https://github.com/ServiceStack/ServiceStackVS/blob/angular-spa-template/angular-spa.md#03-package-client)** - Optimizes and packages the client artefacts for deployment in `/wwwroot`
- - **[04-deploy-app](https://github.com/ServiceStack/ServiceStackVS/blob/angular-spa-template/angular-spa.md#04-deploy-app)** - Uses MS WebDeploy and `/wwwroot_buld/publish/config.json` to deploy app to specified server
+ - **[01-run-tests](https://github.com/ServiceStack/ServiceStackVS/blob/docs/angular-spa.md#01-run-tests)** - Runs Karma JavaScript Unit Tests
+ - **[02-package-server](https://github.com/ServiceStack/ServiceStackVS/blob/docs/angular-spa.md#02-package-server)** - Uses msbuild to build the application and copies server artefacts to `/wwwroot`
+ - **[03-package-client](https://github.com/ServiceStack/ServiceStackVS/blob/docs/angular-spa.md#03-package-client)** - Optimizes and packages the client artefacts for deployment in `/wwwroot`
+ - **[04-deploy-app](https://github.com/ServiceStack/ServiceStackVS/blob/docs/angular-spa.md#04-deploy-app)** - Uses MS WebDeploy and `/wwwroot_buld/publish/config.json` to deploy app to specified server
 
 ## [React Chat](https://github.com/ServiceStackApps/Chat-React)
 
