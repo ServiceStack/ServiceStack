@@ -9,6 +9,7 @@ using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 using System.Text;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack.Metadata
 {
@@ -83,7 +84,7 @@ namespace ServiceStack.Metadata
                 }
 
                 var isSoap = Format == Format.Soap11 || Format == Format.Soap12;
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var description = operationType.GetDescription();
                 if (!description.IsNullOrEmpty())
                 {
@@ -170,7 +171,8 @@ namespace ServiceStack.Metadata
                 }
                 sb.Append("</div>");
 
-                RenderOperation(writer, httpReq, operationName, requestMessage, responseMessage, sb.ToString());
+                RenderOperation(writer, httpReq, operationName, requestMessage, responseMessage,
+                    StringBuilderCache.ReturnAndFree(sb));
                 return;
             }
 

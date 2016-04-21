@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -122,7 +123,7 @@ namespace ServiceStack
 
                 httpRes.ContentType = MimeTypes.Xml;
 
-                var xml = new StringBuilder();
+                var xml = StringBuilderCache.Allocate();
                 xml.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 
                 xml.Append("<sitemapindex");
@@ -160,7 +161,8 @@ namespace ServiceStack
                 }
 
                 xml.AppendLine("</sitemapindex>");
-                httpRes.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(xml.ToString()));
+                var text = StringBuilderCache.ReturnAndFree(xml);
+                httpRes.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text));
             }
         }
 
@@ -183,7 +185,7 @@ namespace ServiceStack
 
                 httpRes.ContentType = MimeTypes.Xml;
 
-                var xml = new StringBuilder();
+                var xml = StringBuilderCache.Allocate();
                 xml.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 
                 xml.Append("<urlset");
@@ -226,7 +228,8 @@ namespace ServiceStack
 
                 xml.AppendLine("</urlset>");
 
-                httpRes.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(xml.ToString()));
+                var text = StringBuilderCache.ReturnAndFree(xml);
+                httpRes.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text));
             }
         }
     }

@@ -173,12 +173,12 @@ namespace ServiceStack
             byte[] hash = md5.ComputeHash(inputBytes);
 
             // step 2, convert byte array to hex string
-            StringBuilder sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             for (int i = 0; i < hash.Length; i++)
             {
                 sb.Append(hash[i].ToString("X2"));
             }
-            return sb.ToString().ToLower(); // The RFC requires the hex values are lowercase
+            return StringBuilderCache.ReturnAndFree(sb).ToLower(); // The RFC requires the hex values are lowercase
         }
 #endif
 

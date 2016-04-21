@@ -28,12 +28,12 @@ namespace ServiceStack.Host.Handlers
         {
             Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
 
-            var text = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
 
             var responseStatus = response.Dto.GetResponseStatus();
             if (responseStatus != null)
             {
-                text.AppendLine(
+                sb.AppendLine(
                     responseStatus.ErrorCode != responseStatus.Message
                     ? "Error ({0}): {1}\n".Fmt(responseStatus.ErrorCode, responseStatus.Message)
                     : "Error: {0}\n".Fmt(responseStatus.Message ?? responseStatus.ErrorCode));
@@ -41,7 +41,7 @@ namespace ServiceStack.Host.Handlers
 
             if (HostContext.DebugMode)
             {
-                text.AppendLine("Handler for Request not found (404):\n")
+                sb.AppendLine("Handler for Request not found (404):\n")
                     .AppendLine("  Request.HttpMethod: " + request.Verb)
                     .AppendLine("  Request.PathInfo: " + request.PathInfo)
                     .AppendLine("  Request.QueryString: " + request.QueryString)
@@ -49,7 +49,7 @@ namespace ServiceStack.Host.Handlers
             }
             else
             {
-                text.Append("404");
+                sb.Append("404");
             }
 
             response.ContentType = "text/plain";
@@ -58,7 +58,8 @@ namespace ServiceStack.Host.Handlers
             if (responseStatus != null)
                 response.StatusDescription = responseStatus.ErrorCode;
 
-            response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text.ToString()));
+            var text = StringBuilderCache.ReturnAndFree(sb);
+            response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text));
         }
 
         public override void ProcessRequest(HttpContextBase context)
@@ -75,7 +76,7 @@ namespace ServiceStack.Host.Handlers
 
             Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
 
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             sb.AppendLine("Handler for Request not found: \n\n");
 
             sb.AppendLine("Request.ApplicationPath: " + request.ApplicationPath);
@@ -123,7 +124,8 @@ namespace ServiceStack.Host.Handlers
 
             response.ContentType = "text/plain";
             response.StatusCode = 404;
-            context.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(sb.ToString()));
+            var text = StringBuilderCache.ReturnAndFree(sb);
+            context.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text));
         }
 
         public override bool IsReusable

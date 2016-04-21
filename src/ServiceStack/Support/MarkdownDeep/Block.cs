@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack.Text;
 
 namespace MarkdownDeep
 {
@@ -76,13 +77,13 @@ namespace MarkdownDeep
 				switch (blockType)
 				{
 					case BlockType.codeblock:
-						StringBuilder s = new StringBuilder();
-						foreach (var line in children)
+                        var sb = StringBuilderCache.Allocate();
+                        foreach (var line in children)
 						{
-							s.Append(line.Content);
-							s.Append('\n');
+							sb.Append(line.Content);
+							sb.Append('\n');
 						}
-						return s.ToString();
+						return StringBuilderCache.ReturnAndFree(sb);
 				}
 
 
@@ -248,13 +249,13 @@ namespace MarkdownDeep
 				case BlockType.codeblock:
 					if (m.FormatCodeBlock != null)
 					{
-						var sb = new StringBuilder();
+						var sb = StringBuilderCacheAlt.Allocate();
 						foreach (var line in children)
 						{
 							m.HtmlEncodeAndConvertTabsToSpaces(sb, line.buf, line.contentStart, line.contentLen);
 							sb.Append("\n");
 						}
-						b.Append(m.FormatCodeBlock(m, sb.ToString()));
+						b.Append(m.FormatCodeBlock(m, StringBuilderCacheAlt.ReturnAndFree(sb)));
 					}
 					else
 					{

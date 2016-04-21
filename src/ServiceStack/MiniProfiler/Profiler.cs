@@ -516,7 +516,7 @@ namespace ServiceStack.MiniProfiler
         {
             if (profiler == null) return new HtmlString("");
 
-            var text = new StringBuilder()
+            var text = StringBuilderCache.Allocate()
                 .Append(HttpUtility.HtmlEncode(Environment.MachineName)).Append(" at ").Append(DateTime.UtcNow).AppendLine();
 
             Stack<Timing> timings = new Stack<Timing>();
@@ -532,7 +532,7 @@ namespace ServiceStack.MiniProfiler
                     for (int i = children.Count - 1; i >= 0; i--) timings.Push(children[i]);
                 }
             }
-            return new HtmlString(text.ToString());
+            return new HtmlString(StringBuilderCache.ReturnAndFree(text));
         }
 
     }

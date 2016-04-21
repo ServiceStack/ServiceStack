@@ -715,7 +715,7 @@ namespace ServiceStack.Host
                 return;
             }
 
-            var failedScenarios = new StringBuilder();
+            var failedScenarios = StringBuilderCache.Allocate();
             foreach (var requiredScenario in restrictAttr.AccessibleToAny)
             {
                 var allServiceRestrictionsMet = (requiredScenario & actualAttributes) == actualAttributes;
@@ -736,7 +736,7 @@ namespace ServiceStack.Host
 
             throw new UnauthorizedAccessException(
                 string.Format("Could not execute service '{0}', The following restrictions were not met: '{1}'" + internalDebugMsg,
-                    requestType.GetOperationName(), failedScenarios));
+                    requestType.GetOperationName(), StringBuilderCache.ReturnAndFree(failedScenarios)));
         }
     }
 

@@ -101,7 +101,8 @@ namespace ServiceStack.NativeTypes.Kotlin
             Func<string, string> defaultValue = k =>
                 request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
-            var sb = new StringBuilderWrapper(new StringBuilder());
+            var sbInner = StringBuilderCache.Allocate();
+            var sb = new StringBuilderWrapper(sbInner);
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
             sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
@@ -223,8 +224,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 }
             }
 
-
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sbInner);
         }
 
         private bool ReferencesGson(MetadataTypes metadata)
@@ -461,7 +461,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 }
                 else
                 {
-                    var args = new StringBuilder();
+                    var args = StringBuilderCacheAlt.Allocate();
                     if (attr.ConstructorArgs != null)
                     {
                         if (attr.ConstructorArgs.Count > 1)
@@ -483,7 +483,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                             args.Append("{0}={1}".Fmt(attrArg.Name, TypeValue(attrArg.Type, attrArg.Value)));
                         }
                     }
-                    sb.AppendLine(prefix + "@{0}({1})".Fmt(attr.Name, args));
+                    sb.AppendLine(prefix + "@{0}({1})".Fmt(attr.Name, StringBuilderCacheAlt.ReturnAndFree(args)));
                 }
             }
 
@@ -551,7 +551,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 var parts = type.Split('`');
                 if (parts.Length > 1)
                 {
-                    var args = new StringBuilder();
+                    var args = StringBuilderCacheAlt.Allocate();
                     foreach (var arg in genericArgs)
                     {
                         if (args.Length > 0)
@@ -561,7 +561,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                     }
 
                     var typeName = TypeAlias(type);
-                    return "{0}<{1}>".Fmt(typeName, args);
+                    return "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
                 }
             }
 

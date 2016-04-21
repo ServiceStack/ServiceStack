@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
@@ -88,7 +89,7 @@ namespace ServiceStack.Auth
     {
         public static string ToSha256Hash(this string value)
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             using (var hash = SHA256Managed.Create())
             {
                 var result = hash.ComputeHash(value.ToUtf8Bytes());
@@ -97,7 +98,7 @@ namespace ServiceStack.Auth
                     sb.Append(b.ToString("x2"));
                 }
             }
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         public static byte[] ToSha256HashBytes(this byte[] bytes)

@@ -17,7 +17,7 @@ namespace ServiceStack
         public AsyncState(int bufferSize)
         {
             BufferRead = new byte[bufferSize];
-            TextData = new StringBuilder();
+            TextData = StringBuilderCache.Allocate();
             BytesData = MemoryStreamFactory.GetStream(bufferSize);
             WebRequest = null;
             ResponseStream = null;
@@ -149,6 +149,11 @@ namespace ServiceStack
 
         public void Dispose()
         {
+            if (TextData != null)
+            {
+                StringBuilderCache.Free(TextData);
+                TextData = null;
+            }
             if (this.BytesData != null)
             {
                 this.BytesData.Dispose();

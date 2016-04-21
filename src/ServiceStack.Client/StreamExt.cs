@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using ServiceStack.Caching;
-
+using ServiceStack.Text;
 #if !(NETFX_CORE || SL5 || PCL)
 using System.Security.Cryptography;
 #endif
@@ -135,23 +135,23 @@ namespace ServiceStack
         public static string ToMd5Hash(this Stream stream)
         {
             var hash = MD5.Create().ComputeHash(stream);
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             for (var i = 0; i < hash.Length; i++)
             {
                 sb.Append(hash[i].ToString("x2"));
             }
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         public static string ToMd5Hash(this byte[] bytes)
         {
             var hash = MD5.Create().ComputeHash(bytes);
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             for (var i = 0; i < hash.Length; i++)
             {
                 sb.Append(hash[i].ToString("x2"));
             }
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 #endif
     }

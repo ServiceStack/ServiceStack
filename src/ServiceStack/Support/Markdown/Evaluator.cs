@@ -173,7 +173,8 @@ namespace ServiceStack.Support.Markdown
 				var typeName = type == null
 					//|| type.FullName == null
 					? null
-					: type.FullName.Replace('+', '.').SplitOnFirst('`')[0];
+					: StringBuilderCacheAlt.Allocate()
+                        .Append(type.FullName.Replace('+', '.').SplitOnFirst('`')[0]);
 
 				if (typeName == null) return null;
 
@@ -184,18 +185,18 @@ namespace ServiceStack.Support.Markdown
 				{
 					var genericArgs = type.GetGenericArguments();
 
-					typeName += "<";
+					typeName.Append("<");
 					var i = 0;
 					foreach (var genericArg in genericArgs)
 					{
 						if (i++ > 0)
-							typeName += ", ";
-						typeName += GetTypeName(genericArg);
+							typeName.Append(", ");
+						typeName.Append(GetTypeName(genericArg));
 					}
-					typeName += ">";
+					typeName.Append(">");
 				}
 
-				return typeName;
+				return StringBuilderCacheAlt.ReturnAndFree(typeName);
 			}
 			catch (Exception)
 			{
@@ -229,7 +230,7 @@ namespace ServiceStack.Support.Markdown
 			};
 			Assemblies.ForEach(x => AddAssembly(cp, x.Location));
             
-			var code = new StringBuilder();
+			var code = StringBuilderCache.Allocate();
 
             AssemblyNames.ForEach(x => 
                 code.AppendFormat("using {0};\n", x));
@@ -269,7 +270,7 @@ namespace CSharpEval
 
 			foreach (var item in items)
 			{
-				var sbParams = new StringBuilder();
+				var sbParams = StringBuilderCacheAlt.Allocate();
 				foreach (var param in item.Params)
 				{
 					if (sbParams.Length > 0)
@@ -287,7 +288,7 @@ namespace CSharpEval
 
 				var returnType = isVoid ? "void" : GetTypeName(item.ReturnType);
 				code.AppendFormat("    public {0} {1}({2})",
-					returnType, item.Name, sbParams);
+					returnType, item.Name, StringBuilderCacheAlt.ReturnAndFree(sbParams));
 
 				code.AppendLine("    {");
 				if (isVoid)
@@ -312,17 +313,17 @@ namespace CSharpEval
 				}
 			}
 
-			var src = code.ToString();
+			var src = StringBuilderCache.ReturnAndFree(code);
 			var compilerResults = codeCompiler.CompileAssemblyFromSource(cp, src);
 			if (compilerResults.Errors.HasErrors)
 			{
-				var error = new StringBuilder();
+				var error = StringBuilderCache.Allocate();
 				error.Append("Error Compiling Expression: ");
 				foreach (CompilerError err in compilerResults.Errors)
 				{
 					error.AppendFormat("{0}\n", err.ErrorText);
 				}
-				throw new Exception("Error Compiling Expression: " + error);
+				throw new Exception("Error Compiling Expression: " + StringBuilderCache.ReturnAndFree(error));
 			}
 
 			compiledAssembly = compilerResults.CompiledAssembly;

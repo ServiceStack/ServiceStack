@@ -430,7 +430,7 @@ namespace ServiceStack
             using (var redis = clientsManager.GetClient())
             {
                 var json = message != null ? message.ToJson() : null;
-                var sb = new StringBuilder(key);
+                var sb = StringBuilderCache.Allocate().Append(key);
 
                 if (selector != null)
                 {
@@ -449,7 +449,7 @@ namespace ServiceStack
                     sb.Append(json);
                 }
 
-                var msg = sb.ToString();
+                var msg = StringBuilderCache.ReturnAndFree(sb);
 
                 redis.PublishMessage(Topic, msg);
             }

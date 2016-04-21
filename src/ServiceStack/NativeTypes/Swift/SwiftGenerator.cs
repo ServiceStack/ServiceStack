@@ -66,7 +66,8 @@ namespace ServiceStack.NativeTypes.Swift
             Func<string, string> defaultValue = k =>
                 request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
-            var sb = new StringBuilderWrapper(new StringBuilder());
+            var sbInner = StringBuilderCache.Allocate();
+            var sb = new StringBuilderWrapper(sbInner);
             var sbExt = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
@@ -192,7 +193,7 @@ namespace ServiceStack.NativeTypes.Swift
                 sb.AppendLine(sbExt.ToString());
             }
 
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sbInner);
         }
 
         //Use built-in types already in net.servicestack.client package
@@ -653,7 +654,7 @@ namespace ServiceStack.NativeTypes.Swift
                 }
                 else
                 {
-                    var args = new StringBuilder();
+                    var args = StringBuilderCacheAlt.Allocate();
                     if (attr.ConstructorArgs != null)
                     {
                         foreach (var ctorArg in attr.ConstructorArgs)
@@ -672,7 +673,7 @@ namespace ServiceStack.NativeTypes.Swift
                             args.Append("{0}={1}".Fmt(attrArg.Name, TypeValue(attrArg.Type, attrArg.Value)));
                         }
                     }
-                    sb.AppendLine("// @{0}({1})".Fmt(attr.Name, args));
+                    sb.AppendLine("// @{0}({1})".Fmt(attr.Name, StringBuilderCacheAlt.ReturnAndFree(args)));
                 }
             }
 
@@ -807,7 +808,7 @@ namespace ServiceStack.NativeTypes.Swift
                 var parts = type.Split('`');
                 if (parts.Length > 1)
                 {
-                    var args = new StringBuilder();
+                    var args = StringBuilderCacheAlt.Allocate();
                     foreach (var arg in genericArgs)
                     {
                         if (args.Length > 0)
@@ -817,7 +818,7 @@ namespace ServiceStack.NativeTypes.Swift
                     }
 
                     var typeName = TypeAlias(type);
-                    return "{0}<{1}>".Fmt(typeName, args);
+                    return "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
                 }
             }
 

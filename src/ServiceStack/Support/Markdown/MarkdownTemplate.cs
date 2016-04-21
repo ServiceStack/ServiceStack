@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using ServiceStack.Markdown;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Support.Markdown
@@ -111,8 +112,8 @@ namespace ServiceStack.Support.Markdown
 			if (TextBlocks == null || VarRefBlocks == null)
 				throw new InvalidDataException("Template has not been Initialized.");
 
-			var sb = new StringBuilder();
-			for (var i = 0; i < TextBlocks.Length; i++)
+            var sb = StringBuilderCache.Allocate();
+            for (var i = 0; i < TextBlocks.Length; i++)
 			{
 				var textBlock = TextBlocks[i];
 				var varName = VarRefBlocks[i];
@@ -126,10 +127,10 @@ namespace ServiceStack.Support.Markdown
 				}
 				sb.Append(textBlock);
 			}
-			return sb.ToString();
-		}
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
 
-		public void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
+        public void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			lock (readWriteLock)
 			{

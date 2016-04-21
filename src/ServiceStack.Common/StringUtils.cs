@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -25,26 +26,26 @@ namespace ServiceStack
         //Output different format for debugging to verify command was parsed correctly
         public string ToDebugString()
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCacheAlt.Allocate();
             foreach (var arg in Args)
             {
                 if (sb.Length > 0)
                     sb.Append('|');
                 sb.Append(arg);
             }
-            return "[{0}:{1}]{2}".Fmt(Name, sb.ToString(), Suffix);
+            return "[{0}:{1}]{2}".Fmt(Name, StringBuilderCacheAlt.ReturnAndFree(sb), Suffix);
         }
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCacheAlt.Allocate();
             foreach (var arg in Args)
             {
                 if (sb.Length > 0)
                     sb.Append(',');
                 sb.Append(arg);
             }
-            return "{0}({1}){2}".Fmt(Name, sb.ToString(), Suffix);
+            return "{0}({1}){2}".Fmt(Name, StringBuilderCacheAlt.ReturnAndFree(sb), Suffix);
         }
     }
 

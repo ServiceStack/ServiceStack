@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using ServiceStack.Text;
 
 namespace MarkdownDeep
 {
@@ -331,22 +332,21 @@ namespace MarkdownDeep
 			if (str == null || str.IndexOf('\\')==-1)
 				return str;
 
-			var b = new StringBuilder();
+		    var sb = StringBuilderCacheAlt.Allocate();
 			for (int i = 0; i < str.Length; i++)
 			{
 				if (str[i] == '\\' && i+1<str.Length && IsEscapableChar(str[i+1], ExtraMode))
 				{
-					b.Append(str[i + 1]);
+					sb.Append(str[i + 1]);
 					i++;
 				}
 				else
 				{
-					b.Append(str[i]);
+					sb.Append(str[i]);
 				}
 			}
 
-			return b.ToString();
-
+		    return StringBuilderCacheAlt.ReturnAndFree(sb);
 		}
 
 		// Normalize the line ends in a string to just '\n'
@@ -357,8 +357,8 @@ namespace MarkdownDeep
 			if (str.IndexOfAny(lineends) < 0)
 				return str;
 
-			StringBuilder sb = new StringBuilder();
-			StringScanner sp = new StringScanner(str);
+            var sb = StringBuilderCacheAlt.Allocate();
+            StringScanner sp = new StringScanner(str);
 			while (!sp.eof)
 			{
 				if (sp.eol)
@@ -373,7 +373,7 @@ namespace MarkdownDeep
 				}
 			}
 
-			return sb.ToString();
+		    return StringBuilderCacheAlt.ReturnAndFree(sb);
 		}
 
 		/*

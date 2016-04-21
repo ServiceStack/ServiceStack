@@ -347,7 +347,7 @@ namespace ServiceStack.Messaging.Redis
         {
             lock (workers)
             {
-                var sb = new StringBuilder("#MQ SERVER STATS:\n");
+                var sb = StringBuilderCache.Allocate().Append("#MQ SERVER STATS:\n");
                 sb.AppendLine("Listening On: " + string.Join(", ", workers.ToList().ConvertAll(x => x.QueueName).ToArray()));
                 sb.Append(RedisPubSub.GetStatsDescription());
 
@@ -356,7 +356,7 @@ namespace ServiceStack.Messaging.Redis
                     sb.AppendLine(worker.GetStats().ToString());
                     sb.AppendLine("---------------\n");
                 }
-                return sb.ToString();
+                return StringBuilderCache.ReturnAndFree(sb);
             }
         }
 

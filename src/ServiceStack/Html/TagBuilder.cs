@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.Html
 {
@@ -82,7 +83,7 @@ namespace ServiceStack.Html
 				return null;
 			}
 
-			var sb = new StringBuilder(originalId.Length);
+			var sb = StringBuilderCache.Allocate();
 			sb.Append(firstChar);
 
 			for (int i = 1; i < originalId.Length; i++)
@@ -98,7 +99,7 @@ namespace ServiceStack.Html
 				}
 			}
 
-			return sb.ToString();
+			return StringBuilderCache.ReturnAndFree(sb);
 		}
 
 		public void GenerateId(string name)
@@ -109,22 +110,6 @@ namespace ServiceStack.Html
 					Attributes["id"] = sanitizedId;
 				}
 			}
-		}
-		
-		private string GetAttributesString()
-		{
-			var sb = new StringBuilder();
-			foreach (var attribute in Attributes)
-			{
-				string key = attribute.Key;
-				if (String.Equals(key, "id", StringComparison.Ordinal /* case-sensitive */) && String.IsNullOrEmpty(attribute.Value))
-				{
-					continue; // DevDiv Bugs #227595: don't output empty IDs
-				}
-				string value = HttpUtility.HtmlAttributeEncode(attribute.Value);
-				sb.AppendFormat(CultureInfo.InvariantCulture, AttributeFormat, key, value);
-			}
-			return sb.ToString();
 		}
 
         private void AppendAttributes(StringBuilder sb)
@@ -201,7 +186,7 @@ namespace ServiceStack.Html
 
 		public string ToString(TagRenderMode renderMode)
 		{
-            StringBuilder sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             switch (renderMode) {
                 case TagRenderMode.StartTag:
                     sb.Append('<')
@@ -231,11 +216,11 @@ namespace ServiceStack.Html
                         .Append('>');
                     break;
             }
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
-		// Valid IDs are defined in http://www.w3.org/TR/html401/types.html#type-id
-		private static class Html401IdUtil
+        // Valid IDs are defined in http://www.w3.org/TR/html401/types.html#type-id
+        private static class Html401IdUtil
 		{
 			private static bool IsAllowableSpecialCharacter(char c)
 			{

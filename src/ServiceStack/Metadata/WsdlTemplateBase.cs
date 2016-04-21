@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack.Metadata
 {
@@ -144,22 +145,22 @@ namespace ServiceStack.Metadata
 
         public string RepeaterTemplate(string template, IEnumerable<string> dataSource)
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             foreach (var item in dataSource)
             {
                 sb.AppendFormat(template, item);
             }
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         public string RepeaterTemplate(string template, object arg0, IEnumerable<string> dataSource)
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             foreach (var item in dataSource)
             {
                 sb.AppendFormat(template, arg0, item);
             }
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         public override string ToString()

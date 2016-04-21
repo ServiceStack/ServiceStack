@@ -525,23 +525,6 @@ namespace ServiceStack.Html
 
             tagBuilder.MergeAttributes(htmlHelper.GetUnobtrusiveValidationAttributes(name, metadata));
 
-            //causes 'true,false' to be posted which is an invalid value for booleans
-            if (false && inputType == InputType.CheckBox) {
-                // Render an additional <input type="hidden".../> for checkboxes. This
-                // addresses scenarios where unchecked checkboxes are not sent in the request.
-                // Sending a hidden input makes it possible to know that the checkbox was present
-                // on the page when the request was submitted.
-                StringBuilder inputItemBuilder = new StringBuilder();
-                inputItemBuilder.Append(tagBuilder.ToString(TagRenderMode.SelfClosing));
-
-                TagBuilder hiddenInput = new TagBuilder("input");
-                hiddenInput.MergeAttribute("type", HtmlHelper.GetInputTypeString(InputType.Hidden));
-                hiddenInput.MergeAttribute("name", fullName);
-                hiddenInput.MergeAttribute("value", "false");
-                inputItemBuilder.Append(hiddenInput.ToString(TagRenderMode.SelfClosing));
-                return MvcHtmlString.Create(inputItemBuilder.ToString());
-            }
-
             return tagBuilder.ToHtmlString(TagRenderMode.SelfClosing);
         }
 

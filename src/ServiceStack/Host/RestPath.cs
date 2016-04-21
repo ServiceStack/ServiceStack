@@ -156,7 +156,7 @@ namespace ServiceStack.Host
             this.PathComponentsCount = this.componentsWithSeparators.Length;
             string firstLiteralMatch = null;
 
-            var sbHashKey = new StringBuilder();
+            var sbHashKey = StringBuilderCache.Allocate();
             for (var i = 0; i < components.Length; i++)
             {
                 var component = components[i];
@@ -202,7 +202,7 @@ namespace ServiceStack.Host
                 : WildCardChar + PathSeperator + firstLiteralMatch;
 
             this.IsValid = sbHashKey.Length > 0;
-            this.UniqueMatchHashKey = sbHashKey.ToString();
+            this.UniqueMatchHashKey = StringBuilderCache.ReturnAndFree(sbHashKey);
 
             this.typeDeserializer = new StringMapTypeDeserializer(this.RequestType);
             RegisterCaseInsenstivePropertyNameMappings();
@@ -427,12 +427,13 @@ namespace ServiceStack.Host
                     if (i == this.TotalComponentsCount - 1)
                     {
                         // Wildcard at end of path definition consumes all the rest
-                        var sb = new StringBuilder(value);
+                        var sb = StringBuilderCache.Allocate();
+                        sb.Append(value);
                         for (var j = pathIx + 1; j < requestComponents.Length; j++)
                         {
                             sb.Append(PathSeperatorChar + requestComponents[j]);
                         }
-                        value = sb.ToString();
+                        value = StringBuilderCache.ReturnAndFree(sb);
                     }
                     else
                     {
@@ -442,13 +443,14 @@ namespace ServiceStack.Host
                         var stopLiteral = i == this.TotalComponentsCount - 1 ? null : this.literalsToMatch[i + 1];
                         if (requestComponents[pathIx] != stopLiteral)
                         {
-                            var sb = new StringBuilder(value);
+                            var sb = StringBuilderCache.Allocate();
+                            sb.Append(value);
                             pathIx++;
                             while (requestComponents[pathIx] != stopLiteral)
                             {
                                 sb.Append(PathSeperatorChar + requestComponents[pathIx++]);
                             }
-                            value = sb.ToString();
+                            value = StringBuilderCache.ReturnAndFree(sb);
                         }
                         else
                         {

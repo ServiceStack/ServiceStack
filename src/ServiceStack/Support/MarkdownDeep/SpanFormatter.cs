@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack.Text;
 
 namespace MarkdownDeep
 {
@@ -99,9 +100,9 @@ namespace MarkdownDeep
 		// (used in formatting the text of links)
 		internal string Format(string str)
 		{
-			StringBuilder dest = new StringBuilder();
+			var dest = StringBuilderCacheAlt.Allocate();
 			Format(dest, str, 0, str.Length);
-			return dest.ToString();
+			return StringBuilderCacheAlt.ReturnAndFree(dest);
 		}
 
 		internal string MakeID(string str)
@@ -113,10 +114,10 @@ namespace MarkdownDeep
 		{
 			// Parse the string into a list of tokens
 			Tokenize(str, start, len);
-	
-			StringBuilder sb = new StringBuilder();
 
-			foreach (var t in m_Tokens)
+            var sb = StringBuilderCacheAlt.Allocate();
+
+            foreach (var t in m_Tokens)
 			{
 				switch (t.type)
 				{
@@ -163,7 +164,7 @@ namespace MarkdownDeep
 				SkipForward(1);
 			}
 
-			return sb.ToString();
+			return StringBuilderCacheAlt.ReturnAndFree(sb);
 		}
 
 		// Render a list of tokens to a destinatino string builder.

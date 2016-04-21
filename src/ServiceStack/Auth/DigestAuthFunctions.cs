@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Security.Cryptography;
 using System.Globalization;
+using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
@@ -63,12 +64,12 @@ namespace ServiceStack.Auth
         }
         public string ConvertToHexString(IEnumerable<byte> hash)
         {
-            var hexString = new StringBuilder();
+            var hexString = StringBuilderCache.Allocate();
             foreach (byte byteFromHash in hash)
             {
                 hexString.AppendFormat("{0:x2}", byteFromHash);
             }
-            return hexString.ToString();
+            return StringBuilderCache.ReturnAndFree(hexString);
         }
         public string CreateAuthResponse(Dictionary<string, string> digestHeaders, string Ha1)
         {

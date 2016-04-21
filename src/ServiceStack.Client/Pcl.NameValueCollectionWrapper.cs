@@ -57,7 +57,7 @@ namespace ServiceStack.Pcl
                 int count = Count;
                 if (count == 0)
                     return "";
-                StringBuilder sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 string[] keys = AllKeys;
                 for (int i = 0; i < count; i++)
                 {
@@ -65,7 +65,7 @@ namespace ServiceStack.Pcl
                 }
                 if (sb.Length > 0)
                     sb.Length--;
-                return sb.ToString();
+                return StringBuilderCache.ReturnAndFree(sb);
             }
         }
 

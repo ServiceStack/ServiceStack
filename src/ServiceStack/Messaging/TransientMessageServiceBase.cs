@@ -71,14 +71,15 @@ namespace ServiceStack.Messaging
 
         public string GetStatsDescription()
         {
-            var sb = new StringBuilder("#MQ HOST STATS:\n");
+            var sb = StringBuilderCache.Allocate();
+            sb.Append("#MQ HOST STATS:\n");
             sb.AppendLine("===============");
             foreach (var messageHandler in messageHandlers)
             {
                 sb.AppendLine(messageHandler.GetStats().ToString());
                 sb.AppendLine("---------------");
             }
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(

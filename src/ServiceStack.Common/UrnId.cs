@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -57,7 +58,7 @@ namespace ServiceStack
                 throw new ArgumentException("objectTypeName cannot have the illegal characters: ':'", "objectTypeName");
             }
 
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             foreach (var keyPart in keyParts)
             {
                 if (sb.Length > 0)
@@ -65,7 +66,7 @@ namespace ServiceStack
                 sb.Append(keyPart);
             }
 
-            return string.Format("urn:{0}:{1}", objectTypeName, sb);
+            return string.Format("urn:{0}:{1}", objectTypeName, StringBuilderCache.ReturnAndFree(sb));
         }
 
         public static string CreateWithParts<T>(params string[] keyParts)

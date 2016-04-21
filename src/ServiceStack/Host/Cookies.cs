@@ -2,6 +2,7 @@
 using System.Net;
 using System.Text;
 using System.Web;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -86,7 +87,7 @@ namespace ServiceStack.Host
                 ? "/"
                 : cookie.Path ?? "/";
 
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
 
             sb.AppendFormat("{0}={1};path={2}", cookie.Name, cookie.Value, path);
 
@@ -113,7 +114,7 @@ namespace ServiceStack.Host
                 sb.Append(";HttpOnly");
             }
 
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
     }
 }

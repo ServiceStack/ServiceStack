@@ -65,7 +65,8 @@ namespace ServiceStack.Validation
                 if (this.Violations.Count == 1)
                     return this.ErrorMessage ?? this.Violations[0].ErrorMessage;
 
-                var sb = new StringBuilder(this.ErrorMessage).AppendLine();
+                var sb = StringBuilderCache.Allocate()
+                    .Append(this.ErrorMessage).AppendLine();
                 foreach (var error in this.Violations)
                 {
                     if (!string.IsNullOrEmpty(error.ErrorMessage))
@@ -79,7 +80,7 @@ namespace ServiceStack.Validation
                         sb.AppendFormat("\n  - {0}{1}", error.ErrorCode, fieldLabel);
                     }
                 }
-                return sb.ToString();
+                return StringBuilderCache.ReturnAndFree(sb);
             }
         }
 
@@ -91,7 +92,7 @@ namespace ServiceStack.Validation
         /// <returns></returns>
         public string ToXml()
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             sb.Append("<ValidationException>");
             foreach (ValidationErrorField error in this.Violations)
             {
@@ -102,7 +103,7 @@ namespace ServiceStack.Validation
                     .Append("</ValidationError>");
             }
             sb.Append("</ValidationException>");
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         public static ValidationError CreateException(Enum errorCode)

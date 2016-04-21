@@ -503,7 +503,7 @@ namespace ServiceStack
         {
             if (mappedPathRoot == null) return null;
 
-            var sbPathInfo = new StringBuilder();
+            var sbPathInfo = StringBuilderCache.Allocate();
             var fullPathParts = fullPath.Split('/');
             var mappedPathRootParts = mappedPathRoot.Split('/');
             var fullPathIndexOffset = mappedPathRootParts.Length - 1;
@@ -530,7 +530,7 @@ namespace ServiceStack
             }
             if (!pathRootFound) return null;
 
-            var path = sbPathInfo.ToString();
+            var path = StringBuilderCache.ReturnAndFree(sbPathInfo);
             return path.Length > 1 ? path.TrimEnd('/') : "/";
         }
 

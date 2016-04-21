@@ -108,39 +108,30 @@ namespace ServiceStack.Support.Markdown
 
 		public static string RenderToString(this MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, bool renderHtml)
 		{
-			var sb = new StringBuilder();
-			using (var writer = new StringWriter(sb))
-			{
-				var pageContext = new PageContext(markdownPage, scopeArgs, renderHtml);
-				markdownPage.Write(writer, pageContext);
-			}
-			return sb.ToString();
+		    var writer = StringWriterCache.Allocate();
+            var pageContext = new PageContext(markdownPage, scopeArgs, renderHtml);
+            markdownPage.Write(writer, pageContext);
+		    return StringWriterCache.ReturnAndFree(writer);
 		}
 
 		public static string RenderToString(this ITemplateWriter templateWriter, Dictionary<string, object> scopeArgs)
 		{
-			var sb = new StringBuilder();
-			using (var writer = new StringWriter(sb))
-			{
-				templateWriter.Write(null, writer, scopeArgs);
-			}
-			return sb.ToString();
-		}
+            var writer = StringWriterCache.Allocate();
+            templateWriter.Write(null, writer, scopeArgs);
+            return StringWriterCache.ReturnAndFree(writer);
+        }
 
-		public static string RenderToString(this IEnumerable<ITemplateWriter> templateWriters, Dictionary<string, object> scopeArgs)
+        public static string RenderToString(this IEnumerable<ITemplateWriter> templateWriters, Dictionary<string, object> scopeArgs)
 		{
-			var sb = new StringBuilder();
-			using (var writer = new StringWriter(sb))
-			{
-				foreach (var templateWriter in templateWriters)
-				{
-					templateWriter.Write(null, writer, scopeArgs);
-				}
-			}
-			return sb.ToString();
-		}
+            var writer = StringWriterCache.Allocate();
+            foreach (var templateWriter in templateWriters)
+            {
+                templateWriter.Write(null, writer, scopeArgs);
+            }
+            return StringWriterCache.ReturnAndFree(writer);
+        }
 
-		public static List<TemplateBlock> SplitIntoBlocks(this string content, string onPlaceHolder)
+        public static List<TemplateBlock> SplitIntoBlocks(this string content, string onPlaceHolder)
 		{
 			var blocks = new List<TemplateBlock>();
 			if (content.IsNullOrEmpty()) return blocks;

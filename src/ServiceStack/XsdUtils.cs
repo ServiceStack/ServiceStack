@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Schema;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -20,7 +21,7 @@ namespace ServiceStack
 
         public static string GetXsd(XmlSchemaSet schemaSet)
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             using (var sw = new StringWriter(sb))
             {
                 foreach (XmlSchema schema in schemaSet.Schemas())
@@ -30,13 +31,13 @@ namespace ServiceStack
                 }
             }
             sb = sb.Replace("<?xml version=\"1.0\" encoding=\"utf-16\"?>", ""); //remove xml declaration
-            return sb.ToString().Trim();
+            return StringBuilderCache.ReturnAndFree(sb).Trim();
         }
 
         public static string GetXsd(Type operationType)
         {
             if (operationType == null) return null;
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             var exporter = new XsdDataContractExporter();
             if (exporter.CanExport(operationType))
             {
@@ -50,7 +51,7 @@ namespace ServiceStack
                     schema.Write(new StringWriter(sb));
                 }
             }
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
     }
 }

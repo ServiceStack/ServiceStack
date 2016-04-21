@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack.Html
 {
@@ -44,9 +45,9 @@ namespace ServiceStack.Html
         {
             using (sr = new StringReader(js))
             {
-                sb = new StringBuilder();
+                sb = StringBuilderCache.Allocate();
                 jsmin();
-                return sb.ToString(); // return the minified string  
+                return StringBuilderCache.ReturnAndFree(sb); // return the minified string  
             }
         }
 

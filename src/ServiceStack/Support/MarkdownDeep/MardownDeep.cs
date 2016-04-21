@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack.Text;
 
 namespace MarkdownDeep
 {
@@ -36,7 +37,6 @@ namespace MarkdownDeep
 		{
 			HtmlClassFootnotes = "footnotes";
 			m_StringBuilder = new StringBuilder();
-			m_StringBuilderFinal = new StringBuilder();
 			m_StringScanner = new StringScanner();
 			m_SpanFormatter = new SpanFormatter(this);
 			m_LinkDefinitions = new Dictionary<string, LinkDefinition>(StringComparer.CurrentCultureIgnoreCase);
@@ -84,7 +84,7 @@ namespace MarkdownDeep
 			}
 
 			// Setup string builder
-			StringBuilder sb = m_StringBuilderFinal;
+			StringBuilder sb = StringBuilderCache.Allocate();
 			sb.Length = 0;
 
 			if (SummaryLength != 0)
@@ -199,7 +199,7 @@ namespace MarkdownDeep
 			definitions = m_LinkDefinitions;
 
 			// Done
-			return sb.ToString();
+			return StringBuilderCache.ReturnAndFree(sb);
 		}
 
 		public int SummaryLength
@@ -648,7 +648,7 @@ namespace MarkdownDeep
 		// Join previously split sections back into one document
 		public static string JoinUserSections(List<string> sections)
 		{
-			var sb = new StringBuilder();
+			var sb = StringBuilderCacheAlt.Allocate();
 			for (int i = 0; i < sections.Count; i++)
 			{
 				if (i > 0)
@@ -665,7 +665,7 @@ namespace MarkdownDeep
 				sb.Append(sections[i]);
 			}
 
-			return sb.ToString();
+		    return StringBuilderCacheAlt.ReturnAndFree(sb);
 		}
 
 		// Split the markdown into sections, one section for each
@@ -708,8 +708,8 @@ namespace MarkdownDeep
 		// Join previously split sections back into one document
 		public static string JoinSections(List<string> sections)
 		{
-			var sb = new StringBuilder();
-			for (int i = 0; i < sections.Count; i++)
+            var sb = StringBuilderCacheAlt.Allocate();
+            for (int i = 0; i < sections.Count; i++)
 			{
 				if (i > 0)
 				{
@@ -723,7 +723,7 @@ namespace MarkdownDeep
 				sb.Append(sections[i]);
 			}
 
-			return sb.ToString();
+		    return StringBuilderCacheAlt.ReturnAndFree(sb);
 		}
 
 		// Add a link definition
@@ -960,7 +960,6 @@ namespace MarkdownDeep
 
 		// Attributes
 		StringBuilder m_StringBuilder;
-		StringBuilder m_StringBuilderFinal;
 		StringScanner m_StringScanner;
 		SpanFormatter m_SpanFormatter;
 		Dictionary<string, LinkDefinition> m_LinkDefinitions;

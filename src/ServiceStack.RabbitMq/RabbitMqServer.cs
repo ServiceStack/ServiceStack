@@ -6,6 +6,7 @@ using System.Threading;
 using RabbitMQ.Client;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
+using ServiceStack.Text;
 
 namespace ServiceStack.RabbitMq
 {
@@ -246,7 +247,7 @@ namespace ServiceStack.RabbitMq
         {
             lock (workers)
             {
-                var sb = new StringBuilder("#MQ SERVER STATS:\n");
+                var sb = StringBuilderCache.Allocate().Append("#MQ SERVER STATS:\n");
                 sb.AppendLine("===============");
                 sb.AppendLine("Current Status: " + GetStatus());
                 sb.AppendLine("Listening On: " + string.Join(", ", workers.ToList().ConvertAll(x => x.QueueName).ToArray()));
@@ -260,7 +261,7 @@ namespace ServiceStack.RabbitMq
                     sb.AppendLine(worker.GetStats().ToString());
                     sb.AppendLine("---------------\n");
                 }
-                return sb.ToString();
+                return StringBuilderCache.ReturnAndFree(sb);
             }
         }
 

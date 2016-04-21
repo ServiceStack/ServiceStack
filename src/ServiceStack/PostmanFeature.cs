@@ -271,7 +271,7 @@ namespace ServiceStack
         public string GetName(PostmanFeature feature, Postman request, Type requestType, string virtualPath)
         {
             var fragments = request.Label ?? feature.DefaultLabelFmt;
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             foreach (var fragment in fragments)
             {
                 var parts = fragment.ToLower().Split(':');
@@ -290,7 +290,7 @@ namespace ServiceStack
                     sb.Append(parts[0]);
                 }
             }
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
     }
 

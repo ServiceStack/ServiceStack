@@ -167,7 +167,7 @@ namespace ServiceStack
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             sb.AppendFormat("{0} {1}\n", StatusCode, StatusDescription);
             sb.AppendFormat("Code: {0}, Message: {1}\n", ErrorCode, ErrorMessage);
 
@@ -206,7 +206,7 @@ namespace ServiceStack
                 sb.AppendFormat("Server StackTrace:\n {0}\n", ServerStackTrace);
 
 
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         public ResponseStatus ToResponseStatus()

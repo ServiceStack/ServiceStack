@@ -126,7 +126,7 @@ namespace ServiceStack
         {
             var nameOnly = type.Name.SplitOnFirst('`')[0];
 
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             foreach (var arg in type.GetGenericArguments())
             {
                 if (sb.Length > 0)
@@ -135,7 +135,7 @@ namespace ServiceStack
                 sb.Append(arg.ExpandTypeName());
             }
 
-            var fullName = "{0}<{1}>".Fmt(nameOnly, sb);
+            var fullName = "{0}<{1}>".Fmt(nameOnly, StringBuilderCache.ReturnAndFree(sb));
             return fullName;
         }
 
@@ -431,7 +431,7 @@ namespace ServiceStack
 
         internal static string GetQueryString(object request, IDictionary<string, RouteMember> propertyMap)
         {
-            var result = new StringBuilder();
+            var result = StringBuilderCache.Allocate();
 
             foreach (var queryProperty in propertyMap)
             {
@@ -453,7 +453,7 @@ namespace ServiceStack
             }
 
             if (result.Length > 0) result.Length -= 1;
-            return result.ToString();
+            return StringBuilderCache.ReturnAndFree(result);
         }
 
         internal static IDictionary<string, RouteMember> GetQueryProperties(Type requestType)

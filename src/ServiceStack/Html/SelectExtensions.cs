@@ -8,6 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.Html
 {
@@ -266,7 +267,7 @@ namespace ServiceStack.Html
             }
 
             // Convert each ListItem to an <option> tag
-            StringBuilder listItemBuilder = new StringBuilder();
+            StringBuilder listItemBuilder = StringBuilderCache.Allocate();
 
             // Make optionLabel the first item that gets rendered.
             if (optionLabel != null)
@@ -281,7 +282,7 @@ namespace ServiceStack.Html
 
             TagBuilder tagBuilder = new TagBuilder("select")
             {
-                InnerHtml = listItemBuilder.ToString()
+                InnerHtml = StringBuilderCache.ReturnAndFree(listItemBuilder)
             };
             tagBuilder.MergeAttributes(htmlAttributes);
             tagBuilder.MergeAttribute("name", fullName, true /* replaceExisting */);

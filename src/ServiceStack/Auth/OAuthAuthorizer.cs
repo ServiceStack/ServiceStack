@@ -328,7 +328,7 @@ namespace ServiceStack.Auth
         //
         public static string PercentEncode(string s)
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
 
             foreach (byte c in Encoding.UTF8.GetBytes(s))
             {
@@ -339,7 +339,7 @@ namespace ServiceStack.Auth
                     sb.AppendFormat("%{0:X2}", c);
                 }
             }
-            return sb.ToString();
+            return StringBuilderCache.ReturnAndFree(sb);
         }
     }
 }

@@ -15,6 +15,7 @@ using ServiceStack.Html;
 using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Redis;
+using ServiceStack.Text;
 using ServiceStack.Web;
 using IHtmlString = System.Web.IHtmlString;
 
@@ -164,7 +165,7 @@ namespace ServiceStack.Razor
                                       params AttributeValue[] values)
         {
             var writtenAttribute = false;
-            var attributeBuilder = new StringBuilder(prefix.Item1);
+            var attributeBuilder = StringBuilderCache.Allocate().Append(prefix.Item1);
 
             foreach (var value in values)
             {
@@ -188,9 +189,9 @@ namespace ServiceStack.Razor
             var renderAttribute = writtenAttribute || values.Length == 0;
 
             if (renderAttribute)
-            {
-                return attributeBuilder.ToString();
-            }
+                return StringBuilderCache.ReturnAndFree(attributeBuilder);
+
+            StringBuilderCache.Free(attributeBuilder);
 
             return string.Empty;
         }

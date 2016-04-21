@@ -55,7 +55,7 @@ namespace ServiceStack.MiniProfiler.SqlFormatters
                 return timing.CommandString;
             }
 
-            StringBuilder buffer = new StringBuilder();
+            StringBuilder buffer = StringBuilderCache.Allocate();
 
             buffer.Append("DECLARE ");
 
@@ -106,11 +106,10 @@ namespace ServiceStack.MiniProfiler.SqlFormatters
                 buffer.Append(niceName).Append(" ").Append(resolvedType).Append(" = ").Append(PrepareValue(p));
             }
 
-            return buffer
+            return StringBuilderCache.ReturnAndFree(buffer
                 .AppendLine()
                 .AppendLine()
-                .Append(timing.CommandString)
-                .ToString();
+                .Append(timing.CommandString));
         }
 
         static readonly string[] dontQuote = new string[] {"Int16","Int32","Int64", "Boolean"};

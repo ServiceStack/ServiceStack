@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using ServiceStack.Text;
 
 
 namespace ServiceStack.Html
@@ -611,7 +612,7 @@ namespace ServiceStack.Html
 
                     var matches = PreservePatterns[p].Matches(html);
                     var index = 0;
-                    var sb = new StringBuilder();
+                    var sb = StringBuilderCache.Allocate();
                     var lastValue = 0;
 
                     foreach (Match match in matches)
@@ -631,7 +632,7 @@ namespace ServiceStack.Html
                     //matches.appendTail(sb1);
                     sb.Append(html.Substring(lastValue));
 
-                    html = sb.ToString();
+                    html = StringBuilderCache.ReturnAndFree(sb);
                     userBlocks.Add(userBlock);
                 }
             }
@@ -642,7 +643,7 @@ namespace ServiceStack.Html
             if (true)
             {
                 var matcher = skipPattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -662,7 +663,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //preserve conditional comments
@@ -671,7 +672,7 @@ namespace ServiceStack.Html
                 var condCommentCompressor = createCompressorClone();
                 var matcher = condCommentPattern.Matches(html);
                 var index = 0;
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -692,7 +693,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //preserve inline events
@@ -700,7 +701,7 @@ namespace ServiceStack.Html
             {
                 var matcher = eventPattern1.Matches(html);
                 var index = 0;
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -720,14 +721,14 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             if (true)
             {
                 var matcher = eventPattern2.Matches(html);
                 var index = 0;
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -747,7 +748,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //preserve PRE tags
@@ -755,7 +756,7 @@ namespace ServiceStack.Html
             {
                 var matcher = prePattern.Matches(html);
                 var index = 0;
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -775,7 +776,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //preserve SCRIPT tags
@@ -783,7 +784,7 @@ namespace ServiceStack.Html
             {
                 var matcher = scriptPattern.Matches(html);
                 var index = 0;
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -832,7 +833,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //preserve STYLE tags
@@ -840,7 +841,7 @@ namespace ServiceStack.Html
             {
                 var matcher = stylePattern.Matches(html);
                 var index = 0;
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -860,7 +861,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //preserve TEXTAREA tags
@@ -868,7 +869,7 @@ namespace ServiceStack.Html
             {
                 var matcher = taPattern.Matches(html);
                 var index = 0;
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -888,7 +889,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //preserve line breaks
@@ -896,7 +897,7 @@ namespace ServiceStack.Html
             {
                 var matcher = lineBreakPattern.Matches(html);
                 var index = 0;
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -913,7 +914,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             return html;
@@ -935,7 +936,7 @@ namespace ServiceStack.Html
             if (PreserveLineBreaks)
             {
                 var matcher = tempLineBreakPattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -954,14 +955,14 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //put TEXTAREA blocks back
             if (true)
             {
                 var matcher = tempTextAreaPattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -980,14 +981,14 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //put STYLE blocks back
             if (true)
             {
                 var matcher = tempStylePattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -1006,14 +1007,14 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //put SCRIPT blocks back
             if (true)
             {
                 var matcher = tempScriptPattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -1032,14 +1033,14 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //put PRE blocks back
             if (true)
             {
                 var matcher = tempPrePattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -1058,14 +1059,14 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //put event blocks back
             if (true)
             {
                 var matcher = tempEventPattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -1084,14 +1085,14 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //put conditional comments back
             if (true)
             {
                 var matcher = tempCondCommentPattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -1110,14 +1111,14 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //put skip blocks back
             if (true)
             {
                 var matcher = tempSkipPattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -1136,7 +1137,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
 
             //put user blocks back
@@ -1146,7 +1147,7 @@ namespace ServiceStack.Html
                 {
                     Regex tempUserPattern = new Regex("%%%~COMPRESS~USER" + p + "~(\\d+?)~%%%");
                     var matcher = tempUserPattern.Matches(html);
-                    var sb = new StringBuilder();
+                    var sb = StringBuilderCache.Allocate();
                     var lastValue = 0;
 
                     foreach (Match match in matcher)
@@ -1165,7 +1166,7 @@ namespace ServiceStack.Html
                     //matcher.appendTail(sb);
                     sb.Append(html.Substring(lastValue));
 
-                    html = sb.ToString();
+                    html = StringBuilderCache.ReturnAndFree(sb);
                 }
             }
 
@@ -1249,7 +1250,7 @@ namespace ServiceStack.Html
                 }
 
                 var matcher = pattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -1264,8 +1265,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
-
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
             return html;
         }
@@ -1276,7 +1276,7 @@ namespace ServiceStack.Html
             if (RemoveQuotes)
             {
                 var matcher = tagQuotePattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -1303,7 +1303,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
 
             }
             return html;
@@ -1317,7 +1317,7 @@ namespace ServiceStack.Html
             //remove ending spaces inside tags
             //html = tagEndSpacePattern.Matches(html).Replace("$1$2");
             var matcher = tagEndSpacePattern.Matches(html);
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             var lastValue = 0;
 
             foreach (Match match in matcher)
@@ -1344,7 +1344,7 @@ namespace ServiceStack.Html
             //matcher.appendTail(sb);
             sb.Append(html.Substring(lastValue));
 
-            html = sb.ToString();
+            html = StringBuilderCache.ReturnAndFree(sb);
 
             return html;
         }
@@ -1422,7 +1422,7 @@ namespace ServiceStack.Html
             if (RemoveLinkAttributes)
             {
                 var matcher = linkTypeAttrPattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -1449,7 +1449,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
             return html;
         }
@@ -1490,7 +1490,7 @@ namespace ServiceStack.Html
             if (RemoveHttpProtocol)
             {
                 var matcher = httpProtocolPattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -1517,7 +1517,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
             return html;
         }
@@ -1528,7 +1528,7 @@ namespace ServiceStack.Html
             if (RemoveHttpsProtocol)
             {
                 var matcher = httpsProtocolPattern.Matches(html);
-                var sb = new StringBuilder();
+                var sb = StringBuilderCache.Allocate();
                 var lastValue = 0;
 
                 foreach (Match match in matcher)
@@ -1555,7 +1555,7 @@ namespace ServiceStack.Html
                 //matcher.appendTail(sb);
                 sb.Append(html.Substring(lastValue));
 
-                html = sb.ToString();
+                html = StringBuilderCache.ReturnAndFree(sb);
             }
             return html;
         }
