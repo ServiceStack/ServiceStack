@@ -1,4 +1,4 @@
-## ServiceStackVS v1.0.24 Update
+## ServiceStackVS v1.0.22 Update
 The latest update to ServiceStackVS includes various improvements to various templates, including:
 
 - React Desktop Apps Packaged Installer using Squirrel.Windows.
