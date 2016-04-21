@@ -47,6 +47,7 @@ namespace ServiceStack.Pcl
     using System;
     using System.Net;
     using System.Text;
+    using ServiceStack.Text;
 
     public class HttpUtility
     {
