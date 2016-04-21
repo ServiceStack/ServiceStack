@@ -1500,6 +1500,12 @@
             <param name="cmdWithBinaryArgs"></param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.Redis.RedisNativeClient.SendUnmanagedExpectSuccess(System.Byte[][])">
+            <summary>
+            Send command outside of managed Write Buffer
+            </summary>
+            <param name="cmdWithBinaryArgs"></param>
+        </member>
         <member name="M:ServiceStack.Redis.RedisNativeClient.ResetSendBuffer">
             <summary>
             reset buffer index in send buffer
