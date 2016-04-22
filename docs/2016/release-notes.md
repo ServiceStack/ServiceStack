@@ -1,1209 +1,390 @@
-# v4.0.54 Release Notes
+# [v4.0.56 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.56.md)
 
-We have another massive release in store with big updates to AutoQuery, Server Events and TypeScript support
-as well as greater flexibility for Multitenancy scenarios and around Service Clients.
+This is another release jam-packed with some killer features, the release notes are unfortunately quite longer than usual as the new features required more detail to describe what each does and understand how they work. 
 
-## [AutoQuery Viewer](https://github.com/ServiceStack/Admin)
+We'll list the highlights below to provide a quick overview, but when you can please checkout the full
+[v4.0.56 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.56.md) for the finer details of each feature.
 
-If you've yet to try
-[Auto Query](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) 
-we encourage you to check it out, it lets you effortlessly create high-performance, fully-queryable, 
-self-descriptive services with just a single, typed Request DTO definition. As they're just normal ServiceStack
-Services they also benefit from ServiceStack's surrounding feature ecosystem, including native support in 
-.NET PCL Service Clients and multi-language 
-[Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) 
-clients. We're excited to announce even more new features for AutoQuery in this release - making it more 
-capable and productive than ever!
+## ServiceStack VS Templates Update
 
-AutoQuery Viewer is an exciting new feature providing an automatic UI to quickly browse and query all 
-your AutoQuery Services!
+React Desktop Apps received a major update with much faster Startup times on Windows that now features auto-updating support built-in courtesy of [Squirrel Windows][2] integration! Whilst the OSX App can now be built using Xamarin's free Community Edition :smile:  
 
-[![](https://raw.githubusercontent.com/ServiceStack/Admin/master/img/query-default-values.png)](http://github.servicestack.net/ss_admin/autoquery)
+We're now all-in with React and TypeScript with both our VS.NET SPA React Templates modernized with TypeScript + JSPM. If you're new to both, please checkout the comprehensive [TypeScript + Redux walk through][1] to get up and running quickly. 
 
-> [YouTube Demo](https://youtu.be/YejYkCvKsuQ)
+## New AutoQuery Data
 
-AutoQuery Viewer is a React App that's bundled within a single `ServiceStack.Admin.dll` that's available from NuGet at:
+AutoQuery Data is an alternative implementation of AutoQuery for RDBMS but supports an Open Provider model which can be implemented to query multiple data source backends. The 3 data source providers available include:
 
-### Install ServiceStack.Admin
+ - **MemorySource** - for querying static or dynamic in-memory .NET collections, some of the included examples show querying a flat-file `.csv` file and a 3rd Party API that can also the throttled with configurable caching.
+ - **ServiceSource** - a step higher than MemorySource where you can decorate the response of existing Services with AutoQuery's rich querying capabilities.
+ - **DynamoDbSource** - adds rich querying capabilities over an AWS DynamoDB Table making it much more productive than if you had to construct the query manually.
+ 
+AutoQuery DynamoDB queries are also self-optimizing where it will transparently construct the most optimal query possible by looking at any Hash Id's, Range Keys and Local Indexes populated in the Request to construct the most optimal DynamoDB **QueryRequest** or **Scan** Operation behind-the-scenes.
 
-    PM> Install-Package ServiceStack.Admin
+And since AutoQuery Services are just normal ServiceStack Services they get to take advantage of ServiceStack's rich ecosystem around Services so with just the single AutoQuery DynamoDB Request DTO below:
+ 
+```csharp
+[Route("/rockstar-albums")]
+[CacheResponse(Duration = 60, MaxAge = 30)]
+public class QueryRockstarAlbums : QueryData<RockstarAlbum>
+{
+    public int? Id { get; set; }         
+    public int? RockstarId { get; set; }
+    public string Genre { get; set; }
+    public int[] IdBetween { get; set; }
+}
+```
 
-Signed Version also available from NuGet at [ServiceStack.Admin.Signed](http://nuget.org/packages/ServiceStack.Admin.Signed)
+We've declaratively created a fully-queryable DynamoDB AutoQuery Service that transparently executes the most ideal DynamoDB queries for each request, has it's optimal representation efficiently cached on both Server and clients, whose Typed DTO can be reused as-is on the client to call Services with an end-to-end Typed API using any .NET Service Client, that's also available to external developers in a clean typed API, natively in their preferred language of choice, accessible with just a right-click menu integrated inside VS.NET, Xcode, Android Studio, IntelliJ and Eclipse - serving both PCL Xamarin.iOS/Android as well as native iOS and Android developers by just Adding a ServiceStack Reference to the base URL of a remote ServiceStack Instance - all without needing to write any implementation!
+
+## HTTP Caching
+
+HTTP Caching is another big feature we expect to prove extremely valuable which much improves story around HTTP Caching that transparently improves the behavior of existing ToOptimized Cached Responses, provides a typed API to to opt-in to HTTP Client features, introduces a simpler declarative API for enabling both Server and Client Caching of Services and also includes Cache-aware clients that are able to improve the performance and robustness of all existing .NET Service Clients - functionality that's especially valuable to bandwidth-constrained Xamarin.iOS / Xamarin.Android clients offering improved performance and greater resilience.
+
+### Cache-aware Service Clients
+
+You can now create **cache-aware** versions of all .NET Service Clients that respects any caching directives
+returned by your Server using the `.WithCache()` extension methods, e.g:
+
+```csharp
+IServiceClient client = new JsonServiceClient(baseUrl).WithCache(); 
+
+IServiceClient client = new JsonHttpClient(baseUrl).WithCache();
+```
+
+Cache-aware Service Clients can dramatically improve performance by eliminating server requests entirely as well as reducing bandwidth for re-validated requests. They also offer an additional layer of resiliency as re-validated requests that result in Errors will transparently fallback to using pre-existing locally cached responses. For bandwidth-constrained environments like Mobile Apps they can dramatically improve the User Experience and as they're available in all supported PCL client platforms.
+
+@jezzsantos also wrote a comprehensive overview about HTTP Caching in general and goes through the process of how he developed an alternative caching solution within ServiceStack in his epic [Caching Anyone post](http://www.mindkin.co.nz/blog/2016/1/5/caching-anyone).
+
+## Service Gateway
+
+The new `IServiceGateway` is another valuable capability that despite being trivial to implement on top of ServiceStack's existing message-based architecture, opens up exciting new possibilities for development of loosely-coupled [Modularized Service Architectures](https://github.com/ServiceStack/ServiceStack/wiki/Modularizing-services).
+
+The Service Gateway is available from `base.Gateway` in both sync:
+
+```csharp
+public object Any(GetCustomerOrders request)
+{
+    return new GetCustomerOrders {
+        Customer = Gateway.Send(new GetCustomer { Id = request.Id }),
+        Orders = Gateway.Send(new QueryOrders { CustomerId = request.Id })
+    };
+}
+```
+
+and async versions:
+
+```csharp
+public async Task<GetCustomerOrdersResponse> Any(GetCustomerOrders request)
+{
+    return new GetCustomerOrdersResponse {
+        Customer = await Gateway.SendAsync(new GetCustomer { Id = request.Id }),
+        Orders = await Gateway.SendAsync(new QueryOrders { CustomerId = request.Id })
+    };
+}
+```
+
+The benefit of the Gateway is that the same above code will continue to function even if you later decided to split out your Customer and Order subsystems out into different Micro Services.
+
+The Service Gateway also allows plugging in a Discovery Service for your Micro Services where you can happily just send Request DTO's to call Services and the Discovery Service will transparently route it to the most available Service. 
+
+We're extremely fortunate to have @Mac and @rsafier both jump in with Service Discovery solutions straight out-of-the-gate which you can find more about in their GitHub Project home pages:
+
+ - https://github.com/MacLeanElectrical/servicestack-discovery-consul
+ - https://github.com/rsafier/ServiceStack.Discovery.Redis
+
+## Super CSV Support
+
+We've now implemented CSV deserialization support so now all your Services can accept CSV payloads in addition to serializing to .csv. As a tabular data format it's especially useful when your Service accepts Lists of POCO's such as in Auto Batched Requests where it's now the most compact text data format to send them with using either the new `CsvServiceClient` or `.PostCsvToUrl()` HTTP Utils extension method.
+
+A feature that sets ServiceStack's CSV support apart is that it's built on the compact and very fast JSV Format which not only can deserialize a tabular flat file of scalar values at high-speed, it also supports deeply nested object graphs which are encoded in JSV and escaped in a CSV field.
+
+Which opens a number of interesting use-cases as you can now maintain rich code or system data in .csv flat-files to easily query them in AutoQuery Services, making it a great option for structured logging as they're now easily parsable, queryable with AutoQuery Data, analyzed with your favorite Spreadsheet or imported using CSV features or data migration tooling for your preferred RDBMS. 
+
+Given these useful properties we've developed a CSV Request Logger that can be registered with:
+
+```csharp
+Plugins.Add(new RequestLogsFeature {
+    RequestLogger = new CsvRequestLogger(),
+});
+```
+
+To store request and error logs into daily logs to the following overridable locations:
+
+- `requestlogs/{year}-{month}/{year}-{month}-{day}.csv`
+- `requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv`
+
+Error logs are also written out into a separate log file as it can be useful to view them in isolation.
+
+## Virtual FileSystem
+
+To efficiently support Appending to existing files as needed by the CsvRequestLogger we've added new 
+`AppendFile` API's and implementations for Memory and FileSystem Virtual File Providers:
+
+```csharp
+interface IVirtualFiles
+{
+    void AppendFile(string filePath, string textContents);
+    void AppendFile(string filePath, Stream stream);
+}
+```
+
+## OrmLite
+
+New `UpdateAdd` API's provides several Typed API's for updating existing values:
+
+```csharp
+//Increase everyone's Score by 3 points
+db.UpdateAdd(new Person { Score = 3 }, fields: x => x.Score); 
+
+//Remove 5 points from Jackson Score
+db.UpdateAdd(new Person { Score = -5 }, x => x.Score, x => 
+    where: x.LastName == "Jackson");
+
+//Graduate everyone and increase everyone's Score by 2 points 
+var q = db.From<Person>().Update(x => new { x.Points, x.Graduated });
+db.UpdateAdd(new Person { Points = 2, Graduated = true }, q);
+```
+
+## Deprecating Legacy OrmLite API's
+
+We're going to gracefully deprecate OrmLite's legacy API's by first deprecating them in this release to notify which API's are earmarked to move, then in a future release we'll move the extension methods under the `ServiceStack.OrmLite.Legacy` namespace to move them out of OrmLite's default namespace. 
+
+The deprecated API's include those ending with `*Fmt` which uses C#'s old-style string formatting, e.g:
+
+```csharp
+var tracks = db.SelectFmt<Track>("Artist = {0} AND Album = {1}", 
+  "Nirvana", 
+  "Nevermind");
+```
+
+Ideally they should be replaced with the parameterized API's below:
+
+```csharp
+var tracks = db.Select<Track>(x => x.Artist == "Nirvana" && x.Album == "Nevermind");
+
+var tracks = db.Select<Track>("Artist = @artist AND Album = @album", 
+    new { artist = "Nirvana", album = "Nevermind" });
     
-Then to add it to your project, just register the Plugin:
-
-```csharp
-Plugins.Add(new AdminFeature());
+var tracks = db.SqlList<Track>(
+    "SELECT * FROM Track WHERE Artist = @artist AND Album = @album",
+    new { artist = "Nirvana", album = "Nevermind" });
 ```
 
-Which requires [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query), if not already registered:
+The other API's that have been deprecated are those that inject an `SqlExpression<T>` e.g:
 
 ```csharp
-Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
+var tracks = db.Select<Track>(q => 
+    q.Where(x => x.Artist == "Nirvana" && x.Album == "Nevermind"));
 ```
 
-Once enabled a link to the AutoQuery Viewer will appear under **Plugin Links** in your 
-[Metadata Page](https://github.com/ServiceStack/ServiceStack/wiki/Metadata-page):
+Which should be changed to passing in the `SqlExpression<T>` by calling `db.From<T>`, e.g:
 
-![](https://raw.githubusercontent.com/ServiceStack/Admin/master/img/metadata-plugin-link.png)
+```csharp
+var tracks = db.Select(db.From<Track>() 
+    .Where(x => x.Artist == "Nirvana" && x.Album == "Nevermind"));
+```
 
-> Or you can navigate to it directly at `/ss_admin/`
+## PocoDynamo
 
-As it's quick to add, we've already enabled it in a number of existing Live Demo's containing AutoQuery Services:
+ServiceStack's POCO-friendly DynamoDB client has added support for DynamoDB's **UpdateItem** which lets you modify existing attributes. The easiest API to use is to pass in a partially populated POCO with containing any non-default values you want updated:
 
-### Live Examples
+```csharp
+db.UpdateItemNonDefaults(new Customer { Id = customer.Id, Age = 42 });
+```
+
+There's also a more flexible API to support each of DynamoDB UpdateItem operations, e.g:
+
+```csharp
+db.UpdateItem(customer.Id, 
+    put: () => new Customer {
+        Nationality = "Australian"
+    },
+    add: () => new Customer {
+        Age = -1
+    },
+    delete: x => new { x.Name, x.Orders });
+```
+
+**ServiceStack.Redis**
+
+Additional resiliency was added in ServiceStack.Redis which can now handle re-connections for broken TCP connections happening in the middle of processing a Redis Operation.
+
+New API's were added to remove multiple values from a Sorted Set:
+
+```csharp
+interface IRedisClient {
+    long RemoveItemsFromSortedSet(string setId, List<string> values);
+} 
+
+interface IRedisNativeClient {
+    long ZRem(string setId, byte[][] values);
+}
+```
+
+## ServiceStack IDEA
+
+The ServiceStack IDEA Android Studio plugin was updated to support Android Studio 2.0.
+
+## Community
+
+There were a number of community plugins published in this release, check out their GitHub projects for
+more info:
+
+ - [ServiceStack.Discovery.Redis](https://github.com/MacLeanElectrical/servicestack-eventstore)
+ - [ServiceStack.SimpleCloudControl](https://github.com/rsafier/ServiceStack.SimpleCloudControl)
+ - [ServiceStack.Funq.Quartz](https://github.com/CodeRevver/ServiceStackWithQuartz)
+ - [ServiceStack.Discovery.Consul](https://github.com/MacLeanElectrical/servicestack-discovery-consul)
+ - [ServiceStack.Discovery.Redis](https://github.com/rsafier/ServiceStack.Discovery.Redis)
+
+## Other Features
+
+ - Changed ServiceStack.Interfaces to **Profile 328** adding support **Windows Phone 8.1**
+ - New `IHasStatusDescription` can be added on Exceptions to customize their StatusDescription
+ - New `IHasErrorCode` can be used to customize the ErrorCode used, instead of its Exception Type
+ - New `AppHost.OnLogError` can be used to override and suppress service error logging
+
+
+  [1]: https://github.com/ServiceStackApps/typescript-redux
+  [2]: https://github.com/Squirrel/Squirrel.Windows
+
+
+# [v4.0.54 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.54.md)
+
+v4.0.54 is another jam-packed release with a lot of features across the board, we'll list the highlights 
+here, for more details about each feature you can checkout the full
+[v4.0.54 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.54.md).
+
+**WARNING .NET 4.0 builds will cease after August 1, 2016**
+
+We want to warn everyone that we will be upgrading all packages to .NET 4.5 and stop providing .NET 4.0 builds after August 1, 2016 now that Microsoft no longer supports them. If you absolutely need supported .NET 4.0 builds after this date please leave a comment on:  
+https://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/12528912-continue-supporting-net-4-0-projects
+
+---
+
+**AutoQuery Viewer**
+
+An exciting new plugin available from the **ServiceStack.Admin** NuGet package which provides an instant automatic UI for all your AutoQuery services. As it's super quick to add we've enabled it on a number of existing live demos which you can try out:
 
 - http://github.servicestack.net/ss_admin/
 - http://northwind.servicestack.net/ss_admin/
 - http://stackapis.servicestack.net/ss_admin/
 - http://techstacks.io/ss_admin/
 
-### Default Minimal UI
-
-By default AutoQuery Services start with a minimal UI that uses the Request DTO name to identify the Query.
-An example of this can be seen with the 
-[Northwind AutoQuery Services](http://northwind.servicestack.net/ss_admin/autoquery/QueryCustomers) below:
-
-```csharp
-[Route("/query/customers")]
-public class QueryCustomers : QueryBase<Customer> {}
-
-[Route("/query/orders")]
-public class QueryOrders : QueryBase<Order> {}
-```
-
-Which renders a UI with the default query and initial fields unpopulated:
-
-[![](https://raw.githubusercontent.com/ServiceStack/Admin/master/img/unannotated-autoquery-services.png)](http://northwind.servicestack.net/ss_admin/autoquery/QueryCustomers)
-
-### Marking up AutoQuery Services
-
-To provide a more useful experience to end users you can also markup your AutoQuery Services by annotating them
-with the `[AutoQueryViewer]` attribute, as seen in 
-[GitHub QueryRepos](http://github.servicestack.net/ss_admin/autoquery/QueryRepos):
-
-```csharp
-[Route("/repos")]
-[AutoQueryViewer(IconUrl = "octicon:repo",    
-    Title = "ServiceStack Repositories", 
-    Description = "Browse different ServiceStack repos",
-    DefaultSearchField = "Language", DefaultSearchType = "=", DefaultSearchText = "C#",
-    DefaultFields = "Id,Name,Language,Description:500,Homepage,Has_Wiki")]
-public class QueryRepos : QueryBase<GithubRepo> {}
-```
-
-The additional metadata is then used to customize the UI at the following locations:
-
-[![](https://raw.githubusercontent.com/ServiceStack/Admin/master/img/query-default-values-markup.png)](http://github.servicestack.net/ss_admin/autoquery/QueryRepos)
-
-Where `Title`, `Description`, `DefaultSearchField`, `DefaultSearchType` and `DefaultSearchText` is a 
-straight forward placeholder replacement.
-
-#### IconUrl
-
-Can either be an url to a **24x24** icon or preferably to avoid relying on any external resources, 
-Admin UI embeds both
-[Google's Material Design Icons](https://design.google.com/icons/) and 
-[GitHub's Octicon](https://octicons.github.com/) fonts which can be referenced using the custom
-`octicon:` and `material-icons:` schemes, e.g:
-
- - octicon:icon
- - material-icons:cast
-
-#### DefaultFields
-
-Can hold a subset list of fields from the AutoQuery **Response Type** in the order you want them displayed.
-By default fields have a max-width of **300px** but we can override this default with a `:` suffix as seen
-with `Description:500` which changes the Description column width to **500px**. Any text longer than its width
-is automatically clipped, but you can still see the full-text by hovering over the field or by clicking the 
-AutoQuery generated link, calling the AutoQuery Service and viewing the entire results.
-
-> For more, see [Advanced Customizations](https://github.com/ServiceStack/Admin#advanced-customizations)
-
-### Filter AutoQuery Services
-
-The filter textbox can be used to quickly find and browse to AutoQuery Services:
-
-![](https://raw.githubusercontent.com/ServiceStack/Admin/master/img/filter-autoquery-services.png)
-
-### Authorized Only Queries
-
-Users only see Queries they have access to, this lets you further tailor the UI for users by using the 
-`[Authenticate]`, Required Role or Permission attributes to ensure different users only see relevant queries,
-e.g. 
-
-```csharp
-[RequiredRole("Sales")]
-public class QueryOrders : QueryBase<Order> {}
-```
-
-Since the Auth attributes are Request Filter Attributes with a server dependency to **ServiceStack.dll**, 
-in order to maintain and share a dependency-free **ServiceModel.dll** you should instead define a custom 
-AutoQuery in your Service implementations which will inherit any Service or Action filter attributes as normal:
-
-```csharp
-public class QueryOrders : QueryBase<Order> {}
-
-[RequiredRole("Sales")]
-public class SalesServices : Service
-{
-    public IAutoQuery AutoQuery { get; set; }
-
-    public object Any(QueryOrders query)
-    {
-        return AutoQuery.Execute(query, AutoQuery.CreateQuery(query, Request));
-    }
-}
-```
-
-### Updated in Real-time
-
-To enable a fast and productive UX, the generated AutoQuery link and query results are refreshed as-you-type, 
-in addition any change to a any query immediately saves the App's state to **localStorage** so users queries 
-are kept across page refreshes and browser restarts.
-
-![](https://raw.githubusercontent.com/ServiceStack/Admin/master/img/search-as-type.png)
-
-The generated AutoQuery Url is kept in-sync and captures the state of the current query and serves as a 
-good source for learning how to construct AutoQuery requests that can be used as-is in client applications. 
-
-### Multiple Conditions
-
-Queries can be constructed with multiple conditions by hitting **Enter** or clicking on the **green (+)** button 
-(activated when a condition is valid), adding it to the conditions list and clearing the search text:  
-
-![](https://raw.githubusercontent.com/ServiceStack/Admin/master/img/multiple-conditions.png)
-
-Clicking the **red** remove icon removes the condition.
-
-### Change Content-Type
-
-You can force a query to return a specific Content-Type response by clicking on one of the format links. E.g
-clicking on **json** link will add the **.json** extension to the generated url, overriding the browser's
-default Content-Type to specify a JSON response: 
-
-![](https://raw.githubusercontent.com/ServiceStack/Admin/master/img/custom-content-types.png)
-
-### Customize Columns
-
-Results can further customized to show only the columns you're interested in by clicking on the 
-**show/hide columns** icon and selecting the columns you want to see in the order you want them added:
-
-![](https://raw.githubusercontent.com/ServiceStack/Admin/master/img/customize-columns.png)
-
-### Sorting Columns and Paging Results
-
-Results can be sorted in descending or ascending order by clicking on the column headers:
-
-![](https://raw.githubusercontent.com/ServiceStack/Admin/master/img/paging-queries.png)
-
-Clicking the back/forward navigation icons on the left will page through the results in the order specified.
-
-## AutoQuery Enhancements
-
-We've also added a number of new features to AutoQuery that improves performance and enables greater 
-flexibility for your AutoQuery Services:
-
-### Parameterized AutoQuery
-
-AutoQuery now generates parameterized sql for all queries where the `{Value}` placeholder in the AutoQuery 
-Templates have been changed to use db parameters.
-
-### Customizable Fields
-
-You can now customize which fields you want returned using the new `Fields` property available on all 
-AutoQuery Services, e.g:
-
-    ?Fields=Id,Name,Description,JoinTableId
-
-The Fields still need to be defined on the Response DTO as this feature doesn't change the Response
-DTO Schema, only which fields are populated. This does change the underlying RDBMS SELECT that's executed, 
-also benefiting from reduced bandwidth between your RDBMS and App Server.
-
-A useful [JSON customization](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/release-notes.md#customize-json-responses-on-the-fly) 
-that you can add when specifying custom fields is `ExcludeDefaultValues`, e.g:
-
-    /query?Fields=Id,Name,Description,JoinTableId&jsconfig=ExcludeDefaultValues
-
-Which will remove any value type fields with a **default value** from the JSON response, e.g:
-    
- - [github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At](http://github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At)
- - [github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At&jsconfig=ExcludeDefaultValues](http://github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At&jsconfig=ExcludeDefaultValues)
-
-### Multiple Conditions
-
-Previously unsupported, AutoQuery now allows specifying multiple conditions with the same name, e.g:
-
-    ?DescriptionContains=Service&DescriptionContains=Stack
-
-### Named Connection
-
-Related to our improved support for multi-tenancy applications, AutoQuery can easily be used to query 
-any number of different databases registered in your AppHost. 
-
-In the example below we configure our main RDBMS to use SQL Server and register a **Named Connection** 
-to point to a **Reporting** PostgreSQL RDBMS:
-
-```csharp
-var dbFactory = new OrmLiteConnectionFactory(connString, SqlServer2012Dialect.Provider);
-container.Register<IDbConnectionFactory>(dbFactory);
-
-dbFactory.RegisterConnection("Reporting", pgConnString, PostgreSqlDialect.Provider);
-```
-
-Any normal AutoQuery Services like `QueryOrders` will use the default SQL Server connection whilst 
-`QuerySales` will execute its query on the PostgreSQL `Reporting` Database instead:
-
-```csharp
-public class QueryOrders : QueryBase<Order> {}
-
-[NamedConnection("Reporting")]
-public class QuerySales : QueryBase<Sales> {}
-```
-
-### Generate AutoQuery Services from OrmLite T4 Templates
-
-[Richard Safier](https://forums.servicestack.net/t/t4-template-autoquery-feature/1911) 
-from the ServiceStack community has extended OrmLite's T4 Templates to include support for generating 
-AutoQuery Services for each Table POCO model using the new opt-in 
-[CreateAutoQueryTypes](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/0e5c42b84a55e446c39ff3c4e01f361916e591b1/src/T4/OrmLite.Poco.tt#L13)
-option whilst the new 
-[AddNamedConnection](https://github.com/ServiceStack/ServiceStack.OrmLite/blob/0e5c42b84a55e446c39ff3c4e01f361916e591b1/src/T4/OrmLite.Poco.tt#L14)
-option can be used to generate `[NamedConnection]` annotations.
-
-With this feature Richard was able to generate thousands of fully-queryable AutoQuery Services spanning
-multiple databases in a single ServiceStack instance with just the T4 templates and configuration.
-
-### AdminFeature Rich UI Implementation
-
-We'd like to make a special mention of how `AdminFeature` was built and deployed as ServiceStack makes it
-really easy to package and deploy rich plugins with complex UI and behavior encapsulated within a single plugin - 
-which we hope spurs the creation of even richer community [Plugins](github.com/ServiceStack/ServiceStack/wiki/Plugins)!
-
-Development of `AdminFeature` is maintained in a TypeScript 1.8 + JSPM + React
-[ServiceStack.Admin.WebHost](https://github.com/ServiceStack/Admin/tree/master/src/ServiceStack.Admin.WebHost) 
-project where it's structured to provide an optimal iterative development experience. 
-To re-package the App we just call on JSPM to create our app.js bundle by pointing it to the React App's 
-`main` entry point:
+It also ships with a number of productive features out-of-the-box:
+
+ - **Marking up Services** - Use `[AutoQueryViewer]` attribute to mark up look and default behavior of Services
+ - **Filter Services** - If you have a lot of Services, this will help quickly find the service you want
+ - **Authorized Only Services** - Users only see the AQ Services they're authorized to, which lets you customize the UI for what each user sees
+ - **Multiple Conditions** - The UI makes it easy to create complex queries with multiple conditions
+ - **Updated in Real-Time** - AQ Services are refreshed and App State is saved as-you-type
+ - **Change Content Type** - The short-cut links can be used to access results in your desired format
+ - **Customize Columns** - Customize results to only return the columns you're interested in
+ - **Sorting and Paging** - Results can be sorted by any column and paged with nav links
  
-    jspm bundle -m src\main ..\ServiceStack.Admin\ss_admin\app.js
-
-Then each of the static resources are copied into the Plugins 
-[ServiceStack.Admin](https://github.com/ServiceStack/Admin/tree/master/src/ServiceStack.Admin) 
-project with their **Build Action** set to **Embedded Resource** so they're embedded in the 
-**ServiceStack.Admin.dll**.
-
-To add the Embedded Resources to the 
-[Virtual File System](https://github.com/ServiceStack/ServiceStack/wiki/Virtual-file-system)
-the `AdminFeature` just adds it to `Config.EmbeddedResourceBaseTypes` (also making it safe to ILMerge).
-
-The entire server implementation for the `AdminFeature` is contained below, most of which is dedicated to 
-supporting when ServiceStack is mounted at both root `/` or a custom path (e.g. `/api`) - which it supports 
-by rewriting the embedded `index.html` with the `HandlerFactoryPath` before returning it:
-
-```csharp
-public class AdminFeature : IPlugin, IPreInitPlugin
-{
-    public void Configure(IAppHost appHost)
-    {
-        //Register ServiceStack.Admin.dll as an Embedded Resource to VirtualFiles
-        appHost.Config.EmbeddedResourceBaseTypes.Add(typeof(AdminFeature));
-    }
-
-    public void Register(IAppHost appHost)
-    {
-        var indexHtml = appHost.VirtualFileSources.GetFile("ss_admin/index.html").ReadAllText();
-        if (appHost.Config.HandlerFactoryPath != null) //Inject HandlerFactoryPath if mounted at /custom path
-            indexHtml = indexHtml.Replace("/ss_admin", "/{0}/ss_admin".Fmt(appHost.Config.HandlerFactoryPath));
-
-        appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => 
-            pathInfo.StartsWith("/ss_admin") 
-                ? (pathInfo == "/ss_admin/index.html" || !appHost.VirtualFileSources.FileExists(pathInfo)
-                    ? new StaticContentHandler(indexHtml, MimeTypes.Html) as IHttpHandler
-                    : new StaticFileHandler(appHost.VirtualFileSources.GetFile(pathInfo)))
-                : null);
-
-        appHost.GetPlugin<MetadataFeature>()
-            .AddPluginLink("/ss_admin/autoquery/", "AutoQuery Viewer"); //Add link to /metadata page
-    }
-}
-```
-
-To power most of its UI, AutoQuery Viewer makes use of the 
-[existing Metadata service in AutoQuery](https://github.com/ServiceStack/Admin#advanced-customizations).
-
-#### Code-first POCO Simplicity
-
-Other classes worth reviewing is the 
-[GitHubTasks.cs](https://github.com/ServiceStack/Admin/blob/master/tests/Admin.Tasks/GitHubTasks.cs) and
-[StackOverflowTasks.cs](https://github.com/ServiceStack/Admin/blob/master/tests/Admin.Tasks/StackOverflowTasks.cs)
-containing the NUnit tests used to create the test sqlite database on-the-fly, directly from the GitHub and 
-StackOverflow JSON APIs, the ease of which speaks to the simplicity of 
-[ServiceStack's code-first POCO approach](http://stackoverflow.com/a/32940275/85785).
-
-## [Server Events](https://github.com/ServiceStack/ServiceStack/wiki/Server-Events)
-
-We've published a couple of new examples projects showing how easy it is to create rich, interactive native 
-mobile and web apps using Server Events. 
-
-### [Xamarin.Android Chat](https://github.com/ServiceStackApps/AndroidXamarinChat)
-
-Xamarin.Android Chat utilizes the 
-[.NET PCL Server Events Client](https://github.com/ServiceStack/ServiceStack/wiki/C%23-Server-Events-Client)
-to create an Android Chat App connecting to the existing 
-[chat.servicestack.net](http://chat.servicestack.net/) back-end where it's able to communicate with existing 
-Ajax clients and other connected Android Chat Apps. The example shows how to enable a native integrated 
-experience by translating the existing `cmd.announce` message into an Android notification as well shows how to 
-use Xamarin.Auth to authenticate with ServiceStack using Twitter Auth. 
-
-Click the video below to see a quick demo of it in action:
-
-> [YouTube Video](https://www.youtube.com/watch?v=tImAm2LURu0)
-
-[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/xamarin-android-server-events.png)](https://www.youtube.com/watch?v=tImAm2LURu0)
-
-For a deeper dive, checkout the feature list and source code from the 
-[AndroidXamarinChat](https://github.com/ServiceStackApps/AndroidXamarinChat) 
-GitHub repo.
-
-### [Networked Time Traveller Shape Creator](https://github.com/ServiceStackApps/typescript-redux#example-9---real-time-networked-time-traveller)
-
-We've also added Server Events to convert a 
-[stand-alone Time Traveller Shape Creator](https://github.com/ServiceStackApps/typescript-redux#example-8---time-travelling-using-state-snapshots)
-into a networked one where users can **connect to** and **watch** other users using the App in real-time similar 
-to how users can use Remote Desktop to watch another computer's screen: 
-
-[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/redux-chrome-safari.png)](http://redux.servicestack.net)
-
-> Live demo at: http://redux.servicestack.net
-
-Surprisingly most of the client code required to enable this is encapsulated within a single 
-[React Connect component](https://github.com/ServiceStackApps/typescript-redux/blob/master/src/TypeScriptRedux/src/example09/Connect.tsx).
-
-The networked Shape Creator makes use of 2 back-end Services that lets users publish their actions to a channel 
-and another Service to send a direct message to a User. The 
-[implementation for both services](https://github.com/ServiceStackApps/typescript-redux/blob/master/src/TypeScriptRedux/Global.asax.cs) 
-is contained below:
-
-```csharp
-//Services Contract
-[Route("/publish-channel/{Channel}")]
-public class PublishToChannel : IReturnVoid, IRequiresRequestStream
-{
-    public string Channel { get; set; }
-    public string Selector { get; set; }
-    public Stream RequestStream { get; set; }
-}
-
-[Route("/send-user/{To}")]
-public class SendUser : IReturnVoid, IRequiresRequestStream
-{
-    public string To { get; set; }
-    public string Selector { get; set; }
-    public Stream RequestStream { get; set; }
-}
-
-//Services Implementation
-public class ReduxServices : Service
-{
-    public IServerEvents ServerEvents { get; set; }
-
-    public void Any(PublishToChannel request)
-    {
-        var msg = request.RequestStream.ReadFully().FromUtf8Bytes();
-        ServerEvents.NotifyChannel(request.Channel, request.Selector, msg);
-    }
-
-    public void Any(SendUser request)
-    {
-        var msg = request.RequestStream.ReadFully().FromUtf8Bytes();
-        ServerEvents.NotifyUserId(request.To, request.Selector, msg);
-    }
-}
-```
-
-Essentially just calling `IServerEvents` to forward the raw JSON Request Body to the specified channel or user.
-
-### Updating Channels on Live Subscriptions
-
-Previously to change Server Event channel subscriptions you would need to create a new connection with the 
-channels you wanted to join. You can now update a live Server Events connection with Channels you want to 
-Join or Leave using the new built-in ServerEvents `UpdateEventSubscriber` Service:
-
-```csharp
-[Route("/event-subscribers/{Id}", "POST")]
-public class UpdateEventSubscriber : IReturn<UpdateEventSubscriberResponse>
-{
-    public string Id { get; set; }
-    public string[] SubscribeChannels { get; set; }
-    public string[] UnsubscribeChannels { get; set; }
-}
-```
-
-This lets you modify your active subscription with channels you want to join  or leave with a HTTP POST Request, e.g:
-
-    POST /event-subscribers/{subId}
-    SubscribeChannels=chan1,chan2&UnsubscribeChannels=chan3,chan4
-
-### New onUpdate Notification
-
-As this modifies the active subscription it also publishes a new **onUpdate** notification to all channel 
-subscribers so they're able to maintain up-to-date info on each subscriber. 
-
-In C# `ServerEventsClient` this can be handled together with **onJoin** and **onLeave** events using `OnCommand`:
-
-```csharp
-client.OnCommand = msg => ...; //= ServerEventJoin, ServerEventLeave or ServerEventUpdate
-```
-
-In the ss-utils JavaScript Client this can be handled with a Global Event Handler, e.g:
-
-```javascript
-$(source).handleServerEvents({
-    handlers: {
-        onConnect: connectedUserInfo => { ... },
-        onJoin: userInfo => { ... },
-        onLeave: userInfo => { ... },
-        onUpdate: userInfo => { ... }
-    }
-});
-```
-
-### .NET UpdateSubscriber APIs
-
-Typed versions of this API is built into the C# `ServerEventsClient` in both sync/async versions:
-
-```csharp
-client.UpdateSubscriber(new UpdateEventSubscriber { 
-    SubscribeChannels = new[]{ "chan1", "chan2" },
-    UnsubscribeChannels = new[]{ "chan3", "chan4" },
-});
-
-client.SubscribeToChannels("chan1", "chan2");
-client.UnsubscribeFromChannels("chan3", "chan4");
-
-await client.SubscribeToChannelsAsync("chan1", "chan2");
-await client.UnsubscribeFromChannelsAsync("chan3", "chan4");
-```
-
-### JavaScript UpdateSubscriber APIs
-
-As well as in ServiceStack's ss-utils JavaScript library:
-
-```javascript
-$.ss.updateSubscriber({ 
-    SubscribeChannels: "chan1,chan2",
-    UnsubscribeChannels: "chan3,chan4"
-});
-
-$.ss.subscribeToChannels(["chan1","chan2"], response => ..., error => ...);
-$.ss.unsubscribeFromChannels(["chan3","chan4"], response => ..., error => ...);
-```
-
-### ServerEvents Update Channel APIs
-
-Whilst internally, from within ServiceStack you can update a channel's subscription using the new
-[IServerEvents](https://github.com/ServiceStack/ServiceStack/blob/b9a33c34d0b0eedbcc6b3483257f1dc37bbf713f/src/ServiceStack/ServerEventsFeature.cs#L1004)
-APIs:
-
-```csharp
-public interface IServerEvents 
-{
-    ...
-    void SubscribeToChannels(string subscriptionId, string[] channels);
-    void UnsubscribeFromChannels(string subscriptionId, string[] channels);
-}
-```
-
-## [TypeScript React App (beta)](https://github.com/ServiceStackApps/typescript-react-template/)
-
-[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/typescript-react-jspm-banner.png)](https://github.com/ServiceStackApps/typescript-react-template/)
+A quick showcase of some of these features are available on YouTube: https://youtu.be/YejYkCvKsuQ 
 
-We've spent a fair amount of time researching the JavaScript ecosystem to discover what we believe offers VS.NET 
-developers the most optimal balance of power, simplicity and tooling to build and maintain large JavaScript Apps. 
-[ES6](https://github.com/lukehoban/es6features) 
-offers a number of language improvements to ES5-compatible JavaScript making it much more enjoyable to 
-develop modern applications with, which we believe justifies the additional tooling needed to transpile it to 
-support down-level ES5 browsers. Given the lack of support for Babel/ES6 in VS.NET, the best option to access 
-ES6 features is to use 
-[TypeScript](http://www.typescriptlang.org/) which also offers its own benefits over and beyond ES6.
-
-The decision to use TypeScript also meant revisiting other tools used in our Single Page App templates. One of
-the most productive features in ES6/TypeScript is being able to easily use modules to modularize your code which 
-provides an optimal development experience for maintaining large and complex code-bases. For this to work 
-seamlessly we needed to integrate TypeScript modules with our front-end JavaScript package manager which is 
-why we've replaced [bower](http://bower.io/) with [JSPM](http://jspm.io/) and configured TypeScript to use the 
-Universal [SystemJS module format](https://github.com/systemjs/systemjs). 
-
-Finally to minimize JavaScript fatigue, we've removed as much complexity and moving parts as we could and 
-have removed [Grunt](http://gruntjs.com/) in favor of leaving only a [Gulp](http://gulpjs.com/) 
-JS build system without any
-[loss of functionality](https://github.com/ServiceStackApps/ReactDesktopApps#defaultapp-project).
+**AutoQuery Enhancements**
 
-With these changes we've hand picked what we believe is the current **Gold Standard** for developing modern 
-JavaScript Apps in VS.NET with the just released 
-[TypeScript 1.8](http://www.typescriptlang.org/), 
-[React](https://facebook.github.io/react/), 
-[JSPM](http://jspm.io/), 
-[Gulp](http://gulpjs.com/) and 
-[typings](https://github.com/typings/typings) (the successor to [TSD](https://github.com/DefinitelyTyped/tsd)). 
-We're also greatly benefiting from this Technology Stack ourselves with the development our latest 
-[AutoQuery Viewer](https://github.com/ServiceStack/Admin) TypeScript App.
+A number of new Enhancements were also added to AutoQuery Services:
 
-We've integrated these powerful combinations of technologies and packaged it in the new 
-**TypeScript React App (Beta)** VS.NET template that's now available in the updated 
-[ServiceStackVS VS.NET Extension](https://github.com/ServiceStack/ServiceStackVS):
+ - **Parameterized AutoQuery** - AQ Services are now parameterized with Convention Templates converted to use db params
+ - **Customizable Fields** - You can now customize which fields you want returned using new **Fields** property
+ - **Named Connection** - As part of our new Multitenancy features AQ Services can be easily configured to run on multiple db's 
+ - **T4 Templates** - OrmLite's T4 templates now have options for generating AutoQuery Services and named connections
 
-![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/release-notes/typescript-react-jspm-template.png)
+**Server Events**
 
-To learn more about this template and explore its different features. please see the 
-[in-depth typescript-react-template guide](https://github.com/ServiceStackApps/typescript-react-template/).
+We've added a couple of demos showing how easy it is to create rich, interactive mobile and web apps with Server Events:
 
-## [TypeScript Redux](https://github.com/ServiceStackApps/typescript-redux)
+**Xamarin.Android Chat**
 
-To help developers familiarize themselves with these technologies we've also published an in-depth step-by-step 
-guide for beginners that starts off building the simplest HelloWorld TypeScript React App from scratch then 
-slowly growing with each example explaining how TypeScript, React and Redux can be used to easily create a 
-more complex networked Time Travelling Shape Creator as seen in the final Example:
+The new Xamarin.Android demo shows how to use the .NET PCL typed Server Events Client to connect to an existing chat.servicestack.net back-end and communicate with existing Ajax web clients. It also shows how to use Xamarin.Auth to authenticate with ServiceStack using Twitter and OAuth.
 
-[![](https://raw.githubusercontent.com/ServiceStackApps/typescript-redux/master/img/preview-09.png)](https://github.com/ServiceStackApps/typescript-redux)
+A quick demo is available from: https://www.youtube.com/watch?v=tImAm2LURu0 
 
-> Live Demo: [http://redux.servicestack.net](http://redux.servicestack.net)
+**Networked Time Traveller Shape Creator**
 
-Except for the final demo above, all other examples are pure client-side only demos, i.e. without any 
-server dependencies and can be previewed directly from the static GitHub website below:
+We've given the existing Time Traveller Shape Creator networking capabilities which now let you "Remote Desktop" into and watch other users view the app. This was surprisingly simple to do with Redux, just 1 React Component and 2x 1-line ServiceStack ServerEvent Services.
 
- - [Example 1 - HelloWorld](http://servicestackapps.github.io/typescript-redux/example01/)
- - [Example 2 - Modularizing HelloWorld](http://servicestackapps.github.io/typescript-redux/example02/)
- - [Example 3 - Creating a stateful Component](http://servicestackapps.github.io/typescript-redux/example03/)
- - [Example 4 - Change Counter to use Redux](http://servicestackapps.github.io/typescript-redux/example04/)
- - [Example 5 - Use Provider to inject store in child Context](http://servicestackapps.github.io/typescript-redux/example05/)
- - [Example 6 - Use connect() to make Components stateless](http://servicestackapps.github.io/typescript-redux/example06/)
- - [Example 7 - Shape Creator](http://servicestackapps.github.io/typescript-redux/example07/)
- - [Example 8 - Time Travelling using State Snapshots](http://servicestackapps.github.io/typescript-redux/example08/)
+Live demo at: http://redux.servicestack.net
 
-## [ss-utils](https://github.com/ServiceStack/ServiceStack/wiki/ss-utils.js-JavaScript-Client-Library)
+**Update Channels on Live Subscriptions**
 
-### ss-utils now available on npm and DefinitelyTyped
+You can now update the channels your active SSE subscription is connected to without re-connecting. This is enabled everywhere, in Memory + Redis SSE backends as well as typed API's for .NET and Ajax clients.
 
-To make it easier to develop with **ss-utils** in any of the npm-based Single Page Apps templates we're 
-maintaining a copy of [ss-utils in npm](https://www.npmjs.com/package/ss-utils) and have also added it to JSPM 
-and DefinitelyTyped registry so you can now add it to your project like any other external dependency using JSPM:
+**TypeScript React App (beta)**
 
-    C:\> jspm install ss-utils
+The new TypeScript + React VS.NET Tempalte captures what we believe is the best combination of technologies for developing rich JavaScript apps: TypeScript 1.8, React, JSPM, typings + Gulp - combined together within a single integrated, pre-configured VS.NET template. This tech suite represents our choice stack for developing rich Single Page Apps which we've used to build AutoQuery Viewer and Networked Shape Creator and currently our number #1 choice for new SPA Apps.
 
-If you're using TypeScript, you can also download the accompanying TypeScript definition from:
+**TypeScript Redux**
 
-    C:\>typings install ss-utils --ambient --save
-    
-Or if you're using the older tsd package manager: `tsd install ss-utils --save`.
+To help developers familiarize themselves with these technologies we've also published an in-depth step-by-step guide for beginners that starts off building the simplest HelloWorld TypeScript React App from scratch then slowly growing with each example explaining how TypeScript, React and Redux can be used to easily create the more complex networked Time Travelling Shape Creator, available at: https://github.com/ServiceStackApps/typescript-redux
 
-### New ss-utils API's
+**ss-utils**
 
-We've added new core utils to make it easier to create paths, urls, normalize JSON responses and send POST
-JSON Requests:
+To make it easier to use ss-utils in JavaScript projects, we're maintaining copies of ss-utils in npm, JSPM and Definitely Typed registries. We've also added a few new common utils:
 
-#### combinePaths and createUrl
+ - $.ss.combinePaths
+ - $.ss.createPath
+ - $.ss.createUrl
+ - $.ss.normalizeKey
+ - $.ss.normalize
+ - $.ss.postJSON
+ 
+**Customize JSON Responses on-the-fly**
 
-The new `combinePaths` and `createUrl` API's help with constructing urls, e.g:
-
-```javascript
-$.ss.combinePaths("path","to","..","join")   //= path/join
-$.ss.createPath("path/{foo}", {foo:1,bar:2}) //= path/1
-
-$.ss.createUrl("http://host/path/{foo}",{foo:1,bar:2}) //= http://host/path/1?bar=2
-```
-
-This is a change from previous release where `createUrl()` behaved like `createPath()`.
-
-#### normalize and normalizeKey
-
-The new `normalizeKey` and `normalize` APIs helps with normalizing JSON responses with different naming 
-conventions by converting each property into lowercase with any `_` separators removed - `normalizeKey()` 
-converts a single string whilst `normalize()` converts an entire object graph, e.g:
-
-```javascript
-$.ss.normalizeKey("THE_KEY") //= thekey
-
-JSON.stringify(
-    $.ss.normalize({THE_KEY:"key",Foo:"foo",bar:{A:1}})
-)   //= {"thekey":"key","foo":"foo","bar":{"A":1}}
-
-const deep = true;
-JSON.stringify(
-    $.ss.normalize({THE_KEY:"key",Foo:"foo",bar:{A:1}}, deep) 
-)   //= {"thekey":"key","foo":"foo","bar":{"a":1}}
-```
-
-#### postJSON
-
-Finally `postJSON` is jQuery's missing equivalent to `$.getJSON`, but for POST's, eg:
-
-```javascript
-$.ss.postJSON(url, {data:1}, response => ..., error => ...);
-```
-
-## Customize JSON Responses on-the-fly
-
-The JSON and JSV Responses for all Services (inc. AutoQuery Services) can now be further customized with the 
-new `?jsconfig` QueryString param which lets your Service consumers customize the returned JSON Response to 
-their preference. This works similar to having wrapped your Service response in a `HttpResult` with a Custom 
-`ResultScope` in the Service implementation to enable non-default customization of a Services response, e.g:
+The JSON/JSV responses for all your services can now be customized on-the-fly by your Service consumers so they're able to access your JSON responses in their preferred configuration using the `?jsconfig` modifier, e.g:
 
     /service?jsconfig=EmitLowercaseUnderscoreNames,ExcludeDefaultValues
-    
-Works similarly to:
-
-```csharp
-return new HttpResult(new { TheKey = "value", Foo=0 }) {
-    ResultScope = () => JsConfig.With(
-        emitLowercaseUnderscoreNames:true, excludeDefaultValues:true)
-};
-```
-
-Which results in **lowercase_underscore** key names with any properties with **default values removed**:
-
-    {"the_key":"value"}
-
-It also supports cascading server and client ResultScopes, with the client `?jsconfig` taking precedence.
-
-Nearly all `JsConfig` scope options are supported other than delegates and complex type configuration properties.
-
-### Camel Humps Notation
-
-JsConfig also supports Camel Humps notation letting you target a configuration by just using the 
-**Uppercase Letters** in the property name which is also case-insensitive so an equivalent shorter version 
-of the above config can be:
-
-    ?jsconfig=ELUN,edv
-    
-Camel Humps also works with Enum Values so both these two configurations are the same:
-
-    ?jsconfig=DateHandler:UnixTime
-    ?jsconfig=dh:ut
-
-### Custom JSON Live Example
-
-AutoQuery Viewer makes use of this feature in order to return human readable dates using the new 
-`ISO8601DateOnly` DateHandler Enum Value as well as appending `ExcludeDefaultValues` when specifying custom 
-fields so that any unpopulated value type properties with default values are excluded from the JSON Response. 
-Here's a live example of this comparing the default Response with the customized JSON Response:
-
- - http://github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At
- - http://github.servicestack.net/repos.json?fields=Name,Homepage,Language,Updated_At&jsconfig=edv,dh:iso8601do
-
-### Custom JSON Settings
-
-The presence of a **bool** configuration property will be set to `true` unless they have a `false` or `0` 
-value in which case they will be set to `false`, e.g:
-
-    ?jsconfig=ExcludeDefaultValues:false
-
-For a quick reference the following **bool** customizations are supported:
-
-<table>
-    <thead>
-        <tr><th>Name</th><th>Alias</th></tr>
-    </thead>
-    <tr><td>EmitCamelCaseNames</td><td>eccn</td></tr>
-    <tr><td>EmitLowercaseUnderscoreNames</td><td>elun</td></tr>
-    <tr><td>IncludeNullValues</td><td>inv</td></tr>
-    <tr><td>IncludeNullValuesInDictionaries</td><td>invid</td></tr>
-    <tr><td>IncludeDefaultEnums</td><td>ide</td></tr>
-    <tr><td>IncludePublicFields</td><td>ipf</td></tr>
-    <tr><td>IncludeTypeInfo</td><td>iti</td></tr>
-    <tr><td>ExcludeTypeInfo</td><td>eti</td></tr>
-    <tr><td>ConvertObjectTypesIntoStringDictionary</td><td>cotisd</td></tr>
-    <tr><td>TreatEnumAsInteger</td><td>teai</td></tr>
-    <tr><td>TryToParsePrimitiveTypeValues</td><td>ttpptv</td></tr>
-    <tr><td>TryToParseNumericType</td><td>ttpnt</td></tr>
-    <tr><td>ThrowOnDeserializationError</td><td>tode</td></tr>
-    <tr><td>EscapeUnicode</td><td>eu</td></tr>
-    <tr><td>PreferInterfaces</td><td>pi</td></tr>
-    <tr><td>SkipDateTimeConversion</td><td>sdtc</td></tr>
-    <tr><td>AlwaysUseUtc</td><td>auu</td></tr>
-    <tr><td>AssumeUtc</td><td>au</td></tr>
-    <tr><td>AppendUtcOffset</td><td>auo</td></tr>
-    <tr><th colspan=2>DateHandler (dh)</th></tr>
-    <tr><td>TimestampOffset</td><td>to</td></tr>
-    <tr><td>DCJSCompatible</td><td>dcjsc</td></tr>
-    <tr><td>ISO8601</td><td>iso8601</td></tr>
-    <tr><td>ISO8601DateOnly</td><td>iso8601do</td></tr>
-    <tr><td>ISO8601DateTime</td><td>iso8601dt</td></tr>
-    <tr><td>RFC1123</td><td>rfc1123</td></tr>
-    <tr><td>UnixTime</td><td>ut</td></tr>
-    <tr><td>UnixTimeMs</td><td>utm</td></tr>
-    <tr><th colspan=2>TimeSpanHandler (tsh)</th></tr>
-    <tr><td>DurationFormat</td><td>df</td></tr>
-    <tr><td>StandardFormat</td><td>sf</td></tr>
-    <tr><th colspan=2>PropertyConvention (pc)</th></tr>
-    <tr><td>Strict</td><td>s</td></tr>
-    <tr><td>Lenient</td><td>l</td></tr>
-</table>
-
-You can also create a scope from a string manually using the new `JsConfig.CreateScope()`, e.g:
-
-```csharp
-using (JsConfig.CreateScope("EmitLowercaseUnderscoreNames,ExcludeDefaultValues,dh:ut")) 
-{
-    var json = dto.ToJson();
-}
-```
-
-If you don't wish for consumers to be able to customize JSON responses this feature can be disabled with 
-`Config.AllowJsConfig=false`.
-
-## Improved support for Multitenancy
-
-All built-in dependencies available from `Service` base class, AutoQuery, Razor View pages, etc are now 
-resolved in a central overridable location in your AppHost. 
-
-This now lets you control which dependency is used based on the incoming Request for each Service by overriding 
-any of the AppHost methods below, e.g. to change the DB Connection your Service uses you can override 
-`GetDbConnection(IRequest)` in your AppHost.
-
-```csharp
-public virtual IDbConnection Db
-{
-    get { return db ?? (db = HostContext.AppHost.GetDbConnection(Request)); }
-}
-
-public virtual ICacheClient Cache
-{
-    get { return cache ?? (cache = HostContext.AppHost.GetCacheClient(Request)); }
-}
-
-public virtual MemoryCacheClient LocalCache //New
-{
-    get { return localCache ?? (localCache = HostContext.AppHost.GetMemoryCacheClient(Request)); }
-}
-
-public virtual IRedisClient Redis
-{
-    get { return redis ?? (redis = HostContext.AppHost.GetRedisClient(Request)); }
-}
-
-public virtual IMessageProducer MessageProducer
-{
-    get { return messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request)); }
-}
-```
-
-### Change Database Connection at Runtime
-
-The default implementation of `GetDbConnection(IRequest)` includes an easy way to change the DB Connection 
-that can be done by populating the 
-[ConnectionInfo](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack/ConnectionInfo.cs) 
-POCO in any
-[Request Filter in the Request Pipeline](https://github.com/ServiceStack/ServiceStack/wiki/Order-of-Operations):
-
-```csharp
-req.Items[Keywords.DbInfo] = new ConnectionInfo {
-    NamedConnection  = ... //Use a registered NamedConnection for this Request
-    ConnectionString = ... //Use a different DB connection for this Request
-    ProviderName     = ... //Use a different Dialect Provider for this Request
-};
-```
-
-To illustrate how this works we'll go through a simple example showing how to create an AutoQuery Service 
-that lets the user change which DB the Query is run on. We'll control which of the Services we want to allow 
-the user to change the DB it's run on by having them implement the interface below:
-
-```csharp
-public interface IChangeDb
-{
-    string NamedConnection { get; set; }
-    string ConnectionString { get; set; }
-    string ProviderName { get; set; }
-}
-```
-
-We'll create one such AutoQuery Service, implementing the above interface:
-
-```csharp
-[Route("/rockstars")]
-public class QueryRockstars : QueryBase<Rockstar>, IChangeDb
-{
-    public string NamedConnection { get; set; }
-    public string ConnectionString { get; set; }
-    public string ProviderName { get; set; }
-}
-``` 
-
-For this example we'll configure our Database to use a default **SQL Server 2012** database, 
-register an optional named connection looking at a "Reporting" **PostgreSQL** database and 
-register an alternative **Sqlite** RDBMS Dialect that we also want the user to be able to use:
-
-#### ChangeDB AppHost Registration
-
-```csharp
-container.Register<IDbConnectionFactory>(c => 
-    new OrmLiteConnectionFactory(defaultDbConn, SqlServer2012Dialect.Provider));
-
-var dbFactory = container.Resolve<IDbConnectionFactory>();
-
-//Register NamedConnection
-dbFactory.RegisterConnection("Reporting", ReportingConnString, PostgreSqlDialect.Provider);
-
-//Register DialectProvider
-dbFactory.RegisterDialectProvider("Sqlite", SqliteDialect.Provider);
-```
-
-#### ChangeDB Request Filter
-
-To enable this feature we just need to add a Request Filter that populates the `ConnectionInfo` with properties
-from the Request DTO:
-
-```csharp
-GlobalRequestFilters.Add((req, res, dto) => {
-   var changeDb = dto as IChangeDb;
-   if (changeDb == null) return;
-
-   req.Items[Keywords.DbInfo] = new ConnectionInfo {
-       NamedConnection = changeDb.NamedConnection,
-       ConnectionString = changeDb.ConnectionString,
-       ProviderName = changeDb.ProviderName,
-   };
-});
-```
-
-Since our `IChangeDb` interface shares the same property names as `ConnectionInfo`, the above code can be 
-further condensed using a 
-[Typed Request Filter](https://github.com/ServiceStack/ServiceStack/wiki/Request-and-response-filters#typed-request-filters)
-and ServiceStack's built-in [AutoMapping](https://github.com/ServiceStack/ServiceStack/wiki/Auto-mapping)
-down to just:
-
-```csharp
-RegisterTypedRequestFilter<IChangeDb>((req, res, dto) =>
-    req.Items[Keywords.DbInfo] = dto.ConvertTo<ConnectionInfo>());
-```
-
-#### Change Databases via QueryString
-
-With the above configuration the user can now change which database they want to execute the query on, e.g:
-
-```csharp
-var response = client.Get(new QueryRockstars()); //SQL Server
-
-var response = client.Get(new QueryRockstars {   //Reporting PostgreSQL DB
-    NamedConnection = "Reporting"
-}); 
-
-var response = client.Get(new QueryRockstars {   //Alternative SQL Server Database
-    ConnectionString = "Server=alt-host;Database=Rockstars;User Id=test;Password=test;"
-}); 
-
-var response = client.Get(new QueryRockstars {   //Alternative SQLite Database
-    ConnectionString = "C:\backups\2016-01-01.sqlite",
-    ProviderName = "Sqlite"
-}); 
-```
-
-### ConnectionInfo Attribute
-
-To make it even easier to use we've also wrapped this feature in a simple
-[ConnectionInfoAttribute.cs](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack/ConnectionInfoAttribute.cs)
-which allows you to declaratively specify which database a Service should be configured to use, e.g we can
-configure the `Db` connection in the Service below to use the PostgreSQL **Reporting** database with:
-
-```csharp
-[ConnectionInfo(NamedConnection = "Reporting")]
-public class ReportingServices : Service
-{
-    public object Any(Sales request)
-    {
-        return new SalesResponse { Results = Db.Select<Sales>() };
-    }
-}
-```
-
-### [Multi Tenancy Example](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/MultiTennantAppHostTests.cs)
-
-To show how much easier it is to implement a Multi Tenancy Service with this feature we've updated the 
-[Multi Tenancy AppHost Example](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.Endpoints.Tests/MultiTennantAppHostTests.cs) 
-comparing it with the previous approach of implementing a Custom `IDbConnectionFactory`.
-
-### New CreateQuery overloads for Custom AutoQuery
-
-In order for AutoQuery to pass the current `IRequest` into the new `AppHost.GetDbConnection(IRequest)` method 
-it needs to be passed when calling `CreateQuery`. 2 new API's have been added that now does this:
-
-```csharp
-public class MyServices : Service
-{
-    public IAutoQuery AutoQuery { get; set; }
-
-    public object Any(Request dto)
-    {
-        var q = AutoQuery.CreateQuery(dto, base.Request);
-        //Calls:
-        //var q = AutoQuery.CreateQuery(dto, base.Request.GetRequestParams(), base.Request);
-        return AutoQuery.Execute(request, q);
-    }
-}
-```
-
-## ServiceClient URL Resolvers
-
-The urls used in all .NET Service Clients are now customizable with the new `UrlResolver` and `TypedUrlResolver` 
-delegates. 
-
-E.g. you can use this feature to rewrite the URL used with the Request DTO Type Name used as the subdomain by:
-
-```csharp
-[Route("/test")] 
-class Request {}
-
-var client = JsonServiceClient("http://example.org/api") {
-    TypedUrlResolver =  (meta, httpMethod, dto) => 
-        meta.BaseUri.Replace("example.org", dto.GetType().Name + ".example.org")
-            .CombineWith(dto.ToUrl(httpMethod, meta.Format)));
-};
-
-var res = client.Get(new Request());  //= http://Request.example.org/api/test
-var res = client.Post(new Request()); //= http://Request.example.org/api/test
-```
-
-This feature is also implemented in `JsonHttpClient`, examples below shows rewriting APIs that use custom urls:
-
-```csharp
-var client = JsonHttpClient("http://example.org/api") {
-    UrlResolver = (meta, httpMethod, url) => 
-        meta.BaseUri.Replace("example.org", "111.111.111.111").CombineWith(url))
-};
-
-await client.DeleteAsync<MockResponse>("/dummy"); 
-//=http://111.111.111.111/api/dummy
-
-await client.PutAsync<MockResponse>("/dummy", new Request()); 
-//=http://111.111.111.111/api/dummy
-```
-
-## [ServiceStack.Discovery.Consul](https://github.com/wwwlicious/servicestack-discovery-consul)
-
-This feature was added to make it easier to support the new 
-[ServiceStack.Discovery.Consul](https://github.com/wwwlicious/servicestack-discovery-consul)
-plugin by [Scott Mackay](https://twitter.com/wwwlicious) which enables external RequestDTO endpoint discovery 
-by integrating with [Consul.io](http://consul.io) to provide automatic service registration and health checking.
-
-![RequestDTO Service Discovery](https://raw.githubusercontent.com/wwwlicious/servicestack-discovery-consul/master/assets/RequestDTOServiceDiscovery.png)
-
-To use the plugin install it from NuGet:
-
-    Install-Package ServiceStack.Discovery.Consul
-
-Then configure your AppHost specifying the external `WebHostUrl` for this Service as well as registering the
-`ConsulFeature` plugin: 
-
-```csharp
-public class AppHost : AppSelfHostBase
-{
-    public AppHost() : base("MyService", typeof(MyService).Assembly) {}
-
-    public override void Configure(Container container)
-    {
-        SetConfig(new HostConfig {
-            // the url:port that other services will use to access this one
-            WebHostUrl = "http://api.acme.com:1234"
-            ApiVersion = "2.0" // optional
-        });
-
-        // Pass in any ServiceClient and it will be autowired with Func
-        Plugins.Add(new ConsulFeature(new JsonServiceClient()));
-    }
-}
-```
-
-You'll also need to 
-[install and start a Consul agent](https://github.com/wwwlicious/servicestack-discovery-consul/blob/master/README.md#running-your-services)
-after which once the AppHost is initialized you should see it automatically appear in the 
-[Consul UI](https://www.consul.io/intro/getting-started/ui.html) and disappear after the AppHost is shutdown:
-
-![Automatic Service Registration](https://raw.githubusercontent.com/wwwlicious/servicestack-discovery-consul/master/assets/ServiceRegistration.png)
-
-In your Services you'll then be able to use the Consul-injected `IServiceClient` to call any external services
-and it will automatically send the request to an active Service endpoint that handles each Request DTO, e.g:
-
-```csharp
-public class MyService : Service
-{
-    public IServiceClient Client { get; set; }
-
-    public void Any(RequestDTO dto)
-    {
-        // the client will resolve the correct uri for the external dto using consul
-        var response = Client.Post(new ExternalDTO { Custom = "bob" });
-    }
-}
-```
-
-#### Health checks
-
-![Default Health Checks](https://raw.githubusercontent.com/wwwlicious/servicestack-discovery-consul/master/assets/HealthChecks.png)
-
-By default the plugin creates 2 health checks used to filter out failing instances of your services:
-
-1. Heartbeat: Creates an endpoint in your service [http://locahost:1234/reply/json/heartbeat](http://locahost:1234/reply/json/heartbeat) that expects a 200 response
-2. If Redis has been configured in the AppHost, it will check if Redis is responding
-
-For more info checkout [servicestack-discovery-consul](https://github.com/wwwlicious/servicestack-discovery-consul/) GitHub Repo.
-
-## Multiple File Uploads
-
-New .NET APIs have been added to all .NET Service Clients that allow you to easily upload multiple streams
-within a single HTTP request. It supports populating Request DTO with any combination of QueryString and 
-POST'ed FormData in addition to multiple file upload data streams:
-
-```csharp
-using (var stream1 = uploadFile1.OpenRead())
-using (var stream2 = uploadFile2.OpenRead())
-{
-    var client = new JsonServiceClient(baseUrl);
-    var response = client.PostFilesWithRequest<MultipleFileUploadResponse>(
-        "/multi-fileuploads?CustomerId=123",
-        new MultipleFileUpload { CustomerName = "Foo,Bar" },
-        new[] {
-            new UploadFile("upload1.png", stream1),
-            new UploadFile("upload2.png", stream2),
-        });
-}
-```
-
-Or using only a Typed Request DTO. The `JsonHttpClient` also includes async equivalents for each of the new 
-`PostFilesWithRequest` APIs:
-
-```csharp
-using (var stream1 = uploadFile1.OpenRead())
-using (var stream2 = uploadFile2.OpenRead())
-{
-    var client = new JsonHttpClient(baseUrl);
-    var response = await client.PostFilesWithRequestAsync<MultipleFileUploadResponse>(
-        new MultipleFileUpload { CustomerId = 123, CustomerName = "Foo,Bar" },
-        new[] {
-            new UploadFile("upload1.png", stream1),
-            new UploadFile("upload2.png", stream2),
-        });
-}
-```
-
-Special thanks to [@rsafier](https://github.com/rsafier) for contributing support for Multiple File Uploads.
-
-### PCL WinStore Client retargeted to 8.1
-
-Following a VS.NET Update, we've upgraded the **WinStore** PCL ServiceStack.Client to target **8.1**. 
-
-### Local MemoryCacheClient
-
-As it sometimes beneficial to have access to a local in-memory Cache in addition to your registered `ICacheClient` 
-[Caching Provider](https://github.com/ServiceStack/ServiceStack/wiki/Caching)
-we've pre-registered a `MemoryCacheClient` that all your Services now have access to from the `LocalCache` 
-property, i.e:
-
-```csharp
-    MemoryCacheClient LocalCache { get; }
-```
-
-This doesn't affect any existing functionality that utilizes a cache like Sessions which continue to use
-your registered `ICacheClient`, but it does let you change which cache you want different responses to use, e.g: 
-
-```csharp
-var cacheKey = "unique_key_for_this_request";
-return base.Request.ToOptimizedResultUsingCache(LocalCache, cacheKey, () => {
-    //Delegate is executed if item doesn't exist in cache 
-});
-```
-
-If you don't register a `ICacheClient` ServiceStack automatically registers a `MemoryCacheClient` for you 
-which will also refer to the same instance registered for `LocalCache`.
-
-### Cookies
-
-If you're using a Custom `AuthProvider` that doesn't rely on Session Cookies you can disable them from being
-created with `Config.AllowSessionCookies=false`. The Cookie behavior can be further customized by overriding
-`AllowSetCookie()` in your AppHost, E.g. you can disable all cookies with:
-
-```csharp
-public override bool AllowSetCookie(IRequest req, string cookieName)
-{
-    return false;
-}
-```
-
-## Redis
-
- - [Added support for HashSet API's in Redis Transactions](https://github.com/ServiceStack/ServiceStack.Redis/commit/d6ed687a1f25cec0f43fb04e3c906905b5c99085)
+
+It also supports the much shorter Camel Humps notation:
+
+    /service?jsconfig=elun,edv
+
+Most JsConfig config options are supported.
+
+**Improved support for Multitenancy**
+
+There are a number of new features and flexibile options available to make Multitenancy easier to support where you can easily change which DB is used at runtime based on an incoming request with a request filter.
+
+We've added a number of examples in the release notes to show how this works.
+
+**ServiceClient URL Resolvers**
+
+You can use the new `TypedUrlResolver` and `UrlResolver` delegates available on every .NET Service Client to change which url each request is made with.
+
+**ServiceStack.Discovery.Consul**
+
+This feature makes it easy to enable high-level discovery and health/failover features as seen in the new **ServiceStack.Discovery.Consul** Community project which maintains an active list of available load-balanced ServiceStack Services as well as auto-registering the Services each instance supports taking care of managing the different endpoints for each Service where all Typed requests can be made with a single Service Client and Consul takes care of routing to the appropriate active endpoint.  
+
+**Multiple File Uploads**
+
+The new PostFilesWithRequest API's on every ServiceClient for sending mutliple file uploads with a single Request.
+
+**Local MemoryCacheClient**
+
+The new `LocalCache` property gives your Services access to a Local Memory Cache in addition to your registered ICacheClient
+
+**OrmLite**
+
+ - New `[EnumAsInt]` attribute can be used as an alternative to `[Flags]` for storing enums as ints in OrmLites but serialized as strings
+ - Free-text SQL Expressions are now converted to Parameterized Statements
+ - New SelectFields API provides an smart API to reference and return custom fields
+ - All `db.Exists()` API's have been optimized to return only a single scalar value
+ - Max String column definition on MySql now uses **LONGTEXT**
  
-## OrmLite
-
-New `[EnumAsInt]` attribute as an alternative to `[Flags]` for storing Enums as ints in OrmLite but still 
-have them serialized as strings in Service responses.
-
-Free-text SQL Expressions are now converted to Parameterized Statements, e.g:
-
-```csharp
-var q = db.From<Rockstar>()
-    .Where("Id < {0} AND Age = {1}", 3, 27);
-
-var results = db.Select(q);
-```
-
-### Select Fields
-
-The new Select API on SqlExpression enables a resilient way to select custom fields matching the first column it 
-finds (from primary table then joined tables). It also fully qualifies field names to avoid ambiguous columns, 
-allows matching of joined tables with `{Table}{Column}` convention and ignores any non-matching fields, e.g:
-
-```csharp
-var q = db.From<Rockstar>()
-    .Join<RockstarAlbum>((r,a) => r.Id == a.RockstarId)
-    .Select(new[] { "Id", "FirstName", "Age", "RockstarAlbumName", "_unknown_" });
-```
-
-### Other OrmLite Changes
-
- - All `db.Exists()` APIs have been optimized to only query a single column and row.
- - New `db.SelectLazy()` API added that accepts an SqlExpression
- - Max String column definition for MySQL now uses **LONGTEXT**
-
-### ServiceStack.Text
+**ServiceStack.Text**
 
  - New `JsConfig.SkipDateTimeConversion` to skip built-in Conversion of DateTime's.
  - New `ISO8601DateOnly` and `ISO8601DateTime` DateHandler formats to emit only the Date or Date and Time 
 
-## Stripe Gateway
+**Stripe Gateway**
 
-Added support for serializing nested complex entities using Stripe's unconventional object notation and 
-the new `CreateStripeAccount` requiring it, e.g:
+Support added to support Stripe's unconventional object notation for complex Requests. This feature is used
+in the new `CreateStripeAccount` API.
 
-```csharp
-var response = gateway.Post(new CreateStripeAccount
-{
-    Country = "US",
-    Email = "test@email.com",
-    Managed = true,
-    LegalEntity = new StripeLegalEntity
-    {
-        Address = new StripeAddress
-        {
-            Line1 = "1 Highway Rd",
-            City = "Brooklyn",
-            State = "NY",
-            Country = "US",
-            PostalCode = "90210",
-        },
-        Dob = new StripeDate(1980, 1, 1),
-        BusinessName = "Business Name",
-        FirstName = "First",
-        LastName = "Last",
-    }
-});
-```
-
-Which sends a POST Form Data request that serializes the nested Dob into the object notation Stripe expects, e.g:
-
-    &legal_entity[dob][year]=1970&legal_entity[dob][month]=1&legal_entity[dob][day]=1 
- 
-## Minor ServiceStack Features
+**Minor ServiceStack Features**
 
  - Old Session removed and invalided when generating new session ids for a new AuthRequest
  - New ResourcesResponseFilter, ApiDeclarationFilter and OperationFilter added to SwaggerFeature to modify response
@@ -1211,28 +392,10 @@ Which sends a POST Form Data request that serializes the nested Dob into the obj
  - `HostType`, `RootDirectoryPath`, `RequestAttributes`, `Ipv4Addresses` and `Ipv6Addresses` added to [?debug=requestinfo](https://github.com/ServiceStack/ServiceStack/wiki/Debugging#request-info)
  - `StaticFileHandler` now has `IVirtualFile` and `IVirtualDirectory` constructor overloads
  - New `StaticContentHandler` for returning custom text or binary responses in `RawHttpHandlers`
- 
-## Changes
 
-`IRequest.GetRequestParams()` Dictionary now returns any duplicate fields with a hash + number suffix, e.g: `#1`.
-To retain existing behavior where duplicate values are merged into a `,` delimited string use 
-`IRequest.GetFlattenedRequestParams()`
+And that's a wrap for this release, apologies for the length of the TL;DR. For even more details on each feature please see the release notes: https://servicestack.net/release-notes
 
-HttpListener now returns the `RemoteEndPoint` as the `UserHostAddress` matching the `UserHostAddress` returned 
-in ASP.NET Web Applications.
-
-## WARNING .NET 4.0 builds will cease after August 1, 2016
-
-Microsoft has 
-[discontinued supporting .NET 4.0, 4.5 and 4.5.1](https://blogs.msdn.microsoft.com/dotnet/2015/12/09/support-ending-for-the-net-framework-4-4-5-and-4-5-1/)
-as of January 12th, 2016. We've already started seeing a number of 3rd Party NuGet packages already drop
-support for .NET 4.0 builds which has kept us referencing old versions. As a result we intend to follow and 
-stop providing .NET 4.0 builds ourselves after August 1st, 2016. If you absolutely need access to .NET 4.0
-builds after this date please 
-[leave a comment on this UserVoice entry](https://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/12528912-continue-supporting-net-4-0-projects).
-
-
-# v4.0.52 Release Notes
+# [v4.0.52 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.52.md)
 
 We've hope everyone's had a great X-mas holidays and are super-charged for a productive 2016!
 
@@ -1854,7 +1017,6 @@ Will return all Rockstars where **DateDied IS NULL**.
  - Change Exception returned by overriding `ResolveResponseException()` in AppHost
 
 ---
-
 
 ## [2015 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2015/release-notes.md)
 
