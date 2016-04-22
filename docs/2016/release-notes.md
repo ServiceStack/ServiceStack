@@ -122,7 +122,7 @@ To store request and error logs into daily logs to the following overridable loc
 
 Error logs are also written out into a separate log file as it can be useful to view them in isolation.
 
-## Virtual FileSystem
+## [Virtual FileSystem](https://github.com/ServiceStack/ServiceStack/wiki/Virtual-file-system)
 
 To efficiently support Appending to existing files as needed by the CsvRequestLogger we've added new 
 `AppendFile` API's and implementations for Memory and FileSystem Virtual File Providers:
@@ -191,7 +191,7 @@ var tracks = db.Select(db.From<Track>()
     .Where(x => x.Artist == "Nirvana" && x.Album == "Nevermind"));
 ```
 
-## PocoDynamo
+## [PocoDynamo](https://github.com/ServiceStack/PocoDynamo)
 
 ServiceStack's POCO-friendly DynamoDB client has added support for DynamoDB's **UpdateItem** which lets you modify existing attributes. The easiest API to use is to pass in a partially populated POCO with containing any non-default values you want updated:
 
