@@ -5,19 +5,19 @@ This is another release jam-packed with some killer features, the release notes 
 We'll list the highlights below to provide a quick overview, but when you can please checkout the full
 [v4.0.56 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.56.md) for the finer details of each feature.
 
-## ServiceStack VS Templates Update
+## [ServiceStack VS Templates Update](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/servicestackvs/v1.0.22.md)
 
 React Desktop Apps received a major update with much faster Startup times on Windows that now features auto-updating support built-in courtesy of [Squirrel Windows][2] integration! Whilst the OSX App can now be built using Xamarin's free Community Edition :smile:  
 
 We're now all-in with React and TypeScript with both our VS.NET SPA React Templates modernized with TypeScript + JSPM. If you're new to both, please checkout the comprehensive [TypeScript + Redux walk through][1] to get up and running quickly. 
 
-## New AutoQuery Data
+## [New AutoQuery Data](https://github.com/ServiceStack/ServiceStack/wiki/AutoQuery-Data)
 
 AutoQuery Data is an alternative implementation of AutoQuery for RDBMS but supports an Open Provider model which can be implemented to query multiple data source backends. The 3 data source providers available include:
 
- - **MemorySource** - for querying static or dynamic in-memory .NET collections, some of the included examples show querying a flat-file `.csv` file and a 3rd Party API that can also the throttled with configurable caching.
- - **ServiceSource** - a step higher than MemorySource where you can decorate the response of existing Services with AutoQuery's rich querying capabilities.
- - **DynamoDbSource** - adds rich querying capabilities over an AWS DynamoDB Table making it much more productive than if you had to construct the query manually.
+ - **[MemorySource](https://github.com/ServiceStack/ServiceStack/wiki/AutoQuery-Memory)** - for querying static or dynamic in-memory .NET collections, some of the included examples show querying a flat-file `.csv` file and a 3rd Party API that can also the throttled with configurable caching.
+ - **[ServiceSource](https://github.com/ServiceStack/ServiceStack/wiki/AutoQuery-Service)** - a step higher than MemorySource where you can decorate the response of existing Services with AutoQuery's rich querying capabilities.
+ - **[DynamoDbSource](https://github.com/ServiceStack/ServiceStack/wiki/AutoQuery-DynamoDb)** - adds rich querying capabilities over an AWS DynamoDB Table making it much more productive than if you had to construct the query manually.
  
 AutoQuery DynamoDB queries are also self-optimizing where it will transparently construct the most optimal query possible by looking at any Hash Id's, Range Keys and Local Indexes populated in the Request to construct the most optimal DynamoDB **QueryRequest** or **Scan** Operation behind-the-scenes.
 
@@ -37,11 +37,17 @@ public class QueryRockstarAlbums : QueryData<RockstarAlbum>
 
 We've declaratively created a fully-queryable DynamoDB AutoQuery Service that transparently executes the most ideal DynamoDB queries for each request, has it's optimal representation efficiently cached on both Server and clients, whose Typed DTO can be reused as-is on the client to call Services with an end-to-end Typed API using any .NET Service Client, that's also available to external developers in a clean typed API, natively in their preferred language of choice, accessible with just a right-click menu integrated inside VS.NET, Xcode, Android Studio, IntelliJ and Eclipse - serving both PCL Xamarin.iOS/Android as well as native iOS and Android developers by just Adding a ServiceStack Reference to the base URL of a remote ServiceStack Instance - all without needing to write any implementation!
 
-## HTTP Caching
+## [HTTP Caching](https://github.com/ServiceStack/ServiceStack/wiki/HTTP-Caching)
 
 HTTP Caching is another big feature we expect to prove extremely valuable which much improves story around HTTP Caching that transparently improves the behavior of existing ToOptimized Cached Responses, provides a typed API to to opt-in to HTTP Client features, introduces a simpler declarative API for enabling both Server and Client Caching of Services and also includes Cache-aware clients that are able to improve the performance and robustness of all existing .NET Service Clients - functionality that's especially valuable to bandwidth-constrained Xamarin.iOS / Xamarin.Android clients offering improved performance and greater resilience.
 
-### Cache-aware Service Clients
+### [CacheResponse Attribute](https://github.com/ServiceStack/ServiceStack/wiki/CacheResponse-Attribute)
+
+The new `[CacheResponse]` Filter Attribute provides the easiest way to enable both **HTTP Client** and 
+**Server Caching** of your Services with a single Attribute declared on your Service class, method implementation
+or Request DTO.
+
+### [Cache-aware Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/Cache-Aware-Clients)
 
 You can now create **cache-aware** versions of all .NET Service Clients that respects any caching directives
 returned by your Server using the `.WithCache()` extension methods, e.g:
@@ -56,7 +62,7 @@ Cache-aware Service Clients can dramatically improve performance by eliminating 
 
 @jezzsantos also wrote a comprehensive overview about HTTP Caching in general and goes through the process of how he developed an alternative caching solution within ServiceStack in his epic [Caching Anyone post](http://www.mindkin.co.nz/blog/2016/1/5/caching-anyone).
 
-## Service Gateway
+## [Service Gateway](https://github.com/ServiceStack/ServiceStack/wiki/Service-Gateway)
 
 The new `IServiceGateway` is another valuable capability that despite being trivial to implement on top of ServiceStack's existing message-based architecture, opens up exciting new possibilities for development of loosely-coupled [Modularized Service Architectures](https://github.com/ServiceStack/ServiceStack/wiki/Modularizing-services).
 
@@ -93,7 +99,7 @@ We're extremely fortunate to have @Mac and @rsafier both jump in with Service Di
  - https://github.com/MacLeanElectrical/servicestack-discovery-consul
  - https://github.com/rsafier/ServiceStack.Discovery.Redis
 
-## Super CSV Support
+## [Super CSV Support](https://github.com/ServiceStack/ServiceStack/wiki/CSV-Format#csv-deserialization-support)
 
 We've now implemented CSV deserialization support so now all your Services can accept CSV payloads in addition to serializing to .csv. As a tabular data format it's especially useful when your Service accepts Lists of POCO's such as in Auto Batched Requests where it's now the most compact text data format to send them with using either the new `CsvServiceClient` or `.PostCsvToUrl()` HTTP Utils extension method.
 
@@ -129,7 +135,7 @@ interface IVirtualFiles
 }
 ```
 
-## OrmLite
+## [OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite)
 
 New `UpdateAdd` API's provides several Typed API's for updating existing values:
 
@@ -206,7 +212,7 @@ db.UpdateItem(customer.Id,
     delete: x => new { x.Name, x.Orders });
 ```
 
-**ServiceStack.Redis**
+## [ServiceStack.Redis](https://github.com/ServiceStack/ServiceStack.Redis)
 
 Additional resiliency was added in ServiceStack.Redis which can now handle re-connections for broken TCP connections happening in the middle of processing a Redis Operation.
 
@@ -222,7 +228,7 @@ interface IRedisNativeClient {
 }
 ```
 
-## ServiceStack IDEA
+## [ServiceStack IDEA](https://github.com/ServiceStack/ServiceStack.Java)
 
 The ServiceStack IDEA Android Studio plugin was updated to support Android Studio 2.0.
 
@@ -257,12 +263,13 @@ here, for more details about each feature you can checkout the full
 
 **WARNING .NET 4.0 builds will cease after August 1, 2016**
 
-We want to warn everyone that we will be upgrading all packages to .NET 4.5 and stop providing .NET 4.0 builds after August 1, 2016 now that Microsoft no longer supports them. If you absolutely need supported .NET 4.0 builds after this date please leave a comment on:  
-https://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/12528912-continue-supporting-net-4-0-projects
+We want to warn everyone that we will be upgrading all packages to .NET 4.5 and stop providing .NET 4.0 
+builds after August 1, 2016 now that Microsoft no longer supports them. If you absolutely need supported 
+.NET 4.0 builds after this date please leave a comment on [User Voice](https://servicestack.uservoice.com/forums/176786-feature-requests/suggestions/12528912-continue-supporting-net-4-0-projects)
 
 ---
 
-**AutoQuery Viewer**
+## [AutoQuery Viewer](https://github.com/ServiceStack/Admin)
 
 An exciting new plugin available from the **ServiceStack.Admin** NuGet package which provides an instant automatic UI for all your AutoQuery services. As it's super quick to add we've enabled it on a number of existing live demos which you can try out:
 
@@ -284,7 +291,7 @@ It also ships with a number of productive features out-of-the-box:
  
 A quick showcase of some of these features are available on YouTube: https://youtu.be/YejYkCvKsuQ 
 
-**AutoQuery Enhancements**
+## [AutoQuery](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query)
 
 A number of new Enhancements were also added to AutoQuery Services:
 
@@ -293,35 +300,37 @@ A number of new Enhancements were also added to AutoQuery Services:
  - **Named Connection** - As part of our new Multitenancy features AQ Services can be easily configured to run on multiple db's 
  - **T4 Templates** - OrmLite's T4 templates now have options for generating AutoQuery Services and named connections
 
-**Server Events**
+## [Server Events](https://github.com/ServiceStack/ServiceStack/wiki/Server-Events)
 
 We've added a couple of demos showing how easy it is to create rich, interactive mobile and web apps with Server Events:
 
-**Xamarin.Android Chat**
+## [Xamarin.Android Chat](https://github.com/ServiceStackApps/AndroidXamarinChat)
 
-The new Xamarin.Android demo shows how to use the .NET PCL typed Server Events Client to connect to an existing chat.servicestack.net back-end and communicate with existing Ajax web clients. It also shows how to use Xamarin.Auth to authenticate with ServiceStack using Twitter and OAuth.
+The new Xamarin.Android demo shows how to use the .NET PCL typed Server Events Client to connect to an 
+existing chat.servicestack.net back-end and communicate with existing Ajax web clients. It also shows 
+how to use Xamarin.Auth to authenticate with ServiceStack using Twitter and OAuth.
 
 A quick demo is available from: https://www.youtube.com/watch?v=tImAm2LURu0 
 
-**Networked Time Traveller Shape Creator**
+### [Networked Time Traveller Shape Creator](https://github.com/ServiceStackApps/typescript-redux#example-9---real-time-networked-time-traveller)
 
 We've given the existing Time Traveller Shape Creator networking capabilities which now let you "Remote Desktop" into and watch other users view the app. This was surprisingly simple to do with Redux, just 1 React Component and 2x 1-line ServiceStack ServerEvent Services.
 
 Live demo at: http://redux.servicestack.net
 
-**Update Channels on Live Subscriptions**
+### Update Channels on Live Subscriptions
 
 You can now update the channels your active SSE subscription is connected to without re-connecting. This is enabled everywhere, in Memory + Redis SSE backends as well as typed API's for .NET and Ajax clients.
 
-**TypeScript React App (beta)**
+## [TypeScript React App](https://github.com/ServiceStackApps/typescript-react-template)
 
 The new TypeScript + React VS.NET Tempalte captures what we believe is the best combination of technologies for developing rich JavaScript apps: TypeScript 1.8, React, JSPM, typings + Gulp - combined together within a single integrated, pre-configured VS.NET template. This tech suite represents our choice stack for developing rich Single Page Apps which we've used to build AutoQuery Viewer and Networked Shape Creator and currently our number #1 choice for new SPA Apps.
 
-**TypeScript Redux**
+## [TypeScript Redux](https://github.com/ServiceStackApps/typescript-redux)
 
 To help developers familiarize themselves with these technologies we've also published an in-depth step-by-step guide for beginners that starts off building the simplest HelloWorld TypeScript React App from scratch then slowly growing with each example explaining how TypeScript, React and Redux can be used to easily create the more complex networked Time Travelling Shape Creator, available at: https://github.com/ServiceStackApps/typescript-redux
 
-**ss-utils**
+## [ss-utils](https://github.com/ServiceStack/ServiceStack/wiki/ss-utils.js-JavaScript-Client-Library)
 
 To make it easier to use ss-utils in JavaScript projects, we're maintaining copies of ss-utils in npm, JSPM and Definitely Typed registries. We've also added a few new common utils:
 
@@ -332,7 +341,7 @@ To make it easier to use ss-utils in JavaScript projects, we're maintaining copi
  - $.ss.normalize
  - $.ss.postJSON
  
-**Customize JSON Responses on-the-fly**
+## [Customize JSON Responses on-the-fly](https://github.com/ServiceStack/ServiceStack/wiki/Customize-JSON-Responses)
 
 The JSON/JSV responses for all your services can now be customized on-the-fly by your Service consumers so they're able to access your JSON responses in their preferred configuration using the `?jsconfig` modifier, e.g:
 
@@ -344,29 +353,30 @@ It also supports the much shorter Camel Humps notation:
 
 Most JsConfig config options are supported.
 
-**Improved support for Multitenancy**
+## [Improved support for Multitenancy](https://github.com/ServiceStack/ServiceStack/wiki/Multitenancy)
 
 There are a number of new features and flexibile options available to make Multitenancy easier to support where you can easily change which DB is used at runtime based on an incoming request with a request filter.
 
 We've added a number of examples in the release notes to show how this works.
 
-**ServiceClient URL Resolvers**
+## [ServiceClient URL Resolvers](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client#serviceclient-url-resolvers)
 
-You can use the new `TypedUrlResolver` and `UrlResolver` delegates available on every .NET Service Client to change which url each request is made with.
+You can use the new `TypedUrlResolver` and `UrlResolver` delegates available on every .NET Service Client 
+to change which url each request is made with.
 
-**ServiceStack.Discovery.Consul**
+### [ServiceStack.Discovery.Consul](https://github.com/MacLeanElectrical/servicestack-discovery-consul)
 
 This feature makes it easy to enable high-level discovery and health/failover features as seen in the new **ServiceStack.Discovery.Consul** Community project which maintains an active list of available load-balanced ServiceStack Services as well as auto-registering the Services each instance supports taking care of managing the different endpoints for each Service where all Typed requests can be made with a single Service Client and Consul takes care of routing to the appropriate active endpoint.  
 
-**Multiple File Uploads**
+## [Multiple File Uploads](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client#multiple-file-uploads)
 
 The new PostFilesWithRequest API's on every ServiceClient for sending mutliple file uploads with a single Request.
 
-**Local MemoryCacheClient**
+## Local MemoryCacheClient
 
 The new `LocalCache` property gives your Services access to a Local Memory Cache in addition to your registered ICacheClient
 
-**OrmLite**
+## OrmLite
 
  - New `[EnumAsInt]` attribute can be used as an alternative to `[Flags]` for storing enums as ints in OrmLites but serialized as strings
  - Free-text SQL Expressions are now converted to Parameterized Statements
@@ -374,17 +384,17 @@ The new `LocalCache` property gives your Services access to a Local Memory Cache
  - All `db.Exists()` API's have been optimized to return only a single scalar value
  - Max String column definition on MySql now uses **LONGTEXT**
  
-**ServiceStack.Text**
+## ServiceStack.Text
 
  - New `JsConfig.SkipDateTimeConversion` to skip built-in Conversion of DateTime's.
  - New `ISO8601DateOnly` and `ISO8601DateTime` DateHandler formats to emit only the Date or Date and Time 
 
-**Stripe Gateway**
+## [Stripe Gateway](https://github.com/ServiceStack/Stripe)
 
 Support added to support Stripe's unconventional object notation for complex Requests. This feature is used
 in the new `CreateStripeAccount` API.
 
-**Minor ServiceStack Features**
+## Minor ServiceStack Features
 
  - Old Session removed and invalided when generating new session ids for a new AuthRequest
  - New ResourcesResponseFilter, ApiDeclarationFilter and OperationFilter added to SwaggerFeature to modify response
@@ -394,6 +404,7 @@ in the new `CreateStripeAccount` API.
  - New `StaticContentHandler` for returning custom text or binary responses in `RawHttpHandlers`
 
 And that's a wrap for this release, apologies for the length of the TL;DR. For even more details on each feature please see the release notes: https://servicestack.net/release-notes
+
 
 # [v4.0.52 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.52.md)
 
