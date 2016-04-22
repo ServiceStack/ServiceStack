@@ -588,8 +588,17 @@ namespace ServiceStack
             return client.PublishAllAsync(requestDtos, token);
         }
 
-        public string SessionId { get; set; }
-        public int Version { get; set; }
+        public string SessionId
+        {
+            get { return client.SessionId; }
+            set { client.SessionId = value; }
+        }
+
+        public int Version
+        {
+            get { return client.Version; }
+            set { client.Version = value; }
+        }
     }
 
     public static class CachedHttpClientExtensions
