@@ -28,15 +28,25 @@ namespace ServiceStack.Auth
 
         public bool UseDistinctRoleTables { get; set; }
 
-        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory)
+        public string NamedConnection { get; private set; }
+
+        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, string namedConnnection = null)
         {
             this.dbFactory = dbFactory;
+            this.NamedConnection = namedConnnection;
+        }
+
+        protected IDbConnection OpenDbConnection()
+        {
+            return this.NamedConnection != null
+                ? dbFactory.OpenDbConnection(NamedConnection)
+                : dbFactory.OpenDbConnection();
         }
 
         public void InitSchema()
         {
             hasInitSchema = true;
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 db.CreateTable<TUserAuth>();
                 db.CreateTable<TUserAuthDetails>();
@@ -46,7 +56,7 @@ namespace ServiceStack.Auth
 
         public void DropAndReCreateTables()
         {
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 db.DropAndCreateTable<TUserAuth>();
                 db.DropAndCreateTable<TUserAuthDetails>();
@@ -58,7 +68,7 @@ namespace ServiceStack.Auth
         {
             newUser.ValidateNewUser(password);
 
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 AssertNoExistingUser(db, newUser);
 
@@ -101,7 +111,7 @@ namespace ServiceStack.Auth
         {
             newUser.ValidateNewUser(password);
 
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 AssertNoExistingUser(db, newUser, existingUser);
 
@@ -132,7 +142,7 @@ namespace ServiceStack.Auth
         {
             newUser.ValidateNewUser();
 
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 AssertNoExistingUser(db, newUser, existingUser);
 
@@ -156,14 +166,14 @@ namespace ServiceStack.Auth
 
             if (!hasInitSchema)
             {
-                using (var db = dbFactory.Open())
+                using (var db = OpenDbConnection())
                 {
                     hasInitSchema = db.TableExists<TUserAuth>();
                 }
                 if (!hasInitSchema)
                     throw new Exception("OrmLiteAuthRepository Db tables have not been initialized. Try calling 'InitSchema()' in your AppHost Configure method.");
             }
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 return GetUserAuthByUserName(db, userNameOrEmail);
             }
@@ -218,7 +228,7 @@ namespace ServiceStack.Auth
 
         public virtual void DeleteUserAuth(string userAuthId)
         {
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             using (var trans = db.OpenTransaction())
             {
                 var userId = int.Parse(userAuthId);
@@ -247,7 +257,7 @@ namespace ServiceStack.Auth
 
         public virtual IUserAuth GetUserAuth(string userAuthId)
         {
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 return db.SingleById<TUserAuth>(int.Parse(userAuthId));
             }
@@ -258,7 +268,7 @@ namespace ServiceStack.Auth
             if (authSession == null)
                 throw new ArgumentNullException("authSession");
 
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
                     ? db.SingleById<TUserAuth>(int.Parse(authSession.UserAuthId))
@@ -284,7 +294,7 @@ namespace ServiceStack.Auth
             if (userAuth.CreatedDate == default(DateTime))
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 db.Save((TUserAuth)userAuth);
             }
@@ -293,7 +303,7 @@ namespace ServiceStack.Auth
         public virtual List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
             var id = int.Parse(userAuthId);
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 return db.Select<TUserAuthDetails>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
             }
@@ -317,7 +327,7 @@ namespace ServiceStack.Auth
             if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
                 return null;
 
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 var oAuthProvider = db.Select<TUserAuthDetails>(q =>
                     q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
@@ -336,7 +346,7 @@ namespace ServiceStack.Auth
             TUserAuth userAuth = (TUserAuth)GetUserAuth(authSession, tokens)
                 ?? typeof(TUserAuth).CreateInstance<TUserAuth>();
 
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 var authDetails = db.Select<TUserAuthDetails>(
                     q => q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
@@ -371,7 +381,7 @@ namespace ServiceStack.Auth
 
         public virtual void Clear()
         {
-            using (var db = dbFactory.Open())
+            using (var db = OpenDbConnection())
             {
                 db.DeleteAll<TUserAuth>();
                 db.DeleteAll<TUserAuthDetails>();
@@ -387,7 +397,7 @@ namespace ServiceStack.Auth
             }
             else
             {
-                using (var db = dbFactory.Open())
+                using (var db = OpenDbConnection())
                 {
                     return db.Select<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Role != null).ConvertAll(x => x.Role);
                 }
@@ -403,7 +413,7 @@ namespace ServiceStack.Auth
             }
             else
             {
-                using (var db = dbFactory.Open())
+                using (var db = OpenDbConnection())
                 {
                     return db.Select<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Permission != null).ConvertAll(x => x.Permission);
                 }
@@ -425,7 +435,7 @@ namespace ServiceStack.Auth
             }
             else
             {
-                using (var db = dbFactory.Open())
+                using (var db = OpenDbConnection())
                 {
                     return db.Count<UserAuthRole>(q =>
                         q.UserAuthId == int.Parse(userAuthId) && q.Role == role) > 0;
@@ -448,7 +458,7 @@ namespace ServiceStack.Auth
             }
             else
             {
-                using (var db = dbFactory.Open())
+                using (var db = OpenDbConnection())
                 {
                     return db.Count<UserAuthRole>(q =>
                         q.UserAuthId == int.Parse(userAuthId) && q.Permission == permission) > 0;
@@ -481,7 +491,7 @@ namespace ServiceStack.Auth
             }
             else
             {
-                using (var db = dbFactory.Open())
+                using (var db = OpenDbConnection())
                 {
                     var now = DateTime.UtcNow;
                     var userRoles = db.Select<UserAuthRole>(q => q.UserAuthId == userAuth.Id);
@@ -540,7 +550,7 @@ namespace ServiceStack.Auth
             }
             else
             {
-                using (var db = dbFactory.Open())
+                using (var db = OpenDbConnection())
                 {
                     if (!roles.IsEmpty())
                     {
