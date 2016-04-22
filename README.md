@@ -9,7 +9,7 @@ ServiceStack is a simple, fast, versatile and highly-productive full-featured [W
 [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services) Framework that's 
 thoughtfully-architected to [reduce artificial complexity](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query#why-not-complexity) and promote 
 [remote services best-practices](https://github.com/ServiceStack/ServiceStack/wiki/Advantages-of-message-based-web-services) 
-with a [message-based design](https://github.com/ServiceStack/ServiceStack/wiki/What-is-a-message-based-web-service%3F) 
+with a [message-based design](https://github.com/ServiceStack/ServiceStack/wiki/What-is-a-message-based-web-service) 
 that allows for maximum re-use where ServiceStack Services are able to be consumed via an array of built-in fast data formats (inc. 
 [JSON](https://github.com/ServiceStack/ServiceStack.Text), 
 XML, 
