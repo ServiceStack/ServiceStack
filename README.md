@@ -10,10 +10,14 @@ ServiceStack is a simple, fast, versatile and highly-productive full-featured [W
 thoughtfully-architected to [reduce artificial complexity](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query#why-not-complexity) and promote 
 [remote services best-practices](https://github.com/ServiceStack/ServiceStack/wiki/Advantages-of-message-based-web-services) 
 with a [message-based design](https://github.com/ServiceStack/ServiceStack/wiki/What-is-a-message-based-web-service) 
-that allows for maximum re-use where ServiceStack Services are able to be consumed via an array of built-in fast data formats (inc. 
+that allows for maximum re-use that can leverage an integrated 
+[Service Gateway](https://github.com/ServiceStack/ServiceStack/wiki/Service-Gateway) 
+for the creation of loosely-coupled 
+[Modularized Service Architectures](https://github.com/ServiceStack/ServiceStack/wiki/Modularizing-services).
+ServiceStack Services are consumable via an array of built-in fast data formats (inc. 
 [JSON](https://github.com/ServiceStack/ServiceStack.Text), 
 XML, 
-[CSV](https://github.com/ServiceStack/ServiceStack/wiki/ServiceStack-CSV-Format), 
+[CSV](https://github.com/ServiceStack/ServiceStack/wiki/CSV-Format), 
 [JSV](https://github.com/ServiceStack/ServiceStack.Text/wiki/JSV-Format), 
 [ProtoBuf](https://github.com/ServiceStack/ServiceStack/wiki/Protobuf-format) and 
 [MsgPack](https://github.com/ServiceStack/ServiceStack/wiki/MessagePack-Format)) 
@@ -28,7 +32,7 @@ without code, from creating fully queryable Web API's with just a single Typed R
 [every major RDBMS](https://github.com/ServiceStack/ServiceStack.OrmLite#8-flavours-of-ormlite-is-on-nuget) 
 to the built-in support for
 [Auto Batched Requests](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Batched-Requests) 
-or effortlessly enabling
+or effortlessly enabling rich [HTTP Caching](https://github.com/ServiceStack/ServiceStack/wiki/HTTP-Caching) and
 [Encrypted Messaging](https://github.com/ServiceStack/ServiceStack/wiki/Encrypted-Messaging) 
 for all your existing services via a [Plugin](https://github.com/ServiceStack/ServiceStack/wiki/Plugins).
 
