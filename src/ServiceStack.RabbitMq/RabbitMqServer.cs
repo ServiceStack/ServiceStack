@@ -227,20 +227,7 @@ namespace ServiceStack.RabbitMq
 
         public virtual string GetStatus()
         {
-            switch (Interlocked.CompareExchange(ref status, 0, 0))
-            {
-                case WorkerStatus.Disposed:
-                    return "Disposed";
-                case WorkerStatus.Stopped:
-                    return "Stopped";
-                case WorkerStatus.Stopping:
-                    return "Stopping";
-                case WorkerStatus.Starting:
-                    return "Starting";
-                case WorkerStatus.Started:
-                    return "Started";
-            }
-            return null;
+            return WorkerStatus.ToString(Interlocked.CompareExchange(ref status, 0, 0));
         }
 
         public virtual string GetStatsDescription()
