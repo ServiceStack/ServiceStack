@@ -13,7 +13,7 @@ with a [message-based design](https://github.com/ServiceStack/ServiceStack/wiki/
 that allows for maximum re-use that can leverage an integrated 
 [Service Gateway](https://github.com/ServiceStack/ServiceStack/wiki/Service-Gateway) 
 for the creation of loosely-coupled 
-[Modularized Service Architectures](https://github.com/ServiceStack/ServiceStack/wiki/Modularizing-services).
+[Modularized Service](https://github.com/ServiceStack/ServiceStack/wiki/Modularizing-services) Architectures.
 ServiceStack Services are consumable via an array of built-in fast data formats (inc. 
 [JSON](https://github.com/ServiceStack/ServiceStack.Text), 
 XML, 
