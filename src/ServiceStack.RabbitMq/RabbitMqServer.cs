@@ -392,10 +392,15 @@ namespace ServiceStack.RabbitMq
                             case WorkerOperation.Stop:
                                 Log.Debug("Stop Command Issued");
 
-                                if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Started) != WorkerStatus.Started)
-                                    Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Stopping);
-
-                                StopWorkerThreads();
+                                try
+                                {
+                                    StopWorkerThreads();
+                                }
+                                finally
+                                {
+                                    if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Started) != WorkerStatus.Started)
+                                        Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Stopping);
+                                }
                                 return; //exits
 
                             case WorkerOperation.Restart:
@@ -449,6 +454,13 @@ namespace ServiceStack.RabbitMq
                     Monitor.Pulse(msgLock);
                 }
             }
+        }
+
+        public virtual void WaitForWorkersToStop(TimeSpan? timeout=null)
+        {
+            ExecExtensions.RetryUntilTrue(
+                () => Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Stopped,
+                timeout);            
         }
 
         public virtual void Restart()
