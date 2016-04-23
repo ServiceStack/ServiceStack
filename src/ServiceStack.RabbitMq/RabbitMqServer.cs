@@ -392,26 +392,31 @@ namespace ServiceStack.RabbitMq
                             case WorkerOperation.Stop:
                                 Log.Debug("Stop Command Issued");
 
+                                Interlocked.CompareExchange(ref status, WorkerStatus.Stopping, WorkerStatus.Started);
                                 try
                                 {
                                     StopWorkerThreads();
                                 }
                                 finally
                                 {
-                                    if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Started) != WorkerStatus.Started)
-                                        Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Stopping);
+                                    Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Stopping);
                                 }
                                 return; //exits
 
                             case WorkerOperation.Restart:
                                 Log.Debug("Restart Command Issued");
 
-                                if (Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Started) != WorkerStatus.Started)
+                                Interlocked.CompareExchange(ref status, WorkerStatus.Stopping, WorkerStatus.Started);
+                                try
+                                {
+                                    StopWorkerThreads();
+                                }
+                                finally
+                                {
                                     Interlocked.CompareExchange(ref status, WorkerStatus.Stopped, WorkerStatus.Stopping);
+                                }
 
-                                StopWorkerThreads();
                                 StartWorkerThreads();
-
                                 Interlocked.CompareExchange(ref status, WorkerStatus.Started, WorkerStatus.Stopped);
                                 break; //continues
                         }
