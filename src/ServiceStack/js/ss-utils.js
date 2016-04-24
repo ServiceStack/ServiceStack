@@ -63,7 +63,7 @@
         return paths.join("/") || (paths.length ? "/" : ".");
     };
     $.ss.queryString = function (url) {
-        if (!url) return {};
+        if (!url || url.indexOf('?') === -1) return {};
         var pairs = $.ss.splitOnFirst(url, '?')[1].split('&');
         var map = {};
         for (var i = 0; i < pairs.length; ++i) {
