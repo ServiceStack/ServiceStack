@@ -75,7 +75,10 @@ namespace ServiceStack
         public TResponse Send<TResponse>(object requestDto)
         {
             var holdDto = req.Dto;
+            var holdAttrs = req.RequestAttributes;
             var holdVerb = SetVerb(requestDto);
+
+            req.RequestAttributes |= RequestAttributes.InProcess;
             try
             {
                 return ExecSync<TResponse>(requestDto);
@@ -83,6 +86,7 @@ namespace ServiceStack
             finally
             {
                 req.Dto = holdDto;
+                req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
             }
         }
@@ -90,11 +94,15 @@ namespace ServiceStack
         public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = new CancellationToken())
         {
             var holdDto = req.Dto;
+            var holdAttrs = req.RequestAttributes;
             var holdVerb = SetVerb(requestDto);
+
+            req.RequestAttributes |= RequestAttributes.InProcess;
 
             return ExecAsync<TResponse>(requestDto)
                 .ContinueWith(task => {
                     req.Dto = holdDto;
+                    req.RequestAttributes = holdAttrs;
                     ResetVerb(holdVerb);
                     return task.Result;
                 }, token);
@@ -115,9 +123,12 @@ namespace ServiceStack
         public List<TResponse> SendAll<TResponse>(IEnumerable<object> requestDtos)
         {
             var holdDto = req.Dto;
+            var holdAttrs = req.RequestAttributes;
             string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+
             var typedArray = CreateTypedArray(requestDtos);
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
+            req.RequestAttributes |= RequestAttributes.InProcess;
 
             try
             {
@@ -126,6 +137,7 @@ namespace ServiceStack
             finally
             {
                 req.Dto = holdDto;
+                req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
             }
         }
@@ -133,14 +145,18 @@ namespace ServiceStack
         public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requestDtos, CancellationToken token = new CancellationToken())
         {
             var holdDto = req.Dto;
+            var holdAttrs = req.RequestAttributes;
             string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+
             var typedArray = CreateTypedArray(requestDtos);
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
+            req.RequestAttributes |= RequestAttributes.InProcess;
 
             return ExecAsync<TResponse[]>(typedArray)
                 .ContinueWith(task => 
                 {
                     req.Dto = holdDto;
+                    req.RequestAttributes = holdAttrs;
                     ResetVerb(holdVerb);
                     return task.Result.ToList();
                 }, token);
@@ -155,6 +171,7 @@ namespace ServiceStack
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
             req.RequestAttributes &= ~RequestAttributes.Reply;
             req.RequestAttributes |= RequestAttributes.OneWay;
+            req.RequestAttributes |= RequestAttributes.InProcess;
 
             try
             {
@@ -177,6 +194,7 @@ namespace ServiceStack
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
             req.RequestAttributes &= ~RequestAttributes.Reply;
             req.RequestAttributes |= RequestAttributes.OneWay;
+            req.RequestAttributes |= RequestAttributes.InProcess;
 
             return HostContext.ServiceController.ExecuteAsync(requestDto, req, applyFilters: false)
                 .ContinueWith(task => 
@@ -197,6 +215,7 @@ namespace ServiceStack
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
             req.RequestAttributes &= ~RequestAttributes.Reply;
             req.RequestAttributes |= RequestAttributes.OneWay;
+            req.RequestAttributes |= RequestAttributes.InProcess;
 
             try
             {

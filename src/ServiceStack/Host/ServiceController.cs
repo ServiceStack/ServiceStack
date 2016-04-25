@@ -705,6 +705,7 @@ namespace ServiceStack.Host
         public void AssertServiceRestrictions(Type requestType, RequestAttributes actualAttributes)
         {
             if (!appHost.Config.EnableAccessRestrictions) return;
+            if ((RequestAttributes.InProcess & actualAttributes) == RequestAttributes.InProcess) return;
 
             RestrictAttribute restrictAttr;
             var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out restrictAttr)
