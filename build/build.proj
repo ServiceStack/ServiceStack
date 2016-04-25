@@ -139,6 +139,7 @@
       <EventLogFiles Include="$(SrcDir)/ServiceStack.Logging.EventLog/bin/$(Configuration)/ServiceStack.Logging.EventLog.*"></EventLogFiles>
       <Log4NetFiles Include="$(SrcDir)/ServiceStack.Logging.Log4Net/bin/$(Configuration)/ServiceStack.Logging.Log4Net.*"></Log4NetFiles>
       <NLogFiles Include="$(SrcDir)/ServiceStack.Logging.NLog/bin/$(Configuration)/ServiceStack.Logging.NLog.*"></NLogFiles>
+      <SlackFiles Include="$(SrcDir)/ServiceStack.Logging.Slack/bin/$(Configuration)/ServiceStack.Logging.Slack.*"></SlackFiles>
 
       <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
 
@@ -339,6 +340,18 @@
     <Copy SourceFiles="%(NLogFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.NLog/lib/net40" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.NLog/servicestack.logging.nlog.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Logging.Slack -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Slack/ServiceStack.Logging.Slack.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.Slack/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.Slack/lib/net40')" />
+    <Copy SourceFiles="%(SlackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Slack/lib/net40" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Slack/servicestack.logging.slack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Host.AspNet - Content Templates -->
