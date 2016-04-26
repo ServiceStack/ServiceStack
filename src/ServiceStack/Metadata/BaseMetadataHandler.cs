@@ -23,7 +23,7 @@ namespace ServiceStack.Metadata
         public override void Execute(HttpContextBase context)
         {
             var writer = new HtmlTextWriter(context.Response.Output);
-            context.Response.ContentType = "text/html;utf-8";
+            context.Response.ContentType = "text/html; charset=utf-8";
 
             var request = context.ToRequest();
             ProcessOperations(writer, request, request.Response);
