@@ -23,7 +23,7 @@ namespace ServiceStack.Metadata
         public override void Execute(HttpContextBase context)
         {
             var writer = new HtmlTextWriter(context.Response.Output);
-            context.Response.ContentType = "text/html";
+            context.Response.ContentType = "text/html; charset=utf-8";
 
             var request = context.ToRequest();
             ProcessOperations(writer, request, request.Response);
@@ -37,8 +37,8 @@ namespace ServiceStack.Metadata
             using (var sw = new StreamWriter(httpRes.OutputStream))
             {
                 var writer = new HtmlTextWriter(sw);
-                httpRes.ContentType = "text/html";
-                ProcessOperations(writer, httpReq, httpRes);
+               httpRes.ContentType = "text/html; charset=utf-8";
+               ProcessOperations(writer, httpReq, httpRes);
             }
 
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
