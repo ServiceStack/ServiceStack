@@ -554,7 +554,7 @@ namespace ServiceStack.NativeTypes
             {
                 Name = pi.Name,
                 Attributes = ToAttributes(pi.GetCustomAttributes(false)),
-                Type = pi.PropertyType.GetOperationName(),
+                Type = pi.PropertyType.GetMetadataPropertyType(),
                 IsValueType = pi.PropertyType.IsValueType ? true : (bool?)null,
                 TypeNamespace = pi.PropertyType.Namespace,
                 DataMember = ToDataMember(pi.GetDataMember()),

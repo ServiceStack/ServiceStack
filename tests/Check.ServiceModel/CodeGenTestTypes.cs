@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Runtime.Serialization;
 using Check.ServiceModel.Types;
@@ -341,6 +342,7 @@ namespace Check.ServiceModel.Types
         public Dictionary<string, string> StringMap { get; set; }
         public Dictionary<int, string> IntStringMap { get; set; }
         public SubType SubType { get; set; }
+        public Point Point { get; set; }
 
         [DataMember(Name = "aliasedName")]
         public string OriginalName { get; set; }
@@ -364,6 +366,35 @@ namespace Check.ServiceModel.Types
     public class Poco
     {
         public string Name { get; set; }
+    }
+
+    public struct Point
+    {
+        public Point(double x=0, double y=0)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public Point(string point)
+        {
+            var parts = point.Split(',');
+            X = double.Parse(parts[0]);
+            Y = double.Parse(parts[1]);
+        }
+
+        public double X { get; set; }
+        public double Y { get; set; }
+
+        public override string ToString()
+        {
+            return X.ToString(CultureInfo.InvariantCulture) + "," + Y.ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    public class HelloStruct : IReturn<HelloStruct>
+    {
+        public Point Point { get; set; }
     }
 
     public abstract class HelloBase

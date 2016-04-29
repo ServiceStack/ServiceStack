@@ -100,10 +100,17 @@ namespace ServiceStack
             return predefinedRoute;
         }
 
+        public static string GetMetadataPropertyType(this Type type)
+        {
+            return type.IsValueType && !type.IsSystemType()
+                ? "string"
+                : GetOperationName(type);
+        }
+
         public static string GetOperationName(this Type type)
         {
             var typeName = type.FullName != null //can be null, e.g. generic types
-                ? type.FullName.SplitOnFirst("[[").First() //Generic Fullname
+                ? type.FullName.SplitOnFirst("[[")[0]  //Generic Fullname
                     .Replace(type.Namespace + ".", "") //Trim Namespaces
                     .Replace("+", ".") //Convert nested into normal type
                 : type.Name;

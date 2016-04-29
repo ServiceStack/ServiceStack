@@ -159,6 +159,11 @@ namespace Check.ServiceInterface
             };
         }
 
+        public object Any(HelloStruct request)
+        {
+            return request;
+        }
+
         public object Any(HelloSession request)
         {
             return new HelloSessionResponse
