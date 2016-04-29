@@ -30,6 +30,9 @@ namespace ServiceStack
 
         public void HandleCacheResponses(IRequest req, IResponse res, object response)
         {
+            if (req.IsInProcessRequest())
+                return;
+
             var cacheInfo = req.GetItem(Keywords.CacheInfo) as CacheInfo;
             if (cacheInfo != null && cacheInfo.CacheKey != null)
             {

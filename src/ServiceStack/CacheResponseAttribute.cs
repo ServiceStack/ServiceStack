@@ -48,6 +48,8 @@ namespace ServiceStack
         {
             if (req.Verb != HttpMethods.Get && req.Verb != HttpMethods.Head)
                 return;
+            if (req.IsInProcessRequest())
+                return;
 
             var feature = HostContext.GetPlugin<HttpCacheFeature>();
             if (feature == null)
