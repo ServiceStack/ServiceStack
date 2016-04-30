@@ -370,13 +370,13 @@ namespace Check.ServiceModel.Types
 
     public struct Point
     {
-        public Point(double x=0, double y=0)
+        public Point(double x=0, double y=0) : this()
         {
             X = x;
             Y = y;
         }
 
-        public Point(string point)
+        public Point(string point) : this()
         {
             var parts = point.Split(',');
             X = double.Parse(parts[0]);
