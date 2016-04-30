@@ -546,51 +546,6 @@
               DELETE FROM "Person" WHERE Age = 27
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Skip(System.Nullable{System.Int32})">
-            <summary>
-            Offset of the first row to return. The offset of the initial row is 0
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Take(System.Nullable{System.Int32})">
-            <summary>
-            Number of rows returned by a SELECT statement
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Limit(System.Int32,System.Int32)">
-            <summary>
-            Set the specified offset and rows for SQL Limit clause.
-            </summary>
-            <param name='skip'>
-            Offset of the first row to return. The offset of the initial row is 0
-            </param>
-            <param name='rows'>
-            Number of rows returned by a SELECT statement
-            </param>	
-        </member>
-        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Limit(System.Nullable{System.Int32},System.Nullable{System.Int32})">
-            <summary>
-            Set the specified offset and rows for SQL Limit clause where they exist.
-            </summary>
-            <param name='skip'>
-            Offset of the first row to return. The offset of the initial row is 0
-            </param>
-            <param name='rows'>
-            Number of rows returned by a SELECT statement
-            </param>	
-        </member>
-        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Limit(System.Int32)">
-            <summary>
-            Set the specified rows for Sql Limit clause.
-            </summary>
-            <param name='rows'>
-            Number of rows returned by a SELECT statement
-            </param>
-        </member>
-        <member name="M:ServiceStack.OrmLite.JoinSqlBuilder`2.Limit">
-            <summary>
-            Clear Sql Limit clause
-            </summary>
-        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Select``1(System.Data.IDbConnection)">
             <summary>
             Returns results from the active connection.
