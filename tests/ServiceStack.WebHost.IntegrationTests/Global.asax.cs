@@ -144,7 +144,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                 {
                     var redisManager = new BasicRedisClientManager();
                     var mqHost = new RedisMqServer(redisManager);
-                    mqHost.RegisterHandler<Reverse>(ServiceController.ExecuteMessage);
+                    mqHost.RegisterHandler<Reverse>(ExecuteMessage);
                     mqHost.Start();
                     this.Container.Register((IMessageService)mqHost);
                 }

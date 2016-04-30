@@ -161,12 +161,11 @@ namespace ServiceStack.Common.Tests.Messaging
             container.Register(c => createMqServerFn());
 
             var mqServer = container.Resolve<IMessageService>();
-            mqServer.RegisterHandler<AnyTestMq>(ServiceController.ExecuteMessage);
-            mqServer.RegisterHandler<AnyTestMqAsync>(msg 
-             => ServiceController.ExecuteMessage(msg));
-            mqServer.RegisterHandler<PostTestMq>(ServiceController.ExecuteMessage);
-            mqServer.RegisterHandler<ValidateTestMq>(ServiceController.ExecuteMessage);
-            mqServer.RegisterHandler<ThrowGenericError>(ServiceController.ExecuteMessage);
+            mqServer.RegisterHandler<AnyTestMq>(ExecuteMessage);
+            mqServer.RegisterHandler<AnyTestMqAsync>(ExecuteMessage);
+            mqServer.RegisterHandler<PostTestMq>(ExecuteMessage);
+            mqServer.RegisterHandler<ValidateTestMq>(ExecuteMessage);
+            mqServer.RegisterHandler<ThrowGenericError>(ExecuteMessage);
 
             mqServer.Start();
         }

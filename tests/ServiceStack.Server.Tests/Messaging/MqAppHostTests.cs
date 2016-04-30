@@ -18,7 +18,7 @@ namespace ServiceStack.Server.Tests.Messaging
             var mqServer = new RabbitMqServer();
 
             mqServer.RegisterHandler<MqCustomException>(
-                ServiceController.ExecuteMessage,
+                ExecuteMessage,
                 HandleMqCustomException);
 
             container.Register<IMessageService>(c => mqServer);

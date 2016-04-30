@@ -113,11 +113,11 @@ namespace ServiceStack.Server.Tests.Messaging
 
             var mqServer = container.Resolve<IMessageService>();
 
-            mqServer.RegisterHandler<HelloIntro>(ServiceController.ExecuteMessage);
+            mqServer.RegisterHandler<HelloIntro>(ExecuteMessage);
             mqServer.RegisterHandler<MqAuthOnly>(m => {
                 var req = new BasicRequest { Verb = HttpMethods.Post };
                 req.Headers["X-ss-id"] = m.GetBody().SessionId;
-                var response = ServiceController.ExecuteMessage(m, req);
+                var response = ExecuteMessage(m, req);
                 return response;
             });
             mqServer.Start();
@@ -309,7 +309,7 @@ namespace ServiceStack.Server.Tests.Messaging
 
                     var mqServer = host.Container.Resolve<IMessageService>();
 
-                    mqServer.RegisterHandler<HelloIntro>(host.ServiceController.ExecuteMessage);
+                    mqServer.RegisterHandler<HelloIntro>(host.ExecuteMessage);
                     mqServer.Start();
                 }
             }.Init())
@@ -409,7 +409,7 @@ namespace ServiceStack.Server.Tests.Messaging
 
                     var mqServer = host.Container.Resolve<IMessageService>();
 
-                    mqServer.RegisterHandler<HelloIntroWithDep>(host.ServiceController.ExecuteMessage);
+                    mqServer.RegisterHandler<HelloIntroWithDep>(host.ExecuteMessage);
                     mqServer.Start();
                 }
             }.Init())
