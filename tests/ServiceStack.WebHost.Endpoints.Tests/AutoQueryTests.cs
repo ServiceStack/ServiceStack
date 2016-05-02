@@ -281,6 +281,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? IdNotEqualTo { get; set; }
     }
 
+    public class QueryRockstarAlbumsCustomLeftJoin : QueryDb<Rockstar, CustomRockstar>
+    {
+        public int? Age { get; set; }
+        public string AlbumName { get; set; }
+        public int? IdNotEqualTo { get; set; }
+    }
+
     public class QueryMultiJoinRockstar : QueryDb<Rockstar, CustomRockstar>, 
         IJoin<Rockstar, RockstarAlbum>,
         IJoin<Rockstar, RockstarGenre>
@@ -573,6 +580,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Total = (int)Db.Count(q),
             };
             return response;
+        }
+
+        public object Any(QueryRockstarAlbumsCustomLeftJoin query)
+        {
+            var q = AutoQuery.CreateQuery(query, Request)
+                .LeftJoin<RockstarAlbum>((r, a) => r.Id == a.RockstarId);
+            return AutoQuery.Execute(query, q);
         }
     }
 
@@ -947,6 +961,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_execute_query_with_LEFTJOIN_on_RockstarAlbums()
         {
             var response = client.Get(new QueryRockstarAlbumsLeftJoin { IdNotEqualTo = 3 });
+            Assert.That(response.Total, Is.EqualTo(TotalRockstars - 1));
+            Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars - 1));
+            var albumNames = response.Results.Where(x => x.RockstarAlbumName != null).Select(x => x.RockstarAlbumName);
+            Assert.That(albumNames, Is.EquivalentTo(new[] {
+                "Electric Ladyland", "Foo Fighters", "Into the Wild"
+            }));
+        }
+
+        [Test]
+        public void Can_execute_query_with_custom_LEFTJOIN_on_RockstarAlbums()
+        {
+            var response = client.Get(new QueryRockstarAlbumsCustomLeftJoin { IdNotEqualTo = 3 });
             Assert.That(response.Total, Is.EqualTo(TotalRockstars - 1));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars - 1));
             var albumNames = response.Results.Where(x => x.RockstarAlbumName != null).Select(x => x.RockstarAlbumName);
