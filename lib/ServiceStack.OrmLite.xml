@@ -49,6 +49,46 @@
             For Types that are natively supported by RDBMS's and shouldn't be quoted
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiLegacy.SelectFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
+            <summary>
+            Returns results from using an SqlFormat query. E.g:
+            <para>db.SelectFmt&lt;Person&gt;("Age &gt; {0}", 40)</para>
+            <para>db.SelectFmt&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; {0}", 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiLegacy.SelectFmt``1(System.Data.IDbConnection,System.Type,System.String,System.Object[])">
+            <summary>
+            Returns a partial subset of results from the specified tableType using a SqlFormat query. E.g:
+            <para>db.SelectFmt&lt;EntityWithId&gt;(typeof(Person), "Age &gt; {0}", 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiLegacy.SqlExpression``1(System.Data.IDbConnection)">
+            <summary>
+            Create a new SqlExpression builder allowing typed LINQ-like queries.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiLegacy.Select``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+            <summary>
+            Returns results from using an SqlExpression lambda. E.g:
+            <para>db.Select&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiLegacy.Select``2(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``1})">
+            <summary>
+            Project results from a number of joined tables into a different model
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiLegacy.Select``2(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``1},ServiceStack.OrmLite.SqlExpression{``1}})">
+            <summary>
+            Project results from a number of joined tables into a different model
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiLegacy.Single``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
+            <summary>
+            Returns a single result from using an SqlExpression lambda. E.g:
+            <para>db.Single&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age == 42))</para>
+            </summary>
+        </member>
         <member name="F:ServiceStack.OrmLite.OrmLiteContext.UseThreadStatic">
             <summary>
             Tell ServiceStack to use ThreadStatic Items Collection for Context Scoped items.
@@ -224,11 +264,6 @@
             Combines the first expression with the second using the specified merge function.
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.SqlExpression``1(System.Data.IDbConnection)">
-            <summary>
-            Create a new SqlExpression builder allowing typed LINQ-like queries.
-            </summary>
-        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.From``1(System.Data.IDbConnection)">
             <summary>
             Creates a new SqlExpression builder allowing typed LINQ-like queries.
@@ -261,26 +296,10 @@
             <para>db.Select&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Select``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
-            <summary>
-            Returns results from using an SqlExpression lambda. E.g:
-            <para>db.Select&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &gt; 40))</para>
-            </summary>
-        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Select``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
             <summary>
             Returns results from using an SqlExpression lambda. E.g:
             <para>db.Select(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Select``2(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``1})">
-            <summary>
-            Project results from a number of joined tables into a different model
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Select``2(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``1},ServiceStack.OrmLite.SqlExpression{``1}})">
-            <summary>
-            Project results from a number of joined tables into a different model
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Select``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Object)">
@@ -293,12 +312,6 @@
             <summary>
             Returns a single result from using a LINQ Expression. E.g:
             <para>db.Single&lt;Person&gt;(x =&gt; x.Age == 42)</para>
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Single``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
-            <summary>
-            Returns a single result from using an SqlExpression lambda. E.g:
-            <para>db.Single&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age == 42))</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApi.Single``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0})">
@@ -578,11 +591,11 @@
             <para>db.Select&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; @age", new Dictionary&lt;string, object&gt; { { "age", 40 } })</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SelectFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Select``1(System.Data.IDbConnection,System.Type,System.String,System.Object)">
             <summary>
-            Returns results from using an SqlFormat query. E.g:
-            <para>db.SelectFmt&lt;Person&gt;("Age &gt; {0}", 40)</para>
-            <para>db.SelectFmt&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; {0}", 40)</para>
+            Returns a partial subset of results from the specified tableType. E.g:
+            <para>db.Select&lt;EntityWithId&gt;(typeof(Person))</para>
+            <para></para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Select``1(System.Data.IDbConnection,System.Type)">
@@ -590,12 +603,6 @@
             Returns a partial subset of results from the specified tableType. E.g:
             <para>db.Select&lt;EntityWithId&gt;(typeof(Person))</para>
             <para></para>
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SelectFmt``1(System.Data.IDbConnection,System.Type,System.String,System.Object[])">
-            <summary>
-            Returns a partial subset of results from the specified tableType using a SqlFormat query. E.g:
-            <para>db.SelectFmt&lt;EntityWithId&gt;(typeof(Person), "Age &gt; {0}", 40)</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.Where``1(System.Data.IDbConnection,System.String,System.Object)">
@@ -1205,9 +1212,24 @@
             </summary>
             <returns>number of rows deleted</returns>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Delete``1(System.Data.IDbConnection,System.String,System.Object)">
+            <summary>
+            Delete rows using a SqlFormat filter. E.g:
+            <para>db.Delete&lt;Person&gt;("Age > @age", new { age = 42 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Delete(System.Data.IDbConnection,System.Type,System.String,System.Object)">
+            <summary>
+            Delete rows using a SqlFormat filter. E.g:
+            <para>db.Delete&lt;Person&gt;("Age > @age", new { age = 42 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.DeleteFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
             <summary>
             Delete rows using a SqlFormat filter. E.g:
+            <para>db.Delete&lt;Person&gt;("Age > {0}", 42)</para>
             </summary>
             <returns>number of rows deleted</returns>
         </member>
