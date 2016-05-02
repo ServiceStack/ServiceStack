@@ -425,7 +425,8 @@ namespace ServiceStack.Caching
         {
             Exec(db => {
                 var dbPattern = pattern.Replace('*', '%');
-                db.DeleteFmt<CacheEntry>(db.GetDialectProvider().GetQuotedColumnName("Id") + " LIKE {0}", dbPattern);
+                var dialect = db.GetDialectProvider();
+                db.Delete<CacheEntry>(dialect.GetQuotedColumnName("Id") + " LIKE " + dialect.GetParam("dbPattern"), new { dbPattern });
             });
         }
 
