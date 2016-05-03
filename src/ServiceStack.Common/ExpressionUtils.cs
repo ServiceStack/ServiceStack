@@ -30,5 +30,21 @@ namespace ServiceStack
             var pi = m.Member as PropertyInfo;
             return pi;
         }
+
+        public static string GetMemberName<T>(Expression<Func<T, object>> fieldExpr)
+        {
+            var m = GetMemberExpression(fieldExpr);
+            if (m != null)
+                return m.Member.Name;
+
+            throw new NotSupportedException("Expected Property Expression");
+        }
+
+        public static MemberExpression GetMemberExpression<T>(Expression<Func<T, object>> expr)
+        {
+            var member = expr.Body as MemberExpression;
+            var unary = expr.Body as UnaryExpression;
+            return member ?? (unary != null ? unary.Operand as MemberExpression : null);
+        }
     }
 }

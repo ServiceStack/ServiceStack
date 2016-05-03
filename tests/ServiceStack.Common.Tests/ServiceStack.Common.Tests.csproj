@@ -168,6 +168,7 @@
     <Compile Include="CryptUtilTest.cs" />
     <Compile Include="DynamoConfig.cs" />
     <Compile Include="EndpointHandlerBaseTests.cs" />
+    <Compile Include="ExpressionUtilsTests.cs" />
     <Compile Include="FluentValidation\ErrorCodeTests.cs" />
     <Compile Include="FormatTests.cs" />
     <Compile Include="FunqTests.cs" />
