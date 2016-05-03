@@ -40,6 +40,7 @@ namespace ServiceStack
         public HashSet<Assembly> LoadFromAssemblies { get; set; } 
         public int? MaxLimit { get; set; }
         public string UseNamedConnection { get; set; }
+        public bool CaseInsensitiveSearches { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableRawSqlFilters { get; set; }
         public bool EnableAutoQueryViewer { get; set; }
@@ -53,6 +54,8 @@ namespace ServiceStack
         public const string LessThanFormat =           "{Field} < {Value}";
         public const string LessThanOrEqualFormat =    "{Field} <= {Value}";
         public const string NotEqualFormat =           "{Field} <> {Value}";
+        public const string CaseSensitiveLikeFormat =  "{Field} LIKE {Value}";
+        public const string CaseInsensitiveLikeFormat = "UPPER({Field}) LIKE UPPER({Value})";
 
         public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
         {
@@ -91,7 +94,7 @@ namespace ServiceStack
             {"%<",              LessThanOrEqualFormat},
             {"<%",              LessThanFormat},
 
-            {"%Like%",          "UPPER({Field}) LIKE UPPER({Value})"},
+            {"%Like%",          CaseInsensitiveLikeFormat },
             {"%In",             "{Field} IN ({Values})"},
             {"%Ids",            "{Field} IN ({Values})"},
             {"%Between%",       "{Field} BETWEEN {Value1} AND {Value2}"},
@@ -102,9 +105,9 @@ namespace ServiceStack
 
         public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions = new Dictionary<string, QueryDbFieldAttribute>
         {
-            { "StartsWith", new QueryDbFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "{0}%" }},
-            { "Contains", new QueryDbFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}%" }},
-            { "EndsWith", new QueryDbFieldAttribute { Template = "UPPER({Field}) LIKE UPPER({Value})", ValueFormat = "%{0}" }},
+            { "StartsWith", new QueryDbFieldAttribute { Template = CaseInsensitiveLikeFormat, ValueFormat = "{0}%" }},
+            { "Contains", new QueryDbFieldAttribute { Template = CaseInsensitiveLikeFormat, ValueFormat = "%{0}%" }},
+            { "EndsWith", new QueryDbFieldAttribute { Template = CaseInsensitiveLikeFormat, ValueFormat = "%{0}" }},
         };
 
         public AutoQueryFeature()
@@ -118,11 +121,25 @@ namespace ServiceStack
             EnableUntypedQueries = true;
             EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
+            CaseInsensitiveSearches = true;
             LoadFromAssemblies = new HashSet<Assembly>();
         }
 
         public void Register(IAppHost appHost)
         {
+            if (!CaseInsensitiveSearches)
+            {
+                string convention;
+                if (ImplicitConventions.TryGetValue("%Like%", out convention) && convention == CaseInsensitiveLikeFormat)
+                    ImplicitConventions["%Like%"] = CaseSensitiveLikeFormat;
+
+                foreach (var attr in EndsWithConventions)
+                {
+                    if (attr.Value.Template == CaseInsensitiveLikeFormat)
+                        attr.Value.Template = CaseSensitiveLikeFormat;
+                }
+            }
+
             foreach (var entry in ImplicitConventions)
             {
                 var key = entry.Key.Trim('%');
