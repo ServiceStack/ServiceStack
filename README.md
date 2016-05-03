@@ -1,7 +1,6 @@
-See [servicestack.net/features](https://servicestack.net/features) for an overview and the [Release Notes](https://servicestack.net/release-notes) for latest features.
+Join the [ServiceStack Google+ Community](https://plus.google.com/communities/112445368900682590445) or follow [@ServiceStack](https://twitter.com/servicestack) for updates. 
 
-Join the [ServiceStack Google+ Community](https://plus.google.com/communities/112445368900682590445) or
-follow [@ServiceStack](https://twitter.com/servicestack) for project updates. 
+> View the [Release Notes](https://servicestack.net/release-notes) for latest features or see [servicestack.net/features](https://servicestack.net/features) for an overview.
 
 ### Simple, Fast, Versatile and full-featured Services Framework
 
