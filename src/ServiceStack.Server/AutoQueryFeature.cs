@@ -40,7 +40,7 @@ namespace ServiceStack
         public HashSet<Assembly> LoadFromAssemblies { get; set; } 
         public int? MaxLimit { get; set; }
         public string UseNamedConnection { get; set; }
-        public bool CaseInsensitiveSearches { get; set; }
+        public bool StripUpperInLike { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableRawSqlFilters { get; set; }
         public bool EnableAutoQueryViewer { get; set; }
@@ -121,13 +121,13 @@ namespace ServiceStack
             EnableUntypedQueries = true;
             EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
-            CaseInsensitiveSearches = true;
+            StripUpperInLike = OrmLiteConfig.StripUpperInLike;
             LoadFromAssemblies = new HashSet<Assembly>();
         }
 
         public void Register(IAppHost appHost)
         {
-            if (!CaseInsensitiveSearches)
+            if (StripUpperInLike)
             {
                 string convention;
                 if (ImplicitConventions.TryGetValue("%Like%", out convention) && convention == CaseInsensitiveLikeFormat)
