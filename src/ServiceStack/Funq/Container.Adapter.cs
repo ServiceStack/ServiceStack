@@ -10,57 +10,57 @@ using System;
 
 namespace Funq
 {
-	public partial class Container : IResolver
-	{
+    public partial class Container : IResolver
+    {
         public IContainerAdapter Adapter { get; set; }
 
-		/// <summary>
-		/// Register an autowired dependency
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		public IRegistration<T> RegisterAutoWired<T>()
-		{
-			var serviceFactory = GenerateAutoWireFn<T>();
-			return this.Register(serviceFactory);
-		}
+        /// <summary>
+        /// Register an autowired dependency
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public IRegistration<T> RegisterAutoWired<T>()
+        {
+            var serviceFactory = GenerateAutoWireFn<T>();
+            return this.Register(serviceFactory);
+        }
 
-		/// <summary>
-		/// Register an autowired dependency as a separate type
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		public IRegistration<TAs> RegisterAutoWiredAs<T, TAs>()
-			where T : TAs
-		{
-			var serviceFactory = GenerateAutoWireFn<T>();
-			Func<Container, TAs> fn = c => serviceFactory(c);
-			return this.Register(fn);
-		}
+        /// <summary>
+        /// Register an autowired dependency as a separate type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public IRegistration<TAs> RegisterAutoWiredAs<T, TAs>()
+            where T : TAs
+        {
+            var serviceFactory = GenerateAutoWireFn<T>();
+            Func<Container, TAs> fn = c => serviceFactory(c);
+            return this.Register(fn);
+        }
 
-		/// <summary>
-		/// Alias for RegisterAutoWiredAs
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		public IRegistration<TAs> RegisterAs<T, TAs>()
-			where T : TAs
-		{
-			return this.RegisterAutoWiredAs<T, TAs>();
-		}
+        /// <summary>
+        /// Alias for RegisterAutoWiredAs
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public IRegistration<TAs> RegisterAs<T, TAs>()
+            where T : TAs
+        {
+            return this.RegisterAutoWiredAs<T, TAs>();
+        }
 
-		/// <summary>
-		/// Auto-wires an existing instance, 
-		/// ie all public properties are tried to be resolved.
-		/// </summary>
-		/// <param name="instance"></param>
-		public void AutoWire(object instance)
-		{
-			AutoWire(this, instance);
-		}
+        /// <summary>
+        /// Auto-wires an existing instance, 
+        /// ie all public properties are tried to be resolved.
+        /// </summary>
+        /// <param name="instance"></param>
+        public void AutoWire(object instance)
+        {
+            AutoWire(this, instance);
+        }
 
         public object GetLazyResolver(params Type[] types) // returns Func<type>
         {
             var tryResolveGeneric = typeof(Container).GetMethods()
-                .First(x => x.Name == "ReverseLazyResolve" 
-                    && x.GetGenericArguments().Length == types.Length 
+                .First(x => x.Name == "ReverseLazyResolve"
+                    && x.GetGenericArguments().Length == types.Length
                     && x.GetParameters().Length == 0);
 
             var tryResolveMethod = tryResolveGeneric.MakeGenericMethod(types);
@@ -93,7 +93,7 @@ namespace Funq
 
         public bool Exists<TService>()
         {
-            var entry = GetEntry<TService, Func<Container, TService>>(null, throwIfMissing:false);
+            var entry = GetEntry<TService, Func<Container, TService>>(null, throwIfMissing: false);
             return entry != null;
         }
 
@@ -115,7 +115,7 @@ namespace Funq
         public static HashSet<string> IgnorePropertyTypeFullNames = new HashSet<string>
         {
             "System.Web.Mvc.ViewDataDictionary", //overrides ViewBag set in Controller constructor
-        }; 
+        };
 
         private static bool IsPublicWritableUserPropertyType(PropertyInfo pi)
         {
@@ -191,7 +191,7 @@ namespace Funq
                 setter(instance);
         }
 
-	    private static Action<object> GenerateAutoWireFnForProperty(
+        private static Action<object> GenerateAutoWireFnForProperty(
             Container container, MethodInfo propertyResolveFn, PropertyInfo property, Type instanceType)
         {
             var instanceParam = Expression.Parameter(typeof(object), "instance");

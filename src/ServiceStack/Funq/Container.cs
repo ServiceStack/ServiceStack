@@ -12,55 +12,56 @@ namespace Funq
         Container Container { get; }
     }
 
-	/// <include file='Container.xdoc' path='docs/doc[@for="Container"]/*'/>
-	public sealed partial class Container : IDisposable
-	{
-		Dictionary<ServiceKey, ServiceEntry> services = new Dictionary<ServiceKey, ServiceEntry>();
+    /// <include file='Container.xdoc' path='docs/doc[@for="Container"]/*'/>
+    public sealed partial class Container : IDisposable
+    {
+        Dictionary<ServiceKey, ServiceEntry> services = new Dictionary<ServiceKey, ServiceEntry>();
         Dictionary<ServiceKey, ServiceEntry> servicesReadOnlyCopy;
 
-	    public int disposablesCount
-	    {
+        public int disposablesCount
+        {
             get { lock (disposables) return disposables.Count; }
-	    }
+        }
 
-		// Disposable components include factory-scoped instances that we don't keep 
-		// a strong reference to. 
-		Stack<WeakReference> disposables = new Stack<WeakReference>();
-		// We always hold a strong reference to child containers.
-		Stack<Container> childContainers = new Stack<Container>();
-		Container parent;
+        // Disposable components include factory-scoped instances that we don't keep 
+        // a strong reference to. 
+        Stack<WeakReference> disposables = new Stack<WeakReference>();
+        // We always hold a strong reference to child containers.
+        Stack<Container> childContainers = new Stack<Container>();
+        Container parent;
 
-		/// <include file='Container.xdoc' path='docs/doc[@for="Container.ctor"]/*'/>
-		public Container()
-		{
-			services[new ServiceKey(typeof(Func<Container, Container>), null)] =
-				new ServiceEntry<Container, Func<Container, Container>>((Func<Container, Container>)(c => c)) {
-					Container = this,
-					Instance = this,
-					Owner = Owner.External,
-					Reuse = ReuseScope.Container,
-				};
-		}
+        /// <include file='Container.xdoc' path='docs/doc[@for="Container.ctor"]/*'/>
+        public Container()
+        {
+            services[new ServiceKey(typeof(Func<Container, Container>), null)] =
+                new ServiceEntry<Container, Func<Container, Container>>((Func<Container, Container>)(c => c))
+                {
+                    Container = this,
+                    Instance = this,
+                    Owner = Owner.External,
+                    Reuse = ReuseScope.Container,
+                };
+        }
 
-		/// <include file='Container.xdoc' path='docs/doc[@for="Container.DefaultOwner"]/*'/>
-		public Owner DefaultOwner { get; set; }
+        /// <include file='Container.xdoc' path='docs/doc[@for="Container.DefaultOwner"]/*'/>
+        public Owner DefaultOwner { get; set; }
 
-		/// <include file='Container.xdoc' path='docs/doc[@for="Container.DefaultReuse"]/*'/>
-		public ReuseScope DefaultReuse { get; set; }
+        /// <include file='Container.xdoc' path='docs/doc[@for="Container.DefaultReuse"]/*'/>
+        public ReuseScope DefaultReuse { get; set; }
 
-		/// <include file='Container.xdoc' path='docs/doc[@for="Container.CreateChildContainer"]/*'/>
-		public Container CreateChildContainer()
-		{
-			var child = new Container { parent = this };
+        /// <include file='Container.xdoc' path='docs/doc[@for="Container.CreateChildContainer"]/*'/>
+        public Container CreateChildContainer()
+        {
+            var child = new Container { parent = this };
             lock (childContainers) childContainers.Push(child);
-			return child;
-		}
+            return child;
+        }
 
-		/// <include file='Container.xdoc' path='docs/doc[@for="Container.Dispose"]/*'/>
-		public void Dispose()
-		{
-		    lock (disposables)
-		    {
+        /// <include file='Container.xdoc' path='docs/doc[@for="Container.Dispose"]/*'/>
+        public void Dispose()
+        {
+            lock (disposables)
+            {
                 while (disposables.Count > 0)
                 {
                     var wr = disposables.Pop();
@@ -88,50 +89,51 @@ namespace Funq
             }
         }
 
-		/// <include file='Container.xdoc' path='docs/doc[@for="Container.Register(instance)"]/*'/>
-		public void Register<TService>(TService instance)
-		{
-			Register(null, instance);
-		}
+        /// <include file='Container.xdoc' path='docs/doc[@for="Container.Register(instance)"]/*'/>
+        public void Register<TService>(TService instance)
+        {
+            Register(null, instance);
+        }
 
-		/// <include file='Container.xdoc' path='docs/doc[@for="Container.Register(name,instance)"]/*'/>
-		public void Register<TService>(string name, TService instance)
-		{
-			var entry = RegisterImpl<TService, Func<Container, TService>>(name, null);
+        /// <include file='Container.xdoc' path='docs/doc[@for="Container.Register(name,instance)"]/*'/>
+        public void Register<TService>(string name, TService instance)
+        {
+            var entry = RegisterImpl<TService, Func<Container, TService>>(name, null);
 
-			// Set sensible defaults for instance registration.
-			entry.ReusedWithin(ReuseScope.Hierarchy).OwnedBy(Owner.External);
-			entry.InitializeInstance(instance);
-		}
+            // Set sensible defaults for instance registration.
+            entry.ReusedWithin(ReuseScope.Hierarchy).OwnedBy(Owner.External);
+            entry.InitializeInstance(instance);
+        }
 
 
-		private ServiceEntry<TService, TFunc> RegisterImpl<TService, TFunc>(string name, TFunc factory)
-		{
-			if (typeof(TService) == typeof(Container))
-				throw new ArgumentException(ServiceStack.Properties.Resources.Registration_CantRegisterContainer);
+        private ServiceEntry<TService, TFunc> RegisterImpl<TService, TFunc>(string name, TFunc factory)
+        {
+            if (typeof(TService) == typeof(Container))
+                throw new ArgumentException(ServiceStack.Properties.Resources.Registration_CantRegisterContainer);
 
-			var entry = new ServiceEntry<TService, TFunc>(factory) {
-				Container = this,
-				Reuse = DefaultReuse,
-				Owner = DefaultOwner
-			};
-			var key = new ServiceKey(typeof(TFunc), name);
+            var entry = new ServiceEntry<TService, TFunc>(factory)
+            {
+                Container = this,
+                Reuse = DefaultReuse,
+                Owner = DefaultOwner
+            };
+            var key = new ServiceKey(typeof(TFunc), name);
 
             SetServiceEntry(key, entry);
 
-		    return entry;
-		}
+            return entry;
+        }
 
         private ServiceEntry<TService, TFunc> SetServiceEntry<TService, TFunc>(ServiceKey key, ServiceEntry<TService, TFunc> entry)
-	    {
-	        lock (services)
-	        {
-	            services[key] = entry;
-	            Interlocked.Exchange(ref servicesReadOnlyCopy, null);
-	        }
+        {
+            lock (services)
+            {
+                services[key] = entry;
+                Interlocked.Exchange(ref servicesReadOnlyCopy, null);
+            }
 
             return entry;
-	    }
+        }
 
         private bool TryGetServiceEntry(ServiceKey key, out ServiceEntry entry)
         {
@@ -188,7 +190,7 @@ namespace Funq
                 }
 
                 return instance;
-            }		    
+            }
         }
 
         private TService ResolveImpl<TService, TArg>(string name, bool throwIfMissing, TArg arg)
@@ -216,7 +218,7 @@ namespace Funq
                 }
 
                 return instance;
-            }		
+            }
         }
 
         private TService ResolveImpl<TService, TArg1, TArg2>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2)
@@ -244,7 +246,7 @@ namespace Funq
                 }
 
                 return instance;
-            }		
+            }
         }
 
         private TService ResolveImpl<TService, TArg1, TArg2, TArg3>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3)
@@ -261,7 +263,7 @@ namespace Funq
                 if (instance == null)
                 {
                     try
-                    { 
+                    {
                         instance = entry.Factory(entry.Container, arg1, arg2, arg3);
                         entry.InitializeInstance(instance);
                     }
@@ -272,7 +274,7 @@ namespace Funq
                 }
 
                 return instance;
-            }		
+            }
         }
 
         private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4)
@@ -289,7 +291,7 @@ namespace Funq
                 if (instance == null)
                 {
                     try
-                    { 
+                    {
                         instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4);
                         entry.InitializeInstance(instance);
                     }
@@ -300,7 +302,7 @@ namespace Funq
                 }
 
                 return instance;
-            }		
+            }
         }
 
         private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4, TArg5>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5)
@@ -317,7 +319,7 @@ namespace Funq
                 if (instance == null)
                 {
                     try
-                    { 
+                    {
                         instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4, arg5);
                         entry.InitializeInstance(instance);
                     }
@@ -328,7 +330,7 @@ namespace Funq
                 }
 
                 return instance;
-            }		
+            }
         }
 
         private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5, TArg6 arg6)
@@ -344,8 +346,8 @@ namespace Funq
                 TService instance = entry.Instance;
                 if (instance == null)
                 {
-                    try 
-                    { 
+                    try
+                    {
                         instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4, arg5, arg6);
                         entry.InitializeInstance(instance);
                     }
@@ -356,14 +358,14 @@ namespace Funq
                 }
 
                 return instance;
-            }		
+            }
         }
 
         #endregion
-		internal void TrackDisposable(object instance)
-		{
+        internal void TrackDisposable(object instance)
+        {
             lock (disposables) disposables.Push(new WeakReference(instance));
-		}
+        }
 
         public bool CheckAdapterFirst { get; set; }
 
@@ -479,17 +481,17 @@ namespace Funq
             return new Exception(errMsg, ex);
         }
 
-	    private static TService ThrowMissing<TService>(string serviceName)
-		{
-			if (serviceName == null)
-				throw new ResolutionException(typeof(TService));
-			else
-				throw new ResolutionException(typeof(TService), serviceName);
-		}
+        private static TService ThrowMissing<TService>(string serviceName)
+        {
+            if (serviceName == null)
+                throw new ResolutionException(typeof(TService));
+            else
+                throw new ResolutionException(typeof(TService), serviceName);
+        }
 
-		private void ThrowIfNotRegistered<TService, TFunc>(string name)
-		{
-			GetEntry<TService, TFunc>(name, true);
-		}
-	}
+        private void ThrowIfNotRegistered<TService, TFunc>(string name)
+        {
+            GetEntry<TService, TFunc>(name, true);
+        }
+    }
 }
