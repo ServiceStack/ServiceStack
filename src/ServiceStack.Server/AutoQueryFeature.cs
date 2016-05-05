@@ -277,6 +277,8 @@ namespace ServiceStack
                 if (cmd.Args.Count == 0)
                     cmd.Args.Add("*");
 
+                cmd.Original = cmd.ToString();
+
                 var hasAlias = !string.IsNullOrWhiteSpace(cmd.Suffix);
 
                 for (var i = 0; i < cmd.Args.Count; i++)
@@ -295,7 +297,9 @@ namespace ServiceStack
                     if (fieldRef != null)
                     {
                         //To return predictable aliases, if it's primary table don't fully qualify name
-                        if (fieldRef.Item1 != q.ModelDef || hasAlias)
+                        var fieldName = fieldRef.Item2.FieldName;
+                        var needsRewrite = !fieldName.EqualsIgnoreCase(q.DialectProvider.NamingStrategy.GetColumnName(fieldName)); 
+                        if (fieldRef.Item1 != q.ModelDef || fieldRef.Item2.Alias != null || needsRewrite || hasAlias)
                         {
                             cmd.Args[i] = modifier + q.DialectProvider.GetQuotedColumnName(fieldRef.Item1, fieldRef.Item2);
                         }
@@ -320,7 +324,7 @@ namespace ServiceStack
                 }
                 else
                 {
-                    cmd.Suffix = " " + q.DialectProvider.GetQuotedName(cmd.ToString());
+                    cmd.Suffix = " " + q.DialectProvider.GetQuotedName(cmd.Original);
                 }
             }
 

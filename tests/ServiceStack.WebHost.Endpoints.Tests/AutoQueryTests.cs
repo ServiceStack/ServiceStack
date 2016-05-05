@@ -34,6 +34,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             using (var db = dbFactory.OpenDbConnection(SqlServerNamedConnection))
             {
+                db.DropTable<RockstarAlbum>();
                 db.DropAndCreateTable<NamedRockstar>();
 
                 db.Insert(new NamedRockstar {
@@ -48,6 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             using (var db = dbFactory.OpenDbConnectionString(SqliteFileConnString))
             {
+                db.DropTable<RockstarAlbum>();
                 db.DropAndCreateTable<Rockstar>();
                 db.Insert(new Rockstar {
                     Id = 1,
@@ -80,11 +82,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             using (var db = container.Resolve<IDbConnectionFactory>().Open())
             {
-                db.DropAndCreateTable<Rockstar>();
-                db.DropAndCreateTable<RockstarAlbum>();
+                db.DropTable<RockstarAlbum>();
+                db.DropTable<Rockstar>();
+                db.CreateTable<Rockstar>();
+                db.CreateTable<RockstarAlbum>();
+
                 db.DropAndCreateTable<RockstarGenre>();
                 db.DropAndCreateTable<Movie>();
                 db.DropAndCreateTable<PagingTest>();
+
                 db.InsertAll(SeedRockstars);
                 db.InsertAll(SeedAlbums);
                 db.InsertAll(SeedGenres);
@@ -1502,7 +1508,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Meta["Min(Age)"], Is.EqualTo(Rockstars.Map(x => x.Age).Min().ToString()));
             Assert.That(response.Meta["Max(Age)"], Is.EqualTo(Rockstars.Map(x => x.Age).Max().ToString()));
             Assert.That(response.Meta["Sum(Id)"], Is.EqualTo(Rockstars.Map(x => x.Id).Sum().ToString()));
-            Assert.That(response.Meta["Avg(Age)"], Is.EqualTo(Rockstars.Average(x => x.Age).ToString()));
+            Assert.That(double.Parse(response.Meta["Avg(Age)"]), Is.EqualTo(Rockstars.Average(x => x.Age)).Within(1d));
             //Not supported by Sqlite
             //Assert.That(response.Meta["First(Id)"], Is.EqualTo(Rockstars.First().Id.ToString()));
             //Assert.That(response.Meta["Last(Id)"], Is.EqualTo(Rockstars.Last().Id.ToString()));
@@ -1513,7 +1519,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Meta["Min(Age)"], Is.EqualTo(rockstars27.Map(x => x.Age).Min().ToString()));
             Assert.That(response.Meta["Max(Age)"], Is.EqualTo(rockstars27.Map(x => x.Age).Max().ToString()));
             Assert.That(response.Meta["Sum(Id)"], Is.EqualTo(rockstars27.Map(x => x.Id).Sum().ToString()));
-            Assert.That(response.Meta["Avg(Age)"], Is.EqualTo(rockstars27.Average(x => x.Age).ToString()));
+            Assert.That(double.Parse(response.Meta["Avg(Age)"]), Is.EqualTo(rockstars27.Average(x => x.Age)).Within(1d));
             //Not supported by Sqlite
             //Assert.That(response.Meta["First(Id)"], Is.EqualTo(rockstars27.First().Id.ToString()));
             //Assert.That(response.Meta["Last(Id)"], Is.EqualTo(rockstars27.Last().Id.ToString()));
@@ -1535,14 +1541,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_Include_Aggregates_in_AutoQuery_with_Aliases()
         {
-            var response = client.Get(new QueryRockstars { Include = "COUNT(*) Count" });
-            Assert.That(response.Meta["Count"], Is.EqualTo(Rockstars.Count.ToString()));
+            var response = client.Get(new QueryRockstars { Include = "COUNT(*) count" });
+            Assert.That(response.Meta["count"], Is.EqualTo(Rockstars.Count.ToString()));
 
-            response = client.Get(new QueryRockstars { Include = "COUNT(DISTINCT LivingStatus) as UniqueStatus" });
-            Assert.That(response.Meta["UniqueStatus"], Is.EqualTo("2"));
+            response = client.Get(new QueryRockstars { Include = "COUNT(DISTINCT LivingStatus) as uniquestatus" });
+            Assert.That(response.Meta["uniquestatus"], Is.EqualTo("2"));
 
-            response = client.Get(new QueryRockstars { Include = "MIN(Age) MinAge" });
-            Assert.That(response.Meta["MinAge"], Is.EqualTo(Rockstars.Map(x => x.Age).Min().ToString()));
+            response = client.Get(new QueryRockstars { Include = "MIN(Age) minage" });
+            Assert.That(response.Meta["minage"], Is.EqualTo(Rockstars.Map(x => x.Age).Min().ToString()));
 
             response = client.Get(new QueryRockstars { Include = "Count(*) count, Min(Age) min, Max(Age) max, Sum(Id) sum" });
             Assert.That(response.Meta["count"], Is.EqualTo(Rockstars.Count.ToString()));

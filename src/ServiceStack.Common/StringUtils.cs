@@ -23,6 +23,8 @@ namespace ServiceStack
 
         public string Suffix { get; set; }
 
+        public string Original { get; set; }
+
         //Output different format for debugging to verify command was parsed correctly
         public string ToDebugString()
         {
