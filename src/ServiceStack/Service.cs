@@ -142,10 +142,19 @@ namespace ServiceStack
         /// </summary>
         protected virtual TUserSession SessionAs<TUserSession>()
         {
-            var ret = TryResolve<TUserSession>();
-            return !Equals(ret, default(TUserSession))
-                ? ret
-                : SessionFeature.GetOrCreateSession<TUserSession>(Cache, Request, Response);
+            if (HostContext.TestMode)
+            {
+                var mockSession = TryResolve<TUserSession>();
+                if (!Equals(mockSession, default(TUserSession)))
+                    mockSession = TryResolve<IAuthSession>() is TUserSession 
+                        ? (TUserSession)TryResolve<IAuthSession>() 
+                        : default(TUserSession);
+
+                if (!Equals(mockSession, default(TUserSession)))
+                    return mockSession;
+            }
+
+            return SessionFeature.GetOrCreateSession<TUserSession>(Cache, Request, Response);
         }
 
         public virtual bool IsAuthenticated
