@@ -16,13 +16,6 @@ namespace ServiceStack.Auth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
-        [Obsolete("Moved to AuthFeature.MaxLoginAttempts")]
-        public int? MaxLoginAttempts
-        {
-            get { return null; }
-            private set { throw new NotImplementedException("Use AuthFeature.MaxLoginAttempts"); }
-        }
-
         private readonly IDbConnectionFactory dbFactory;
         private bool hasInitSchema;
 
@@ -48,9 +41,9 @@ namespace ServiceStack.Auth
             hasInitSchema = true;
             using (var db = OpenDbConnection())
             {
-                db.CreateTable<TUserAuth>();
-                db.CreateTable<TUserAuthDetails>();
-                db.CreateTable<UserAuthRole>();
+                db.CreateTableIfNotExists<TUserAuth>();
+                db.CreateTableIfNotExists<TUserAuthDetails>();
+                db.CreateTableIfNotExists<UserAuthRole>();
             }
         }
 
