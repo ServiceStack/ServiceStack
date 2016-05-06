@@ -211,6 +211,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="QueryStringSerializerTests.cs" />
+    <Compile Include="RedisTypeTests.cs" />
     <Compile Include="ReflectionExtensionsTests.cs" />
     <Compile Include="Reflection\PropertyAccessorTests.cs" />
     <Compile Include="Expressions\DelegateFactoryTests.cs" />
