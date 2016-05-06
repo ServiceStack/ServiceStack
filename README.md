@@ -6,7 +6,7 @@ Join the [ServiceStack Google+ Community](https://plus.google.com/communities/11
 
 ServiceStack is a simple, fast, versatile and highly-productive full-featured [Web](http://razor.servicestack.net) and 
 [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services) Framework that's 
-thoughtfully-architected to [reduce artificial complexity](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query#why-not-complexity) and promote 
+thoughtfully-architected to [reduce artificial complexity](https://github.com/ServiceStack/ServiceStack/wiki/Why-not-OData#why-not-complexity) and promote 
 [remote services best-practices](https://github.com/ServiceStack/ServiceStack/wiki/Advantages-of-message-based-web-services) 
 with a [message-based design](https://github.com/ServiceStack/ServiceStack/wiki/What-is-a-message-based-web-service) 
 that allows for maximum re-use that can leverage an integrated 
@@ -33,7 +33,7 @@ to the built-in support for
 [Auto Batched Requests](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Batched-Requests) 
 or effortlessly enabling rich [HTTP Caching](https://github.com/ServiceStack/ServiceStack/wiki/HTTP-Caching) and
 [Encrypted Messaging](https://github.com/ServiceStack/ServiceStack/wiki/Encrypted-Messaging) 
-for all your existing services via a [Plugin](https://github.com/ServiceStack/ServiceStack/wiki/Plugins).
+for all your existing services via [Plugins](https://github.com/ServiceStack/ServiceStack/wiki/Plugins).
 
 Your same Services also serve as the Controller in ServiceStack's [Smart Razor Views](http://razor.servicestack.net/)
 reducing the effort to serve both 
