@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
@@ -12,6 +13,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/cache/serveronly/{Id}")]
     public class ServerCacheOnly : ICacheDto
+    {
+        internal static int Count = 0;
+
+        public int Id { get; set; }
+        public string Value { get; set; }
+    }
+
+    [Route("/cache/serveronlyasync/{Id}")]
+    public class ServerCacheOnlyAsync : ICacheDto
     {
         internal static int Count = 0;
 
@@ -96,6 +106,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(ServerCacheOnly request)
         {
             Interlocked.Increment(ref ServerCacheOnly.Count);
+            return request;
+        }
+
+        [CacheResponse(Duration = 10)]
+        public async Task<object> Any(ServerCacheOnlyAsync request)
+        {
+            await Task.Yield();
+            Interlocked.Increment(ref ServerCacheOnlyAsync.Count);
             return request;
         }
 
@@ -227,6 +245,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = new JsonServiceClient(Config.ListeningOn);
             response = client.Get<ServerCacheOnly>(request);
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(1));
+            AssertEquals(response, request);
+        }
+
+        [Test]
+        public async Task Does_cache_duplicate_requests_async()
+        {
+            ServerCacheOnlyAsync.Count = 0;
+            var request = new ServerCacheOnlyAsync { Id = 1, Value = "foo" };
+
+            var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .GetJsonFromUrl(responseFilter: res =>
+                {
+                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                    Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
+                })
+                .FromJson<ServerCacheOnlyAsync>();
+
+            Assert.That(ServerCacheOnlyAsync.Count, Is.EqualTo(1));
+            AssertEquals(response, request);
+
+            response = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .GetJsonFromUrl(responseFilter: res =>
+                {
+                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                    Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
+                })
+                .FromJson<ServerCacheOnlyAsync>();
+
+            Assert.That(ServerCacheOnlyAsync.Count, Is.EqualTo(1));
+            AssertEquals(response, request);
+
+            var client = new JsonServiceClient(Config.ListeningOn);
+            response = await client.GetAsync<ServerCacheOnlyAsync>(request);
+            Assert.That(ServerCacheOnlyAsync.Count, Is.EqualTo(1));
             AssertEquals(response, request);
         }
 
