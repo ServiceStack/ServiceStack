@@ -58,7 +58,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             // Look first for shortest Namespace ending with `ServiceModel` convention, else shortest ns
             var globalNamespace = Config.GlobalNamespace
-                ?? typeNamespaces.Where(x => x.EndsWith("ServiceModel"))
+                ?? typeNamespaces.Where(x => x != null && x.EndsWith("ServiceModel"))
                     .OrderBy(x => x).FirstOrDefault()
                 ?? typeNamespaces.OrderBy(x => x).First();
 
