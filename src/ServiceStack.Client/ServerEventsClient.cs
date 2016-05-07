@@ -411,7 +411,7 @@ namespace ServiceStack
         {
             if (!stream.CanRead) return;
 
-            var task = stream.ReadAsync(buffer, 0, 2048, cancel.Token);
+            var task = stream.ReadAsync(buffer, 0, BufferSize, cancel.Token);
             task.ContinueWith(t =>
             {
                 if (cancel.IsCancellationRequested || t.IsCanceled)
