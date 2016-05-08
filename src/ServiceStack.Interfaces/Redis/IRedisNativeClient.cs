@@ -203,6 +203,17 @@ namespace ServiceStack.Redis
         byte[][] HVals(string hashId);
         byte[][] HGetAll(string hashId);
 
+        //Redis GEO operations
+        long GeoAdd(string key, double longitude, double latitude, string member);
+        long GeoAdd(string key, params RedisGeo[] geoPoints);
+        double GeoDist(string key, string fromMember, string toMember, string unit = null);
+        string[] GeoHash(string key, params string[] members);
+        List<RedisGeo> GeoPos(string key, params string[] members);
+        List<RedisGeoResult> GeoRadius(string key, double longitude, double latitude, double radius, string unit,
+            bool withCoords = false, bool withDist = false, bool withHash = false, int? count = null, bool? asc = null);
+        List<RedisGeoResult> GeoRadiusByMember(string key, string member, double radius, string unit,
+            bool withCoords = false, bool withDist = false, bool withHash = false, int? count = null, bool? asc = null);
+
         //Redis Pub/Sub operations
         void Watch(params string[] keys);
         void UnWatch();

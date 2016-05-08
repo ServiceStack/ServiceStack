@@ -139,6 +139,17 @@ namespace ServiceStack.Redis
         long CountHyperLog(string key);
         void MergeHyperLogs(string toKey, params string[] fromKeys);
 
+        //GEO APIs
+        long AddGeoMember(string key, double longitude, double latitude, string member);
+        long AddGeoMembers(string key, params RedisGeo[] geoPoints);
+        double CalculateDistanceBetweenGeoMembers(string key, string fromMember, string toMember, string unit = null);
+        string[] GetGeohashes(string key, params string[] members);
+        List<RedisGeo> GetGeoCoordinates(string key, params string[] members);
+        string[] FindGeoMembersInRadius(string key, double longitude, double latitude, double radius, string unit);
+        List<RedisGeoResult> FindGeoResultsInRadius(string key, double longitude, double latitude, double radius, string unit, int? count = null, bool? asc = null);
+        string[] FindGeoMembersInRadius(string key, string member, double radius, string unit);
+        List<RedisGeoResult> FindGeoResultsInRadius(string key, string member, double radius, string unit, int? count = null, bool? asc = null);
+
         /// <summary>
         /// Returns a high-level typed client API
         /// </summary>
