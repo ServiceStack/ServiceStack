@@ -331,6 +331,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async void Does_not_fire_UnobservedTaskException()
+        {
+            var unobservedTaskException = false;
+            TaskScheduler.UnobservedTaskException += (s, e) => { unobservedTaskException = true; };
+            using (var client1 = CreateServerEventsClient())
+            {
+                using (var connectedEvent = new ManualResetEvent(false))
+                {
+                    client1.Start();
+                    client1.OnConnect += (e) => { connectedEvent.Set(); };
+                    Assert.True(connectedEvent.WaitOne(TimeSpan.FromSeconds(10)));
+                }
+
+                // Ensure that "stream.ReadAsync" is called
+                System.Threading.Thread.Sleep(200);
+            }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+                
+            // collect finalized objects
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            Assert.IsFalse(unobservedTaskException);
+        }
+
+        [Test]
         public async void Does_fire_all_callbacks()
         {
             using (var client1 = CreateServerEventsClient())

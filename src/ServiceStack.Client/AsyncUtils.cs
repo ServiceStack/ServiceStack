@@ -108,7 +108,7 @@ namespace ServiceStack
         {
             return token.IsCancellationRequested
                 ? TaskConstants<int>.Canceled
-                : Task<int>.Factory.FromAsync(stream.BeginRead, stream.EndRead, buffer, offset, count, null);
+                : Task<int>.Factory.FromAsync(stream.BeginRead, result => stream.CanRead ? stream.EndRead(result) : 0, buffer, offset, count, null);
         }
 
         public static Task WriteAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken token)
