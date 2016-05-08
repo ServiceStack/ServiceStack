@@ -331,7 +331,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async void Does_not_fire_UnobservedTaskException()
+        public void Does_not_fire_UnobservedTaskException()
         {
             var unobservedTaskException = false;
             TaskScheduler.UnobservedTaskException += (s, e) => { unobservedTaskException = true; };
