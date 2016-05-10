@@ -221,10 +221,7 @@ namespace ServiceStack
         /// </summary>
         public virtual TUserSession SessionAs<TUserSession>()
         {
-            var ret = TryResolve<TUserSession>();
-            return !Equals(ret, default(TUserSession))
-                ? ret
-                : SessionFeature.GetOrCreateSession<TUserSession>(Cache, Request, Response);
+            return SessionFeature.GetOrCreateSession<TUserSession>(Cache, Request, Response);
         }
 
         public virtual void ClearSession()

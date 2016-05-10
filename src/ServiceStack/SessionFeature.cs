@@ -73,6 +73,10 @@ namespace ServiceStack
             if (httpReq == null)
                 httpReq = HostContext.GetCurrentRequest();
 
+            var iSession = httpReq.GetSession(reload:false);
+            if (iSession is T)
+                return (T)iSession;
+
             var sessionId = httpReq.GetSessionId();
             var sessionKey = GetSessionKey(sessionId);
             if (sessionKey != null)

@@ -127,9 +127,6 @@ namespace ServiceStack
             return service.Request.GetSession(reload);
         }
 
-        [Obsolete("Use SessionFeature.RequestItemsSessionKey")]
-        public const string RequestItemsSessionKey = SessionFeature.RequestItemsSessionKey;
-
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
             if (httpReq == null) return null;
@@ -143,7 +140,10 @@ namespace ServiceStack
 
             object oSession = null;
             if (!reload)
-                httpReq.Items.TryGetValue(SessionFeature.RequestItemsSessionKey, out oSession);
+            {
+                if (!httpReq.Items.TryGetValue(SessionFeature.RequestItemsSessionKey, out oSession))
+                    return null;
+            }
 
             var sessionId = httpReq.GetSessionId();
             var cachedSession = HostContext.AppHost.OnSessionFilter(oSession as IAuthSession, sessionId);
