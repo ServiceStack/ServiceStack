@@ -15,4 +15,23 @@ namespace Check.ServiceInterface
             return request;
         }
     }
+
+
+    [Route("/timestamp", Verbs = "GET")]
+    public class GetTimestamp : IReturn<TimestampData>
+    {
+    }
+
+    public class TimestampData
+    {
+        public long Timestamp { get; set; }
+    }
+
+    public class TimestampService : Service
+    {
+        public object Get(GetTimestamp request)
+        {
+            return new TimestampData { Timestamp = 635980054734850470 };
+        }
+    }
 }
