@@ -129,7 +129,8 @@ namespace ServiceStack
 
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
-            if (httpReq == null) return null;
+            if (httpReq == null)
+                return null;
 
             if (HostContext.TestMode)
             {
@@ -140,32 +141,26 @@ namespace ServiceStack
 
             object oSession = null;
             if (!reload)
-            {
-                if (!httpReq.Items.TryGetValue(SessionFeature.RequestItemsSessionKey, out oSession))
-                    return null;
-            }
+                httpReq.Items.TryGetValue(SessionFeature.RequestItemsSessionKey, out oSession);
 
             var sessionId = httpReq.GetSessionId();
-            var cachedSession = HostContext.AppHost.OnSessionFilter(oSession as IAuthSession, sessionId);
-            if (cachedSession != null)
-            {
-                return cachedSession;
-            }
+            var session = oSession as IAuthSession;
+            if (session != null)
+                session = HostContext.AppHost.OnSessionFilter(session, sessionId);
+            if (session != null)
+                return session;
 
-            var sessionKey = SessionFeature.GetSessionKey(sessionId);
-            var session = (sessionKey != null ? HostContext.AppHost.OnSessionFilter(httpReq.GetCacheClient().Get<IAuthSession>(sessionKey), sessionId) : null)
-                ?? SessionFeature.CreateNewSession(httpReq, sessionId);
+            session = httpReq.GetCacheClient().Get<IAuthSession>(SessionFeature.GetSessionKey(sessionId));
 
-            httpReq.SaveSessionInItems(session);
+            if (session != null)
+                session = HostContext.AppHost.OnSessionFilter(session, sessionId);
+
+            if (session == null)
+                session = HostContext.AppHost.OnSessionFilter(
+                    SessionFeature.CreateNewSession(httpReq, sessionId), sessionId);
+
+            httpReq.Items[SessionFeature.RequestItemsSessionKey] = session;
             return session;
-        }
-
-        internal static void SaveSessionInItems(this IRequest httpReq, IAuthSession session)
-        {
-            if (httpReq.Items.ContainsKey(SessionFeature.RequestItemsSessionKey))
-                httpReq.Items.Remove(SessionFeature.RequestItemsSessionKey);
-
-            httpReq.Items.Add(SessionFeature.RequestItemsSessionKey, session);
         }
 
         public static TimeSpan? GetSessionTimeToLive(this ICacheClient cache, string sessionId)
