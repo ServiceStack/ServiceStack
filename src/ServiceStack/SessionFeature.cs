@@ -12,6 +12,8 @@ namespace ServiceStack
         public const string PermanentSessionId = "ss-pid";
         public const string SessionOptionsKey = "ss-opt";
         public const string XUserAuthId = HttpHeaders.XUserAuthId;
+
+        [Obsolete("Use Keywords.Session")]
         public const string RequestItemsSessionKey = "__session";
 
         public static TimeSpan DefaultSessionExpiry = TimeSpan.FromDays(7 * 2); //2 weeks

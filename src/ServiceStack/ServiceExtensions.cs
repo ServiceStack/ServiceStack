@@ -119,7 +119,7 @@ namespace ServiceStack
             var sessionKey = SessionFeature.GetSessionKey(sessionId);
             httpReq.GetCacheClient().Remove(sessionKey);
 
-            httpReq.Items.Remove(SessionFeature.RequestItemsSessionKey);
+            httpReq.Items.Remove(Keywords.Session);
         }
 
         public static IAuthSession GetSession(this IServiceBase service, bool reload = false)
@@ -141,7 +141,7 @@ namespace ServiceStack
 
             object oSession = null;
             if (!reload)
-                httpReq.Items.TryGetValue(SessionFeature.RequestItemsSessionKey, out oSession);
+                httpReq.Items.TryGetValue(Keywords.Session, out oSession);
 
             var sessionId = httpReq.GetSessionId();
             var session = oSession as IAuthSession;
@@ -159,7 +159,7 @@ namespace ServiceStack
                 session = HostContext.AppHost.OnSessionFilter(
                     SessionFeature.CreateNewSession(httpReq, sessionId), sessionId);
 
-            httpReq.Items[SessionFeature.RequestItemsSessionKey] = session;
+            httpReq.Items[Keywords.Session] = session;
             return session;
         }
 

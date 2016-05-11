@@ -485,7 +485,7 @@ namespace ServiceStack
             session.LastModified = DateTime.UtcNow;
             this.GetCacheClient().CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
 
-            httpReq.Items[SessionFeature.RequestItemsSessionKey] = session;
+            httpReq.Items[Keywords.Session] = session;
         }
 
         /// <summary>

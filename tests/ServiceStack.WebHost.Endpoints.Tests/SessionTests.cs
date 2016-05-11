@@ -258,7 +258,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_mock_IntegrationTest_Session_with_Request()
         {
             var mockRequest = new MockHttpRequest();
-            mockRequest.Items[SessionFeature.RequestItemsSessionKey] = new AuthUserSession
+            mockRequest.Items[Keywords.Session] = new AuthUserSession
             {
                 UserName = "Mocked",
             };
@@ -300,7 +300,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             using (new BasicAppHost(typeof(SessionService).Assembly).Init())
             {
                 var req = new MockHttpRequest();
-                req.Items[SessionFeature.RequestItemsSessionKey] = 
+                req.Items[Keywords.Session] = 
                     new AuthUserSession {
                         UserName = "Mocked",
                     };
