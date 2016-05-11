@@ -20,6 +20,7 @@ namespace ServiceStack
         public TimeSpan? SessionExpiry { get; set; }
         public TimeSpan? PermanentSessionExpiry { get; set; }
 
+        [Obsolete("Removing rarely used feature, if needed override OnSessionFilter() and return null if invalid session")]
         public static bool VerifyCachedSessionId = false;
 
         private static bool alreadyConfigured;

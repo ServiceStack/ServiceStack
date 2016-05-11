@@ -488,6 +488,10 @@ namespace ServiceStack
             httpReq.Items[SessionFeature.RequestItemsSessionKey] = session;
         }
 
+        /// <summary>
+        /// Inspect or modify ever new UserSession created or resolved from cache. 
+        /// return null if Session is invalid to create new Session.
+        /// </summary>
         public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId)
         {
             if (session == null || !SessionFeature.VerifyCachedSessionId)

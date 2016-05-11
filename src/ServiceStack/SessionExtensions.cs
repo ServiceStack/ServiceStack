@@ -295,7 +295,7 @@ namespace ServiceStack
                 ? permId
                 : tempId;
 
-            req.SaveSessionInItems(session);
+            req.Items[SessionFeature.RequestItemsSessionKey] = session;
         }
     }
 }
