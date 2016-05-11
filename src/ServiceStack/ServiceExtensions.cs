@@ -160,8 +160,10 @@ namespace ServiceStack
             }
 
             if (session == null)
-                session = HostContext.AppHost.OnSessionFilter(
-                    SessionFeature.CreateNewSession(httpReq, sessionId), sessionId);
+            {
+                var newSession = SessionFeature.CreateNewSession(httpReq, sessionId);
+                session = HostContext.AppHost.OnSessionFilter(newSession, sessionId) ?? newSession;
+            }
 
             httpReq.Items[Keywords.Session] = session;
             return session;
