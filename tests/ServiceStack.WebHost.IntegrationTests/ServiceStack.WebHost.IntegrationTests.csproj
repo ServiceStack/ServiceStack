@@ -81,6 +81,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\src\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Admin">
+      <HintPath>..\..\lib\tests\ServiceStack.Admin.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>

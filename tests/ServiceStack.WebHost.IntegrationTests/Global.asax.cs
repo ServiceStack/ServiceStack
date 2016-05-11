@@ -2,6 +2,7 @@
 using System.Linq;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Authentication.OpenId;
 using ServiceStack.Caching;
@@ -122,6 +123,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                 Plugins.Add(new PostmanFeature());
                 Plugins.Add(new CorsFeature());
                 Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
+                Plugins.Add(new AdminFeature());
 
                 container.RegisterValidators(typeof(CustomersValidator).Assembly);
 
