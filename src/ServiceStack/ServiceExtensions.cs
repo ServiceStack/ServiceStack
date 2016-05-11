@@ -150,10 +150,14 @@ namespace ServiceStack
             if (session != null)
                 return session;
 
-            session = httpReq.GetCacheClient().Get<IAuthSession>(SessionFeature.GetSessionKey(sessionId));
+            var sessionKey = SessionFeature.GetSessionKey(sessionId);
+            if (sessionKey != null)
+            {
+                session = httpReq.GetCacheClient().Get<IAuthSession>(sessionKey);
 
-            if (session != null)
-                session = HostContext.AppHost.OnSessionFilter(session, sessionId);
+                if (session != null)
+                    session = HostContext.AppHost.OnSessionFilter(session, sessionId);
+            }
 
             if (session == null)
                 session = HostContext.AppHost.OnSessionFilter(
