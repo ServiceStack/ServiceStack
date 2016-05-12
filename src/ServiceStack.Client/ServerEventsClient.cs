@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,8 +94,36 @@ namespace ServiceStack
             get { return ConnectionInfo != null ? ConnectionInfo.DisplayName : "(not connected)"; }
         }
 
-        private readonly string eventStreamPath;
+        private string eventStreamPath;
         public string EventStreamUri { get; private set; }
+
+        public string BaseUri
+        {
+            get
+            {
+                var serviceClientMeta = this.ServiceClient as IServiceClientMeta;
+                return serviceClientMeta == null ? null : serviceClientMeta.BaseUri;
+            }
+            set
+            {
+                this.eventStreamPath = value.CombineWith("event-stream");
+                ConstructEventStreamUri();
+
+                var serviceClientMeta = this.ServiceClient as IServiceClientMeta;
+                if (serviceClientMeta == null) {
+                    return;
+                }
+
+                PropertyInfo baseUriProp = serviceClientMeta.GetType()
+                    .GetProperty("BaseUri", BindingFlags.Public | BindingFlags.Instance);
+
+                if (baseUriProp == null || !baseUriProp.CanWrite) {
+                    return;
+                }
+
+                baseUriProp.SetValue(serviceClientMeta, value, null);
+            }
+        }
 
         private string[] channels;
         public string[] Channels
@@ -106,9 +135,14 @@ namespace ServiceStack
                     throw new ArgumentNullException("channels");
 
                 this.channels = value;
-                this.EventStreamUri = this.eventStreamPath
-                    .AddQueryParam("channels", string.Join(",", channels));
+                ConstructEventStreamUri();
             }
+        }
+
+        private void ConstructEventStreamUri()
+        {
+            this.EventStreamUri = this.eventStreamPath
+                    .AddQueryParam("channels", string.Join(",", this.channels));
         }
 
         public IServiceClient ServiceClient { get; set; }
@@ -210,7 +244,7 @@ namespace ServiceStack
         {
             return messageTcs.Task;
         }
-
+        
         protected void OnConnectReceived()
         {
             if (log.IsDebugEnabled)
