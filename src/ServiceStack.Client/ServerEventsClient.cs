@@ -101,27 +101,17 @@ namespace ServiceStack
         {
             get
             {
-                var serviceClientMeta = this.ServiceClient as IServiceClientMeta;
-                return serviceClientMeta == null ? null : serviceClientMeta.BaseUri;
+                var meta = this.ServiceClient as IServiceClientMeta;
+                return meta != null ? meta.BaseUri : null;
             }
             set
             {
                 this.eventStreamPath = value.CombineWith("event-stream");
-                ConstructEventStreamUri();
+                BuildEventStreamUri();
 
-                var serviceClientMeta = this.ServiceClient as IServiceClientMeta;
-                if (serviceClientMeta == null) {
-                    return;
-                }
-
-                PropertyInfo baseUriProp = serviceClientMeta.GetType()
-                    .GetProperty("BaseUri", BindingFlags.Public | BindingFlags.Instance);
-
-                if (baseUriProp == null || !baseUriProp.CanWrite) {
-                    return;
-                }
-
-                baseUriProp.SetValue(serviceClientMeta, value, null);
+                var meta = this.ServiceClient as IServiceClientMeta;
+                if (meta != null)
+                    meta.BaseUri = value;
             }
         }
 
@@ -135,14 +125,14 @@ namespace ServiceStack
                     throw new ArgumentNullException("channels");
 
                 this.channels = value;
-                ConstructEventStreamUri();
+                BuildEventStreamUri();
             }
         }
 
-        private void ConstructEventStreamUri()
+        private void BuildEventStreamUri()
         {
             this.EventStreamUri = this.eventStreamPath
-                    .AddQueryParam("channels", string.Join(",", this.channels));
+                .AddQueryParam("channels", string.Join(",", this.channels));
         }
 
         public IServiceClient ServiceClient { get; set; }

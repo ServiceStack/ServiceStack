@@ -1918,7 +1918,7 @@ namespace ServiceStack
     public interface IServiceClientMeta
     {
         string Format { get; }
-        string BaseUri { get; }
+        string BaseUri { get; set; }
         string SyncReplyBaseUri { get; }
         string AsyncOneWayBaseUri { get; }
         string UserName { get; }
