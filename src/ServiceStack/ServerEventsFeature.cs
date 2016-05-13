@@ -93,16 +93,7 @@ namespace ServiceStack
             }
         }
 
-        public bool CanAccessSubscription(IRequest req, string subscriptionId)
-        {
-            if (!ValidateUserAddress)
-                return true;
-
-            var sub = req.TryResolve<IServerEvents>().GetSubscriptionInfo(subscriptionId);
-            return sub.UserAddress == req.UserHostAddress;
-        }
-
-        public bool CanAccessSubscription(IRequest req, SubscriptionInfo sub)
+        internal bool CanAccessSubscription(IRequest req, SubscriptionInfo sub)
         {
             if (!ValidateUserAddress)
                 return true;
