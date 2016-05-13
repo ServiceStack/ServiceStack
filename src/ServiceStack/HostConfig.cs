@@ -86,6 +86,7 @@ namespace ServiceStack
                 WriteErrorsToResponse = true,
                 ReturnsInnerException = true,
                 DisposeDependenciesAfterUse = true,
+                LogUnobservedTaskExceptions = true,
                 MarkdownOptions = new MarkdownOptions(),
                 MarkdownBaseType = typeof(MarkdownViewBase),
                 MarkdownGlobalHelpers = new Dictionary<string, Type>(),
@@ -176,6 +177,7 @@ namespace ServiceStack
             this.EnableFeatures = instance.EnableFeatures;
             this.WriteErrorsToResponse = instance.WriteErrorsToResponse;
             this.DisposeDependenciesAfterUse = instance.DisposeDependenciesAfterUse;
+            this.LogUnobservedTaskExceptions = instance.LogUnobservedTaskExceptions;
             this.ReturnsInnerException = instance.ReturnsInnerException;
             this.MarkdownOptions = instance.MarkdownOptions;
             this.MarkdownBaseType = instance.MarkdownBaseType;
@@ -253,6 +255,7 @@ namespace ServiceStack
         public bool ReturnsInnerException { get; set; }
         public bool WriteErrorsToResponse { get; set; }
         public bool DisposeDependenciesAfterUse { get; set; }
+        public bool LogUnobservedTaskExceptions { get; set; }
 
         public MarkdownOptions MarkdownOptions { get; set; }
         public Type MarkdownBaseType { get; set; }

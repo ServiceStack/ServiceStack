@@ -165,6 +165,9 @@ namespace ServiceStack.Host.Handlers
         public List<ResponseStatus> StartUpErrors { get; set; }
 
         [DataMember]
+        public List<ResponseStatus> AsyncErrors { get; set; }
+
+        [DataMember]
         public RequestHandlerInfo LastRequestInfo { get; set; }
 
         [DataMember]
@@ -323,6 +326,7 @@ namespace ServiceStack.Host.Handlers
                 Ipv6Addresses = ipv6Address,
                 PluginsLoaded = HostContext.AppHost.PluginsLoaded,
                 StartUpErrors = HostContext.AppHost.StartUpErrors,
+                AsyncErrors = HostContext.AppHost.AsyncErrors,
                 LastRequestInfo = LastRequestInfo,
                 VirtualPathProviderFiles = HostContext.AppHost.VirtualFileSources.GetAllMatchingFiles("*").Take(virtualPathCount).Map(x => x.RealPath),
                 Stats = new Dictionary<string, string> {

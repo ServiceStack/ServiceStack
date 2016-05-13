@@ -96,6 +96,7 @@ namespace ServiceStack
                 { HttpStatusCode.NotFound, new NotFoundHttpHandler() },
             };
             StartUpErrors = new List<ResponseStatus>();
+            AsyncErrors = new List<ResponseStatus>();
             PluginsLoaded = new List<string>();
             Plugins = new List<IPlugin> {
                 new HtmlFormat(),
@@ -321,6 +322,8 @@ namespace ServiceStack
 
         public List<ResponseStatus> StartUpErrors { get; set; }
 
+        public List<ResponseStatus> AsyncErrors { get; set; }
+
         public List<string> PluginsLoaded { get; set; }
 
         public List<IPlugin> Plugins { get; set; }
@@ -534,6 +537,22 @@ namespace ServiceStack
                 && !Container.Exists<IAuthRepository>())
             {
                 Container.Register<IAuthRepository>(c => c.Resolve<IUserAuthRepository>());
+            }
+
+            if (config.LogUnobservedTaskExceptions)
+            {
+                System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (sender, args) =>
+                {
+                    args.SetObserved();
+                    args.Exception.Handle(ex =>
+                    {
+                        lock (AsyncErrors)
+                        {
+                            AsyncErrors.Add(DtoUtils.CreateErrorResponse(null, ex).GetResponseStatus());
+                            return true;
+                        }
+                    });
+                };
             }
 
             foreach (var callback in AfterInitCallbacks)
