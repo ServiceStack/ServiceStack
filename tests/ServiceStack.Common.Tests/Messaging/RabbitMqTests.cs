@@ -85,7 +85,8 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IConnection connection = mqFactory.CreateConnection())
             using (IModel channel = connection.CreateModel())
             {
-                5.Times(i => {
+                5.Times(i =>
+                {
                     byte[] payload = new HelloRabbit { Name = "World! #{0}".Fmt(i) }.ToJson().ToUtf8Bytes();
                     var props = channel.CreateBasicProperties();
                     props.Persistent = true;
@@ -136,7 +137,8 @@ namespace ServiceStack.Common.Tests.Messaging
                 var consumerTag = channel.BasicConsume(QueueNames<HelloRabbit>.In, noAck: false, consumer: consumer);
                 string recvMsg = null;
 
-                ThreadPool.QueueUserWorkItem(_ => {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
                     Thread.Sleep(100);
                     PublishHelloRabbit(channel);
                 });
@@ -165,7 +167,7 @@ namespace ServiceStack.Common.Tests.Messaging
                         break;
                     }
                 }
-                
+
                 Assert.That(recvMsg, Is.Not.Null);
             }
         }
@@ -188,7 +190,7 @@ namespace ServiceStack.Common.Tests.Messaging
 
         private static void PublishHelloRabbit(IModel channel, string text = "World!")
         {
-            byte[] payload = new HelloRabbit {Name = text}.ToJson().ToUtf8Bytes();
+            byte[] payload = new HelloRabbit { Name = text }.ToJson().ToUtf8Bytes();
             var props = channel.CreateBasicProperties();
             props.Persistent = true;
             channel.BasicPublish(Exchange, QueueNames<HelloRabbit>.In, props, payload);
@@ -257,7 +259,8 @@ namespace ServiceStack.Common.Tests.Messaging
                 string recvMsg = null;
                 EndOfStreamException lastEx = null;
 
-                var bgThread = new Thread(() => {
+                var bgThread = new Thread(() =>
+                {
                     try
                     {
                         var consumer = new QueueingBasicConsumer(channel);
@@ -286,7 +289,7 @@ namespace ServiceStack.Common.Tests.Messaging
                     }
                     catch (Exception ex)
                     {
-                        "Exception in bgthread: {0}: {1}".Print(ex.GetType().Name,ex.Message);
+                        "Exception in bgthread: {0}: {1}".Print(ex.GetType().Name, ex.Message);
                     }
                 })
                 {
@@ -321,7 +324,8 @@ namespace ServiceStack.Common.Tests.Messaging
 
                 channel.Close();
 
-                ThreadPool.QueueUserWorkItem(_ => {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
                     try
                     {
                         PublishHelloRabbit(channel);
@@ -330,7 +334,7 @@ namespace ServiceStack.Common.Tests.Messaging
                     {
                         lastEx = ex as OperationInterruptedException;
                         "Caught {0}: {1}".Print(ex.GetType().Name, ex);
-                    }    
+                    }
                 });
 
                 Thread.Sleep(1000);

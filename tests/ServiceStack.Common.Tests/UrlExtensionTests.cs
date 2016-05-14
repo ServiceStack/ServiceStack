@@ -24,15 +24,15 @@ namespace ServiceStack.Common.Tests
     }
 
     [Route("/route/{Id}")]
-	public class FieldId : IReturn
-	{
-		public readonly long Id;
+    public class FieldId : IReturn
+    {
+        public readonly long Id;
 
-		public FieldId(long id)
-		{
-			Id = id;
-		}
-	}
+        public FieldId(long id)
+        {
+            Id = id;
+        }
+    }
 
     [Route("/route/{Ids}")]
     public class ArrayIds : IReturn
@@ -81,22 +81,22 @@ namespace ServiceStack.Common.Tests
         public string Excluded { get; set; }
     }
 
-	public enum Gender
-	{
-		None = 0,
-		Male,
-		Female
-	}
+    public enum Gender
+    {
+        None = 0,
+        Male,
+        Female
+    }
 
-	[Route("/route/{Id}")]
-	public class RequestWithValueTypes : IReturn
-	{
-		public long Id { get; set; }
+    [Route("/route/{Id}")]
+    public class RequestWithValueTypes : IReturn
+    {
+        public long Id { get; set; }
 
-		public Gender Gender1 { get; set; }
+        public Gender Gender1 { get; set; }
 
-		public Gender? Gender2 { get; set; }
-	}
+        public Gender? Gender2 { get; set; }
+    }
 
     [TestFixture]
     public class UrlExtensionTests
@@ -129,16 +129,16 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-		public void Can_create_url_with_FieldId()
-		{
-			using (JsConfig.BeginScope())
-			{
-				JsConfig.IncludePublicFields = true;
-				var url = new FieldId(1).ToUrl("GET");
-				Assert.That(url, Is.EqualTo("/route/1"));
+        public void Can_create_url_with_FieldId()
+        {
+            using (JsConfig.BeginScope())
+            {
+                JsConfig.IncludePublicFields = true;
+                var url = new FieldId(1).ToUrl("GET");
+                Assert.That(url, Is.EqualTo("/route/1"));
 
-			}
-		}
+            }
+        }
 
         [Test]
         public void Can_create_url_with_ArrayIds()
@@ -168,40 +168,40 @@ namespace ServiceStack.Common.Tests
             Assert.That(url, Is.EqualTo("/route/1?inc=Yes"));
         }
 
-		[Test]
-		public void Cannot_use_default_for_non_nullable_value_types_on_querystring()
-		{
-			var url = new RequestWithValueTypes {Id = 1, Gender1 = Gender.None}.ToUrl("GET");
-			Assert.That(url, Is.EqualTo("/route/1"));
-		}
+        [Test]
+        public void Cannot_use_default_for_non_nullable_value_types_on_querystring()
+        {
+            var url = new RequestWithValueTypes { Id = 1, Gender1 = Gender.None }.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/route/1"));
+        }
 
-		[Test]
-		public void Can_use_non_default_for_non_nullable_value_types_on_querystring()
-		{
-			var url = new RequestWithValueTypes { Id = 1, Gender1 = Gender.Male }.ToUrl("GET");
-			Assert.That(url, Is.EqualTo("/route/1?gender1=Male"));
-		}
+        [Test]
+        public void Can_use_non_default_for_non_nullable_value_types_on_querystring()
+        {
+            var url = new RequestWithValueTypes { Id = 1, Gender1 = Gender.Male }.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/route/1?gender1=Male"));
+        }
 
-		[Test]
-		public void Can_use_default_for_nullable_value_types_on_querystring()
-		{
-			var url = new RequestWithValueTypes { Id = 1, Gender2 = Gender.None }.ToUrl("GET");
-			Assert.That(url, Is.EqualTo("/route/1?gender2=None"));
-		}
+        [Test]
+        public void Can_use_default_for_nullable_value_types_on_querystring()
+        {
+            var url = new RequestWithValueTypes { Id = 1, Gender2 = Gender.None }.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/route/1?gender2=None"));
+        }
 
-		[Test]
-		public void Cannot_use_null_for_nullable_value_types_on_querystring()
-		{
-			var url = new RequestWithValueTypes { Id = 1, Gender2 = null }.ToUrl("GET");
-			Assert.That(url, Is.EqualTo("/route/1"));
-		}
+        [Test]
+        public void Cannot_use_null_for_nullable_value_types_on_querystring()
+        {
+            var url = new RequestWithValueTypes { Id = 1, Gender2 = null }.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/route/1"));
+        }
 
-		[Test]
-		public void Can_use_non_default_for_nullable_value_types_on_querystring()
-		{
-			var url = new RequestWithValueTypes { Id = 1, Gender2 = Gender.Male }.ToUrl("GET");
-			Assert.That(url, Is.EqualTo("/route/1?gender2=Male"));
-		}
+        [Test]
+        public void Can_use_non_default_for_nullable_value_types_on_querystring()
+        {
+            var url = new RequestWithValueTypes { Id = 1, Gender2 = Gender.Male }.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/route/1?gender2=Male"));
+        }
 
         [Test]
         public void Can_combine_Uris_with_toUrl()
@@ -212,12 +212,12 @@ namespace ServiceStack.Common.Tests
             Assert.That(new Uri(serviceEndpoint, actionUrl).ToString(), Is.EqualTo("http://localhost/api/route/1"));
         }
 
-		[Test]
-		public void Can_use_default_for_non_nullable_value_types_on_path()
-		{
-			var url = new RequestWithValueTypes { Id = 0 }.ToUrl("GET");
-			Assert.That(url, Is.EqualTo("/route/0"));
-		}
+        [Test]
+        public void Can_use_default_for_non_nullable_value_types_on_path()
+        {
+            var url = new RequestWithValueTypes { Id = 0 }.ToUrl("GET");
+            Assert.That(url, Is.EqualTo("/route/0"));
+        }
 
         [Route("/images/{ImagePath*}")]
         public class WildCardPath : IReturn<object>

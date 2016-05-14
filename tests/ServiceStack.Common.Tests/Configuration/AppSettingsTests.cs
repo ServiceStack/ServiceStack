@@ -95,10 +95,10 @@ namespace ServiceStack.Common.Tests
             using (var db = settings.DbFactory.Open())
             {
                 var value = db.Scalar<string>(
-                    "SELECT Value FROM ConfigSetting WHERE Id = @id", new { id = "RealKey"});
+                    "SELECT Value FROM ConfigSetting WHERE Id = @id", new { id = "RealKey" });
 
                 Assert.That(value, Is.EqualTo("This is a real value"));
-            }            
+            }
         }
 
         [Test]
@@ -180,7 +180,7 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
             Assert.That(appSettings.Get("EmptyKey"), Is.EqualTo(""));
             Assert.That(appSettings.Get("RealKey"), Is.EqualTo("This is a real value"));
 
-            Assert.That(appSettings.Get("IntKey", defaultValue:1), Is.EqualTo(42));
+            Assert.That(appSettings.Get("IntKey", defaultValue: 1), Is.EqualTo(42));
 
             var list = appSettings.GetList("ListKey");
             Assert.That(list, Has.Count.EqualTo(5));
@@ -206,7 +206,7 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
         {
             return new DictionarySettings(GetConfigDictionary())
             {
-                ParsingStrategy = null,   
+                ParsingStrategy = null,
             };
         }
 
@@ -331,7 +331,7 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
                 Assert.That(ex.Message.Contains("BadDictionaryKey"));
             }
         }
-        
+
         [Test]
         public void Get_Returns_ObjectNoLineFeed()
         {

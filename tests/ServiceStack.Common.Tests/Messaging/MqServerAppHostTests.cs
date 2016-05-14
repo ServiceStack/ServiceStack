@@ -123,8 +123,8 @@ namespace ServiceStack.Common.Tests.Messaging
 
         public async Task<object> Any(AnyTestMqAsync request)
         {
-            return await Task.Factory.StartNew(() => 
-                new AnyTestMqResponse {CorrelationId = request.Id});
+            return await Task.Factory.StartNew(() =>
+                new AnyTestMqResponse { CorrelationId = request.Id });
         }
 
         public object Post(PostTestMq request)
