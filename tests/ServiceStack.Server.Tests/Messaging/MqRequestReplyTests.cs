@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Funq;
@@ -83,6 +84,61 @@ namespace ServiceStack.Server.Tests.Messaging
                     IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(replyToMq);
                     mqClient.Ack(responseMsg);
                     Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
+                }
+            }
+        }
+
+        [Test]
+        public void Can_send_message_with_custom_Tag()
+        {
+            using (var mqServer = CreateMqServer())
+            {
+                if (mqServer is RabbitMqServer)
+                    return; //Uses DeliveryTag for Tag
+
+                mqServer.RegisterHandler<HelloIntro>(m =>
+                    new Message<HelloIntroResponse>(new HelloIntroResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) }) { Tag = m.Tag });
+                mqServer.Start();
+
+                using (var mqClient = mqServer.CreateMessageQueueClient())
+                {
+                    var replyToMq = mqClient.GetTempQueueName();
+                    mqClient.Publish(new Message<HelloIntro>(new HelloIntro { Name = "World" })
+                    {
+                        ReplyTo = replyToMq,
+                        Tag = "Custom"
+                    });
+
+                    IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(replyToMq);
+                    mqClient.Ack(responseMsg);
+                    Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
+                    Assert.That(responseMsg.Tag, Is.EqualTo("Custom"));
+                }
+            }
+        }
+
+        [Test]
+        public void Can_send_message_with_custom_Header()
+        {
+            using (var mqServer = CreateMqServer())
+            {
+                mqServer.RegisterHandler<HelloIntro>(m =>
+                    new Message<HelloIntroResponse>(new HelloIntroResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) }) { Meta = m.Meta });
+                mqServer.Start();
+
+                using (var mqClient = mqServer.CreateMessageQueueClient())
+                {
+                    var replyToMq = mqClient.GetTempQueueName();
+                    mqClient.Publish(new Message<HelloIntro>(new HelloIntro { Name = "World" })
+                    {
+                        ReplyTo = replyToMq,
+                        Meta = new Dictionary<string, string> { { "Custom", "Header" } }
+                    });
+
+                    IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(replyToMq);
+                    mqClient.Ack(responseMsg);
+                    Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
+                    Assert.That(responseMsg.Meta["Custom"], Is.EqualTo("Header"));
                 }
             }
         }

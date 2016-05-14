@@ -216,15 +216,32 @@ namespace ServiceStack.RabbitMq
 
             if (props.Headers != null)
             {
-                object errors = null;
-                props.Headers.TryGetValue("Error", out errors);
-                if (errors != null)
+                foreach (var entry in props.Headers)
                 {
-                    var errorBytes = errors as byte[];
-                    var errorsJson = errorBytes != null
-                        ? errorBytes.FromUtf8Bytes()
-                        : errors.ToString();
-                    message.Error = errorsJson.FromJson<ResponseStatus>();
+                    if (entry.Key == "Error")
+                    {
+                        var errors = entry.Value;
+                        if (errors != null)
+                        {
+                            var errorBytes = errors as byte[];
+                            var errorsJson = errorBytes != null
+                                ? errorBytes.FromUtf8Bytes()
+                                : errors.ToString();
+                            message.Error = errorsJson.FromJson<ResponseStatus>();
+                        }
+                    }
+                    else
+                    {
+                        if (message.Meta == null)
+                            message.Meta = new Dictionary<string, string>();
+
+                        var bytes = entry.Value as byte[];
+                        var value = bytes != null
+                            ? bytes.FromUtf8Bytes()
+                            : entry.Value.ToString();
+
+                        message.Meta[entry.Key] = value;
+                    }
                 }
             }
 

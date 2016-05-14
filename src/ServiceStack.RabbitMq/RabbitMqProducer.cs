@@ -100,6 +100,15 @@ namespace ServiceStack.RabbitMq
                 props.Persistent = true;
                 props.PopulateFromMessage(message);
 
+                if (message.Meta != null)
+                {
+                    props.Headers = new Dictionary<string, object>();
+                    foreach (var entry in message.Meta)
+                    {
+                        props.Headers[entry.Key] = entry.Value;
+                    }
+                }
+
                 if (PublishMessageFilter != null)
                 {
                     PublishMessageFilter(queueName, props, message);

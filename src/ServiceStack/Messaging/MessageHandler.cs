@@ -190,7 +190,10 @@ namespace ServiceStack.Messaging
                 
                 if (response != null)
                 {
-                    var responseType = response.GetType();
+                    var responseMessage = response as IMessage;
+                    var responseType = responseMessage != null 
+                        ? (responseMessage.Body != null ? responseMessage.Body.GetType() : typeof(object))
+                        : response.GetType();
 
                     //If there's no explicit ReplyTo, send it to the typed Response InQ by default
                     var mqReplyTo = message.ReplyTo;
@@ -231,7 +234,9 @@ namespace ServiceStack.Messaging
                     }
 
                     //Otherwise send to our trusty response Queue (inc if replyClient fails)
-                    var responseMessage = MessageFactory.Create(response);
+                    if (responseMessage == null)
+                        responseMessage = MessageFactory.Create(response);
+
                     responseMessage.ReplyId = message.Id;
                     mqClient.Publish(mqReplyTo, responseMessage);
                 }

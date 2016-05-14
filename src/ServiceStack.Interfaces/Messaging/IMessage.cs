@@ -4,7 +4,7 @@ using ServiceStack.Model;
 namespace ServiceStack.Messaging
 {
     public interface IMessage
-        : IHasId<Guid>
+        : IHasId<Guid>, IMeta
     {
         DateTime CreatedDate { get; }
 
