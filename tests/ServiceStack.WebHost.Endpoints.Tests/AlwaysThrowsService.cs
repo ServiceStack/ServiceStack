@@ -46,20 +46,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class ThrowArgumentException : IReturn<ThrowArgumentException>
+    {
+        public int Id { get; set; }
+    }
+
     [DataContract]
-	public class AlwaysThrowsResponse : IHasResponseStatus
-	{
-		public AlwaysThrowsResponse()
-		{
-			this.ResponseStatus = new ResponseStatus();
-		}
+    public class AlwaysThrowsResponse : IHasResponseStatus
+    {
+        public AlwaysThrowsResponse()
+        {
+            this.ResponseStatus = new ResponseStatus();
+        }
 
-		[DataMember]
-		public string Result { get; set; }
+        [DataMember]
+        public string Result { get; set; }
 
-		[DataMember]
-		public ResponseStatus ResponseStatus { get; set; }
-	}
+        [DataMember]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 
     [DataContract]
     public class BasicAuthRequired
@@ -67,8 +72,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
-	public class AlwaysThrowsService : Service
-	{
+    public class AlwaysThrowsService : Service
+    {
         public object Any(AlwaysThrows request)
         {
             if (request.StatusCode.HasValue)
@@ -95,20 +100,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         public static string GetErrorMessage(string value)
-		{
-			return value + " is not implemented";
-		}
+        {
+            return value + " is not implemented";
+        }
 
         public object Any(BasicAuthRequired request)
         {
             return request;
         }
-	}
+
+        public object Any(ThrowArgumentException request)
+        {
+            throw new ArgumentNullException("Id");
+        }
+    }
 
     public class AlwaysThrowsAppHost : AppHostHttpListenerBase
     {
-        public AlwaysThrowsAppHost() 
-            : base("Always Throws Service", typeof(AlwaysThrowsService).Assembly) {}
+        public AlwaysThrowsAppHost()
+            : base("Always Throws Service", typeof(AlwaysThrowsService).Assembly) { }
 
         public override void Configure(Container container)
         {
@@ -160,7 +170,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     /// </summary>
     [TestFixture]
     public abstract class WebServicesTests
-        //: TestBase
+    //: TestBase
     {
         public const string ListeningOn = "http://localhost:1337/";
         private const string TestString = "ServiceStack";
@@ -202,6 +212,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Is.EqualTo(typeof(NotImplementedException).Name));
                 Assert.That(response.ResponseStatus.Message,
                     Is.EqualTo(expectedError));
+            }
+        }
+
+        [Test]
+        public void Can_Handle_ThrowArgumentException()
+        {
+            var client = CreateNewServiceClient();
+            try
+            {
+                var response = client.Send<ThrowArgumentException>(
+                    new ThrowArgumentException());
+
+                Assert.Fail("Should throw HTTP errors");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo(400));
+                Assert.That(webEx.StatusDescription, Is.EqualTo(typeof(ArgumentNullException).Name));
+                Assert.That(webEx.Message, Is.EqualTo(typeof(ArgumentNullException).Name));
+                Assert.That(webEx.ErrorCode, Is.EqualTo(typeof(ArgumentNullException).Name));
+                Assert.That(webEx.ErrorMessage.Replace("\r\n", "\n"), Is.EqualTo("Value cannot be null.\nParameter name: Id"));
             }
         }
 

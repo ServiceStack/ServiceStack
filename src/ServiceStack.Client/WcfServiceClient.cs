@@ -273,11 +273,11 @@ namespace ServiceStack
                 var responseStatus = response.GetResponseStatus();
                 if (responseStatus != null && !string.IsNullOrEmpty(responseStatus.ErrorCode))
                 {
-                    throw new WebServiceException(responseStatus.Message, null)
+                    throw new WebServiceException(responseStatus.ErrorCode, null)
                     {
                         StatusCode = GetErrorStatus(responseMsg),
                         ResponseDto = response,
-                        StatusDescription = responseStatus.Message,
+                        StatusDescription = responseStatus.ErrorCode,
                     };
                 }
 
