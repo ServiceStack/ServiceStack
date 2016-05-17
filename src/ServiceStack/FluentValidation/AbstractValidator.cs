@@ -90,6 +90,10 @@ namespace ServiceStack.FluentValidation
         /// <returns>A ValidationResult object containing any validation failures.</returns>
         public virtual ValidationResult Validate(ValidationContext<T> context) {
             context.Guard("Cannot pass null to Validate");
+
+            if (Request == null)
+                Request = context.Request;
+
             var failures = nestedValidators.SelectMany(x => x.Validate(context)).ToList();
             return new ValidationResult(failures);
         }

@@ -264,7 +264,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var fieldError = status.Errors[0];
             Assert.That(fieldError.FieldName, Is.EqualTo("Int"));
-            Assert.That(fieldError.ErrorCode, Is.EqualTo(typeof (SerializationException).Name));
+            Assert.That(fieldError.ErrorCode, Is.EqualTo(typeof(SerializationException).Name));
             Assert.That(fieldError.Message, Is.EqualTo("'string' is an Invalid value for 'Int'"));
 
             var fieldError2 = status.Errors[1];

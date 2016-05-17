@@ -11,7 +11,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/uservalidation")]
-	[Route("/uservalidation/{Id}")]
+    [Route("/uservalidation/{Id}")]
     public class UserValidation
     {
         public string FirstName { get; set; }
@@ -26,24 +26,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class UserValidator : AbstractValidator<UserValidation>, IRequiresRequest
     {
         public IAddressValidator AddressValidator { get; set; }
-		public IRequest Request { get; set; }
+        public IRequest Request { get; set; }
 
         public UserValidator()
         {
-			RuleFor(x => x.FirstName).Must(f =>
-			{
-				if (Request == null)
-					Assert.Fail();
+            RuleFor(x => x.FirstName).Must(f =>
+            {
+                if (Request == null)
+                    Assert.Fail();
 
-				return true;
-			});
-			RuleFor(x => x.LastName).NotEmpty().WithErrorCode("ShouldNotBeEmpty");
-			RuleSet(ApplyTo.Post | ApplyTo.Put, () =>
+                return true;
+            });
+            RuleFor(x => x.LastName).NotEmpty().WithErrorCode("ShouldNotBeEmpty");
+            RuleSet(ApplyTo.Post | ApplyTo.Put, () =>
             {
                 RuleFor(x => x.FirstName).NotEmpty().WithMessage("Please specify a first name");
             });
         }
-	}
+    }
 
     //Not matching the naming convention ([Request DTO Name] + "Response")
     public class OperationResponse
@@ -73,8 +73,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
-				Plugins.Add(new ValidationFeature());
-				container.RegisterValidators(typeof(UserValidator).Assembly);
+                Plugins.Add(new ValidationFeature());
+                container.RegisterValidators(typeof(UserValidator).Assembly);
             }
         }
 
@@ -109,12 +109,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 //be run for all test fixtures, not just this one.
 
                 return new Func<IServiceClient>[] {
-					() => UnitTestServiceClient(),
-					() => new JsonServiceClient(ListeningOn),
-					() => new JsonHttpClient(ListeningOn),
-					() => new JsvServiceClient(ListeningOn),
-					() => new XmlServiceClient(ListeningOn),
-				};
+                    () => UnitTestServiceClient(),
+                    () => new JsonServiceClient(ListeningOn),
+                    () => new JsonHttpClient(ListeningOn),
+                    () => new JsvServiceClient(ListeningOn),
+                    () => new XmlServiceClient(ListeningOn),
+                };
             }
         }
 
@@ -124,13 +124,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var client = (IRestClient)factory();
-				var response = client.Get<OperationResponse>("UserValidation");
+                var response = client.Get<OperationResponse>("UserValidation");
                 Assert.Fail("Should throw Validation Exception");
             }
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
-            	Assert.That(ex.StatusDescription, Is.EqualTo(ExpectedErrorCode));
+                Assert.That(ex.StatusDescription, Is.EqualTo(ExpectedErrorCode));
             }
         }
 
@@ -142,11 +142,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 //be run for all test fixtures, not just this one.
 
                 return new Func<IServiceClient>[] {
-					() => new JsonServiceClient(ListeningOn),
-					() => new JsonHttpClient(ListeningOn),
-					() => new JsvServiceClient(ListeningOn),
-					() => new XmlServiceClient(ListeningOn),
-				};
+                    () => new JsonServiceClient(ListeningOn),
+                    () => new JsonHttpClient(ListeningOn),
+                    () => new JsvServiceClient(ListeningOn),
+                    () => new XmlServiceClient(ListeningOn),
+                };
             }
         }
 
