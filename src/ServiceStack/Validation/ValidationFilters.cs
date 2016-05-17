@@ -13,13 +13,11 @@ namespace ServiceStack.Validation
 
             try
             {
-                var validatorWithHttpRequest = validator as IRequiresRequest;
-                if (validatorWithHttpRequest != null)
-                    validatorWithHttpRequest.Request = req;
-
                 var ruleSet = req.Verb;
                 var validationResult = validator.Validate(
-                    new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)));
+                    new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)) {
+                        Request = req
+                    });
 
                 if (validationResult.IsValid) return;
 

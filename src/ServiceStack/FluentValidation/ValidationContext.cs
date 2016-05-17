@@ -16,6 +16,8 @@
 // The latest version of this file can be found at http://www.codeplex.com/FluentValidation
 #endregion
 
+using ServiceStack.Web;
+
 namespace ServiceStack.FluentValidation
 {
     using Internal;
@@ -51,14 +53,18 @@ namespace ServiceStack.FluentValidation
         public object InstanceToValidate { get; private set; }
         public IValidatorSelector Selector { get; private set; }
         public bool IsChildContext { get; internal set; }
+        public IRequest Request { get; internal set; }
 
         public ValidationContext Clone(PropertyChain chain = null, object instanceToValidate = null, IValidatorSelector selector = null) {
-            return new ValidationContext(instanceToValidate ?? this.InstanceToValidate, chain ?? this.PropertyChain, selector ?? this.Selector);
+            return new ValidationContext(instanceToValidate ?? this.InstanceToValidate, chain ?? this.PropertyChain, selector ?? this.Selector) {
+                Request = Request
+            };
         }
 
         internal ValidationContext CloneForChildValidator(object instanceToValidate) {
             return new ValidationContext(instanceToValidate, PropertyChain, Selector) {
-                IsChildContext = true
+                IsChildContext = true,
+                Request = Request
             };
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
@@ -55,16 +56,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class CustomRequestError
     {
         public string Name { get; set; }
+
+        public List<CustomRequestItem> Items { get; set; }
+    }
+
+    public class CustomRequestItem
+    {
+        public string Name { get; set; }
     }
 
     public class MyRequestValidator : AbstractValidator<CustomRequestError>
     {
         public MyRequestValidator()
         {
-            RuleSet(ApplyTo.Post | ApplyTo.Put | ApplyTo.Get, () => {
+            RuleSet(ApplyTo.Post | ApplyTo.Put | ApplyTo.Get, () =>
+            {
+                var req = base.Request;
                 RuleFor(c => c.Name)
                     .Must(x => !base.Request.PathInfo.ContainsAny("-", ".", " "));
+
+                RuleFor(x => x.Items).SetCollectionValidator(new MyRequestItemValidator());
             });
+        }
+    }
+
+    public class MyRequestItemValidator : AbstractValidator<CustomRequestItem>
+    {
+        public MyRequestItemValidator()
+        {
+            RuleFor(x => x.Name)
+                .Must(x => !base.Request.QueryString["Items"].ContainsAny("-", ".", " "));
         }
     }
 
@@ -120,13 +141,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var response = "{0}/customrequesterror/the.name".Fmt(Config.ServiceStackBaseUri).GetJsonFromUrl();
+                var response = "{0}/customerror".Fmt(Config.ServiceStackBaseUri).GetJsonFromUrl();
                 Assert.Fail("Should throw HTTP Error");
             }
             catch (Exception ex)
             {
                 var body = ex.GetResponseBody();
-                body.Print();
+                Assert.That(body, Is.EqualTo("{\"code\":\"GreaterThan\",\"error\":\"'Age' must be greater than '0'.\"}"));
             }
         }
 
@@ -135,13 +156,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var response = "{0}/customerror".Fmt(Config.ServiceStackBaseUri).GetJsonFromUrl();
+                var response = "{0}/customrequesterror/the.name".Fmt(Config.ServiceStackBaseUri)
+                    .GetJsonFromUrl();
                 Assert.Fail("Should throw HTTP Error");
             }
             catch (Exception ex)
             {
                 var body = ex.GetResponseBody();
-                Assert.That(body, Is.EqualTo("{\"code\":\"GreaterThan\",\"error\":\"'Age' must be greater than '0'.\"}"));
+                Assert.That(body, Is.EquivalentTo("{\"code\":\"Predicate\",\"error\":\"The specified condition was not met for 'Name'.\"}"));
+            }
+        }
+
+        [Test]
+        public void Can_access_Request_in_item_collection_Validator()
+        {
+            try
+            {
+                var response = (Config.ServiceStackBaseUri + "/customrequesterror/thename?items=[{name:item.name}]")
+                    .GetJsonFromUrl();
+                Assert.Fail("Should throw HTTP Error");
+            }
+            catch (Exception ex)
+            {
+                var body = ex.GetResponseBody();
+                Assert.That(body, Is.EqualTo("{\"code\":\"Predicate\",\"error\":\"The specified condition was not met for 'Name'.\"}"));
             }
         }
 
