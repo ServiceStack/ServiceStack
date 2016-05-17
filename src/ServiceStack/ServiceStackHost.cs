@@ -811,6 +811,11 @@ namespace ServiceStack
             }
         }
 
+        public void RegisterServicesInAssembly(Assembly assembly)
+        {
+            ServiceController.RegisterServicesInAssembly(assembly);
+        }
+
         public virtual RouteAttribute[] GetRouteAttributes(Type requestType)
         {
             return requestType.AllAttributes<RouteAttribute>();

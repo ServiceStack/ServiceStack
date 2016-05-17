@@ -47,6 +47,7 @@
     <Compile Include="AutoQueryTypes.cs" />
     <Compile Include="CodeGenTestTypes.cs" />
     <Compile Include="CustomMethodRoutes.cs" />
+    <Compile Include="DynamicallyRegisteredService.cs" />
     <Compile Include="Echoes.cs" />
     <Compile Include="Errors.cs" />
     <Compile Include="MetadataTest.cs" />

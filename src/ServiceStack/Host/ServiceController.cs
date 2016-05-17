@@ -103,14 +103,20 @@ namespace ServiceStack.Host
                 throw new Exception(msg, ex);
             }
         }
+        public void RegisterServicesInAssembly(Assembly assembly)
+        {
+            foreach (var serviceType in assembly.GetTypes().Where(IsServiceType))
+            {
+                RegisterService(serviceType);
+            }
+        }
 
         public void RegisterService(Type serviceType)
         {
             try
             {
-                var isNService = typeof(IService).IsAssignableFrom(serviceType);
-                if (!isNService)
-                    throw new ArgumentException("Type {0} is not a Web Service that inherits IService".Fmt(serviceType.FullName));
+                if (!IsServiceType(serviceType))
+                    throw new ArgumentException("Type {0} is not a Web Service that implements IService".Fmt(serviceType.FullName));
                 
                 RegisterService(typeFactory, serviceType);
                 appHost.Container.RegisterAutoWiredType(serviceType);
@@ -134,8 +140,7 @@ namespace ServiceStack.Host
         {
             var processedReqs = new HashSet<Type>();
 
-            if (typeof(IService).IsAssignableFrom(serviceType)
-                && !serviceType.IsAbstract && !serviceType.IsGenericTypeDefinition && !serviceType.ContainsGenericParameters)
+            if (IsServiceType(serviceType))
             {
                 foreach (var mi in serviceType.GetActions())
                 {
@@ -173,6 +178,14 @@ namespace ServiceStack.Host
                         (responseType != null ? "Reply" : "OneWay"), serviceType.GetOperationName(), requestType.GetOperationName());
                 }
             }
+        }
+
+        public static bool IsServiceType(Type serviceType)
+        {
+            return typeof(IService).IsAssignableFrom(serviceType)
+                && !serviceType.IsAbstract 
+                && !serviceType.IsGenericTypeDefinition 
+                && !serviceType.ContainsGenericParameters;
         }
 
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();

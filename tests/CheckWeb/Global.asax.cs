@@ -93,6 +93,8 @@ namespace CheckWeb
                 RequestLogger = new CsvRequestLogger(),
             });
 
+            Plugins.Add(new DynamicallyRegisteredPlugin());
+
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 

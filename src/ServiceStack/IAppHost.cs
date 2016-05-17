@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Reflection;
 using System.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -171,6 +172,11 @@ namespace ServiceStack
         /// Register an Adhoc web service on Startup
         /// </summary>
         void RegisterService(Type serviceType, params string[] atRestPaths);
+
+        /// <summary>
+        /// Register all Services in Assembly
+        /// </summary>
+        void RegisterServicesInAssembly(Assembly assembly);
 
         /// <summary>
         /// List of pre-registered and user-defined plugins to be enabled in this AppHost
