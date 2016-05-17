@@ -51,9 +51,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Route("/customrequesterror/{Name}")]
+    public class CustomRequestError
+    {
+        public string Name { get; set; }
+    }
+
+    public class MyRequestValidator : AbstractValidator<CustomRequestError>
+    {
+        public MyRequestValidator()
+        {
+            RuleSet(ApplyTo.Post | ApplyTo.Put | ApplyTo.Get, () => {
+                RuleFor(c => c.Name)
+                    .Must(x => !base.Request.PathInfo.ContainsAny("-", ".", " "));
+            });
+        }
+    }
+
     public class CustomValidationService : Service
     {
         public object Get(CustomError request)
+        {
+            return request;
+        }
+
+        public object Any(CustomRequestError request)
         {
             return request;
         }
@@ -95,6 +117,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         [Test]
         public void Can_create_custom_validation_error()
+        {
+            try
+            {
+                var response = "{0}/customrequesterror/the.name".Fmt(Config.ServiceStackBaseUri).GetJsonFromUrl();
+                Assert.Fail("Should throw HTTP Error");
+            }
+            catch (Exception ex)
+            {
+                var body = ex.GetResponseBody();
+                body.Print();
+            }
+        }
+
+        [Test]
+        public void Can_access_Request_in_Validator()
         {
             try
             {

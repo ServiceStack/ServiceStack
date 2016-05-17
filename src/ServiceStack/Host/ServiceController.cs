@@ -174,8 +174,9 @@ namespace ServiceStack.Host
                         };
                     }
 
-                    Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
-                        (responseType != null ? "Reply" : "OneWay"), serviceType.GetOperationName(), requestType.GetOperationName());
+                    if (Log.IsDebugEnabled)
+                        Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
+                            responseType != null ? "Reply" : "OneWay", serviceType.GetOperationName(), requestType.GetOperationName());
                 }
             }
         }
