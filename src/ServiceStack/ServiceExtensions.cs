@@ -127,6 +127,23 @@ namespace ServiceStack
             return service.Request.GetSession(reload);
         }
 
+        public static TUserSession SessionAs<TUserSession>(this IRequest req)
+        {
+            if (HostContext.TestMode)
+            {
+                var mockSession = req.TryResolve<TUserSession>();
+                if (!Equals(mockSession, default(TUserSession)))
+                    mockSession = req.TryResolve<IAuthSession>() is TUserSession
+                        ? (TUserSession)req.TryResolve<IAuthSession>()
+                        : default(TUserSession);
+
+                if (!Equals(mockSession, default(TUserSession)))
+                    return mockSession;
+            }
+
+            return SessionFeature.GetOrCreateSession<TUserSession>(req.GetCacheClient(), req, req.Response);
+        }
+
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
             if (httpReq == null)
