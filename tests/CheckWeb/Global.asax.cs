@@ -113,6 +113,19 @@ namespace CheckWeb
                         ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
                     });
 
+            dbFactory.RegisterConnection("pgsql",
+                new OrmLiteConnectionFactory(
+                    "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+                    PostgreSqlDialect.Provider));
+
+            using (var db = dbFactory.OpenDbConnection("pgsql"))
+            {
+                db.DropAndCreateTable<Rockstar>();
+                db.DropAndCreateTable<PgRockstar>();
+
+                db.Insert(new Rockstar { Id = 1, FirstName = "PostgreSQL", LastName = "Connection", Age = 1 });
+                db.Insert(new PgRockstar { Id = 1, FirstName = "PostgreSQL", LastName = "Named Connection", Age = 1 });
+            }
 
             this.GlobalHtmlErrorHttpHandler = new RazorHandler("GlobalErrorHandler.cshtml");
 

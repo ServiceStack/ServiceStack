@@ -18,6 +18,22 @@ namespace Check.ServiceInterface
         public int? Age { get; set; }
     }
 
+    [ConnectionInfo(NamedConnection = "pgsql")]
+    [Route("/pgsql/rockstars")]
+    public class QueryPostgresRockstars : QueryDb<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    [NamedConnection("pgsql")]
+    public class PgRockstar : Rockstar {}
+
+    [Route("/pgsql/pgrockstars")]
+    public class QueryPostgresPgRockstars : QueryDb<PgRockstar>
+    {
+        public int? Age { get; set; }
+    }
+
     public class QueryRockstarsConventions : QueryDb<Rockstar>
     {
         public int[] Ids { get; set; }
