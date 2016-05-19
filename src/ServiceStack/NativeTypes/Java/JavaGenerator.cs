@@ -122,6 +122,7 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+            sb.AppendLine("{0}IncludeRequestReferenceTypes: {1}".Fmt(defaultValue("IncludeRequestReferenceTypes"), Config.IncludeRequestReferenceTypes));
 
             sb.AppendLine("*/");
             sb.AppendLine();

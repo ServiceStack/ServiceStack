@@ -78,6 +78,7 @@ namespace ServiceStack.NativeTypes.CSharp
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
+            sb.AppendLine("{0}IncludeRequestReferenceTypes: {1}".Fmt(defaultValue("IncludeRequestReferenceTypes"), Config.IncludeRequestReferenceTypes));
 
             //[GeneratedCode]
             //sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), Config.DefaultNamespaces.ToArray().Join(", ")));
