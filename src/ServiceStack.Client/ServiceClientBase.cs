@@ -1908,6 +1908,30 @@ namespace ServiceStack
 
             hasCookies.CookieContainer.Add(baseUri, cookie);
         }
+
+        public static string GetSessionId(this IServiceClient client)
+        {
+            string sessionId;
+            client.GetCookieValues().TryGetValue("ss-id", out sessionId);
+            return sessionId;
+        }
+
+        public static string GetPermanentSessionId(this IServiceClient client)
+        {
+            string sessionId;
+            client.GetCookieValues().TryGetValue("ss-pid", out sessionId);
+            return sessionId;
+        }
+
+        public static void SetSessionId(this IServiceClient client, string sessionId)
+        {
+            client.SetCookie("ss-id", sessionId);
+        }
+
+        public static void SetPermanentSessionId(this IServiceClient client, string sessionId)
+        {
+            client.SetCookie("ss-pid", sessionId, expiresIn:TimeSpan.FromDays(365 * 20));
+        }
     }
 
     public interface IHasCookieContainer
