@@ -4,8 +4,6 @@ using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
 {
-    using System.Linq;
-
     public class MetadataTypesConfig
     {
         public MetadataTypesConfig(
@@ -29,8 +27,7 @@ namespace ServiceStack
             bool makePropertiesOptional = true,
             bool makeDataContractsExtensible = false,
             bool initializeCollections = true,
-            int? addImplicitVersion = null,
-            bool includeRequestReferenceTypes = false)
+            int? addImplicitVersion = null)
         {
             BaseUrl = baseUrl;
             MakePartial = makePartial;
@@ -53,7 +50,6 @@ namespace ServiceStack
             SettersReturnThis = settersReturnThis;
             MakePropertiesOptional = makePropertiesOptional;
             AddImplicitVersion = addImplicitVersion;
-            IncludeRequestReferenceTypes = includeRequestReferenceTypes;
         }
 
         public string BaseUrl { get; set; }
@@ -83,8 +79,6 @@ namespace ServiceStack
         public List<string> IncludeTypes { get; set; }
         public List<string> ExcludeTypes { get; set; }
         public List<string> TreatTypesAsStrings { get; set; }
-
-        public bool IncludeRequestReferenceTypes { get; set; }
 
         public string GlobalNamespace { get; set; }
 

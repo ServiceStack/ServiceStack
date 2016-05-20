@@ -69,7 +69,6 @@ namespace ServiceStack.NativeTypes
     public class NativeTypesBase
     {
         public string BaseUrl { get; set; }
-        public bool? IncludeRequestReferenceTypes { get; set; }
         public bool? MakePartial { get; set; }
         public bool? MakeVirtual { get; set; }
         public bool? AddReturnMarker { get; set; }

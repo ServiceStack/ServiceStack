@@ -29,13 +29,12 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void GetIncludeList_Returns_IncludeList_If_IncludeRequestReferenceTypes_False()
+        public void GetIncludeList_Returns_IncludeList_If_NoIncludeTypes_HaveWildcard()
         {
-            var includeTypes = new List<string> { "Dto1", "Dto2" };
+            var includeTypes = new List<string> { "Dto1", "DTO2" };
             var config = new MetadataTypesConfig
             {
-                IncludeTypes = includeTypes,
-                IncludeRequestReferenceTypes = false
+                IncludeTypes = includeTypes
             };
 
             var result = MetadataExtensions.GetIncludeList(new MetadataTypes(), config);
@@ -43,12 +42,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeRequestReferenceTypes_False_Csharp()
+        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeTypes_NoWildcard_Csharp()
         {
             var result = appHost.ExecuteService(new TypesCSharp
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = false
+                IncludeTypes = new List<string> { "Dto" }
             });
 
             var stringResult = result.ToString();
@@ -59,12 +57,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeRequestReferenceTypes_True_Csharp()
+        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeTypes_HasWildcard_Csharp()
         {
             var result = appHost.ExecuteService(new TypesCSharp
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = true
+                IncludeTypes = new List<string> { "Dto.*" }
             });
 
             var stringResult = result.ToString();
@@ -75,12 +72,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeRequestReferenceTypes_False_Fsharp()
+        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeTypes_NoWildcard_Fsharp()
         {
             var result = appHost.ExecuteService(new TypesFSharp
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = false
+                IncludeTypes = new List<string> { "Dto" }
             });
 
             var stringResult = result.ToString();
@@ -91,12 +87,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeRequestReferenceTypes_True_Fsharp()
+        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeTypes_HasWildcard_Fsharp()
         {
             var result = appHost.ExecuteService(new TypesFSharp
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = true
+                IncludeTypes = new List<string> { "Dto.*" }
             });
 
             var stringResult = result.ToString();
@@ -107,12 +102,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeRequestReferenceTypes_False_VbNet()
+        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeTypes_NoWildcard_VbNet()
         {
             var result = appHost.ExecuteService(new TypesVbNet()
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = false
+                IncludeTypes = new List<string> { "Dto" }
             });
 
             var stringResult = result.ToString();
@@ -123,12 +117,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeRequestReferenceTypes_True_VbNet()
+        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeTypes_HasWildcard_VbNet()
         {
             var result = appHost.ExecuteService(new TypesVbNet
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = true
+                IncludeTypes = new List<string> { "Dto.*" }
             });
 
             var stringResult = result.ToString();
@@ -139,12 +132,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeRequestReferenceTypes_False_Kotlin()
+        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeTypes_NoWildcard_Kotlin()
         {
             var result = appHost.ExecuteService(new TypesKotlin
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = false
+                IncludeTypes = new List<string> { "Dto" }
             });
 
             var stringResult = result.ToString();
@@ -155,12 +147,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeRequestReferenceTypes_True_Kotlin()
+        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeTypes_HasWildcard_Kotlin()
         {
             var result = appHost.ExecuteService(new TypesKotlin
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = true
+                IncludeTypes = new List<string> { "Dto.*" }
             });
 
             var stringResult = result.ToString();
@@ -171,12 +162,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeRequestReferenceTypes_False_Java()
+        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeTypes_NoWildcard_Java()
         {
             var result = appHost.ExecuteService(new TypesJava
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = false
+                IncludeTypes = new List<string> { "Dto" }
             });
 
             var stringResult = result.ToString();
@@ -187,12 +177,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeRequestReferenceTypes_True_Java()
+        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeTypes_HasWildcard_Java()
         {
             var result = appHost.ExecuteService(new TypesJava
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = true
+                IncludeTypes = new List<string> { "Dto.*" }
             });
 
             var stringResult = result.ToString();
@@ -203,12 +192,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeRequestReferenceTypes_False_Swift()
+        public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeTypes_NoWildcard_Swift()
         {
             var result = appHost.ExecuteService(new TypesSwift
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = false
+                IncludeTypes = new List<string> { "Dto" }
             });
 
             var stringResult = result.ToString();
@@ -219,12 +207,11 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeRequestReferenceTypes_True_Swift()
+        public void IncludeTypes_ReturnsReferenceTypes_If_IncludeTypes_HasWildcard_Swift()
         {
             var result = appHost.ExecuteService(new TypesSwift
             {
-                IncludeTypes = new List<string> { "Dto" },
-                IncludeRequestReferenceTypes = true
+                IncludeTypes = new List<string> { "Dto.*" }
             });
 
             var stringResult = result.ToString();

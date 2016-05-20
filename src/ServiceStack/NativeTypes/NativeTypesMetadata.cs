@@ -57,8 +57,7 @@ namespace ServiceStack.NativeTypes
                 ExportTypes = defaults.ExportTypes,
                 IgnoreTypes = defaults.IgnoreTypes,
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
-                GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace,
-                IncludeRequestReferenceTypes = req.IncludeRequestReferenceTypes ?? defaults.IncludeRequestReferenceTypes
+                GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace
             };
         }
 
@@ -886,12 +885,19 @@ namespace ServiceStack.NativeTypes
 
         public static List<string> GetIncludeList(MetadataTypes metadata, MetadataTypesConfig config)
         {
-            if (!config.IncludeRequestReferenceTypes)
+            const string wildCard = ".*";
+
+            var typesToExpand = config.IncludeTypes
+                                      .Where(s => s.Length > 2 && s.EndsWith(wildCard))
+                                      .Select(s => s.Substring(0, s.Length - 2))
+                                      .ToList();
+
+            if (typesToExpand.Count == 0)
                 return config.IncludeTypes;
 
             // From IncludeTypes get the corresponding MetadataTypes
             var includedMetadataTypes =
-                metadata.Operations.Select(o => o.Request).Where(t => config.IncludeTypes.Contains(t.Name)).ToList();
+                metadata.Operations.Select(o => o.Request).Where(t => typesToExpand.Contains(t.Name)).ToList();
 
             // Get return types for IncludedTypes
             var returnTypesForInclude = (from response in metadata.Operations.Select(o => o.Response)
@@ -908,6 +914,7 @@ namespace ServiceStack.NativeTypes
 
             return referenceTypes
                 .Union(config.IncludeTypes)
+                .Union(typesToExpand)
                 .Union(returnTypesForInclude.Select(x => x.Name))
                 .Distinct()
                 .ToList();
