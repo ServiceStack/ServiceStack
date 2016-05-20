@@ -150,7 +150,6 @@ namespace ServiceStack.NativeTypes.VbNet
             allTypes.AddRange(requestTypes);
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(types);
-            allTypes.RemoveAll(x => x.IgnoreType(Config));
 
             var orderedTypes = allTypes
                 .OrderBy(x => x.Namespace)

@@ -193,6 +193,7 @@
     <Compile Include="Models\Shipper.cs" />
     <Compile Include="Models\ShipperFactory.cs" />
     <Compile Include="Models\BuiltInsFactory.cs" />
+    <Compile Include="NativeTypesTests.cs" />
     <Compile Include="OAuth\AuthUserSessionTests.cs" />
     <Compile Include="OAuth\OrmLiteUserAuthRepositoryTests.cs" />
     <Compile Include="OAuth\OrmLiteUserAuthTests.cs" />

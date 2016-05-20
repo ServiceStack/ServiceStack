@@ -57,7 +57,7 @@ namespace ServiceStack.NativeTypes
                 ExportTypes = defaults.ExportTypes,
                 IgnoreTypes = defaults.IgnoreTypes,
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
-                GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace,
+                GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace
             };
         }
 
@@ -871,25 +871,66 @@ namespace ServiceStack.NativeTypes
 
         public static void RemoveIgnoredTypes(this MetadataTypes metadata, MetadataTypesConfig config)
         {
-            metadata.Types.RemoveAll(x => x.IgnoreType(config));
-            metadata.Operations.RemoveAll(x => x.Request.IgnoreType(config));
+            var includeList = GetIncludeList(metadata, config);
+
+            metadata.Types.RemoveAll(x => x.IgnoreType(config, includeList));
+            metadata.Operations.RemoveAll(x => x.Request.IgnoreType(config, includeList));
             metadata.Operations.Each(x => {
-                if (x.Response != null && x.Response.IgnoreType(config))
+                if (x.Response != null && x.Response.IgnoreType(config, includeList))
                 {
                     x.Response = null;
                 }
             });
         }
 
-        public static bool IgnoreType(this MetadataType type, MetadataTypesConfig config)
+        public static List<string> GetIncludeList(MetadataTypes metadata, MetadataTypesConfig config)
         {
+            const string wildCard = ".*";
+
+            var typesToExpand = config.IncludeTypes
+                                      .Where(s => s.Length > 2 && s.EndsWith(wildCard))
+                                      .Select(s => s.Substring(0, s.Length - 2))
+                                      .ToList();
+
+            if (typesToExpand.Count == 0)
+                return config.IncludeTypes;
+
+            // From IncludeTypes get the corresponding MetadataTypes
+            var includedMetadataTypes =
+                metadata.Operations.Select(o => o.Request).Where(t => typesToExpand.Contains(t.Name)).ToList();
+
+            // Get return types for IncludedTypes
+            var returnTypesForInclude = (from response in metadata.Operations.Select(o => o.Response)
+                                        where response != null
+                                        join returnName in includedMetadataTypes.Select(o => o.ReturnMarkerTypeName?.Name) on response.Name
+                                            equals returnName
+                                        select response).ToList();
+
+            // GetReferencedTypes for both request + response objects
+            var referenceTypes = includedMetadataTypes
+                .Union(returnTypesForInclude)
+                .Where(x => x != null)
+                .SelectMany(x => x.GetReferencedTypeNames());
+
+            return referenceTypes
+                .Union(config.IncludeTypes)
+                .Union(typesToExpand)
+                .Union(returnTypesForInclude.Select(x => x.Name))
+                .Distinct()
+                .ToList();
+        }
+
+        public static bool IgnoreType(this MetadataType type, MetadataTypesConfig config, List<string> overrideIncludeType = null)
+        {
+            // If is a systemType and export types doesn't include this
             if (type.IgnoreSystemType() && config.ExportTypes.All(x => x.Name != type.Name))
                 return true;
 
-            if (config.IncludeTypes != null && !config.IncludeTypes.Contains(type.Name))
+            var includes = overrideIncludeType ?? config.IncludeTypes;
+            if (includes != null && !includes.Contains(type.Name))
                 return true;
 
-            if (config.ExcludeTypes != null && 
+            if (config.ExcludeTypes != null &&
                 config.ExcludeTypes.Any(x => type.Name == x || type.Name.StartsWith(x + "`")))
                 return true;
 
