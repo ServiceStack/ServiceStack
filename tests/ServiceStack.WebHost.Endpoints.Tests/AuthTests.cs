@@ -559,16 +559,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var client = (ServiceClientBase)GetClientWithUserPassword();
                 client.AlwaysSendBasicAuthHeader = true;
-                client.RequestFilter = req =>
-                {
-                    bool hasAuthentication = false;
-                    foreach (var key in req.Headers.Keys)
-                    {
-                        if (key.ToString() == "Authorization")
-                            hasAuthentication = true;
-                    }
-                    Assert.IsTrue(hasAuthentication);
-                };
+                client.RequestFilter = req => 
+                    Assert.That(req.Headers[HttpHeaders.Authorization], Is.Not.Null);
 
                 var request = new Secured { Name = "test" };
                 var response = client.Send<SecureResponse>(request);
@@ -577,6 +569,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.Fail(webEx.Message);
+            }
+        }
+
+        [Test]
+        public void Authenticating_once_with_BasicAuth_does_not_establish_auth_session()
+        {
+            var client = (ServiceClientBase)GetClientWithUserPassword();
+            client.AlwaysSendBasicAuthHeader = true;
+            client.RequestFilter = req =>
+                Assert.That(req.Headers[HttpHeaders.Authorization], Is.Not.Null);
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send<SecureResponse>(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var nonBasicAuthClient = GetClient();
+            nonBasicAuthClient.SetSessionId(client.GetSessionId());
+            try
+            {
+                response = nonBasicAuthClient.Send<SecureResponse>(request);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
             }
         }
 

@@ -86,14 +86,14 @@ namespace ServiceStack.Auth
                 //No Joy :(
                 tokens.RequestToken = null;
                 tokens.RequestTokenSecret = null;
-                authService.SaveSession(session, SessionExpiry);
+                SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
             }
             if (OAuthUtils.AcquireRequestToken())
             {
                 tokens.RequestToken = OAuthUtils.RequestToken;
                 tokens.RequestTokenSecret = OAuthUtils.RequestTokenSecret;
-                authService.SaveSession(session, SessionExpiry);
+                SaveSession(authService, session, SessionExpiry);
 
                 //Redirect to OAuth provider to approve access
                 return authService.Redirect(AccessTokenUrlFilter(this, this.AuthorizeUrl

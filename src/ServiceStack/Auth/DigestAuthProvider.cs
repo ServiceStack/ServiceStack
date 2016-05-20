@@ -140,7 +140,7 @@ namespace ServiceStack.Auth
             }
             finally
             {
-                authService.SaveSession(session, SessionExpiry);
+                SaveSession(authService, session, SessionExpiry);
             }
 
             return null;

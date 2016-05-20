@@ -55,7 +55,7 @@ namespace ServiceStack.Auth
                 var preAuthUrl = PreAuthUrl + "?client_id={0}&redirect_uri={1}&scope={2}"
                     .Fmt(AppId, this.CallbackUrl.UrlEncode(), string.Join(",", Permissions));
 
-                authService.SaveSession(session, SessionExpiry);
+                SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 

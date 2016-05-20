@@ -22,6 +22,8 @@ namespace ServiceStack.Auth
         public string CallbackUrl { get; set; }
         public string RedirectUrl { get; set; }
 
+        public bool StatelessAuth { get; set; }
+
         public Action<AuthUserSession, IAuthTokens, Dictionary<string, string>> LoadUserAuthFilter { get; set; }
 
         public Func<AuthContext, IHttpResult> CustomValidationFilter { get; set; }
@@ -37,7 +39,10 @@ namespace ServiceStack.Auth
             return url;
         }
 
-        protected AuthProvider(){}
+        protected AuthProvider()
+        {
+            StatelessAuth = GetType().HasInterface(typeof(IAuthWithRequest));
+        }
 
         protected AuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
             : this()
@@ -242,10 +247,22 @@ namespace ServiceStack.Auth
             }
             finally
             {
-                authService.SaveSession(session, SessionExpiry);
+                SaveSession(authService, session, SessionExpiry);
             }
 
             return null;
+        }
+
+        public virtual void SaveSession(IServiceBase authService, IAuthSession session, TimeSpan? sessionExpiry = null)
+        {
+            if (!StatelessAuth)
+            {
+                authService.SaveSession(session, SessionExpiry);
+            }
+            else
+            {
+                authService.Request.Items[Keywords.Session] = session;
+            }
         }
 
         // Keep in-memory map of userAuthId's when no IAuthRepository exists 
