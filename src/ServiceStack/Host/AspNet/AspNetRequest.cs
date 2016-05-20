@@ -311,6 +311,14 @@ namespace ServiceStack.Host.AspNet
             }
         }
 
+        public string Accept
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.Accept]) ? null : request.Headers[HttpHeaders.Accept];
+            }
+        }
+
         private string remoteIp;
         public string RemoteIp
         {

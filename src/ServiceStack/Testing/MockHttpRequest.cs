@@ -140,6 +140,7 @@ namespace ServiceStack.Testing
         public int? XForwardedPort { get; set; }
         public string XForwardedProtocol { get; set; }
         public string XRealIp { get; set; }
+        public string Accept { get; set; }
 
         public bool IsSecureConnection { get; set; }
         public string[] AcceptTypes { get; set; }

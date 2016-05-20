@@ -40,6 +40,11 @@ namespace ServiceStack.Web
         /// The value of the X-Real-IP header, null if null or empty
         /// </summary>
         string XRealIp { get; }
+
+        /// <summary>
+        /// The value of the Accept HTTP Request Header
+        /// </summary>
+        string Accept { get; }
     }
 }
 #endif

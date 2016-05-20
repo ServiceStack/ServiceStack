@@ -130,7 +130,15 @@ namespace ServiceStack.Host.HttpListener
         {
             get
             {
-                return String.IsNullOrEmpty(request.Headers[HttpHeaders.XRealIp]) ? null : request.Headers[HttpHeaders.XRealIp];
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XRealIp]) ? null : request.Headers[HttpHeaders.XRealIp];
+            }
+        }
+
+        public string Accept
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.Accept]) ? null : request.Headers[HttpHeaders.Accept];
             }
         }
 
