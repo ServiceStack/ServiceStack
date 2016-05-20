@@ -888,23 +888,26 @@ namespace ServiceStack.NativeTypes
             const string wildCard = ".*";
 
             var typesToExpand = config.IncludeTypes
-                                      .Where(s => s.Length > 2 && s.EndsWith(wildCard))
-                                      .Select(s => s.Substring(0, s.Length - 2))
-                                      .ToList();
+                .Where(s => s.Length > 2 && s.EndsWith(wildCard))
+                .Map(s => s.Substring(0, s.Length - 2));
 
             if (typesToExpand.Count == 0)
                 return config.IncludeTypes;
 
             // From IncludeTypes get the corresponding MetadataTypes
-            var includedMetadataTypes =
-                metadata.Operations.Select(o => o.Request).Where(t => typesToExpand.Contains(t.Name)).ToList();
+            var includedMetadataTypes = metadata.Operations
+                .Select(o => o.Request)
+                .Where(t => typesToExpand.Contains(t.Name))
+                .ToList();
 
-            // Get return types for IncludedTypes
-            var returnTypesForInclude = (from response in metadata.Operations.Select(o => o.Response)
-                                        where response != null
-                                        join returnName in includedMetadataTypes.Select(o => o.ReturnMarkerTypeName?.Name) on response.Name
-                                            equals returnName
-                                        select response).ToList();
+            var includeSet = includedMetadataTypes
+                .Where(x => x.ReturnMarkerTypeName != null)
+                .Select(x => x.ReturnMarkerTypeName.Name)
+                .ToHashSet();
+
+            var returnTypesForInclude = metadata.Operations
+                .Where(x => x.Response != null && includeSet.Contains(x.Response.Name))
+                .Map(x => x.Response);
 
             // GetReferencedTypes for both request + response objects
             var referenceTypes = includedMetadataTypes
