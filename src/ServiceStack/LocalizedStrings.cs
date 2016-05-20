@@ -19,6 +19,9 @@
         public static string CacheInfo = "__cacheinfo";
         public static string Session = "__session";
         public static string JsConfig = "jsconfig";
+        public static string SessionId = "ss-id";
+        public static string PermanentSessionId = "ss-pid";
+        public static string SessionOptionsKey = "ss-opt";
     }
 
     public static class LocalizedStrings
