@@ -137,19 +137,25 @@ namespace ServiceStack
             return null;
         }
 
-        internal static bool ShouldAuthenticate(WebException webEx, string userName, string password)
+        internal static bool ShouldAuthenticate(WebException webEx, string userName, string password, ICredentials credentials)
         {
             return webEx != null
                    && webEx.Response != null
                    && ((HttpWebResponse)webEx.Response).StatusCode == HttpStatusCode.Unauthorized
-                   && !string.IsNullOrEmpty(userName)
-                   && !string.IsNullOrEmpty(password);
+                   && ((!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password)) 
+                        || credentials != null);
         }
 
         public static void AddBasicAuth(this WebRequest client, string userName, string password)
         {
             client.Headers[HttpHeaders.Authorization]
                 = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(userName + ":" + password));
+        }
+
+        public static void AddApiKeyAuth(this WebRequest client, string apiKey)
+        {
+            client.Headers[HttpHeaders.Authorization]
+                = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(apiKey + ":"));
         }
 
 #if NETFX_CORE
