@@ -199,7 +199,7 @@ namespace ServiceStack
         /// </summary>
         public static IEnumerable<T> Safe<T>(this IEnumerable<T> enumerable)
         {
-            return enumerable ?? new T[0];
+            return enumerable ?? TypeReflector<T>.EmptyArray;
         }
     }
 }

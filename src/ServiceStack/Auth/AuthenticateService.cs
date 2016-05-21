@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -35,7 +36,8 @@ namespace ServiceStack.Auth
         public static string DefaultOAuthProvider { get; private set; }
         public static string DefaultOAuthRealm { get; private set; }
         public static string HtmlRedirect { get; internal set; }
-        public static IAuthProvider[] AuthProviders { get; private set; }
+        internal static IAuthProvider[] AuthProviders = new IAuthProvider[0];
+        internal static IAuthWithRequest[] AuthWithRequestProviders = new IAuthWithRequest[0];
 
         static AuthenticateService()
         {
@@ -44,8 +46,10 @@ namespace ServiceStack.Auth
 
         public static IAuthProvider GetAuthProvider(string provider)
         {
-            if (AuthProviders == null || AuthProviders.Length == 0) return null;
-            if (provider == LogoutAction) return AuthProviders[0];
+            if (AuthProviders.Length == 0)
+                return null;
+            if (provider == LogoutAction)
+                return AuthProviders[0];
 
             foreach (var authConfig in AuthProviders)
             {
@@ -57,6 +61,11 @@ namespace ServiceStack.Auth
             return null;
         }
 
+        public static IAuthProvider[] GetAuthProviders()
+        {
+            return AuthProviders ?? TypeReflector<IAuthProvider>.EmptyArray;
+        }
+
         public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
         {
             if (authProviders.Length == 0)
@@ -66,6 +75,8 @@ namespace ServiceStack.Auth
             DefaultOAuthRealm = authProviders[0].AuthRealm;
 
             AuthProviders = authProviders;
+            AuthWithRequestProviders = authProviders.OfType<IAuthWithRequest>().ToArray();
+
             if (sessionFactory != null)
                 CurrentSessionFactory = sessionFactory;
         }

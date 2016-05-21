@@ -60,6 +60,11 @@ namespace ServiceStack
         /// </summary>
         public virtual bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
         {
+            foreach (var authProvider in AuthenticateService.AuthWithRequestProviders)
+            {
+                authProvider.PreAuthenticate(httpReq, httpRes);
+            }
+
             return ApplyPreRequestFilters(httpReq, httpRes);
         }
 
