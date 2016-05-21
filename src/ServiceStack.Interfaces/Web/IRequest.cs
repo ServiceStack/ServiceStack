@@ -99,6 +99,11 @@ namespace ServiceStack.Web
         string RemoteIp { get; }
 
         /// <summary>
+        /// The value of the Authorization Header used to send the Api Key, null if not available
+        /// </summary>
+        string Authorization { get; }
+
+        /// <summary>
         /// e.g. is https or not
         /// </summary>
         bool IsSecureConnection { get; }

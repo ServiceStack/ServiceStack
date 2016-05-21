@@ -154,6 +154,14 @@ namespace ServiceStack.Host.HttpListener
             }
         }
 
+        public string Authorization
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.Authorization]) ? null : request.Headers[HttpHeaders.Authorization];
+            }
+        }
+
         public bool IsSecureConnection
         {
             get { return request.IsSecureConnection || XForwardedProtocol == "https"; }

@@ -73,6 +73,7 @@ namespace ServiceStack.ServiceHost.Tests
             public Uri UrlReferrer { get; private set; }
 
             public string RemoteIp { get; set; }
+            public string Authorization { get; set; }
             public string XForwardedFor { get; set; }
             public int? XForwardedPort { get; set; }
             public string XForwardedProtocol { get; set; }

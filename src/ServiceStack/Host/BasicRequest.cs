@@ -133,6 +133,8 @@ namespace ServiceStack.Host
 
         public string RemoteIp { get; set; }
 
+        public string Authorization { get; set; }
+
         public bool IsSecureConnection { get; set; }
 
         public string[] AcceptTypes { get; set; }

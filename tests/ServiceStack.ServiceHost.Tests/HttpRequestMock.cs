@@ -110,6 +110,11 @@ namespace ServiceStack.ServiceHost.Tests
             get { throw new NotImplementedException(); }
         }
 
+        public string Authorization
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         public string XForwardedFor
         {
             get { throw new NotImplementedException(); }

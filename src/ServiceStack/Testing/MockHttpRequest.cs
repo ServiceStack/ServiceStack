@@ -136,6 +136,7 @@ namespace ServiceStack.Testing
         public string UserHostAddress { get; set; }
 
         public string RemoteIp { get; set; }
+        public string Authorization { get; set; }
         public string XForwardedFor { get; set; }
         public int? XForwardedPort { get; set; }
         public string XForwardedProtocol { get; set; }
