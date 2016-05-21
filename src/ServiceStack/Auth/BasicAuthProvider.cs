@@ -33,20 +33,22 @@ namespace ServiceStack.Auth
 
         public void PreAuthenticate(IRequest req, IResponse res)
         {
-            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
-            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
-
             var userPass = req.GetBasicAuthUserAndPassword();
             if (userPass != null)
             {
-                var authService = req.TryResolve<AuthenticateService>();
-                authService.Request = req;
-                var response = authService.Post(new Authenticate
+                //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
+                SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
+
+                using (var authService = req.TryResolve<AuthenticateService>())
                 {
-                    provider = Name,
-                    UserName = userPass.Value.Key,
-                    Password = userPass.Value.Value
-                });
+                    authService.Request = req;
+                    var response = authService.Post(new Authenticate
+                    {
+                        provider = Name,
+                        UserName = userPass.Value.Key,
+                        Password = userPass.Value.Value
+                    });
+                }
             }
         }
     }

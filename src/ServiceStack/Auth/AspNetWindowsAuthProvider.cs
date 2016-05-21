@@ -154,22 +154,22 @@ namespace ServiceStack.Auth
 
         public void PreAuthenticate(IRequest req, IResponse res)
         {
-            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
-
-            var authService = req.TryResolve<AuthenticateService>();
-            authService.Request = req;
             var user = req.GetUser();
-
             if (user != null)
             {
-                var session = req.GetSession();
-                if (LoginMatchesSession(session, user.Identity.Name)) return;
-
-                var response = authService.Post(new Authenticate
+                SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
+                using (var authService = req.TryResolve<AuthenticateService>())
                 {
-                    provider = Name,
-                    UserName = user.GetUserName(),
-                });
+                    authService.Request = req;
+                    var session = req.GetSession();
+                    if (LoginMatchesSession(session, user.Identity.Name)) return;
+
+                    var response = authService.Post(new Authenticate
+                    {
+                        provider = Name,
+                        UserName = user.GetUserName(),
+                    });
+                }
             }
         }
     }

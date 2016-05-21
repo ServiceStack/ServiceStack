@@ -158,25 +158,27 @@ namespace ServiceStack.Auth
 
         public void PreAuthenticate(IRequest req, IResponse res)
         {
-            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
-            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
-
             var digestAuth = req.GetDigestAuth();
             if (digestAuth != null)
             {
-                var authService = req.TryResolve<AuthenticateService>();
-                authService.Request = req;
-                var response = authService.Post(new Authenticate
+                //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
+                SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
+
+                using (var authService = req.TryResolve<AuthenticateService>())
                 {
-                    provider = Name,
-                    nonce = digestAuth["nonce"],
-                    uri = digestAuth["uri"],
-                    response = digestAuth["response"],
-                    qop = digestAuth["qop"],
-                    nc = digestAuth["nc"],
-                    cnonce = digestAuth["cnonce"],
-                    UserName = digestAuth["username"]
-                });
+                    authService.Request = req;
+                    var response = authService.Post(new Authenticate
+                    {
+                        provider = Name,
+                        nonce = digestAuth["nonce"],
+                        uri = digestAuth["uri"],
+                        response = digestAuth["response"],
+                        qop = digestAuth["qop"],
+                        nc = digestAuth["nc"],
+                        cnonce = digestAuth["cnonce"],
+                        UserName = digestAuth["username"]
+                    });
+                }
             }
         }
     }
