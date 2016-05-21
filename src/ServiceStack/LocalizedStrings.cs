@@ -17,6 +17,7 @@
         public static string InvokeVerb = "__verb";
         public static string DbInfo = "__dbinfo";
         public static string CacheInfo = "__cacheinfo";
+        public static string ApiKey = "__apikey";
         public static string Session = "__session";
         public static string JsConfig = "jsconfig";
         public static string SessionId = "ss-id";
@@ -45,8 +46,10 @@
         public static string NotAuthenticated = "Not Authenticated";
         public static string InvalidUsernameOrPassword = "Invalid UserName or Password";
         public static string UsernameOrEmailRequired = "UserName or Email is required";
+        public static string UserAccountLocked = "This account has been locked";
         public static string IllegalUsername = "UserName contains invalid characters";
         public static string ShouldNotRegisterAuthSession = "AuthSession's are rehydrated from ICacheClient and should not be registered in IOC's when not in HostContext.TestMode";
+        public static string ApiKeyRequiresSecureConnection = "Sending ApiKey over insecure connection forbidden when RequireSecureConnection=true";
 
         public static string InvalidRole = "Invalid Role";
         public static string InvalidPermission = "Invalid Permission";

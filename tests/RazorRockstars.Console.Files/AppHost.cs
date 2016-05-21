@@ -20,6 +20,7 @@ namespace RazorRockstars.Console.Files
 
         public bool EnableRazor = true;
         public bool EnableAuth = false;
+        public bool UseApiKeyProvider = false;
 
         public override void Configure(Container container)
         {
@@ -53,30 +54,18 @@ namespace RazorRockstars.Console.Files
             if (EnableAuth)
             {
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
-                    new IAuthProvider[] {
-                        new BasicAuthProvider(AppSettings), 
+                    new[] {
+                        UseApiKeyProvider 
+                            ? new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false }
+                            : new BasicAuthProvider(AppSettings) as IAuthProvider, 
                         new CredentialsAuthProvider(AppSettings),
-                    }));
+                    })
+                {
+                    IncludeRegistrationService = true,
+                });
 
                 container.Register<IAuthRepository>(c => new OrmLiteAuthRepository(dbFactory));
-                var authRepo = container.Resolve<IAuthRepository>();
-                authRepo.InitSchema();
-
-                string hash, salt;
-                new SaltedHash().GetHashAndSaltString("p@55word", out hash, out salt);
-
-                authRepo.CreateUserAuth(new UserAuth {
-                    Id = 1,
-                    DisplayName = "DisplayName",
-                    Email = "as@if{0}.com",
-                    UserName = "user",
-                    FirstName = "FirstName",
-                    LastName = "LastName",
-                    PasswordHash = hash,
-                    Salt = salt,
-                    Roles = new List<string> { "TheRole" },
-                    Permissions = new List<string> { "ThePermission" }
-                }, "p@55word");
+                container.Resolve<IAuthRepository>().InitSchema();
             }
         }
 

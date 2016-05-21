@@ -127,6 +127,8 @@ namespace ServiceStack
 
             if (IncludeAuthMetadataProvider && appHost.TryResolve<IAuthMetadataProvider>() == null)
                 appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
+
+            authProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

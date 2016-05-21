@@ -24,6 +24,7 @@ namespace ServiceStack.Auth
     public class AuthenticateService : Service
     {
         public const string BasicProvider = "basic";
+        public const string ApiKeyProvider = "apikey";
         public const string CredentialsProvider = "credentials";
         public const string WindowsAuthProvider = "windowsauth";
         public const string CredentialsAliasProvider = "login";
