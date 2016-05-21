@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using ServiceStack.FluentValidation;
 using ServiceStack.Validation;
@@ -133,6 +134,9 @@ namespace ServiceStack.Auth
             if (registerNewUser)
             {
                 session = this.GetSession();
+                if (!request.AutoLogin.GetValueOrDefault())
+                    session.PopulateSession(user, new List<IAuthTokens>());
+
                 session.OnRegistered(this.Request, session, this);
                 if (AuthEvents != null)
                     AuthEvents.OnRegistered(this.Request, session, this);
