@@ -86,9 +86,7 @@ namespace ServiceStack.Configuration
         {
             var value = GetNullableString(name);
             if (value == null)
-            {
-                throw new ConfigurationErrorsException(String.Format(ErrorAppsettingNotFound, name));
-            }
+                throw new ConfigurationErrorsException(string.Format(ErrorAppsettingNotFound, name));
 
             return value;
         }

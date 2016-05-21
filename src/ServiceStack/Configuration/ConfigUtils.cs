@@ -12,9 +12,9 @@ namespace ServiceStack.Configuration
         const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
         const string ErrorConnectionStringNotFound = "Unable to find Connection String: {0}";
         const string ErrorCreatingType = "Error creating type {0} from text '{1}";
-        const char ItemSeperator = ',';
-        const char KeyValueSeperator = ':';
-        const string ConfigNullValue = "{null}";
+        public const char ItemSeperator = ',';
+        public const char KeyValueSeperator = ':';
+        public const string ConfigNullValue = "{null}";
 
         /// <summary>
         /// Gets the nullable app setting.
