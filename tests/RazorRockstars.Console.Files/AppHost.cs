@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 using Funq;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
@@ -18,6 +19,7 @@ namespace RazorRockstars.Console.Files
         public AppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
 
         public bool EnableRazor = true;
+        public bool EnableAuth = false;
 
         public override void Configure(Container container)
         {
@@ -36,7 +38,8 @@ namespace RazorRockstars.Console.Files
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
-            using (var db = container.Resolve<IDbConnectionFactory>().OpenDbConnection())
+            var dbFactory = container.Resolve<IDbConnectionFactory>();
+            using (var db = dbFactory.OpenDbConnection())
             {
                 db.DropAndCreateTable<Rockstar>(); //Create table if not exists
                 db.Insert(Rockstar.SeedData); //Populate with seed data
@@ -46,6 +49,35 @@ namespace RazorRockstars.Console.Files
                 AdminAuthSecret = "secret",
                 DebugMode = true,
             });
+
+            if (EnableAuth)
+            {
+                Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+                    new IAuthProvider[] {
+                        new BasicAuthProvider(AppSettings), 
+                        new CredentialsAuthProvider(AppSettings),
+                    }));
+
+                container.Register<IAuthRepository>(c => new OrmLiteAuthRepository(dbFactory));
+                var authRepo = container.Resolve<IAuthRepository>();
+                authRepo.InitSchema();
+
+                string hash, salt;
+                new SaltedHash().GetHashAndSaltString("p@55word", out hash, out salt);
+
+                authRepo.CreateUserAuth(new UserAuth {
+                    Id = 1,
+                    DisplayName = "DisplayName",
+                    Email = "as@if{0}.com",
+                    UserName = "user",
+                    FirstName = "FirstName",
+                    LastName = "LastName",
+                    PasswordHash = hash,
+                    Salt = salt,
+                    Roles = new List<string> { "TheRole" },
+                    Permissions = new List<string> { "ThePermission" }
+                }, "p@55word");
+            }
         }
 
         private static void Main(string[] args)

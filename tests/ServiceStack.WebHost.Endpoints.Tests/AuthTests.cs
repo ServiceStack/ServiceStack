@@ -316,7 +316,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Plugins.Add(new AuthFeature(() => new CustomUserSession(),
                 GetAuthProviders(), "~/" + AuthTests.LoginUrl)
-            { RegisterPlugins = { new WebSudoFeature() } });
+            {
+                RegisterPlugins = { new WebSudoFeature() }
+            });
 
             container.Register(new MemoryCacheClient());
             userRep = new InMemoryAuthRepository();
