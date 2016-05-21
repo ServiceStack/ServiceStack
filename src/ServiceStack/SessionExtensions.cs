@@ -103,11 +103,21 @@ namespace ServiceStack
             return base64Id;
         }
 
-        public static string CreateRandomBase64Id()
+        public static string CreateRandomBase64Id(int size = 15)
         {
-            var data = new byte[15];
+            var data = new byte[size];
             randgen.GetBytes(data);
             return Convert.ToBase64String(data);
+        }
+
+        public static string CreateRandomBase62Id(int size)
+        {
+            string base64Id;
+            do
+            {
+                base64Id = CreateRandomBase64Id(size);
+            } while (Base64StringContainsUrlUnfriendlyChars(base64Id));
+            return base64Id;
         }
 
         static readonly char[] UrlUnsafeBase64Chars = new[] { '+', '/' };

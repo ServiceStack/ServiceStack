@@ -1,5 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
@@ -15,6 +16,24 @@ namespace ServiceStack.Common.Tests
                 Assert.That(sessionId, Is.Not.StringContaining("+"));
                 Assert.That(sessionId, Is.Not.StringContaining("/"));
             });
+        }
+
+        [Test]
+        public void Does_CreateRandomBase62Id_16_byte_id_in_less_than_3_attempts_avg()
+        {
+            Assert.That(SessionExtensions.CreateRandomBase62Id(16).Length, Is.EqualTo(24));
+
+            int attempts = 0;
+            1000.Times(i =>
+            {
+                do
+                {
+                    attempts++;
+                } while (SessionExtensions.CreateRandomBase64Id(16).IndexOfAny(new[] {'+', '/'}) >= 0);
+            });
+
+            attempts.Print();
+            Assert.That(attempts, Is.LessThan(1000 * 3));
         }
 
         [Test]
