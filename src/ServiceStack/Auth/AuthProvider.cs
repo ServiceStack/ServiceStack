@@ -429,6 +429,17 @@ namespace ServiceStack.Auth
 
             return referrerUrl;
         }
+
+        protected void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
+        {
+            var holdSessionId = session.Id;
+            session.PopulateWith(userAuth); //overwrites session.Id
+            session.Id = holdSessionId;
+            session.IsAuthenticated = true;
+            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+            session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
+                .ConvertAll(x => (IAuthTokens)x);
+        }
     }
 
     public class AuthContext

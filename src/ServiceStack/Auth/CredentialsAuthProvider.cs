@@ -52,7 +52,7 @@ namespace ServiceStack.Auth
             if (authRepo.TryAuthenticate(userName, password, out userAuth))
             {
                 if (IsAccountLocked(authRepo, userAuth))
-                    throw new AuthenticationException("This account has been locked");
+                    throw new AuthenticationException(ErrorMessages.UserAccountLocked);
 
                 PopulateSession(authRepo, userAuth, session);
 
@@ -60,17 +60,6 @@ namespace ServiceStack.Auth
             }
 
             return false;
-        }
-
-        private static void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
-        {
-            var holdSessionId = session.Id;
-            session.PopulateWith(userAuth); //overwrites session.Id
-            session.Id = holdSessionId;
-            session.IsAuthenticated = true;
-            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-            session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
-                .ConvertAll(x => (IAuthTokens) x);
         }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
@@ -116,9 +105,7 @@ namespace ServiceStack.Auth
                 session.IsAuthenticated = true;
 
                 if (session.UserAuthName == null)
-                {
                     session.UserAuthName = userName;
-                }
 
                 var response = OnAuthenticated(authService, session, null, null);
                 if (response != null)
@@ -149,7 +136,7 @@ namespace ServiceStack.Auth
                 throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword);
 
             if (IsAccountLocked(authRepo, userAuth))
-                throw new AuthenticationException("This account has been locked");
+                throw new AuthenticationException(ErrorMessages.UserAccountLocked);
 
             PopulateSession(authRepo, userAuth, session);
 
