@@ -44,11 +44,10 @@ namespace RazorRockstars.Console.Files
     {
         public const string ListeningOn = "http://localhost:2337/";
 
-        ServiceStackHost appHost;
+        protected readonly ServiceStackHost appHost;
         protected ApiKey ApiKey;
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+        public StatelessAuthTests()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
             appHost = CreateAppHost()
@@ -64,12 +63,6 @@ namespace RazorRockstars.Console.Files
                 FirstName = "FirstName",
                 LastName = "LastName",
             });
-
-            using (var db = appHost.Resolve<IDbConnectionFactory>().OpenDbConnection())
-            {
-                ApiKey = db.Select<ApiKey>().First();
-                ApiKey.PrintDump();
-            }
         }
 
         protected abstract ServiceStackHost CreateAppHost();
@@ -96,6 +89,15 @@ namespace RazorRockstars.Console.Files
 
     public class StatelessApiKeyAuthTests : StatelessAuthTests
     {
+        public StatelessApiKeyAuthTests()
+        {
+            using (var db = appHost.Resolve<IDbConnectionFactory>().OpenDbConnection())
+            {
+                ApiKey = db.Select<ApiKey>().First();
+                ApiKey.PrintDump();
+            }
+        }
+
         protected override ServiceStackHost CreateAppHost()
         {
             return new AppHost { EnableAuth = true, UseApiKeyProvider = true };

@@ -372,7 +372,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var userAuth1 = userAuthRepository.GetUserAuthByUserName(userName1);
             Assert.That(userAuth1, Is.Not.Null);
 
-            Register(userAuthRepository, oAuthUserSession, RegisterDto);
+            Register(userAuthRepository, null, RegisterDto);
 
             userAuth1 = userAuthRepository.GetUserAuthByUserName(userName1);
             var userAuth2 = userAuthRepository.GetUserAuthByUserName(userName2);
