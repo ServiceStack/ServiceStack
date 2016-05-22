@@ -8,61 +8,62 @@ using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
-	public class Product
-	{
-		public Product() { }
-		public Product(string name, decimal price)
-		{
-			Name = name;
-			Price = price;
-		}
+    public class Product
+    {
+        public Product() { }
+        public Product(string name, decimal price)
+        {
+            Name = name;
+            Price = price;
+        }
 
-		public int ProductID { get; set; }
-		public string Name { get; set; }
-		public decimal Price { get; set; }
-	}
+        public int ProductID { get; set; }
+        public string Name { get; set; }
+        public decimal Price { get; set; }
+    }
 
-	[TestFixture]
-	public class IntroductionExampleRazorTests : RazorTestBase
-	{
-		private List<Product> products;
-		object productArgs;
+    [TestFixture]
+    public class IntroductionExampleRazorTests : RazorTestBase
+    {
+        private List<Product> products;
+        object productArgs;
 
-	    private ServiceStackHost appHost;
+        private ServiceStackHost appHost;
 
-		[TestFixtureSetUp]
-		public void TestFixtureSetUp()
-		{
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
             appHost = new BasicAppHost().Init();
-			this.products = new List<Product> {
-				new Product("Pen", 1.99m),
-				new Product("Glass", 9.99m),
-				new Product("Book", 14.99m),
-				new Product("DVD", 11.99m),
-			};
-			productArgs = new { products = products };
-		}
+            this.products = new List<Product> {
+                new Product("Pen", 1.99m),
+                new Product("Glass", 9.99m),
+                new Product("Book", 14.99m),
+                new Product("DVD", 11.99m),
+            };
+            productArgs = new { products = products };
+        }
 
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
         }
-        
+
         [SetUp]
         public void SetUp()
         {
             RazorFormat.Instance = null;
-            RazorFormat = new RazorFormat {
+            RazorFormat = new RazorFormat
+            {
                 PageBaseType = typeof(CustomRazorBasePage<>),
                 VirtualFileSources = new InMemoryVirtualPathProvider(new BasicAppHost()),
             }.Init();
         }
 
-		[Test]
-		public void Basic_Razor_Example()
-		{
-			var template = 
+        [Test]
+        public void Basic_Razor_Example()
+        {
+            var template =
 @"<h1>Razor Example</h1>
 
 <h3>Hello @Model.name, the year is @DateTime.Now.Year</h3>
@@ -70,7 +71,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 <p>Checkout <a href=""/Product/Details/@Model.productId"">this product</a></p>
 ".NormalizeNewLines();
 
-			var expectedHtml = 
+            var expectedHtml =
 @"<h1>Razor Example</h1>
 
 <h3>Hello Demis, the year is 2016</h3>
@@ -78,24 +79,24 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 <p>Checkout <a href=""/Product/Details/10"">this product</a></p>
 ".NormalizeNewLines();
 
-			var html = RazorFormat.CreateAndRenderToHtml(template, model:new { name = "Demis", productId = 10 });
+            var html = RazorFormat.CreateAndRenderToHtml(template, model: new { name = "Demis", productId = 10 });
 
-		    html.Print();
-			Assert.That(html, Is.EqualTo(expectedHtml));
-		}
+            html.Print();
+            Assert.That(html, Is.EqualTo(expectedHtml));
+        }
 
 
-		[Test]
-		public void Simple_loop()
-		{
-			var template = @"<ul>
+        [Test]
+        public void Simple_loop()
+        {
+            var template = @"<ul>
 @foreach (var p in Model.products) {
 	<li>@p.Name: (@p.Price)</li>
 }
 </ul>
 ".NormalizeNewLines();
 
-			var expectedHtml = 
+            var expectedHtml =
 @"<ul>
 	<li>Pen: (1.99)</li>
 	<li>Glass: (9.99)</li>
@@ -106,14 +107,14 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-			html.Print();
-			Assert.That(html, Is.EqualTo(expectedHtml));
-		}
+            html.Print();
+            Assert.That(html, Is.EqualTo(expectedHtml));
+        }
 
-		[Test]
-		public void If_Statment()
-		{
-			var template = @"
+        [Test]
+        public void If_Statment()
+        {
+            var template = @"
 @if (Model.products.Count == 0) {
 <p>Sorry - no products in this category</p>
 } else {
@@ -121,7 +122,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 }
 ".NormalizeNewLines();
 
-			var expectedHtml = @"
+            var expectedHtml = @"
 <p>We have products for you!</p>
 ".NormalizeNewLines();
 
@@ -129,12 +130,12 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
-		}
+        }
 
-		[Test]
-		public void Multi_variable_declarations()
-		{
-			var template = @"
+        [Test]
+        public void Multi_variable_declarations()
+        {
+            var template = @"
 @{ 
 var number = 1; 
 var message = ""Number is "" + number; 
@@ -142,7 +143,7 @@ var message = ""Number is "" + number;
 <p>Your Message: @message</p>
 ".NormalizeNewLines();
 
-			var expectedHtml = @"
+            var expectedHtml = @"
 
 <p>Your Message: Number is 1</p>
 ".NormalizeNewLines();
@@ -151,31 +152,31 @@ var message = ""Number is "" + number;
 
             html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
-		}
+        }
 
 
-		[Test]
-		public void Integrating_content_and_code()
-		{
-			var template = 
+        [Test]
+        public void Integrating_content_and_code()
+        {
+            var template =
 @"<p>Send mail to demis.bellot@gmail.com telling him the time: @DateTime.Now.</p>
 ".NormalizeNewLines();
 
-			var expectedHtml = 
+            var expectedHtml =
 @"<p>Send mail to demis.bellot@gmail.com telling him the time: 02/06/2011 06:38:34.</p>
 ".NormalizeNewLines();
 
-            var html = RazorFormat.CreateAndRenderToHtml(template, model:productArgs);
+            var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
             html.Print();
             Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
-		}
+        }
 
 
-		[Test]
-		public void Identifying_nested_content()
-		{
-			var template = 
+        [Test]
+        public void Identifying_nested_content()
+        {
+            var template =
 @"
 @if (DateTime.Now.Year == 2016) {
 <p>If the year is 2016 then print this 
@@ -184,7 +185,7 @@ the date: @DateTime.Now</p>
 }
 ".NormalizeNewLines();
 
-			var expectedHtml = 
+            var expectedHtml =
 @"<p>If the year is 2016 then print this 
 multi-line text block and 
 the date: 02/06/2013 06:42:45</p>
@@ -194,24 +195,24 @@ the date: 02/06/2013 06:42:45</p>
 
             html.Print();
             Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
-		}
+        }
 
-		[Test]
-		public void HTML_encoding()
-		{
-			var template = 
+        [Test]
+        public void HTML_encoding()
+        {
+            var template =
 @"<p>Some Content @Model.stringContainingHtml</p>
 ".NormalizeNewLines();
 
-			var expectedHtml = 
+            var expectedHtml =
 @"<p>Some Content &lt;span&gt;html&lt;/span&gt;</p>
 ".NormalizeNewLines();
 
             var html = RazorFormat.CreateAndRenderToHtml(template, new { stringContainingHtml = "<span>html</span>" });
 
             html.Print();
-			Assert.That(html, Is.EqualTo(expectedHtml));
-		}
+            Assert.That(html, Is.EqualTo(expectedHtml));
+        }
 
-	}
+    }
 }

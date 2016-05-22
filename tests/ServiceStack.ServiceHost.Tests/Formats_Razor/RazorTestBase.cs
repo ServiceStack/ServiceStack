@@ -14,12 +14,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             return razorFormat.AddPage(filePath);
         }
     }
-    
-    public class RazorTestBase
-	{
-		public const string TemplateName = "Template";
-		protected const string PageName = "Page";
-        protected RazorFormat RazorFormat;
-	}
 
+    public class RazorTestBase
+    {
+        public const string TemplateName = "Template";
+        protected const string PageName = "Page";
+        protected RazorFormat RazorFormat;
+    }
 }

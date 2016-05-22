@@ -4,15 +4,15 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.ServiceHost.Tests.UseCase.Operations
 {
-	[DataContract]
-	public class StoreCustomers
-	{
-		public StoreCustomers()
-		{
-			Customers = new List<Customer>();
-		}
+    [DataContract]
+    public class StoreCustomers
+    {
+        public StoreCustomers()
+        {
+            Customers = new List<Customer>();
+        }
 
-		[DataMember]
-		public List<Customer> Customers { get; set; }
-	}
+        [DataMember]
+        public List<Customer> Customers { get; set; }
+    }
 }

@@ -38,13 +38,13 @@ namespace ServiceStack.ServiceHost.Tests
         public void Can_resolve_root_path()
         {
             var results = new List<string> {
-				ResolvePath(null, "/handler.all35"),
-				ResolvePath(null, "/handler.all35/"),
-				ResolvePath("api", "/location.api.wildcard35/api"),
-				ResolvePath("api", "/location.api.wildcard35/api/"),
-				ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack"),
-				ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack/"),
-			};
+                ResolvePath(null, "/handler.all35"),
+                ResolvePath(null, "/handler.all35/"),
+                ResolvePath("api", "/location.api.wildcard35/api"),
+                ResolvePath("api", "/location.api.wildcard35/api/"),
+                ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack"),
+                ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack/"),
+            };
 
             Console.WriteLine(results.Dump());
 
@@ -55,13 +55,13 @@ namespace ServiceStack.ServiceHost.Tests
         public void Can_resolve_metadata_paths()
         {
             var results = new List<string> {
-				ResolvePath(null, "/handler.all35/metadata"),
-				ResolvePath(null, "/handler.all35/metadata/"),
-				ResolvePath("api", "/location.api.wildcard35/api/metadata"),
-				ResolvePath("api", "/location.api.wildcard35/api/metadata/"),
-				ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack/metadata"),
-				ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack/metadata/"),
-			};
+                ResolvePath(null, "/handler.all35/metadata"),
+                ResolvePath(null, "/handler.all35/metadata/"),
+                ResolvePath("api", "/location.api.wildcard35/api/metadata"),
+                ResolvePath("api", "/location.api.wildcard35/api/metadata/"),
+                ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack/metadata"),
+                ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack/metadata/"),
+            };
 
             Console.WriteLine(results.Dump());
 
@@ -72,13 +72,13 @@ namespace ServiceStack.ServiceHost.Tests
         public void Can_resolve_metadata_json_paths()
         {
             var results = new List<string> {
-				ResolvePath(null, "/handler.all35/json/metadata"),
-				ResolvePath(null, "/handler.all35/json/metadata/"),
-				ResolvePath("api", "/location.api.wildcard35/api/json/metadata"),
-				ResolvePath("api", "/location.api.wildcard35/api/json/metadata/"),
-				ResolvePath("servicestack", "/location.api.wildcard35/servicestack/json/metadata"),
-				ResolvePath("servicestack", "/location.api.wildcard35/servicestack/json/metadata/"),
-			};
+                ResolvePath(null, "/handler.all35/json/metadata"),
+                ResolvePath(null, "/handler.all35/json/metadata/"),
+                ResolvePath("api", "/location.api.wildcard35/api/json/metadata"),
+                ResolvePath("api", "/location.api.wildcard35/api/json/metadata/"),
+                ResolvePath("servicestack", "/location.api.wildcard35/servicestack/json/metadata"),
+                ResolvePath("servicestack", "/location.api.wildcard35/servicestack/json/metadata/"),
+            };
 
             Console.WriteLine(results.Dump());
 
@@ -89,11 +89,11 @@ namespace ServiceStack.ServiceHost.Tests
         public void Can_resolve_paths_with_multipart_root()
         {
             var results = new List<string> {
-				HttpRequestExtensions.GetPathInfo("/api/foo/metadata", "api/foo", "api"),
-				HttpRequestExtensions.GetPathInfo("/api/foo/1.0/wildcard/metadata", "api/foo/1.0/wildcard", "api"),
-				HttpRequestExtensions.GetPathInfo("/location.api.wildcard35/api/foo/metadata", "api/foo", "api"),
-				HttpRequestExtensions.GetPathInfo("/this/is/very/nested/metadata", "this/is/very/nested", "api"),
-			};
+                HttpRequestExtensions.GetPathInfo("/api/foo/metadata", "api/foo", "api"),
+                HttpRequestExtensions.GetPathInfo("/api/foo/1.0/wildcard/metadata", "api/foo/1.0/wildcard", "api"),
+                HttpRequestExtensions.GetPathInfo("/location.api.wildcard35/api/foo/metadata", "api/foo", "api"),
+                HttpRequestExtensions.GetPathInfo("/this/is/very/nested/metadata", "this/is/very/nested", "api"),
+            };
 
             Console.WriteLine(results.Dump());
 
@@ -103,8 +103,10 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void GetPhysicalPath_Honours_WebHostPhysicalPath()
         {
-            using (var appHost = new BasicAppHost {
-                ConfigFilter = c => {
+            using (var appHost = new BasicAppHost
+            {
+                ConfigFilter = c =>
+                {
                     c.WebHostPhysicalPath = "c:/Windows/Temp";
                 }
             }.Init())

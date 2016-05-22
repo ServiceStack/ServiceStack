@@ -19,8 +19,8 @@ namespace ServiceStack.ServiceHost.Tests.Support
         public T Data { get; set; }
     }
 
-	public class GenericService<T> : IService
-	{
+    public class GenericService<T> : IService
+    {
         public object Any(T request)
         {
             return new Generic1Response { Data = request.GetType().FullName };

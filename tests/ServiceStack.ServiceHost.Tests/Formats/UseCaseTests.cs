@@ -7,51 +7,51 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
-	public class Page
-	{
-		public Page()
-		{
-			this.Tags = new List<string>();
-		}
+    public class Page
+    {
+        public Page()
+        {
+            this.Tags = new List<string>();
+        }
 
-		public string Name { get; set; }
-		public string Slug { get; set; }
-		public string Src { get; set; }
-		public string FilePath { get; set; }
-		public string Category { get; set; }
-		public string Content { get; set; }
-		public DateTime? CreatedDate { get; set; }
-		public DateTime? ModifiedDate { get; set; }
-		public List<string> Tags { get; set; }
-		
-		public string AbsoluteUrl
-		{
-			get { return "http://path.com/to/" + this.Slug; }
-		}
-	}
+        public string Name { get; set; }
+        public string Slug { get; set; }
+        public string Src { get; set; }
+        public string FilePath { get; set; }
+        public string Category { get; set; }
+        public string Content { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        public List<string> Tags { get; set; }
 
-	public class SearchResponse : IHasResponseStatus
-	{
-		public SearchResponse()
-		{
-			this.Results = new List<Page>();
-		}
+        public string AbsoluteUrl
+        {
+            get { return "http://path.com/to/" + this.Slug; }
+        }
+    }
 
-		public string Query { get; set; }
+    public class SearchResponse : IHasResponseStatus
+    {
+        public SearchResponse()
+        {
+            this.Results = new List<Page>();
+        }
 
-		public List<Page> Results { get; set; }
+        public string Query { get; set; }
 
-		public ResponseStatus ResponseStatus { get; set; }
-	}
+        public List<Page> Results { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 
 
-	[TestFixture]
-	public class UseCaseTests : MarkdownTestBase
-	{
-		private List<Page> Pages;
-		private SearchResponse SearchResponse;
+    [TestFixture]
+    public class UseCaseTests : MarkdownTestBase
+    {
+        private List<Page> Pages;
+        private SearchResponse SearchResponse;
 
-		string websiteTemplate = 
+        string websiteTemplate =
 @"<!DOCTYPE html>
 <html>
     <head>
@@ -68,23 +68,24 @@ namespace ServiceStack.ServiceHost.Tests.Formats
     </body>
 </html>".NormalizeNewLines();
 
-		[TestFixtureSetUp]
-		public void TestFixtureSetUp()
-		{
-			var jsonPages = File.ReadAllText("~/AppData/Pages.json".MapProjectPath());
-	
-			Pages = JsonSerializer.DeserializeFromString<List<Page>>(jsonPages);
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            var jsonPages = File.ReadAllText("~/AppData/Pages.json".MapProjectPath());
 
-			SearchResponse = new SearchResponse {
-				Query = "OrmLite",
-				Results = Pages.Take(5).ToList(),
-			};
-		}
+            Pages = JsonSerializer.DeserializeFromString<List<Page>>(jsonPages);
 
-		[Test]
-		public void Can_display_search_results_basic()
-		{
-			var pageTemplate = @"@var Title = ""Search results for "" + Model.Query
+            SearchResponse = new SearchResponse
+            {
+                Query = "OrmLite",
+                Results = Pages.Take(5).ToList(),
+            };
+        }
+
+        [Test]
+        public void Can_display_search_results_basic()
+        {
+            var pageTemplate = @"@var Title = ""Search results for "" + Model.Query
 
 @if (Model.Results.Count == 0) {
 
@@ -108,7 +109,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 @page.Content
 }
 </div>";
-			var expectedHtml = @"<!DOCTYPE html>
+            var expectedHtml = @"<!DOCTYPE html>
 <html>
     <head>
         <title>Simple Site</title>
@@ -131,20 +132,20 @@ namespace ServiceStack.ServiceHost.Tests.Formats
     </body>
 </html>".NormalizeNewLines();
 
-			var markdownFormat = Create(websiteTemplate, pageTemplate);
+            var markdownFormat = Create(websiteTemplate, pageTemplate);
 
-			var html = markdownFormat.RenderDynamicPageHtml(PageName, SearchResponse);
+            var html = markdownFormat.RenderDynamicPageHtml(PageName, SearchResponse);
 
-			Console.WriteLine(html);
+            Console.WriteLine(html);
 
-			Assert.That(html.NormalizeNewLines(), Is.EqualTo(expectedHtml));
-		}
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(expectedHtml));
+        }
 
 
-		[Test]
-		public void Can_display_search_results()
-		{
-			var pageTemplate = @"@var Title = ""Search results for "" + Model.Query
+        [Test]
+        public void Can_display_search_results()
+        {
+            var pageTemplate = @"@var Title = ""Search results for "" + Model.Query
 
 @if (Model.Results.Count == 0) {
 
@@ -173,7 +174,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 ^</div>
 
 }";
-			var expectedHtml = @"<!DOCTYPE html>
+            var expectedHtml = @"<!DOCTYPE html>
 <html>
     <head>
         <title>Simple Site</title>
@@ -197,15 +198,15 @@ namespace ServiceStack.ServiceHost.Tests.Formats
     </body>
 </html>".NormalizeNewLines();
 
-			var markdownFormat = Create(websiteTemplate, pageTemplate);
+            var markdownFormat = Create(websiteTemplate, pageTemplate);
 
-			var html = markdownFormat.RenderDynamicPageHtml(PageName, SearchResponse);
+            var html = markdownFormat.RenderDynamicPageHtml(PageName, SearchResponse);
 
-			Console.WriteLine(html);
+            Console.WriteLine(html);
 
-			Assert.That(html, Is.EqualTo(expectedHtml));
-		}
-	}
+            Assert.That(html, Is.EqualTo(expectedHtml));
+        }
+    }
 
 }
 

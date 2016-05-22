@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Razor;
 using ServiceStack.Testing;
@@ -53,7 +49,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         private void SetupRootViewLayout() { RazorFormat.AddFileAndPage("/Views/_Layout.cshtml", RootViewLayout); }
         private void SetupChildViewLayout() { RazorFormat.AddFileAndPage("/Views/Child/_Layout.cshtml", ChildViewLayout); }
         private void SetupRootContentLayout() { RazorFormat.AddFileAndPage("/content/_Layout.cshtml", RootContentLayout); }
-        private void SetupChildContentLayout() { RazorFormat.AddFileAndPage("/content/child/_Layout.cshtml", ChildContentLayout ); }
+        private void SetupChildContentLayout() { RazorFormat.AddFileAndPage("/content/child/_Layout.cshtml", ChildContentLayout); }
 
         private void SetupAllDefaultLayoutFiles()
         {
@@ -63,7 +59,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             SetupRootContentLayout();
             SetupChildContentLayout();
         }
-        
+
         [Test]
         public void Can_resolve_content_page_by_filename()
         {
@@ -306,7 +302,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         {
             var responseDtoType = typeof(TRequest).Assembly.GetType(typeof(TRequest).FullName + "Response");
             var responseDto = Activator.CreateInstance(responseDtoType);
-            var mockReq = new MockHttpRequest { OperationName = typeof(TRequest).Name, Dto = new TRequest()};
+            var mockReq = new MockHttpRequest { OperationName = typeof(TRequest).Name, Dto = new TRequest() };
             var mockRes = new MockHttpResponse(mockReq) { Dto = responseDto };
             RazorFormat.ProcessRequest(mockReq, mockRes, responseDto);
             return mockRes.ReadAsString();
@@ -324,7 +320,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             return mockRes.ReadAsString();
         }
 
-        public class RootView {}
+        public class RootView { }
         public class RootViewResponse { }
         public class ChildView { }
         public class ChildViewResponse { }

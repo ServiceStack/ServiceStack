@@ -83,7 +83,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             var result = RazorFormat.RenderToHtml("/simple.cshtml", model: new { Name = "World" });
             Assert.That(result, Is.EqualTo("<html><body><div></div>This is my sample template, Hello World!</body></html>"));
 
-            var result2 = RazorFormat.RenderToHtml("/simple.cshtml", model: new { Name = "World2" }, layout:"bare");
+            var result2 = RazorFormat.RenderToHtml("/simple.cshtml", model: new { Name = "World2" }, layout: "bare");
             Assert.That(result2, Is.EqualTo("This is my sample template, Hello World2!"));
         }
 

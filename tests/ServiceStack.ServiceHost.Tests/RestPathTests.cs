@@ -438,7 +438,7 @@ namespace ServiceStack.ServiceHost.Tests
                 new SlugRoute("ANY /content/literal-before/{Version}"),
 
                 new SlugRoute("GET /content/v1/literal/slug"),
-                new SlugRoute("ANY /content/v1/literal/slug"),                
+                new SlugRoute("ANY /content/v1/literal/slug"),
                 new SlugRoute("GET /content/v1/literal/{ignore}"),
                 new SlugRoute("GET /content/{ignore}/literal/{ignore}"),
                 new SlugRoute("GET /content/{Version*}/literal/{Slug*}"),
@@ -490,7 +490,7 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Can_match_lowercase_http_method()
         {
-            var restPath = new RestPath(typeof (ComplexType), "/Complex/{Id}/{Name}/Unique/{UniqueId}", "PUT");
+            var restPath = new RestPath(typeof(ComplexType), "/Complex/{Id}/{Name}/Unique/{UniqueId}", "PUT");
             var withPathInfoParts = RestPath.GetPathPartsForMatching("/complex/5/Is Alive/unique/4583B364-BBDC-427F-A289-C2923DEBD547");
             Assert.That(restPath.IsMatch("put", withPathInfoParts));
         }

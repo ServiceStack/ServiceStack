@@ -84,22 +84,22 @@ namespace ServiceStack.ServiceHost.Tests.Routes
         }
     }
 
-	public class NewApiRequestDtoWithFieldId
-	{
-		public int Id { get; set; }
-	}
+    public class NewApiRequestDtoWithFieldId
+    {
+        public int Id { get; set; }
+    }
 
-	public class NewApiRequestDtoWithFieldIdService : IService
-	{
-		public object Get(NewApiRequestDtoWithFieldId request)
-		{
-			return new HttpResult { StatusCode = HttpStatusCode.OK };
-		}
+    public class NewApiRequestDtoWithFieldIdService : IService
+    {
+        public object Get(NewApiRequestDtoWithFieldId request)
+        {
+            return new HttpResult { StatusCode = HttpStatusCode.OK };
+        }
 
-		public object Any(NewApiRequestDtoWithFieldId request)
-		{
-			return new HttpResult { StatusCode = HttpStatusCode.OK };
-		}
-	}
+        public object Any(NewApiRequestDtoWithFieldId request)
+        {
+            return new HttpResult { StatusCode = HttpStatusCode.OK };
+        }
+    }
 
 }

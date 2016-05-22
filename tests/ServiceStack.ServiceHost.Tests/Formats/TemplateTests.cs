@@ -42,7 +42,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         [SetUp]
         public void OnBeforeEachTest()
         {
-            markdownFormat = new MarkdownFormat {
+            markdownFormat = new MarkdownFormat
+            {
                 VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost())
             };
             templateArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, person } };
@@ -85,14 +86,15 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             public List<string> Labels { get; set; }
         }
 
-        Person person = new Person {
+        Person person = new Person
+        {
             FirstName = "Demis",
             LastName = "Bellot",
             Links = new List<Link>
-				{
-					new Link { Name = "ServiceStack", Href = "http://www.servicestack.net", Labels = {"REST","JSON","XML"} },
-					new Link { Name = "AjaxStack", Href = "http://www.ajaxstack.com", Labels = {"HTML5", "AJAX", "SPA"} },
-				},
+                {
+                    new Link { Name = "ServiceStack", Href = "http://www.servicestack.net", Labels = {"REST","JSON","XML"} },
+                    new Link { Name = "AjaxStack", Href = "http://www.ajaxstack.com", Labels = {"HTML5", "AJAX", "SPA"} },
+                },
         };
 
 
@@ -353,10 +355,10 @@ AjaxStack - http://www.ajaxstack.com
 
 
             markdownFormat.MarkdownBaseType = typeof(CustomMarkdownViewBase);
-            markdownFormat.MarkdownGlobalHelpers = new Dictionary<string, Type> 
-				{
-					{"Ext", typeof(CustomMarkdownHelper)}
-				};
+            markdownFormat.MarkdownGlobalHelpers = new Dictionary<string, Type>
+                {
+                    {"Ext", typeof(CustomMarkdownHelper)}
+                };
 
             markdownFormat.RegisterMarkdownPage(new MarkdownPage(markdownFormat,
                 "/path/to/page", "HeaderLinks", headerTemplate));
@@ -858,7 +860,8 @@ AjaxStack - http://www.ajaxstack.com
             markdownFormat.AddFileAndTemplate("websiteTemplate", websiteTemplate);
 
             markdownFormat.AddPage(
-                new MarkdownPage(markdownFormat, "/path/to/page-tpl", "DynamicModelTpl", template) {
+                new MarkdownPage(markdownFormat, "/path/to/page-tpl", "DynamicModelTpl", template)
+                {
                     Template = "websiteTemplate"
                 });
 
@@ -941,7 +944,8 @@ paragraph";
             markdownFormat.AddFileAndTemplate("websiteTemplate", websiteTemplate);
 
             markdownFormat.RegisterMarkdownPage(
-                new MarkdownPage(markdownFormat, "pagetpl", "StaticTpl", template, MarkdownPageType.ContentPage) {
+                new MarkdownPage(markdownFormat, "pagetpl", "StaticTpl", template, MarkdownPageType.ContentPage)
+                {
                     Template = "websiteTemplate"
                 });
 

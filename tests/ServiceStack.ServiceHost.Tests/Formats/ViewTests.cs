@@ -30,9 +30,10 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
             appHost = new BasicAppHost
             {
-                ConfigFilter = config => {
+                ConfigFilter = config =>
+                {
                     //Files aren't copied, set RootDirectory to ProjectPath instead.
-                    config.WebHostPhysicalPath = "~".MapProjectPath(); 
+                    config.WebHostPhysicalPath = "~".MapProjectPath();
                 }
             }.Init();
             markdownFormat = appHost.GetPlugin<MarkdownFormat>();
@@ -220,7 +221,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             public Dictionary<string, object> Items { get; private set; }
 
             public void SetCookie(Cookie cookie)
-            {                
+            {
             }
 
             public void ClearCookies()

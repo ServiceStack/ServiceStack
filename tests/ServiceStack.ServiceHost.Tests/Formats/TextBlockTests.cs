@@ -8,36 +8,36 @@ using ServiceStack.ServiceHost.Tests.Formats_Razor;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
-	[TestFixture]
-	public class TextBlockTests
-	{
-		string dynamicListPagePath;
-		string dynamicListPageContent;
+    [TestFixture]
+    public class TextBlockTests
+    {
+        string dynamicListPagePath;
+        string dynamicListPageContent;
 
-		[TestFixtureSetUp]
-		public void TestFixtureSetUp()
-		{
-			dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapProjectPath();
-			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
-		}
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapProjectPath();
+            dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
+        }
 
-		[Test]
-		public void Does_replace_foreach_statements_with_expr_placeholders()
-		{
-			var content = (string)dynamicListPageContent.Clone();
+        [Test]
+        public void Does_replace_foreach_statements_with_expr_placeholders()
+        {
+            var content = (string)dynamicListPageContent.Clone();
 
-			var expected = content.ReplaceForeach("@^1"); ;
+            var expected = content.ReplaceForeach("@^1"); ;
 
-			var statements = new List<StatementExprBlock>();
-			var parsedContent = StatementExprBlock.Extract(content, statements);
+            var statements = new List<StatementExprBlock>();
+            var parsedContent = StatementExprBlock.Extract(content, statements);
 
-			Console.WriteLine(parsedContent);
+            Console.WriteLine(parsedContent);
 
-			Assert.That(parsedContent, Is.EqualTo(expected));
-			Assert.That(statements.Count, Is.EqualTo(1));
-			Assert.That(statements[0].Condition, Is.EqualTo("var link in Model.Links"));
-			Assert.That(statements[0].Statement, Is.EqualTo("  - @link.Name - @link.Href\r\n"));
-		}
+            Assert.That(parsedContent, Is.EqualTo(expected));
+            Assert.That(statements.Count, Is.EqualTo(1));
+            Assert.That(statements[0].Condition, Is.EqualTo("var link in Model.Links"));
+            Assert.That(statements[0].Statement, Is.EqualTo("  - @link.Name - @link.Href\r\n"));
+        }
 
         [Test]
         public void Does_handle_foreach_when_enumerable_is_empty_first_time()
@@ -50,17 +50,17 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             markdownPage.RenderToHtml(scopeArgs);             // First time the list is empty
 
             var expected = "A new list item";
-            model.Links.Add(new Link { Name = expected } );
+            model.Links.Add(new Link { Name = expected });
             var html = markdownPage.RenderToHtml(scopeArgs);  // Second time the list has 1 item
 
             Console.WriteLine(html);
             Assert.That(html, Contains.Substring(expected));
         }
 
-		[Test]
-		public void Does_replace_multiple_statements_with_expr_placeholders()
-		{
-			string template = @"
+        [Test]
+        public void Does_replace_multiple_statements_with_expr_placeholders()
+        {
+            string template = @"
 ## Statement 1
 
 @if (Model.IsValid) {
@@ -84,7 +84,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 # EOF".NormalizeNewLines();
 
-			string expected = @"
+            string expected = @"
 ## Statement 1
 
 @^1
@@ -98,27 +98,27 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 @^4
 
 # EOF".NormalizeNewLines();
-			var statements = new List<StatementExprBlock>();
-			var content = StatementExprBlock.Extract(template, statements);
+            var statements = new List<StatementExprBlock>();
+            var content = StatementExprBlock.Extract(template, statements);
 
-			Console.WriteLine(content);
+            Console.WriteLine(content);
 
-			Assert.That(content, Is.EqualTo(expected));
-			Assert.That(statements.Count, Is.EqualTo(4));
-			Assert.That(statements[0].Condition, Is.EqualTo("Model.IsValid"));
-			Assert.That(statements[0].Statement, Is.EqualTo("### This is valid\n"));
-			Assert.That(statements[1].Condition, Is.EqualTo("var link in Model.Links"));
-			Assert.That(statements[1].Statement, Is.EqualTo("  - @link.Name - @link.Href\n"));
-			Assert.That(statements[2].Condition, Is.EqualTo("var text in Model.Texts"));
-			Assert.That(statements[2].Statement, Is.EqualTo("### @text.Name\n@text.body\n"));
-			Assert.That(statements[3].Condition, Is.EqualTo("!Model.IsValid"));
-			Assert.That(statements[3].Statement, Is.EqualTo("### This is not valid\n"));
-		}
+            Assert.That(content, Is.EqualTo(expected));
+            Assert.That(statements.Count, Is.EqualTo(4));
+            Assert.That(statements[0].Condition, Is.EqualTo("Model.IsValid"));
+            Assert.That(statements[0].Statement, Is.EqualTo("### This is valid\n"));
+            Assert.That(statements[1].Condition, Is.EqualTo("var link in Model.Links"));
+            Assert.That(statements[1].Statement, Is.EqualTo("  - @link.Name - @link.Href\n"));
+            Assert.That(statements[2].Condition, Is.EqualTo("var text in Model.Texts"));
+            Assert.That(statements[2].Statement, Is.EqualTo("### @text.Name\n@text.body\n"));
+            Assert.That(statements[3].Condition, Is.EqualTo("!Model.IsValid"));
+            Assert.That(statements[3].Statement, Is.EqualTo("### This is not valid\n"));
+        }
 
-		[Test]
-		public void Does_parse_parens_free_statements()
-		{
-			string template = @"
+        [Test]
+        public void Does_parse_parens_free_statements()
+        {
+            string template = @"
 ## Statement 1
 
 @if Model.IsValid {
@@ -141,7 +141,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 }
 
 # EOF".NormalizeNewLines();
-			
+
             string expected = @"
 ## Statement 1
 
@@ -157,40 +157,40 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 # EOF".NormalizeNewLines();
 
-			var statements = new List<StatementExprBlock>();
-			var content = StatementExprBlock.Extract(template, statements);
+            var statements = new List<StatementExprBlock>();
+            var content = StatementExprBlock.Extract(template, statements);
 
-			Console.WriteLine(content);
+            Console.WriteLine(content);
 
-			Assert.That(content, Is.EqualTo(expected));
-			Assert.That(statements.Count, Is.EqualTo(4));
+            Assert.That(content, Is.EqualTo(expected));
+            Assert.That(statements.Count, Is.EqualTo(4));
 
-			var stat1 = (IfStatementExprBlock)statements[0];
-			Assert.That(stat1.Condition, Is.EqualTo("Model.IsValid"));
-			Assert.That(stat1.Statement, Is.EqualTo("### This is valid\n"));
+            var stat1 = (IfStatementExprBlock)statements[0];
+            Assert.That(stat1.Condition, Is.EqualTo("Model.IsValid"));
+            Assert.That(stat1.Statement, Is.EqualTo("### This is valid\n"));
 
-			var stat2 = (ForEachStatementExprBlock)statements[1];
-			Assert.That(stat2.Condition, Is.EqualTo("var link in Model.Links"));
-			Assert.That(stat2.Statement, Is.EqualTo("  - @link.Name - @link.Href\n"));
-			Assert.That(stat2.EnumeratorName, Is.EqualTo("link"));
-			Assert.That(stat2.MemberExpr, Is.EqualTo("Model.Links"));
+            var stat2 = (ForEachStatementExprBlock)statements[1];
+            Assert.That(stat2.Condition, Is.EqualTo("var link in Model.Links"));
+            Assert.That(stat2.Statement, Is.EqualTo("  - @link.Name - @link.Href\n"));
+            Assert.That(stat2.EnumeratorName, Is.EqualTo("link"));
+            Assert.That(stat2.MemberExpr, Is.EqualTo("Model.Links"));
 
-			var stat3 = (ForEachStatementExprBlock)statements[2];
-			Assert.That(stat3.Condition, Is.EqualTo("text in Model.Texts"));
-			Assert.That(stat3.Statement, Is.EqualTo("### @text.Name\n@text.body\n"));
-			Assert.That(stat3.EnumeratorName, Is.EqualTo("text"));
-			Assert.That(stat3.MemberExpr, Is.EqualTo("Model.Texts"));
+            var stat3 = (ForEachStatementExprBlock)statements[2];
+            Assert.That(stat3.Condition, Is.EqualTo("text in Model.Texts"));
+            Assert.That(stat3.Statement, Is.EqualTo("### @text.Name\n@text.body\n"));
+            Assert.That(stat3.EnumeratorName, Is.EqualTo("text"));
+            Assert.That(stat3.MemberExpr, Is.EqualTo("Model.Texts"));
 
-			var stat4 = (IfStatementExprBlock)statements[3];
-			Assert.That(stat4.Condition, Is.EqualTo("!Model.IsValid"));
-			Assert.That(stat4.Statement, Is.EqualTo("### This is not valid\n"));
-		}
+            var stat4 = (IfStatementExprBlock)statements[3];
+            Assert.That(stat4.Condition, Is.EqualTo("!Model.IsValid"));
+            Assert.That(stat4.Statement, Is.EqualTo("### This is not valid\n"));
+        }
 
-		[Test]
-		public void Does_transform_escaped_html_start_tags()
-		{
-			var markdownText =
-			@"#### Showing Results 1 - 5
+        [Test]
+        public void Does_transform_escaped_html_start_tags()
+        {
+            var markdownText =
+            @"#### Showing Results 1 - 5
 
 ^<div id=""searchresults"">
 
@@ -200,25 +200,25 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 Text".NormalizeNewLines();
 
-			var expectedHtml =
-			@"<h4>Showing Results 1 - 5</h4>
+            var expectedHtml =
+            @"<h4>Showing Results 1 - 5</h4>
 <div id=""searchresults"">
 <h3>Markdown &gt; <a href=""http://path.com/to/about"">About Docs</a></h3>
 </div>
 <p>Text</p>
 ".NormalizeNewLines();
 
-			var textBlock = new TextBlock("");
-			var page = new MarkdownPage { Markdown = new MarkdownFormat() };
-			textBlock.DoFirstRun(new PageContext(page, null, true));
+            var textBlock = new TextBlock("");
+            var page = new MarkdownPage { Markdown = new MarkdownFormat() };
+            textBlock.DoFirstRun(new PageContext(page, null, true));
 
-			var html = textBlock.TransformHtml(markdownText);
+            var html = textBlock.TransformHtml(markdownText);
 
-			Console.WriteLine(html);
+            Console.WriteLine(html);
 
-			Assert.That(html, Is.EqualTo(expectedHtml));
-		}
+            Assert.That(html, Is.EqualTo(expectedHtml));
+        }
 
 
-	}
+    }
 }
