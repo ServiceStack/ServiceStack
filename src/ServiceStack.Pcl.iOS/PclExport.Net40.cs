@@ -103,7 +103,7 @@ namespace ServiceStack
         public override string[] GetFileNames(string dirPath, string searchPattern = null)
         {
             if (!Directory.Exists(dirPath))
-                return new string[0];
+                return TypeConstants.EmptyStringArray;
 
             return searchPattern != null
                 ? Directory.GetFiles(dirPath, searchPattern)
@@ -113,7 +113,7 @@ namespace ServiceStack
         public override string[] GetDirectoryNames(string dirPath, string searchPattern = null)
         {
             if (!Directory.Exists(dirPath))
-                return new string[0];
+                return TypeConstants.EmptyStringArray;
 
             return searchPattern != null
                 ? Directory.GetDirectories(dirPath, searchPattern)

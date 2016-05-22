@@ -168,7 +168,7 @@ namespace ServiceStack
 
         internal static string Underscored(IEnumerable<char> pascalCase)
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Allocate();
             var i = 0;
             foreach (var c in pascalCase)
             {
@@ -179,7 +179,7 @@ namespace ServiceStack
                 sb.Append(c);
                 i++;
             }
-            return sb.ToString().ToLowerInvariant();
+            return StringBuilderCache.ReturnAndFree(sb).ToLowerInvariant();
         }
     }
 #endif
