@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using ServiceStack.Text;
 
@@ -201,6 +202,11 @@ namespace ServiceStack
         public static IEnumerable<T> Safe<T>(this IEnumerable<T> enumerable)
         {
             return enumerable ?? TypeConstants<T>.EmptyArray;
+        }
+
+        public static IEnumerable Safe(this IEnumerable enumerable)
+        {
+            return enumerable ?? TypeConstants.EmptyObjectArray;
         }
     }
 }
