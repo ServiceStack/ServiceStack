@@ -136,7 +136,7 @@ namespace ServiceStack.Support.Markdown
 			Type baseType, Type[] genericArgs, IDictionary<string, Type> typeProperties)
 		{
 			this.BaseType = baseType;
-			this.GenericArgs = genericArgs ?? new Type[0];
+			this.GenericArgs = genericArgs ?? TypeConstants.EmptyTypeArray;
 			this.TypeProperties = typeProperties;
 
 			ConstructEvaluator(items);

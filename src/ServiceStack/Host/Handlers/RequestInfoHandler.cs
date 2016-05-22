@@ -317,7 +317,7 @@ namespace ServiceStack.Host.Handlers
                 Headers = ToDictionary(httpReq.Headers),
                 QueryString = ToDictionary(httpReq.QueryString),
                 FormData = ToDictionary(httpReq.FormData),
-                AcceptTypes = new List<string>(httpReq.AcceptTypes ?? new string[0]),
+                AcceptTypes = new List<string>(httpReq.AcceptTypes ?? TypeConstants.EmptyStringArray),
                 ContentLength = httpReq.ContentLength,
                 OperationName = httpReq.OperationName,
                 ResponseContentType = httpReq.ResponseContentType,

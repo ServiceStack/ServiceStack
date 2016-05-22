@@ -103,7 +103,7 @@ namespace ServiceStack
                 (
                     genericType,
                     "GetId",
-                    new Type[0],
+                    TypeConstants.EmptyTypeArray,
                     oInstanceParam
                 );
             GetIdFn = System.Linq.Expressions.Expression.Lambda<Func<TEntity, object>>
@@ -135,7 +135,7 @@ namespace ServiceStack
 
         public static object GetObjectId(this object entity)
         {
-            return entity.GetType().GetIdProperty().GetMethodInfo().Invoke(entity, new object[0]);
+            return entity.GetType().GetIdProperty().GetMethodInfo().Invoke(entity, TypeConstants.EmptyObjectArray);
         }
 
         public static object ToId<T>(this T entity)

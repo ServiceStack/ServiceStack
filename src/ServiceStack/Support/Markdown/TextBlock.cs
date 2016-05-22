@@ -263,7 +263,7 @@ namespace ServiceStack.Support.Markdown
 		{
 			this.Condition = condition;
 			this.Statement = statement;
-			this.ChildBlocks = new TemplateBlock[0];
+			this.ChildBlocks = TypeConstants<TemplateBlock>.EmptyArray;
 		}
 
 		public string Condition { get; set; }
@@ -809,7 +809,7 @@ namespace ServiceStack.Support.Markdown
 		{
 			this.ReturnType = typeof(bool);
 			this.ElseStatement = elseStatement;
-			this.ElseChildBlocks = new TemplateBlock[0];
+			this.ElseChildBlocks = TypeConstants<TemplateBlock>.EmptyArray;
 		}
 
 		public TemplateBlock[] ElseChildBlocks { get; set; }

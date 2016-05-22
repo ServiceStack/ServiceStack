@@ -21,7 +21,7 @@ namespace ServiceStack.Host
 		{
             var resolveType = tryResolve ? "TryResolve" : "Resolve";
 			var containerParam = Expression.Parameter(typeof(Container), "container");
-			var resolveInstance = Expression.Call(containerParam, resolveType, new[] { type }, new Expression[0]);
+			var resolveInstance = Expression.Call(containerParam, resolveType, new[] { type });
 			var resolveObject = Expression.Convert(resolveInstance, typeof(object));
 			return Expression.Lambda<Func<Container, object>>(resolveObject, containerParam).Compile();
 		}

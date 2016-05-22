@@ -353,7 +353,7 @@ namespace ServiceStack.Host.HttpListener
                 if (httpFiles == null)
                 {
                     if (files == null)
-                        return httpFiles = new IHttpFile[0];
+                        return httpFiles = TypeConstants<IHttpFile>.EmptyArray;
 
                     httpFiles = new IHttpFile[files.Count];
                     for (int i = 0; i < files.Count; i++)

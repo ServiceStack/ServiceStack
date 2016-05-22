@@ -76,7 +76,7 @@ namespace ServiceStack.Messaging.Redis
         {
             set
             {
-                PriortyQueuesWhitelist = new string[0];
+                PriortyQueuesWhitelist = TypeConstants.EmptyStringArray;
             }
         }
 
@@ -102,7 +102,7 @@ namespace ServiceStack.Messaging.Redis
 
         public bool DisablePublishingResponses
         {
-            set { PublishResponsesWhitelist = value ? new string[0] : null; }
+            set { PublishResponsesWhitelist = value ? TypeConstants.EmptyStringArray : null; }
         }
 
         private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap

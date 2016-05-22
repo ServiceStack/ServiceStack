@@ -27,7 +27,7 @@ namespace ServiceStack.Auth
         {
             this.AppId = appSettings.GetString("oauth.facebook.AppId");
             this.AppSecret = appSettings.GetString("oauth.facebook.AppSecret");
-            this.Permissions = appSettings.Get("oauth.facebook.Permissions", new string[0]);
+            this.Permissions = appSettings.Get("oauth.facebook.Permissions", TypeConstants.EmptyStringArray);
             this.Fields = appSettings.Get("oauth.facebook.Fields", DefaultFields);
         }
 

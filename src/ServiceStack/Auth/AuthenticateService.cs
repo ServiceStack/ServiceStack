@@ -37,8 +37,8 @@ namespace ServiceStack.Auth
         public static string DefaultOAuthProvider { get; private set; }
         public static string DefaultOAuthRealm { get; private set; }
         public static string HtmlRedirect { get; internal set; }
-        internal static IAuthProvider[] AuthProviders = new IAuthProvider[0];
-        internal static IAuthWithRequest[] AuthWithRequestProviders = new IAuthWithRequest[0];
+        internal static IAuthProvider[] AuthProviders = TypeConstants<IAuthProvider>.EmptyArray;
+        internal static IAuthWithRequest[] AuthWithRequestProviders = TypeConstants<IAuthWithRequest>.EmptyArray;
 
         static AuthenticateService()
         {
@@ -64,7 +64,7 @@ namespace ServiceStack.Auth
 
         public static IAuthProvider[] GetAuthProviders()
         {
-            return AuthProviders ?? TypeReflector<IAuthProvider>.EmptyArray;
+            return AuthProviders ?? TypeConstants<IAuthProvider>.EmptyArray;
         }
 
         public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)

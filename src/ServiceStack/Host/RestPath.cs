@@ -19,18 +19,18 @@ namespace ServiceStack.Host
         private const char ComponentSeperator = '.';
         private const string VariablePrefix = "{";
 
-        readonly bool[] componentsWithSeparators = new bool[0];
+        readonly bool[] componentsWithSeparators;
 
         private readonly string restPath;
         private readonly string allowedVerbs;
         private readonly bool allowsAllVerbs;
         public bool IsWildCardPath { get; private set; }
 
-        private readonly string[] literalsToMatch = new string[0];
+        private readonly string[] literalsToMatch;
 
-        private readonly string[] variablesNames = new string[0];
+        private readonly string[] variablesNames;
 
-        private readonly bool[] isWildcard = new bool[0];
+        private readonly bool[] isWildcard;
         private readonly int wildcardCount = 0;
 
         public int VariableArgsCount { get; set; }

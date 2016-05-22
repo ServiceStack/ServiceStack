@@ -1625,7 +1625,7 @@ namespace ServiceStack
             var mi = type.GetMethod("Configure");
             if (mi != null)
             {
-                mi.Invoke(null, new object[0]);
+                mi.Invoke(null, TypeConstants.EmptyObjectArray);
             }
 
             return true;

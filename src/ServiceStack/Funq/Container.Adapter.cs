@@ -7,6 +7,7 @@ using System.Threading;
 using ServiceStack;
 using ServiceStack.Configuration;
 using System;
+using ServiceStack.Text;
 
 namespace Funq
 {
@@ -64,7 +65,7 @@ namespace Funq
                     && x.GetParameters().Length == 0);
 
             var tryResolveMethod = tryResolveGeneric.MakeGenericMethod(types);
-            var instance = tryResolveMethod.Invoke(this, new object[0]);
+            var instance = tryResolveMethod.Invoke(this, TypeConstants.EmptyObjectArray);
             return instance;
         }
 
@@ -101,7 +102,7 @@ namespace Funq
 
         private static MethodInfo GetResolveMethod(Type typeWithResolveMethod, Type serviceType)
         {
-            var methodInfo = typeWithResolveMethod.GetMethod("Resolve", new Type[0]);
+            var methodInfo = typeWithResolveMethod.GetMethod("Resolve", TypeConstants.EmptyTypeArray);
             return methodInfo.MakeGenericMethod(new[] { serviceType });
         }
 
@@ -134,7 +135,7 @@ namespace Funq
         public static Func<Container, TService> GenerateAutoWireFn<TService>()
         {
             var lambdaParam = Expression.Parameter(typeof(Container), "container");
-            var propertyResolveFn = typeof(Container).GetMethod("TryResolve", new Type[0]);
+            var propertyResolveFn = typeof(Container).GetMethod("TryResolve", TypeConstants.EmptyTypeArray);
             var memberBindings = typeof(TService).GetPublicProperties()
                 .Where(IsPublicWritableUserPropertyType)
                 .Select(x =>
@@ -145,7 +146,7 @@ namespace Funq
                     )
                 ).ToArray();
 
-            var ctorResolveFn = typeof(Container).GetMethod("Resolve", new Type[0]);
+            var ctorResolveFn = typeof(Container).GetMethod("Resolve", TypeConstants.EmptyTypeArray);
             return Expression.Lambda<Func<Container, TService>>
                 (
                     Expression.MemberInit
@@ -166,7 +167,7 @@ namespace Funq
         public void AutoWire(Container container, object instance)
         {
             var instanceType = instance.GetType();
-            var propertyResolveFn = typeof(Container).GetMethod("TryResolve", new Type[0]);
+            var propertyResolveFn = typeof(Container).GetMethod("TryResolve", TypeConstants.EmptyTypeArray);
 
             Action<object>[] setters;
             if (!autoWireCache.TryGetValue(instanceType, out setters))
@@ -249,7 +250,7 @@ namespace Funq
                        x.GetParameters().Length == 0);
 
             var genericMi = mi.MakeGenericMethod(type);
-            var instance = genericMi.Invoke(this, new object[0]);
+            var instance = genericMi.Invoke(this, TypeConstants.EmptyObjectArray);
             return instance;
         }
     }

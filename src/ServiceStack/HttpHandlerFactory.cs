@@ -36,7 +36,7 @@ namespace ServiceStack
                 var pi = typeof(HttpRuntime).GetProperty("UsingIntegratedPipeline");
                 if (pi != null)
                 {
-                    IsIntegratedPipeline = (bool)pi.GetGetMethod().Invoke(null, new object[0]);
+                    IsIntegratedPipeline = (bool)pi.GetGetMethod().Invoke(null, TypeConstants.EmptyObjectArray);
                 }
 
                 var appHost = HostContext.AppHost;

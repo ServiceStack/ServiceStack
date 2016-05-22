@@ -23,7 +23,7 @@ namespace ServiceStack.Configuration
                 if (appSettings.Length == 0)
                     throw new ArgumentNullException("appSettings");
 
-                this.appSettings = appSettings ?? new IAppSettings[0];
+                this.appSettings = appSettings;
             }
 
             public string Get(string key)

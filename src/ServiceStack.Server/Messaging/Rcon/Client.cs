@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using ServiceStack.Text;
 
 namespace ServiceStack.Messaging.Rcon
 {
@@ -313,7 +314,7 @@ namespace ServiceStack.Messaging.Rcon
     public class ClientSocketState
     {
         public byte[] Header = new byte[8];
-        public byte[] CompleteMessage = new byte[0];
+        public byte[] CompleteMessage = TypeConstants.EmptyByteArray;
         public bool ReadHeader = false;
         public uint MessageLength = 0;
     }

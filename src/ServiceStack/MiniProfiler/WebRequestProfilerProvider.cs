@@ -31,7 +31,7 @@ namespace ServiceStack.MiniProfiler
             var path = context.Request.AppRelativeCurrentExecutionFilePath.Substring(1);
 
             // don't profile /content or /scripts, either - happens in web.dev
-            foreach (var ignored in Profiler.Settings.IgnoredPaths ?? new string[0])
+            foreach (var ignored in Profiler.Settings.IgnoredPaths.Safe())
             {
                 if (path.ToUpperInvariant().Contains((ignored ?? "").ToUpperInvariant()))
                     return null;

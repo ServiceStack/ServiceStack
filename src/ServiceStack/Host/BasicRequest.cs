@@ -51,7 +51,7 @@ namespace ServiceStack.Host
             this.Items = new Dictionary<string, object>();
             this.QueryString = PclExportClient.Instance.NewNameValueCollection();
             this.FormData = PclExportClient.Instance.NewNameValueCollection();
-            this.Files = new IHttpFile[0];
+            this.Files = TypeConstants<IHttpFile>.EmptyArray;
         }
 
         private string operationName;

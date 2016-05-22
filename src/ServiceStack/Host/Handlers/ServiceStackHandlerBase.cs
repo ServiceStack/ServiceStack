@@ -18,7 +18,7 @@ namespace ServiceStack.Host.Handlers
     {
         internal static readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHandlerBase));
         internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
-        internal static readonly byte[][] NetworkInterfaceIpv6Addresses = new byte[0][];
+        internal static readonly byte[][] NetworkInterfaceIpv6Addresses = TypeConstants.EmptyByteArrayArray;
 
         static ServiceStackHandlerBase()
         {
@@ -81,7 +81,7 @@ namespace ServiceStack.Host.Handlers
                                 }
 
                                 if (taskResults.Length == 0)
-                                    return callback(new object[0]);
+                                    return callback(TypeConstants.EmptyObjectArray);
 
                                 var firstResponse = taskResults[0].GetResult();
                                 var batchedResponses = firstResponse != null 

@@ -164,7 +164,7 @@ namespace ServiceStack
 
         //http://stackoverflow.com/a/757251/85785
         static readonly string[] VirtualPathPrefixes = HostingEnvironment.ApplicationVirtualPath == null || HostingEnvironment.ApplicationVirtualPath == "/"
-            ? new string[0]
+            ? TypeConstants.EmptyStringArray
             : new[] { HostingEnvironment.ApplicationVirtualPath, "~" + HostingEnvironment.ApplicationVirtualPath };
 
         public static string SanitizedVirtualPath(this string virtualPath)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ServiceStack.Caching;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -60,7 +61,7 @@ namespace ServiceStack
             {
                 if (typeof(IEnumerable<T>).IsAssignableFrom(pi.PropertyType))
                 {
-                    return (IEnumerable<T>)pi.GetGetMethod().Invoke(response, new object[0]);
+                    return (IEnumerable<T>)pi.GetGetMethod().Invoke(response, TypeConstants.EmptyObjectArray);
                 }
             }
 

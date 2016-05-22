@@ -102,7 +102,7 @@ namespace ServiceStack.RabbitMq
         {
             set
             {
-                PriortyQueuesWhitelist = new string[0];
+                PriortyQueuesWhitelist = TypeConstants.EmptyStringArray;
             }
         }
 
@@ -117,7 +117,7 @@ namespace ServiceStack.RabbitMq
         /// </summary>
         public bool DisablePublishingResponses
         {
-            set { PublishResponsesWhitelist = value ? new string[0] : null; }
+            set { PublishResponsesWhitelist = value ? TypeConstants.EmptyStringArray : null; }
         }
 
         private IConnection connection;

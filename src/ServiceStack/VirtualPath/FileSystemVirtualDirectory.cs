@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using ServiceStack.IO;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
@@ -71,7 +72,7 @@ namespace ServiceStack.VirtualPath
             {
                 //Possible exception from scanning symbolic links
                 Log.Warn("Unable to GetFiles for {0}".Fmt(RealPath), ex);
-                return new FileInfo[0];
+                return TypeConstants<FileInfo>.EmptyArray;
             }
         }
 
@@ -85,7 +86,7 @@ namespace ServiceStack.VirtualPath
             {
                 //Possible exception from scanning symbolic links
                 Log.Warn("Unable to GetDirectories for {0}".Fmt(RealPath), ex);
-                return new DirectoryInfo[0];
+                return TypeConstants<DirectoryInfo>.EmptyArray;
             }
         }
 
@@ -111,7 +112,7 @@ namespace ServiceStack.VirtualPath
             {
                 //Possible exception from scanning symbolic links
                 Log.Warn("Unable to scan for {0} in {1}".Fmt(globPattern, RealPath), ex);
-                return new IVirtualFile[0];
+                return TypeConstants<IVirtualFile>.EmptyArray;
             }
         }
 

@@ -645,7 +645,7 @@ namespace ServiceStack.Host
             {
                 var dtosList = ((IEnumerable) dtos).Map(x => x);
                 if (dtosList.Count == 0)
-                    return new object[0];
+                    return TypeConstants.EmptyObjectArray;
 
                 var firstDto = dtosList[0];
 

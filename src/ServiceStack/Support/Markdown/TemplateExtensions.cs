@@ -81,7 +81,7 @@ namespace ServiceStack.Support.Markdown
 
 		public static string[] SplitAndTrimOn(this string text, char[] chars)
 		{
-			if (text == null) return new string[0];
+			if (text == null) return TypeConstants.EmptyStringArray;
 			var parts = text.Split(chars);
 			var results = new List<string>();
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -28,7 +29,7 @@ namespace ServiceStack.Auth
     {
         public MultiAuthEvents(IEnumerable<IAuthEvents> authEvents=null)
         {
-            ChildEvents = new List<IAuthEvents>(authEvents ?? new IAuthEvents[0]);
+            ChildEvents = new List<IAuthEvents>(authEvents ?? TypeConstants<IAuthEvents>.EmptyArray);
         }
 
         public List<IAuthEvents> ChildEvents { get; private set; }

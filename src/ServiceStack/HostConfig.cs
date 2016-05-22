@@ -224,7 +224,7 @@ namespace ServiceStack
 
         public string DefaultContentType { get; set; }
         public List<string> PreferredContentTypes { get; set; }
-        internal string[] PreferredContentTypesArray = new string[0]; //use array at runtime
+        internal string[] PreferredContentTypesArray = TypeConstants.EmptyStringArray; //use array at runtime
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
         public bool DebugMode { get; set; }

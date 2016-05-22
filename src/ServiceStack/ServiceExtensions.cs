@@ -7,6 +7,7 @@ using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 using ServiceStack.Testing;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -204,8 +205,8 @@ namespace ServiceStack
         {
             var actionCtx = new ActionContext
             {
-                RequestFilters = new IHasRequestFilter[0],
-                ResponseFilters = new IHasResponseFilter[0],
+                RequestFilters = TypeConstants<IHasRequestFilter>.EmptyArray,
+                ResponseFilters = TypeConstants<IHasResponseFilter>.EmptyArray,
                 ServiceType = typeof(TService),
                 RequestType = typeof(TRequest),
                 ServiceAction = (instance, req) => invokeAction(service, request)
