@@ -5,6 +5,7 @@ using System.Text;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Web;
 
@@ -150,12 +151,10 @@ namespace ServiceStack.Auth
 
         public void PreAuthenticate(IRequest req, IResponse res)
         {
-            var authHeader = req.Authorization;
-            if (authHeader != null && authHeader.StartsWithIgnoreCase("Basic "))
+            //The API Key is sent in the Basic Auth Username and Password is Empty
+            var userPass = req.GetBasicAuthUserAndPassword();
+            if (userPass != null && string.IsNullOrEmpty(userPass.Value.Value))
             {
-                if (AuthenticateService.GetAuthProvider(AuthenticateService.BasicProvider) != null)
-                    throw new NotSupportedException("ApiKeyAuthProvider and BasicAuthProvider can not both be registered at the same time");
-
                 if (RequireSecureConnection && !req.IsSecureConnection)
                     throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
 
@@ -165,8 +164,7 @@ namespace ServiceStack.Auth
                 using (var authService = req.TryResolve<AuthenticateService>())
                 {
                     authService.Request = req;
-                    var apiKey = Convert.FromBase64String(authHeader.Substring("Basic ".Length)).FromUtf8Bytes();
-                    apiKey = apiKey.Substring(0, apiKey.Length - 1); //remove trailing ':' separating empty password
+                    var apiKey = userPass.Value.Key;
                     var response = authService.Post(new Authenticate
                     {
                         provider = Name,
@@ -179,9 +177,6 @@ namespace ServiceStack.Auth
 
         public void Register(IAppHost appHost, AuthFeature feature)
         {
-            if (AuthenticateService.GetAuthProvider(AuthenticateService.BasicProvider) != null)
-                throw new NotSupportedException("ApiKeyAuthProvider and BasicAuthProvider can not both be registered at the same time");
-
             feature.AuthEvents.Add(new ApiKeyAuthEvents(this));
 
             if (InitSchema)

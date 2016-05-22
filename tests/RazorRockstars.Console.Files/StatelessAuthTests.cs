@@ -40,7 +40,7 @@ namespace RazorRockstars.Console.Files
         }
     }
 
-    public abstract class StatelessAuthTests
+    public class StatelessAuthTests
     {
         public const string ListeningOn = "http://localhost:2337/";
 
@@ -50,7 +50,7 @@ namespace RazorRockstars.Console.Files
         public StatelessAuthTests()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
-            appHost = CreateAppHost()
+            appHost = new AppHost { EnableAuth = true }
                .Init()
                .Start("http://*:2337/");
 
@@ -63,13 +63,12 @@ namespace RazorRockstars.Console.Files
                 FirstName = "FirstName",
                 LastName = "LastName",
             });
-        }
 
-        protected abstract ServiceStackHost CreateAppHost();
-
-        protected IServiceClient GetClient()
-        {
-            return new JsonServiceClient(ListeningOn);
+            using (var db = appHost.Resolve<IDbConnectionFactory>().OpenDbConnection())
+            {
+                ApiKey = db.Select<ApiKey>().First();
+                ApiKey.PrintDump();
+            }
         }
 
         [TestFixtureTearDown]
@@ -85,22 +84,17 @@ namespace RazorRockstars.Console.Files
             Process.Start(ListeningOn);
             Thread.Sleep(TimeSpan.FromMinutes(10));
         }
-    }
 
-    public class StatelessApiKeyAuthTests : StatelessAuthTests
-    {
-        public StatelessApiKeyAuthTests()
+        const string Username = "user";
+        const string Password = "p@55word";
+
+        IServiceClient GetClientWithUserPassword()
         {
-            using (var db = appHost.Resolve<IDbConnectionFactory>().OpenDbConnection())
+            return new JsonServiceClient(ListeningOn)
             {
-                ApiKey = db.Select<ApiKey>().First();
-                ApiKey.PrintDump();
-            }
-        }
-
-        protected override ServiceStackHost CreateAppHost()
-        {
-            return new AppHost { EnableAuth = true, UseApiKeyProvider = true };
+                UserName = Username,
+                Password = Password
+            };
         }
 
         IServiceClient GetClientWithApiKey()
@@ -111,10 +105,15 @@ namespace RazorRockstars.Console.Files
             };
         }
 
+        protected IServiceClient GetClient()
+        {
+            return new JsonServiceClient(ListeningOn);
+        }
+
         [Test]
         public void Authenticating_once_with_ApiKeyAuth_does_not_establish_auth_session()
         {
-            var client = (ServiceClientBase)GetClientWithApiKey();
+            var client = GetClientWithApiKey();
 
             var request = new Secured { Name = "test" };
             var response = client.Send<SecuredResponse>(request);
@@ -143,25 +142,6 @@ namespace RazorRockstars.Console.Files
             Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
                 requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
-        }
-    }
-
-    public class StatelessBasicAuthTests : StatelessAuthTests
-    {
-        protected override ServiceStackHost CreateAppHost()
-        {
-            return new AppHost { EnableAuth = true, UseApiKeyProvider = false };
-        }
-
-        const string Username = "user";
-        const string Password = "p@55word";
-
-        IServiceClient GetClientWithUserPassword()
-        {
-            return new JsonServiceClient(ListeningOn) {
-                UserName = Username,
-                Password = Password
-            };
         }
 
         [Test]

@@ -54,10 +54,9 @@ namespace RazorRockstars.Console.Files
             if (EnableAuth)
             {
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
-                    new[] {
-                        UseApiKeyProvider 
-                            ? new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false }
-                            : new BasicAuthProvider(AppSettings) as IAuthProvider, 
+                    new IAuthProvider[] {
+                        new BasicAuthProvider(AppSettings),
+                        new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
                         new CredentialsAuthProvider(AppSettings),
                     })
                 {
