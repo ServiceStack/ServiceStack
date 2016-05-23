@@ -30,9 +30,7 @@ namespace ServiceStack
         {
             get
             {
-                return GetItems() ?? (System.Web.HttpContext.Current != null
-                    ? System.Web.HttpContext.Current.Items
-                    : CreateItems());
+                return GetItems() ?? CreateItems();
             }
             set
             {
@@ -52,6 +50,9 @@ namespace ServiceStack
                 //Don't init CallContext on Main Thread which inits copies in Request threads
                 if (!ServiceStackHost.IsReady())
                     return new Dictionary<object, object>();
+
+                if (System.Web.HttpContext.Current != null)
+                    return System.Web.HttpContext.Current.Items;
 
                 return CallContext.LogicalGetData(_key) as IDictionary;
             }
