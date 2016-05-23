@@ -6,17 +6,17 @@
     <version>4.0.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
-    <summary>.NET 4.0 project Integration of ServiceStack with MVC3</summary>
+    <summary>ASP.NET MVC Integration adapters for ServiceStack</summary>
     <description>
-      Full details in Mvc PowerPack: http://servicestack.net/mvc-powerpack/
-      Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC3.
+      Full details in MVC PowerPack: http://mono.servicestack.net/mvc-powerpack/
+      MVC Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC.
       Including adapters for: MiniProfiler, FluentValidation, Funq IOC Controller Factory, Funq Validator Factory
       ControllerBase (configured with access to ServiceStack's ICacheClient, ISession, typed UserSession dependencies).
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
-    <tags>MiniProfiler FluentValidation MVC Controller ServiceStack</tags>
+    <tags>MVC ServiceStack MiniProfiler FluentValidation Controller</tags>
     <language>en-US</language>
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
