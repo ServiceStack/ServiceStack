@@ -563,6 +563,17 @@ namespace ServiceStack
             NotifyUpdate = s => NotifyChannels(s.Channels, "cmd.onUpdate", s.Meta);
             NotifyHeartbeat = s => NotifySubscription(s.SubscriptionId, "cmd.onHeartbeat", s.Meta);
             Serialize = o => o != null ? o.ToJson() : null;
+
+            var appHost = HostContext.AppHost;
+            var feature = appHost != null ? appHost.GetPlugin<ServerEventsFeature>() : null;
+            if (feature != null)
+            {
+                IdleTimeout = feature.IdleTimeout;
+                HouseKeepingInterval = feature.HouseKeepingInterval;
+                OnSubscribe = feature.OnSubscribe;
+                OnUnsubscribe = feature.OnUnsubscribe;
+                NotifyChannelOfSubscriptions = feature.NotifyChannelOfSubscriptions;
+            }
         }
 
         public void Reset()
