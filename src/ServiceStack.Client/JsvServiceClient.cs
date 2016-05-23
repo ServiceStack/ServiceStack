@@ -52,5 +52,21 @@ namespace ServiceStack
         {
             get { return TypeSerializer.DeserializeFromStream; }
         }
+
+        internal static T FromJsv<T>(string jsv)
+        {
+            using (__requestAccess())
+            {
+                return jsv.FromJsv<T>();
+            }
+        }
+
+        internal static string ToJsv<T>(T o)
+        {
+            using (__requestAccess())
+            {
+                return o.ToJsv();
+            }
+        }
     }
 }

@@ -45,7 +45,7 @@ namespace ServiceStack
                 }
             }
 
-            var rsMap = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(responseStatus);
+            var rsMap = JsvServiceClient.FromJsv<Dictionary<string, string>>(responseStatus);
             if (rsMap == null) return;
 
             rsMap = new Dictionary<string, string>(rsMap, PclExport.Instance.InvariantComparerIgnoreCase);
@@ -56,13 +56,13 @@ namespace ServiceStack
 
         private bool TryGetResponseStatusFromResponseDto(out string responseStatus)
         {
-            responseStatus = String.Empty;
+            responseStatus = string.Empty;
             try
             {
                 if (ResponseDto == null)
                     return false;
-                var jsv = TypeSerializer.SerializeToString(ResponseDto);
-                var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(jsv);
+                var jsv = JsvServiceClient.ToJsv(ResponseDto);
+                var map = JsvServiceClient.FromJsv<Dictionary<string, string>>(jsv);
                 map = new Dictionary<string, string>(map, PclExport.Instance.InvariantComparerIgnoreCase);
 
                 return map.TryGetValue("ResponseStatus", out responseStatus);
