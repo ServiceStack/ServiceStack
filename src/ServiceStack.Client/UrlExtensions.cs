@@ -110,7 +110,7 @@ namespace ServiceStack
         public static string GetOperationName(this Type type)
         {
             var typeName = type.FullName != null //can be null, e.g. generic types
-                ? type.FullName.SplitOnFirst("[[")[0]  //Generic Fullname
+                ? type.FullName.LeftPart("[[")   //Generic Fullname
                     .Replace(type.Namespace + ".", "") //Trim Namespaces
                     .Replace("+", ".") //Convert nested into normal type
                 : type.Name;
@@ -131,7 +131,7 @@ namespace ServiceStack
 
         public static string ExpandGenericTypeName(Type type)
         {
-            var nameOnly = type.Name.SplitOnFirst('`')[0];
+            var nameOnly = type.Name.LeftPart('`');
 
             var sb = StringBuilderCache.Allocate();
             foreach (var arg in type.GetGenericArguments())

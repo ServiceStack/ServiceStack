@@ -1150,7 +1150,7 @@ namespace ServiceStack
         {
             foreach (var entry in RequestPropertyGetters)
             {
-                var name = entry.Key.SplitOnFirst('#')[0];
+                var name = entry.Key.LeftPart('#');
 
                 QueryDataField attr;
                 if (QueryFieldMap.TryGetValue(name, out attr))
@@ -1210,7 +1210,7 @@ namespace ServiceStack
         {
             foreach (var entry in dynamicParams)
             {
-                var name = entry.Key.SplitOnFirst('#')[0];
+                var name = entry.Key.LeftPart('#');
 
                 var match = GetQueryMatch(q, name, options, aliases);
                 if (match == null)

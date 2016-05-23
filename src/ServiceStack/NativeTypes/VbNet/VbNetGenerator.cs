@@ -482,7 +482,7 @@ namespace ServiceStack.NativeTypes.VbNet
             if (value.StartsWith("typeof("))
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).SplitOnLast('.').Last();
+                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
                 return "GetType(" + typeNameOnly + ")";
             }
 
@@ -541,10 +541,10 @@ namespace ServiceStack.NativeTypes.VbNet
 
         public string NameOnly(string type, bool includeNested = false)
         {
-            var name = type.SplitOnFirst('`')[0];
+            var name = type.LeftPart('`');
 
             if (!includeNested)
-                name = name.SplitOnLast('.').Last();
+                name = name.LastRightPart('.');
 
             return name.SafeToken();
         }

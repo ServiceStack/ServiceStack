@@ -76,7 +76,7 @@ namespace ServiceStack
                     return true;
             }
 
-            var primaryType = realContentType.SplitOnFirst('/')[0];
+            var primaryType = realContentType.LeftPart('/');
             switch (primaryType)
             {
                 case "image":

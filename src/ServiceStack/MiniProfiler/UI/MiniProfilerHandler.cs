@@ -80,7 +80,7 @@ namespace ServiceStack.MiniProfiler.UI
         public static string GetFileNameWithoutExtension(string pathInfo)
         {
             //Path.GetFileNameWithoutExtension() throws exception with illegal chars
-            return pathInfo.SplitOnLast('.')[0].SplitOnLast('/').Last();
+            return pathInfo.LastLeftPart('.').LastRightPart('/');
         }
 
 		//internal static void RegisterRoutes()

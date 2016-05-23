@@ -214,9 +214,11 @@ namespace ServiceStack
         public static string GetFormatModifier(this IRequest httpReq)
         {
             var format = httpReq.QueryString[Keywords.Format];
-            if (format == null) return null;
-            var parts = format.SplitOnFirst('.');
-            return parts.Length > 1 ? parts[1] : null;
+            if (format == null)
+                return null;
+
+            var pos = format.IndexOf('.');
+            return pos >= 0 ? format.Substring(pos + 1) : null;
         }
 
         public static bool HasNotModifiedSince(this IRequest httpReq, DateTime? dateTime)
@@ -628,7 +630,7 @@ namespace ServiceStack
         public static string GetQueryStringContentType(this IRequest httpReq)
         {
             var callback = httpReq.QueryString[Keywords.Callback];
-            if (!String.IsNullOrEmpty(callback)) return MimeTypes.Json;
+            if (!string.IsNullOrEmpty(callback)) return MimeTypes.Json;
 
             var format = httpReq.QueryString[Keywords.Format];
             if (format == null)
@@ -637,11 +639,11 @@ namespace ServiceStack
                 var pi = httpReq.PathInfo;
                 if (pi == null || pi.Length <= formatMaxLength) return null;
                 if (pi[0] == '/') pi = pi.Substring(1);
-                format = pi.SplitOnFirst('/')[0];
+                format = pi.LeftPart('/');
                 if (format.Length > formatMaxLength) return null;
             }
 
-            format = format.SplitOnFirst('.')[0].ToLower();
+            format = format.LeftPart('.').ToLower();
             if (format.Contains("json")) return MimeTypes.Json;
             if (format.Contains("xml")) return MimeTypes.Xml;
             if (format.Contains("jsv")) return MimeTypes.Jsv;
@@ -870,25 +872,25 @@ namespace ServiceStack
                 string ipAddressNumber = null;
                 if (isIpv4Address)
                 {
-                    ipAddressNumber = request.UserHostAddress.SplitOnFirst(":")[0];
+                    ipAddressNumber = request.UserHostAddress.LeftPart(":");
                 }
                 else
                 {
                     if (request.UserHostAddress.Contains("]:"))
                     {
-                        ipAddressNumber = request.UserHostAddress.SplitOnLast(":")[0];
+                        ipAddressNumber = request.UserHostAddress.LastLeftPart(":");
                     }
                     else
                     {
                         ipAddressNumber = request.UserHostAddress.LastIndexOf("%", StringComparison.InvariantCulture) > 0 ?
-                            request.UserHostAddress.SplitOnLast(":")[0] :
+                            request.UserHostAddress.LastLeftPart(":") :
                             request.UserHostAddress;
                     }
                 }
 
                 try
                 {
-                    ipAddressNumber = ipAddressNumber.SplitOnFirst(',')[0];
+                    ipAddressNumber = ipAddressNumber.LeftPart(',');
                     var ipAddress = ipAddressNumber.StartsWith("::1")
                         ? IPAddress.IPv6Loopback
                         : IPAddress.Parse(ipAddressNumber);

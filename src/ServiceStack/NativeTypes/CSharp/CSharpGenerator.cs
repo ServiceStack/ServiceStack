@@ -479,10 +479,10 @@ namespace ServiceStack.NativeTypes.CSharp
 
         public static string NameOnly(string type, bool includeNested = false)
         {
-            var name = type.SplitOnFirst('`')[0];
+            var name = type.LeftPart('`');
 
             if (!includeNested)
-                name = name.SplitOnLast('.').Last();
+                name = name.LastRightPart('.');
 
             return name.SafeToken();
         }

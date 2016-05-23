@@ -812,7 +812,7 @@ namespace ServiceStack.NativeTypes
                 return type.Name;
             
             var genericTypeName = type.GetGenericTypeDefinition().Name;
-            genericTypeName = genericTypeName.SplitOnFirst('`')[0];
+            genericTypeName = genericTypeName.LeftPart('`');
             var genericArgs = string.Join(",",
                 type.GetGenericArguments()
                     .Select(ToPrettyName).ToArray());

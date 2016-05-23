@@ -174,7 +174,7 @@ namespace ServiceStack.Support.Markdown
 					//|| type.FullName == null
 					? null
 					: StringBuilderCacheAlt.Allocate()
-                        .Append(type.FullName.Replace('+', '.').SplitOnFirst('`')[0]);
+                        .Append(type.FullName.Replace('+', '.').LeftPart('`'));
 
 				if (typeName == null) return null;
 

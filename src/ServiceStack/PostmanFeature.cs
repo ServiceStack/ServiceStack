@@ -304,7 +304,7 @@ namespace ServiceStack
         public static string AsFriendlyName(this Type type, PostmanFeature feature)
         {
             var parts = type.Name.SplitOnFirst('`');
-            var typeName = parts[0].SplitOnFirst('[')[0];
+            var typeName = parts[0].LeftPart('[');
             var suffix = "";
 
             var nullableType = Nullable.GetUnderlyingType(type);

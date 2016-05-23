@@ -329,7 +329,7 @@ namespace ServiceStack.Host.Handlers
             }
 
             return xml.StartsWith("<")
-                ? xml.Substring(1, xml.IndexOf(" ") - 1).SplitOnFirst(':').Last()
+                ? xml.Substring(1, xml.IndexOf(" ") - 1).RightPart(':')
                 : null;
         }
 

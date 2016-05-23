@@ -364,7 +364,7 @@ namespace ServiceStack.NativeTypes.FSharp
             if (value.StartsWith("typeof("))
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).SplitOnLast('.').Last();
+                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
                 return "typeof<" + typeNameOnly + ">";
             }
 
@@ -414,7 +414,7 @@ namespace ServiceStack.NativeTypes.FSharp
 
         public string NameOnly(string type)
         {
-            return type.SplitOnFirst('`')[0].SplitOnLast('.').Last().SafeToken();
+            return type.LeftPart('`').LastRightPart('.').SafeToken();
         }
 
         public void AppendComments(StringBuilderWrapper sb, string desc)

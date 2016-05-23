@@ -114,7 +114,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             //Swift doesn't support reusing same type name with different generic airity
             var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
-                .GroupBy(g => g.SplitOnFirst('`')[0])
+                .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
@@ -218,7 +218,7 @@ namespace ServiceStack.NativeTypes.Swift
             var hasGenericBaseType = type.Inherits != null && !type.Inherits.GenericArgs.IsEmpty();
             if (Config.ExcludeGenericBaseTypes && hasGenericBaseType)
             {
-                sb.AppendLine("//Excluded {0} : {1}<{2}>".Fmt(type.Name, type.Inherits.Name.SplitOnFirst('`')[0], string.Join(",", type.Inherits.GenericArgs)));
+                sb.AppendLine("//Excluded {0} : {1}<{2}>".Fmt(type.Name, type.Inherits.Name.LeftPart('`'), string.Join(",", type.Inherits.GenericArgs)));
                 return lastNS;
             }
 
@@ -417,7 +417,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             var typeName = Type(type.Name, type.GenericArgs);
 
-            var typeNameOnly = typeName.SplitOnFirst('<')[0];
+            var typeNameOnly = typeName.LeftPart('<');
 
             sbExt.AppendLine();
             sbExt.AppendLine("extension {0} : JsonSerializable".Fmt(typeNameOnly));
@@ -691,7 +691,7 @@ namespace ServiceStack.NativeTypes.Swift
             if (value.StartsWith("typeof("))
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).SplitOnLast('.').Last();
+                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
                 return "typeof(" + typeNameOnly + ")";
             }
 
@@ -842,9 +842,9 @@ namespace ServiceStack.NativeTypes.Swift
         {
             var name = conflictTypeNames.Contains(type)
                 ? type.Replace('`', '_')
-                : type.SplitOnFirst('`')[0];
+                : type.LeftPart('`');
 
-            return name.SplitOnLast('.').Last().SafeToken();
+            return name.LastRightPart('.').SafeToken();
         }
 
         public void AppendComments(StringBuilderWrapper sb, string desc)
@@ -982,7 +982,7 @@ namespace ServiceStack.NativeTypes.Swift
             }
 
             var typeName = sb.ToString();
-            return typeName.SplitOnLast('.').Last(); //remove nested class
+            return typeName.LastRightPart('.'); //remove nested class
         }
     }
 

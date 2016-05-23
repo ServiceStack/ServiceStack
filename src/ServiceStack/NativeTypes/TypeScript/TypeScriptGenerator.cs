@@ -105,7 +105,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             //TypeScript doesn't support reusing same type name with different generic airity
             var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
-                .GroupBy(g => g.SplitOnFirst('`')[0])
+                .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
@@ -389,7 +389,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             if (value.StartsWith("typeof("))
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).SplitOnLast('.').Last();
+                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
                 return "typeof(" + typeNameOnly + ")";
             }
 
@@ -473,9 +473,9 @@ namespace ServiceStack.NativeTypes.TypeScript
         {
             var name = conflictTypeNames.Contains(type)
                 ? type.Replace('`','_')
-                : type.SplitOnFirst('`')[0];
+                : type.LeftPart('`');
 
-            return name.SplitOnLast('.').Last().SafeToken();
+            return name.LastRightPart('.').SafeToken();
         }
 
         public void AppendComments(StringBuilderWrapper sb, string desc)

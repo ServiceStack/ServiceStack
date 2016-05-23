@@ -154,7 +154,7 @@ namespace ServiceStack.NativeTypes.Java
 
             //TypeScript doesn't support reusing same type name with different generic airity
             var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
-                .GroupBy(g => g.SplitOnFirst('`')[0])
+                .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
@@ -345,8 +345,8 @@ namespace ServiceStack.NativeTypes.Java
 
                         if (implStr.StartsWith("IReturn<"))
                         {
-                            var parts = implStr.SplitOnFirst('<');
-                            var returnType = parts[1].Substring(0, parts[1].Length - 1);
+                            var types = implStr.RightPart('<');
+                            var returnType = types.Substring(0, types.Length - 1);
 
                             //Can't get .class from Generic Type definition
                             responseTypeExpression = returnType.Contains("<")
@@ -530,7 +530,7 @@ namespace ServiceStack.NativeTypes.Java
             if (value.StartsWith("typeof("))
             {
                 //Only emit type as Namespaces are merged
-                var typeNameOnly = value.Substring(7, value.Length - 8).SplitOnLast('.').Last();
+                var typeNameOnly = value.Substring(7, value.Length - 8).LastRightPart('.');
                 return typeNameOnly + ".class";
             }
 
@@ -616,7 +616,7 @@ namespace ServiceStack.NativeTypes.Java
                 ? type.Replace('`','_')
                 : type.SplitOnFirst('`')[0];
 
-            return name.SplitOnLast('.').Last().SafeToken();
+            return name.LastRightPart('.').SafeToken();
         }
 
         public void AppendComments(StringBuilderWrapper sb, string desc)
@@ -759,7 +759,7 @@ namespace ServiceStack.NativeTypes.Java
             }
 
             var typeName = sb.ToString();
-            return typeName.SplitOnLast('.').Last(); //remove nested class
+            return typeName.LastRightPart('.'); //remove nested class
         }
     }
 

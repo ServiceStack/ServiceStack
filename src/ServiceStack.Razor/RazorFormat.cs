@@ -123,7 +123,7 @@ namespace ServiceStack.Razor
                 var loadedAssemblyNames = CompilerServices
                     .GetLoadedAssemblies()
                     .Where(x => !x.IsDynamic)
-                    .Map(x => x.FullName.SplitOnFirst(',')[0]);
+                    .Map(x => x.FullName.LeftPart(','));
 
                 foreach (var razorNamespace in appHost.Config.RazorNamespaces)
                 {

@@ -451,7 +451,7 @@ namespace ServiceStack.Host
                     }
                     else if (p.IsArray())
                     {
-                        var elType = p.Type.SplitOnFirst('[')[0];
+                        var elType = p.Type.LeftPart('[');
                         type = FindMetadataType(metadataTypes, elType);
                         if (type != null && !types.Contains(type))
                         {

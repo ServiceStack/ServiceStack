@@ -209,7 +209,7 @@ namespace ServiceStack.Razor.Managers
             //Views should be uniquely named and stored in any deep folder structure
             if (pagePath.StartsWithIgnoreCase("views/") && !pagePath.EndsWithIgnoreCase(DefaultLayoutFile))
             {
-                var viewName = pagePath.SplitOnLast('.').First().SplitOnLast('/').Last();
+                var viewName = pagePath.LastLeftPart('.').LastRightPart('/');
                 ViewNamesMap[viewName] = pagePath;
             }
 
@@ -260,7 +260,7 @@ namespace ServiceStack.Razor.Managers
             string contextParentDir = contextRelativePath;
             do
             {
-                contextParentDir = (contextParentDir ?? "").SplitOnLast('/').First();
+                contextParentDir = (contextParentDir ?? "").LastLeftPart('/');
 
                 var path = CombinePaths(contextParentDir, layoutFile);
                 var layoutPage = GetPage(path);

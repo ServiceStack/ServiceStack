@@ -727,7 +727,7 @@ namespace ServiceStack
         {
             foreach (var entry in PropertyGetters)
             {
-                var name = entry.Key.SplitOnFirst('#')[0];
+                var name = entry.Key.LeftPart('#');
 
                 QueryDbFieldAttribute implicitQuery;
                 QueryFieldMap.TryGetValue(name, out implicitQuery);
@@ -824,7 +824,7 @@ namespace ServiceStack
         {
             foreach (var entry in dynamicParams)
             {
-                var name = entry.Key.SplitOnFirst('#')[0];
+                var name = entry.Key.LeftPart('#');
 
                 var match = GetQueryMatch(q, name, options, aliases);
                 if (match == null)

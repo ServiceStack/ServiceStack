@@ -93,7 +93,7 @@ namespace ServiceStack.Razor.Compilation.CodeTransformers
         private readonly string _typeName;
         public SetBaseType(string typeName, bool? isGenericType = null)
         {
-            _typeName = typeName.SplitOnLast("`")[0]; //get clean generic name without 'GenericType`1' n args suffix
+            _typeName = typeName.LastLeftPart("`"); //get clean generic name without 'GenericType`1' n args suffix
             this.isGenericType = isGenericType ?? typeName.Contains("`");
         }
 

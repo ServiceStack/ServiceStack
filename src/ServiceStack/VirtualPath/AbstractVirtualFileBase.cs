@@ -12,7 +12,7 @@ namespace ServiceStack.VirtualPath
 
         public string Extension
         {
-            get { return Name.SplitOnLast('.').LastOrDefault(); }
+            get { return Name.LastRightPart('.'); }
         }
 
         public IVirtualDirectory Directory { get; set; }

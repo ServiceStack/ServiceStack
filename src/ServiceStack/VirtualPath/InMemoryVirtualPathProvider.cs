@@ -246,7 +246,7 @@ namespace ServiceStack.VirtualPath
 
         public override string Name
         {
-            get { return DirPath != null ? DirPath.SplitOnLast(InMemoryVirtualPathProvider.DirSep).Last() : null; }
+            get { return DirPath != null ? DirPath.LastRightPart(InMemoryVirtualPathProvider.DirSep) : null; }
         }
 
         public override IVirtualFile GetFile(string virtualPath)
@@ -312,7 +312,7 @@ namespace ServiceStack.VirtualPath
 
         public override string Name
         {
-            get { return FilePath.SplitOnLast(InMemoryVirtualPathProvider.DirSep).Last(); }
+            get { return FilePath.LastRightPart(InMemoryVirtualPathProvider.DirSep); }
         }
 
         public override string VirtualPath
