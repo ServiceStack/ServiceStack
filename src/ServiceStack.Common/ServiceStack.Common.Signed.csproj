@@ -101,6 +101,7 @@
     <Compile Include="ByteArrayExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CachedExpressionCompiler.cs" />
     <Compile Include="Data\DbConnectionFactory.cs" />
     <Compile Include="Data\IDbConnectionFactory.cs" />
     <Compile Include="Data\IHasDbConnection.cs" />
