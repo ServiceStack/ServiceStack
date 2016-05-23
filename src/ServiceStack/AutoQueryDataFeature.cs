@@ -1241,9 +1241,7 @@ namespace ServiceStack
                       TypeSerializer.DeserializeFromString(strValue, Array.CreateInstance(fieldType, 0).GetType())
                     : fieldType == typeof(string) ? 
                       strValue
-                    : fieldType.IsValueType && !fieldType.IsEnum ? 
-                      Convert.ChangeType(strValue, fieldType) :
-                      TypeSerializer.DeserializeFromString(strValue, fieldType);
+                    : strValue.ChangeTo(fieldType);
 
                 AddCondition(q, defaultTerm, match.FieldDef, value, condition);
             }
