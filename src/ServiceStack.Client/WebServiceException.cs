@@ -75,11 +75,11 @@ namespace ServiceStack
 
         private bool TryGetResponseStatusFromResponseBody(out string responseStatus)
         {
-            responseStatus = String.Empty;
+            responseStatus = string.Empty;
             try
             {
-                if (String.IsNullOrEmpty(ResponseBody)) return false;
-                var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(ResponseBody);
+                if (string.IsNullOrEmpty(ResponseBody)) return false;
+                var map = JsvServiceClient.FromJsv<Dictionary<string, string>>(ResponseBody);
                 map = new Dictionary<string, string>(map, PclExport.Instance.InvariantComparerIgnoreCase);
                 return map.TryGetValue("ResponseStatus", out responseStatus);
             }
