@@ -52,6 +52,10 @@ namespace ServiceStack
         public string Password { get; set; }
         public bool AlwaysSendBasicAuthHeader { get; set; }
 
+        public ICredentials Credentials { get; set; }
+
+        public string BearerToken { get; set; }
+
         public CancellationTokenSource CancelTokenSource { get; set; }
 
         /// <summary>
@@ -131,7 +135,8 @@ namespace ServiceStack
             {
                 UseCookies = true,
                 CookieContainer = CookieContainer,
-                UseDefaultCredentials = true,
+                UseDefaultCredentials = Credentials == null,
+                Credentials = Credentials,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
             };
 
@@ -171,7 +176,9 @@ namespace ServiceStack
 
             var client = GetHttpClient();
 
-            if (AlwaysSendBasicAuthHeader)
+            if (BearerToken != null)
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
+            else if (AlwaysSendBasicAuthHeader)
                 AddBasicAuth(client);
 
             this.PopulateRequestMetadata(request);
@@ -354,7 +361,8 @@ namespace ServiceStack
 
         private void AddBasicAuth(HttpClient client)
         {
-            if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password)) return;
+            if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
+                return;
 
             var byteArray = Encoding.UTF8.GetBytes("{0}:{1}".Fmt(UserName, Password));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));

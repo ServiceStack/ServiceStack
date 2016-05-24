@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Auth;
@@ -37,6 +38,40 @@ namespace RazorRockstars.Console.Files
         public object Any(Secured request)
         {
             return new SecuredResponse { Result = request.Name };
+        }
+    }
+
+    public class JsonHttpClientStatelessAuthTests : StatelessAuthTests
+    {
+        protected override IServiceClient GetClientWithUserPassword(bool alwaysSend = false)
+        {
+            return new JsonHttpClient(ListeningOn)
+            {
+                UserName = Username,
+                Password = Password,
+                AlwaysSendBasicAuthHeader = alwaysSend,
+            };
+        }
+
+        protected override IServiceClient GetClientWithApiKey()
+        {
+            return new JsonHttpClient(ListeningOn)
+            {
+                Credentials = new NetworkCredential(ApiKey.Key, ""),
+            };
+        }
+
+        protected override IServiceClient GetClientWithApiKeyBearerToken()
+        {
+            return new JsonHttpClient(ListeningOn)
+            {
+                BearerToken = ApiKey.Key,
+            };
+        }
+
+        protected override IServiceClient GetClient()
+        {
+            return new JsonHttpClient(ListeningOn);
         }
     }
 
@@ -85,19 +120,20 @@ namespace RazorRockstars.Console.Files
             Thread.Sleep(TimeSpan.FromMinutes(10));
         }
 
-        const string Username = "user";
-        const string Password = "p@55word";
+        public const string Username = "user";
+        public const string Password = "p@55word";
 
-        IServiceClient GetClientWithUserPassword()
+        protected virtual IServiceClient GetClientWithUserPassword(bool alwaysSend = false)
         {
             return new JsonServiceClient(ListeningOn)
             {
                 UserName = Username,
-                Password = Password
+                Password = Password,
+                AlwaysSendBasicAuthHeader = alwaysSend,
             };
         }
 
-        IServiceClient GetClientWithApiKey()
+        protected virtual IServiceClient GetClientWithApiKey()
         {
             return new JsonServiceClient(ListeningOn)
             {
@@ -105,7 +141,15 @@ namespace RazorRockstars.Console.Files
             };
         }
 
-        protected IServiceClient GetClient()
+        protected virtual IServiceClient GetClientWithApiKeyBearerToken()
+        {
+            return new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = ApiKey.Key,
+            };
+        }
+
+        protected virtual IServiceClient GetClient()
         {
             return new JsonServiceClient(ListeningOn);
         }
@@ -113,10 +157,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Authenticating_once_with_BasicAuth_does_not_establish_auth_session()
         {
-            var client = (ServiceClientBase)GetClientWithUserPassword();
-            client.AlwaysSendBasicAuthHeader = true;
-            client.RequestFilter = req =>
-                Assert.That(req.Headers[HttpHeaders.Authorization], Is.Not.Null);
+            var client = GetClientWithUserPassword(alwaysSend:true);
 
             var request = new Secured { Name = "test" };
             var response = client.Send<SecuredResponse>(request);
@@ -149,6 +190,72 @@ namespace RazorRockstars.Console.Files
             try
             {
                 response = newClient.Send<SecuredResponse>(request);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
+        }
+
+        [Test]
+        public async Task Authenticating_once_with_ApiKeyAuth_does_not_establish_auth_session_Async()
+        {
+            var client = GetClientWithApiKey();
+
+            var request = new Secured { Name = "test" };
+            var response = await client.SendAsync<SecuredResponse>(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var newClient = GetClient();
+            newClient.SetSessionId(client.GetSessionId());
+            try
+            {
+                response = await newClient.SendAsync<SecuredResponse>(request);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
+        }
+
+        [Test]
+        public void Authenticating_once_with_ApiKeyAuth_BearerToken_does_not_establish_auth_session()
+        {
+            var client = GetClientWithApiKeyBearerToken();
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send<SecuredResponse>(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var newClient = GetClient();
+            newClient.SetSessionId(client.GetSessionId());
+            try
+            {
+                response = newClient.Send<SecuredResponse>(request);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
+        }
+
+        [Test]
+        public async Task Authenticating_once_with_ApiKeyAuth_BearerToken_does_not_establish_auth_session_Async()
+        {
+            var client = GetClientWithApiKeyBearerToken();
+
+            var request = new Secured { Name = "test" };
+            var response = await client.SendAsync<SecuredResponse>(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var newClient = GetClient();
+            newClient.SetSessionId(client.GetSessionId());
+            try
+            {
+                response = await newClient.SendAsync<SecuredResponse>(request);
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException webEx)
@@ -208,6 +315,42 @@ namespace RazorRockstars.Console.Files
 
             Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
                 requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
+                Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+        }
+
+        [Test]
+        public async Task Can_access_Secured_Pages_with_ApiKeyAuth_async()
+        {
+            Assert.That(await ListeningOn.CombineWith("/secured").GetStringFromUrlAsync(
+                requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
+                Is.StringContaining("<!--view:Secured.cshtml-->"));
+
+            Assert.That(await ListeningOn.CombineWith("/SecuredPage").GetStringFromUrlAsync(
+                requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
+                Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+        }
+
+        [Test]
+        public void Can_access_Secured_Pages_with_ApiKeyAuth_BearerToken()
+        {
+            Assert.That(ListeningOn.CombineWith("/secured").GetStringFromUrl(
+                requestFilter: req => req.AddBearerToken(ApiKey.Key)),
+                Is.StringContaining("<!--view:Secured.cshtml-->"));
+
+            Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
+                requestFilter: req => req.AddBearerToken(ApiKey.Key)),
+                Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+        }
+
+        [Test]
+        public async Task Can_access_Secured_Pages_with_ApiKeyAuth_BearerToken_Async()
+        {
+            Assert.That(await ListeningOn.CombineWith("/secured").GetStringFromUrlAsync(
+                requestFilter: req => req.AddBearerToken(ApiKey.Key)),
+                Is.StringContaining("<!--view:Secured.cshtml-->"));
+
+            Assert.That(await ListeningOn.CombineWith("/SecuredPage").GetStringFromUrlAsync(
+                requestFilter: req => req.AddBearerToken(ApiKey.Key)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
         }
 

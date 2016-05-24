@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Text;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
@@ -158,20 +158,40 @@ namespace ServiceStack.Auth
                 if (RequireSecureConnection && !req.IsSecureConnection)
                     throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
 
-                //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
-                SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
+                var apiKey = userPass.Value.Key;
 
-                using (var authService = req.TryResolve<AuthenticateService>())
+                PreAuthenticateWithApiKey(req, res, apiKey);
+            }
+            var bearerToken = req.GetBearerToken();
+            if (bearerToken != null)
+            {
+                using (var db = HostContext.AppHost.GetDbConnection(req))
                 {
-                    authService.Request = req;
-                    var apiKey = userPass.Value.Key;
-                    var response = authService.Post(new Authenticate
+                    if (db.Exists<ApiKey>(x => x.Key == bearerToken))
                     {
-                        provider = Name,
-                        UserName = "ApiKey",
-                        Password = apiKey,
-                    });
+                        if (RequireSecureConnection && !req.IsSecureConnection)
+                            throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
+
+                        PreAuthenticateWithApiKey(req, res, bearerToken);
+                    }
                 }
+            }
+        }
+
+        private static void PreAuthenticateWithApiKey(IRequest req, IResponse res, string apiKey)
+        {
+            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
+            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
+
+            using (var authService = req.TryResolve<AuthenticateService>())
+            {
+                authService.Request = req;
+                var response = authService.Post(new Authenticate
+                {
+                    provider = Name,
+                    UserName = "ApiKey",
+                    Password = apiKey,
+                });
             }
         }
 
@@ -245,5 +265,18 @@ namespace ServiceStack.Auth
             }
         }
     }
+}
 
+namespace ServiceStack
+{
+    public static class ApiKeyAuthProviderExtensions
+    {
+        public static ApiKey GetApiKey(this IRequest req)
+        {
+            object oApiKey;
+            return req.Items.TryGetValue(Keywords.ApiKey, out oApiKey)
+                ? oApiKey as ApiKey
+                : null;
+        }
+    }
 }

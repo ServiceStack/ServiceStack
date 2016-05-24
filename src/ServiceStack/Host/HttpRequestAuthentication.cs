@@ -8,6 +8,15 @@ namespace ServiceStack.Host
 {
     public static class HttpRequestAuthentication
     {
+        public static string GetBearerToken(this IRequest httpReq)
+        {
+            var auth = httpReq.Headers[HttpHeaders.Authorization];
+            if (auth == null) return null;
+
+            var pos = auth.IndexOf(' ');
+            return auth.Substring(0, pos).EqualsIgnoreCase("Bearer") ? auth.Substring(pos + 1) : null;
+        }
+
         public static string GetBasicAuth(this IRequest httpReq)
         {
             var auth = httpReq.Headers[HttpHeaders.Authorization];

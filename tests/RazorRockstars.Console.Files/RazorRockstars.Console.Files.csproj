@@ -359,6 +359,10 @@
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj">
+      <Project>{C05DE4A1-84C5-481B-8BD4-C837A1303B01}</Project>
+      <Name>ServiceStack.HttpClient</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.MsgPack\ServiceStack.MsgPack.csproj">
       <Project>{6b751a07-75d4-4a9d-b3a0-eea27808e64c}</Project>
       <Name>ServiceStack.MsgPack</Name>

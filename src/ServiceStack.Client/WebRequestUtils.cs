@@ -164,6 +164,14 @@ namespace ServiceStack
                 = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(apiKey + ":"));
         }
 
+        public static void AddBearerToken(this WebRequest client, string bearerToken)
+        {
+            if (string.IsNullOrEmpty(bearerToken))
+                return;
+
+            client.Headers[HttpHeaders.Authorization] = "Bearer " + bearerToken;
+        }
+
 #if NETFX_CORE
         internal static string CalculateMD5Hash(string input)
         {
