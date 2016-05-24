@@ -57,7 +57,7 @@ namespace RazorRockstars.Console.Files
         {
             return new JsonHttpClient(ListeningOn)
             {
-                Credentials = new NetworkCredential(ApiKey.Key, ""),
+                Credentials = new NetworkCredential(ApiKey.Id, ""),
             };
         }
 
@@ -65,7 +65,7 @@ namespace RazorRockstars.Console.Files
         {
             return new JsonHttpClient(ListeningOn)
             {
-                BearerToken = ApiKey.Key,
+                BearerToken = ApiKey.Id,
             };
         }
 
@@ -84,7 +84,7 @@ namespace RazorRockstars.Console.Files
 
         public StatelessAuthTests()
         {
-            LogManager.LogFactory = new ConsoleLogFactory();
+            //LogManager.LogFactory = new ConsoleLogFactory();
             appHost = new AppHost { EnableAuth = true }
                .Init()
                .Start("http://*:2337/");
@@ -137,7 +137,7 @@ namespace RazorRockstars.Console.Files
         {
             return new JsonServiceClient(ListeningOn)
             {
-                Credentials = new NetworkCredential(ApiKey.Key, ""),
+                Credentials = new NetworkCredential(ApiKey.Id, ""),
             };
         }
 
@@ -145,7 +145,7 @@ namespace RazorRockstars.Console.Files
         {
             return new JsonServiceClient(ListeningOn)
             {
-                BearerToken = ApiKey.Key,
+                BearerToken = ApiKey.Id,
             };
         }
 
@@ -310,11 +310,11 @@ namespace RazorRockstars.Console.Files
         public void Can_access_Secured_Pages_with_ApiKeyAuth()
         {
             Assert.That(ListeningOn.CombineWith("/secured").GetStringFromUrl(
-                requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
+                requestFilter: req => req.AddApiKeyAuth(ApiKey.Id)),
                 Is.StringContaining("<!--view:Secured.cshtml-->"));
 
             Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
-                requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
+                requestFilter: req => req.AddApiKeyAuth(ApiKey.Id)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
         }
 
@@ -322,11 +322,11 @@ namespace RazorRockstars.Console.Files
         public async Task Can_access_Secured_Pages_with_ApiKeyAuth_async()
         {
             Assert.That(await ListeningOn.CombineWith("/secured").GetStringFromUrlAsync(
-                requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
+                requestFilter: req => req.AddApiKeyAuth(ApiKey.Id)),
                 Is.StringContaining("<!--view:Secured.cshtml-->"));
 
             Assert.That(await ListeningOn.CombineWith("/SecuredPage").GetStringFromUrlAsync(
-                requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
+                requestFilter: req => req.AddApiKeyAuth(ApiKey.Id)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
         }
 
@@ -334,11 +334,11 @@ namespace RazorRockstars.Console.Files
         public void Can_access_Secured_Pages_with_ApiKeyAuth_BearerToken()
         {
             Assert.That(ListeningOn.CombineWith("/secured").GetStringFromUrl(
-                requestFilter: req => req.AddBearerToken(ApiKey.Key)),
+                requestFilter: req => req.AddBearerToken(ApiKey.Id)),
                 Is.StringContaining("<!--view:Secured.cshtml-->"));
 
             Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
-                requestFilter: req => req.AddBearerToken(ApiKey.Key)),
+                requestFilter: req => req.AddBearerToken(ApiKey.Id)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
         }
 
@@ -346,11 +346,11 @@ namespace RazorRockstars.Console.Files
         public async Task Can_access_Secured_Pages_with_ApiKeyAuth_BearerToken_Async()
         {
             Assert.That(await ListeningOn.CombineWith("/secured").GetStringFromUrlAsync(
-                requestFilter: req => req.AddBearerToken(ApiKey.Key)),
+                requestFilter: req => req.AddBearerToken(ApiKey.Id)),
                 Is.StringContaining("<!--view:Secured.cshtml-->"));
 
             Assert.That(await ListeningOn.CombineWith("/SecuredPage").GetStringFromUrlAsync(
-                requestFilter: req => req.AddBearerToken(ApiKey.Key)),
+                requestFilter: req => req.AddBearerToken(ApiKey.Id)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
         }
 

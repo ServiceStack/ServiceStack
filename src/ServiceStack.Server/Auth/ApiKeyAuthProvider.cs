@@ -13,14 +13,10 @@ namespace ServiceStack.Auth
 {
     public class ApiKey : IMeta
     {
-        [AutoIncrement]
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string UserAuthId { get; set; }
         public string Environment { get; set; }
         public string KeyType { get; set; }
-
-        [Index(Unique = true)]
-        public string Key { get; set; }
 
         public DateTime CreatedDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
@@ -108,7 +104,7 @@ namespace ServiceStack.Auth
 
             using (var db = HostContext.AppHost.GetDbConnection(authService.Request))
             {
-                var apiKey = db.Single<ApiKey>(x => x.Key == request.Password);
+                var apiKey = db.SingleById<ApiKey>(request.Password);
                 if (apiKey == null)
                     throw HttpError.NotFound("ApiKey does not exist");
 
@@ -167,7 +163,7 @@ namespace ServiceStack.Auth
             {
                 using (var db = HostContext.AppHost.GetDbConnection(req))
                 {
-                    if (db.Exists<ApiKey>(x => x.Key == bearerToken))
+                    if (db.Exists<ApiKey>(x => x.Id == bearerToken))
                     {
                         if (RequireSecureConnection && !req.IsSecureConnection)
                             throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
@@ -248,7 +244,7 @@ namespace ServiceStack.Auth
                         UserAuthId = userId,
                         Environment = env,
                         KeyType = keyType,
-                        Key = key,
+                        Id = key,
                         CreatedDate = now,
                     };
 
