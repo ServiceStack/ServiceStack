@@ -103,7 +103,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Auth\ApiKeyAuthProvider.cs" />
     <Compile Include="Auth\OrmLiteAuthRepository.cs" />
     <Compile Include="Caching\OrmLiteCacheClient.cs" />
     <Compile Include="Configuration\OrmLiteAppSettings.cs" />

@@ -12,7 +12,7 @@ namespace ServiceStack.Auth
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory) : base(dbFactory) { }
     }
 
-    public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles
+    public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -554,6 +554,38 @@ namespace ServiceStack.Auth
                         db.Delete<UserAuthRole>(q => q.UserAuthId == userAuth.Id && permissions.Contains(q.Permission));
                     }
                 }
+            }
+        }
+
+        public void InitApiKeySchema()
+        {
+            using (var db = dbFactory.OpenDbConnection())
+            {
+                db.CreateTableIfNotExists<ApiKey>();
+            }
+        }
+
+        public bool ApiKeyExists(string apiKey)
+        {
+            using (var db = dbFactory.OpenDbConnection())
+            {
+                return db.Exists<ApiKey>(x => x.Id == apiKey);
+            }
+        }
+
+        public ApiKey GetApiKey(string apiKey)
+        {
+            using (var db = dbFactory.OpenDbConnection())
+            {
+                return db.SingleById<ApiKey>(apiKey);
+            }
+        }
+
+        public void StoreAll(IEnumerable<ApiKey> apiKeys)
+        {
+            using (var db = dbFactory.OpenDbConnection())
+            {
+                db.InsertAll(apiKeys);
             }
         }
     }

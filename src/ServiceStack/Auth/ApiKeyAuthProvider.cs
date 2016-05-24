@@ -6,11 +6,21 @@ using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
-using ServiceStack.OrmLite;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
+    public interface IManageApiKeys
+    {
+        void InitApiKeySchema();
+
+        bool ApiKeyExists(string apiKey);
+
+        ApiKey GetApiKey(string apiKey);
+
+        void StoreAll(IEnumerable<ApiKey> apiKeys);
+    }
+
     public class ApiKey : IMeta
     {
         public string Id { get; set; }
@@ -101,48 +111,46 @@ namespace ServiceStack.Auth
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var authRepo = authService.TryResolve<IAuthRepository>().AsUserAuthRepository(authService.GetResolver());
+            var apiRepo = (IManageApiKeys)authRepo;
 
-            using (var db = HostContext.AppHost.GetDbConnection(authService.Request))
+            var apiKey = apiRepo.GetApiKey(request.Password);
+            if (apiKey == null)
+                throw HttpError.NotFound("ApiKey does not exist");
+
+            if (apiKey.CancelledDate != null)
+                throw HttpError.Forbidden("ApiKey has been cancelled");
+
+            if (apiKey.ExpiryDate != null && DateTime.UtcNow > apiKey.ExpiryDate.Value)
+                throw HttpError.Forbidden("ApiKey has expired");
+
+            var userAuth = authRepo.GetUserAuth(apiKey.UserAuthId);
+            if (userAuth == null)
+                throw HttpError.Unauthorized("User for ApiKey does not exist");
+
+            if (IsAccountLocked(authRepo, userAuth))
+                throw new AuthenticationException(ErrorMessages.UserAccountLocked);
+
+            PopulateSession(authRepo, userAuth, session);
+
+            if (session.UserAuthName == null)
+                session.UserAuthName = userAuth.UserName ?? userAuth.Email;
+
+            var response = OnAuthenticated(authService, session, null, null);
+            if (response != null)
+                return response;
+
+            authService.Request.Items[Keywords.ApiKey] = apiKey;
+
+            return new AuthenticateResponse
             {
-                var apiKey = db.SingleById<ApiKey>(request.Password);
-                if (apiKey == null)
-                    throw HttpError.NotFound("ApiKey does not exist");
-
-                if (apiKey.CancelledDate != null)
-                    throw HttpError.Forbidden("ApiKey has been cancelled");
-
-                if (apiKey.ExpiryDate != null && DateTime.UtcNow > apiKey.ExpiryDate.Value)
-                    throw HttpError.Forbidden("ApiKey has expired");
-
-                var userAuth = authRepo.GetUserAuth(apiKey.UserAuthId);
-                if (userAuth == null)
-                    throw HttpError.Unauthorized("User for ApiKey does not exist");
-
-                if (IsAccountLocked(authRepo, userAuth))
-                    throw new AuthenticationException(ErrorMessages.UserAccountLocked);
-
-                PopulateSession(authRepo, userAuth, session);
-
-                if (session.UserAuthName == null)
-                    session.UserAuthName = userAuth.UserName ?? userAuth.Email;
-
-                var response = OnAuthenticated(authService, session, null, null);
-                if (response != null)
-                    return response;
-
-                authService.Request.Items[Keywords.ApiKey] = apiKey;
-
-                return new AuthenticateResponse
-                {
-                    UserId = session.UserAuthId,
-                    UserName = session.UserName,
-                    SessionId = session.Id,
-                    DisplayName = session.DisplayName
-                        ?? session.UserName
-                        ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim(),
-                    ReferrerUrl = request.Continue,
-                };
-            }
+                UserId = session.UserAuthId,
+                UserName = session.UserName,
+                SessionId = session.Id,
+                DisplayName = session.DisplayName
+                    ?? session.UserName
+                    ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim(),
+                ReferrerUrl = request.Continue,
+            };
         }
 
         public void PreAuthenticate(IRequest req, IResponse res)
@@ -161,15 +169,13 @@ namespace ServiceStack.Auth
             var bearerToken = req.GetBearerToken();
             if (bearerToken != null)
             {
-                using (var db = HostContext.AppHost.GetDbConnection(req))
+                var authRepo = (IManageApiKeys)req.TryResolve<IAuthRepository>().AsUserAuthRepository(req);
+                if (authRepo.ApiKeyExists(bearerToken))
                 {
-                    if (db.Exists<ApiKey>(x => x.Id == bearerToken))
-                    {
-                        if (RequireSecureConnection && !req.IsSecureConnection)
-                            throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
+                    if (RequireSecureConnection && !req.IsSecureConnection)
+                        throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
 
-                        PreAuthenticateWithApiKey(req, res, bearerToken);
-                    }
+                    PreAuthenticateWithApiKey(req, res, bearerToken);
                 }
             }
         }
@@ -193,19 +199,16 @@ namespace ServiceStack.Auth
 
         public void Register(IAppHost appHost, AuthFeature feature)
         {
+            var authRepo = appHost.TryResolve<IAuthRepository>().AsUserAuthRepository(appHost);
+            var apiRepo = authRepo as IManageApiKeys;
+            if (apiRepo == null)
+                throw new NotSupportedException(apiRepo.GetType().Name + " does not implement IManageApiKeys");
+
             feature.AuthEvents.Add(new ApiKeyAuthEvents(this));
 
             if (InitSchema)
             {
-                var dbFactory = appHost.TryResolve<IDbConnectionFactory>();
-
-                if (dbFactory == null)
-                    throw new NotSupportedException("ApiKeyAuthProvider requires a registered OrmLite IDbConnectionFactory");
-
-                using (var db = dbFactory.OpenDbConnection())
-                {
-                    db.CreateTableIfNotExists<ApiKey>();
-                }
+                apiRepo.InitApiKeySchema();
             }
         }
 
@@ -255,10 +258,8 @@ namespace ServiceStack.Auth
                 }
             }
 
-            using (var db = HostContext.AppHost.GetDbConnection(httpReq))
-            {
-                db.InsertAll(apiKeys);
-            }
+            var authRepo = (IManageApiKeys)httpReq.TryResolve<IAuthRepository>().AsUserAuthRepository(httpReq);
+            authRepo.StoreAll(apiKeys);
         }
     }
 }
