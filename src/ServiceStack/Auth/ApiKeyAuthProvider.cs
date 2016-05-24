@@ -18,6 +18,8 @@ namespace ServiceStack.Auth
 
         ApiKey GetApiKey(string apiKey);
 
+        List<ApiKey> GetUserApiKeys(string userId);
+
         void StoreAll(IEnumerable<ApiKey> apiKeys);
     }
 

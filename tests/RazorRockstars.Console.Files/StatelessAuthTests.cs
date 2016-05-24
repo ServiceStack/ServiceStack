@@ -10,6 +10,7 @@ using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite;
+using ServiceStack.Redis;
 using ServiceStack.Text;
 
 namespace RazorRockstars.Console.Files
@@ -75,6 +76,36 @@ namespace RazorRockstars.Console.Files
         }
     }
 
+    public class MemoryAuthRepoStatelessAuthTests : StatelessAuthTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new AppHost
+            {
+                EnableAuth = true,
+                Use = container => container.Register<IAuthRepository>(c => new InMemoryAuthRepository())
+            };
+        }
+    }
+
+    public class RedisAuthRepoStatelessAuthTests : StatelessAuthTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            var redisManager = new RedisManagerPool();
+            using (var redis = redisManager.GetClient())
+            {
+                redis.FlushAll();
+            }
+
+            return new AppHost
+            {
+                EnableAuth = true,
+                Use = container => container.Register<IAuthRepository>(c => new RedisAuthRepository(redisManager))
+            };
+        }
+    }
+
     public class StatelessAuthTests
     {
         public const string ListeningOn = "http://localhost:2337/";
@@ -82,15 +113,26 @@ namespace RazorRockstars.Console.Files
         protected readonly ServiceStackHost appHost;
         protected ApiKey ApiKey;
 
+        protected virtual ServiceStackHost CreateAppHost()
+        {
+            return new AppHost
+            {
+                EnableAuth = true,
+                Use = container => container.Register<IAuthRepository>(c =>
+                    new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()))
+            };
+        }
+
         public StatelessAuthTests()
         {
             //LogManager.LogFactory = new ConsoleLogFactory();
-            appHost = new AppHost { EnableAuth = true }
+            appHost = CreateAppHost()
                .Init()
                .Start("http://*:2337/");
 
             var client = GetClient();
-            client.Post(new Register {
+            var response = client.Post(new Register
+            {
                 UserName = "user",
                 Password = "p@55word",
                 Email = "as@if{0}.com",
@@ -99,11 +141,8 @@ namespace RazorRockstars.Console.Files
                 LastName = "LastName",
             });
 
-            using (var db = appHost.Resolve<IDbConnectionFactory>().OpenDbConnection())
-            {
-                ApiKey = db.Select<ApiKey>().First();
-                ApiKey.PrintDump();
-            }
+            var apiRepo = (IManageApiKeys)appHost.Resolve<IAuthRepository>();
+            ApiKey = apiRepo.GetUserApiKeys(response.UserId).First();
         }
 
         [TestFixtureTearDown]
@@ -157,7 +196,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Authenticating_once_with_BasicAuth_does_not_establish_auth_session()
         {
-            var client = GetClientWithUserPassword(alwaysSend:true);
+            var client = GetClientWithUserPassword(alwaysSend: true);
 
             var request = new Secured { Name = "test" };
             var response = client.Send<SecuredResponse>(request);
@@ -268,7 +307,8 @@ namespace RazorRockstars.Console.Files
         public void Authenticating_once_with_CredentialsAuth_does_establish_auth_session()
         {
             var client = GetClient();
-            client.Post(new Authenticate {
+            client.Post(new Authenticate
+            {
                 provider = "credentials",
                 UserName = Username,
                 Password = Password,
@@ -358,7 +398,8 @@ namespace RazorRockstars.Console.Files
         public void Can_access_Secured_Pages_with_CredentialsAuth()
         {
             var client = GetClient();
-            client.Post(new Authenticate {
+            client.Post(new Authenticate
+            {
                 provider = "credentials",
                 UserName = Username,
                 Password = Password,

@@ -581,6 +581,20 @@ namespace ServiceStack.Auth
             }
         }
 
+        public List<ApiKey> GetUserApiKeys(string userId)
+        {
+            using (var db = dbFactory.OpenDbConnection())
+            {
+                var q = db.From<ApiKey>()
+                    .Where(x => x.UserAuthId == userId)
+                    .And(x => x.CancelledDate == null)
+                    .And(x => x.ExpiryDate == null || x.ExpiryDate >= DateTime.UtcNow)
+                    .OrderByDescending(x => x.CreatedDate);
+
+                return db.Select(q);
+            }
+        }
+
         public void StoreAll(IEnumerable<ApiKey> apiKeys)
         {
             using (var db = dbFactory.OpenDbConnection())

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Funq;
 using ServiceStack;
@@ -22,8 +23,13 @@ namespace RazorRockstars.Console.Files
         public bool EnableAuth = false;
         public bool UseApiKeyProvider = false;
 
+        public Action<Container> Use;
+
         public override void Configure(Container container)
         {
+            if (Use != null)
+                Use(container);
+
             if (EnableRazor)
                 Plugins.Add(new RazorFormat());
 
@@ -34,7 +40,6 @@ namespace RazorRockstars.Console.Files
 
             Plugins.Add(new ValidationFeature());
             container.RegisterValidators(typeof(AutoValidationValidator).Assembly);
-
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
@@ -63,7 +68,6 @@ namespace RazorRockstars.Console.Files
                     IncludeRegistrationService = true,
                 });
 
-                container.Register<IAuthRepository>(c => new OrmLiteAuthRepository(dbFactory));
                 container.Resolve<IAuthRepository>().InitSchema();
             }
         }
