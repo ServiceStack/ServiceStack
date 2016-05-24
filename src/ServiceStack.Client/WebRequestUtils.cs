@@ -148,12 +148,18 @@ namespace ServiceStack
 
         public static void AddBasicAuth(this WebRequest client, string userName, string password)
         {
+            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
+                return;
+
             client.Headers[HttpHeaders.Authorization]
                 = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(userName + ":" + password));
         }
 
         public static void AddApiKeyAuth(this WebRequest client, string apiKey)
         {
+            if (string.IsNullOrEmpty(apiKey))
+                return;
+
             client.Headers[HttpHeaders.Authorization]
                 = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(apiKey + ":"));
         }

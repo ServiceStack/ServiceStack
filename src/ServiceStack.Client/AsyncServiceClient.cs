@@ -100,6 +100,8 @@ namespace ServiceStack
             this.Password = password;
         }
 
+        public string BearerToken { get; set; }
+
         public TimeSpan? Timeout { get; set; }
 
         public string ContentType { get; set; }
@@ -234,11 +236,12 @@ namespace ServiceStack
             //EmulateHttpViaPost is also forced for SL5 clients sending non GET/POST requests
             PclExport.Instance.Config(client, userAgent: UserAgent);
 
-            if (this.Credentials != null) 
-                client.Credentials = this.Credentials;
-
             if (this.authInfo != null)
                 client.AddAuthInfo(this.UserName, this.Password, authInfo);
+            else if (this.BearerToken != null)
+                client.Headers[HttpHeaders.Authorization] = "Bearer " + this.BearerToken;
+            else if (this.Credentials != null)
+                client.Credentials = this.Credentials;
             else if (this.AlwaysSendBasicAuthHeader)
                 client.AddBasicAuth(this.UserName, this.Password);
 

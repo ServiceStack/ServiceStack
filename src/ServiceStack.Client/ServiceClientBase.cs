@@ -194,6 +194,20 @@ namespace ServiceStack
             this.Password = password;
         }
 
+        /// <summary>
+        /// The Authorization Bearer Token to send with this request
+        /// </summary>
+        private string bearerToken;
+        public string BearerToken
+        {
+            get { return bearerToken; }
+            set
+            {
+                bearerToken = value;
+                asyncClient.BearerToken = value;
+            }
+        }
+
         public string BaseUri { get; set; }
 
         public abstract string Format { get; }
@@ -304,6 +318,7 @@ namespace ServiceStack
         /// </summary>
         public ICredentials Credentials
         {
+            get { return this.credentials; }
             set
             {
                 this.credentials = value;
@@ -843,11 +858,12 @@ namespace ServiceStack
                     readWriteTimeout: ReadWriteTimeout,
                     userAgent: UserAgent);
 
-                if (this.credentials != null)
-                    client.Credentials = this.credentials;
-
                 if (this.authInfo != null)
                     client.AddAuthInfo(this.UserName, this.Password, authInfo);
+                else if (this.BearerToken != null)
+                    client.Headers[HttpHeaders.Authorization] = "Bearer " + this.BearerToken;
+                else if (this.Credentials != null)
+                    client.Credentials = this.Credentials;
                 else if (this.AlwaysSendBasicAuthHeader)
                     client.AddBasicAuth(this.UserName, this.Password);
 

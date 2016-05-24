@@ -111,60 +111,6 @@ namespace RazorRockstars.Console.Files
         }
 
         [Test]
-        public void Authenticating_once_with_ApiKeyAuth_does_not_establish_auth_session()
-        {
-            var client = GetClientWithApiKey();
-
-            var request = new Secured { Name = "test" };
-            var response = client.Send<SecuredResponse>(request);
-            Assert.That(response.Result, Is.EqualTo(request.Name));
-
-            var newClient = GetClient();
-            newClient.SetSessionId(client.GetSessionId());
-            try
-            {
-                response = newClient.Send<SecuredResponse>(request);
-                Assert.Fail("Should throw");
-            }
-            catch (WebServiceException webEx)
-            {
-                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
-            }
-        }
-
-        [Test]
-        public void Can_access_Secured_Pages_with_ApiKeyAuth()
-        {
-            Assert.That(ListeningOn.CombineWith("/secured").GetStringFromUrl(
-                requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
-                Is.StringContaining("<!--view:Secured.cshtml-->"));
-
-            Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
-                requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
-                Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
-        }
-
-        [Test]
-        public void Authenticating_once_with_CredentialsAuth_does_establish_auth_session()
-        {
-            var client = GetClient();
-            client.Post(new Authenticate {
-                provider = "credentials",
-                UserName = Username,
-                Password = Password,
-            });
-
-            var request = new Secured { Name = "test" };
-            var response = client.Send<SecuredResponse>(request);
-            Assert.That(response.Result, Is.EqualTo(request.Name));
-
-            var newClient = GetClient();
-            newClient.SetSessionId(client.GetSessionId());
-            response = newClient.Send<SecuredResponse>(request);
-            Assert.That(response.Result, Is.EqualTo(request.Name));
-        }
-
-        [Test]
         public void Authenticating_once_with_BasicAuth_does_not_establish_auth_session()
         {
             var client = (ServiceClientBase)GetClientWithUserPassword();
@@ -190,6 +136,48 @@ namespace RazorRockstars.Console.Files
         }
 
         [Test]
+        public void Authenticating_once_with_ApiKeyAuth_does_not_establish_auth_session()
+        {
+            var client = GetClientWithApiKey();
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send<SecuredResponse>(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var newClient = GetClient();
+            newClient.SetSessionId(client.GetSessionId());
+            try
+            {
+                response = newClient.Send<SecuredResponse>(request);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
+        }
+
+        [Test]
+        public void Authenticating_once_with_CredentialsAuth_does_establish_auth_session()
+        {
+            var client = GetClient();
+            client.Post(new Authenticate {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password,
+            });
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send<SecuredResponse>(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var newClient = GetClient();
+            newClient.SetSessionId(client.GetSessionId());
+            response = newClient.Send<SecuredResponse>(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
         public void Can_not_access_Secured_Pages_without_Authentication()
         {
             Assert.That(ListeningOn.CombineWith("/secured").GetStringFromUrl(),
@@ -208,6 +196,18 @@ namespace RazorRockstars.Console.Files
 
             Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
                 requestFilter: req => req.AddBasicAuth(Username, Password)),
+                Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+        }
+
+        [Test]
+        public void Can_access_Secured_Pages_with_ApiKeyAuth()
+        {
+            Assert.That(ListeningOn.CombineWith("/secured").GetStringFromUrl(
+                requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
+                Is.StringContaining("<!--view:Secured.cshtml-->"));
+
+            Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
+                requestFilter: req => req.AddApiKeyAuth(ApiKey.Key)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
         }
 
