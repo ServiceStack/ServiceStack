@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
-using ServiceStack.MiniProfiler.Data;
-using ServiceStack.MiniProfiler.Storage;
 //using System.Web.Script.Serialization;
 
 namespace ServiceStack.MiniProfiler

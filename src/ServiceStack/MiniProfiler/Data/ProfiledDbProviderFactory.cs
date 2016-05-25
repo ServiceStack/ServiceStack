@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using ServiceStack.Data;
 
 namespace ServiceStack.MiniProfiler.Data
 {

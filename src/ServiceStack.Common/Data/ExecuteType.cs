@@ -1,4 +1,4 @@
-﻿namespace ServiceStack.MiniProfiler.Data
+﻿namespace ServiceStack.Data
 {
     /// <summary>
     /// Categories of sql statements.

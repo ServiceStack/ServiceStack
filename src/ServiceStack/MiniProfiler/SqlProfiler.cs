@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Linq;
-using ServiceStack.MiniProfiler.Data;
+using ServiceStack.Data;
 
 namespace ServiceStack.MiniProfiler
 {

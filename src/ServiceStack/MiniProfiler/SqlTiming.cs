@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 using System.Runtime.Serialization;
+using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
-using ServiceStack.MiniProfiler.Data;
 using ServiceStack.MiniProfiler.Helpers;
 //using System.Web.Script.Serialization;
 
@@ -187,7 +187,7 @@ namespace ServiceStack.MiniProfiler
         }
 
         /// <summary>
-        /// Called when database reader is closed, ending profiling for <see cref="ServiceStack.MiniProfiler.Data.ExecuteType.Reader"/> SqlTimings.
+        /// Called when database reader is closed, ending profiling for <see cref="ServiceStack.Data.ExecuteType.Reader"/> SqlTimings.
         /// </summary>
         public void ReaderFetchComplete()
         {

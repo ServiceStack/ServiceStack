@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 
-namespace ServiceStack.MiniProfiler.Data
+namespace ServiceStack.Data
 {
     /// <summary>
     /// A callback for ProfiledDbConnection and family
