@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Data.Common;
 using System.Runtime.Serialization;
-using ServiceStack.Data;
+using ServiceStack.MiniProfiler.Data;
 
 namespace ServiceStack.MiniProfiler
 {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data.Common;
 using System.Data;
-using ServiceStack.Data;
 
 #pragma warning disable 1591 // xml doc comments warnings
 
