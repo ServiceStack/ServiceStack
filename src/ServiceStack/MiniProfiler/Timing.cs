@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
 using ServiceStack.MiniProfiler.Data;
-using ServiceStack.MiniProfiler.Storage;
+
 //using System.Web.Script.Serialization;
 
 namespace ServiceStack.MiniProfiler

@@ -187,7 +187,7 @@ namespace ServiceStack.MiniProfiler
         }
 
         /// <summary>
-        /// Called when database reader is closed, ending profiling for <see cref="ServiceStack.MiniProfiler.Data.ExecuteType.Reader"/> SqlTimings.
+        /// Called when database reader is closed, ending profiling for <see cref="Data.ExecuteType.Reader"/> SqlTimings.
         /// </summary>
         public void ReaderFetchComplete()
         {
