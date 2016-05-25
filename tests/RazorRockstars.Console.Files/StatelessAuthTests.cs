@@ -4,9 +4,12 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Amazon.DynamoDBv2;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Auth;
+using ServiceStack.Aws.DynamoDb;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite;
@@ -76,6 +79,30 @@ namespace RazorRockstars.Console.Files
         }
     }
 
+    public class DynamoDbAuthRepoStatelessAuthTests : StatelessAuthTests
+    {
+        public static AmazonDynamoDBClient CreateDynamoDBClient()
+        {
+            var dynamoClient = new AmazonDynamoDBClient("keyId", "key", new AmazonDynamoDBConfig
+            {
+                ServiceURL = ConfigUtils.GetAppSetting("DynamoDbUrl", "http://localhost:8000"),
+            });
+
+            return dynamoClient;
+        }
+        protected override ServiceStackHost CreateAppHost()
+        {
+            var pocoDynamo = new PocoDynamo(CreateDynamoDBClient());
+            pocoDynamo.DeleteAllTables(TimeSpan.FromMinutes(1));
+
+            return new AppHost
+            {
+                EnableAuth = true,
+                Use = container => container.Register<IAuthRepository>(c => new DynamoDbAuthRepository(pocoDynamo))
+            };
+        }
+    }
+
     public class MemoryAuthRepoStatelessAuthTests : StatelessAuthTests
     {
         protected override ServiceStackHost CreateAppHost()
@@ -112,6 +139,9 @@ namespace RazorRockstars.Console.Files
 
         protected readonly ServiceStackHost appHost;
         protected ApiKey ApiKey;
+        private IManageApiKeys apiRepo;
+        private ApiKeyAuthProvider apiProvider;
+        private string userId;
 
         protected virtual ServiceStackHost CreateAppHost()
         {
@@ -141,8 +171,11 @@ namespace RazorRockstars.Console.Files
                 LastName = "LastName",
             });
 
-            var apiRepo = (IManageApiKeys)appHost.Resolve<IAuthRepository>();
-            ApiKey = apiRepo.GetUserApiKeys(response.UserId).First();
+            userId = response.UserId;
+            apiRepo = (IManageApiKeys)appHost.Resolve<IAuthRepository>();
+            ApiKey = apiRepo.GetUserApiKeys(userId).First();
+
+            apiProvider = (ApiKeyAuthProvider)AuthenticateService.GetAuthProvider(ApiKeyAuthProvider.Name);
         }
 
         [TestFixtureTearDown]
@@ -191,6 +224,27 @@ namespace RazorRockstars.Console.Files
         protected virtual IServiceClient GetClient()
         {
             return new JsonServiceClient(ListeningOn);
+        }
+
+        [Test]
+        public void Does_create_multiple_ApiKeys()
+        {
+            var apiKeys = apiRepo.GetUserApiKeys(userId);
+            Assert.That(apiKeys.Count, Is.EqualTo(
+                apiProvider.Environments.Length * apiProvider.KeyTypes.Length));
+
+            Assert.That(apiKeys.All(x => x.UserAuthId != null));
+            Assert.That(apiKeys.All(x => x.Environment != null));
+            Assert.That(apiKeys.All(x => x.KeyType != null));
+            Assert.That(apiKeys.All(x => x.CreatedDate != default(DateTime)));
+            Assert.That(apiKeys.All(x => x.CancelledDate == null));
+            Assert.That(apiKeys.All(x => x.ExpiryDate == null));
+
+            foreach (var apiKey in apiKeys)
+            {
+                var byId = apiRepo.GetApiKey(apiKey.Id);
+                Assert.That(byId.Id, Is.EqualTo(apiKey.Id));
+            }
         }
 
         [Test]

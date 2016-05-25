@@ -27,6 +27,7 @@ namespace ServiceStack.Auth
     {
         public string Id { get; set; }
         public string UserAuthId { get; set; }
+
         public string Environment { get; set; }
         public string KeyType { get; set; }
 
