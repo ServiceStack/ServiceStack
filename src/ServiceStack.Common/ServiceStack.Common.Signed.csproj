@@ -103,7 +103,9 @@
     </Compile>
     <Compile Include="CachedExpressionCompiler.cs" />
     <Compile Include="Data\DbConnectionFactory.cs" />
+    <Compile Include="MiniProfiler\Data\ExecuteType.cs" />
     <Compile Include="Data\IDbConnectionFactory.cs" />
+    <Compile Include="MiniProfiler\Data\IDbProfiler.cs" />
     <Compile Include="Data\IHasDbConnection.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="DirectoryInfoExtensions.cs">

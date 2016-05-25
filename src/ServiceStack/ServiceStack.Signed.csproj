@@ -404,8 +404,6 @@
     <Compile Include="Funq\ServiceKey.cs" />
     <Compile Include="Funq\Syntax.cs" />
     <Compile Include="MiniProfiler\BaseProfilerProvider.cs" />
-    <Compile Include="MiniProfiler\Data\ExecuteType.cs" />
-    <Compile Include="MiniProfiler\Data\IDbProfiler.cs" />
     <Compile Include="MiniProfiler\Data\Link.cs" />
     <Compile Include="MiniProfiler\Data\ProfiledDbCommand.cs">
       <SubType>Component</SubType>
