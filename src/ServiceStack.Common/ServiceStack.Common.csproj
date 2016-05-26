@@ -123,6 +123,15 @@
     <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Logging\DebugLogFactory.cs" />
     <Compile Include="Logging\DebugLogger.cs" />
+    <Compile Include="MiniProfiler\Data\ProfiledCommand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MiniProfiler\Data\ProfiledConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MiniProfiler\Data\ProfiledDbDataReader.cs" />
+    <Compile Include="MiniProfiler\Data\ProfiledProviderFactory.cs" />
+    <Compile Include="MiniProfiler\Data\ProfiledDbTransaction.cs" />
     <Compile Include="Reflection\DelegateFactory.cs">
       <SubType>Code</SubType>
     </Compile>

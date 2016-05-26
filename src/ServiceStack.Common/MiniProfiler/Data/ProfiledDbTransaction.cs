@@ -8,10 +8,10 @@ namespace ServiceStack.MiniProfiler.Data
 {
     public class ProfiledDbTransaction : DbTransaction
     {
-        private ProfiledDbConnection _conn;
+        private ProfiledConnection _conn;
         private DbTransaction _trans;
 
-        public ProfiledDbTransaction(DbTransaction transaction, ProfiledDbConnection connection)
+        public ProfiledDbTransaction(DbTransaction transaction, ProfiledConnection connection)
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
             if (connection == null) throw new ArgumentNullException("connection");
