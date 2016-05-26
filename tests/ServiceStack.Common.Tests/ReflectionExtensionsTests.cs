@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Text;
@@ -97,6 +98,32 @@ namespace ServiceStack.Common.Tests
             Assert.That(testB.FromUserFileTypes, Is.Not.Null);
             Assert.That(testA.FromUserFileTypes,
                 Is.EquivalentTo(testB.FromUserFileTypes.ConvertAll(x => x.ToEnum<UserFileType>())));
+        }
+
+        [Test]
+        public void Can_cache_a_geneneric_tuple_activator()
+        {
+            var genericArgs = new[]
+            {
+                typeof(TestClassA),
+                typeof(TestClassB),
+                typeof(TestClassC),
+            };
+            Type genericType = typeof(Tuple<,,>).GetCachedGenericType(genericArgs);
+
+            var ci = genericType.GetConstructor(genericArgs);
+
+            var activator = ci.GetActivator();
+
+            var tuple = (Tuple<TestClassA, TestClassB, TestClassC>)
+                activator(new TestClassA(), new TestClassB(), new TestClassC());
+
+            tuple = (Tuple<TestClassA, TestClassB, TestClassC>)
+                activator(new TestClassA(), new TestClassB(), new TestClassC());
+
+            Assert.That(tuple.Item1, Is.Not.Null);
+            Assert.That(tuple.Item2, Is.Not.Null);
+            Assert.That(tuple.Item3, Is.Not.Null);
         }
     }
 }
