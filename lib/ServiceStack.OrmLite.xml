@@ -554,6 +554,25 @@
               UPDATE "Person" SET "FirstName" = 'JJ'
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+             <summary>
+             Update only fields in the specified expression that matches the where condition (if any), E.g:
+             
+               db.UpdateOnly(() => new Person { FirstName = "JJ" }, where: p => p.LastName == "Hendrix");
+               UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
+            
+               db.UpdateOnly(() => new Person { FirstName = "JJ" });
+               UPDATE "Person" SET "FirstName" = 'JJ'
+             </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Update only fields in the specified expression that matches the where condition (if any), E.g:
+            
+              db.UpdateOnly(() => new Person { FirstName = "JJ" }, db.From&gt;Person&lt;().Where(p => p.LastName == "Hendrix"));
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``2(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,``1}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
              <summary>
              Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
@@ -565,19 +584,28 @@
                UPDATE "Person" SET "FirstName" = 'JJ'
              </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateAdd``1(System.Data.IDbConnection,``0,ServiceStack.OrmLite.SqlExpression{``0})" -->
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateAdd``2(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,``1}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateAdd``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
              <summary>
              Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
              Numeric fields generates an increment sql which is usefull to increment counters, etc...
              avoiding concurrency conflicts
              
-               db.UpdateAdd(new Person { Age = 5 }, p => p.Age, p => p.LastName == "Hendrix");
+               db.UpdateAdd(() => new Person { Age = 5 }, where: p => p.LastName == "Hendrix");
                UPDATE "Person" SET "Age" = "Age" + 5 WHERE ("LastName" = 'Hendrix')
             
-               db.UpdateAdd(new Person { Age = 5 }, p => p.FirstName);
+               db.UpdateAdd(() => new Person { Age = 5 });
                UPDATE "Person" SET "Age" = "Age" + 5
              </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateAdd``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0})">
+            <summary>
+            Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
+            Numeric fields generates an increment sql which is usefull to increment counters, etc...
+            avoiding concurrency conflicts
+            
+              db.UpdateAdd(() => new Person { Age = 5 }, db.From&lt;Person&gt;().Where(p => p.LastName == "Hendrix"));
+              UPDATE "Person" SET "Age" = "Age" + 5 WHERE ("LastName" = 'Hendrix')
+            </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateNonDefaults``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
             <summary>
@@ -623,7 +651,7 @@
             <summary>
             Delete the rows that matches the where expression, e.g:
             
-              var q = db.From&gt;Person&lt;());
+              var q = db.From&lt;Person&gt;());
               db.Delete&lt;Person&gt;(q.Where(p => p.Age == 27));
               DELETE FROM "Person" WHERE ("Age" = 27)
             </summary>
