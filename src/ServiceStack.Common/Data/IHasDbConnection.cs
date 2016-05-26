@@ -15,5 +15,10 @@ namespace ServiceStack.Data
     {
         IDbCommand DbCommand { get; }
     }
+
+    public interface IHasDbTransaction
+    {
+        IDbTransaction DbTransaction { get; }
+    }
 }
 #endif

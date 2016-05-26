@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Data.Common;
 using System.Data;
+using ServiceStack.Data;
 
 #pragma warning disable 1591 // xml doc comments warnings
 
 namespace ServiceStack.MiniProfiler.Data
 {
-    public class ProfiledDbTransaction : DbTransaction
+    public class ProfiledDbTransaction : DbTransaction, IHasDbTransaction
     {
         private ProfiledConnection _conn;
         private DbTransaction _trans;
@@ -24,7 +25,7 @@ namespace ServiceStack.MiniProfiler.Data
             get { return _conn; }
         }
 
-        internal DbTransaction WrappedTransaction
+        public IDbTransaction DbTransaction
         {
             get { return _trans; }
         }
