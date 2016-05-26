@@ -129,6 +129,8 @@ namespace ServiceStack
 
         internal Action CancelAsyncFn;
 
+        public static bool DisableTimer { get; set; }
+
         public void CancelAsync()
         {
             if (CancelAsyncFn != null)
@@ -211,7 +213,8 @@ namespace ServiceStack
                 UseSynchronizationContext = CaptureSynchronizationContext ? SynchronizationContext.Current : null,
                 HandleCallbackOnUIThread = HandleCallbackOnUiThread,
             };
-            requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
+            if (!DisableTimer)
+                requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
 
             SendWebRequestAsync(httpMethod, request, requestState, webRequest);
         }
