@@ -26,7 +26,7 @@ namespace ServiceStack.FluentValidation
         }
 
         public IValidator GetValidator(Type type) {
-            var genericType = typeof(IValidator<>).MakeGenericType(type);
+            var genericType = typeof(IValidator<>).GetCachedGenericType(type);
             return CreateInstance(genericType);
         }
 

@@ -338,7 +338,7 @@ namespace ServiceStack.Host
             if (!serviceExecCache.TryGetValue(serviceType, out requestTypes))
             {
                 var mi = typeof(ServiceExec<>)
-                    .MakeGenericType(serviceType)
+                    .GetCachedGenericType(serviceType)
                     .GetMethod("Reset", BindingFlags.Public | BindingFlags.Static);
 
                 mi.Invoke(null, new object[] { });
@@ -349,7 +349,7 @@ namespace ServiceStack.Host
             if (!requestTypes.Contains(requestType))
             {
                 var mi = typeof(ServiceExec<>)
-                    .MakeGenericType(serviceType)
+                    .GetCachedGenericType(serviceType)
                     .GetMethod("CreateServiceRunnersFor", BindingFlags.Public | BindingFlags.Static)
                     .MakeGenericMethod(requestType);
 

@@ -84,7 +84,7 @@ namespace ServiceStack.Validation
             }
 
             var dtoType = baseType.GetGenericArguments()[0];
-            var validatorType = typeof(IValidator<>).MakeGenericType(dtoType);
+            var validatorType = typeof(IValidator<>).GetCachedGenericType(dtoType);
 
             container.RegisterAutoWiredType(validator, validatorType, scope);
         }

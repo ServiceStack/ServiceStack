@@ -458,7 +458,7 @@ namespace ServiceStack.Support.Markdown
 					var genericDefinitionName = genericTypeName + "`" + genericArgNames.Length;
 					var genericDefinition = Type.GetType(genericDefinitionName);
 					var argTypes = genericArgNames.Select(AssemblyUtils.FindType).ToArray();
-					var concreteType = genericDefinition.MakeGenericType(argTypes);
+					var concreteType = genericDefinition.GetCachedGenericType(argTypes);
 					type = concreteType;
 				}
 				else
