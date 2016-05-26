@@ -125,5 +125,19 @@ namespace ServiceStack.Common.Tests
             Assert.That(tuple.Item2, Is.Not.Null);
             Assert.That(tuple.Item3, Is.Not.Null);
         }
+
+        [Test]
+        public void Can_cache_generic_list_activator()
+        {
+            Type genericType = typeof(List<>).GetCachedGenericType(typeof(TestClassA));
+
+            var ci = genericType.GetConstructor(Type.EmptyTypes);
+
+            var activator = ci.GetActivator();
+
+            var list = (List<TestClassA>)activator();
+
+            Assert.That(list, Is.Not.Null);
+        }
     }
 }
