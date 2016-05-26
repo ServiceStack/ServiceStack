@@ -68,6 +68,104 @@
             True if the profiler instance is active
             </summary>
         </member>
+        <member name="T:ServiceStack.MiniProfiler.Data.ProfiledConnection">
+            <summary>
+            Wraps a database connection, allowing sql execution timings to be collected when a <see cref="T:ServiceStack.MiniProfiler.Data.IDbProfiler"/> session is started.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledConnection.#ctor(System.Data.Common.DbConnection,ServiceStack.MiniProfiler.Data.IDbProfiler,System.Boolean)">
+            <summary>
+            Returns a new <see cref="T:ServiceStack.MiniProfiler.Data.ProfiledConnection"/> that wraps <paramref name="connection"/>, 
+            providing query execution profiling.  If profiler is null, no profiling will occur.
+            </summary>
+            <param name="connection">Your provider-specific flavor of connection, e.g. SqlConnection, OracleConnection</param>
+            <param name="profiler">The currently started <see cref="T:ServiceStack.MiniProfiler.Data.IDbProfiler"/> or null.</param>
+            <param name="autoDisposeConnection">Determines whether the ProfiledDbConnection will dispose the underlying connection.</param>
+        </member>
+        <member name="P:ServiceStack.MiniProfiler.Data.ProfiledConnection.InnerConnection">
+            <summary>
+            The underlying, real database connection to your db provider.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.MiniProfiler.Data.ProfiledConnection.Profiler">
+            <summary>
+            The current profiler instance; could be null.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.MiniProfiler.Data.ProfiledConnection.WrappedConnection">
+            <summary>
+            The raw connection this is wrapping
+            </summary>
+        </member>
+        <member name="T:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory">
+            <summary>
+            Wrapper for a db provider factory to enable profiling
+            </summary>
+        </member>
+        <member name="F:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.Instance">
+            <summary>
+            Every provider factory must have an Instance public field
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.InitProfiledDbProviderFactory(ServiceStack.MiniProfiler.Data.IDbProfiler,System.Data.Common.DbProviderFactory)">
+            <summary>
+            Allow to re-init the provider factory.
+            </summary>
+            <param name="profiler"></param>
+            <param name="wrappedFactory"></param>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.#ctor(ServiceStack.MiniProfiler.Data.IDbProfiler,System.Data.Common.DbProviderFactory)">
+            <summary>
+            proxy
+            </summary>
+            <param name="profiler"></param>
+            <param name="wrappedFactory"></param>
+        </member>
+        <member name="P:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CanCreateDataSourceEnumerator">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateDataSourceEnumerator">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateCommand">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateConnection">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateParameter">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateConnectionStringBuilder">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateCommandBuilder">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateDataAdapter">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreatePermission(System.Security.Permissions.PermissionState)">
+            <summary>
+            proxy
+            </summary>
+        </member>
         <member name="M:ServiceStack.EnumerableExtensions.Safe``1(System.Collections.Generic.IEnumerable{``0})">
             <summary>
             Return T[0] when enumerable is null, safe to use in enumerations like foreach
