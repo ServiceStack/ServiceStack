@@ -4,6 +4,70 @@
         <name>ServiceStack.Common</name>
     </assembly>
     <members>
+        <member name="T:ServiceStack.MiniProfiler.Data.ExecuteType">
+            <summary>
+            Categories of sql statements.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.MiniProfiler.Data.ExecuteType.None">
+            <summary>
+            Unknown
+            </summary>
+        </member>
+        <member name="F:ServiceStack.MiniProfiler.Data.ExecuteType.NonQuery">
+            <summary>
+            DML statements that alter database state, e.g. INSERT, UPDATE
+            </summary>
+        </member>
+        <member name="F:ServiceStack.MiniProfiler.Data.ExecuteType.Scalar">
+            <summary>
+            Statements that return a single record
+            </summary>
+        </member>
+        <member name="F:ServiceStack.MiniProfiler.Data.ExecuteType.Reader">
+            <summary>
+            Statements that iterate over a result set
+            </summary>
+        </member>
+        <member name="T:ServiceStack.MiniProfiler.Data.IDbProfiler">
+            <summary>
+            A callback for ProfiledDbConnection and family
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.IDbProfiler.ExecuteStart(System.Data.Common.DbCommand,ServiceStack.MiniProfiler.Data.ExecuteType)">
+            <summary>
+            Called when a command starts executing
+            </summary>
+            <param name="profiledDbCommand"></param>
+            <param name="executeType"></param>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.IDbProfiler.ExecuteFinish(System.Data.Common.DbCommand,ServiceStack.MiniProfiler.Data.ExecuteType,System.Data.Common.DbDataReader)">
+            <summary>
+            Called when a reader finishes executing
+            </summary>
+            <param name="profiledDbCommand"></param>
+            <param name="executeType"></param>
+            <param name="reader"></param>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.IDbProfiler.ReaderFinish(System.Data.Common.DbDataReader)">
+            <summary>
+            Called when a reader is done iterating through the data 
+            </summary>
+            <param name="reader"></param>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.IDbProfiler.OnError(System.Data.Common.DbCommand,ServiceStack.MiniProfiler.Data.ExecuteType,System.Exception)">
+            <summary>
+            Called when an error happens during execution of a command 
+            </summary>
+            <param name="profiledDbCommand"></param>
+            <param name="executeType"></param>
+            <param name="exception"></param>
+        </member>
+        <member name="P:ServiceStack.MiniProfiler.Data.IDbProfiler.IsActive">
+            <summary>
+            True if the profiler instance is active
+            </summary>
+        </member>
         <member name="M:ServiceStack.EnumerableExtensions.Safe``1(System.Collections.Generic.IEnumerable{``0})">
             <summary>
             Return T[0] when enumerable is null, safe to use in enumerations like foreach

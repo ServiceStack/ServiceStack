@@ -157,6 +157,11 @@
             Sets the username and the password for basic authentication.
             </summary>
         </member>
+        <member name="F:ServiceStack.ServiceClientBase.bearerToken">
+            <summary>
+            The Authorization Bearer Token to send with this request
+            </summary>
+        </member>
         <member name="P:ServiceStack.ServiceClientBase.CaptureSynchronizationContext">
             <summary>
             Whether to execute async callbacks on the same Synchronization Context it was called from.
