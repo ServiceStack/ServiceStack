@@ -111,6 +111,14 @@
     <Compile Include="Host\Handlers\StaticContentHandler.cs" />
     <Compile Include="HttpCacheFeature.cs" />
     <Compile Include="InProcessServiceGateway.cs" />
+    <Compile Include="MiniProfiler\Data\Link.cs" />
+    <Compile Include="MiniProfiler\Data\ProfiledDbCommand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MiniProfiler\Data\ProfiledDbConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MiniProfiler\Data\ProfiledDbProviderFactory.cs" />
     <Compile Include="NativeTypes\Kotlin\KotlinGenerator.cs" />
     <Compile Include="RequiresSchemaProviders.cs" />
     <Compile Include="CancellableRequestsFeature.cs" />
@@ -398,16 +406,6 @@
     <Compile Include="Funq\ServiceKey.cs" />
     <Compile Include="Funq\Syntax.cs" />
     <Compile Include="MiniProfiler\BaseProfilerProvider.cs" />
-    <Compile Include="MiniProfiler\Data\Link.cs" />
-    <Compile Include="MiniProfiler\Data\ProfiledDbCommand.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="MiniProfiler\Data\ProfiledDbConnection.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="MiniProfiler\Data\ProfiledDbDataReader.cs" />
-    <Compile Include="MiniProfiler\Data\ProfiledDbProviderFactory.cs" />
-    <Compile Include="MiniProfiler\Data\ProfiledDbTransaction.cs" />
     <Compile Include="MiniProfiler\Helpers\ExtensionMethods.cs" />
     <Compile Include="MiniProfiler\Helpers\HaackFormatter.cs" />
     <Compile Include="MiniProfiler\Helpers\IStopwatch.cs" />
