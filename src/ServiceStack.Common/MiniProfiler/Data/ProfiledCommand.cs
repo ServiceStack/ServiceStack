@@ -51,7 +51,10 @@ namespace ServiceStack.MiniProfiler.Data
             protected set { _cmd = value; }
         }
 
-        IDbCommand IHasDbCommand.DbCommand => DbCommand;
+        IDbCommand IHasDbCommand.DbCommand
+        {
+            get { return DbCommand; }            
+        }
 
         protected override DbConnection DbConnection
         {
