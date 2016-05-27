@@ -35,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             if (service is IocScopeService)
                 service.InjectRequestIntoDependencies(httpReq);
-            return base.OnPreExecuteServiceFilter(service, request, httpReq, httpRes);
+            return request;
         }
     }
 

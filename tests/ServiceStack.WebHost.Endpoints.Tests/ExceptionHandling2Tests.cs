@@ -141,7 +141,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class ExceptionHandling2Tests
     {
-        private static string testUri = "http://localhost:1337/";
+        private static string testUri = Config.ListeningOn;
 
         AppHost appHost;
 
@@ -153,7 +153,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 appHost = new AppHost();
                 appHost.Init();
                 appHost.Config.DebugMode = true;
-                appHost.Start("http://*:1337/");
+                appHost.Start(Config.ListeningOn);
             }
             catch (Exception ex)
             {

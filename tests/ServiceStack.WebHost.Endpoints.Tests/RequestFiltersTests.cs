@@ -89,9 +89,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public abstract class RequestFiltersTests
     {
-        private const string ListeningOn = "http://localhost:82/";
-        private const string ServiceClientBaseUri = "http://localhost:82/";
-
         private const string AllowedUser = "user";
         private const string AllowedPass = "p@55word";
 
@@ -149,12 +146,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         RequestFiltersAppHostHttpListener appHost;
 
+        public const string ServiceClientBaseUri = Config.ListeningOn;
+
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new RequestFiltersAppHostHttpListener();
             appHost.Init();
-            appHost.Start(ListeningOn);
+            appHost.Start(Config.ListeningOn);
         }
 
         [TestFixtureTearDown]
@@ -204,8 +203,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
-            var req = (HttpWebRequest)WebRequest.Create(
-                string.Format("http://localhost:82/{0}/reply/Secure", format));
+            var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
 
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -292,8 +290,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
-            var req = (HttpWebRequest)WebRequest.Create(
-                string.Format("http://localhost:82/{0}/reply/Secure", format));
+            var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
 
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -302,8 +299,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var cookie = res.Cookies["ss-session"];
             if (cookie != null)
             {
-                req = (HttpWebRequest)WebRequest.Create(
-                    string.Format("http://localhost:82/{0}/reply/Secure", format));
+                req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
                 req.CookieContainer.Add(new Cookie("ss-session", cookie.Value));
 
                 var dtoString = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
@@ -318,8 +314,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
-            var req = (HttpWebRequest)WebRequest.Create(
-                string.Format("http://localhost:82/{0}/reply/Secure", format));
+            var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
 
             req.CookieContainer = new CookieContainer();
             req.CookieContainer.Add(new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));
