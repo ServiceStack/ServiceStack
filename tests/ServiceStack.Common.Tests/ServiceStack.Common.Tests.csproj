@@ -172,6 +172,7 @@
     <Compile Include="FluentValidation\ErrorCodeTests.cs" />
     <Compile Include="FormatTests.cs" />
     <Compile Include="FunqTests.cs" />
+    <Compile Include="IocExtensions.cs" />
     <Compile Include="ManageRolesTests.cs" />
     <Compile Include="MessagingTests.cs" />
     <Compile Include="Messaging\RabbitMqTests.cs" />
