@@ -10,9 +10,9 @@ namespace ServiceStack.Shared.Tests
 {
     public static class IocShared
     {
-		public static void Configure(ServiceStackHost appHost)
-		{
-		    var container = appHost.Container;
+        public static void Configure(ServiceStackHost appHost)
+        {
+            var container = appHost.Container;
 
             container.Adapter = new IocAdapter();
             container.Register(c => new FunqDepCtor());
@@ -189,9 +189,9 @@ namespace ServiceStack.Shared.Tests
             var response = new IocResponse();
 
             var deps = new object[] {
-				FunqDepProperty, FunqDepDisposableProperty, 
-				AltDepProperty, AltDepDisposableProperty
-			};
+                FunqDepProperty, FunqDepDisposableProperty,
+                AltDepProperty, AltDepDisposableProperty
+            };
 
             foreach (var dep in deps)
             {
@@ -282,10 +282,10 @@ namespace ServiceStack.Shared.Tests
             var response = new IocResponse();
 
             var deps = new object[] {
-				funqDepCtor, altDepCtor, 
-				FunqDepProperty, FunqDepDisposableProperty, 
-				AltDepProperty, AltDepDisposableProperty
-			};
+                funqDepCtor, altDepCtor,
+                FunqDepProperty, FunqDepDisposableProperty,
+                AltDepProperty, AltDepDisposableProperty
+            };
 
             foreach (var dep in deps)
             {
@@ -316,7 +316,7 @@ namespace ServiceStack.Shared.Tests
             await Task.Delay(10);
             return Request.Items["action-attr"] as IocResponse;
         }
-        
+
         public static int DisposeCount = 0;
         public static bool ThrowErrors = false;
 
@@ -385,12 +385,13 @@ namespace ServiceStack.Shared.Tests
             if (request.Throw)
                 throw new Exception("Exception requested by user");
 
-            var response = new IocScopeResponse {
+            var response = new IocScopeResponse
+            {
                 Results = {
                     { typeof(FunqSingletonScope).Name, FunqSingletonScope.Count },
                     { typeof(FunqRequestScope).Name, FunqRequestScope.Count },
                     { typeof(FunqNoneScope).Name, FunqNoneScope.Count },
-                },                
+                },
             };
 
             return response;
@@ -408,7 +409,7 @@ namespace ServiceStack.Shared.Tests
         public void Dispose()
         {
             Interlocked.Increment(ref DisposedCount);
-        }    
+        }
     }
 
     public class IocDispose : IReturn<IocDisposeResponse>

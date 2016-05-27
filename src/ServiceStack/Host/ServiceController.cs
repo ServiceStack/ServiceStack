@@ -366,14 +366,14 @@ namespace ServiceStack.Host
             var serviceExecDef = typeof(ServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
             var iserviceExec = (IServiceExec)serviceExecDef.CreateInstance();
 
-            ServiceExecFn handlerFn = (requestContext, dto) =>
+            ServiceExecFn handlerFn = (req, dto) =>
             {
                 var service = serviceFactoryFn.CreateInstance(serviceType);
 
-                ServiceExecFn serviceExec = (reqCtx, req) =>
-                    iserviceExec.Execute(reqCtx, service, req);
+                ServiceExecFn serviceExec = (reqCtx, requestDto) =>
+                    iserviceExec.Execute(reqCtx, service, requestDto);
 
-                return ManagedServiceExec(serviceExec, (IService)service, requestContext, dto);
+                return ManagedServiceExec(serviceExec, (IService)service, req, dto);
             };
 
             AddToRequestExecMap(requestType, serviceType, handlerFn);
@@ -449,14 +449,14 @@ namespace ServiceStack.Host
             }
         }
 
-        internal static void InjectRequestContext(object service, IRequest requestContext)
+        internal static void InjectRequestContext(object service, IRequest req)
         {
-            if (requestContext == null) return;
+            if (req == null) return;
 
             var serviceRequiresContext = service as IRequiresRequest;
             if (serviceRequiresContext != null)
             {
-                serviceRequiresContext.Request = requestContext;
+                serviceRequiresContext.Request = req;
             }
         }
 
