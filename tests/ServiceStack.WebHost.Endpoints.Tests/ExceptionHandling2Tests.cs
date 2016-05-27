@@ -92,7 +92,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (request.Age.HasValue && request.Age <= 0)
                 throw new ArgumentException("Invalid Age");
 
-            var response = new SearchReqstarsResponse {
+            var response = new SearchReqstarsResponse
+            {
                 Total = 2,
                 Aged = 10,
                 Results = new List<Reqstar> {
@@ -112,7 +113,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (request.Age.HasValue && request.Age <= 0)
                 throw new ArgumentException("Invalid Age");
 
-            var response = new ReqstarsResponse() {
+            var response = new ReqstarsResponse()
+            {
                 Total = 2,
                 Aged = 10,
                 Results = new List<Reqstar> {
@@ -124,7 +126,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return response;
         }
     }
-    
+
     public class AppHost : AppHostHttpListenerBase
     {
         public AppHost()
@@ -167,14 +169,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Dispose();
         }
 
-        static IRestClient[] ServiceClients = 
-		{
-			new JsonServiceClient(testUri),
-			new JsonHttpClient(testUri),
-			new XmlServiceClient(testUri),
-			new JsvServiceClient(testUri),
-			new ProtoBufServiceClient(testUri)
-		};
+        static IRestClient[] ServiceClients =
+        {
+            new JsonServiceClient(testUri),
+            new JsonHttpClient(testUri),
+            new XmlServiceClient(testUri),
+            new JsvServiceClient(testUri),
+            new ProtoBufServiceClient(testUri)
+        };
 
 
         /// <summary>
@@ -297,6 +299,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.AreEqual("Invalid Age", ex.ErrorMessage, "Wrong message");
             }
         }
-        
+
     }
 }

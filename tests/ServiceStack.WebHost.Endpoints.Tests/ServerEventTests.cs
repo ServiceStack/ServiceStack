@@ -339,8 +339,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 using (var connectedEvent = new ManualResetEvent(false))
                 {
+                    client1.OnConnect += e => { connectedEvent.Set(); };
                     client1.Start();
-                    client1.OnConnect += (e) => { connectedEvent.Set(); };
                     Assert.True(connectedEvent.WaitOne(TimeSpan.FromSeconds(10)));
                 }
 
