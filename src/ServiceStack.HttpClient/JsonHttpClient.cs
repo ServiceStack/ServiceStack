@@ -142,7 +142,14 @@ namespace ServiceStack
 
             var baseUri = BaseUri != null ? new Uri(BaseUri) : null;
 
-            return HttpClient = new HttpClient(handler) { BaseAddress = baseUri };
+            var client = new HttpClient(handler) { BaseAddress = baseUri };
+
+            if (BearerToken != null)
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
+            else if (AlwaysSendBasicAuthHeader)
+                AddBasicAuth(client);
+
+            return HttpClient = client;
         }
 
         public void AddHeader(string name, string value)
@@ -175,11 +182,6 @@ namespace ServiceStack
             }
 
             var client = GetHttpClient();
-
-            if (BearerToken != null)
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
-            else if (AlwaysSendBasicAuthHeader)
-                AddBasicAuth(client);
 
             this.PopulateRequestMetadata(request);
 
