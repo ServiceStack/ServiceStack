@@ -29,6 +29,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             base.OnEndRequest(request);
         }
+
+        public override object OnPreExecuteServiceFilter(IService service, object request, IRequest httpReq, IResponse httpRes)
+        {
+            foreach (var pi in service.GetType().GetPublicProperties())
+            {
+                var mi = pi.GetGetMethod();
+                if (mi == null)
+                    continue;
+
+                var dep = mi.Invoke(service, new object[0]);
+                var requiresRequest = dep as IRequiresRequest;
+                if (requiresRequest != null)
+                {
+                    requiresRequest.Request = httpReq;
+                }
+            }
+
+            return base.OnPreExecuteServiceFilter(service, request, httpReq, httpRes);
+        }
     }
 
     public class IocServiceAspNetTests : IocServiceTests
@@ -179,6 +198,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response2.Results[typeof(FunqSingletonScope).Name], Is.EqualTo(1));
             Assert.That(response2.Results[typeof(FunqRequestScope).Name], Is.EqualTo(2));
             Assert.That(response2.Results[typeof(FunqNoneScope).Name], Is.EqualTo(4));
+
+            Assert.That(response2.InjectsRequest);
 
             Thread.Sleep(WaitForRequestCleanup);
 

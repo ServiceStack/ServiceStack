@@ -22,6 +22,7 @@ namespace ServiceStack.Shared.Tests
             container.Register(c => new FunqSingletonScope()).ReusedWithin(ReuseScope.Default);
             container.Register(c => new FunqRequestScope()).ReusedWithin(ReuseScope.Request);
             container.Register(c => new FunqNoneScope()).ReusedWithin(ReuseScope.None);
+            container.Register(c => new FunqInjectRequest()).ReusedWithin(ReuseScope.None);
             container.Register(c => new FunqRequestScopeDepDisposableProperty()).ReusedWithin(ReuseScope.Request);
 
             container.Register(c => new FunqSingletonScopeDisposable()).ReusedWithin(ReuseScope.Default);
@@ -80,6 +81,11 @@ namespace ServiceStack.Shared.Tests
     {
         public static int Count = 0;
         public FunqNoneScope() { Interlocked.Increment(ref Count); }
+    }
+
+    public class FunqInjectRequest : IRequiresRequest
+    {
+        public IRequest Request { get; set; }
     }
 
     public class FunqRequestScopeDisposable : IDisposable
@@ -348,6 +354,8 @@ namespace ServiceStack.Shared.Tests
 
         public Dictionary<string, int> Results { get; set; }
 
+        public bool InjectsRequest { get; set; }
+
         public ResponseStatus ResponseStatus { get; set; }
     }
 
@@ -377,6 +385,7 @@ namespace ServiceStack.Shared.Tests
         public FunqRequestScope FunqRequestScope { get; set; }
         public FunqSingletonScope FunqSingletonScope { get; set; }
         public FunqNoneScope FunqNoneScope { get; set; }
+        public FunqInjectRequest FunqInjectRequest { get; set; }
         public FunqRequestScopeDepDisposableProperty FunqRequestScopeDepDisposableProperty { get; set; }
         public AltRequestScopeDepDisposableProperty AltRequestScopeDepDisposableProperty { get; set; }
 
@@ -392,6 +401,7 @@ namespace ServiceStack.Shared.Tests
                     { typeof(FunqRequestScope).Name, FunqRequestScope.Count },
                     { typeof(FunqNoneScope).Name, FunqNoneScope.Count },
                 },
+                InjectsRequest = FunqInjectRequest.Request != null,
             };
 
             return response;
