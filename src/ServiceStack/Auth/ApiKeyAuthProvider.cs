@@ -59,6 +59,7 @@ namespace ServiceStack.Auth
         public int KeySizeBytes { get; set; }
         public string[] Environments { get; set; }
         public string[] KeyTypes { get; set; }
+        public TimeSpan? ExpireKeysAfter { get; set; }
         public bool InitSchema { get; set; }
         public bool RequireSecureConnection { get; set; }
 
@@ -258,6 +259,7 @@ namespace ServiceStack.Auth
                         KeyType = keyType,
                         Id = key,
                         CreatedDate = now,
+                        ExpiryDate = ExpireKeysAfter != null ? now.Add(ExpireKeysAfter.Value) : (DateTime?) null
                     };
 
                     if (ApiKeyFilterFn != null)
