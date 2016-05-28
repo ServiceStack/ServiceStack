@@ -173,7 +173,7 @@ namespace RazorRockstars.Console.Files
 
             userId = response.UserId;
             apiRepo = (IManageApiKeys)appHost.Resolve<IAuthRepository>();
-            ApiKey = apiRepo.GetUserApiKeys(userId).First();
+            ApiKey = apiRepo.GetUserApiKeys(userId).First(x => x.Environment == "test");
 
             apiProvider = (ApiKeyAuthProvider)AuthenticateService.GetAuthProvider(ApiKeyAuthProvider.Name);
         }
@@ -248,6 +248,47 @@ namespace RazorRockstars.Console.Files
         }
 
         [Test]
+        public void Regenerating_AuthKeys_invalidates_existing_Keys_and_enables_new_keys()
+        {
+            var client = new JsonServiceClient(ListeningOn) {
+                Credentials = new NetworkCredential(ApiKey.Id, ""),
+            };
+
+            var apiKeyResponse = client.Get(new GetApiKeys { Environment = "live" });
+            apiKeyResponse.PrintDump();
+
+            var oldApiKey = apiKeyResponse.Results[0].Key;
+            client = new JsonServiceClient(ListeningOn) {
+                BearerToken = oldApiKey,
+            };
+
+            //Key IsValid
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var regenResponse = client.Send(new RegenrateApiKeys { Environment = "live" });
+
+            try
+            {
+                //Key is no longer valid
+                apiKeyResponse = client.Get(new GetApiKeys { Environment = "live" });
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
+            }
+
+            //Change to new Valid Key
+            client.BearerToken = regenResponse.Results[0].Key;
+            apiKeyResponse = client.Get(new GetApiKeys { Environment = "live" });
+
+            Assert.That(regenResponse.Results.Map(x => x.Key), Is.EquivalentTo(
+                apiKeyResponse.Results.Map(x => x.Key)));
+        }
+
+        [Test]
         public void Authenticating_once_with_BasicAuth_does_not_establish_auth_session()
         {
             var client = GetClientWithUserPassword(alwaysSend: true);
@@ -275,7 +316,7 @@ namespace RazorRockstars.Console.Files
             var client = GetClientWithApiKey();
 
             var request = new Secured { Name = "test" };
-            var response = client.Send<SecuredResponse>(request);
+            var response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             var newClient = GetClient();

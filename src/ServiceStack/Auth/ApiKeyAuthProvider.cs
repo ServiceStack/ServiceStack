@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -49,9 +50,11 @@ namespace ServiceStack.Auth
         public const string Name = AuthenticateService.ApiKeyProvider;
         public const string Realm = "/auth/" + AuthenticateService.ApiKeyProvider;
 
-        public static string[] DefaultTypes = new[] { "ApiKey" };
-        public static string[] DefaultEnvironments = new[] { "Live", "Test" };
+        public static string[] DefaultTypes = new[] { "secret" };
+        public static string[] DefaultEnvironments = new[] { "live", "test" };
         public static int DefaultKeySizeBytes = 16;
+
+        public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
         public int KeySizeBytes { get; set; }
         public string[] Environments { get; set; }
@@ -99,6 +102,12 @@ namespace ServiceStack.Auth
                 if (keySize != null)
                     KeySizeBytes = int.Parse(keySize);
             }
+
+            ServiceRoutes = new Dictionary<Type, string[]>
+            {
+                { typeof(GetApiKeysService), new[] { "/apikeys", "/apikeys/{Environment}" } },
+                { typeof(RegenrateApiKeysService), new [] { "/apikeys/regenerate", "/apikeys/regenerate/{Environment}" } },
+            };
         }
 
         public virtual string CreateApiKey(string environment, string keyType, int sizeBytes)
@@ -207,6 +216,11 @@ namespace ServiceStack.Auth
             if (apiRepo == null)
                 throw new NotSupportedException(apiRepo.GetType().Name + " does not implement IManageApiKeys");
 
+            foreach (var registerService in ServiceRoutes)
+            {
+                appHost.RegisterService(registerService.Key, registerService.Value);
+            }
+
             feature.AuthEvents.Add(new ApiKeyAuthEvents(this));
 
             if (InitSchema)
@@ -222,6 +236,38 @@ namespace ServiceStack.Auth
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "Basic realm=\"{0}\"".Fmt(this.AuthRealm));
             httpRes.EndRequest();
         }
+
+        public List<ApiKey> GenerateNewApiKeys(string userId, params string[] environments)
+        {
+            var now = DateTime.UtcNow;
+            var apiKeys = new List<ApiKey>();
+
+            if (environments.Length == 0)
+                environments = Environments;
+
+            foreach (var env in environments)
+            {
+                foreach (var keyType in KeyTypes)
+                {
+                    var key = CreateApiKeyFn(env, keyType, KeySizeBytes);
+
+                    var apiKey = new ApiKey
+                    {
+                        UserAuthId = userId,
+                        Environment = env,
+                        KeyType = keyType,
+                        Id = key,
+                        CreatedDate = now,
+                    };
+
+                    if (ApiKeyFilterFn != null)
+                        ApiKeyFilterFn(apiKey);
+
+                    apiKeys.Add(apiKey);
+                }
+            }
+            return apiKeys;
+        }
     }
 
     internal class ApiKeyAuthEvents : AuthEvents
@@ -235,34 +281,73 @@ namespace ServiceStack.Auth
 
         public override void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase registrationService)
         {
-            var now = DateTime.UtcNow;
-            var userId = session.UserAuthId;
-            var apiKeys = new List<ApiKey>();
-
-            foreach (var env in apiKeyProvider.Environments)
-            {
-                foreach (var keyType in apiKeyProvider.KeyTypes)
-                {
-                    var key = apiKeyProvider.CreateApiKeyFn(env, keyType, apiKeyProvider.KeySizeBytes);
-
-                    var apiKey = new ApiKey
-                    {
-                        UserAuthId = userId,
-                        Environment = env,
-                        KeyType = keyType,
-                        Id = key,
-                        CreatedDate = now,
-                    };
-
-                    if (apiKeyProvider.ApiKeyFilterFn != null)
-                        apiKeyProvider.ApiKeyFilterFn(apiKey);
-
-                    apiKeys.Add(apiKey);
-                }
-            }
-
+            var apiKeys = apiKeyProvider.GenerateNewApiKeys(session.UserAuthId);
             var authRepo = (IManageApiKeys)httpReq.TryResolve<IAuthRepository>().AsUserAuthRepository(httpReq);
             authRepo.StoreAll(apiKeys);
+        }
+    }
+
+    [Authenticate]
+    [DefaultRequest(typeof(GetApiKeys))]
+    public class GetApiKeysService : Service
+    {
+        public object Any(GetApiKeys request)
+        {
+            var apiKeyAuth = this.Request.AssertValidApiKeyRequest();
+            if (string.IsNullOrEmpty(request.Environment) && apiKeyAuth.Environments.Length != 1)
+                throw new ArgumentNullException("Environment");
+
+            var env = request.Environment ?? apiKeyAuth.Environments[0];
+
+            var authRepo = (IManageApiKeys)TryResolve<IAuthRepository>().AsUserAuthRepository(Request);
+            return new GetApiKeysResponse
+            {
+                Results = authRepo.GetUserApiKeys(GetSession().UserAuthId)
+                    .Where(x => x.Environment == env)
+                    .Map(k => new UserApiKey {
+                            Key = k.Id,
+                            KeyType = k.KeyType,
+                            ExpiryDate = k.ExpiryDate,
+                        })
+            };
+        }
+    }
+
+    [Authenticate]
+    [DefaultRequest(typeof(RegenrateApiKeys))]
+    public class RegenrateApiKeysService : Service
+    {
+        public object Any(RegenrateApiKeys request)
+        {
+            var apiKeyAuth = this.Request.AssertValidApiKeyRequest();
+            if (string.IsNullOrEmpty(request.Environment) && apiKeyAuth.Environments.Length != 1)
+                throw new ArgumentNullException("Environment");
+
+            var env = request.Environment ?? apiKeyAuth.Environments[0];
+
+            var authRepo = (IManageApiKeys)TryResolve<IAuthRepository>().AsUserAuthRepository(Request);
+
+            var userId = GetSession().UserAuthId;
+            var updateKeys = authRepo.GetUserApiKeys(userId)
+                .Where(x => x.Environment == env)
+                .ToList();
+
+            updateKeys.Each(x => x.CancelledDate = DateTime.UtcNow);
+
+            var newKeys = apiKeyAuth.GenerateNewApiKeys(userId, env);
+            updateKeys.AddRange(newKeys);
+
+            authRepo.StoreAll(updateKeys);
+            
+            return new RegenrateApiKeysResponse
+            {
+                Results = newKeys.Map(k => new UserApiKey
+                    {
+                        Key = k.Id,
+                        KeyType = k.KeyType,
+                        ExpiryDate = k.ExpiryDate,
+                    })
+            };
         }
     }
 }
@@ -277,6 +362,15 @@ namespace ServiceStack
             return req.Items.TryGetValue(Keywords.ApiKey, out oApiKey)
                 ? oApiKey as ApiKey
                 : null;
+        }
+
+        internal static ApiKeyAuthProvider AssertValidApiKeyRequest(this IRequest req)
+        {
+            var apiKeyAuth = (ApiKeyAuthProvider)AuthenticateService.GetAuthProvider(AuthenticateService.ApiKeyProvider);
+            if (apiKeyAuth.RequireSecureConnection && !req.IsSecureConnection)
+                throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
+
+            return apiKeyAuth;
         }
     }
 }

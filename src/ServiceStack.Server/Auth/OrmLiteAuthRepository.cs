@@ -602,7 +602,7 @@ namespace ServiceStack.Auth
         {
             using (var db = dbFactory.OpenDbConnection())
             {
-                db.InsertAll(apiKeys);
+                db.SaveAll(apiKeys);
             }
         }
     }

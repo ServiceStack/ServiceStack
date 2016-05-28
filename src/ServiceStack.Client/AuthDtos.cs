@@ -198,4 +198,40 @@ namespace ServiceStack
     {
         public string[] Channels { get; set; }
     }
+
+    [DataContract]
+    public class GetApiKeys : IGet, IReturn<GetApiKeysResponse>
+    {
+        [DataMember(Order = 1)] public string Environment { get; set; }
+    }
+
+    [DataContract]
+    public class GetApiKeysResponse
+    {
+        [DataMember(Order = 1)] public List<UserApiKey> Results { get; set; }
+
+        [DataMember(Order = 2)] public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [DataContract]
+    public class RegenrateApiKeys : IPost, IReturn<GetApiKeysResponse>
+    {
+        [DataMember(Order = 1)] public string Environment { get; set; }
+    }
+
+    [DataContract]
+    public class RegenrateApiKeysResponse
+    {
+        [DataMember(Order = 1)] public List<UserApiKey> Results { get; set; }
+
+        [DataMember(Order = 2)] public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [DataContract]
+    public class UserApiKey
+    {
+        [DataMember(Order = 1)] public string Key { get; set; }
+        [DataMember(Order = 2)] public string KeyType { get; set; }
+        [DataMember(Order = 3)] public DateTime? ExpiryDate { get; set; }
+    }
 }
