@@ -361,12 +361,25 @@ namespace RazorRockstars.Console.Files
         public void Authenticating_once_with_CredentialsAuth_does_establish_auth_session()
         {
             var client = GetClient();
+
+            try
+            {
+                client.Send(new Authenticate());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
+
             client.Post(new Authenticate
             {
                 provider = "credentials",
                 UserName = Username,
                 Password = Password,
             });
+
+            client.Send(new Authenticate());
 
             var request = new Secured { Name = "test" };
             var response = client.Send<SecuredResponse>(request);
