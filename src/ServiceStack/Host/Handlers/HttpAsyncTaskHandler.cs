@@ -9,6 +9,7 @@ using System.Web;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -16,13 +17,6 @@ namespace ServiceStack.Host.Handlers
     public abstract class HttpAsyncTaskHandler : IHttpAsyncHandler, IServiceStackHandler
     {
         internal static readonly ILog Log = LogManager.GetLogger(typeof(HttpAsyncTaskHandler));
-
-        internal static readonly Task<object> EmptyTask;
-
-        static HttpAsyncTaskHandler()
-        {
-            EmptyTask = ((object)null).AsTaskResult();
-        }
 
         public string RequestName { get; set; }
 
@@ -47,9 +41,9 @@ namespace ServiceStack.Host.Handlers
 
             RememberLastRequestInfo(operationName, context.Request.PathInfo);
 
-            if (String.IsNullOrEmpty(operationName)) return EmptyTask;
+            if (String.IsNullOrEmpty(operationName)) return TypeConstants.EmptyTask;
 
-            if (DefaultHandledRequest(context)) return EmptyTask;
+            if (DefaultHandledRequest(context)) return TypeConstants.EmptyTask;
 
             var httpReq = new AspNetRequest(context, operationName);
 
@@ -172,7 +166,7 @@ namespace ServiceStack.Host.Handlers
             try
             {
                 HostContext.RaiseAndHandleUncaughtException(httpReq, httpRes, operationName, ex);
-                return EmptyTask;
+                return TypeConstants.EmptyTask;
             }
             catch (Exception writeErrorEx)
             {

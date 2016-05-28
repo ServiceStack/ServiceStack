@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -40,7 +41,7 @@ namespace ServiceStack
         protected override Task ProcessRequestAsync(HttpListenerContext context)
         {
             if (string.IsNullOrEmpty(context.Request.RawUrl))
-                return ((object)null).AsTaskResult();
+                return TypeConstants.EmptyTask;
 
             var operationName = context.Request.GetOperationName().UrlDecode();
 

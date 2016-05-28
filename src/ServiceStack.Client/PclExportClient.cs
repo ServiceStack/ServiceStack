@@ -1591,7 +1591,7 @@ namespace ServiceStack
 #endif
         ;
 
-        public static readonly Task<object> EmptyTask;
+        public static readonly Task<object> EmptyTask = TypeConstants.EmptyTask;
 
         static PclExportClient()
         {
@@ -1610,10 +1610,6 @@ namespace ServiceStack
                     return;
             }
             catch (Exception /*ignore*/) {}
-
-            var tcs = new TaskCompletionSource<object>();
-            tcs.SetResult(null);
-            EmptyTask = tcs.Task;
         }
 
         public static bool ConfigureProvider(string typeName)

@@ -10,6 +10,9 @@ namespace ServiceStack.Auth
     public class OrmLiteAuthRepository : OrmLiteAuthRepository<UserAuth, UserAuthDetails>, IUserAuthRepository
     {
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory) : base(dbFactory) { }
+
+        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, string namedConnnection = null) 
+            : base(dbFactory, namedConnnection) {}
     }
 
     public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys

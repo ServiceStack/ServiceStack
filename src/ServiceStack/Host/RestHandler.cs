@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -71,7 +72,7 @@ namespace ServiceStack.Host
             {
                 var appHost = HostContext.AppHost;
                 if (appHost.ApplyPreRequestFilters(httpReq, httpRes)) 
-                    return EmptyTask;
+                    return TypeConstants.EmptyTask;
                 
                 var restPath = GetRestPath(httpReq.Verb, httpReq.PathInfo);
                 if (restPath == null)
@@ -96,19 +97,19 @@ namespace ServiceStack.Host
                 var request = httpReq.Dto = CreateRequest(httpReq, restPath);
 
                 if (appHost.ApplyRequestFilters(httpReq, httpRes, request)) 
-                    return EmptyTask;
+                    return TypeConstants.EmptyTask;
 
                 var rawResponse = GetResponse(httpReq, request);
 
                 if (httpRes.IsClosed)
-                    return EmptyTask;
+                    return TypeConstants.EmptyTask;
 
                 return HandleResponse(rawResponse, response =>
                 {
                     response = appHost.ApplyResponseConverters(httpReq, response);
 
                     if (appHost.ApplyResponseFilters(httpReq, httpRes, response)) 
-                        return EmptyTask;
+                        return TypeConstants.EmptyTask;
 
                     if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString[Keywords.Debug]))
                         return WriteDebugResponse(httpRes, response);

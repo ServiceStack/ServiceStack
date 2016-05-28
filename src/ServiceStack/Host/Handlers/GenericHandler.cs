@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -58,7 +59,7 @@ namespace ServiceStack.Host.Handlers
                 appHost.AssertFeatures(format);
 
                 if (appHost.ApplyPreRequestFilters(httpReq, httpRes))
-                    return EmptyTask;
+                    return TypeConstants.EmptyTask;
 
                 httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
                 var callback = httpReq.QueryString[Keywords.Callback];
@@ -68,19 +69,19 @@ namespace ServiceStack.Host.Handlers
                 var request = httpReq.Dto = CreateRequest(httpReq, operationName);
 
                 if (appHost.ApplyRequestFilters(httpReq, httpRes, request))
-                    return EmptyTask;
+                    return TypeConstants.EmptyTask;
 
                 var rawResponse = GetResponse(httpReq, request);
 
                 if (httpRes.IsClosed)
-                    return EmptyTask;
+                    return TypeConstants.EmptyTask;
 
                 return HandleResponse(rawResponse, response =>
                 {
                     response = appHost.ApplyResponseConverters(httpReq, response);
 
                     if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
-                        return EmptyTask;
+                        return TypeConstants.EmptyTask;
 
                     if (doJsonp && !(response is CompressedResult))
                         return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());

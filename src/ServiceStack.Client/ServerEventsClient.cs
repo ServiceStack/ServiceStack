@@ -147,15 +147,6 @@ namespace ServiceStack
         public Action<WebRequest> EventStreamRequestFilter { get; set; }
         public Action<WebRequest> HeartbeatRequestFilter { get; set; }
 
-        public static readonly Task<object> EmptyTask;
-
-        static ServerEventsClient()
-        {
-            var tcs = new TaskCompletionSource<object>();
-            tcs.SetResult(null);
-            EmptyTask = tcs.Task;
-        }
-
         public ServerEventsClient(string baseUri, params string[] channels)
         {
             this.eventStreamPath = baseUri.CombineWith("event-stream");
@@ -415,7 +406,7 @@ namespace ServiceStack
         private Task SleepBackOffMultiplier(int continuousErrorsCount)
         {
             if (continuousErrorsCount <= 1)
-                return EmptyTask;
+                return TypeConstants.EmptyTask;
 
             const int MaxSleepMs = 60 * 1000;
 
@@ -652,7 +643,7 @@ namespace ServiceStack
             if (cancel != null)
                 cancel.Cancel();
 
-            Task task = EmptyTask;
+            Task task = TypeConstants.EmptyTask;
 
             if (ConnectionInfo != null && ConnectionInfo.UnRegisterUrl != null)
             {

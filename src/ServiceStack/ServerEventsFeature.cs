@@ -10,6 +10,7 @@ using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -112,7 +113,7 @@ namespace ServiceStack
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
-                return EmptyTask;
+                return TypeConstants.EmptyTask;
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
 
@@ -120,7 +121,7 @@ namespace ServiceStack
             if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
             {
                 session.ReturnFailedAuthentication(req);
-                return EmptyTask;
+                return TypeConstants.EmptyTask;
             }
 
             res.ContentType = MimeTypes.ServerSentEvents;
@@ -181,7 +182,7 @@ namespace ServiceStack
                 feature.OnCreated(subscription, req);
 
             if (req.Response.IsClosed)
-                return EmptyTask; //Allow short-circuiting in OnCreated callback
+                return TypeConstants.EmptyTask; //Allow short-circuiting in OnCreated callback
 
             var heartbeatUrl = feature.HeartbeatPath != null
                 ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath)).AddQueryParam("id", subscriptionId)
@@ -247,7 +248,7 @@ namespace ServiceStack
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
-                return EmptyTask;
+                return TypeConstants.EmptyTask;
 
             res.ApplyGlobalResponseHeaders();
 
@@ -260,7 +261,7 @@ namespace ServiceStack
                 feature.OnHeartbeatInit(req);
 
             if (req.Response.IsClosed)
-                return EmptyTask;
+                return TypeConstants.EmptyTask;
 
             var subscriptionId = req.QueryString["id"];
             var subscription = serverEvents.GetSubscriptionInfo(subscriptionId);
@@ -269,7 +270,7 @@ namespace ServiceStack
                 res.StatusCode = 404;
                 res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId);
                 res.EndHttpHandlerRequest(skipHeaders: true);
-                return EmptyTask;
+                return TypeConstants.EmptyTask;
             }
 
             if (!feature.CanAccessSubscription(req, subscription))
@@ -277,7 +278,7 @@ namespace ServiceStack
                 res.StatusCode = 403;
                 res.StatusDescription = "Invalid User Address";
                 res.EndHttpHandlerRequest(skipHeaders: true);
-                return EmptyTask;
+                return TypeConstants.EmptyTask;
             }
 
             if (!serverEvents.Pulse(subscriptionId))
@@ -286,7 +287,7 @@ namespace ServiceStack
                 res.StatusDescription = "Subscription {0} does not exist".Fmt(subscriptionId);
             }
             res.EndHttpHandlerRequest(skipHeaders: true);
-            return EmptyTask;
+            return TypeConstants.EmptyTask;
         }
     }
 

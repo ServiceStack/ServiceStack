@@ -20,17 +20,6 @@ namespace ServiceStack
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseExtensionsInternal));
 
-        private static readonly Task<bool> TrueTask;
-        private static readonly Task<bool> FalseTask;
-        private static readonly Task<object> EmptyTask;
-
-        static HttpResponseExtensionsInternal()
-        {
-            EmptyTask = ((object)null).AsTaskResult();
-            TrueTask = true.AsTaskResult();
-            FalseTask = false.AsTaskResult();
-        }
-
         public static bool WriteToOutputStream(IResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
         {
             var partialResult = result as IPartialWriter;
@@ -93,7 +82,7 @@ namespace ServiceStack
             if (result == null)
             {
                 httpRes.EndRequestWithNoContent();
-                return TrueTask;
+                return TypeConstants.TrueTask;
             }
 
             var httpResult = result as IHttpResult;
@@ -139,7 +128,7 @@ namespace ServiceStack
                     if (result == null)
                     {
                         response.EndRequestWithNoContent();
-                        return TrueTask;
+                        return TypeConstants.TrueTask;
                     }
 
                     ApplyGlobalResponseHeaders(response);
@@ -168,7 +157,7 @@ namespace ServiceStack
                             if (response.HandleCustomErrorHandler(request,
                                 defaultContentType, httpError.Status, response.Dto))
                             {
-                                return TrueTask;
+                                return TypeConstants.TrueTask;
                             }
                         }
 
@@ -249,7 +238,7 @@ namespace ServiceStack
                         {
                             response.Flush(); //required for Compression
                             if (disposableResult != null) disposableResult.Dispose();
-                            return TrueTask;
+                            return TypeConstants.TrueTask;
                         }
 
                         if (httpResult != null)
@@ -265,7 +254,7 @@ namespace ServiceStack
                             response.Write(responseText);
 
                             if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
-                            return TrueTask;
+                            return TypeConstants.TrueTask;
                         }
 
                         if (defaultAction == null)
@@ -288,7 +277,7 @@ namespace ServiceStack
                             disposableResult.Dispose();
                     }
 
-                    return FalseTask;
+                    return TypeConstants.FalseTask;
                 }
                 catch (Exception originalEx)
                 {
@@ -330,7 +319,7 @@ namespace ServiceStack
                 Log.Info("Failed to write error to response: {0}", writeErrorEx);
                 return originalEx.AsTaskException<bool>();
             }
-            return TrueTask;
+            return TypeConstants.TrueTask;
         }
 
         public static void WriteBytesToResponse(this IResponse res, byte[] responseBytes, string contentType)
@@ -370,7 +359,7 @@ namespace ServiceStack
             HostContext.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
 
             if (HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto))
-                return EmptyTask;
+                return TypeConstants.EmptyTask;
 
             if (httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html)
             {
@@ -398,7 +387,7 @@ namespace ServiceStack
 
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
 
-            return EmptyTask;
+            return TypeConstants.EmptyTask;
         }
 
         private static bool HandleCustomErrorHandler(this IResponse httpRes, IRequest httpReq,
