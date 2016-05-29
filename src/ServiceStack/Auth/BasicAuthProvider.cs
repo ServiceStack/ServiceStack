@@ -40,9 +40,8 @@ namespace ServiceStack.Auth
                 //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
                 SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
-                using (var authService = req.TryResolve<AuthenticateService>())
+                using (var authService = HostContext.ResolveService<AuthenticateService>(req))
                 {
-                    authService.Request = req;
                     var response = authService.Post(new Authenticate
                     {
                         provider = Name,

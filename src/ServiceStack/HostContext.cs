@@ -371,7 +371,7 @@ namespace ServiceStack
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service.
         /// </summary>
-        public static T ResolveService<T>(IHttpRequest httpReq) where T : class, IRequiresRequest
+        public static T ResolveService<T>(IRequest httpReq) where T : class, IRequiresRequest
         {
             return ResolveService(httpReq, AssertAppHost().Container.Resolve<T>());
         }

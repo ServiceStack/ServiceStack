@@ -158,9 +158,8 @@ namespace ServiceStack.Auth
             if (user != null)
             {
                 SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
-                using (var authService = req.TryResolve<AuthenticateService>())
+                using (var authService = HostContext.ResolveService<AuthenticateService>(req))
                 {
-                    authService.Request = req;
                     var session = req.GetSession();
                     if (LoginMatchesSession(session, user.Identity.Name)) return;
 
