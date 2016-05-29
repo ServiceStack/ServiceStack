@@ -289,6 +289,57 @@ namespace RazorRockstars.Console.Files
         }
 
         [Test]
+        public void Doesnt_allow_using_expired_keys()
+        {
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                Credentials = new NetworkCredential(ApiKey.Id, ""),
+            };
+
+            var authResponse = client.Get(new Authenticate());
+
+            var apiKeys = apiRepo.GetUserApiKeys(authResponse.UserId)
+                .Where(x => x.Environment == "live")
+                .ToList();
+
+            var oldApiKey = apiKeys[0].Id;
+            client = new JsonServiceClient(ListeningOn) {
+                BearerToken = oldApiKey,
+            };
+
+            //Key IsValid
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            apiKeys[0].ExpiryDate = DateTime.UtcNow.AddMinutes(-1);
+            apiRepo.StoreAll(new[]{ apiKeys[0] });
+
+            try
+            {
+                //Key is no longer valid
+                client.Get(new GetApiKeys { Environment = "live" });
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
+            }
+
+            client = new JsonServiceClient(ListeningOn) {
+                Credentials = new NetworkCredential(ApiKey.Id, ""),
+            };
+            var regenResponse = client.Send(new RegenrateApiKeys { Environment = "live" });
+
+            //Change to new Valid Key
+            client.BearerToken = regenResponse.Results[0].Key;
+            var apiKeyResponse = client.Get(new GetApiKeys { Environment = "live" });
+
+            Assert.That(regenResponse.Results.Map(x => x.Key), Is.EquivalentTo(
+                apiKeyResponse.Results.Map(x => x.Key)));
+        }
+
+        [Test]
         public void Authenticating_once_with_BasicAuth_does_not_establish_auth_session()
         {
             var client = GetClientWithUserPassword(alwaysSend: true);
