@@ -133,15 +133,43 @@ namespace RazorRockstars.Console.Files
         }
     }
 
-    public class StatelessAuthTests
+    public class OrmLiteStatelessAuthTests : StatelessAuthTests
+    {
+        [Test]
+        public void Does_use_different_database_depending_on_ApiKey()
+        {
+            var apiKeys = apiRepo.GetUserApiKeys(userId);
+            var testKey = apiKeys.First(x => x.Environment == "test");
+            var liveKey = apiKeys.First(x => x.Environment == "live");
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = testKey.Id,
+            };
+
+            var response = client.Get(new GetAllRockstars());
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Test"));
+
+            client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = liveKey.Id,
+            };
+
+            response = client.Get(new GetAllRockstars());
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstar.SeedData.Length));
+        }
+    }
+
+    public abstract class StatelessAuthTests
     {
         public const string ListeningOn = "http://localhost:2337/";
 
         protected readonly ServiceStackHost appHost;
         protected ApiKey ApiKey;
-        private IManageApiKeys apiRepo;
-        private ApiKeyAuthProvider apiProvider;
-        private string userId;
+        protected IManageApiKeys apiRepo;
+        protected ApiKeyAuthProvider apiProvider;
+        protected string userId;
 
         protected virtual ServiceStackHost CreateAppHost()
         {
@@ -571,4 +599,5 @@ namespace RazorRockstars.Console.Files
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
         }
     }
+
 }

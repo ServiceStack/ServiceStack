@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Runtime.Serialization;
 using Funq;
 using ServiceStack;
@@ -41,24 +42,32 @@ namespace RazorRockstars.Console.Files
             Plugins.Add(new ValidationFeature());
             container.RegisterValidators(typeof(AutoValidationValidator).Assembly);
 
-            container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+            var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
+            container.Register<IDbConnectionFactory>(dbFactory);
 
-            var dbFactory = container.Resolve<IDbConnectionFactory>();
+            dbFactory.RegisterConnection("testdb", "~/App_Data/test.sqlite".MapAbsolutePath(), SqliteDialect.Provider);
+
             using (var db = dbFactory.OpenDbConnection())
             {
                 db.DropAndCreateTable<Rockstar>(); //Create table if not exists
                 db.Insert(Rockstar.SeedData); //Populate with seed data
             }
 
-            SetConfig(new HostConfig {
+            using (var db = dbFactory.OpenDbConnection("testdb"))
+            {
+                db.DropAndCreateTable<Rockstar>(); //Create table if not exists
+                db.Insert(new Rockstar(1, "Test", "Database", 27));
+            }
+
+            SetConfig(new HostConfig
+            {
                 AdminAuthSecret = "secret",
                 DebugMode = true,
             });
 
             if (EnableAuth)
             {
-                Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+                Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                     new IAuthProvider[] {
                         new BasicAuthProvider(AppSettings),
                         new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
@@ -70,6 +79,14 @@ namespace RazorRockstars.Console.Files
 
                 container.Resolve<IAuthRepository>().InitSchema();
             }
+        }
+
+        public override IDbConnection GetDbConnection(IRequest req = null)
+        {
+            var apiKey = req.GetApiKey();
+            return apiKey != null && apiKey.Environment == "test"
+                ? TryResolve<IDbConnectionFactory>().OpenDbConnection("testdb")
+                : base.GetDbConnection(req);
         }
 
         private static void Main(string[] args)
@@ -86,12 +103,12 @@ namespace RazorRockstars.Console.Files
     public class Rockstar
     {
         public static Rockstar[] SeedData = new[] {
-            new Rockstar(1, "Jimi", "Hendrix", 27), 
-            new Rockstar(2, "Janis", "Joplin", 27), 
-            new Rockstar(3, "Jim", "Morrisson", 27), 
-            new Rockstar(4, "Kurt", "Cobain", 27),              
-            new Rockstar(5, "Elvis", "Presley", 42), 
-            new Rockstar(6, "Michael", "Jackson", 50), 
+            new Rockstar(1, "Jimi", "Hendrix", 27),
+            new Rockstar(2, "Janis", "Joplin", 27),
+            new Rockstar(3, "Jim", "Morrisson", 27),
+            new Rockstar(4, "Kurt", "Cobain", 27),
+            new Rockstar(5, "Elvis", "Presley", 42),
+            new Rockstar(6, "Michael", "Jackson", 50),
         };
 
         [AutoIncrement]
@@ -115,7 +132,7 @@ namespace RazorRockstars.Console.Files
     [Route("/rockstars/aged/{Age}")]
     [Route("/rockstars/delete/{Delete}")]
     [Route("/rockstars/{Id}")]
-    public class Rockstars
+    public class Rockstars : IReturn<RockstarsResponse>
     {
         public int Id { get; set; }
         public string FirstName { get; set; }
@@ -164,6 +181,17 @@ namespace RazorRockstars.Console.Files
     public class PartialChildModel
     {
         public string SomeProperty { get; set; }
+    }
+
+    public class GetAllRockstars : IReturn<RockstarsResponse> { }
+
+    [Authenticate]
+    public class SecureServices : Service
+    {
+        public object Any(GetAllRockstars request)
+        {
+            return new RockstarsResponse { Results = Db.Select<Rockstar>() };
+        }
     }
 
     public class RockstarsService : Service
@@ -236,7 +264,7 @@ namespace RazorRockstars.Console.Files
             };
         }
 
-        public void Any(RedirectWithoutQueryString request) {}
+        public void Any(RedirectWithoutQueryString request) { }
     }
 
     public class RedirectWithoutQueryStringFilterAttribute : RequestFilterAttribute

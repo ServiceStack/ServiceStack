@@ -359,6 +359,9 @@ namespace ServiceStack
     {
         public static ApiKey GetApiKey(this IRequest req)
         {
+            if (req == null)
+                return null;
+
             object oApiKey;
             return req.Items.TryGetValue(Keywords.ApiKey, out oApiKey)
                 ? oApiKey as ApiKey

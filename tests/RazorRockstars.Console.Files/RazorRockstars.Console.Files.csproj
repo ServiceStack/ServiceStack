@@ -398,5 +398,8 @@
   <ItemGroup>
     <Analyzer Include="..\..\src\packages\AWSSDK.DynamoDBv2.3.1.4.0\analyzers\dotnet\cs\AWSSDK.DynamoDBv2.CodeAnalysis.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+  </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
 </Project>
