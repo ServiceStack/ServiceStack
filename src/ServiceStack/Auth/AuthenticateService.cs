@@ -129,7 +129,7 @@ namespace ServiceStack.Auth
             if (authWithRequest != null && !base.Request.IsInProcessRequest())
             {
                 //IAuthWithRequest normally doesn't call Authenticate directly, but they can to return Auth Info
-                //But as AuthenticateService doesn't have [Authenticate] we need to call PreAuthenticate() manually
+                //But as AuthenticateService doesn't have [Authenticate] we need to call it manually
                 new AuthenticateAttribute().Execute(base.Request, base.Response, request);
                 if (base.Response.IsClosed)
                     return null;

@@ -22,7 +22,7 @@ namespace ServiceStack.Auth
         public string CallbackUrl { get; set; }
         public string RedirectUrl { get; set; }
 
-        public bool StatelessAuth { get; set; }
+        public bool PersistSession { get; set; }
 
         public Action<AuthUserSession, IAuthTokens, Dictionary<string, string>> LoadUserAuthFilter { get; set; }
 
@@ -41,7 +41,7 @@ namespace ServiceStack.Auth
 
         protected AuthProvider()
         {
-            StatelessAuth = GetType().HasInterface(typeof(IAuthWithRequest));
+            PersistSession = !GetType().HasInterface(typeof(IAuthWithRequest));
         }
 
         protected AuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
@@ -255,7 +255,7 @@ namespace ServiceStack.Auth
 
         public virtual void SaveSession(IServiceBase authService, IAuthSession session, TimeSpan? sessionExpiry = null)
         {
-            if (!StatelessAuth)
+            if (PersistSession)
             {
                 authService.SaveSession(session, SessionExpiry);
             }
