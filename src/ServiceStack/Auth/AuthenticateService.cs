@@ -118,19 +118,29 @@ namespace ServiceStack.Auth
             if (provider == CredentialsAliasProvider)
                 provider = CredentialsProvider;
 
-            var oAuthConfig = GetAuthProvider(provider);
-            if (oAuthConfig == null)
+            var authProvider = GetAuthProvider(provider);
+            if (authProvider == null)
                 throw HttpError.NotFound(ErrorMessages.UnknownAuthProviderFmt.Fmt(provider));
 
             if (LogoutAction.EqualsIgnoreCase(request.provider))
-                return oAuthConfig.Logout(this, request);
+                return authProvider.Logout(this, request);
+
+            var authWithRequest = authProvider as IAuthWithRequest;
+            if (authWithRequest != null && !base.Request.IsInProcessRequest())
+            {
+                //IAuthWithRequest normally doesn't call Authenticate directly, but they can to return Auth Info
+                //But as AuthenticateService doesn't have [Authenticate] we need to call PreAuthenticate() manually
+                new AuthenticateAttribute().Execute(base.Request, base.Response, request);
+                if (base.Response.IsClosed)
+                    return null;
+            }
 
             var session = this.GetSession();
 
             var isHtml = base.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
             try
             {
-                var response = Authenticate(request, provider, session, oAuthConfig);
+                var response = Authenticate(request, provider, session, authProvider);
 
                 // The above Authenticate call may end an existing session and create a new one so we need
                 // to refresh the current session reference.
@@ -142,7 +152,7 @@ namespace ServiceStack.Auth
                 var referrerUrl = request.Continue
                     ?? session.ReferrerUrl
                     ?? this.Request.GetHeader("Referer")
-                    ?? oAuthConfig.CallbackUrl;
+                    ?? authProvider.CallbackUrl;
 
                 var alreadyAuthenticated = response == null;
                 response = response ?? new AuthenticateResponse {
