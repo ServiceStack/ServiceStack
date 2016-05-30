@@ -49,6 +49,9 @@ namespace ServiceStack.Common.Tests
         {
             Assert.That(ExpressionUtils.GetFieldNames((Poco x) => x.Name),
                 Is.EquivalentTo(new[] { "Name" }));
+
+            Assert.That(ExpressionUtils.GetFieldNames((Poco x) => x.Id),
+                Is.EquivalentTo(new[] { "Id" }));
         }
 
         [Test]

@@ -81,8 +81,6 @@ namespace ServiceStack
                 var strEnum = array as IEnumerable<string>;
                 if (strEnum != null)
                     return strEnum.ToArray();
-
-                throw new ArgumentException("Invalid Fields List Expression: " + expr);
             }
 
             var newExpr = expr.Body as NewExpression;
@@ -107,7 +105,15 @@ namespace ServiceStack
                 return array.ConvertTo<string[]>();
             }
 
-            return new string[0];
+            var unary = expr.Body as UnaryExpression;
+            if (unary != null)
+            {
+                member = unary.Operand as MemberExpression;
+                if (member != null)
+                    return new[] { member.Member.Name };
+            }
+
+            throw new ArgumentException("Invalid Fields List Expression: " + expr);
         }
 
         public static object GetValue(this MemberBinding binding)
