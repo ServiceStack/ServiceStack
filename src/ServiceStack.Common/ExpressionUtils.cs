@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ServiceStack.Logging;
@@ -66,6 +67,47 @@ namespace ServiceStack
                 to[binding.Member.Name] = binding.GetValue();
             }
             return to;
+        }
+
+        public static string[] GetFieldNames<T>(this Expression<Func<T, object>> expr)
+        {
+            var member = expr.Body as MemberExpression;
+            if (member != null)
+            {
+                if (member.Member.DeclaringType == typeof(T))
+                    return new[] { member.Member.Name };
+
+                var array = CachedExpressionCompiler.Evaluate(member);
+                var strEnum = array as IEnumerable<string>;
+                if (strEnum != null)
+                    return strEnum.ToArray();
+
+                throw new ArgumentException("Invalid Fields List Expression: " + expr);
+            }
+
+            var newExpr = expr.Body as NewExpression;
+            if (newExpr != null)
+                return newExpr.Arguments.OfType<MemberExpression>().Select(x => x.Member.Name).ToArray();
+
+            var init = expr.Body as MemberInitExpression;
+            if (init != null)
+                return init.Bindings.Select(x => x.Member.Name).ToArray();
+
+            var newArray = expr.Body as NewArrayExpression;
+            if (newArray != null)
+            {
+                if (newArray.Expressions.All(x => x is ConstantExpression))
+                    return newArray.Expressions.OfType<ConstantExpression>().Select(x => x.Value.ToString()).ToArray();
+
+                var array = CachedExpressionCompiler.Evaluate(newArray);
+                var strArray = array as string[];
+                if (strArray != null)
+                    return strArray;
+
+                return array.ConvertTo<string[]>();
+            }
+
+            return new string[0];
         }
 
         public static object GetValue(this MemberBinding binding)
