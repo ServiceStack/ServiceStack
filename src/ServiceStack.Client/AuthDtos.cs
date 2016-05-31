@@ -46,6 +46,7 @@ namespace ServiceStack
 
         [DataMember(Order = 6)] public ResponseStatus ResponseStatus { get; set; }
         [DataMember(Order = 7)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 8)] public string BearerToken { get; set; }
     }
 
     [DataContract]

@@ -52,9 +52,11 @@ namespace ServiceStack
         [DataMember(Order = 35)] public List<string> Roles { get; set; }
         [DataMember(Order = 36)] public List<string> Permissions { get; set; }
         [DataMember(Order = 37)] public virtual bool IsAuthenticated { get; set; }
-        [DataMember(Order = 38)] public virtual string Sequence { get; set; }
-        [DataMember(Order = 39)] public long Tag { get; set; }
-        [DataMember(Order = 40)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
+        [DataMember(Order = 38)] public virtual bool IsPartial { get; set; }
+        [DataMember(Order = 39)] public virtual string ProfileUrl { get; set; }
+        [DataMember(Order = 40)] public virtual string Sequence { get; set; }
+        [DataMember(Order = 41)] public long Tag { get; set; }
+        [DataMember(Order = 42)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {
@@ -125,6 +127,9 @@ namespace ServiceStack
 
         public static string GetProfileUrl(this IAuthSession authSession, string defaultUrl = null)
         {
+            if (authSession.ProfileUrl != null)
+                return authSession.ProfileUrl;
+
             var profile = HostContext.TryResolve<IAuthMetadataProvider>();
             return profile == null ? defaultUrl : profile.GetProfileUrl(authSession, defaultUrl);
         }
