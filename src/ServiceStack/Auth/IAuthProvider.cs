@@ -43,4 +43,8 @@ namespace ServiceStack.Auth
         void PreAuthenticate(IRequest req, IResponse res);
     }
 
+    public interface IAuthResponseFilter
+    {
+        AuthenticateResponse Execute(IServiceBase authService, IAuthProvider authProvider, IAuthSession session, AuthenticateResponse response);
+    }
 }

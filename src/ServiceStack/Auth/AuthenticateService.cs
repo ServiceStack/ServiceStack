@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -25,6 +22,7 @@ namespace ServiceStack.Auth
     {
         public const string BasicProvider = "basic";
         public const string ApiKeyProvider = "apikey";
+        public const string JwtProvider = "jwt";
         public const string CredentialsProvider = "credentials";
         public const string WindowsAuthProvider = "windowsauth";
         public const string CredentialsAliasProvider = "login";
@@ -39,6 +37,7 @@ namespace ServiceStack.Auth
         public static string HtmlRedirect { get; internal set; }
         internal static IAuthProvider[] AuthProviders = TypeConstants<IAuthProvider>.EmptyArray;
         internal static IAuthWithRequest[] AuthWithRequestProviders = TypeConstants<IAuthWithRequest>.EmptyArray;
+        internal static IAuthResponseFilter[] AuthResponseFilters = TypeConstants<IAuthResponseFilter>.EmptyArray;
 
         static AuthenticateService()
         {
@@ -77,6 +76,7 @@ namespace ServiceStack.Auth
 
             AuthProviders = authProviders;
             AuthWithRequestProviders = authProviders.OfType<IAuthWithRequest>().ToArray();
+            AuthResponseFilters = authProviders.OfType<IAuthResponseFilter>().ToArray();
 
             if (sessionFactory != null)
                 CurrentSessionFactory = sessionFactory;
@@ -164,6 +164,15 @@ namespace ServiceStack.Auth
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl,
                 };
+
+                var authResponse = response as AuthenticateResponse;
+                if (authResponse != null)
+                {
+                    foreach (var responseFilter in AuthResponseFilters)
+                    {
+                        authResponse = responseFilter.Execute(this, authProvider, session, authResponse) ?? authResponse;
+                    }
+                }
 
                 if (isHtml && request.provider != null)
                 {
