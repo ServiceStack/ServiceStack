@@ -11,6 +11,11 @@ public static class DictionaryExtensions
         return dictionary.ContainsKey(key) ? dictionary[key] : default(TValue);
     }
 
+    public static TValue GetValue<TValue, TKey>(this Dictionary<TKey, TValue> dictionary, TKey key, Func<TValue> defaultValue)
+    {
+        return dictionary.ContainsKey(key) ? dictionary[key] : defaultValue();
+    }
+
     public static bool IsNullOrEmpty(this IDictionary dictionary)
     {
         return dictionary == null || dictionary.Count == 0;

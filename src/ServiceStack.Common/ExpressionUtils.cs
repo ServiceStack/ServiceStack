@@ -94,8 +94,9 @@ namespace ServiceStack
             var newArray = expr.Body as NewArrayExpression;
             if (newArray != null)
             {
-                if (newArray.Expressions.All(x => x is ConstantExpression))
-                    return newArray.Expressions.OfType<ConstantExpression>().Select(x => x.Value.ToString()).ToArray();
+                var constantExprs = newArray.Expressions.OfType<ConstantExpression>().ToList();
+                if (newArray.Expressions.Count == constantExprs.Count)
+                    return constantExprs.Select(x => x.Value.ToString()).ToArray();
 
                 var array = CachedExpressionCompiler.Evaluate(newArray);
                 var strArray = array as string[];

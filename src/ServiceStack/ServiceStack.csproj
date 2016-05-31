@@ -98,6 +98,7 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Auth\ApiKeyAuthProvider.cs" />
+    <Compile Include="Auth\JwtAuthProvider.cs" />
     <Compile Include="AutoQueryDataConditions.cs" />
     <Compile Include="AutoQueryDataFeature.cs" />
     <Compile Include="AutoQueryDataServiceSource.cs" />

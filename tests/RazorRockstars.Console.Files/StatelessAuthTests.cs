@@ -65,11 +65,11 @@ namespace RazorRockstars.Console.Files
             };
         }
 
-        protected override IServiceClient GetClientWithApiKeyBearerToken()
+        protected override IServiceClient GetClientWithBearerToken(string bearerToken)
         {
             return new JsonHttpClient(ListeningOn)
             {
-                BearerToken = ApiKey.Id,
+                BearerToken = bearerToken,
             };
         }
 
@@ -241,11 +241,11 @@ namespace RazorRockstars.Console.Files
             };
         }
 
-        protected virtual IServiceClient GetClientWithApiKeyBearerToken()
+        protected virtual IServiceClient GetClientWithBearerToken(string bearerToken)
         {
             return new JsonServiceClient(ListeningOn)
             {
-                BearerToken = ApiKey.Id,
+                BearerToken = bearerToken,
             };
         }
 
@@ -390,6 +390,33 @@ namespace RazorRockstars.Console.Files
         }
 
         [Test]
+        public void Authenticating_once_with_JWT_does_not_establish_auth_session()
+        {
+            var client = GetClientWithUserPassword(alwaysSend: true);
+
+            var authResponse = client.Send(new Authenticate());
+            Assert.That(authResponse.BearerToken, Is.Not.Null);
+
+            var jwtClient = GetClientWithBearerToken(authResponse.BearerToken);
+            var request = new Secured { Name = "test" };
+            var response = jwtClient.Send<SecuredResponse>(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var newClient = GetClient();
+            newClient.SetSessionId(jwtClient.GetSessionId());
+
+            try
+            {
+                response = newClient.Send<SecuredResponse>(request);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
+        }
+
+        [Test]
         public void Authenticating_once_with_ApiKeyAuth_does_not_establish_auth_session()
         {
             var client = GetClientWithApiKey();
@@ -436,7 +463,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Authenticating_once_with_ApiKeyAuth_BearerToken_does_not_establish_auth_session()
         {
-            var client = GetClientWithApiKeyBearerToken();
+            var client = GetClientWithBearerToken(ApiKey.Id);
 
             var request = new Secured { Name = "test" };
             var response = client.Send<SecuredResponse>(request);
@@ -458,7 +485,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public async Task Authenticating_once_with_ApiKeyAuth_BearerToken_does_not_establish_auth_session_Async()
         {
-            var client = GetClientWithApiKeyBearerToken();
+            var client = GetClientWithBearerToken(ApiKey.Id);
 
             var request = new Secured { Name = "test" };
             var response = await client.SendAsync<SecuredResponse>(request);
@@ -530,6 +557,21 @@ namespace RazorRockstars.Console.Files
 
             Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
                 requestFilter: req => req.AddBasicAuth(Username, Password)),
+                Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+        }
+
+        [Test]
+        public void Can_access_Secured_Pages_with_JWT()
+        {
+            var client = GetClientWithUserPassword(alwaysSend: true);
+            var authResponse = client.Send(new Authenticate());
+
+            Assert.That(ListeningOn.CombineWith("/secured").GetStringFromUrl(
+                requestFilter: req => req.AddBearerToken(authResponse.BearerToken)),
+                Is.StringContaining("<!--view:Secured.cshtml-->"));
+
+            Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
+                requestFilter: req => req.AddBearerToken(authResponse.BearerToken)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
         }
 

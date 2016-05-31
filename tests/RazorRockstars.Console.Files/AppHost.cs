@@ -72,6 +72,7 @@ namespace RazorRockstars.Console.Files
                         new BasicAuthProvider(AppSettings),
                         new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
                         new CredentialsAuthProvider(AppSettings),
+                        new JwtAuthProvider(AppSettings),
                     })
                 {
                     IncludeRegistrationService = true,
