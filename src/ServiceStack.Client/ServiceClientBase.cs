@@ -1941,11 +1941,17 @@ namespace ServiceStack
 
         public static void SetSessionId(this IServiceClient client, string sessionId)
         {
+            if (sessionId == null)
+                return;
+
             client.SetCookie("ss-id", sessionId);
         }
 
         public static void SetPermanentSessionId(this IServiceClient client, string sessionId)
         {
+            if (sessionId == null)
+                return;
+
             client.SetCookie("ss-pid", sessionId, expiresIn:TimeSpan.FromDays(365 * 20));
         }
     }
