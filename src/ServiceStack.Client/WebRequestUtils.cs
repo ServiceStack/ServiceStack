@@ -13,6 +13,11 @@ using Windows.Storage.Streams;
 
 namespace ServiceStack
 {
+    public class TokenException : AuthenticationException
+    {
+        public TokenException(string message) : base(message) { }
+    }
+
     public class AuthenticationException : Exception
     {
         public AuthenticationException()

@@ -278,7 +278,8 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Regenerating_AuthKeys_invalidates_existing_Keys_and_enables_new_keys()
         {
-            var client = new JsonServiceClient(ListeningOn) {
+            var client = new JsonServiceClient(ListeningOn)
+            {
                 Credentials = new NetworkCredential(ApiKey.Id, ""),
             };
 
@@ -286,7 +287,8 @@ namespace RazorRockstars.Console.Files
             apiKeyResponse.PrintDump();
 
             var oldApiKey = apiKeyResponse.Results[0].Key;
-            client = new JsonServiceClient(ListeningOn) {
+            client = new JsonServiceClient(ListeningOn)
+            {
                 BearerToken = oldApiKey,
             };
 
@@ -331,7 +333,8 @@ namespace RazorRockstars.Console.Files
                 .ToList();
 
             var oldApiKey = apiKeys[0].Id;
-            client = new JsonServiceClient(ListeningOn) {
+            client = new JsonServiceClient(ListeningOn)
+            {
                 BearerToken = oldApiKey,
             };
 
@@ -341,7 +344,7 @@ namespace RazorRockstars.Console.Files
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             apiKeys[0].ExpiryDate = DateTime.UtcNow.AddMinutes(-1);
-            apiRepo.StoreAll(new[]{ apiKeys[0] });
+            apiRepo.StoreAll(new[] { apiKeys[0] });
 
             try
             {
@@ -354,7 +357,8 @@ namespace RazorRockstars.Console.Files
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
             }
 
-            client = new JsonServiceClient(ListeningOn) {
+            client = new JsonServiceClient(ListeningOn)
+            {
                 Credentials = new NetworkCredential(ApiKey.Id, ""),
             };
             var regenResponse = client.Send(new RegenrateApiKeys { Environment = "live" });
@@ -640,6 +644,107 @@ namespace RazorRockstars.Console.Files
             Assert.That(client.Get<string>("/SecuredPage?format=html"),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
         }
+
+        [Test]
+        public void Can_not_access_Secure_service_with_invalidated_token()
+        {
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+
+            var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com"
+            });
+
+            var client = GetClientWithBearerToken(token);
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            jwtProvider.InvalidateTokensIssuedBefore = DateTime.UtcNow.AddSeconds(1);
+
+            try
+            {
+                response = client.Send(request);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(TokenException).Name));
+            }
+            finally
+            {
+                jwtProvider.InvalidateTokensIssuedBefore = null;
+            }
+        }
+
+        [Test]
+        public void Can_not_access_Secure_service_with_expired_token()
+        {
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+            jwtProvider.JwtPayloadFilter = jwtPayload =>
+                jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
+
+            var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com"
+            });
+
+            jwtProvider.JwtPayloadFilter = null;
+
+            var client = GetClientWithBearerToken(token);
+
+            try
+            {
+                var request = new Secured { Name = "test" };
+                var response = client.Send(request);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(TokenException).Name));
+            }
+        }
+
+        [Test]
+        public void Can_not_access_Secure_service_on_unsecured_connection_when_RequireSecureConnection()
+        {
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+            jwtProvider.RequireSecureConnection = true;
+
+            var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com"
+            });
+
+            var client = GetClientWithBearerToken(token);
+
+            try
+            {
+                var request = new Secured { Name = "test" };
+                var response = client.Send(request);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
+                Assert.That(ex.ErrorCode, Is.EqualTo("Forbidden"));
+            }
+            finally
+            {
+                jwtProvider.RequireSecureConnection = false;
+            }
+        }
+
+
     }
 
 }

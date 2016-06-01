@@ -21,6 +21,7 @@ namespace ServiceStack.Auth
             { "HS512", (key, value) => { using (var sha = new HMACSHA512(key)) { return sha.ComputeHash(value); } } }
         };
 
+        public bool RequireSecureConnection { get; set; }
         public Action<Dictionary<string, string>> JwtHeaderFilter { get; set; }
         public Action<Dictionary<string, string>> JwtPayloadFilter { get; set; }
         public Action<IAuthSession, Dictionary<string, string>> JwtSessionFilter { get; set; }
@@ -63,6 +64,7 @@ namespace ServiceStack.Auth
 
         public void Init(IAppSettings appSettings = null)
         {
+            RequireSecureConnection = true;
             AuthKey = AesUtils.CreateKey();
             HashAlgorithm = "HS256";
             Issuer = "ssjwt";
@@ -70,6 +72,8 @@ namespace ServiceStack.Auth
 
             if (appSettings != null)
             {
+                RequireSecureConnection = appSettings.Get("jwt.RequireSecureConnection", RequireSecureConnection);
+
                 var base64 = appSettings.GetString("jwt.AuthKeyBase64");
                 if (base64 != null)
                     AuthKeyBase64 = base64;
@@ -116,6 +120,9 @@ namespace ServiceStack.Auth
                 var parts = bearerToken.Split('.');
                 if (parts.Length == 3)
                 {
+                    if (RequireSecureConnection && !req.IsSecureConnection)
+                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
+
                     var header = parts[0];
                     var payload = parts[1];
                     var sentSignatureBytes = Base64UrlDecode(parts[2]);
@@ -131,7 +138,7 @@ namespace ServiceStack.Auth
                     var calcSignatureBytes = HashAlgorithms[algorithm](AuthKey, bytesToSign);
 
                     if (!calcSignatureBytes.EquivalentTo(sentSignatureBytes))
-                        throw new TokenException("Invalid signature");
+                        throw new TokenException(ErrorMessages.InvalidSignature);
 
                     if (CryptKey != null && Iv != null)
                     {
@@ -144,13 +151,13 @@ namespace ServiceStack.Auth
                     var expiresAt = GetUnixTime(jwtPayload, "exp");
                     var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
                     if (secondsSinceEpoch >= expiresAt)
-                        throw new TokenException("Token has expired");
+                        throw new TokenException(ErrorMessages.TokenExpired);
 
                     if (InvalidateTokensIssuedBefore != null)
                     {
                         var issuedAt = GetUnixTime(jwtPayload, "iat");
                         if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
-                            throw new TokenException("Token has been invalidated");
+                            throw new TokenException(ErrorMessages.TokenInvalidated);
                     }
 
                     var sessionId = jwtPayload.GetValue("jid", SessionExtensions.CreateRandomSessionId);
@@ -178,7 +185,18 @@ namespace ServiceStack.Auth
             }
         }
 
-        public static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
+        public AuthenticateResponse Execute(IServiceBase authService, IAuthProvider authProvider, IAuthSession session, AuthenticateResponse response)
+        {
+            if (response.BearerToken == null && session.IsAuthenticated)
+            {
+                if (!RequireSecureConnection || authService.Request.IsSecureConnection)
+                    response.BearerToken = CreateJwtBearerToken(session);
+            }
+
+            return response;
+        }
+
+        static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
         {
             string value;
             if (jwtPayload.TryGetValue(key, out value) && !string.IsNullOrEmpty(value))
@@ -193,14 +211,6 @@ namespace ServiceStack.Auth
                 }
             }
             return null;
-        }
-
-        public AuthenticateResponse Execute(IServiceBase authService, IAuthProvider authProvider, IAuthSession session, AuthenticateResponse response)
-        {
-            if (response.BearerToken == null && session.IsAuthenticated)
-                response.BearerToken = CreateJwtBearerToken(session);
-
-            return response;
         }
 
         public string CreateJwtBearerToken(IAuthSession session)
@@ -331,8 +341,4 @@ namespace ServiceStack.Auth
         }
     }
 
-    public class TokenException : Exception
-    {
-        public TokenException(string message) : base(message) { }
-    }
 }

@@ -70,9 +70,9 @@ namespace RazorRockstars.Console.Files
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                     new IAuthProvider[] {
                         new BasicAuthProvider(AppSettings),
-                        new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
                         new CredentialsAuthProvider(AppSettings),
-                        new JwtAuthProvider(AppSettings),
+                        new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
+                        new JwtAuthProvider(AppSettings) { RequireSecureConnection = false },
                     })
                 {
                     IncludeRegistrationService = true,
