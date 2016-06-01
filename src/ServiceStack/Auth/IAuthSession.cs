@@ -21,7 +21,7 @@ namespace ServiceStack.Auth
         List<string> Roles { get; set; }
         List<string> Permissions { get; set; }
         bool IsAuthenticated { get; set; }
-        bool IsPartial { get; set; } //Partially restored from JWT
+        bool FromToken { get; set; } //Partially restored from JWT
         string ProfileUrl { get; set; }
 
         //Used for digest authentication replay protection

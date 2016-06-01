@@ -52,7 +52,7 @@ namespace ServiceStack
         [DataMember(Order = 35)] public List<string> Roles { get; set; }
         [DataMember(Order = 36)] public List<string> Permissions { get; set; }
         [DataMember(Order = 37)] public virtual bool IsAuthenticated { get; set; }
-        [DataMember(Order = 38)] public virtual bool IsPartial { get; set; }
+        [DataMember(Order = 38)] public virtual bool FromToken { get; set; }
         [DataMember(Order = 39)] public virtual string ProfileUrl { get; set; }
         [DataMember(Order = 40)] public virtual string Sequence { get; set; }
         [DataMember(Order = 41)] public long Tag { get; set; }
@@ -66,10 +66,13 @@ namespace ServiceStack
 
         public virtual bool HasPermission(string permission)
         {
-            var managesRoles = HostContext.TryResolve<IAuthRepository>() as IManageRoles;
-            if (managesRoles != null)
+            if (!FromToken) //If populated from a token it should have the complete list of permissions
             {
-                return managesRoles.HasPermission(this.UserAuthId, permission);
+                var managesRoles = HostContext.TryResolve<IAuthRepository>() as IManageRoles;
+                if (managesRoles != null)
+                {
+                    return managesRoles.HasPermission(this.UserAuthId, permission);
+                }
             }
 
             return this.Permissions != null && this.Permissions.Contains(permission);
@@ -77,10 +80,13 @@ namespace ServiceStack
 
         public virtual bool HasRole(string role)
         {
-            var managesRoles = HostContext.TryResolve<IAuthRepository>() as IManageRoles;
-            if (managesRoles != null)
+            if (!FromToken) //If populated from a token it should have the complete list of roles
             {
-                return managesRoles.HasRole(this.UserAuthId, role);
+                var managesRoles = HostContext.TryResolve<IAuthRepository>() as IManageRoles;
+                if (managesRoles != null)
+                {
+                    return managesRoles.HasRole(this.UserAuthId, role);
+                }
             }
 
             return this.Roles != null && this.Roles.Contains(role);
