@@ -23,7 +23,7 @@ namespace ServiceStack.Auth
 
         public Action<Dictionary<string, string>> JwtHeaderFilter { get; set; }
         public Action<Dictionary<string, string>> JwtPayloadFilter { get; set; }
-        public Action<IAuthSession, Dictionary<string,string>> JwtSessionFilter { get; set; }
+        public Action<IAuthSession, Dictionary<string, string>> JwtSessionFilter { get; set; }
 
         public bool EncryptPayload { get; set; }
         public string HashAlgorithm { get; set; }
@@ -41,13 +41,14 @@ namespace ServiceStack.Auth
             set { CryptKey = Convert.FromBase64String(value); }
         }
 
-        public byte[] IV { get; set; }
-        public string IVBase64
+        public byte[] Iv { get; set; }
+        public string IvBase64
         {
-            set { IV = Convert.FromBase64String(value); }
+            set { Iv = Convert.FromBase64String(value); }
         }
 
-        public TimeSpan ExpireTokensAfter { get; set; }
+        public TimeSpan ExpireTokensIn { get; set; }
+        public DateTime? InvalidateTokensIssuedBefore { get; set; }
 
         public JwtAuthProvider()
         {
@@ -65,7 +66,7 @@ namespace ServiceStack.Auth
             AuthKey = AesUtils.CreateKey();
             HashAlgorithm = "HS256";
             Issuer = "ssjwt";
-            ExpireTokensAfter = TimeSpan.FromDays(14);
+            ExpireTokensIn = TimeSpan.FromDays(14);
 
             if (appSettings != null)
             {
@@ -77,9 +78,9 @@ namespace ServiceStack.Auth
                 if (!string.IsNullOrEmpty(base64))
                     CryptKeyBase64 = base64;
 
-                base64 = appSettings.GetString("jwt.IVBase64");
+                base64 = appSettings.GetString("jwt.IvBase64");
                 if (!string.IsNullOrEmpty(base64))
-                    IVBase64 = base64;
+                    IvBase64 = base64;
 
                 var hashAlg = appSettings.GetString("jwt.HashAlgorithm");
                 if (!string.IsNullOrEmpty(hashAlg))
@@ -89,18 +90,22 @@ namespace ServiceStack.Auth
                 if (!string.IsNullOrEmpty(issuer))
                     Issuer = issuer;
 
-                ExpireTokensAfter = appSettings.Get("jwt.ExpireTokensAfter", ExpireTokensAfter);
+                ExpireTokensIn = appSettings.Get("jwt.ExpireTokensIn", ExpireTokensIn);
+
+                var dateStr = appSettings.GetString("jwt.InvalidateTokensIssuedBefore");
+                if (!string.IsNullOrEmpty(dateStr))
+                    InvalidateTokensIssuedBefore = dateStr.FromJsv<DateTime>();
             }
         }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
-            return session.IsPartial && session.IsAuthenticated;
+            return session.FromToken && session.IsAuthenticated;
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
-            throw new System.NotImplementedException("JWT should not be Authenticated directly");
+            throw new NotImplementedException("JWT Authenticate() should not be called directly");
         }
 
         public void PreAuthenticate(IRequest req, IResponse res)
@@ -126,48 +131,43 @@ namespace ServiceStack.Auth
                     var calcSignatureBytes = HashAlgorithms[algorithm](AuthKey, bytesToSign);
 
                     if (!calcSignatureBytes.EquivalentTo(sentSignatureBytes))
-                        throw new SignatureVerificationException("Invalid signature");
+                        throw new TokenException("Invalid signature");
 
-                    if (CryptKey != null && IV != null)
+                    if (CryptKey != null && Iv != null)
                     {
-                        payloadBytes = AesUtils.Decrypt(payloadBytes, CryptKey, IV);
+                        payloadBytes = AesUtils.Decrypt(payloadBytes, CryptKey, Iv);
                     }
 
                     var payloadJson = payloadBytes.FromUtf8Bytes();
                     var jwtPayload = payloadJson.FromJson<Dictionary<string, string>>();
 
-                    if (jwtPayload.ContainsKey("exp") && !string.IsNullOrEmpty(jwtPayload["exp"]))
-                    {
-                        int exp;
-                        try
-                        {
-                            exp = Convert.ToInt32(jwtPayload["exp"]);
-                        }
-                        catch (Exception)
-                        {
-                            throw new SignatureVerificationException("Claim 'exp' must be a Unix Timestamp.");
-                        }
+                    var expiresAt = GetUnixTime(jwtPayload, "exp");
+                    var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
+                    if (secondsSinceEpoch >= expiresAt)
+                        throw new TokenException("Token has expired");
 
-                        var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
-                        if (secondsSinceEpoch >= exp)
-                            throw new SignatureVerificationException("Token has expired.");
+                    if (InvalidateTokensIssuedBefore != null)
+                    {
+                        var issuedAt = GetUnixTime(jwtPayload, "iat");
+                        if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
+                            throw new TokenException("Token has been invalidated");
                     }
 
                     var sessionId = jwtPayload.GetValue("jid", SessionExtensions.CreateRandomSessionId);
                     var session = SessionFeature.CreateNewSession(req, sessionId);
                     session.IsAuthenticated = true;
-                    session.IsPartial = true;
+                    session.FromToken = true;
                     session.UserAuthId = jwtPayload["sub"];
                     session.Email = jwtPayload.GetValueOrDefault("email");
-                    session.DisplayName = jwtPayload.GetValueOrDefault("name");
                     session.UserName = jwtPayload.GetValueOrDefault("preferred_username");
+                    session.DisplayName = jwtPayload.GetValueOrDefault("name");
                     session.ProfileUrl = jwtPayload.GetValueOrDefault("picture");
 
-                    var roles = jwtPayload.GetValueOrDefault("roles");
+                    var roles = jwtPayload.GetValueOrDefault("role");
                     if (roles != null)
                         session.Roles = roles.Split(',').ToList();
 
-                    var perms = jwtPayload.GetValueOrDefault("perms");
+                    var perms = jwtPayload.GetValueOrDefault("perm");
                     if (perms != null)
                         session.Permissions = perms.Split(',').ToList();
 
@@ -178,86 +178,129 @@ namespace ServiceStack.Auth
             }
         }
 
+        public static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
+        {
+            string value;
+            if (jwtPayload.TryGetValue(key, out value) && !string.IsNullOrEmpty(value))
+            {
+                try
+                {
+                    return Convert.ToInt32(value);
+                }
+                catch (Exception)
+                {
+                    throw new TokenException("Claim '{0}' must be a Unix Timestamp".Fmt(key));
+                }
+            }
+            return null;
+        }
+
         public AuthenticateResponse Execute(IServiceBase authService, IAuthProvider authProvider, IAuthSession session, AuthenticateResponse response)
         {
             if (response.BearerToken == null && session.IsAuthenticated)
-            {
-                var now = DateTime.UtcNow;
-                var jwtPayload = new Dictionary<string, string>
-                {
-                    { "iss", Issuer },
-                    { "sub", session.UserAuthId },
-                    { "iat", now.ToUnixTime().ToString() },
-                    { "exp", now.Add(ExpireTokensAfter).ToUnixTime().ToString() },
-                    //{ "jti", SessionExtensions.CreateRandomSessionId() },
-                };
-
-                if (!string.IsNullOrEmpty(session.Email))
-                    jwtPayload["email"] = session.Email;
-                if (!string.IsNullOrEmpty(session.DisplayName))
-                    jwtPayload["name"] = session.DisplayName;
-
-                if (!string.IsNullOrEmpty(session.UserName))
-                    jwtPayload["preferred_username"] = session.UserName;
-                else if (!string.IsNullOrEmpty(session.UserAuthName) && !session.UserAuthName.Contains("@"))
-                    jwtPayload["preferred_username"] = session.UserAuthName;
-
-                var profileUrl = session.GetProfileUrl();
-                if (profileUrl != null && profileUrl != AuthMetadataProvider.DefaultNoProfileImgUrl)
-                    jwtPayload["picture"] = profileUrl;
-
-                var authRepo = authService.TryResolve<IAuthRepository>().AsUserAuthRepository(authService.GetResolver());
-                var manageRoles = authRepo as IManageRoles;
-
-                if (manageRoles != null)
-                {
-                    var roles = manageRoles.GetRoles(session.UserAuthId);
-                    if (!roles.IsEmpty())
-                        jwtPayload["roles"] = string.Join(",", roles);
-
-                    var perms = manageRoles.GetPermissions(session.UserAuthId);
-                    if (!perms.IsEmpty())
-                        jwtPayload["perms"] = string.Join(",", perms);
-                }
-                else
-                {
-                    if (!session.Roles.IsEmpty())
-                        jwtPayload["roles"] = string.Join(",", session.Roles);
-
-                    if (!session.Permissions.IsEmpty())
-                        jwtPayload["perms"] = string.Join(",", session.Permissions);
-                }
-
-                var header = new Dictionary<string, string>
-                {
-                    { "typ", "JWT" },
-                    { "alg", "HS256" }
-                };
-
-                if (JwtHeaderFilter != null)
-                    JwtHeaderFilter(header);
-
-                if (JwtPayloadFilter != null)
-                    JwtPayloadFilter(jwtPayload);
-
-                var headerBytes = header.ToJson().ToUtf8Bytes();
-                var payloadBytes = jwtPayload.ToJson().ToUtf8Bytes();
-
-                if (CryptKey != null && IV != null)
-                {
-                    payloadBytes = AesUtils.Encrypt(payloadBytes, CryptKey, IV);
-                }
-
-                var base64Header = Base64UrlEncode(headerBytes);
-                var base64Payload = Base64UrlEncode(payloadBytes);
-
-                var stringToSign = base64Header + "." + base64Payload;
-                var signature = HashAlgorithms[HashAlgorithm](AuthKey, stringToSign.ToUtf8Bytes());
-
-                response.BearerToken = base64Header + "." + base64Payload + "." + Base64UrlEncode(signature);
-            }
+                response.BearerToken = CreateJwtBearerToken(session);
 
             return response;
+        }
+
+        public string CreateJwtBearerToken(IAuthSession session)
+        {
+            var jwtHeader = CreateJwtHeader();
+            if (JwtHeaderFilter != null)
+                JwtHeaderFilter(jwtHeader);
+
+            var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn);
+            if (JwtPayloadFilter != null)
+                JwtPayloadFilter(jwtPayload);
+
+            var bearerToken = CreateJwtBearerToken(jwtHeader, jwtPayload, HashAlgorithms[HashAlgorithm], AuthKey, CryptKey, Iv);
+            return bearerToken;
+        }
+
+        public static string CreateJwtBearerToken(
+            Dictionary<string, string> jwtHeader,
+            Dictionary<string, string> jwtPayload,
+            Func<byte[], byte[], byte[]> hashAlgorithm,
+            byte[] authKey,
+            byte[] cryptKey = null, byte[] iv = null)
+        {
+            var headerBytes = jwtHeader.ToJson().ToUtf8Bytes();
+            var payloadBytes = jwtPayload.ToJson().ToUtf8Bytes();
+
+            if (cryptKey != null && iv != null)
+            {
+                payloadBytes = AesUtils.Encrypt(payloadBytes, cryptKey, iv);
+            }
+
+            var base64Header = Base64UrlEncode(headerBytes);
+            var base64Payload = Base64UrlEncode(payloadBytes);
+
+            var stringToSign = base64Header + "." + base64Payload;
+            var signature = hashAlgorithm(authKey, stringToSign.ToUtf8Bytes());
+
+            var bearerToken = base64Header + "." + base64Payload + "." + Base64UrlEncode(signature);
+            return bearerToken;
+        }
+
+        public static Dictionary<string, string> CreateJwtHeader()
+        {
+            var header = new Dictionary<string, string>
+            {
+                {"typ", "JWT"},
+                {"alg", "HS256"}
+            };
+            return header;
+        }
+
+        public static Dictionary<string, string> CreateJwtPayload(IAuthSession session, string issuer, TimeSpan expireIn)
+        {
+            var now = DateTime.UtcNow;
+            var jwtPayload = new Dictionary<string, string>
+            {
+                {"iss", issuer},
+                {"sub", session.UserAuthId},
+                {"iat", now.ToUnixTime().ToString()},
+                {"exp", now.Add(expireIn).ToUnixTime().ToString()},
+                //{ "jti", SessionExtensions.CreateRandomSessionId() },
+            };
+
+            if (!string.IsNullOrEmpty(session.Email))
+                jwtPayload["email"] = session.Email;
+            if (!string.IsNullOrEmpty(session.DisplayName))
+                jwtPayload["name"] = session.DisplayName;
+
+            if (!string.IsNullOrEmpty(session.UserName))
+                jwtPayload["preferred_username"] = session.UserName;
+            else if (!string.IsNullOrEmpty(session.UserAuthName) && !session.UserAuthName.Contains("@"))
+                jwtPayload["preferred_username"] = session.UserAuthName;
+
+            var profileUrl = session.GetProfileUrl();
+            if (profileUrl != null && profileUrl != AuthMetadataProvider.DefaultNoProfileImgUrl)
+                jwtPayload["picture"] = profileUrl;
+
+            var authRepo = HostContext.TryResolve<IAuthRepository>().AsUserAuthRepository();
+            var manageRoles = authRepo as IManageRoles;
+
+            if (manageRoles != null)
+            {
+                var roles = manageRoles.GetRoles(session.UserAuthId);
+                if (!roles.IsEmpty())
+                    jwtPayload["role"] = string.Join(",", roles);
+
+                var perms = manageRoles.GetPermissions(session.UserAuthId);
+                if (!perms.IsEmpty())
+                    jwtPayload["perm"] = string.Join(",", perms);
+            }
+            else
+            {
+                if (!session.Roles.IsEmpty())
+                    jwtPayload["role"] = string.Join(",", session.Roles);
+
+                if (!session.Permissions.IsEmpty())
+                    jwtPayload["perm"] = string.Join(",", session.Permissions);
+            }
+
+            return jwtPayload;
         }
 
         // from JWT spec
@@ -288,8 +331,8 @@ namespace ServiceStack.Auth
         }
     }
 
-    public class SignatureVerificationException : Exception
+    public class TokenException : Exception
     {
-        public SignatureVerificationException(string message) : base(message) { }
+        public TokenException(string message) : base(message) { }
     }
 }

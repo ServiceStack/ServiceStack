@@ -16,6 +16,9 @@ namespace ServiceStack.Auth
     /// <summary>
     /// Thank you Martijn
     /// http://www.dijksterhuis.org/creating-salted-hash-values-in-c/
+    /// 
+    /// Stronger/Slower Alternative: 
+    /// https://github.com/defuse/password-hashing/blob/master/PasswordStorage.cs
     /// </summary>
     public class SaltedHash : IHashProvider
     {
