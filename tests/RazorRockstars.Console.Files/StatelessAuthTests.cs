@@ -842,16 +842,59 @@ namespace RazorRockstars.Console.Files
 
             var authClient = GetClientWithUserPassword(alwaysSend:true);
 
-            var client = new JsonServiceClient(ListeningOn)
+            var called = 0;
+            var client = new JsonServiceClient(ListeningOn);
+            client.OnAuthenticationRequired = () =>
             {
-                BearerToken = token,
-                OnAuthenticationRequired = webReq => 
-                    webReq.AddBearerToken(authClient.Send(new Authenticate()).BearerToken)
+                called++;
+                client.BearerToken = authClient.Send(new Authenticate()).BearerToken;
             };
 
             var request = new Secured { Name = "test" };
             var response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            Assert.That(called, Is.EqualTo(1));
+        }
+
+
+        [Test]
+        public async Task Can_Auto_reconnect_after_expired_token_Async()
+        {
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+            jwtProvider.JwtPayloadFilter = jwtPayload =>
+                jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
+
+            var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com"
+            });
+
+            jwtProvider.JwtPayloadFilter = null;
+
+            var authClient = GetClientWithUserPassword(alwaysSend: true);
+
+            var called = 0;
+            var client = new JsonServiceClient(ListeningOn);
+            client.OnAuthenticationRequired = () =>
+            {
+                called++;
+                client.BearerToken = authClient.Send(new Authenticate()).BearerToken;
+            };
+
+            var request = new Secured { Name = "test" };
+            var response = await client.SendAsync(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            response = await client.SendAsync(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            Assert.That(called, Is.EqualTo(1));
         }
 
         [Test]

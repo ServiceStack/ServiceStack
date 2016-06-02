@@ -45,7 +45,7 @@ namespace ServiceStack
         /// <summary>
         /// Called before request resend, when the initial request required authentication
         /// </summary>
-        public Action<WebRequest> OnAuthenticationRequired { get; set; }
+        public Action OnAuthenticationRequired { get; set; }
 
         public static int BufferSize = 8192;
 
@@ -239,7 +239,7 @@ namespace ServiceStack
             //EmulateHttpViaPost is also forced for SL5 clients sending non GET/POST requests
             PclExport.Instance.Config(client, userAgent: UserAgent);
 
-            if (this.authInfo != null)
+            if (this.authInfo != null && !string.IsNullOrEmpty(this.UserName))
                 client.AddAuthInfo(this.UserName, this.Password, authInfo);
             else if (this.BearerToken != null)
                 client.Headers[HttpHeaders.Authorization] = "Bearer " + this.BearerToken;
@@ -335,19 +335,23 @@ namespace ServiceStack
             {
                 var webEx = ex as WebException;
                 var firstCall = Interlocked.Increment(ref requestState.RequestCount) == 1;
-                if (firstCall && WebRequestUtils.ShouldAuthenticate(webEx, this.UserName, this.Password, this.Credentials, this.BearerToken))
+                if (firstCall && WebRequestUtils.ShouldAuthenticate(webEx,
+                    (!string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password))
+                        || Credentials != null
+                        || BearerToken != null
+                        || OnAuthenticationRequired != null))
                 {
                     try
                     {
+                        if (OnAuthenticationRequired != null)
+                            OnAuthenticationRequired();
+
                         requestState.WebRequest = (HttpWebRequest)WebRequest.Create(requestState.Url);
 
                         if (StoreCookies)
                             requestState.WebRequest.CookieContainer = CookieContainer;
 
                         HandleAuthException(ex, requestState.WebRequest);
-
-                        if (OnAuthenticationRequired != null)
-                            OnAuthenticationRequired(requestState.WebRequest);
 
                         SendWebRequestAsync(
                             requestState.HttpMethod, requestState.Request,

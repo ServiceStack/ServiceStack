@@ -369,8 +369,8 @@ namespace ServiceStack
         /// <summary>
         /// Called before request resend, when the initial request required authentication
         /// </summary>
-        private Action<WebRequest> onAuthenticationRequired { get; set; }
-        public Action<WebRequest> OnAuthenticationRequired
+        private Action onAuthenticationRequired { get; set; }
+        public Action OnAuthenticationRequired
         {
             get
             {
@@ -645,14 +645,18 @@ namespace ServiceStack
             var webEx = ex as WebException;
             try
             {
-                if (WebRequestUtils.ShouldAuthenticate(webEx, this.UserName, this.Password, credentials, bearerToken))
+                if (WebRequestUtils.ShouldAuthenticate(webEx,
+                    (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+                        || credentials != null
+                        || bearerToken != null
+                        || OnAuthenticationRequired != null))
                 {
+                    if (OnAuthenticationRequired != null)
+                        OnAuthenticationRequired();
+
                     var client = createWebRequest();
 
                     HandleAuthException(ex, client);
-
-                    if (OnAuthenticationRequired != null)
-                        OnAuthenticationRequired(client);
 
                     var webResponse = getResponse(client);
                     response = HandleResponse<TResponse>(webResponse);
@@ -858,7 +862,7 @@ namespace ServiceStack
                     readWriteTimeout: ReadWriteTimeout,
                     userAgent: UserAgent);
 
-                if (this.authInfo != null)
+                if (this.authInfo != null && !string.IsNullOrEmpty(this.UserName))
                     client.AddAuthInfo(this.UserName, this.Password, authInfo);
                 else if (this.BearerToken != null)
                     client.Headers[HttpHeaders.Authorization] = "Bearer " + this.BearerToken;
