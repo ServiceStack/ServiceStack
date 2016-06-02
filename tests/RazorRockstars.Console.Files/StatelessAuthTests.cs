@@ -377,14 +377,14 @@ namespace RazorRockstars.Console.Files
             var client = GetClientWithUserPassword(alwaysSend: true);
 
             var request = new Secured { Name = "test" };
-            var response = client.Send<SecuredResponse>(request);
+            var response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             var newClient = GetClient();
             newClient.SetSessionId(client.GetSessionId());
             try
             {
-                response = newClient.Send<SecuredResponse>(request);
+                response = newClient.Send(request);
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException webEx)
@@ -403,7 +403,7 @@ namespace RazorRockstars.Console.Files
 
             var jwtClient = GetClientWithBearerToken(authResponse.BearerToken);
             var request = new Secured { Name = "test" };
-            var response = jwtClient.Send<SecuredResponse>(request);
+            var response = jwtClient.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             var newClient = GetClient();
@@ -411,13 +411,35 @@ namespace RazorRockstars.Console.Files
 
             try
             {
-                response = newClient.Send<SecuredResponse>(request);
+                response = newClient.Send(request);
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
             }
+        }
+
+        [Test]
+        public void Authenticating_with_JWT_cookie_does_allow_multiple_authenticated_requests()
+        {
+            var client = GetClientWithUserPassword(alwaysSend: true);
+
+            var authResponse = client.Send(new Authenticate());
+            Assert.That(authResponse.BearerToken, Is.Not.Null);
+
+            var jwtClient = GetClient();
+            jwtClient.SetCookie("ss-jwt", authResponse.BearerToken);
+
+            var request = new Secured { Name = "test" };
+            var response = jwtClient.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var newClient = GetClient();
+            var cookieValue = jwtClient.GetCookieValues()["ss-jwt"];
+            newClient.SetCookie("ss-jwt", cookieValue);
+            response = newClient.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
         }
 
         [Test]
@@ -433,7 +455,7 @@ namespace RazorRockstars.Console.Files
             newClient.SetSessionId(client.GetSessionId());
             try
             {
-                response = newClient.Send<SecuredResponse>(request);
+                response = newClient.Send(request);
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException webEx)
@@ -470,14 +492,14 @@ namespace RazorRockstars.Console.Files
             var client = GetClientWithBearerToken(ApiKey.Id);
 
             var request = new Secured { Name = "test" };
-            var response = client.Send<SecuredResponse>(request);
+            var response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             var newClient = GetClient();
             newClient.SetSessionId(client.GetSessionId());
             try
             {
-                response = newClient.Send<SecuredResponse>(request);
+                response = newClient.Send(request);
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException webEx)
@@ -533,12 +555,12 @@ namespace RazorRockstars.Console.Files
             client.Send(new Authenticate());
 
             var request = new Secured { Name = "test" };
-            var response = client.Send<SecuredResponse>(request);
+            var response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             var newClient = GetClient();
             newClient.SetSessionId(client.GetSessionId());
-            response = newClient.Send<SecuredResponse>(request);
+            response = newClient.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
         }
 
@@ -743,8 +765,6 @@ namespace RazorRockstars.Console.Files
                 jwtProvider.RequireSecureConnection = false;
             }
         }
-
-
     }
 
 }
