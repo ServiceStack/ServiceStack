@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Runtime.Serialization;
+using System.Security.Cryptography;
 using Funq;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
@@ -22,7 +23,8 @@ namespace RazorRockstars.Console.Files
 
         public bool EnableRazor = true;
         public bool EnableAuth = false;
-        public bool UseApiKeyProvider = false;
+        public bool JwtUseRsa = false;
+        public bool JwtEncryptPayload = false;
 
         public Action<Container> Use;
 
@@ -72,7 +74,13 @@ namespace RazorRockstars.Console.Files
                         new BasicAuthProvider(AppSettings),
                         new CredentialsAuthProvider(AppSettings),
                         new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
-                        new JwtAuthProvider(AppSettings) { RequireSecureConnection = false },
+                        new JwtAuthProvider(AppSettings)
+                        {
+                            RequireSecureConnection = false,
+                            HashAlgorithm = JwtUseRsa ? "RS256" : "HS256",
+                            EncryptPayload = JwtEncryptPayload,
+                            PrivateKey = JwtUseRsa ? RsaUtils.CreatePrivateKeyParams() : (RSAParameters?) null,
+                        },
                     })
                 {
                     IncludeRegistrationService = true,

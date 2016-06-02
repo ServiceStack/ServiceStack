@@ -161,6 +161,35 @@ namespace RazorRockstars.Console.Files
         }
     }
 
+    public class RsaJwtStatelessAuthTests : StatelessAuthTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new AppHost
+            {
+                EnableAuth = true,
+                JwtUseRsa = true,
+                Use = container => container.Register<IAuthRepository>(c =>
+                    new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()))
+            };
+        }
+    }
+
+    public class RsaJwtWithEncryptedPayloadsStatelessAuthTests : StatelessAuthTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new AppHost
+            {
+                EnableAuth = true,
+                JwtUseRsa = true,
+                JwtEncryptPayload = true,
+                Use = container => container.Register<IAuthRepository>(c =>
+                    new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()))
+            };
+        }
+    }
+
     public abstract class StatelessAuthTests
     {
         public const string ListeningOn = "http://localhost:2337/";

@@ -11,14 +11,28 @@ namespace ServiceStack.Auth
 {
     public class JwtAuthProvider : AuthProvider, IAuthWithRequest, IAuthResponseFilter
     {
+        public static RsaKeyLengths UseRsaKeyLength = RsaKeyLengths.Bit2048;
+
         public const string Name = AuthenticateService.JwtProvider;
         public const string Realm = "/auth/" + AuthenticateService.JwtProvider;
 
-        public static readonly Dictionary<string, Func<byte[], byte[], byte[]>> HashAlgorithms = new Dictionary<string, Func<byte[], byte[], byte[]>>
+        public static readonly Dictionary<string, Func<byte[], byte[], byte[]>> HmacAlgorithms = new Dictionary<string, Func<byte[], byte[], byte[]>>
         {
             { "HS256", (key, value) => { using (var sha = new HMACSHA256(key)) { return sha.ComputeHash(value); } } },
             { "HS384", (key, value) => { using (var sha = new HMACSHA384(key)) { return sha.ComputeHash(value); } } },
             { "HS512", (key, value) => { using (var sha = new HMACSHA512(key)) { return sha.ComputeHash(value); } } }
+        };
+
+        public static readonly Dictionary<string, Func<RSAParameters, byte[], byte[]>> RsaSignAlgorithms = new Dictionary<string, Func<RSAParameters, byte[], byte[]>>
+        {
+            { "RS256", (key, value) => RsaUtils.Authenticate(value, key, "SHA256", UseRsaKeyLength) },
+            { "RS512", (key, value) => RsaUtils.Authenticate(value, key, "SHA512", UseRsaKeyLength) },
+        };
+
+        public static readonly Dictionary<string, Func<RSAParameters, byte[], byte[], bool>> RsaVerifyAlgorithms = new Dictionary<string, Func<RSAParameters, byte[], byte[], bool>>
+        {
+            { "RS256", (key, value, sig) => RsaUtils.Verify(value, sig, key, "SHA256", UseRsaKeyLength) },
+            { "RS512", (key, value, sig) => RsaUtils.Verify(value, sig, key, "SHA512", UseRsaKeyLength) },
         };
 
         public bool RequireSecureConnection { get; set; }
@@ -28,25 +42,34 @@ namespace ServiceStack.Auth
 
         public bool EncryptPayload { get; set; }
         public string HashAlgorithm { get; set; }
+        public bool OnlyUseDefaultHashAlgorithm { get; set; }
         public string Issuer { get; set; }
 
-        public byte[] AuthKey { get; set; }
-        public string AuthKeyBase64
+        public byte[] HmacAuthKey { get; set; }
+        public string HmacAuthKeyBase64
         {
-            set { AuthKey = Convert.FromBase64String(value); }
+            set { HmacAuthKey = Convert.FromBase64String(value); }
         }
 
-        public byte[] CryptKey { get; set; }
-        public string CryptKeyBase64
+        public RSAParameters? privateKey;
+        public RSAParameters? PrivateKey
         {
-            set { CryptKey = Convert.FromBase64String(value); }
+            get { return privateKey; }
+            set
+            {
+                privateKey = value;
+                if (privateKey != null)
+                    PublicKey = privateKey.Value.ToPublicRsaParameters();
+            }
         }
 
-        public byte[] Iv { get; set; }
-        public string IvBase64
+        public string PrivateKeyXml
         {
-            set { Iv = Convert.FromBase64String(value); }
+            get { return PrivateKey.Value.FromPrivateRSAParameters(); }
+            set { PrivateKey = value.ToPrivateRSAParameters(); }
         }
+
+        public RSAParameters? PublicKey { get; set; }
 
         public TimeSpan ExpireTokensIn { get; set; }
         public DateTime? InvalidateTokensIssuedBefore { get; set; }
@@ -65,7 +88,7 @@ namespace ServiceStack.Auth
         public void Init(IAppSettings appSettings = null)
         {
             RequireSecureConnection = true;
-            AuthKey = AesUtils.CreateKey();
+            HmacAuthKey = AesUtils.CreateKey();
             HashAlgorithm = "HS256";
             Issuer = "ssjwt";
             ExpireTokensIn = TimeSpan.FromDays(14);
@@ -74,17 +97,9 @@ namespace ServiceStack.Auth
             {
                 RequireSecureConnection = appSettings.Get("jwt.RequireSecureConnection", RequireSecureConnection);
 
-                var base64 = appSettings.GetString("jwt.AuthKeyBase64");
+                var base64 = appSettings.GetString("jwt.HmacAuthKeyBase64");
                 if (base64 != null)
-                    AuthKeyBase64 = base64;
-
-                base64 = appSettings.GetString("jwt.CryptKeyBase64");
-                if (!string.IsNullOrEmpty(base64))
-                    CryptKeyBase64 = base64;
-
-                base64 = appSettings.GetString("jwt.IvBase64");
-                if (!string.IsNullOrEmpty(base64))
-                    IvBase64 = base64;
+                    HmacAuthKeyBase64 = base64;
 
                 var hashAlg = appSettings.GetString("jwt.HashAlgorithm");
                 if (!string.IsNullOrEmpty(hashAlg))
@@ -114,7 +129,9 @@ namespace ServiceStack.Auth
 
         public void PreAuthenticate(IRequest req, IResponse res)
         {
-            var bearerToken = req.GetBearerToken();
+            var bearerToken = req.GetBearerToken()
+                ?? req.GetCookieValue(Keywords.JwtSessionToken);
+
             if (bearerToken != null)
             {
                 var parts = bearerToken.Split('.');
@@ -125,7 +142,7 @@ namespace ServiceStack.Auth
 
                     var header = parts[0];
                     var payload = parts[1];
-                    var sentSignatureBytes = Base64UrlDecode(parts[2]);
+                    var signatureBytes = Base64UrlDecode(parts[2]);
 
                     var headerJson = Base64UrlDecode(header).FromUtf8Bytes();
                     var payloadBytes = Base64UrlDecode(payload);
@@ -133,16 +150,19 @@ namespace ServiceStack.Auth
                     var headerData = headerJson.FromJson<Dictionary<string, string>>();
 
                     var bytesToSign = string.Concat(header, ".", payload).ToUtf8Bytes();
-                    var algorithm = headerData["alg"];
 
-                    var calcSignatureBytes = HashAlgorithms[algorithm](AuthKey, bytesToSign);
+                    var algorithm = OnlyUseDefaultHashAlgorithm
+                        ? HashAlgorithm
+                        : headerData["alg"];
 
-                    if (!calcSignatureBytes.EquivalentTo(sentSignatureBytes))
-                        throw new TokenException(ErrorMessages.InvalidSignature);
+                    VerifyPayload(algorithm, bytesToSign, signatureBytes);
 
-                    if (CryptKey != null && Iv != null)
+                    if (EncryptPayload)
                     {
-                        payloadBytes = AesUtils.Decrypt(payloadBytes, CryptKey, Iv);
+                        if (PrivateKey == null)
+                            throw new NotSupportedException("PrivateKey required to Decrypt Payload");
+
+                        payloadBytes = RsaUtils.Decrypt(payloadBytes, PrivateKey.Value, UseRsaKeyLength);
                     }
 
                     var payloadJson = payloadBytes.FromUtf8Bytes();
@@ -185,6 +205,31 @@ namespace ServiceStack.Auth
             }
         }
 
+        public void VerifyPayload(string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
+        {
+            var isHmac = HmacAlgorithms.ContainsKey(algorithm);
+            var isRsa = RsaSignAlgorithms.ContainsKey(algorithm);
+            if (!isHmac && !isRsa)
+                throw new NotSupportedException("Invalid algoritm: " + algorithm);
+
+            if (isHmac)
+            {
+                var calcSignatureBytes = HmacAlgorithms[algorithm](HmacAuthKey, bytesToSign);
+
+                if (!calcSignatureBytes.EquivalentTo(sentSignatureBytes))
+                    throw new TokenException(ErrorMessages.InvalidSignature);
+            }
+            else
+            {
+                if (PrivateKey == null)
+                    throw new NotSupportedException("Invalid algoritm: " + algorithm);
+
+                var verified = RsaVerifyAlgorithms[algorithm](PrivateKey.Value, bytesToSign, sentSignatureBytes);
+                if (!verified)
+                    throw new TokenException(ErrorMessages.InvalidSignature);
+            }
+        }
+
         public AuthenticateResponse Execute(IServiceBase authService, IAuthProvider authProvider, IAuthSession session, AuthenticateResponse response)
         {
             if (response.BearerToken == null && session.IsAuthenticated)
@@ -203,7 +248,7 @@ namespace ServiceStack.Auth
             {
                 try
                 {
-                    return Convert.ToInt32(value);
+                    return int.Parse(value);
                 }
                 catch (Exception)
                 {
@@ -215,7 +260,7 @@ namespace ServiceStack.Auth
 
         public string CreateJwtBearerToken(IAuthSession session)
         {
-            var jwtHeader = CreateJwtHeader();
+            var jwtHeader = CreateJwtHeader(HashAlgorithm);
             if (JwtHeaderFilter != null)
                 JwtHeaderFilter(jwtHeader);
 
@@ -223,41 +268,63 @@ namespace ServiceStack.Auth
             if (JwtPayloadFilter != null)
                 JwtPayloadFilter(jwtPayload);
 
-            var bearerToken = CreateJwtBearerToken(jwtHeader, jwtPayload, HashAlgorithms[HashAlgorithm], AuthKey, CryptKey, Iv);
+            Func<byte[], byte[]> hashAlgoritm = null;
+
+            Func<byte[], byte[], byte[]> hmac;
+            if (HmacAlgorithms.TryGetValue(HashAlgorithm, out hmac))
+                hashAlgoritm = data => hmac(HmacAuthKey, data);
+
+            Func<RSAParameters, byte[], byte[]> rsa;
+            if (RsaSignAlgorithms.TryGetValue(HashAlgorithm, out rsa))
+            {
+                if (PrivateKey == null)
+                    throw new NotSupportedException("PrivateKey required to use: " + HashAlgorithm);
+
+                hashAlgoritm = data => rsa(PrivateKey.Value, data);
+            }
+
+            if (hashAlgoritm == null)
+                throw new NotSupportedException("Invalid algoritm: " + HashAlgorithm);
+
+            if (EncryptPayload && PublicKey == null)
+                throw new NotSupportedException("PublicKey required to EncryptPayload");
+
+            var encryptWithKey = EncryptPayload ? PublicKey : null;
+
+            var bearerToken = CreateJwtBearerToken(jwtHeader, jwtPayload, hashAlgoritm, encryptWithKey);
             return bearerToken;
         }
 
         public static string CreateJwtBearerToken(
             Dictionary<string, string> jwtHeader,
             Dictionary<string, string> jwtPayload,
-            Func<byte[], byte[], byte[]> hashAlgorithm,
-            byte[] authKey,
-            byte[] cryptKey = null, byte[] iv = null)
+            Func<byte[], byte[]> signData,
+            RSAParameters? encryptWithPublicKey = null)
         {
             var headerBytes = jwtHeader.ToJson().ToUtf8Bytes();
             var payloadBytes = jwtPayload.ToJson().ToUtf8Bytes();
 
-            if (cryptKey != null && iv != null)
+            if (encryptWithPublicKey != null)
             {
-                payloadBytes = AesUtils.Encrypt(payloadBytes, cryptKey, iv);
+                payloadBytes = RsaUtils.Encrypt(payloadBytes, encryptWithPublicKey.Value, UseRsaKeyLength);
             }
 
             var base64Header = Base64UrlEncode(headerBytes);
             var base64Payload = Base64UrlEncode(payloadBytes);
 
             var stringToSign = base64Header + "." + base64Payload;
-            var signature = hashAlgorithm(authKey, stringToSign.ToUtf8Bytes());
+            var signature = signData(stringToSign.ToUtf8Bytes());
 
             var bearerToken = base64Header + "." + base64Payload + "." + Base64UrlEncode(signature);
             return bearerToken;
         }
 
-        public static Dictionary<string, string> CreateJwtHeader()
+        public static Dictionary<string, string> CreateJwtHeader(string algorithm)
         {
             var header = new Dictionary<string, string>
             {
-                {"typ", "JWT"},
-                {"alg", "HS256"}
+                { "typ", "JWT" },
+                { "alg", algorithm }
             };
             return header;
         }
@@ -271,7 +338,6 @@ namespace ServiceStack.Auth
                 {"sub", session.UserAuthId},
                 {"iat", now.ToUnixTime().ToString()},
                 {"exp", now.Add(expireIn).ToUnixTime().ToString()},
-                //{ "jti", SessionExtensions.CreateRandomSessionId() },
             };
 
             if (!string.IsNullOrEmpty(session.Email))
