@@ -34,6 +34,26 @@ namespace ServiceStack
         public static RsaKeyPair DefaultKeyPair;
         public static bool DoOAEPPadding = true;
 
+        public static RsaKeyPair CreatePublicAndPrivateKeyPair(RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
+        {
+            using (var rsa = new RSACryptoServiceProvider((int)rsaKeyLength))
+            {
+                return new RsaKeyPair
+                {
+                    PrivateKey = rsa.ToXmlString(true),
+                    PublicKey = rsa.ToXmlString(false),
+                };
+            }
+        }
+
+        public static RSAParameters CreatePrivateKeyParams(RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
+        {
+            using (var rsa = new RSACryptoServiceProvider((int)rsaKeyLength))
+            {
+                return rsa.ExportParameters(includePrivateParameters: true);
+            }
+        }
+
         public static string FromPrivateRSAParameters(this RSAParameters privateKey)
         {
             using (var rsa = new RSACryptoServiceProvider())
@@ -76,6 +96,15 @@ namespace ServiceStack
             {
                 rsa.ImportParameters(publicKey);
                 return rsa.ToXmlString(includePrivateParameters: false);
+            }
+        }
+
+        public static RSAParameters ToPublicRsaParameters(this RSAParameters privateKey)
+        {
+            using (var rsa = new RSACryptoServiceProvider())
+            {
+                rsa.ImportParameters(privateKey);
+                return rsa.ExportParameters(includePrivateParameters: false);
             }
         }
 
@@ -174,23 +203,43 @@ namespace ServiceStack
             }
         }
 
-        public static RsaKeyPair CreatePublicAndPrivateKeyPair(RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
+        public static byte[] Authenticate(byte[] dataToSign, RSAParameters privateKey, string hashAlgorithm = "SHA512", RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
             using (var rsa = new RSACryptoServiceProvider((int)rsaKeyLength))
             {
-                return new RsaKeyPair
-                {
-                    PrivateKey = rsa.ToXmlString(true),
-                    PublicKey = rsa.ToXmlString(false),
-                };
+                rsa.ImportParameters(privateKey);
+
+                //.NET 4.5 doesn't let you specify padding, defaults to PKCS#1 v1.5 padding
+                var signature = rsa.SignData(dataToSign, hashAlgorithm);
+                return signature;
             }
         }
 
-        public static RSAParameters CreatePrivateKeyParams(RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
+        public static bool Verify(byte[] dataToVerify, byte[] signature, RSAParameters publicKey, string hashAlgorithm = "SHA512", RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
             using (var rsa = new RSACryptoServiceProvider((int)rsaKeyLength))
             {
-                return rsa.ExportParameters(includePrivateParameters: true);
+                rsa.ImportParameters(publicKey);
+                var verified = rsa.VerifyData(dataToVerify, hashAlgorithm, signature);
+                return verified;
+            }
+        }
+    }
+
+    public static class HashUtils
+    {
+        public static HashAlgorithm GetHashAlgorithm(string hashAlgorithm)
+        {
+            switch (hashAlgorithm)
+            {
+                case "SHA1":
+                    return new SHA1Managed();
+                case "SHA256":
+                    return new SHA256Managed();
+                case "SHA512":
+                    return new SHA512Managed();
+                default:
+                    throw new NotSupportedException(hashAlgorithm);
             }
         }
     }
