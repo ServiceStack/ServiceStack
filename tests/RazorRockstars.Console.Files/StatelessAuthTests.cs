@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
@@ -187,6 +188,66 @@ namespace RazorRockstars.Console.Files
                 Use = container => container.Register<IAuthRepository>(c =>
                     new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()))
             };
+        }
+    }
+
+    public class JwtExternalTokenSourceTests
+    {
+        public const string ListeningOn = "http://localhost:2337/";
+
+        protected readonly ServiceStackHost appHost;
+
+        private readonly RSAParameters privateKey;
+
+        public JwtExternalTokenSourceTests()
+        {
+            privateKey = RsaUtils.CreatePrivateKeyParams(RsaKeyLengths.Bit2048);
+
+            appHost = new AppHost {
+                    EnableAuth = true,
+                    JwtRsaPublicKey = privateKey.ToPublicRsaParameters(),
+                    Use = container => container.Register<IAuthRepository>(c =>
+                        new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()))
+                }
+               .Init()
+               .Start("http://*:2337/");
+
+            var client = new JsonServiceClient(ListeningOn);
+            var response = client.Post(new Register
+            {
+                UserName = "user",
+                Password = "p@55word",
+                Email = "as@if{0}.com",
+                DisplayName = "DisplayName",
+                FirstName = "FirstName",
+                LastName = "LastName",
+            });
+        }
+
+        [Test]
+        public void Can_authenticate_with_RSA_token_created_from_external_source()
+        {
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+
+            var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+            var payload = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com"
+            }, "external-jwt", TimeSpan.FromDays(14));
+
+            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload, 
+                data => RsaUtils.Authenticate(data, privateKey, "SHA256", RsaKeyLengths.Bit2048));
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = token
+            };
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
         }
     }
 

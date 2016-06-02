@@ -234,10 +234,10 @@ namespace ServiceStack.Auth
             }
             else
             {
-                if (PrivateKey == null)
+                if (PublicKey == null)
                     throw new NotSupportedException("Invalid algoritm: " + algorithm);
 
-                var verified = RsaVerifyAlgorithms[algorithm](PrivateKey.Value, bytesToSign, sentSignatureBytes);
+                var verified = RsaVerifyAlgorithms[algorithm](PublicKey.Value, bytesToSign, sentSignatureBytes);
                 if (!verified)
                     throw new TokenException(ErrorMessages.InvalidSignature);
             }
