@@ -23,7 +23,8 @@ namespace RazorRockstars.Console.Files
 
         public bool EnableRazor = true;
         public bool EnableAuth = false;
-        public bool JwtUseRsa = false;
+        public RSAParameters? JwtRsaPrivateKey;
+        public RSAParameters? JwtRsaPublicKey;
         public bool JwtEncryptPayload = false;
 
         public Action<Container> Use;
@@ -77,9 +78,10 @@ namespace RazorRockstars.Console.Files
                         new JwtAuthProvider(AppSettings)
                         {
                             RequireSecureConnection = false,
-                            HashAlgorithm = JwtUseRsa ? "RS256" : "HS256",
+                            HashAlgorithm = JwtRsaPrivateKey != null || JwtRsaPublicKey != null ? "RS256" : "HS256",
                             EncryptPayload = JwtEncryptPayload,
-                            PrivateKey = JwtUseRsa ? RsaUtils.CreatePrivateKeyParams() : (RSAParameters?) null,
+                            PublicKey = JwtRsaPublicKey,
+                            PrivateKey = JwtRsaPrivateKey,
                         },
                     })
                 {

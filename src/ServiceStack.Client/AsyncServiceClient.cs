@@ -335,7 +335,7 @@ namespace ServiceStack
             {
                 var webEx = ex as WebException;
                 var firstCall = Interlocked.Increment(ref requestState.RequestCount) == 1;
-                if (firstCall && WebRequestUtils.ShouldAuthenticate(webEx, this.UserName, this.Password, this.Credentials))
+                if (firstCall && WebRequestUtils.ShouldAuthenticate(webEx, this.UserName, this.Password, this.Credentials, this.BearerToken))
                 {
                     try
                     {

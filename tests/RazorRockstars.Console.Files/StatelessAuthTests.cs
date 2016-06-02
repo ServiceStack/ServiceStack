@@ -168,7 +168,7 @@ namespace RazorRockstars.Console.Files
             return new AppHost
             {
                 EnableAuth = true,
-                JwtUseRsa = true,
+                JwtRsaPrivateKey = RsaUtils.CreatePrivateKeyParams(),
                 Use = container => container.Register<IAuthRepository>(c =>
                     new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()))
             };
@@ -182,7 +182,7 @@ namespace RazorRockstars.Console.Files
             return new AppHost
             {
                 EnableAuth = true,
-                JwtUseRsa = true,
+                JwtRsaPrivateKey = RsaUtils.CreatePrivateKeyParams(),
                 JwtEncryptPayload = true,
                 Use = container => container.Register<IAuthRepository>(c =>
                     new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()))
@@ -761,6 +761,36 @@ namespace RazorRockstars.Console.Files
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(TokenException).Name));
             }
+        }
+
+        [Test]
+        public void Can_Auto_reconnect_after_expired_token()
+        {
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+            jwtProvider.JwtPayloadFilter = jwtPayload =>
+                jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
+
+            var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com"
+            });
+
+            jwtProvider.JwtPayloadFilter = null;
+
+            var authClient = GetClientWithUserPassword(alwaysSend:true);
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = token,
+                OnAuthenticationRequired = webReq => 
+                    webReq.AddBearerToken(authClient.Send(new Authenticate()).BearerToken)
+            };
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
         }
 
         [Test]

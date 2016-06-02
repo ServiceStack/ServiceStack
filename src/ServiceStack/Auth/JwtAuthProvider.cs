@@ -36,16 +36,23 @@ namespace ServiceStack.Auth
         };
 
         public bool RequireSecureConnection { get; set; }
+
         public Action<Dictionary<string, string>> JwtHeaderFilter { get; set; }
+
         public Action<Dictionary<string, string>> JwtPayloadFilter { get; set; }
+
         public Action<IAuthSession, Dictionary<string, string>> JwtSessionFilter { get; set; }
 
         public bool EncryptPayload { get; set; }
+
         public string HashAlgorithm { get; set; }
-        public bool OnlyUseDefaultHashAlgorithm { get; set; }
+
+        public bool RequireHashAlgorithm { get; set; }
+
         public string Issuer { get; set; }
 
         public byte[] HmacAuthKey { get; set; }
+
         public string HmacAuthKeyBase64
         {
             set { HmacAuthKey = Convert.FromBase64String(value); }
@@ -72,6 +79,7 @@ namespace ServiceStack.Auth
         public RSAParameters? PublicKey { get; set; }
 
         public TimeSpan ExpireTokensIn { get; set; }
+
         public DateTime? InvalidateTokensIssuedBefore { get; set; }
 
         public JwtAuthProvider()
@@ -90,6 +98,7 @@ namespace ServiceStack.Auth
             RequireSecureConnection = true;
             HmacAuthKey = AesUtils.CreateKey();
             HashAlgorithm = "HS256";
+            RequireHashAlgorithm = true;
             Issuer = "ssjwt";
             ExpireTokensIn = TimeSpan.FromDays(14);
 
@@ -104,6 +113,8 @@ namespace ServiceStack.Auth
                 var hashAlg = appSettings.GetString("jwt.HashAlgorithm");
                 if (!string.IsNullOrEmpty(hashAlg))
                     HashAlgorithm = hashAlg;
+
+                RequireHashAlgorithm = appSettings.Get("jwt.RequireHashAlgorithm", RequireSecureConnection);
 
                 var issuer = appSettings.GetString("jwt.Issuer");
                 if (!string.IsNullOrEmpty(issuer))
@@ -151,9 +162,11 @@ namespace ServiceStack.Auth
 
                     var bytesToSign = string.Concat(header, ".", payload).ToUtf8Bytes();
 
-                    var algorithm = OnlyUseDefaultHashAlgorithm
-                        ? HashAlgorithm
-                        : headerData["alg"];
+                    var algorithm = headerData["alg"];
+
+                    //Potential Security Risk for relying on user-specified algorithm: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
+                    if (RequireHashAlgorithm && algorithm != HashAlgorithm)
+                        throw new NotSupportedException("Invalid algoritm '{0}', expected '{1}'".Fmt(algorithm, HashAlgorithm));
 
                     VerifyPayload(algorithm, bytesToSign, signatureBytes);
 

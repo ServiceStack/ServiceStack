@@ -645,7 +645,7 @@ namespace ServiceStack
             var webEx = ex as WebException;
             try
             {
-                if (WebRequestUtils.ShouldAuthenticate(webEx, this.UserName, this.Password, credentials))
+                if (WebRequestUtils.ShouldAuthenticate(webEx, this.UserName, this.Password, credentials, bearerToken))
                 {
                     var client = createWebRequest();
 
