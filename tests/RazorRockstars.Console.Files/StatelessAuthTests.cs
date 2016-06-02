@@ -224,6 +224,12 @@ namespace RazorRockstars.Console.Files
             });
         }
 
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         [Test]
         public void Can_authenticate_with_RSA_token_created_from_external_source()
         {
