@@ -143,24 +143,33 @@ namespace ServiceStack.Auth
             manageRoles.UnAssignRoles(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions);
         }
 
+        static IUserAuthRepository AssertUserAuthRepository(this IAuthRepository repo)
+        {
+            var userRepo = repo as IUserAuthRepository;
+            if (userRepo == null)
+                throw new NotSupportedException("This opertation requires a IUserAuthRepository");
+
+            return userRepo;
+        }
+
         public static IUserAuth CreateUserAuth(this IAuthRepository authRepo, IUserAuth newUser, string password)
         {
-            return ((IUserAuthRepository)authRepo).CreateUserAuth(newUser, password);
+            return authRepo.AssertUserAuthRepository().CreateUserAuth(newUser, password);
         }
 
         public static IUserAuth UpdateUserAuth(this IAuthRepository authRepo, IUserAuth existingUser, IUserAuth newUser, string password)
         {
-            return ((IUserAuthRepository)authRepo).UpdateUserAuth(existingUser, newUser, password);
+            return authRepo.AssertUserAuthRepository().UpdateUserAuth(existingUser, newUser, password);
         }
 
         public static IUserAuth GetUserAuth(this IAuthRepository authRepo, string userAuthId)
         {
-            return ((IUserAuthRepository)authRepo).GetUserAuth(userAuthId);
+            return authRepo.AssertUserAuthRepository().GetUserAuth(userAuthId);
         }
 
         public static void DeleteUserAuth(this IAuthRepository authRepo, string userAuthId)
         {
-            ((IUserAuthRepository)authRepo).DeleteUserAuth(userAuthId);
+            authRepo.AssertUserAuthRepository().DeleteUserAuth(userAuthId);
         }
 
         public static void ValidateNewUser(this IUserAuth newUser)

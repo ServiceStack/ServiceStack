@@ -99,6 +99,7 @@
     </Compile>
     <Compile Include="Auth\ApiKeyAuthProvider.cs" />
     <Compile Include="Auth\JwtAuthProvider.cs" />
+    <Compile Include="Auth\JwtAuthProviderReader.cs" />
     <Compile Include="AutoQueryDataConditions.cs" />
     <Compile Include="AutoQueryDataFeature.cs" />
     <Compile Include="AutoQueryDataServiceSource.cs" />

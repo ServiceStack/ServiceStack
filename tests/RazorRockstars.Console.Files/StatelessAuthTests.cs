@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
+using Funq;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Auth;
@@ -191,7 +194,7 @@ namespace RazorRockstars.Console.Files
         }
     }
 
-    public class JwtExternalTokenSourceTests
+    public class JwtAuthProviderReaderTests
     {
         public const string ListeningOn = "http://localhost:2337/";
 
@@ -199,29 +202,48 @@ namespace RazorRockstars.Console.Files
 
         private readonly RSAParameters privateKey;
 
-        public JwtExternalTokenSourceTests()
+        class JwtAuthProviderReaderAppHost : AppHostHttpListenerBase
+        {
+            public JwtAuthProviderReaderAppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
+
+            public override void Configure(Container container)
+            {
+                var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
+                container.Register<IDbConnectionFactory>(dbFactory);
+                container.Register<IAuthRepository>(c => 
+                    new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
+
+                var authRepository = container.Resolve<IAuthRepository>();
+                authRepository.InitSchema();
+                authRepository.CreateUserAuth(new UserAuth
+                {
+                    UserName = "user",
+                    Email = "as@if{0}.com",
+                    DisplayName = "DisplayName",
+                    FirstName = "FirstName",
+                    LastName = "LastName",
+                }, "p@55word");
+
+                Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                    new IAuthProvider[] {
+                        new JwtAuthProviderReader(AppSettings),
+                    }));
+            }
+        }
+
+        public JwtAuthProviderReaderTests()
         {
             privateKey = RsaUtils.CreatePrivateKeyParams(RsaKeyLengths.Bit2048);
 
-            appHost = new AppHost {
-                    EnableAuth = true,
-                    JwtRsaPublicKey = privateKey.ToPublicRsaParameters(),
-                    Use = container => container.Register<IAuthRepository>(c =>
-                        new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()))
+            appHost = new JwtAuthProviderReaderAppHost {
+                    AppSettings = new DictionarySettings(new Dictionary<string, string> {
+                        { "jwt.HashAlgorithm", "RS256" },
+                        { "jwt.PublicKeyXml", privateKey.ToPublicKeyXml() },
+                        { "jwt.RequireSecureConnection", "False" },
+                    })
                 }
                .Init()
                .Start("http://*:2337/");
-
-            var client = new JsonServiceClient(ListeningOn);
-            var response = client.Post(new Register
-            {
-                UserName = "user",
-                Password = "p@55word",
-                Email = "as@if{0}.com",
-                DisplayName = "DisplayName",
-                FirstName = "FirstName",
-                LastName = "LastName",
-            });
         }
 
         [TestFixtureTearDown]
@@ -233,7 +255,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Can_authenticate_with_RSA_token_created_from_external_source()
         {
-            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+            var jwtProvider = (JwtAuthProviderReader)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
 
             var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
             var payload = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
@@ -246,13 +268,15 @@ namespace RazorRockstars.Console.Files
             var token = JwtAuthProvider.CreateJwtBearerToken(header, payload, 
                 data => RsaUtils.Authenticate(data, privateKey, "SHA256", RsaKeyLengths.Bit2048));
 
-            var client = new JsonServiceClient(ListeningOn)
-            {
+            var client = new JsonServiceClient(ListeningOn) {
                 BearerToken = token
             };
 
             var request = new Secured { Name = "test" };
             var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
         }
     }

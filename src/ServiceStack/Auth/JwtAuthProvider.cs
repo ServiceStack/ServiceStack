@@ -1,247 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
-using ServiceStack.Host;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class JwtAuthProvider : AuthProvider, IAuthWithRequest, IAuthResponseFilter
+    public class JwtAuthProvider : JwtAuthProviderReader, IAuthResponseFilter
     {
-        public static RsaKeyLengths UseRsaKeyLength = RsaKeyLengths.Bit2048;
+        public JwtAuthProvider() {}
 
-        public const string Name = AuthenticateService.JwtProvider;
-        public const string Realm = "/auth/" + AuthenticateService.JwtProvider;
-
-        public static readonly Dictionary<string, Func<byte[], byte[], byte[]>> HmacAlgorithms = new Dictionary<string, Func<byte[], byte[], byte[]>>
-        {
-            { "HS256", (key, value) => { using (var sha = new HMACSHA256(key)) { return sha.ComputeHash(value); } } },
-            { "HS384", (key, value) => { using (var sha = new HMACSHA384(key)) { return sha.ComputeHash(value); } } },
-            { "HS512", (key, value) => { using (var sha = new HMACSHA512(key)) { return sha.ComputeHash(value); } } }
-        };
-
-        public static readonly Dictionary<string, Func<RSAParameters, byte[], byte[]>> RsaSignAlgorithms = new Dictionary<string, Func<RSAParameters, byte[], byte[]>>
-        {
-            { "RS256", (key, value) => RsaUtils.Authenticate(value, key, "SHA256", UseRsaKeyLength) },
-            { "RS512", (key, value) => RsaUtils.Authenticate(value, key, "SHA512", UseRsaKeyLength) },
-        };
-
-        public static readonly Dictionary<string, Func<RSAParameters, byte[], byte[], bool>> RsaVerifyAlgorithms = new Dictionary<string, Func<RSAParameters, byte[], byte[], bool>>
-        {
-            { "RS256", (key, value, sig) => RsaUtils.Verify(value, sig, key, "SHA256", UseRsaKeyLength) },
-            { "RS512", (key, value, sig) => RsaUtils.Verify(value, sig, key, "SHA512", UseRsaKeyLength) },
-        };
-
-        public bool RequireSecureConnection { get; set; }
-
-        public Action<Dictionary<string, string>> JwtHeaderFilter { get; set; }
-
-        public Action<Dictionary<string, string>> JwtPayloadFilter { get; set; }
-
-        public Action<IAuthSession, Dictionary<string, string>> JwtSessionFilter { get; set; }
-
-        public bool EncryptPayload { get; set; }
-
-        public string HashAlgorithm { get; set; }
-
-        public bool RequireHashAlgorithm { get; set; }
-
-        public string Issuer { get; set; }
-
-        public byte[] HmacAuthKey { get; set; }
-
-        public string HmacAuthKeyBase64
-        {
-            set { HmacAuthKey = Convert.FromBase64String(value); }
-        }
-
-        public RSAParameters? privateKey;
-        public RSAParameters? PrivateKey
-        {
-            get { return privateKey; }
-            set
-            {
-                privateKey = value;
-                if (privateKey != null)
-                    PublicKey = privateKey.Value.ToPublicRsaParameters();
-            }
-        }
-
-        public string PrivateKeyXml
-        {
-            get { return PrivateKey.Value.FromPrivateRSAParameters(); }
-            set { PrivateKey = value.ToPrivateRSAParameters(); }
-        }
-
-        public RSAParameters? PublicKey { get; set; }
-
-        public TimeSpan ExpireTokensIn { get; set; }
-
-        public DateTime? InvalidateTokensIssuedBefore { get; set; }
-
-        public JwtAuthProvider()
-        {
-            Init();
-        }
-
-        public JwtAuthProvider(IAppSettings appSettings)
-            : base(appSettings, Realm, Name)
-        {
-            Init(appSettings);
-        }
-
-        public void Init(IAppSettings appSettings = null)
-        {
-            RequireSecureConnection = true;
-            HmacAuthKey = AesUtils.CreateKey();
-            HashAlgorithm = "HS256";
-            RequireHashAlgorithm = true;
-            Issuer = "ssjwt";
-            ExpireTokensIn = TimeSpan.FromDays(14);
-
-            if (appSettings != null)
-            {
-                RequireSecureConnection = appSettings.Get("jwt.RequireSecureConnection", RequireSecureConnection);
-
-                var base64 = appSettings.GetString("jwt.HmacAuthKeyBase64");
-                if (base64 != null)
-                    HmacAuthKeyBase64 = base64;
-
-                var hashAlg = appSettings.GetString("jwt.HashAlgorithm");
-                if (!string.IsNullOrEmpty(hashAlg))
-                    HashAlgorithm = hashAlg;
-
-                RequireHashAlgorithm = appSettings.Get("jwt.RequireHashAlgorithm", RequireSecureConnection);
-
-                var issuer = appSettings.GetString("jwt.Issuer");
-                if (!string.IsNullOrEmpty(issuer))
-                    Issuer = issuer;
-
-                ExpireTokensIn = appSettings.Get("jwt.ExpireTokensIn", ExpireTokensIn);
-
-                var dateStr = appSettings.GetString("jwt.InvalidateTokensIssuedBefore");
-                if (!string.IsNullOrEmpty(dateStr))
-                    InvalidateTokensIssuedBefore = dateStr.FromJsv<DateTime>();
-            }
-        }
-
-        public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
-        {
-            return session.FromToken && session.IsAuthenticated;
-        }
-
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
-        {
-            throw new NotImplementedException("JWT Authenticate() should not be called directly");
-        }
-
-        public void PreAuthenticate(IRequest req, IResponse res)
-        {
-            var bearerToken = req.GetBearerToken()
-                ?? req.GetCookieValue(Keywords.JwtSessionToken);
-
-            if (bearerToken != null)
-            {
-                var parts = bearerToken.Split('.');
-                if (parts.Length == 3)
-                {
-                    if (RequireSecureConnection && !req.IsSecureConnection)
-                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
-
-                    var header = parts[0];
-                    var payload = parts[1];
-                    var signatureBytes = Base64UrlDecode(parts[2]);
-
-                    var headerJson = Base64UrlDecode(header).FromUtf8Bytes();
-                    var payloadBytes = Base64UrlDecode(payload);
-
-                    var headerData = headerJson.FromJson<Dictionary<string, string>>();
-
-                    var bytesToSign = string.Concat(header, ".", payload).ToUtf8Bytes();
-
-                    var algorithm = headerData["alg"];
-
-                    //Potential Security Risk for relying on user-specified algorithm: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
-                    if (RequireHashAlgorithm && algorithm != HashAlgorithm)
-                        throw new NotSupportedException("Invalid algoritm '{0}', expected '{1}'".Fmt(algorithm, HashAlgorithm));
-
-                    VerifyPayload(algorithm, bytesToSign, signatureBytes);
-
-                    if (EncryptPayload)
-                    {
-                        if (PrivateKey == null)
-                            throw new NotSupportedException("PrivateKey required to Decrypt Payload");
-
-                        payloadBytes = RsaUtils.Decrypt(payloadBytes, PrivateKey.Value, UseRsaKeyLength);
-                    }
-
-                    var payloadJson = payloadBytes.FromUtf8Bytes();
-                    var jwtPayload = payloadJson.FromJson<Dictionary<string, string>>();
-
-                    var expiresAt = GetUnixTime(jwtPayload, "exp");
-                    var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
-                    if (secondsSinceEpoch >= expiresAt)
-                        throw new TokenException(ErrorMessages.TokenExpired);
-
-                    if (InvalidateTokensIssuedBefore != null)
-                    {
-                        var issuedAt = GetUnixTime(jwtPayload, "iat");
-                        if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
-                            throw new TokenException(ErrorMessages.TokenInvalidated);
-                    }
-
-                    var sessionId = jwtPayload.GetValue("jid", SessionExtensions.CreateRandomSessionId);
-                    var session = SessionFeature.CreateNewSession(req, sessionId);
-                    session.IsAuthenticated = true;
-                    session.FromToken = true;
-                    session.UserAuthId = jwtPayload["sub"];
-                    session.Email = jwtPayload.GetValueOrDefault("email");
-                    session.UserName = jwtPayload.GetValueOrDefault("preferred_username");
-                    session.DisplayName = jwtPayload.GetValueOrDefault("name");
-                    session.ProfileUrl = jwtPayload.GetValueOrDefault("picture");
-
-                    var roles = jwtPayload.GetValueOrDefault("role");
-                    if (roles != null)
-                        session.Roles = roles.Split(',').ToList();
-
-                    var perms = jwtPayload.GetValueOrDefault("perm");
-                    if (perms != null)
-                        session.Permissions = perms.Split(',').ToList();
-
-                    HostContext.AppHost.OnSessionFilter(session, sessionId);
-
-                    req.Items[Keywords.Session] = session;
-                }
-            }
-        }
-
-        public void VerifyPayload(string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
-        {
-            var isHmac = HmacAlgorithms.ContainsKey(algorithm);
-            var isRsa = RsaSignAlgorithms.ContainsKey(algorithm);
-            if (!isHmac && !isRsa)
-                throw new NotSupportedException("Invalid algoritm: " + algorithm);
-
-            if (isHmac)
-            {
-                var calcSignatureBytes = HmacAlgorithms[algorithm](HmacAuthKey, bytesToSign);
-
-                if (!calcSignatureBytes.EquivalentTo(sentSignatureBytes))
-                    throw new TokenException(ErrorMessages.InvalidSignature);
-            }
-            else
-            {
-                if (PublicKey == null)
-                    throw new NotSupportedException("Invalid algoritm: " + algorithm);
-
-                var verified = RsaVerifyAlgorithms[algorithm](PublicKey.Value, bytesToSign, sentSignatureBytes);
-                if (!verified)
-                    throw new TokenException(ErrorMessages.InvalidSignature);
-            }
-        }
+        public JwtAuthProvider(IAppSettings appSettings) : base(appSettings) {}
 
         public AuthenticateResponse Execute(IServiceBase authService, IAuthProvider authProvider, IAuthSession session, AuthenticateResponse response)
         {
@@ -252,23 +21,6 @@ namespace ServiceStack.Auth
             }
 
             return response;
-        }
-
-        static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
-        {
-            string value;
-            if (jwtPayload.TryGetValue(key, out value) && !string.IsNullOrEmpty(value))
-            {
-                try
-                {
-                    return int.Parse(value);
-                }
-                catch (Exception)
-                {
-                    throw new TokenException("Claim '{0}' must be a Unix Timestamp".Fmt(key));
-                }
-            }
-            return null;
         }
 
         public string CreateJwtBearerToken(IAuthSession session)
@@ -322,13 +74,13 @@ namespace ServiceStack.Auth
                 payloadBytes = RsaUtils.Encrypt(payloadBytes, encryptWithPublicKey.Value, UseRsaKeyLength);
             }
 
-            var base64Header = Base64UrlEncode(headerBytes);
-            var base64Payload = Base64UrlEncode(payloadBytes);
+            var base64Header = headerBytes.ToBase64UrlSafe();
+            var base64Payload = payloadBytes.ToBase64UrlSafe();
 
             var stringToSign = base64Header + "." + base64Payload;
             var signature = signData(stringToSign.ToUtf8Bytes());
 
-            var bearerToken = base64Header + "." + base64Payload + "." + Base64UrlEncode(signature);
+            var bearerToken = base64Header + "." + base64Payload + "." + signature.ToBase64UrlSafe();
             return bearerToken;
         }
 
@@ -391,33 +143,5 @@ namespace ServiceStack.Auth
 
             return jwtPayload;
         }
-
-        // from JWT spec
-        public static string Base64UrlEncode(byte[] input)
-        {
-            var output = Convert.ToBase64String(input);
-            output = output.Split('=')[0]; // Remove any trailing '='s
-            output = output.Replace('+', '-'); // 62nd char of encoding
-            output = output.Replace('/', '_'); // 63rd char of encoding
-            return output;
-        }
-
-        // from JWT spec
-        public static byte[] Base64UrlDecode(string input)
-        {
-            var output = input;
-            output = output.Replace('-', '+'); // 62nd char of encoding
-            output = output.Replace('_', '/'); // 63rd char of encoding
-            switch (output.Length % 4) // Pad with trailing '='s
-            {
-                case 0: break; // No pad chars in this case
-                case 2: output += "=="; break; // Two pad chars
-                case 3: output += "="; break;  // One pad char
-                default: throw new Exception("Illegal base64url string!");
-            }
-            var converted = Convert.FromBase64String(output); // Standard base64 decoder
-            return converted;
-        }
     }
-
 }
