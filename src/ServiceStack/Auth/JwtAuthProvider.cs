@@ -122,24 +122,20 @@ namespace ServiceStack.Auth
             var authRepo = HostContext.TryResolve<IAuthRepository>().AsUserAuthRepository();
             var manageRoles = authRepo as IManageRoles;
 
+            var roles = session.Roles ?? new List<string>();
+            var perms = session.Permissions ?? new List<string>();
+
             if (manageRoles != null)
             {
-                var roles = manageRoles.GetRoles(session.UserAuthId);
-                if (!roles.IsEmpty())
-                    jwtPayload["role"] = string.Join(",", roles);
-
-                var perms = manageRoles.GetPermissions(session.UserAuthId);
-                if (!perms.IsEmpty())
-                    jwtPayload["perm"] = string.Join(",", perms);
+                roles.AddRange(manageRoles.GetRoles(session.UserAuthId) ?? TypeConstants.EmptyStringArray);
+                perms.AddRange(manageRoles.GetPermissions(session.UserAuthId) ?? TypeConstants.EmptyStringArray);
             }
-            else
-            {
-                if (!session.Roles.IsEmpty())
-                    jwtPayload["role"] = string.Join(",", session.Roles);
 
-                if (!session.Permissions.IsEmpty())
-                    jwtPayload["perm"] = string.Join(",", session.Permissions);
-            }
+            if (roles.Count > 0)
+                jwtPayload["role"] = string.Join(",", roles);
+
+            if (perms.Count > 0)
+                jwtPayload["perm"] = string.Join(",", perms);
 
             return jwtPayload;
         }

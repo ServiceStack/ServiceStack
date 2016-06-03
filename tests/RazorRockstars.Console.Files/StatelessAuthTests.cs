@@ -303,6 +303,56 @@ namespace RazorRockstars.Console.Files
             response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
         }
+
+        [Test]
+        public void Token_without_roles_or_permssions_cannot_access_SecuredBy_Role_or_Permission()
+        {
+            var jwtProvider = (JwtAuthProviderReader)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+
+            var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+            var payload = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com",
+            }, "external-jwt", TimeSpan.FromDays(14));
+
+            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
+                data => RsaUtils.Authenticate(data, privateKey, "SHA256", RsaKeyLengths.Bit2048));
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = token
+            };
+
+            StatelessAuthTests.AssertNoAccessToSecuredByRoleAndPermission(client);
+        }
+
+        [Test]
+        public void Token_with_roles_and_permssions_can_access_SecuredBy_Role_or_Permission()
+        {
+            var jwtProvider = (JwtAuthProviderReader)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+
+            var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+            var payload = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com",
+                Roles = new List<string> { "TheRole" },
+                Permissions = new List<string> { "ThePermission" },
+            }, "external-jwt", TimeSpan.FromDays(14));
+
+            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
+                data => RsaUtils.Authenticate(data, privateKey, "SHA256", RsaKeyLengths.Bit2048));
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = token
+            };
+
+            StatelessAuthTests.AssertAccessToSecuredByRoleAndPermission(client);
+        }
     }
 
     public abstract class StatelessAuthTests
@@ -831,7 +881,7 @@ namespace RazorRockstars.Console.Files
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
         }
 
-        private static void AssertNoAccessToSecuredByRoleAndPermission(IServiceClient client)
+        public static void AssertNoAccessToSecuredByRoleAndPermission(IServiceClient client)
         {
             try
             {
@@ -877,7 +927,7 @@ namespace RazorRockstars.Console.Files
             AssertNoAccessToSecuredByRoleAndPermission(client);
         }
 
-        private static void AssertAccessToSecuredByRoleAndPermission(IServiceClient client)
+        public static void AssertAccessToSecuredByRoleAndPermission(IServiceClient client)
         {
             var roleResponse = client.Send(new SecuredByRole { Name = "test" });
             Assert.That(roleResponse.Result, Is.EqualTo("test"));
