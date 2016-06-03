@@ -40,6 +40,18 @@ namespace RazorRockstars.Console.Files
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Route("/secured-by-role")]
+    public class SecuredByRole : IReturn<SecuredResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    [Route("/secured-by-permission")]
+    public class SecuredByPermission : IReturn<SecuredResponse>
+    {
+        public string Name { get; set; }
+    }
+
     [Authenticate]
     public class SecureService : IService
     {
@@ -47,25 +59,37 @@ namespace RazorRockstars.Console.Files
         {
             return new SecuredResponse { Result = request.Name };
         }
+
+        [RequiredRole("TheRole")]
+        public object Any(SecuredByRole request)
+        {
+            return new SecuredResponse { Result = request.Name };
+        }
+
+        [RequiredPermission("ThePermission")]
+        public object Any(SecuredByPermission request)
+        {
+            return new SecuredResponse { Result = request.Name };
+        }
     }
 
     public class JsonHttpClientStatelessAuthTests : StatelessAuthTests
     {
-        protected override IServiceClient GetClientWithUserPassword(bool alwaysSend = false)
+        protected override IServiceClient GetClientWithUserPassword(bool alwaysSend = false, string userName = null)
         {
             return new JsonHttpClient(ListeningOn)
             {
-                UserName = Username,
+                UserName = userName ?? Username,
                 Password = Password,
                 AlwaysSendBasicAuthHeader = alwaysSend,
             };
         }
 
-        protected override IServiceClient GetClientWithApiKey()
+        protected override IServiceClient GetClientWithApiKey(string apiKey = null)
         {
             return new JsonHttpClient(ListeningOn)
             {
-                Credentials = new NetworkCredential(ApiKey.Id, ""),
+                Credentials = new NetworkCredential(apiKey ?? ApiKey.Id, ""),
             };
         }
 
@@ -211,7 +235,7 @@ namespace RazorRockstars.Console.Files
                 var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
                 container.Register<IDbConnectionFactory>(dbFactory);
                 container.Register<IAuthRepository>(c => 
-                    new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
+                    new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()) { UseDistinctRoleTables = true });
 
                 var authRepository = container.Resolve<IAuthRepository>();
                 authRepository.InitSchema();
@@ -287,9 +311,11 @@ namespace RazorRockstars.Console.Files
 
         protected readonly ServiceStackHost appHost;
         protected ApiKey ApiKey;
+        protected ApiKey ApiKeyWithRole;
         protected IManageApiKeys apiRepo;
         protected ApiKeyAuthProvider apiProvider;
         protected string userId;
+        protected string userIdWithRoles;
 
         protected virtual ServiceStackHost CreateAppHost()
         {
@@ -324,6 +350,24 @@ namespace RazorRockstars.Console.Files
             ApiKey = apiRepo.GetUserApiKeys(userId).First(x => x.Environment == "test");
 
             apiProvider = (ApiKeyAuthProvider)AuthenticateService.GetAuthProvider(ApiKeyAuthProvider.Name);
+
+            response = client.Post(new Register
+            {
+                UserName = "user2",
+                Password = "p@55word",
+                Email = "as2@if{0}.com",
+                DisplayName = "DisplayName2",
+                FirstName = "FirstName2",
+                LastName = "LastName2",
+            });
+            userIdWithRoles = response.UserId;
+            ApiKeyWithRole = apiRepo.GetUserApiKeys(userIdWithRoles).First(x => x.Environment == "test");
+
+            var authRepo = (IUserAuthRepository)appHost.Resolve<IAuthRepository>();
+            var user2 = authRepo.GetUserAuth(userIdWithRoles);
+            user2.Roles = new List<string> { "TheRole" };
+            user2.Permissions = new List<string> { "ThePermission" };
+            authRepo.SaveUserAuth(user2);
         }
 
         [TestFixtureTearDown]
@@ -343,21 +387,21 @@ namespace RazorRockstars.Console.Files
         public const string Username = "user";
         public const string Password = "p@55word";
 
-        protected virtual IServiceClient GetClientWithUserPassword(bool alwaysSend = false)
+        protected virtual IServiceClient GetClientWithUserPassword(bool alwaysSend = false, string userName = null)
         {
             return new JsonServiceClient(ListeningOn)
             {
-                UserName = Username,
+                UserName = userName ?? Username,
                 Password = Password,
                 AlwaysSendBasicAuthHeader = alwaysSend,
             };
         }
 
-        protected virtual IServiceClient GetClientWithApiKey()
+        protected virtual IServiceClient GetClientWithApiKey(string apiKey = null)
         {
             return new JsonServiceClient(ListeningOn)
             {
-                Credentials = new NetworkCredential(ApiKey.Id, ""),
+                Credentials = new NetworkCredential(apiKey ?? ApiKey.Id, ""),
             };
         }
 
@@ -787,6 +831,84 @@ namespace RazorRockstars.Console.Files
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
         }
 
+        private static void AssertNoAccessToSecuredByRoleAndPermission(IServiceClient client)
+        {
+            try
+            {
+                client.Send(new SecuredByRole { Name = "test" });
+                Assert.Fail("Should Throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
+            }
+
+            try
+            {
+                client.Send(new SecuredByPermission { Name = "test" });
+                Assert.Fail("Should Throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Forbidden));
+            }
+        }
+
+        [Test]
+        public void Can_not_access_SecuredBy_Role_or_Permission_without_TheRole_or_ThePermission()
+        {
+            var client = GetClientWithUserPassword(alwaysSend: true);
+            AssertNoAccessToSecuredByRoleAndPermission(client);
+
+            client = GetClientWithApiKey();
+            AssertNoAccessToSecuredByRoleAndPermission(client);
+
+            var bearerToken = client.Get(new Authenticate()).BearerToken;
+            client = GetClientWithBearerToken(bearerToken);
+            AssertNoAccessToSecuredByRoleAndPermission(client);
+
+            client = GetClient();
+            client.Post(new Authenticate
+            {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password,
+            });
+            AssertNoAccessToSecuredByRoleAndPermission(client);
+        }
+
+        private static void AssertAccessToSecuredByRoleAndPermission(IServiceClient client)
+        {
+            var roleResponse = client.Send(new SecuredByRole { Name = "test" });
+            Assert.That(roleResponse.Result, Is.EqualTo("test"));
+
+            var permResponse = client.Send(new SecuredByPermission { Name = "test" });
+            Assert.That(permResponse.Result, Is.EqualTo("test"));
+        }
+
+        [Test]
+        public void Can_access_SecuredBy_Role_or_Permission_with_TheRole_and_ThePermission()
+        {
+            var client = GetClientWithUserPassword(alwaysSend: true, userName:"user2");
+            AssertAccessToSecuredByRoleAndPermission(client);
+
+            client = GetClientWithApiKey(ApiKeyWithRole.Id);
+            AssertAccessToSecuredByRoleAndPermission(client);
+
+            var bearerToken = client.Get(new Authenticate()).BearerToken;
+            client = GetClientWithBearerToken(bearerToken);
+            AssertAccessToSecuredByRoleAndPermission(client);
+
+            client = GetClient();
+            client.Post(new Authenticate
+            {
+                provider = "credentials",
+                UserName = "user2",
+                Password = Password,
+            });
+            AssertAccessToSecuredByRoleAndPermission(client);
+        }
+
         [Test]
         public void Can_not_access_Secure_service_with_invalidated_token()
         {
@@ -889,7 +1011,6 @@ namespace RazorRockstars.Console.Files
 
             Assert.That(called, Is.EqualTo(1));
         }
-
 
         [Test]
         public async Task Can_Auto_reconnect_after_expired_token_Async()
