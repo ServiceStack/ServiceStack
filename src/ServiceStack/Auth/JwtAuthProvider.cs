@@ -26,12 +26,12 @@ namespace ServiceStack.Auth
         public string CreateJwtBearerToken(IAuthSession session)
         {
             var jwtHeader = CreateJwtHeader(HashAlgorithm);
-            if (JwtHeaderFilter != null)
-                JwtHeaderFilter(jwtHeader);
+            if (CreateHeaderFilter != null)
+                CreateHeaderFilter(jwtHeader);
 
             var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn);
-            if (JwtPayloadFilter != null)
-                JwtPayloadFilter(jwtPayload);
+            if (CreatePayloadFilter != null)
+                CreatePayloadFilter(jwtPayload);
 
             Func<byte[], byte[]> hashAlgoritm = null;
 

@@ -52,12 +52,19 @@ namespace RazorRockstars.Console.Files
         public string Name { get; set; }
     }
 
+    public class GetAuthUserSession : IReturn<AuthUserSession> { }
+
     [Authenticate]
-    public class SecureService : IService
+    public class SecureService : Service
     {
         public object Any(Secured request)
         {
             return new SecuredResponse { Result = request.Name };
+        }
+
+        public object Any(GetAuthUserSession request)
+        {
+            return Request.GetSession() as AuthUserSession;
         }
 
         [RequiredRole("TheRole")]
@@ -234,7 +241,7 @@ namespace RazorRockstars.Console.Files
             {
                 var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
                 container.Register<IDbConnectionFactory>(dbFactory);
-                container.Register<IAuthRepository>(c => 
+                container.Register<IAuthRepository>(c =>
                     new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()) { UseDistinctRoleTables = true });
 
                 var authRepository = container.Resolve<IAuthRepository>();
@@ -259,13 +266,14 @@ namespace RazorRockstars.Console.Files
         {
             privateKey = RsaUtils.CreatePrivateKeyParams(RsaKeyLengths.Bit2048);
 
-            appHost = new JwtAuthProviderReaderAppHost {
-                    AppSettings = new DictionarySettings(new Dictionary<string, string> {
+            appHost = new JwtAuthProviderReaderAppHost
+            {
+                AppSettings = new DictionarySettings(new Dictionary<string, string> {
                         { "jwt.HashAlgorithm", "RS256" },
                         { "jwt.PublicKeyXml", privateKey.ToPublicKeyXml() },
                         { "jwt.RequireSecureConnection", "False" },
                     })
-                }
+            }
                .Init()
                .Start("http://*:2337/");
         }
@@ -289,10 +297,11 @@ namespace RazorRockstars.Console.Files
                 Email = "as@if.com"
             }, "external-jwt", TimeSpan.FromDays(14));
 
-            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload, 
+            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
                 data => RsaUtils.Authenticate(data, privateKey, "SHA256", RsaKeyLengths.Bit2048));
 
-            var client = new JsonServiceClient(ListeningOn) {
+            var client = new JsonServiceClient(ListeningOn)
+            {
                 BearerToken = token
             };
 
@@ -352,6 +361,106 @@ namespace RazorRockstars.Console.Files
             };
 
             StatelessAuthTests.AssertAccessToSecuredByRoleAndPermission(client);
+        }
+
+        [Test]
+        public void Can_populate_entire_session_using_JWT_Token()
+        {
+            var jwtProvider = (JwtAuthProviderReader)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+
+            var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+            var payload = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com",
+                Roles = new List<string> { "TheRole" },
+                Permissions = new List<string> { "ThePermission" },
+                ProfileUrl = "http://example.org/profile.jpg"
+            }, "external-jwt", TimeSpan.FromDays(14));
+
+            PopulateWithAdditionalMetadata(payload);
+
+            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
+                data => RsaUtils.Authenticate(data, privateKey, "SHA256", RsaKeyLengths.Bit2048));
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = token
+            };
+
+            var session = client.Get(new GetAuthUserSession());
+
+            AssertAdditionalMetadataWasPopulated(session);
+        }
+
+        private static void AssertAdditionalMetadataWasPopulated(AuthUserSession session)
+        {
+            Assert.That(session.Id, Is.EqualTo("SESSIONID"));
+            Assert.That(session.ReferrerUrl, Is.EqualTo("http://example.org/ReferrerUrl"));
+            Assert.That(session.UserAuthName, Is.EqualTo("UserAuthName"));
+            Assert.That(session.TwitterUserId, Is.EqualTo("TwitterUserId"));
+            Assert.That(session.TwitterScreenName, Is.EqualTo("TwitterScreenName"));
+            Assert.That(session.FacebookUserId, Is.EqualTo("FacebookUserId"));
+            Assert.That(session.FirstName, Is.EqualTo("FirstName"));
+            Assert.That(session.LastName, Is.EqualTo("LastName"));
+            Assert.That(session.Company, Is.EqualTo("Company"));
+            Assert.That(session.PrimaryEmail, Is.EqualTo("PrimaryEmail"));
+            Assert.That(session.PhoneNumber, Is.EqualTo("PhoneNumber"));
+            Assert.That(session.BirthDate, Is.EqualTo(new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+            Assert.That(session.Address, Is.EqualTo("Address"));
+            Assert.That(session.Address2, Is.EqualTo("Address2"));
+            Assert.That(session.City, Is.EqualTo("City"));
+            Assert.That(session.State, Is.EqualTo("State"));
+            Assert.That(session.Country, Is.EqualTo("Country"));
+            Assert.That(session.Culture, Is.EqualTo("Culture"));
+            Assert.That(session.FullName, Is.EqualTo("FullName"));
+            Assert.That(session.Gender, Is.EqualTo("Gender"));
+            Assert.That(session.Language, Is.EqualTo("Language"));
+            Assert.That(session.MailAddress, Is.EqualTo("MailAddress"));
+            Assert.That(session.Nickname, Is.EqualTo("Nickname"));
+            Assert.That(session.PostalCode, Is.EqualTo("PostalCode"));
+            Assert.That(session.TimeZone, Is.EqualTo("TimeZone"));
+            Assert.That(session.RequestTokenSecret, Is.EqualTo("RequestTokenSecret"));
+            Assert.That(session.CreatedAt, Is.EqualTo(new DateTime(2010, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+            Assert.That(session.LastModified, Is.EqualTo(new DateTime(2016, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+            Assert.That(session.Sequence, Is.EqualTo("Sequence"));
+            Assert.That(session.Tag, Is.EqualTo(1));
+        }
+
+        private static void PopulateWithAdditionalMetadata(Dictionary<string, string> payload)
+        {
+            payload["Id"] = "SESSIONID";
+            payload["ReferrerUrl"] = "http://example.org/ReferrerUrl";
+            payload["UserAuthName"] = "UserAuthName";
+            payload["TwitterUserId"] = "TwitterUserId";
+            payload["TwitterScreenName"] = "TwitterScreenName";
+            payload["FacebookUserId"] = "FacebookUserId";
+            payload["FacebookUserName"] = "FacebookUserName";
+            payload["FirstName"] = "FirstName";
+            payload["LastName"] = "LastName";
+            payload["Company"] = "Company";
+            payload["PrimaryEmail"] = "PrimaryEmail";
+            payload["PhoneNumber"] = "PhoneNumber";
+            payload["BirthDate"] = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc).ToUnixTime().ToString();
+            payload["Address"] = "Address";
+            payload["Address2"] = "Address2";
+            payload["City"] = "City";
+            payload["State"] = "State";
+            payload["Country"] = "Country";
+            payload["Culture"] = "Culture";
+            payload["FullName"] = "FullName";
+            payload["Gender"] = "Gender";
+            payload["Language"] = "Language";
+            payload["MailAddress"] = "MailAddress";
+            payload["Nickname"] = "Nickname";
+            payload["PostalCode"] = "PostalCode";
+            payload["TimeZone"] = "TimeZone";
+            payload["RequestTokenSecret"] = "RequestTokenSecret";
+            payload["CreatedAt"] = new DateTime(2010, 1, 1, 0, 0, 0, DateTimeKind.Utc).ToUnixTime().ToString();
+            payload["LastModified"] = new DateTime(2016, 1, 1, 0, 0, 0, DateTimeKind.Utc).ToUnixTime().ToString();
+            payload["Sequence"] = "Sequence";
+            payload["Tag"] = 1.ToString();
         }
     }
 
@@ -939,7 +1048,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Can_access_SecuredBy_Role_or_Permission_with_TheRole_and_ThePermission()
         {
-            var client = GetClientWithUserPassword(alwaysSend: true, userName:"user2");
+            var client = GetClientWithUserPassword(alwaysSend: true, userName: "user2");
             AssertAccessToSecuredByRoleAndPermission(client);
 
             client = GetClientWithApiKey(ApiKeyWithRole.Id);
@@ -999,7 +1108,7 @@ namespace RazorRockstars.Console.Files
         public void Can_not_access_Secure_service_with_expired_token()
         {
             var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.JwtPayloadFilter = jwtPayload =>
+            jwtProvider.CreatePayloadFilter = jwtPayload =>
                 jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
 
             var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
@@ -1009,7 +1118,7 @@ namespace RazorRockstars.Console.Files
                 Email = "as@if.com"
             });
 
-            jwtProvider.JwtPayloadFilter = null;
+            jwtProvider.CreatePayloadFilter = null;
 
             var client = GetClientWithBearerToken(token);
 
@@ -1030,7 +1139,7 @@ namespace RazorRockstars.Console.Files
         public void Can_Auto_reconnect_after_expired_token()
         {
             var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.JwtPayloadFilter = jwtPayload =>
+            jwtProvider.CreatePayloadFilter = jwtPayload =>
                 jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
 
             var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
@@ -1040,9 +1149,9 @@ namespace RazorRockstars.Console.Files
                 Email = "as@if.com"
             });
 
-            jwtProvider.JwtPayloadFilter = null;
+            jwtProvider.CreatePayloadFilter = null;
 
-            var authClient = GetClientWithUserPassword(alwaysSend:true);
+            var authClient = GetClientWithUserPassword(alwaysSend: true);
 
             var called = 0;
             var client = new JsonServiceClient(ListeningOn);
@@ -1066,7 +1175,7 @@ namespace RazorRockstars.Console.Files
         public async Task Can_Auto_reconnect_after_expired_token_Async()
         {
             var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.JwtPayloadFilter = jwtPayload =>
+            jwtProvider.CreatePayloadFilter = jwtPayload =>
                 jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
 
             var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
@@ -1076,7 +1185,7 @@ namespace RazorRockstars.Console.Files
                 Email = "as@if.com"
             });
 
-            jwtProvider.JwtPayloadFilter = null;
+            jwtProvider.CreatePayloadFilter = null;
 
             var authClient = GetClientWithUserPassword(alwaysSend: true);
 

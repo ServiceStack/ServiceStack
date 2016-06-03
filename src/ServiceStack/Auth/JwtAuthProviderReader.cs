@@ -37,11 +37,11 @@ namespace ServiceStack.Auth
 
         public bool RequireSecureConnection { get; set; }
 
-        public Action<Dictionary<string, string>> JwtHeaderFilter { get; set; }
+        public Action<Dictionary<string, string>> CreateHeaderFilter { get; set; }
 
-        public Action<Dictionary<string, string>> JwtPayloadFilter { get; set; }
+        public Action<Dictionary<string, string>> CreatePayloadFilter { get; set; }
 
-        public Action<IAuthSession, Dictionary<string, string>> JwtSessionFilter { get; set; }
+        public Action<IAuthSession, Dictionary<string, string>, IRequest> PopulateSessionFilter { get; set; }
 
         public bool EncryptPayload { get; set; }
 
@@ -205,21 +205,11 @@ namespace ServiceStack.Auth
 
                     var sessionId = jwtPayload.GetValue("jid", SessionExtensions.CreateRandomSessionId);
                     var session = SessionFeature.CreateNewSession(req, sessionId);
-                    session.IsAuthenticated = true;
-                    session.FromToken = true;
-                    session.UserAuthId = jwtPayload["sub"];
-                    session.Email = jwtPayload.GetValueOrDefault("email");
-                    session.UserName = jwtPayload.GetValueOrDefault("preferred_username");
-                    session.DisplayName = jwtPayload.GetValueOrDefault("name");
-                    session.ProfileUrl = jwtPayload.GetValueOrDefault("picture");
 
-                    var roles = jwtPayload.GetValueOrDefault("role");
-                    if (roles != null)
-                        session.Roles = roles.Split(',').ToList();
+                    session.PopulateFromMap(jwtPayload);
 
-                    var perms = jwtPayload.GetValueOrDefault("perm");
-                    if (perms != null)
-                        session.Permissions = perms.Split(',').ToList();
+                    if (PopulateSessionFilter != null)
+                        PopulateSessionFilter(session, jwtPayload, req);
 
                     HostContext.AppHost.OnSessionFilter(session, sessionId);
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 
@@ -326,6 +327,151 @@ namespace ServiceStack.Auth
                 userAuth.LockedDate = userAuth.LastLoginAttempt;
             }
             repo.SaveUserAuth(userAuth);
+        }
+
+        public static void PopulateFromMap(this IAuthSession session, Dictionary<string, string> map)
+        {
+            var authSession = session as AuthUserSession ?? new AuthUserSession(); //Null Object Pattern
+            session.IsAuthenticated = true;
+            session.FromToken = true;
+
+            foreach (var entry in map)
+            {
+                switch (entry.Key)
+                {
+                    case "jid":
+                    case "Id":
+                        session.Id = entry.Value;
+                        break;
+                    case "IsAuthenticated":
+                        session.IsAuthenticated = entry.Value.FromJsv<bool>();
+                        break;
+                    case "FromToken":
+                        session.FromToken = entry.Value.FromJsv<bool>();
+                        break;
+                    case "sub":
+                        session.UserAuthId = entry.Value.LastRightPart('|'); //in-case of multi-components, last should contain userId
+                        break;
+                    case "UserAuthId":
+                        session.UserAuthId = entry.Value;
+                        break;
+                    case "email":
+                    case "Email":
+                        session.Email = entry.Value;
+                        break;
+                    case "UserName":
+                    case "preferred_username":
+                        session.UserName = entry.Value;
+                        break;
+                    case "name":
+                    case "DisplayName":
+                        session.DisplayName = entry.Value;
+                        break;
+                    case "picture":
+                    case "ProfileUrl":
+                        session.ProfileUrl = entry.Value;
+                        break;
+                    case "role":
+                    case "Roles":
+                        session.Roles = entry.Value.Split(',').ToList();
+                        break;
+                    case "perm":
+                    case "Permissions":
+                        session.Permissions = entry.Value.Split(',').ToList();
+                        break;
+                    case "iat":
+                    case "CreatedAt":
+                        session.CreatedAt = long.Parse(entry.Value).FromUnixTime();
+                        break;
+                    case "ReferrerUrl":
+                        session.ReferrerUrl = entry.Value;
+                        break;
+                    case "UserAuthName":
+                        session.UserAuthName = entry.Value;
+                        break;
+                    case "TwitterUserId":
+                        authSession.TwitterUserId = entry.Value;
+                        break;
+                    case "TwitterScreenName":
+                        authSession.TwitterScreenName = entry.Value;
+                        break;
+                    case "FacebookUserId":
+                        authSession.FacebookUserId = entry.Value;
+                        break;
+                    case "FacebookUserName":
+                        authSession.FacebookUserName = entry.Value;
+                        break;
+                    case "FirstName":
+                        session.FirstName = entry.Value;
+                        break;
+                    case "LastName":
+                        session.LastName = entry.Value;
+                        break;
+                    case "Company":
+                        authSession.Company = entry.Value;
+                        break;
+                    case "PrimaryEmail":
+                        authSession.PrimaryEmail = entry.Value;
+                        break;
+                    case "PhoneNumber":
+                        authSession.PhoneNumber = entry.Value;
+                        break;
+                    case "BirthDate":
+                        authSession.BirthDate = long.Parse(entry.Value).FromUnixTime();
+                        break;
+                    case "Address":
+                        authSession.Address = entry.Value;
+                        break;
+                    case "Address2":
+                        authSession.Address2 = entry.Value;
+                        break;
+                    case "City":
+                        authSession.City = entry.Value;
+                        break;
+                    case "State":
+                        authSession.State = entry.Value;
+                        break;
+                    case "Country":
+                        authSession.Country = entry.Value;
+                        break;
+                    case "Culture":
+                        authSession.Culture = entry.Value;
+                        break;
+                    case "FullName":
+                        authSession.FullName = entry.Value;
+                        break;
+                    case "Gender":
+                        authSession.Gender = entry.Value;
+                        break;
+                    case "Language":
+                        authSession.Language = entry.Value;
+                        break;
+                    case "MailAddress":
+                        authSession.MailAddress = entry.Value;
+                        break;
+                    case "Nickname":
+                        authSession.Nickname = entry.Value;
+                        break;
+                    case "PostalCode":
+                        authSession.PostalCode = entry.Value;
+                        break;
+                    case "TimeZone":
+                        authSession.TimeZone = entry.Value;
+                        break;
+                    case "RequestTokenSecret":
+                        authSession.RequestTokenSecret = entry.Value;
+                        break;
+                    case "LastModified":
+                        session.LastModified = long.Parse(entry.Value).FromUnixTime();
+                        break;
+                    case "Sequence":
+                        session.Sequence = entry.Value;
+                        break;
+                    case "Tag":
+                        authSession.Tag = long.Parse(entry.Value);
+                        break;
+                }
+            }
         }
     }
 
