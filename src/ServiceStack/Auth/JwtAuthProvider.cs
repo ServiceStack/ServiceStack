@@ -25,7 +25,7 @@ namespace ServiceStack.Auth
 
         public string CreateJwtBearerToken(IAuthSession session)
         {
-            var jwtHeader = CreateJwtHeader(HashAlgorithm);
+            var jwtHeader = CreateJwtHeader(HashAlgorithm, GetKeyId());
             if (CreateHeaderFilter != null)
                 CreateHeaderFilter(jwtHeader);
 
@@ -86,13 +86,17 @@ namespace ServiceStack.Auth
             return bearerToken;
         }
 
-        public static Dictionary<string, string> CreateJwtHeader(string algorithm)
+        public static Dictionary<string, string> CreateJwtHeader(string algorithm, string keyId=null)
         {
             var header = new Dictionary<string, string>
             {
                 { "typ", "JWT" },
                 { "alg", algorithm }
             };
+
+            if (keyId != null)
+                header["kid"] = keyId;
+
             return header;
         }
 

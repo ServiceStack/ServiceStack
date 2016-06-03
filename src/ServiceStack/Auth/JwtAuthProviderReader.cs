@@ -51,6 +51,8 @@ namespace ServiceStack.Auth
 
         public string Issuer { get; set; }
 
+        public string KeyId { get; set; }
+
         public byte[] HmacAuthKey { get; set; }
         public string HmacAuthKeyBase64
         {
@@ -154,7 +156,24 @@ namespace ServiceStack.Auth
                 var dateStr = appSettings.GetString("jwt.InvalidateTokensIssuedBefore");
                 if (!string.IsNullOrEmpty(dateStr))
                     InvalidateTokensIssuedBefore = dateStr.FromJsv<DateTime>();
+
+                KeyId = appSettings.GetString("jwt.KeyId");
             }
+
+            GetKeyId();
+        }
+
+        public virtual string GetKeyId()
+        {
+            if (KeyId != null)
+                return KeyId;
+
+            if (HmacAlgorithms.ContainsKey(HashAlgorithm) && HmacAuthKey != null)
+                KeyId = Convert.ToBase64String(HmacAuthKey).Substring(0, 3);
+            else if (RsaSignAlgorithms.ContainsKey(HashAlgorithm) && PublicKey != null)
+                KeyId = Convert.ToBase64String(PublicKey.Value.Modulus).Substring(0, 3);
+
+            return KeyId;
         }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
@@ -170,7 +189,7 @@ namespace ServiceStack.Auth
         public void PreAuthenticate(IRequest req, IResponse res)
         {
             var bearerToken = req.GetBearerToken()
-                              ?? req.GetCookieValue(Keywords.JwtSessionToken);
+                ?? req.GetCookieValue(Keywords.JwtSessionToken);
 
             if (bearerToken != null)
             {
