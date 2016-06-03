@@ -212,16 +212,57 @@ namespace RazorRockstars.Console.Files
 
     public class RsaJwtWithEncryptedPayloadsStatelessAuthTests : StatelessAuthTests
     {
+        private RSAParameters privateKey;
+        private byte[] cryptKey;
+        private byte[] cryptIv;
+
         protected override ServiceStackHost CreateAppHost()
         {
+            privateKey = RsaUtils.CreatePrivateKeyParams();
+            AesUtils.CreateKeyAndIv(out cryptKey, out cryptIv);
+
             return new AppHost
             {
                 EnableAuth = true,
-                JwtRsaPrivateKey = RsaUtils.CreatePrivateKeyParams(),
+                JwtRsaPrivateKey = privateKey,
                 JwtEncryptPayload = true,
+                JwtCryptKey = cryptKey,
+                JwtCryptIv = cryptIv,
                 Use = container => container.Register<IAuthRepository>(c =>
                     new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()))
             };
+        }
+
+        [Test]
+        public void Can_populate_entire_session_using_JWT_Token()
+        {
+            var jwtProvider = (JwtAuthProviderReader)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+
+            var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+            var payload = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com",
+                Roles = new List<string> { "TheRole" },
+                Permissions = new List<string> { "ThePermission" },
+                ProfileUrl = "http://example.org/profile.jpg"
+            }, "external-jwt", TimeSpan.FromDays(14));
+
+            JwtAuthProviderReaderTests.PopulateWithAdditionalMetadata(payload);
+
+            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
+                data => RsaUtils.Authenticate(data, privateKey, "SHA256", JwtAuthProvider.UseRsaKeyLength),
+                data => AesUtils.Encrypt(data, cryptKey, cryptIv));
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = token
+            };
+
+            var session = client.Get(new GetAuthUserSession());
+
+            JwtAuthProviderReaderTests.AssertAdditionalMetadataWasPopulated(session);
         }
     }
 
@@ -394,7 +435,7 @@ namespace RazorRockstars.Console.Files
             AssertAdditionalMetadataWasPopulated(session);
         }
 
-        private static void AssertAdditionalMetadataWasPopulated(AuthUserSession session)
+        public static void AssertAdditionalMetadataWasPopulated(AuthUserSession session)
         {
             Assert.That(session.Id, Is.EqualTo("SESSIONID"));
             Assert.That(session.ReferrerUrl, Is.EqualTo("http://example.org/ReferrerUrl"));
@@ -428,7 +469,7 @@ namespace RazorRockstars.Console.Files
             Assert.That(session.Tag, Is.EqualTo(1));
         }
 
-        private static void PopulateWithAdditionalMetadata(Dictionary<string, string> payload)
+        public static void PopulateWithAdditionalMetadata(Dictionary<string, string> payload)
         {
             payload["Id"] = "SESSIONID";
             payload["ReferrerUrl"] = "http://example.org/ReferrerUrl";
@@ -524,9 +565,18 @@ namespace RazorRockstars.Console.Files
 
             var authRepo = (IUserAuthRepository)appHost.Resolve<IAuthRepository>();
             var user2 = authRepo.GetUserAuth(userIdWithRoles);
-            user2.Roles = new List<string> { "TheRole" };
-            user2.Permissions = new List<string> { "ThePermission" };
-            authRepo.SaveUserAuth(user2);
+
+            var manageRoles = authRepo as IManageRoles;
+            if (manageRoles == null)
+            {
+                user2.Roles = new List<string> { "TheRole" };
+                user2.Permissions = new List<string> { "ThePermission" };
+                authRepo.SaveUserAuth(user2);
+            }
+            else
+            {
+                manageRoles.AssignRoles(userIdWithRoles, new[] { "TheRole" }, new[] { "ThePermission" });
+            }
         }
 
         [TestFixtureTearDown]

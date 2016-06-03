@@ -52,10 +52,21 @@ namespace ServiceStack.Auth
         public string Issuer { get; set; }
 
         public byte[] HmacAuthKey { get; set; }
-
         public string HmacAuthKeyBase64
         {
             set { HmacAuthKey = Convert.FromBase64String(value); }
+        }
+
+        public byte[] CryptKey { get; set; }
+        public string CryptKeyBase64
+        {
+            set { CryptKey = Convert.FromBase64String(value); }
+        }
+
+        public byte[] CryptIv { get; set; }
+        public string CryptIvBase64
+        {
+            set { CryptIv = Convert.FromBase64String(value); }
         }
 
         public RSAParameters? privateKey;
@@ -126,6 +137,14 @@ namespace ServiceStack.Auth
                 if (base64 != null)
                     HmacAuthKeyBase64 = base64;
 
+                base64 = appSettings.GetString("jwt.CryptKeyBase64");
+                if (base64 != null)
+                    CryptKeyBase64 = base64;
+
+                base64 = appSettings.GetString("jwt.CryptIvBase64");
+                if (base64 != null)
+                    CryptIvBase64 = base64;
+
                 var issuer = appSettings.GetString("jwt.Issuer");
                 if (!string.IsNullOrEmpty(issuer))
                     Issuer = issuer;
@@ -182,10 +201,10 @@ namespace ServiceStack.Auth
 
                     if (EncryptPayload)
                     {
-                        if (PrivateKey == null)
-                            throw new NotSupportedException("PrivateKey required to Decrypt Payload");
+                        if (CryptKey == null || CryptIv == null)
+                            throw new NotSupportedException("CryptKey and IV required to Decrypt Payload");
 
-                        payloadBytes = RsaUtils.Decrypt(payloadBytes, PrivateKey.Value, UseRsaKeyLength);
+                        payloadBytes = AesUtils.Decrypt(payloadBytes, CryptKey, CryptIv);
                     }
 
                     var payloadJson = payloadBytes.FromUtf8Bytes();

@@ -51,12 +51,14 @@ namespace ServiceStack.Auth
             if (hashAlgoritm == null)
                 throw new NotSupportedException("Invalid algoritm: " + HashAlgorithm);
 
-            if (EncryptPayload && PublicKey == null)
-                throw new NotSupportedException("PublicKey required to EncryptPayload");
+            if (EncryptPayload && (CryptKey == null || CryptIv == null))
+                throw new NotSupportedException("CryptKey and IV required to EncryptPayload");
 
-            var encryptWithKey = EncryptPayload ? PublicKey : null;
+            var encryptFn = EncryptPayload
+                ? data => AesUtils.Encrypt(data, CryptKey, CryptIv)
+                : (Func<byte[], byte[]>) null;
 
-            var bearerToken = CreateJwtBearerToken(jwtHeader, jwtPayload, hashAlgoritm, encryptWithKey);
+            var bearerToken = CreateJwtBearerToken(jwtHeader, jwtPayload, hashAlgoritm, encryptFn);
             return bearerToken;
         }
 
@@ -64,14 +66,14 @@ namespace ServiceStack.Auth
             Dictionary<string, string> jwtHeader,
             Dictionary<string, string> jwtPayload,
             Func<byte[], byte[]> signData,
-            RSAParameters? encryptWithPublicKey = null)
+            Func<byte[], byte[]> cryptData = null)
         {
             var headerBytes = jwtHeader.ToJson().ToUtf8Bytes();
             var payloadBytes = jwtPayload.ToJson().ToUtf8Bytes();
 
-            if (encryptWithPublicKey != null)
+            if (cryptData != null)
             {
-                payloadBytes = RsaUtils.Encrypt(payloadBytes, encryptWithPublicKey.Value, UseRsaKeyLength);
+                payloadBytes = cryptData(payloadBytes);
             }
 
             var base64Header = headerBytes.ToBase64UrlSafe();
