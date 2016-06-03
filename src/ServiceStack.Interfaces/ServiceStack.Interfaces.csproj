@@ -79,6 +79,7 @@
     <Compile Include="DataAnnotations\CompositeKeyAttribute.cs" />
     <Compile Include="DataAnnotations\ComputeAttribute.cs" />
     <Compile Include="DataAnnotations\CustomFieldAttribute.cs" />
+    <Compile Include="DataAnnotations\CustomSelectAttribute.cs" />
     <Compile Include="DataAnnotations\DescriptionAttribute.cs" />
     <Compile Include="DataAnnotations\EnumAsIntAttribute.cs" />
     <Compile Include="DataAnnotations\ExcludeAttribute.cs" />
