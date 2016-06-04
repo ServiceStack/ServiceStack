@@ -93,14 +93,26 @@ namespace ServiceStack
         }
 
         static readonly RandomNumberGenerator randgen = new RNGCryptoServiceProvider();
+
+        [ThreadStatic] static byte[] SessionBytesCache;
+
         public static string CreateRandomSessionId()
         {
+            if (SessionBytesCache == null)
+                SessionBytesCache = new byte[15];
+
             string base64Id;
             do
             {
-                base64Id = CreateRandomBase64Id();
+                PopulateWithSecureRandomBytes(SessionBytesCache);
+                base64Id = Convert.ToBase64String(SessionBytesCache);
             } while (Base64StringContainsUrlUnfriendlyChars(base64Id));
             return base64Id;
+        }
+
+        public static void PopulateWithSecureRandomBytes(byte[] bytes)
+        {
+            randgen.GetBytes(bytes);
         }
 
         public static string CreateRandomBase64Id(int size = 15)
@@ -112,10 +124,12 @@ namespace ServiceStack
 
         public static string CreateRandomBase62Id(int size)
         {
+            var bytes = new byte[size];
             string base64Id;
             do
             {
-                base64Id = CreateRandomBase64Id(size);
+                PopulateWithSecureRandomBytes(bytes);
+                base64Id = Convert.ToBase64String(bytes);
             } while (Base64StringContainsUrlUnfriendlyChars(base64Id));
             return base64Id;
         }

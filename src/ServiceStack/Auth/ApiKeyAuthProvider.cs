@@ -52,7 +52,7 @@ namespace ServiceStack.Auth
 
         public static string[] DefaultTypes = new[] { "secret" };
         public static string[] DefaultEnvironments = new[] { "live", "test" };
-        public static int DefaultKeySizeBytes = 16;
+        public static int DefaultKeySizeBytes = 24;
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
@@ -63,8 +63,8 @@ namespace ServiceStack.Auth
         public bool InitSchema { get; set; }
         public bool RequireSecureConnection { get; set; }
 
-        public CreateApiKeyDelegate CreateApiKeyFn { get; set; }
-        public Action<ApiKey> ApiKeyFilterFn { get; set; }
+        public CreateApiKeyDelegate GenerateApiKey { get; set; }
+        public Action<ApiKey> CreateApiKeyFilter { get; set; }
 
         public ApiKeyAuthProvider()
         {
@@ -84,7 +84,7 @@ namespace ServiceStack.Auth
             Environments = DefaultEnvironments;
             KeyTypes = DefaultTypes;
             KeySizeBytes = DefaultKeySizeBytes;
-            CreateApiKeyFn = CreateApiKey;
+            GenerateApiKey = CreateApiKey;
 
             if (appSettings != null)
             {
@@ -111,9 +111,15 @@ namespace ServiceStack.Auth
             };
         }
 
+        [ThreadStatic] private static byte[] CachedBytes;
+
         public virtual string CreateApiKey(string environment, string keyType, int sizeBytes)
         {
-            return SessionExtensions.CreateRandomBase62Id(sizeBytes);
+            if (CachedBytes == null)
+                CachedBytes = new byte[sizeBytes];
+
+            SessionExtensions.PopulateWithSecureRandomBytes(CachedBytes);
+            return CachedBytes.ToBase64UrlSafe();
         }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
@@ -249,7 +255,7 @@ namespace ServiceStack.Auth
             {
                 foreach (var keyType in KeyTypes)
                 {
-                    var key = CreateApiKeyFn(env, keyType, KeySizeBytes);
+                    var key = GenerateApiKey(env, keyType, KeySizeBytes);
 
                     var apiKey = new ApiKey
                     {
@@ -261,8 +267,8 @@ namespace ServiceStack.Auth
                         ExpiryDate = ExpireKeysAfter != null ? now.Add(ExpireKeysAfter.Value) : (DateTime?) null
                     };
 
-                    if (ApiKeyFilterFn != null)
-                        ApiKeyFilterFn(apiKey);
+                    if (CreateApiKeyFilter != null)
+                        CreateApiKeyFilter(apiKey);
 
                     apiKeys.Add(apiKey);
                 }

@@ -19,6 +19,27 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
+        public void ToBase64UrlSafe_does_not_contain_unfriendly_chars()
+        {
+            var bytes = new byte[24];
+            string lastSessionId = null;
+
+            1000.Times(i =>
+            {
+                SessionExtensions.PopulateWithSecureRandomBytes(bytes);
+
+                var sessionId = bytes.ToBase64UrlSafe();
+
+                Assert.That(sessionId, Is.Not.StringContaining("+"));
+                Assert.That(sessionId, Is.Not.StringContaining("/"));
+
+                if (lastSessionId != null)
+                    Assert.That(sessionId, Is.Not.EqualTo(lastSessionId));
+                lastSessionId = sessionId;
+            });
+        }
+
+        [Test]
         public void Does_CreateRandomBase62Id_16_byte_id_in_less_than_3_attempts_avg()
         {
             Assert.That(SessionExtensions.CreateRandomBase62Id(16).Length, Is.EqualTo(24));
