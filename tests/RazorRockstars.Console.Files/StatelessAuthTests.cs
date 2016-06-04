@@ -1286,6 +1286,44 @@ namespace RazorRockstars.Console.Files
                 jwtProvider.RequireSecureConnection = false;
             }
         }
+
+        [Test]
+        public void Can_ConvertSessionToToken()
+        {
+            var client = GetClient();
+
+            client.Send(new Authenticate
+            {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password,
+            });
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var newClient = GetClient();
+            newClient.SetSessionId(client.GetSessionId());
+
+            var tokenResponse = newClient.Send(new ConvertSessionToToken());
+            Assert.That(tokenResponse.BearerToken, Is.Not.Null);
+            var tokenCookie = newClient.GetTokenCookie();
+            Assert.That(tokenCookie, Is.EqualTo(tokenResponse.BearerToken));
+
+            try
+            {
+                response = client.Send(request);
+                Assert.Fail("should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
+
+            response = newClient.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
     }
 
 }

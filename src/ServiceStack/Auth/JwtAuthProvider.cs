@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
@@ -8,9 +9,19 @@ namespace ServiceStack.Auth
 {
     public class JwtAuthProvider : JwtAuthProviderReader, IAuthResponseFilter
     {
-        public JwtAuthProvider() {}
+        public JwtAuthProvider() { }
 
-        public JwtAuthProvider(IAppSettings appSettings) : base(appSettings) {}
+        public JwtAuthProvider(IAppSettings appSettings) : base(appSettings) { }
+
+        public override void Init(IAppSettings appSettings = null)
+        {
+            ServiceRoutes = new Dictionary<Type, string[]>
+            {
+                { typeof(ConvertSessionToTokenService), new[] { "/session-to-token" } },
+            };
+
+            base.Init(appSettings);
+        }
 
         public AuthenticateResponse Execute(IServiceBase authService, IAuthProvider authProvider, IAuthSession session, AuthenticateResponse response)
         {
@@ -56,7 +67,7 @@ namespace ServiceStack.Auth
 
             var encryptFn = EncryptPayload
                 ? data => AesUtils.Encrypt(data, CryptKey, CryptIv)
-                : (Func<byte[], byte[]>) null;
+                : (Func<byte[], byte[]>)null;
 
             var bearerToken = CreateJwtBearerToken(jwtHeader, jwtPayload, hashAlgoritm, encryptFn);
             return bearerToken;
@@ -86,7 +97,7 @@ namespace ServiceStack.Auth
             return bearerToken;
         }
 
-        public static Dictionary<string, string> CreateJwtHeader(string algorithm, string keyId=null)
+        public static Dictionary<string, string> CreateJwtHeader(string algorithm, string keyId = null)
         {
             var header = new Dictionary<string, string>
             {
@@ -144,6 +155,44 @@ namespace ServiceStack.Auth
                 jwtPayload["perm"] = string.Join(",", perms);
 
             return jwtPayload;
+        }
+    }
+
+    [Authenticate]
+    [DefaultRequest(typeof(ConvertSessionToToken))]
+    public class ConvertSessionToTokenService : Service
+    {
+        public object Any(ConvertSessionToToken request)
+        {
+            var jwtAuthProvider = AuthenticateService.GetAuthProvider(JwtAuthProvider.Name) as JwtAuthProvider;
+            if (jwtAuthProvider == null)
+                throw new NotSupportedException("JwtAuthProvider is not registered");
+
+            if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
+                throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
+
+            var session = Request.GetSession();
+            var response = new ConvertSessionToTokenResponse
+            {
+                BearerToken = jwtAuthProvider.CreateJwtBearerToken(session)
+            };
+
+            if (!request.PreserveSession)
+                Request.RemoveSession(session.Id);
+
+            if (request.SkipCookie)
+                return response;
+
+            return new HttpResult(response)
+            {
+                Cookies = {
+                    new Cookie(Keywords.JwtSessionToken, response.BearerToken) {
+                        HttpOnly = true,
+                        Secure = Request.IsSecureConnection,
+                        Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),
+                    }
+                }
+            };
         }
     }
 }

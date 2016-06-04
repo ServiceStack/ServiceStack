@@ -237,4 +237,24 @@ namespace ServiceStack
         [DataMember(Order = 2)] public string KeyType { get; set; }
         [DataMember(Order = 3)] public DateTime? ExpiryDate { get; set; }
     }
+
+    [DataContract]
+    public class ConvertSessionToToken : IPost, IReturn<ConvertSessionToTokenResponse>
+    {
+        [DataMember(Order = 1)]
+        public bool PreserveSession { get; set; }
+
+        [DataMember(Order = 2)]
+        public bool SkipCookie { get; set; }
+    }
+
+    [DataContract]
+    public class ConvertSessionToTokenResponse
+    {
+        [DataMember(Order = 1)]
+        public string BearerToken { get; set; }
+
+        [DataMember(Order = 2)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 }

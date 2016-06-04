@@ -1958,6 +1958,21 @@ namespace ServiceStack
 
             client.SetCookie("ss-pid", sessionId, expiresIn:TimeSpan.FromDays(365 * 20));
         }
+
+        public static string GetTokenCookie(this IServiceClient client)
+        {
+            string sessionId;
+            client.GetCookieValues().TryGetValue("ss-jwt", out sessionId);
+            return sessionId;
+        }
+
+        public static void SetTokenCookie(this IServiceClient client, string token)
+        {
+            if (token == null)
+                return;
+
+            client.SetCookie("ss-jwt", token, expiresIn: TimeSpan.FromDays(365 * 20));
+        }
     }
 
     public interface IHasCookieContainer

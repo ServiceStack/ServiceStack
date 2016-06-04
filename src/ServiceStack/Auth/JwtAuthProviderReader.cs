@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -9,7 +11,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest
+    public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
     {
         public static RsaKeyLengths UseRsaKeyLength = RsaKeyLengths.Bit2048;
 
@@ -101,6 +103,8 @@ namespace ServiceStack.Auth
 
         public DateTime? InvalidateTokensIssuedBefore { get; set; }
 
+        public Dictionary<Type, string[]> ServiceRoutes { get; set; }
+
         public JwtAuthProviderReader()
         {
             Init();
@@ -112,7 +116,7 @@ namespace ServiceStack.Auth
             Init(appSettings);
         }
 
-        public void Init(IAppSettings appSettings = null)
+        public virtual void Init(IAppSettings appSettings = null)
         {
             RequireSecureConnection = true;
             HmacAuthKey = AesUtils.CreateKey();
@@ -159,8 +163,6 @@ namespace ServiceStack.Auth
 
                 KeyId = appSettings.GetString("jwt.KeyId");
             }
-
-            GetKeyId();
         }
 
         public virtual string GetKeyId()
@@ -169,11 +171,11 @@ namespace ServiceStack.Auth
                 return KeyId;
 
             if (HmacAlgorithms.ContainsKey(HashAlgorithm) && HmacAuthKey != null)
-                KeyId = Convert.ToBase64String(HmacAuthKey).Substring(0, 3);
-            else if (RsaSignAlgorithms.ContainsKey(HashAlgorithm) && PublicKey != null)
-                KeyId = Convert.ToBase64String(PublicKey.Value.Modulus).Substring(0, 3);
+                return Convert.ToBase64String(HmacAuthKey).Substring(0, 3);
+            if (RsaSignAlgorithms.ContainsKey(HashAlgorithm) && PublicKey != null)
+                return Convert.ToBase64String(PublicKey.Value.Modulus).Substring(0, 3);
 
-            return KeyId;
+            return null;
         }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
@@ -296,6 +298,17 @@ namespace ServiceStack.Auth
                 }
             }
             return null;
+        }
+
+        public void Register(IAppHost appHost, AuthFeature feature)
+        {
+            if (KeyId == null)
+                KeyId = GetKeyId();
+
+            foreach (var registerService in ServiceRoutes)
+            {
+                appHost.RegisterService(registerService.Key, registerService.Value);
+            }
         }
     }
 }
