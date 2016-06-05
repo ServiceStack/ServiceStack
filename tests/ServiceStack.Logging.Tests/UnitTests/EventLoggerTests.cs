@@ -16,17 +16,19 @@ namespace ServiceStack.Logging.Tests.UnitTests
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void EventLogger_NullLogNameTest()
         {
-            ILog log = new EventLogger(null, "Application");
+            Assert.Throws<ArgumentNullException>(() => {
+                ILog log = new EventLogger(null, "Application");
+            });
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void EventLogger_NullSourceNameTest()
         {
-            ILog log = new EventLogger("ServiceStack.Logging.Tests", null);
+            Assert.Throws<ArgumentNullException>(() => {
+                ILog log = new EventLogger("ServiceStack.Logging.Tests", null);
+            });
         }
 
         [Test]
