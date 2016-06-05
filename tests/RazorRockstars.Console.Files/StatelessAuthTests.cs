@@ -750,6 +750,8 @@ namespace RazorRockstars.Console.Files
             var request = new Secured { Name = "test" };
             var response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
+            response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
 
             var newClient = GetClient();
             newClient.SetSessionId(client.GetSessionId());
@@ -775,6 +777,8 @@ namespace RazorRockstars.Console.Files
             var jwtClient = GetClientWithBearerToken(authResponse.BearerToken);
             var request = new Secured { Name = "test" };
             var response = jwtClient.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+            response = jwtClient.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             var newClient = GetClient();
