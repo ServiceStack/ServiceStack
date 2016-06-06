@@ -142,6 +142,10 @@ namespace ServiceStack.Auth
                 var keySize = appSettings.GetString("apikey.KeySizeBytes");
                 if (keySize != null)
                     KeySizeBytes = int.Parse(keySize);
+
+                var timespan = appSettings.GetString("ExpireKeysAfter");
+                if (timespan != null)
+                    ExpireKeysAfter = timespan.FromJsv<TimeSpan>();
             }
 
             ServiceRoutes = new Dictionary<Type, string[]>
