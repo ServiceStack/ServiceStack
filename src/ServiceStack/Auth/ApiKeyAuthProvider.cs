@@ -4,13 +4,14 @@ using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using ServiceStack.Data;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
+    /// <summary>
+    /// The Interface Auth Repositories need to implement to support API Keys
+    /// </summary>
     public interface IManageApiKeys
     {
         void InitApiKeySchema();
@@ -24,6 +25,9 @@ namespace ServiceStack.Auth
         void StoreAll(IEnumerable<ApiKey> apiKeys);
     }
 
+    /// <summary>
+    /// The POCO Table used to persist API Keys
+    /// </summary>
     public class ApiKey : IMeta
     {
         public string Id { get; set; }
@@ -45,6 +49,9 @@ namespace ServiceStack.Auth
 
     public delegate string CreateApiKeyDelegate(string environment, string keyType, int keySizeBytes);
 
+    /// <summary>
+    /// Enable access to protected Services using API Keys
+    /// </summary>
     public class ApiKeyAuthProvider : AuthProvider, IAuthWithRequest, IAuthPlugin
     {
         public const string Name = AuthenticateService.ApiKeyProvider;
@@ -54,16 +61,49 @@ namespace ServiceStack.Auth
         public static string[] DefaultEnvironments = new[] { "live", "test" };
         public static int DefaultKeySizeBytes = 24;
 
+        /// <summary>
+        /// Modify the registration of GetApiKeys and RegenrateApiKeys Services
+        /// </summary>
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
+        /// <summary>
+        /// How much entropy should the generated keys have. (default 24)
+        /// </summary>
         public int KeySizeBytes { get; set; }
+
+        /// <summary>
+        /// Generate different keys for different environments. (default live,test)
+        /// </summary>
         public string[] Environments { get; set; }
+
+        /// <summary>
+        /// Different types of Keys each user can have. (default secret)
+        /// </summary>
         public string[] KeyTypes { get; set; }
+
+        /// <summary>
+        /// Whether to automatically expire keys. (default no expiry)
+        /// </summary>
         public TimeSpan? ExpireKeysAfter { get; set; }
+
+        /// <summary>
+        /// Automatically create the ApiKey Table for AuthRepositories which need it. (default true)
+        /// </summary>
         public bool InitSchema { get; set; }
+
+        /// <summary>
+        /// Whether to only allow access via API Key from a secure connection. (default true)
+        /// </summary>
         public bool RequireSecureConnection { get; set; }
 
+        /// <summary>
+        /// Change how API Key is generated
+        /// </summary>
         public CreateApiKeyDelegate GenerateApiKey { get; set; }
+
+        /// <summary>
+        /// Run custom filter after API Key is created
+        /// </summary>
         public Action<ApiKey> CreateApiKeyFilter { get; set; }
 
         public ApiKeyAuthProvider()

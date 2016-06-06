@@ -7,6 +7,9 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
+    /// <summary>
+    /// Used to Issue and process JWT Tokens and registers ConvertSessionToToken Service to convert Sessions to JWT Tokens
+    /// </summary>
     public class JwtAuthProvider : JwtAuthProviderReader, IAuthResponseFilter
     {
         public JwtAuthProvider() { }

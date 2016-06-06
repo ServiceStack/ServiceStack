@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -11,6 +8,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
+    /// <summary>
+    /// Enable access to protected Services using JWT Tokens
+    /// </summary>
     public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
     {
         public static RsaKeyLengths UseRsaKeyLength = RsaKeyLengths.Bit2048;
@@ -18,6 +18,9 @@ namespace ServiceStack.Auth
         public const string Name = AuthenticateService.JwtProvider;
         public const string Realm = "/auth/" + AuthenticateService.JwtProvider;
 
+        /// <summary>
+        /// Different HMAC Algorithms supported
+        /// </summary>
         public static readonly Dictionary<string, Func<byte[], byte[], byte[]>> HmacAlgorithms = new Dictionary<string, Func<byte[], byte[], byte[]>>
         {
             { "HS256", (key, value) => { using (var sha = new HMACSHA256(key)) { return sha.ComputeHash(value); } } },
@@ -25,6 +28,9 @@ namespace ServiceStack.Auth
             { "HS512", (key, value) => { using (var sha = new HMACSHA512(key)) { return sha.ComputeHash(value); } } }
         };
 
+        /// <summary>
+        /// Different RSA Signing Algorithms supported
+        /// </summary>
         public static readonly Dictionary<string, Func<RSAParameters, byte[], byte[]>> RsaSignAlgorithms = new Dictionary<string, Func<RSAParameters, byte[], byte[]>>
         {
             { "RS256", (key, value) => RsaUtils.Authenticate(value, key, "SHA256", UseRsaKeyLength) },
@@ -37,42 +43,81 @@ namespace ServiceStack.Auth
             { "RS512", (key, value, sig) => RsaUtils.Verify(value, sig, key, "SHA512", UseRsaKeyLength) },
         };
 
+        /// <summary>
+        /// Whether to only allow access via API Key from a secure connection. (default true)
+        /// </summary>
         public bool RequireSecureConnection { get; set; }
 
+        /// <summary>
+        /// Run custom filter after JWT Header is created
+        /// </summary>
         public Action<Dictionary<string, string>> CreateHeaderFilter { get; set; }
 
+        /// <summary>
+        /// Run custom filter after JWT Payload is created
+        /// </summary>
         public Action<Dictionary<string, string>> CreatePayloadFilter { get; set; }
 
+        /// <summary>
+        /// Run custom filter after session is restored from a JWT Token
+        /// </summary>
         public Action<IAuthSession, Dictionary<string, string>, IRequest> PopulateSessionFilter { get; set; }
 
+        /// <summary>
+        /// Whether to encrypt JWT Payload with supplied AES Crypt Key and IV/ (default false)
+        /// </summary>
         public bool EncryptPayload { get; set; }
 
+        /// <summary>
+        /// Which Hash Algorithm should be used to sign the JWT Token. (default HS256)
+        /// </summary>
         public string HashAlgorithm { get; set; }
 
+        /// <summary>
+        /// Whether to only allow processing of JWT Tokens using the configured HashAlgorithm. (default true)
+        /// </summary>
         public bool RequireHashAlgorithm { get; set; }
 
+        /// <summary>
+        /// The Issuer to embed in the token. (default ssjwt)
+        /// </summary>
         public string Issuer { get; set; }
 
+        /// <summary>
+        /// What Id to use to identify the Key used to sign the token. (default First 3 chars of Base64 Key)
+        /// </summary>
         public string KeyId { get; set; }
 
+        /// <summary>
+        /// The AuthKey used to sign the JWT Token
+        /// </summary>
         public byte[] HmacAuthKey { get; set; }
         public string HmacAuthKeyBase64
         {
             set { HmacAuthKey = Convert.FromBase64String(value); }
         }
 
+        /// <summary>
+        /// The AES CryptKey used to encrypt the JWT Payload
+        /// </summary>
         public byte[] CryptKey { get; set; }
         public string CryptKeyBase64
         {
             set { CryptKey = Convert.FromBase64String(value); }
         }
 
+        /// <summary>
+        /// The AES IV used when encrypting the JWT Payload
+        /// </summary>
         public byte[] CryptIv { get; set; }
         public string CryptIvBase64
         {
             set { CryptIv = Convert.FromBase64String(value); }
         }
 
+        /// <summary>
+        /// The RSA Private Key used to Sign the JWT Token when RSA is used
+        /// </summary>
         public RSAParameters? privateKey;
         public RSAParameters? PrivateKey
         {
@@ -85,24 +130,42 @@ namespace ServiceStack.Auth
             }
         }
 
+        /// <summary>
+        /// Convenient overload to intialize the Private Key via exported XML
+        /// </summary>
         public string PrivateKeyXml
         {
             get { return PrivateKey != null ? PrivateKey.Value.FromPrivateRSAParameters() : null; }
             set { PrivateKey = value != null ? value.ToPrivateRSAParameters() : (RSAParameters?) null; }
         }
 
+        /// <summary>
+        /// The RSA Public Key used to Verify the JWT Token when RSA is used
+        /// </summary>
         public RSAParameters? PublicKey { get; set; }
 
+        /// <summary>
+        /// Convenient overload to intialize the Public Key via exported XML
+        /// </summary>
         public string PublicKeyXml
         {
             get { return PublicKey != null ? PublicKey.Value.FromPublicRSAParameters() : null; }
             set { PublicKey = value != null ? value.ToPublicRSAParameters() : (RSAParameters?)null; }
         }
 
+        /// <summary>
+        /// How long should JWT Tokens be valid for. (default 14 days)
+        /// </summary>
         public TimeSpan ExpireTokensIn { get; set; }
 
+        /// <summary>
+        /// Whether to invalidate all JWT Tokens issued before a specified date.
+        /// </summary>
         public DateTime? InvalidateTokensIssuedBefore { get; set; }
 
+        /// <summary>
+        /// Modify the registration of ConvertSessionToToken Service
+        /// </summary>
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
         public JwtAuthProviderReader()
