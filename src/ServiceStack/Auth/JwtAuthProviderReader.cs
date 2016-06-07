@@ -170,7 +170,6 @@ namespace ServiceStack.Auth
         public virtual void Init(IAppSettings appSettings = null)
         {
             RequireSecureConnection = true;
-            AuthKey = AesUtils.CreateKey();
             HashAlgorithm = "HS256";
             RequireHashAlgorithm = true;
             Issuer = "ssjwt";
@@ -412,6 +411,9 @@ namespace ServiceStack.Auth
 
         public void Register(IAppHost appHost, AuthFeature feature)
         {
+            if (AuthKey == null)
+                throw new ArgumentNullException("AuthKey", "An AuthKey is Required to use JWT, e.g: new JwtAuthProvider { AuthKey = AesUtils.CreateKey() }");
+
             if (KeyId == null)
                 KeyId = GetKeyId();
 

@@ -77,6 +77,7 @@ namespace RazorRockstars.Console.Files
                         new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
                         new JwtAuthProvider(AppSettings)
                         {
+                            AuthKey = AesUtils.CreateKey(),
                             RequireSecureConnection = false,
                             HashAlgorithm = JwtRsaPrivateKey != null || JwtRsaPublicKey != null ? "RS256" : "HS256",
                             PublicKey = JwtRsaPublicKey,

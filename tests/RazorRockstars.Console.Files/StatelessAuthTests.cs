@@ -289,7 +289,7 @@ namespace RazorRockstars.Console.Files
 
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                     new IAuthProvider[] {
-                        new JwtAuthProviderReader(AppSettings),
+                        new JwtAuthProviderReader(AppSettings) { AuthKey = AesUtils.CreateKey() },
                     }));
             }
         }

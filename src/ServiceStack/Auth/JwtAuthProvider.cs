@@ -13,7 +13,7 @@ namespace ServiceStack.Auth
     /// </summary>
     public class JwtAuthProvider : JwtAuthProviderReader, IAuthResponseFilter
     {
-        public JwtAuthProvider() { }
+        public JwtAuthProvider() {}
 
         public JwtAuthProvider(IAppSettings appSettings) : base(appSettings) { }
 
