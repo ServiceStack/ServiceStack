@@ -26,8 +26,6 @@ namespace RazorRockstars.Console.Files
         public RSAParameters? JwtRsaPrivateKey;
         public RSAParameters? JwtRsaPublicKey;
         public bool JwtEncryptPayload = false;
-        public byte[] JwtCryptKey = null;
-        public byte[] JwtCryptIv = null;
 
         public Action<Container> Use;
 
@@ -84,8 +82,6 @@ namespace RazorRockstars.Console.Files
                             PublicKey = JwtRsaPublicKey,
                             PrivateKey = JwtRsaPrivateKey,
                             EncryptPayload = JwtEncryptPayload,
-                            CryptKey = JwtCryptKey, 
-                            CryptIv = JwtCryptIv,
                         },
                     })
                 {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -91,28 +92,10 @@ namespace ServiceStack.Auth
         /// <summary>
         /// The AuthKey used to sign the JWT Token
         /// </summary>
-        public byte[] HmacAuthKey { get; set; }
-        public string HmacAuthKeyBase64
+        public byte[] AuthKey { get; set; }
+        public string AuthKeyBase64
         {
-            set { HmacAuthKey = Convert.FromBase64String(value); }
-        }
-
-        /// <summary>
-        /// The AES CryptKey used to encrypt the JWT Payload
-        /// </summary>
-        public byte[] CryptKey { get; set; }
-        public string CryptKeyBase64
-        {
-            set { CryptKey = Convert.FromBase64String(value); }
-        }
-
-        /// <summary>
-        /// The AES IV used when encrypting the JWT Payload
-        /// </summary>
-        public byte[] CryptIv { get; set; }
-        public string CryptIvBase64
-        {
-            set { CryptIv = Convert.FromBase64String(value); }
+            set { AuthKey = Convert.FromBase64String(value); }
         }
 
         /// <summary>
@@ -182,7 +165,7 @@ namespace ServiceStack.Auth
         public virtual void Init(IAppSettings appSettings = null)
         {
             RequireSecureConnection = true;
-            HmacAuthKey = AesUtils.CreateKey();
+            AuthKey = AesUtils.CreateKey();
             HashAlgorithm = "HS256";
             RequireHashAlgorithm = true;
             Issuer = "ssjwt";
@@ -202,17 +185,9 @@ namespace ServiceStack.Auth
 
                 PublicKeyXml = appSettings.GetString("jwt.PublicKeyXml");
 
-                var base64 = appSettings.GetString("jwt.HmacAuthKeyBase64");
+                var base64 = appSettings.GetString("jwt.AuthKeyBase64");
                 if (base64 != null)
-                    HmacAuthKeyBase64 = base64;
-
-                base64 = appSettings.GetString("jwt.CryptKeyBase64");
-                if (base64 != null)
-                    CryptKeyBase64 = base64;
-
-                base64 = appSettings.GetString("jwt.CryptIvBase64");
-                if (base64 != null)
-                    CryptIvBase64 = base64;
+                    AuthKeyBase64 = base64;
 
                 var issuer = appSettings.GetString("jwt.Issuer");
                 if (!string.IsNullOrEmpty(issuer))
@@ -233,8 +208,8 @@ namespace ServiceStack.Auth
             if (KeyId != null)
                 return KeyId;
 
-            if (HmacAlgorithms.ContainsKey(HashAlgorithm) && HmacAuthKey != null)
-                return Convert.ToBase64String(HmacAuthKey).Substring(0, 3);
+            if (HmacAlgorithms.ContainsKey(HashAlgorithm) && AuthKey != null)
+                return Convert.ToBase64String(AuthKey).Substring(0, 3);
             if (RsaSignAlgorithms.ContainsKey(HashAlgorithm) && PublicKey != null)
                 return Convert.ToBase64String(PublicKey.Value.Modulus).Substring(0, 3);
 
@@ -283,42 +258,104 @@ namespace ServiceStack.Auth
 
                     VerifyPayload(algorithm, bytesToSign, signatureBytes);
 
-                    if (EncryptPayload)
-                    {
-                        if (CryptKey == null || CryptIv == null)
-                            throw new NotSupportedException("CryptKey and IV required to Decrypt Payload");
-
-                        payloadBytes = AesUtils.Decrypt(payloadBytes, CryptKey, CryptIv);
-                    }
-
                     var payloadJson = payloadBytes.FromUtf8Bytes();
                     var jwtPayload = JsonObject.Parse(payloadJson);
 
-                    var expiresAt = GetUnixTime(jwtPayload, "exp");
-                    var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
-                    if (secondsSinceEpoch >= expiresAt)
-                        throw new TokenException(ErrorMessages.TokenExpired);
+                    var session = CreateSessionFromPayload(req, jwtPayload);
+                    req.Items[Keywords.Session] = session;
+                }
+                else if (parts.Length == 5) //Encrypted JWE Token
+                {
+                    if (RequireSecureConnection && !req.IsSecureConnection)
+                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
 
-                    if (InvalidateTokensIssuedBefore != null)
+                    if (PrivateKey == null || PublicKey == null)
+                        throw new NotSupportedException("PrivateKey is required to DecryptPayload");
+
+                    var jweHeaderBase64Url = parts[0];
+                    var jweEncKeyBase64Url = parts[1];
+                    var ivBase64Url = parts[2];
+                    var cipherTextBase64Url = parts[3];
+                    var tagBase64Url = parts[4];
+
+                    var sentTag = tagBase64Url.FromBase64UrlSafe();
+                    var aadBytes = (jweHeaderBase64Url + "." + jweEncKeyBase64Url).ToUtf8Bytes();
+                    var iv = ivBase64Url.FromBase64UrlSafe();
+                    var cipherText = cipherTextBase64Url.FromBase64UrlSafe();
+
+                    using (var hmac = new HMACSHA256(AuthKey))
+                    using (var encryptedStream = new MemoryStream())
                     {
-                        var issuedAt = GetUnixTime(jwtPayload, "iat");
-                        if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
-                            throw new TokenException(ErrorMessages.TokenInvalidated);
+                        using (var writer = new BinaryWriter(encryptedStream))
+                        {
+                            writer.Write(aadBytes);
+                            writer.Write(iv);
+                            writer.Write(cipherText);
+                            writer.Flush();
+
+                            var calcTag = hmac.ComputeHash(encryptedStream.ToArray());
+
+                            if (sentTag.Length != calcTag.Length)
+                                throw new ArgumentException("Invalid JWE Authentication Tag");
+
+                            var compare = 0;
+                            for (var i = 0; i < sentTag.Length; i++)
+                                compare |= sentTag[i] ^ calcTag[i];
+
+                            if (compare != 0)
+                                throw new ArgumentException("Invalid JWE Authentication Tag");
+                        }
                     }
 
-                    var sessionId = jwtPayload.GetValue("jid", SessionExtensions.CreateRandomSessionId);
-                    var session = SessionFeature.CreateNewSession(req, sessionId);
+                    var jweEncKey = jweEncKeyBase64Url.FromBase64UrlSafe();
+                    var cryptKey = RsaUtils.Decrypt(jweEncKey, PrivateKey.Value, UseRsaKeyLength);
 
-                    session.PopulateFromMap(jwtPayload);
+                    JsonObject jwtPayload;
+                    using (var aes = new AesManaged
+                    {
+                        KeySize = 128,
+                        BlockSize = 128,
+                        Mode = CipherMode.CBC,
+                        Padding = PaddingMode.PKCS7
+                    })
+                    using (var decryptor = aes.CreateDecryptor(cryptKey, iv))
+                    using (var ms = MemoryStreamFactory.GetStream(cipherText))
+                    using (var cryptStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                    {
+                        var jwtPayloadBytes = cryptStream.ReadFully();
+                        jwtPayload = JsonObject.Parse(jwtPayloadBytes.FromUtf8Bytes());
+                    }
 
-                    if (PopulateSessionFilter != null)
-                        PopulateSessionFilter(session, jwtPayload, req);
-
-                    HostContext.AppHost.OnSessionFilter(session, sessionId);
-
+                    var session = CreateSessionFromPayload(req, jwtPayload);
                     req.Items[Keywords.Session] = session;
                 }
             }
+        }
+
+        private IAuthSession CreateSessionFromPayload(IRequest req, JsonObject jwtPayload)
+        {
+            var expiresAt = GetUnixTime(jwtPayload, "exp");
+            var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
+            if (secondsSinceEpoch >= expiresAt)
+                throw new TokenException(ErrorMessages.TokenExpired);
+
+            if (InvalidateTokensIssuedBefore != null)
+            {
+                var issuedAt = GetUnixTime(jwtPayload, "iat");
+                if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
+                    throw new TokenException(ErrorMessages.TokenInvalidated);
+            }
+
+            var sessionId = jwtPayload.GetValue("jid", SessionExtensions.CreateRandomSessionId);
+            var session = SessionFeature.CreateNewSession(req, sessionId);
+
+            session.PopulateFromMap(jwtPayload);
+
+            if (PopulateSessionFilter != null)
+                PopulateSessionFilter(session, jwtPayload, req);
+
+            HostContext.AppHost.OnSessionFilter(session, sessionId);
+            return session;
         }
 
         public void VerifyPayload(string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
@@ -330,7 +367,7 @@ namespace ServiceStack.Auth
 
             if (isHmac)
             {
-                var calcSignatureBytes = HmacAlgorithms[algorithm](HmacAuthKey, bytesToSign);
+                var calcSignatureBytes = HmacAlgorithms[algorithm](AuthKey, bytesToSign);
 
                 if (!calcSignatureBytes.EquivalentTo(sentSignatureBytes))
                     throw new TokenException(ErrorMessages.InvalidSignature);

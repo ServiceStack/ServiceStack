@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
@@ -39,19 +40,27 @@ namespace ServiceStack.Auth
 
         public string CreateJwtBearerToken(IAuthSession session)
         {
-            var jwtHeader = CreateJwtHeader(HashAlgorithm, GetKeyId());
-            if (CreateHeaderFilter != null)
-                CreateHeaderFilter(jwtHeader);
-
             var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn);
             if (CreatePayloadFilter != null)
                 CreatePayloadFilter(jwtPayload);
+
+            if (EncryptPayload)
+            {
+                if (PrivateKey == null || PublicKey == null)
+                    throw new NotSupportedException("PrivateKey is required to EncryptPayload");
+
+                return CreateEncryptedJweToken(jwtPayload, PublicKey.Value, AuthKey);
+            }
+
+            var jwtHeader = CreateJwtHeader(HashAlgorithm, GetKeyId());
+            if (CreateHeaderFilter != null)
+                CreateHeaderFilter(jwtHeader);
 
             Func<byte[], byte[]> hashAlgoritm = null;
 
             Func<byte[], byte[], byte[]> hmac;
             if (HmacAlgorithms.TryGetValue(HashAlgorithm, out hmac))
-                hashAlgoritm = data => hmac(HmacAuthKey, data);
+                hashAlgoritm = data => hmac(AuthKey, data);
 
             Func<RSAParameters, byte[], byte[]> rsa;
             if (RsaSignAlgorithms.TryGetValue(HashAlgorithm, out rsa))
@@ -65,30 +74,89 @@ namespace ServiceStack.Auth
             if (hashAlgoritm == null)
                 throw new NotSupportedException("Invalid algoritm: " + HashAlgorithm);
 
-            if (EncryptPayload && (CryptKey == null || CryptIv == null))
-                throw new NotSupportedException("CryptKey and IV required to EncryptPayload");
-
-            var encryptFn = EncryptPayload
-                ? data => AesUtils.Encrypt(data, CryptKey, CryptIv)
-                : (Func<byte[], byte[]>)null;
-
-            var bearerToken = CreateJwtBearerToken(jwtHeader, jwtPayload, hashAlgoritm, encryptFn);
+            var bearerToken = CreateJwtBearerToken(jwtHeader, jwtPayload, hashAlgoritm);
             return bearerToken;
+        }
+
+        public static string CreateEncryptedJweToken(JsonObject jwtPayload, RSAParameters publicKey, byte[] authKey)
+        {
+            //From: http://self-issued.info/docs/draft-ietf-jose-json-web-encryption-09.html#RSACBCExample
+            var jweHeader = new JsonObject
+            {
+                { "alg", "RSA1_5" },
+                { "enc", "A128CBC-HS256" },
+                { "kid", Convert.ToBase64String(publicKey.Modulus).Substring(0,3) },
+            };
+
+            var jweHeaderBase64Url = jweHeader.ToJson().ToUtf8Bytes().ToBase64UrlSafe();
+
+            using (var aes = new AesManaged
+            {
+                KeySize = 128,
+                BlockSize = 128,
+                Mode = CipherMode.CBC,
+                Padding = PaddingMode.PKCS7
+            })
+            {
+                aes.GenerateIV();
+                var iv = aes.IV;
+                var cryptKey = aes.Key;
+
+                var jweEncKey = RsaUtils.Encrypt(cryptKey, publicKey, UseRsaKeyLength);
+                var jweEncKeyBase64Url = jweEncKey.ToBase64UrlSafe();
+                var ivBase64Url = iv.ToBase64UrlSafe();
+
+                var aad = jweHeaderBase64Url + "." + jweEncKeyBase64Url;
+                var aadBytes = aad.ToUtf8Bytes();
+                var payloadBytes = jwtPayload.ToJson().ToUtf8Bytes();
+
+                byte[] cipherText, tag;
+                using (var encrypter = aes.CreateEncryptor(cryptKey, iv))
+                using (var cipherStream = new MemoryStream())
+                {
+                    using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
+                    using (var writer = new BinaryWriter(cryptoStream))
+                    {
+                        writer.Write(payloadBytes);
+                    }
+
+                    cipherText = cipherStream.ToArray();
+                }
+
+                using (var hmac = new HMACSHA256(authKey))
+                using (var encryptedStream = new MemoryStream())
+                {
+                    using (var writer = new BinaryWriter(encryptedStream))
+                    {
+                        writer.Write(aadBytes);
+                        writer.Write(iv);
+                        writer.Write(cipherText);
+                        writer.Flush();
+
+                        tag = hmac.ComputeHash(encryptedStream.ToArray());
+                    }
+                }
+
+                var cipherTextBase64Url = cipherText.ToBase64UrlSafe();
+                var tagBase64Url = tag.ToBase64UrlSafe();
+
+                var jweToken = jweHeaderBase64Url + "."
+                    + jweEncKeyBase64Url + "." 
+                    + ivBase64Url + "."
+                    + cipherTextBase64Url + "."
+                    + tagBase64Url;
+
+                return jweToken;
+            }
         }
 
         public static string CreateJwtBearerToken(
             JsonObject jwtHeader,
             JsonObject jwtPayload,
-            Func<byte[], byte[]> signData,
-            Func<byte[], byte[]> cryptData = null)
+            Func<byte[], byte[]> signData)
         {
             var headerBytes = jwtHeader.ToJson().ToUtf8Bytes();
             var payloadBytes = jwtPayload.ToJson().ToUtf8Bytes();
-
-            if (cryptData != null)
-            {
-                payloadBytes = cryptData(payloadBytes);
-            }
 
             var base64Header = headerBytes.ToBase64UrlSafe();
             var base64Payload = payloadBytes.ToBase64UrlSafe();

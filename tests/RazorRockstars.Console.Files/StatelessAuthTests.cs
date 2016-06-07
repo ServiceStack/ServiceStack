@@ -211,32 +211,28 @@ namespace RazorRockstars.Console.Files
     public class RsaJwtWithEncryptedPayloadsStatelessAuthTests : StatelessAuthTests
     {
         private RSAParameters privateKey;
-        private byte[] cryptKey;
-        private byte[] cryptIv;
+        private RSAParameters publicKey;
 
         protected override ServiceStackHost CreateAppHost()
         {
             privateKey = RsaUtils.CreatePrivateKeyParams();
-            AesUtils.CreateKeyAndIv(out cryptKey, out cryptIv);
+            publicKey = privateKey.ToPublicRsaParameters();
 
             return new AppHost
             {
                 EnableAuth = true,
                 JwtRsaPrivateKey = privateKey,
                 JwtEncryptPayload = true,
-                JwtCryptKey = cryptKey,
-                JwtCryptIv = cryptIv,
                 Use = container => container.Register<IAuthRepository>(c =>
                     new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()))
             };
         }
 
         [Test]
-        public void Can_populate_entire_session_using_JWT_Token()
+        public void Can_populate_entire_session_using_JWE_Token()
         {
             var jwtProvider = (JwtAuthProviderReader)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
 
-            var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
             var payload = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
             {
                 UserAuthId = "1",
@@ -249,13 +245,10 @@ namespace RazorRockstars.Console.Files
 
             JwtAuthProviderReaderTests.PopulateWithAdditionalMetadata(payload);
 
-            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
-                data => RsaUtils.Authenticate(data, privateKey, "SHA256", JwtAuthProvider.UseRsaKeyLength),
-                data => AesUtils.Encrypt(data, cryptKey, cryptIv));
-
+            var jweToken = JwtAuthProvider.CreateEncryptedJweToken(payload, privateKey, jwtProvider.AuthKey);
             var client = new JsonServiceClient(ListeningOn)
             {
-                BearerToken = token
+                BearerToken = jweToken
             };
 
             var session = client.Get(new GetAuthUserSession());
