@@ -77,8 +77,8 @@ namespace ServiceStack.Auth
         }
 
         public static string CreateJwtBearerToken(
-            Dictionary<string, string> jwtHeader,
-            Dictionary<string, string> jwtPayload,
+            JsonObject jwtHeader,
+            JsonObject jwtPayload,
             Func<byte[], byte[]> signData,
             Func<byte[], byte[]> cryptData = null)
         {
@@ -100,9 +100,9 @@ namespace ServiceStack.Auth
             return bearerToken;
         }
 
-        public static Dictionary<string, string> CreateJwtHeader(string algorithm, string keyId = null)
+        public static JsonObject CreateJwtHeader(string algorithm, string keyId = null)
         {
-            var header = new Dictionary<string, string>
+            var header = new JsonObject
             {
                 { "typ", "JWT" },
                 { "alg", algorithm }
@@ -114,10 +114,10 @@ namespace ServiceStack.Auth
             return header;
         }
 
-        public static Dictionary<string, string> CreateJwtPayload(IAuthSession session, string issuer, TimeSpan expireIn)
+        public static JsonObject CreateJwtPayload(IAuthSession session, string issuer, TimeSpan expireIn)
         {
             var now = DateTime.UtcNow;
-            var jwtPayload = new Dictionary<string, string>
+            var jwtPayload = new JsonObject
             {
                 {"iss", issuer},
                 {"sub", session.UserAuthId},
@@ -127,6 +127,10 @@ namespace ServiceStack.Auth
 
             if (!string.IsNullOrEmpty(session.Email))
                 jwtPayload["email"] = session.Email;
+            if (!string.IsNullOrEmpty(session.FirstName))
+                jwtPayload["given_name"] = session.FirstName;
+            if (!string.IsNullOrEmpty(session.LastName))
+                jwtPayload["family_name"] = session.LastName;
             if (!string.IsNullOrEmpty(session.DisplayName))
                 jwtPayload["name"] = session.DisplayName;
 
@@ -152,10 +156,10 @@ namespace ServiceStack.Auth
             }
 
             if (roles.Count > 0)
-                jwtPayload["role"] = string.Join(",", roles);
+                jwtPayload["roles"] = roles.ToJson();
 
             if (perms.Count > 0)
-                jwtPayload["perm"] = string.Join(",", perms);
+                jwtPayload["perms"] = perms.ToJson();
 
             return jwtPayload;
         }

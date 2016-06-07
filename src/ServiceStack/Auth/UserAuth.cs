@@ -371,13 +371,13 @@ namespace ServiceStack.Auth
                     case "ProfileUrl":
                         session.ProfileUrl = entry.Value;
                         break;
-                    case "role":
+                    case "roles":
                     case "Roles":
-                        session.Roles = entry.Value.Split(',').ToList();
+                        session.Roles = entry.Value.FromJson<List<string>>();
                         break;
-                    case "perm":
+                    case "perms":
                     case "Permissions":
-                        session.Permissions = entry.Value.Split(',').ToList();
+                        session.Permissions = entry.Value.FromJson<List<string>>();
                         break;
                     case "iat":
                     case "CreatedAt":

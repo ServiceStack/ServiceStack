@@ -51,17 +51,17 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Run custom filter after JWT Header is created
         /// </summary>
-        public Action<Dictionary<string, string>> CreateHeaderFilter { get; set; }
+        public Action<JsonObject> CreateHeaderFilter { get; set; }
 
         /// <summary>
         /// Run custom filter after JWT Payload is created
         /// </summary>
-        public Action<Dictionary<string, string>> CreatePayloadFilter { get; set; }
+        public Action<JsonObject> CreatePayloadFilter { get; set; }
 
         /// <summary>
         /// Run custom filter after session is restored from a JWT Token
         /// </summary>
-        public Action<IAuthSession, Dictionary<string, string>, IRequest> PopulateSessionFilter { get; set; }
+        public Action<IAuthSession, JsonObject, IRequest> PopulateSessionFilter { get; set; }
 
         /// <summary>
         /// Whether to encrypt JWT Payload with supplied AES Crypt Key and IV/ (default false)
@@ -292,7 +292,7 @@ namespace ServiceStack.Auth
                     }
 
                     var payloadJson = payloadBytes.FromUtf8Bytes();
-                    var jwtPayload = payloadJson.FromJson<Dictionary<string, string>>();
+                    var jwtPayload = JsonObject.Parse(payloadJson);
 
                     var expiresAt = GetUnixTime(jwtPayload, "exp");
                     var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();

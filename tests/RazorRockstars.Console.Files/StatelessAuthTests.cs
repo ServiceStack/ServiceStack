@@ -242,8 +242,8 @@ namespace RazorRockstars.Console.Files
                 UserAuthId = "1",
                 DisplayName = "Test",
                 Email = "as@if.com",
-                Roles = new List<string> { "TheRole" },
-                Permissions = new List<string> { "ThePermission" },
+                Roles = new List<string> { "TheRole", "Role 2" },
+                Permissions = new List<string> { "ThePermission", "Perm 2" },
                 ProfileUrl = "http://example.org/profile.jpg"
             }, "external-jwt", TimeSpan.FromDays(14));
 
@@ -387,8 +387,8 @@ namespace RazorRockstars.Console.Files
                 UserAuthId = "1",
                 DisplayName = "Test",
                 Email = "as@if.com",
-                Roles = new List<string> { "TheRole" },
-                Permissions = new List<string> { "ThePermission" },
+                Roles = new List<string> { "TheRole", "Role 2" },
+                Permissions = new List<string> { "ThePermission", "Perm 2" },
             }, "external-jwt", TimeSpan.FromDays(14));
 
             var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
