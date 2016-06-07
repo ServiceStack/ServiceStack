@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using NUnit.Framework;
@@ -197,6 +198,19 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
             Assert.That(value.FinalSetting, Is.EqualTo("Final"));
             Assert.That(value.SomeOtherSetting, Is.EqualTo(12));
             Assert.That(value.SomeSetting, Is.EqualTo("Test"));
+        }
+
+        [Test]
+        public void Does_parse_byte_array_as_Base64()
+        {
+            var authKey = AesUtils.CreateKey();
+
+            var appSettings = new DictionarySettings(new Dictionary<string, string>
+            {
+                { "AuthKey", Convert.ToBase64String(authKey) }
+            });
+
+            Assert.That(appSettings.Get<byte[]>("AuthKey"), Is.EquivalentTo(authKey));
         }
     }
 
