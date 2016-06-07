@@ -704,7 +704,12 @@ namespace ServiceStack.Host
         public static bool ExcludesFeature(this Type type, Feature feature)
         {
             var excludeAttr = type.FirstAttribute<ExcludeAttribute>();
-            return excludeAttr != null && excludeAttr.Feature.HasFlag(feature);
+            return excludeAttr != null && excludeAttr.Feature.Has(feature);
+        }
+
+        public static bool Has(this Feature feature, Feature flag)
+        {
+            return (flag & feature) != 0;
         }
     }
 }

@@ -180,20 +180,20 @@ namespace ServiceStack
             if (cacheInfo.CacheControl != CacheControl.None)
             {
                 var cache = cacheInfo.CacheControl;
-                if (cache.HasFlag(CacheControl.Public))
+                if (cache.Has(CacheControl.Public))
                     cacheHeader.Add("public");
-                else if (cache.HasFlag(CacheControl.Private))
+                else if (cache.Has(CacheControl.Private))
                     cacheHeader.Add("private");
 
-                if (cache.HasFlag(CacheControl.MustRevalidate))
+                if (cache.Has(CacheControl.MustRevalidate))
                     cacheHeader.Add("must-revalidate");
-                if (cache.HasFlag(CacheControl.NoCache))
+                if (cache.Has(CacheControl.NoCache))
                     cacheHeader.Add("no-cache");
-                if (cache.HasFlag(CacheControl.NoStore))
+                if (cache.Has(CacheControl.NoStore))
                     cacheHeader.Add("no-store");
-                if (cache.HasFlag(CacheControl.NoTransform))
+                if (cache.Has(CacheControl.NoTransform))
                     cacheHeader.Add("no-transform");
-                if (cache.HasFlag(CacheControl.ProxyRevalidate))
+                if (cache.Has(CacheControl.ProxyRevalidate))
                     cacheHeader.Add("proxy-revalidate");
             }
 
@@ -209,6 +209,11 @@ namespace ServiceStack
 
     public static class HttpCacheExtensions
     {
+        public static bool Has(this CacheControl cache, CacheControl flag)
+        {
+            return (flag & cache) != 0;
+        }
+
         public static void EndNotModified(this IResponse res, string description=null)
         {
             res.StatusCode = 304;

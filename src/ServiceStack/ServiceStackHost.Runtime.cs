@@ -549,7 +549,7 @@ namespace ServiceStack
         {
             var types = operationTypes
                 .Where(x => !x.AllAttributes<ExcludeAttribute>()
-                            .Any(attr => attr.Feature.HasFlag(Feature.Soap)))
+                            .Any(attr => attr.Feature.Has(Feature.Soap)))
                 .Where(x => !x.IsGenericTypeDefinition())
                 .ToList();
             return types;
@@ -559,7 +559,7 @@ namespace ServiceStack
         {
             return !type.IsGenericTypeDefinition() &&
                    !type.AllAttributes<ExcludeAttribute>()
-                        .Any(attr => attr.Feature.HasFlag(Feature.Soap));
+                        .Any(attr => attr.Feature.Has(Feature.Soap));
         }
 
         public virtual void WriteSoapMessage(IRequest req, System.ServiceModel.Channels.Message message, Stream outputStream)
