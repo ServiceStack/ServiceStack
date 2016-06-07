@@ -40,7 +40,7 @@ namespace ServiceStack.Auth
 
         public string CreateJwtBearerToken(IAuthSession session)
         {
-            var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn);
+            var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audience);
             if (CreatePayloadFilter != null)
                 CreatePayloadFilter(jwtPayload);
 
@@ -182,7 +182,7 @@ namespace ServiceStack.Auth
             return header;
         }
 
-        public static JsonObject CreateJwtPayload(IAuthSession session, string issuer, TimeSpan expireIn)
+        public static JsonObject CreateJwtPayload(IAuthSession session, string issuer, TimeSpan expireIn, string audience=null)
         {
             var now = DateTime.UtcNow;
             var jwtPayload = new JsonObject
@@ -192,6 +192,9 @@ namespace ServiceStack.Auth
                 {"iat", now.ToUnixTime().ToString()},
                 {"exp", now.Add(expireIn).ToUnixTime().ToString()},
             };
+
+            if (audience != null)
+                jwtPayload["aud"] = audience;
 
             if (!string.IsNullOrEmpty(session.Email))
                 jwtPayload["email"] = session.Email;

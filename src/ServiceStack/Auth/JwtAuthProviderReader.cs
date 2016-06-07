@@ -85,6 +85,11 @@ namespace ServiceStack.Auth
         public string Issuer { get; set; }
 
         /// <summary>
+        /// The Audience to embed in the token. (default null)
+        /// </summary>
+        public string Audience { get; set; }
+
+        /// <summary>
         /// What Id to use to identify the Key used to sign the token. (default First 3 chars of Base64 Key)
         /// </summary>
         public string KeyId { get; set; }
@@ -175,6 +180,11 @@ namespace ServiceStack.Auth
             {
                 RequireSecureConnection = appSettings.Get("jwt.RequireSecureConnection", RequireSecureConnection);
 
+                Issuer = appSettings.GetString("jwt.Issuer");
+                Audience = appSettings.GetString("jwt.Audience");
+                ExpireTokensIn = appSettings.Get("jwt.ExpireTokensIn", ExpireTokensIn);
+                KeyId = appSettings.GetString("jwt.KeyId");
+
                 var hashAlg = appSettings.GetString("jwt.HashAlgorithm");
                 if (!string.IsNullOrEmpty(hashAlg))
                     HashAlgorithm = hashAlg;
@@ -189,17 +199,10 @@ namespace ServiceStack.Auth
                 if (base64 != null)
                     AuthKeyBase64 = base64;
 
-                var issuer = appSettings.GetString("jwt.Issuer");
-                if (!string.IsNullOrEmpty(issuer))
-                    Issuer = issuer;
-
-                ExpireTokensIn = appSettings.Get("jwt.ExpireTokensIn", ExpireTokensIn);
-
                 var dateStr = appSettings.GetString("jwt.InvalidateTokensIssuedBefore");
                 if (!string.IsNullOrEmpty(dateStr))
                     InvalidateTokensIssuedBefore = dateStr.FromJsv<DateTime>();
 
-                KeyId = appSettings.GetString("jwt.KeyId");
             }
         }
 
@@ -344,6 +347,13 @@ namespace ServiceStack.Auth
                 var issuedAt = GetUnixTime(jwtPayload, "iat");
                 if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
                     throw new TokenException(ErrorMessages.TokenInvalidated);
+            }
+
+            string audience;
+            if (jwtPayload.TryGetValue("aud", out audience))
+            {
+                if (audience != Audience)
+                    throw new TokenException("Invalid Audience: " + audience);
             }
 
             var sessionId = jwtPayload.GetValue("jid", SessionExtensions.CreateRandomSessionId);
