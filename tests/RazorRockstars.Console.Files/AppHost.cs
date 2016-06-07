@@ -11,6 +11,7 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
+using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 
@@ -71,7 +72,7 @@ namespace RazorRockstars.Console.Files
             if (EnableAuth)
             {
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                    new IAuthProvider[] {
+                    authProviders: new IAuthProvider[] {
                         new BasicAuthProvider(AppSettings),
                         new CredentialsAuthProvider(AppSettings),
                         new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
@@ -83,6 +84,8 @@ namespace RazorRockstars.Console.Files
                             PublicKey = JwtRsaPublicKey,
                             PrivateKey = JwtRsaPrivateKey,
                             EncryptPayload = JwtEncryptPayload,
+                            CreatePayloadFilter = (payload,session) => 
+                                payload["CreatedAt"] = session.CreatedAt.ToUnixTime().ToString()
                         },
                     })
                 {

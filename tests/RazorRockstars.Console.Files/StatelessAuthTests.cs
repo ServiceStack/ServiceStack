@@ -1153,7 +1153,7 @@ namespace RazorRockstars.Console.Files
         public void Can_not_access_Secure_service_with_expired_token()
         {
             var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.CreatePayloadFilter = jwtPayload =>
+            jwtProvider.CreatePayloadFilter = (jwtPayload,session) =>
                 jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
 
             var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
@@ -1184,7 +1184,7 @@ namespace RazorRockstars.Console.Files
         public void Can_Auto_reconnect_after_expired_token()
         {
             var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.CreatePayloadFilter = jwtPayload =>
+            jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
                 jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
 
             var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
@@ -1220,7 +1220,7 @@ namespace RazorRockstars.Console.Files
         public async Task Can_Auto_reconnect_after_expired_token_Async()
         {
             var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.CreatePayloadFilter = jwtPayload =>
+            jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
                 jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
 
             var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession

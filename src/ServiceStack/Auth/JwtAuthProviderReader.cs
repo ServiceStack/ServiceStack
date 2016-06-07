@@ -52,12 +52,12 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Run custom filter after JWT Header is created
         /// </summary>
-        public Action<JsonObject> CreateHeaderFilter { get; set; }
+        public Action<JsonObject, IAuthSession> CreateHeaderFilter { get; set; }
 
         /// <summary>
         /// Run custom filter after JWT Payload is created
         /// </summary>
-        public Action<JsonObject> CreatePayloadFilter { get; set; }
+        public Action<JsonObject, IAuthSession> CreatePayloadFilter { get; set; }
 
         /// <summary>
         /// Run custom filter after session is restored from a JWT Token

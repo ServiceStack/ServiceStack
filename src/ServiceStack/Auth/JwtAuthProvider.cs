@@ -42,7 +42,7 @@ namespace ServiceStack.Auth
         {
             var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audience);
             if (CreatePayloadFilter != null)
-                CreatePayloadFilter(jwtPayload);
+                CreatePayloadFilter(jwtPayload, session);
 
             if (EncryptPayload)
             {
@@ -54,7 +54,7 @@ namespace ServiceStack.Auth
 
             var jwtHeader = CreateJwtHeader(HashAlgorithm, GetKeyId());
             if (CreateHeaderFilter != null)
-                CreateHeaderFilter(jwtHeader);
+                CreateHeaderFilter(jwtHeader, session);
 
             Func<byte[], byte[]> hashAlgoritm = null;
 
