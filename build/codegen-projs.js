@@ -43,6 +43,7 @@ var SIGN_PROJS = [
     '../src/ServiceStack.Authentication.OAuth2/ServiceStack.Authentication.OAuth2.csproj',
     '../src/ServiceStack.Mvc/ServiceStack.Mvc.csproj',
     '../../Admin/src/ServiceStack.Admin/ServiceStack.Admin.csproj',
+    '../../ServiceStack.Aws/src/ServiceStack.Aws/ServiceStack.Aws.csproj',
     '../src/ServiceStack/ServiceStack.csproj'
 ];
 var SIGN_REPLACE_TEXTS = {
