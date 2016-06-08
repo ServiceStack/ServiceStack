@@ -35,12 +35,14 @@ namespace ServiceStack.Auth
         public static readonly Dictionary<string, Func<RSAParameters, byte[], byte[]>> RsaSignAlgorithms = new Dictionary<string, Func<RSAParameters, byte[], byte[]>>
         {
             { "RS256", (key, value) => RsaUtils.Authenticate(value, key, "SHA256", UseRsaKeyLength) },
+            { "RS384", (key, value) => RsaUtils.Authenticate(value, key, "SHA384", UseRsaKeyLength) },
             { "RS512", (key, value) => RsaUtils.Authenticate(value, key, "SHA512", UseRsaKeyLength) },
         };
 
         public static readonly Dictionary<string, Func<RSAParameters, byte[], byte[], bool>> RsaVerifyAlgorithms = new Dictionary<string, Func<RSAParameters, byte[], byte[], bool>>
         {
             { "RS256", (key, value, sig) => RsaUtils.Verify(value, sig, key, "SHA256", UseRsaKeyLength) },
+            { "RS384", (key, value, sig) => RsaUtils.Verify(value, sig, key, "SHA384", UseRsaKeyLength) },
             { "RS512", (key, value, sig) => RsaUtils.Verify(value, sig, key, "SHA512", UseRsaKeyLength) },
         };
 
@@ -411,8 +413,15 @@ namespace ServiceStack.Auth
 
         public void Register(IAppHost appHost, AuthFeature feature)
         {
-            if (AuthKey == null)
+            var isHmac = HmacAlgorithms.ContainsKey(HashAlgorithm);
+            var isRsa = RsaSignAlgorithms.ContainsKey(HashAlgorithm);
+            if (!isHmac && !isRsa)
+                throw new NotSupportedException("Invalid algoritm: " + HashAlgorithm);
+
+            if (isHmac && AuthKey == null)
                 throw new ArgumentNullException("AuthKey", "An AuthKey is Required to use JWT, e.g: new JwtAuthProvider { AuthKey = AesUtils.CreateKey() }");
+            else if (isRsa && PrivateKey == null && PublicKey == null)
+                throw new ArgumentNullException("PrivateKey", "PrivateKey is Required to use JWT with " + HashAlgorithm);
 
             if (KeyId == null)
                 KeyId = GetKeyId();

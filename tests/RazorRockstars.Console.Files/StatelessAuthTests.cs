@@ -301,13 +301,13 @@ namespace RazorRockstars.Console.Files
             appHost = new JwtAuthProviderReaderAppHost
             {
                 AppSettings = new DictionarySettings(new Dictionary<string, string> {
-                        { "jwt.HashAlgorithm", "RS256" },
-                        { "jwt.PublicKeyXml", privateKey.ToPublicKeyXml() },
-                        { "jwt.RequireSecureConnection", "False" },
-                    })
+                    { "jwt.HashAlgorithm", "RS256" },
+                    { "jwt.PublicKeyXml", privateKey.ToPublicKeyXml() },
+                    { "jwt.RequireSecureConnection", "False" },
+                })
             }
-               .Init()
-               .Start("http://*:2337/");
+            .Init()
+            .Start("http://*:2337/");
         }
 
         [TestFixtureTearDown]
