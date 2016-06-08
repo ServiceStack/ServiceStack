@@ -249,10 +249,10 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class ConvertSessionToTokenResponse
+    public class ConvertSessionToTokenResponse : IMeta
     {
         [DataMember(Order = 1)]
-        public string BearerToken { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
 
         [DataMember(Order = 2)]
         public ResponseStatus ResponseStatus { get; set; }

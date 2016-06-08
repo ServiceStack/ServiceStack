@@ -273,7 +273,10 @@ namespace RazorRockstars.Console.Files
             {
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                     new IAuthProvider[] {
-                        new JwtAuthProviderReader(AppSettings),
+                        new JwtAuthProviderReader(AppSettings) {
+                            HashAlgorithm = "RS256",
+                            PublicKeyXml = null
+                        },
                     }));
             }
         }
@@ -1288,9 +1291,9 @@ namespace RazorRockstars.Console.Files
             newClient.SetSessionId(client.GetSessionId());
 
             var tokenResponse = newClient.Send(new ConvertSessionToToken());
-            Assert.That(tokenResponse.BearerToken, Is.Not.Null);
             var tokenCookie = newClient.GetTokenCookie();
-            Assert.That(tokenCookie, Is.EqualTo(tokenResponse.BearerToken));
+            response = newClient.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
 
             try
             {

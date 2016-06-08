@@ -265,21 +265,18 @@ namespace ServiceStack.Auth
                 throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
 
             var session = Request.GetSession();
-            var response = new ConvertSessionToTokenResponse
-            {
-                BearerToken = jwtAuthProvider.CreateJwtBearerToken(session)
-            };
+            var token = jwtAuthProvider.CreateJwtBearerToken(session);
 
             if (!request.PreserveSession)
                 Request.RemoveSession(session.Id);
 
             if (request.SkipCookie)
-                return response;
+                return new ConvertSessionToTokenResponse();
 
-            return new HttpResult(response)
+            return new HttpResult(new ConvertSessionToTokenResponse())
             {
                 Cookies = {
-                    new Cookie(Keywords.JwtSessionToken, response.BearerToken) {
+                    new Cookie(Keywords.JwtSessionToken, token) {
                         HttpOnly = true,
                         Secure = Request.IsSecureConnection,
                         Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),
