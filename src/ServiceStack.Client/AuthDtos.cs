@@ -243,9 +243,6 @@ namespace ServiceStack
     {
         [DataMember(Order = 1)]
         public bool PreserveSession { get; set; }
-
-        [DataMember(Order = 2)]
-        public bool SkipCookie { get; set; }
     }
 
     [DataContract]

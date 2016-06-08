@@ -270,9 +270,6 @@ namespace ServiceStack.Auth
             if (!request.PreserveSession)
                 Request.RemoveSession(session.Id);
 
-            if (request.SkipCookie)
-                return new ConvertSessionToTokenResponse();
-
             return new HttpResult(new ConvertSessionToTokenResponse())
             {
                 Cookies = {
