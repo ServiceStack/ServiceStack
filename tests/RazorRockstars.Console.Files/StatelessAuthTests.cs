@@ -273,10 +273,7 @@ namespace RazorRockstars.Console.Files
             {
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                     new IAuthProvider[] {
-                        new JwtAuthProviderReader(AppSettings) {
-                            HashAlgorithm = "RS256",
-                            PublicKeyXml = null
-                        },
+                        new JwtAuthProviderReader(AppSettings),
                     }));
             }
         }
