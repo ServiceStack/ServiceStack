@@ -271,25 +271,9 @@ namespace RazorRockstars.Console.Files
 
             public override void Configure(Container container)
             {
-                var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
-                container.Register<IDbConnectionFactory>(dbFactory);
-                container.Register<IAuthRepository>(c =>
-                    new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()) { UseDistinctRoleTables = true });
-
-                var authRepository = container.Resolve<IAuthRepository>();
-                authRepository.InitSchema();
-                authRepository.CreateUserAuth(new UserAuth
-                {
-                    UserName = "user",
-                    Email = "as@if{0}.com",
-                    DisplayName = "DisplayName",
-                    FirstName = "FirstName",
-                    LastName = "LastName",
-                }, "p@55word");
-
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                     new IAuthProvider[] {
-                        new JwtAuthProviderReader(AppSettings) { AuthKey = AesUtils.CreateKey() },
+                        new JwtAuthProviderReader(AppSettings),
                     }));
             }
         }

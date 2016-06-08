@@ -40,7 +40,15 @@ namespace ServiceStack.Auth
 
         public string CreateJwtBearerToken(IAuthSession session)
         {
-            var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audience);
+            IEnumerable<string> roles = null, perms = null;
+            var authRepo = HostContext.TryResolve<IAuthRepository>() as IManageRoles;
+            if (authRepo != null)
+            {
+                roles = authRepo.GetRoles(session.UserAuthId);
+                perms = authRepo.GetPermissions(session.UserAuthId);
+            }
+
+            var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audience, roles, perms);
             if (CreatePayloadFilter != null)
                 CreatePayloadFilter(jwtPayload, session);
 
@@ -189,7 +197,11 @@ namespace ServiceStack.Auth
             return header;
         }
 
-        public static JsonObject CreateJwtPayload(IAuthSession session, string issuer, TimeSpan expireIn, string audience=null)
+        public static JsonObject CreateJwtPayload(
+            IAuthSession session, string issuer, TimeSpan expireIn, 
+            string audience=null,
+            IEnumerable<string> roles=null,
+            IEnumerable<string> permissions =null)
         {
             var now = DateTime.UtcNow;
             var jwtPayload = new JsonObject
@@ -221,23 +233,19 @@ namespace ServiceStack.Auth
             if (profileUrl != null && profileUrl != AuthMetadataProvider.DefaultNoProfileImgUrl)
                 jwtPayload["picture"] = profileUrl;
 
-            var authRepo = HostContext.TryResolve<IAuthRepository>().AsUserAuthRepository();
-            var manageRoles = authRepo as IManageRoles;
+            var combinedRoles = new List<string>(session.Roles.Safe());
+            var combinedPerms = new List<string>(session.Permissions.Safe());
 
-            var roles = session.Roles ?? new List<string>();
-            var perms = session.Permissions ?? new List<string>();
+            if (roles != null)
+                combinedRoles.AddRange(roles);
+            if (permissions != null)
+                combinedPerms.AddRange(permissions);
 
-            if (manageRoles != null)
-            {
-                roles.AddRange(manageRoles.GetRoles(session.UserAuthId) ?? TypeConstants.EmptyStringArray);
-                perms.AddRange(manageRoles.GetPermissions(session.UserAuthId) ?? TypeConstants.EmptyStringArray);
-            }
+            if (combinedRoles.Count > 0)
+                jwtPayload["roles"] = combinedRoles.ToJson();
 
-            if (roles.Count > 0)
-                jwtPayload["roles"] = roles.ToJson();
-
-            if (perms.Count > 0)
-                jwtPayload["perms"] = perms.ToJson();
+            if (combinedPerms.Count > 0)
+                jwtPayload["perms"] = combinedPerms.ToJson();
 
             return jwtPayload;
         }
