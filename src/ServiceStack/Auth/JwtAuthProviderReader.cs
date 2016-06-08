@@ -287,7 +287,15 @@ namespace ServiceStack.Auth
                     var iv = ivBase64Url.FromBase64UrlSafe();
                     var cipherText = cipherTextBase64Url.FromBase64UrlSafe();
 
-                    using (var hmac = new HMACSHA256(AuthKey))
+                    var jweEncKey = jweEncKeyBase64Url.FromBase64UrlSafe();
+                    var cryptAuthKeys256 = RsaUtils.Decrypt(jweEncKey, PrivateKey.Value, UseRsaKeyLength);
+
+                    var authKey = new byte[128 / 8];
+                    var cryptKey = new byte[128 / 8];
+                    Buffer.BlockCopy(cryptAuthKeys256, 0, authKey, 0, authKey.Length);
+                    Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
+
+                    using (var hmac = new HMACSHA256(authKey))
                     using (var encryptedStream = new MemoryStream())
                     {
                         using (var writer = new BinaryWriter(encryptedStream))
@@ -310,9 +318,6 @@ namespace ServiceStack.Auth
                                 throw new ArgumentException("Invalid JWE Authentication Tag");
                         }
                     }
-
-                    var jweEncKey = jweEncKeyBase64Url.FromBase64UrlSafe();
-                    var cryptKey = RsaUtils.Decrypt(jweEncKey, PrivateKey.Value, UseRsaKeyLength);
 
                     JsonObject jwtPayload;
                     using (var aes = new AesManaged

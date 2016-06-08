@@ -245,7 +245,7 @@ namespace RazorRockstars.Console.Files
 
             JwtAuthProviderReaderTests.PopulateWithAdditionalMetadata(payload);
 
-            var jweToken = JwtAuthProvider.CreateEncryptedJweToken(payload, privateKey, jwtProvider.AuthKey);
+            var jweToken = JwtAuthProvider.CreateEncryptedJweToken(payload, privateKey);
             var client = new JsonServiceClient(ListeningOn)
             {
                 BearerToken = jweToken

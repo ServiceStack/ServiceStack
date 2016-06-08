@@ -49,7 +49,7 @@ namespace ServiceStack.Auth
                 if (PrivateKey == null || PublicKey == null)
                     throw new NotSupportedException("PrivateKey is required to EncryptPayload");
 
-                return CreateEncryptedJweToken(jwtPayload, PublicKey.Value, AuthKey);
+                return CreateEncryptedJweToken(jwtPayload, PublicKey.Value);
             }
 
             var jwtHeader = CreateJwtHeader(HashAlgorithm, GetKeyId());
@@ -78,7 +78,7 @@ namespace ServiceStack.Auth
             return bearerToken;
         }
 
-        public static string CreateEncryptedJweToken(JsonObject jwtPayload, RSAParameters publicKey, byte[] authKey)
+        public static string CreateEncryptedJweToken(JsonObject jwtPayload, RSAParameters publicKey)
         {
             //From: http://self-issued.info/docs/draft-ietf-jose-json-web-encryption-09.html#RSACBCExample
             var jweHeader = new JsonObject
@@ -90,6 +90,13 @@ namespace ServiceStack.Auth
 
             var jweHeaderBase64Url = jweHeader.ToJson().ToUtf8Bytes().ToBase64UrlSafe();
 
+            var authKey = new byte[128 / 8];
+            var cryptKey = new byte[128 / 8];
+            var cryptAuthKeys256 = AesUtils.CreateKey();
+
+            Buffer.BlockCopy(cryptAuthKeys256, 0, authKey, 0, authKey.Length);
+            Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
+
             using (var aes = new AesManaged
             {
                 KeySize = 128,
@@ -100,9 +107,9 @@ namespace ServiceStack.Auth
             {
                 aes.GenerateIV();
                 var iv = aes.IV;
-                var cryptKey = aes.Key;
+                aes.Key = cryptKey;
 
-                var jweEncKey = RsaUtils.Encrypt(cryptKey, publicKey, UseRsaKeyLength);
+                var jweEncKey = RsaUtils.Encrypt(cryptAuthKeys256, publicKey, UseRsaKeyLength);
                 var jweEncKeyBase64Url = jweEncKey.ToBase64UrlSafe();
                 var ivBase64Url = iv.ToBase64UrlSafe();
 
