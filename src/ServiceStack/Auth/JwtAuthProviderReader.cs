@@ -67,7 +67,8 @@ namespace ServiceStack.Auth
         public Action<IAuthSession, JsonObject, IRequest> PopulateSessionFilter { get; set; }
 
         /// <summary>
-        /// Whether to encrypt JWT Payload with supplied AES Crypt Key and IV/ (default false)
+        /// Whether to encrypt JWE Payload (default false). 
+        /// Uses RSA-OAEP for Key Encryption and AES/128/CBC HMAC SHA256 for Conent Encryption
         /// </summary>
         public bool EncryptPayload { get; set; }
 

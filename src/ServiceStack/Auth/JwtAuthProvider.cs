@@ -83,7 +83,7 @@ namespace ServiceStack.Auth
             //From: http://self-issued.info/docs/draft-ietf-jose-json-web-encryption-09.html#RSACBCExample
             var jweHeader = new JsonObject
             {
-                { "alg", "RSA1_5" },
+                { "alg", "RSA-OAEP" },
                 { "enc", "A128CBC-HS256" },
                 { "kid", Convert.ToBase64String(publicKey.Modulus).Substring(0,3) },
             };
