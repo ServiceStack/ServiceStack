@@ -167,7 +167,7 @@ namespace ServiceStack.Auth
 
                 foreach (var entry in tokens.Items)
                 {
-                    instance.Items[entry.Value] = entry.Value;
+                    instance.Items[entry.Key] = entry.Value;
                 }
             }
 
