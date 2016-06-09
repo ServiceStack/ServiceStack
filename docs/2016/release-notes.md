@@ -1,3 +1,511 @@
+# [v4.0.58 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md)
+
+v4.0.58 is another jam-packed release starting with exciting new API Key and JWT Auth Providers enabling fast, stateless and centralized Auth Services, a modernized API surface for OrmLite, new GEO capabilities in Redis, Logging for Slack, performance and memory improvements across all ServiceStack and libraries including useful utilities you can reuse to improve performance in your own Apps! 
+
+I'll try highlight the main points but I welcome you to checkout the [full v4.0.58 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#v4058-release-notes) when you can.
+
+## Authentication
+
+Auth Providers that authenticate with each request (i.e. implement `IAuthWithRequest`) no longer persist Users Sessions to the cache, they're just attached to the `IRequest` and only last for the duration of the Request. This should be a transparent change but can be reverted by setting `PersistSession=true`.
+
+### [API Key Auth Provider](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#api-key-auth-provider)
+
+The new `ApiKeyAuthProvider` provides an alternative method for allowing external 3rd Parties access to 
+your protected Services without needing to specify a password. API Keys is the preferred approach for 
+many well-known public API providers used in system-to-system scenarios for several reasons:
+
+ - **Simple** - It integrates easily with existing HTTP Auth functionality
+ - **Independent from Password** - Limits exposure to the much more sensitive master user passwords that 
+ should ideally never be stored in plain-text. 
+ - **Entropy** - API Keys are typically much more secure than most normal User Passwords. The configurable 
+default has **24 bytes** of entropy (Guids have 16 bytes) 
+ - **Performance** - Thanks to their much greater entropy and independence from user-chosen passwords,
+ API Keys are validated as fast as possible using a datastore Index. 
+
+Like most ServiceStack providers the new API Key Auth Provider is simple to use, integrates seamlessly with
+ServiceStack existing Auth model and includes Typed end-to-end client/server support. 
+
+We've modeled it around Stripe API Keys and provides an alternative way to authenticate using an API Key, which can be registered with just:
+
+```csharp
+Plugins.Add(new AuthFeature(...,
+    new IAuthProvider[] {
+        new ApiKeyAuthProvider(AppSettings),
+        //...
+    }));
+```
+
+And can persist API Keys in either of the following Auth Repositories: `OrmLiteAuthRepository`, `RedisAuthRepository`, `DynamoDbAuthRepository` and `InMemoryAuthRepository`.
+
+Just like Stripe, API Keys can be sent in the Username of HTTP Basic Auth or as a HTTP Bearer Token. Example using .NET Service Clients:
+
+```csharp
+var client = new JsonServiceClient(baseUrl) {
+    Credentials = new NetworkCredential(apiKey, "")
+};
+
+var client = new JsonHttpClient(baseUrl) {
+    BearerToken = apiKey
+};
+```
+
+And [HTTP Utils](https://github.com/ServiceStack/ServiceStack/wiki/Http-Utils):
+
+```csharp
+var response = baseUrl.CombineWith("/secured").GetStringFromUrl(
+    requestFilter: req => req.AddBasicAuth(apiKey, ""));
+    
+var response = await "https://example.org/secured".GetJsonFromUrlAsync(
+    requestFilter: req => req.AddBearerToken(apiKey));
+```
+
+### [Multiple API Key Types and Environments](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#multiple-api-key-types-and-environments)
+
+API Keys are automatically created when a User is registered, a key is created for each Key **Type** and **Environment**. By default it creates a "secret" API Key for both "live" and "test" environments, you could change this to also create "publishable" API Keys as well with:
+
+```csharp
+Plugins.Add(new AuthFeature(...,
+    new IAuthProvider[] {
+        new ApiKeyAuthProvider(AppSettings) {
+            KeyTypes = new[] { "secret", "publishable" },
+        }
+    });
+```
+
+If preferred properties can also be set in [AppSettings](https://github.com/ServiceStack/ServiceStack/wiki/AppSettings):
+
+```xml
+<add key="apikey.KeyTypes" value="secret,publishable" />
+```
+
+
+### [Multitenancy by API Keys](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#multitenancy) 
+
+Thanks to the ServiceStack's trivial support for [Multitenancy](https://github.com/ServiceStack/ServiceStack/wiki/Multitenancy) you can easily change which Database your Services and AutoQuery Services use based on Key Environment by overriding `GetDbConnection()` in your AppHost, e.g:
+
+```csharp
+public override IDbConnection GetDbConnection(IRequest req = null)
+{
+    //If an API Test Key was used return DB connection to TestDb instead: 
+    return req.GetApiKey()?.Environment == "test"
+        ? TryResolve<IDbConnectionFactory>().OpenDbConnection("TestDb")
+        : base.GetDbConnection(req);
+}
+```
+
+## [JWT Auth Provider](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#jwt-auth-provider)
+
+Even more exciting than the new API Key Provider is the new integrated Auth solution for the popular
+[JSON Web Tokens](https://jwt.io/) (JWT) industry standard which is easily enabled by registering
+the `JwtAuthProvider` with the `AuthFeature` plugin:
+
+```csharp
+Plugins.Add(new AuthFeature(...,
+    new IAuthProvider[] {
+        new JwtAuthProvider(AppSettings) { AuthKey = AesUtils.CreateKey() },
+        new CredentialsAuthProvider(AppSettings),
+        //...
+    }));
+```
+
+## JWT Overview
+
+A nice property of JWT tokens is that they allow for truly stateless authentication where API Keys and user 
+credentials can be maintained in a decentralized Auth Service that's kept isolated from the rest of your 
+System, making them optimal for use in Microservice architectures.
+
+Being self-contained lends JWT tokens to more scalable, performant and flexible architectures as they don't 
+require any I/O or any state to be accessed from App Servers to validate the JWT Tokens, this is unlike all 
+other Auth Providers which requires at least a DB, Cache or Network hit to authenticate the user.
+
+A good introduction into JWT is availble from the JWT website: https://jwt.io/introduction/
+
+### Service Client Integration
+
+Just like API Keys JWT Tokens can be sent as a HTTP Bearer Token, since we control the Service Client we're also able to enable high-level functionality like being able to transparently handle when our JWT Token expires in order to fetch a new one. Since JWT Tokens are self-contained they could instead need to retrieved from an externalized central authority service independent from the Service we're talking to. We can support this scenario by handling the `OnAuthenticationRequired` callback where we can call the Auth Service to fetch our new token with:
+
+```csharp
+var authClient = JsonServiceClient(centralAuthBaseUrl) {
+    Credentials = new NetworkCredential(apiKey, "")
+};
+
+var client = new JsonServiceClient(baseUrl);
+client.OnAuthenticationRequired = () => {
+    client.BearerToken = authClient.Send(new Authenticate()).BearerToken;
+};
+```
+
+### JWT Signature
+
+JWT Tokens are possible courtesy of the cryptographic signature added to the end of the message that's used 
+to Authenticate and Verify that a Message hasn't been tampered with. The JWT standard allows for a number of different Hashing Algorithms although requires at least the **HM256** HMAC SHA-256 to be supported which is the default. The full list of Symmetric HMAC and Asymmetric RSA Algorithms `JwtAuthProvider` supports include:
+
+ - **HM256** - Symmetric HMAC SHA-256 algorithm
+ - **HS384** - Symmetric HMAC SHA-384 algorithm
+ - **HS512** - Symmetric HMAC SHA-512 algorithm
+ - **RS256** - Asymmetric RSA with PKCS#1 padding with SHA-256
+ - **RS384** - Asymmetric RSA with PKCS#1 padding with SHA-384
+ - **RS512** - Asymmetric RSA with PKCS#1 padding with SHA-512
+
+HMAC is the simplest to use as it lets you use the same AuthKey to Sign and Verify the message. 
+
+But if preferred you can use a RSA Keys to sign and verify tokens by changing the `HashAlgorithm` and 
+specifying a RSA Private Key:
+
+```csharp
+new JwtAuthProvider(AppSettings) { 
+    HashAlgorithm = "RS256",
+    PrivateKeyXml = AppSettings.GetString("PrivateKeyXml") 
+}
+```
+
+### Encrypted JWE Tokens
+
+Something that's not immediately obvious is that while JWT Tokens are signed to prevent tampering and 
+verify authenticity, they're not encrypted and can easily be read by decoding the URL-safe Base64 string.
+This is a feature of JWT where it allows Client Apps to inspect the User's claims and hide functionality
+they don't have access to, it also means that JWT Tokens are debuggable and can be inspected for whenever 
+you need to track down unexpected behavior.
+
+But there may be times when you want to embed sensitive information in your JWT Tokens in which case you'll
+want to enable Encryption, which can be done with:
+
+```csharp
+new JwtAuthProvider(AppSettings) { 
+    PrivateKeyXml = AppSettings.GetString("PrivateKeyXml"),
+    EncryptPayload = true
+}
+```
+
+When turning on encryption, tokens are instead created following the [JSON Web Encryption (JWE)](https://tools.ietf.org/html/rfc7516#section-3) standard where they'll be encoded in the 5-part [JWE Compact Serialization](https://tools.ietf.org/html/rfc7516#section-3.1) format.
+
+### Stateless Auth Microservices
+
+One of JWT's most appealing features is its ability to decouple the System that provides User Authentication Services and issues tokens from all the other Systems but are still able provide protected Services although no longer needs access to a User database or Session data store to facilitate it, as sessions can now be embedded in Tokens and its state maintained and sent by clients instead of accessed from each App Server. This is ideal for Microservice architectures where Auth Services can be isolated into a single externalized System.
+
+With this use-case in mind we've decoupled `JwtAuthProvider` in 2 classes:
+
+ - [JwtAuthProviderReader](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack/Auth/JwtAuthProviderReader.cs) - 
+Responsible for validating and creating Authenticated User Sessions from tokens
+ - [JwtAuthProvider](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack/Auth/JwtAuthProvider.cs) -
+Inherits `JwtAuthProviderReader` to also be able to Issue, Encrypt and provide access to tokens
+
+#### Services only Validating Tokens
+
+This lets us configure our Microservices that we want to enable Authentication via JWT Tokens down to just:
+
+```csharp
+public override void Configure(Container container)
+{
+    Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+        new IAuthProvider[] {
+            new JwtAuthProviderReader(AppSettings) {
+                HashAlgorithm = "RS256",
+                PublicKeyXml = AppSettings.GetString("PublicKeyXml")
+            },
+        }));
+}
+```
+
+Which no longer needs access to a [IUserAuthRepository](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization#userauth-persistence---the-iuserauthrepository) or [Sessions](https://github.com/ServiceStack/ServiceStack/wiki/Sessions) since they're populated entirely from JWT Tokens. Whilst you can use the default **HS256** HashAlgorithm, RSA is ideal for this use-case as you can limit access to the **PrivateKey** to only the central Auth Service issuing the tokens and then only distribute the **PublicKey** to each Service which needs to validate them.
+
+### Ajax Clients
+
+Using Cookies is the [recommended way for using JWT Tokens in Web Applications](https://stormpath.com/blog/where-to-store-your-jwts-cookies-vs-html5-web-storage) since the `HttpOnly` Cookie flag will prevent it from being accessible from JavaScript making them immune to XSS attacks whilst the `Secure` flag will ensure that the JWT Token is only ever transmitted over HTTPS.
+
+You can convert your Session into a Token and set the **ss-jwt** Cookie in your web page by sending an Ajax request to `/session-to-token`, e.g:
+
+```javascript
+$.post("/session-to-token");
+```
+
+Likewise this API lets you convert Sessions created by any of the OAuth providers into a stateless JWT Token.
+
+
+## OrmLite
+
+### Cleaner, Modernized API Surface
+
+As [mentioned in the last release](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/release-notes.md#deprecating-legacy-ormlite-apis) we've moved OrmLite's deprecated APIs into the `ServiceStack.OrmLite.Legacy` namespace leaving a clean, modern API surface in OrmLite's default namespace.
+
+This primarily affects the original OrmLite APIs ending with `*Fmt` which were used to provide a familiar API for C# developers based on C#'s `string.Format()`, e.g:
+
+```csharp
+var tracks = db.SelectFmt<Track>("Artist = {0} AND Album = {1}", 
+    "Nirvana", "Nevermind");
+```
+
+Whilst you can continue using the legacy API by adding the `ServiceStack.OrmLite.Legacy` namespace, it's also a good time to consider switching using any of the recommended parameterized APIs below:
+
+```csharp
+var tracks = db.Select<Track>(x => x.Artist == "Nirvana" && x.Album == "Nevermind");
+
+var q = db.From<Track>()
+    .Where(x => x.Artist == "Nirvana" && x.Album == "Nevermind");
+var tracks = db.Select(q);
+
+var tracks = db.Select<Track>("Artist = @artist AND Album = @album", 
+    new { artist = "Nirvana", album = "Nevermind" });
+
+var tracks = db.SqlList<Track>(
+    "SELECT * FROM Track WHERE Artist = @artist AND Album = @album",
+    new { artist = "Nirvana", album = "Nevermind" });
+```
+
+### Parameterized by default
+
+The `OrmLiteConfig.UseParameterizeSqlExpressions` option that could be used to disable parameterized 
+SqlExpressions and revert to using in-line escaped SQL has been removed in along with all its dependent 
+functionality, so now all queries just use db params.
+
+### Improved partial Updates and Inserts APIs
+
+One of the limitations we had with using LINQ Expressions was the [lack of support for assignment expressions](http://stackoverflow.com/a/16847364/85785) which meant we previously needed to do capture which fields you wanted updated in partial updates, e.g:
+
+```csharp
+db.UpdateOnly(new Poco { Age = 22 }, onlyFields:p => p.Age, where:p => p.Name == "Justin Bieber");
+
+//increments age by 1
+db.UpdateAdd(new Poco { Age = 1 }, onlyFields:p => p.Age, where:p => p.Name == "Justin Bieber");
+```
+
+Taking a [leaf from PocoDynamo](https://github.com/ServiceStack/PocoDynamo#updating-an-item-with-pocodynamo) we've added a better API using a lambda expression which now saves us from having to specify which fields to update twice since we're able to infer them from the returned Member Init Expression, e.g:
+
+```csharp
+db.UpdateOnly(() => new Poco { Age = 22 }, where: p => p.Name == "Justin Bieber");
+
+//increments age by 1
+db.UpdateAdd(() => new Poco { Age = 1 }, where: p => p.Name == "Justin Bieber");
+```
+
+With async equivalents also available:
+
+```csharp
+await db.UpdateOnlyAsync(() => new Poco { Age = 22 }, where: p => p.Name == "Justin Bieber");
+await db.UpdateOnlyAsync(() => new Poco { Age = 1 }, where: p => p.Name == "Justin Bieber");
+```
+
+This feature is extended for partial INSERT's as well:
+
+```csharp
+db.InsertOnly(() => new Poco { Name = "Justin Bieber", Age = 22 });
+
+await db.InsertOnlyAsync(() => new Poco { Name = "Justin Bieber", Age = 22 });
+```
+
+### New ColumnExists API
+
+We've added support for a Typed `ColumnExists` API across all supported RDBMS's which makes it easy to
+inspect the state of an RDBMS Table which can be used to determine what modifications you want on it, e.g:
+
+```csharp
+db.DropColumn<Poco>(x => x.Ssn);
+db.ColumnExists<Poco>(x => x.Ssn); //= false
+
+if (!db.ColumnExists<Poco>(x => x.Age)) //= false
+    db.AddColumn<Poco>(x => x.Age);
+db.ColumnExists<Poco>(x => x.Age); //= true
+```
+
+### New SelectMulti API
+
+Previously the only Typed API available to select data across multiple joined tables was to use a [Custom POCO with all the columns](https://github.com/ServiceStack/ServiceStack.OrmLite#selecting-multiple-columns-across-joined-tables) you want from any of the joined tables, e.g:
+
+```
+List<FullCustomerInfo> customers = db.Select<FullCustomerInfo>(
+    db.From<Customer>().Join<CustomerAddress>());
+```
+
+The new `SelectMulti` API now lets you use your existing POCO's to access results from multiple joined tables by returning them in a Typed Tuple:
+
+```csharp
+var q = db.From<Customer>()
+    .Join<Customer, CustomerAddress>()
+    .Join<Customer, Order>()
+    .Where(x => x.CreatedDate >= new DateTime(2016,01,01))
+    .And<CustomerAddress>(x => x.Country == "Australia");
+
+var results = db.SelectMulti<Customer, CustomerAddress, Order>(q);
+
+foreach (var tuple in results)
+{
+    Customer customer = tuple.Item1;
+    CustomerAddress custAddress = tuple.Item2;
+    Order custOrder = tuple.Item3;
+}
+```
+
+We've also added support for `Select<dynamic>` providing an alternative way to fetch data from multiple tables, e.g:
+
+```csharp
+var q = db.From<Employee>()
+    .Join<Department>()
+    .Select<Employee, Department>((e, d) => new { e.FirstName, e.LastName, d.Name });
+    
+List<dynamic> results = db.Select<dynamic>(q);
+
+foreach (dynamic result in results)
+{
+    string firstName = result.FirstName;
+    string lastName = result.LastName;
+    string deptName = result.Name;
+}
+```
+
+### CustomSelect Attribute
+
+The new `[CustomSelect]` can be used to define properties you want populated from a Custom SQL Function or Expression instead of a normal persisted column, e.g:
+
+```csharp
+public class Block
+{
+    public int Id { get; set; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+
+    [CustomSelect("Width * Height")]
+    public int Area { get; set; }
+
+    [Default(OrmLiteVariables.SystemUtc)]
+    public DateTime CreatedDate { get; set; }
+
+    [CustomSelect("FORMAT(CreatedDate, 'yyyy-MM-dd')")]
+    public string DateFormat { get; set; }
+}
+
+db.Insert(new Block { Id = 1, Width = 10, Height = 5 });
+
+var block = db.SingleById<Block>(1);
+
+block.Area.Print(); //= 50
+
+block.DateFormat.Print(); //= 2016-06-08
+```
+
+### New Redis GEO Operations
+
+The latest [release of Redis 3.2.0](http://antirez.com/news/104) brings it exciting new [GEO capabilities](http://redis.io/commands/geoadd) which will let you store Lat/Long coordinates in Redis and query locations within a specified radius. 
+
+To demonstrate this functionality we've created a new [Redis GEO Live Demo](https://github.com/ServiceStackApps/redis-geo) which lets you click on anywhere in the U.S. to find the list of nearest cities within a given radius:
+
+[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/livedemos/redis-geo/redisgeo-screenshot.png)](http://redisgeo.servicestack.net/)
+
+> Live Demo: http://redisgeo.servicestack.net
+
+## Slack Logger
+
+The new Slack Logger can be used to send Logging to a custom Slack Channel which is a nice interactive way 
+for your development team on Slack to see and discuss logging messages as they come in.
+
+To start using it first download it from NuGet:
+
+    PM> Install-Package ServiceStack.Logging.Slack
+
+Then configure it with the channels you want to log it to, e.g:
+
+```csharp
+LogManager.LogFactory = new SlackLogFactory("{GeneratedSlackUrlFromCreatingIncomingWebhook}", 
+    debugEnabled:true)
+{
+    //Alternate default channel than one specified when creating Incoming Webhook.
+    DefaultChannel = "other-default-channel",
+    //Custom channel for Fatal logs. Warn, Info etc will fallback to DefaultChannel or 
+    //channel specified when Incoming Webhook was created.
+    FatalChannel = "more-grog-logs",
+    //Custom bot username other than default
+    BotUsername = "Guybrush Threepwood",
+    //Custom channel prefix can be provided to help filter logs from different users or environments. 
+    ChannelPrefix = System.Security.Principal.WindowsIdentity.GetCurrent().Name
+};
+
+LogManager.LogFactory = new SlackLogFactory(appSettings);
+```
+
+Some more usage examples are available in [SlackLogFactoryTests](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.Logging.Tests/UnitTests/SlackLogFactoryTests.cs).
+
+## Performance and Memory improvements
+
+Several performance and memory usage improvements were also added across the board in this release where all ServiceStack libraries have now switched to using a ThreadStatic `StringBuilder` Cache where possible to reuse existing `StringBuilder` instances and save on Heap allocations. 
+
+For similar improvements you can also use the new `StringBuilderCache` in your own code where you'd just need to call `Allocate()` to get access to a reset `StringBuilder` instance and call `ReturnAndFree()` when you're done to access the `string` and return the `StringBuilder` to the cache, e.g:
+
+```csharp
+public static string ToMd5Hash(this Stream stream)
+{
+    var hash = MD5.Create().ComputeHash(stream);
+    var sb = StringBuilderCache.Allocate();
+    for (var i = 0; i < hash.Length; i++)
+    {
+        sb.Append(hash[i].ToString("x2"));
+    }
+    return StringBuilderCache.ReturnAndFree(sb);
+}
+```
+
+There's also a `StringBuilderCacheAlt` for when you need access to 2x StringBuilders at the same time.
+
+### String Parsing
+
+We've switched to new APIs that have the same behavior as the existing `SplitOnFirst()` and `SplitOnLast()` extension methods but save allocating a temporary array:
+
+```csharp
+str.LeftPart(':')      == str.SplitOnFirst(':')[0]
+str.RightPart(':')     == str.SplitOnFirst(':').Last()
+str.LastLeftPart(':')  == str.SplitOnLast(':')[0]
+str.LastRightPart(':') == str.SplitOnLast(':').Last()
+```
+
+### TypeConstants
+
+We've switched to using the new [TypeConstants](https://github.com/ServiceStack/ServiceStack.Text/blob/master/src/ServiceStack.Text/TypeConstants.cs) which holds static instances of many popular empty collections and `Task<T>` results which you can reuse instead of creating new instances:
+
+```csharp
+TypeConstants.EmptyStringArray == new string[0];
+TypeConstants.EmptyObjectArray == new object[0];
+TypeConstants<CustomType>.EmptyArray == new T[0];
+```
+
+### CachedExpressionCompiler
+
+We've added MVC's [CachedExpressionCompiler](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.Common/CachedExpressionCompiler.cs) to **ServiceStack.Common** and where possible are now using it in-place of Compiling LINQ expressions directly in all of ServiceStack libraries.
+
+### Object Pools
+
+We've added the Object pooling classes that Roslyn's code-base uses in `ServiceStack.Text.Pools` which lets you create reusable object pools of instances. The available pools include:
+
+ - `ObjectPool<T>`
+ - `PooledObject<T>`
+ - `SharedPools`
+ - `StringBuilderPool`
+
+### Add ServiceStack Reference Wildcards
+
+The `IncludeType` option in all [Add ServiceStack Reference](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference) languages now allow specifying a `.*` wildcard suffix on Request DTO's as a shorthand to return all dependent DTOs for that Service:
+
+    IncludeTypes: RequestDto.*
+
+Special thanks to [@donaldgray](https://github.com/donaldgray) for contributing this feature.
+
+### New ServerEventsClient APIs
+
+Use new Typed [GetChannelSubscribers APIs](https://github.com/ServiceStack/ServiceStack/commit/1476e232502f690ba1832600c221ad76c15cfda7) added to [C# ServerEventsClient](https://github.com/ServiceStack/ServiceStack/wiki/C%23-Server-Events-Client) to fetch Channel Subscribers:
+
+```csharp
+var clientA = new ServerEventsClient("A");
+var channelASubscribers = clientA.GetChannelSubscribers();
+var channelASubscribers = await clientA.GetChannelSubscribersAsync();
+```
+
+### RegisterServicesInAssembly
+
+Plugins can use the new `RegisterServicesInAssembly()` API to register multiple Services in a specified assembly:
+
+```csharp
+appHost.RegisterServicesInAssembly(GetType().Assembly);
+```
+
+This summary touches on the the main highlights, more features and further details are available in the [full v4.0.58 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#v4058-release-notes).
+
 # [v4.0.56 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.56.md)
 
 This is another release jam-packed with some killer features, the release notes are unfortunately quite longer than usual as the new features required more detail to describe what each does and understand how they work. 
