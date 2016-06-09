@@ -350,10 +350,10 @@ namespace ServiceStack.Auth
 
             var env = request.Environment ?? apiKeyAuth.Environments[0];
 
-            var authRepo = (IManageApiKeys)TryResolve<IAuthRepository>().AsUserAuthRepository(Request);
+            var apiRepo = (IManageApiKeys)TryResolve<IAuthRepository>();
             return new GetApiKeysResponse
             {
-                Results = authRepo.GetUserApiKeys(GetSession().UserAuthId)
+                Results = apiRepo.GetUserApiKeys(GetSession().UserAuthId)
                     .Where(x => x.Environment == env)
                     .Map(k => new UserApiKey {
                             Key = k.Id,
@@ -376,10 +376,10 @@ namespace ServiceStack.Auth
 
             var env = request.Environment ?? apiKeyAuth.Environments[0];
 
-            var authRepo = (IManageApiKeys)TryResolve<IAuthRepository>().AsUserAuthRepository(Request);
+            var apiRepo = (IManageApiKeys)TryResolve<IAuthRepository>();
 
             var userId = GetSession().UserAuthId;
-            var updateKeys = authRepo.GetUserApiKeys(userId)
+            var updateKeys = apiRepo.GetUserApiKeys(userId)
                 .Where(x => x.Environment == env)
                 .ToList();
 
@@ -388,7 +388,7 @@ namespace ServiceStack.Auth
             var newKeys = apiKeyAuth.GenerateNewApiKeys(userId, env);
             updateKeys.AddRange(newKeys);
 
-            authRepo.StoreAll(updateKeys);
+            apiRepo.StoreAll(updateKeys);
             
             return new RegenrateApiKeysResponse
             {
