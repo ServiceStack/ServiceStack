@@ -59,7 +59,7 @@ var response = await "https://example.org/secured".GetJsonFromUrlAsync(
     requestFilter: req => req.AddBearerToken(apiKey));
 ```
 
-### [Multiple API Key Types and Environments](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#multiple-api-key-types-and-environments)
+### Multiple API Key Types and Environments
 
 API Keys are automatically created when a User is registered, a key is created for each Key **Type** and **Environment**. By default it creates a "secret" API Key for both "live" and "test" environments, you could change this to also create "publishable" API Keys as well with:
 
@@ -79,7 +79,7 @@ If preferred properties can also be set in [AppSettings](https://github.com/Serv
 ```
 
 
-### [Multitenancy by API Keys](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#multitenancy) 
+### Multitenancy by API Keys 
 
 Thanks to the ServiceStack's trivial support for [Multitenancy](https://github.com/ServiceStack/ServiceStack/wiki/Multitenancy) you can easily change which Database your Services and AutoQuery Services use based on Key Environment by overriding `GetDbConnection()` in your AppHost, e.g:
 
@@ -222,9 +222,7 @@ $.post("/session-to-token");
 Likewise this API lets you convert Sessions created by any of the OAuth providers into a stateless JWT Token.
 
 
-## OrmLite
-
-### Cleaner, Modernized API Surface
+## [Modernized OrmLite API Surface](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#cleaner-modernized-api-surface)
 
 As [mentioned in the last release](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/release-notes.md#deprecating-legacy-ormlite-apis) we've moved OrmLite's deprecated APIs into the `ServiceStack.OrmLite.Legacy` namespace leaving a clean, modern API surface in OrmLite's default namespace.
 
@@ -382,7 +380,7 @@ block.Area.Print(); //= 50
 block.DateFormat.Print(); //= 2016-06-08
 ```
 
-### New Redis GEO Operations
+## [New Redis GEO Operations](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#new-redis-geo-operations)
 
 The latest [release of Redis 3.2.0](http://antirez.com/news/104) brings it exciting new [GEO capabilities](http://redis.io/commands/geoadd) which will let you store Lat/Long coordinates in Redis and query locations within a specified radius. 
 
@@ -392,7 +390,7 @@ To demonstrate this functionality we've created a new [Redis GEO Live Demo](http
 
 > Live Demo: http://redisgeo.servicestack.net
 
-## Slack Logger
+## [Slack Logger](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#slack-logger)
 
 The new Slack Logger can be used to send Logging to a custom Slack Channel which is a nice interactive way 
 for your development team on Slack to see and discuss logging messages as they come in.
