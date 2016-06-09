@@ -162,8 +162,13 @@ namespace ServiceStack.Auth
 
             if (tokens.Items != null)
             {
-                var items = instance.Items ?? (instance.Items = new Dictionary<string, string>());
-                tokens.Items.ForEach((x,y) => items[x] = y);
+                if (instance.Items == null)
+                    instance.Items = new Dictionary<string, string>();
+
+                foreach (var entry in tokens.Items)
+                {
+                    instance.Items[entry.Value] = entry.Value;
+                }
             }
 
             PopulateMissingExtended(instance, tokens, overwriteReserved);
