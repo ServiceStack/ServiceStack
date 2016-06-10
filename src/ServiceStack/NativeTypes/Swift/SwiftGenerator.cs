@@ -85,6 +85,7 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("{0}ExcludeGenericBaseTypes: {1}".Fmt(defaultValue("ExcludeGenericBaseTypes"), Config.ExcludeGenericBaseTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
@@ -617,7 +618,8 @@ namespace ServiceStack.NativeTypes.Swift
                     continue;
                 }
 
-                wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
+                wasAdded = AppendComments(sb, prop.Description);
+                wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                 wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
                 if (type.IsInterface())
@@ -847,13 +849,15 @@ namespace ServiceStack.NativeTypes.Swift
             return name.LastRightPart('.').SafeToken();
         }
 
-        public void AppendComments(StringBuilderWrapper sb, string desc)
+        public bool AppendComments(StringBuilderWrapper sb, string desc)
         {
-            if (desc == null) return;
-
-            sb.AppendLine("/**");
-            sb.AppendLine("* {0}".Fmt(desc.SafeComment()));
-            sb.AppendLine("*/");
+            if (desc != null && Config.AddDescriptionAsComments)
+            {
+                sb.AppendLine("/**");
+                sb.AppendLine("* {0}".Fmt(desc.SafeComment()));
+                sb.AppendLine("*/");
+            }
+            return false;
         }
 
         public void AppendDataContract(StringBuilderWrapper sb, MetadataDataContract dcMeta)

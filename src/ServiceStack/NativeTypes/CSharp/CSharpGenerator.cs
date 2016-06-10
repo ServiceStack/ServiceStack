@@ -352,7 +352,8 @@ namespace ServiceStack.NativeTypes.CSharp
                     if (wasAdded) sb.AppendLine();
 
                     var propType = Type(prop.Type, prop.GenericArgs, includeNested:true);
-                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
+                    wasAdded = AppendComments(sb, prop.Description);
+                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
                     var visibility = type.IsInterface() ? "" : "public ";
                     sb.AppendLine("{0}{1}{2} {3} {{ get; set; }}"
@@ -487,19 +488,21 @@ namespace ServiceStack.NativeTypes.CSharp
             return name.SafeToken();
         }
 
-        public void AppendComments(StringBuilderWrapper sb, string desc)
+        public bool AppendComments(StringBuilderWrapper sb, string desc)
         {
-            if (desc == null) return;
+            if (desc == null) return false;
 
             if (Config.AddDescriptionAsComments)
             {
                 sb.AppendLine("///<summary>");
                 sb.AppendLine("///{0}".Fmt(desc.SafeComment()));
                 sb.AppendLine("///</summary>");
+                return false;
             }
             else
             {
                 sb.AppendLine("[Description({0})]".Fmt(desc.QuotedSafeValue()));
+                return true;
             }
         }
 

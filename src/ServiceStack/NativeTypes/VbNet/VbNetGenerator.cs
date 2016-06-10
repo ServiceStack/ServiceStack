@@ -396,7 +396,8 @@ namespace ServiceStack.NativeTypes.VbNet
                     if (wasAdded) sb.AppendLine();
 
                     var propType = Type(prop.Type, prop.GenericArgs, includeNested:true);
-                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
+                    wasAdded = AppendComments(sb, prop.Description);
+                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
                     var visibility = type.IsInterface() ? "" : "Public ";
                     sb.AppendLine("{0}{1}Property {2} As {3}".Fmt(
@@ -415,7 +416,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 if (wasAdded) sb.AppendLine();
                 wasAdded = true;
 
-                AppendDataMember(sb, null, dataMemberIndex++);
+                wasAdded = AppendDataMember(sb, null, dataMemberIndex++);
                 sb.AppendLine("Public {0}Property ResponseStatus As ResponseStatus".Fmt(@virtual));
             }
 
@@ -554,19 +555,21 @@ namespace ServiceStack.NativeTypes.VbNet
             return KeyWords.Contains(name) ? "[{0}]".Fmt(name) : name;
         }
 
-        public void AppendComments(StringBuilderWrapper sb, string desc)
+        public bool AppendComments(StringBuilderWrapper sb, string desc)
         {
-            if (desc == null) return;
+            if (desc == null) return false;
 
             if (Config.AddDescriptionAsComments)
             {
                 sb.AppendLine("'''<Summary>");
                 sb.AppendLine("'''{0}".Fmt(desc.SafeComment()));
                 sb.AppendLine("'''</Summary>");
+                return false;
             }
             else
             {
                 sb.AppendLine("<Description({0})>".Fmt(desc.QuotedSafeValue()));
+                return true;
             }
         }
 

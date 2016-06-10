@@ -113,6 +113,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
@@ -407,7 +408,8 @@ namespace ServiceStack.NativeTypes.Kotlin
 
                     var fieldName = prop.Name.SafeToken().PropertyStyle();
 
-                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
+                    wasAdded = AppendComments(sb, prop.Description);
+                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
                     var initProp = initCollections && !prop.GenericArgs.IsEmpty() &&
@@ -590,13 +592,16 @@ namespace ServiceStack.NativeTypes.Kotlin
             return name.LastRightPart('.').SafeToken();
         }
 
-        public void AppendComments(StringBuilderWrapper sb, string desc)
+        public bool AppendComments(StringBuilderWrapper sb, string desc)
         {
-            if (desc == null) return;
+            if (desc != null && Config.AddDescriptionAsComments)
+            {
+                sb.AppendLine("/**");
+                sb.AppendLine("* {0}".Fmt(desc.SafeComment()));
+                sb.AppendLine("*/");
+            }
 
-            sb.AppendLine("/**");
-            sb.AppendLine("* {0}".Fmt(desc.SafeComment()));
-            sb.AppendLine("*/");
+            return false;
         }
 
         public void AppendDataContract(StringBuilderWrapper sb, MetadataDataContract dcMeta)

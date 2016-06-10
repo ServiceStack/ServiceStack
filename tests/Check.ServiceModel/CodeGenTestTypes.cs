@@ -9,6 +9,25 @@ using ServiceStack.DataAnnotations;
 
 namespace Check.ServiceModel.Operations
 {
+    [System.ComponentModel.Description("Description for HelloACodeGenTest")]
+    public class HelloACodeGenTest
+    {
+        [Description("Description for FirstField")]
+        public int FirstField { get; set; }
+    }
+
+    [DataContract]
+    public class HelloACodeGenTestResponse
+    {
+        [DataMember]
+        [Description("Description for FirstResult")]
+        public int FirstResult { get; set; }
+
+        [DataMember]
+        [ApiMember(Description = "Description for SecondResult")]
+        public int SecondResult { get; set; }
+    }
+
     [Route("/hello")]
     [Route("/hello/{Name}")]
     public class Hello

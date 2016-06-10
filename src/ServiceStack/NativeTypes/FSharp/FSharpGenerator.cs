@@ -259,7 +259,8 @@ namespace ServiceStack.NativeTypes.FSharp
                     if (wasAdded) sb.AppendLine();
 
                     var propType = Type(prop.Type, prop.GenericArgs);
-                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
+                    wasAdded = AppendComments(sb, prop.Description);
+                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
                     if (!type.IsInterface())
@@ -417,19 +418,21 @@ namespace ServiceStack.NativeTypes.FSharp
             return type.LeftPart('`').LastRightPart('.').SafeToken();
         }
 
-        public void AppendComments(StringBuilderWrapper sb, string desc)
+        public bool AppendComments(StringBuilderWrapper sb, string desc)
         {
-            if (desc == null) return;
+            if (desc == null) return false;
 
             if (Config.AddDescriptionAsComments)
             {
                 sb.AppendLine("///<summary>");
                 sb.AppendLine("///{0}".Fmt(desc.SafeComment()));
                 sb.AppendLine("///</summary>");
+                return true;
             }
             else
             {
                 sb.AppendLine("[<Description({0})>]".Fmt(desc.QuotedSafeValue()));
+                return true;
             }
         }
 

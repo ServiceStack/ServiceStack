@@ -13,6 +13,11 @@ namespace Check.ServiceInterface
             public string Name { get; set; }
         }
 
+        public object Any(HelloACodeGenTest request)
+        {
+            return new HelloACodeGenTestResponse { FirstResult = request.FirstField };
+        }
+
         public object Any(HelloInService request)
         {
             return new HelloResponse { Result = request.Name };
