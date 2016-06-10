@@ -887,6 +887,9 @@ namespace ServiceStack.NativeTypes
         {
             const string wildCard = ".*";
 
+            if (config.IncludeTypes == null)
+                return null;
+
             var typesToExpand = config.IncludeTypes
                 .Where(s => s.Length > 2 && s.EndsWith(wildCard))
                 .Map(s => s.Substring(0, s.Length - 2));

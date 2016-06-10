@@ -415,6 +415,19 @@ namespace RazorRockstars.Console.Files
         {
             AssertStatus(Host + "/Views/SimpleView", HttpStatusCode.NotFound);
         }
+
+        [Test]
+        public void Does_return_AddServiceStackReference_Endpoints()
+        {
+            Assert200(Host + "/types/csharp", "/* Options:", "using System;");
+            Assert200(Host + "/types/fsharp", "(* Options:", "open System");
+            Assert200(Host + "/types/vbnet", "' Options:", "Imports System");
+            Assert200(Host + "/types/swift", "/* Options:", "import Foundation;");
+            Assert200(Host + "/types/java", "/* Options:", "import java.math.*;");
+            Assert200(Host + "/types/kotlin", "/* Options:", "import java.math.*");
+            Assert200(Host + "/types/typescript", "/* Options:", "export interface IReturnVoid");
+            Assert200(Host + "/types/typescript.d", "/* Options:", "interface IReturnVoid");
+        }
     }
 }
 
