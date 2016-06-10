@@ -908,6 +908,12 @@ namespace ServiceStack.NativeTypes
                 .Select(x => x.ReturnMarkerTypeName.Name)
                 .ToHashSet();
 
+            var includedResponses = metadata.Operations
+                .Where(t => typesToExpand.Contains(t.Request.Name) && t.Response != null)
+                .Select(o => o.Response)
+                .ToList();
+            includedResponses.ForEach(x => includeSet.Add(x.Name));
+
             var returnTypesForInclude = metadata.Operations
                 .Where(x => x.Response != null && includeSet.Contains(x.Response.Name))
                 .Map(x => x.Response);

@@ -14,6 +14,8 @@ namespace Check.ServiceModel.Operations
     {
         [Description("Description for FirstField")]
         public int FirstField { get; set; }
+
+        public List<string> SecondFields { get; set; }
     }
 
     [DataContract]

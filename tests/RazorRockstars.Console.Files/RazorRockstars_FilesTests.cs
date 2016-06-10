@@ -80,11 +80,30 @@ namespace RazorRockstars.Console.Files
                 if (r.StatusCode != HttpStatusCode.OK)
                     Assert.Fail(url + " did not return 200 OK");
             });
+            //text.Print();
             foreach (var item in containsItems)
             {
                 if (!text.Contains(item))
                 {
                     Assert.Fail(item + " was not found in " + url);
+                }
+            }
+        }
+
+        public void Assert200Without(string url, params string[] withoutStrings)
+        {
+            url.Print();
+            var text = url.GetStringFromUrl(AcceptContentType, responseFilter: r =>
+            {
+                if (r.StatusCode != HttpStatusCode.OK)
+                    Assert.Fail(url + " did not return 200 OK");
+            });
+            text.Print();
+            foreach (var item in withoutStrings)
+            {
+                if (text.Contains(item))
+                {
+                    Assert.Fail(item + " was found in " + url);
                 }
             }
         }
@@ -419,7 +438,57 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Does_return_AddServiceStackReference_Endpoints()
         {
-            Assert200(Host + "/types/csharp", "/* Options:", "using System;");
+            Assert200(Host + "/types/csharp", "/* Options:",
+                "//GlobalNamespace: ",
+                "//MakePartial: True",
+                "//MakeVirtual: True",
+                "//MakeDataContractsExtensible: False",
+                "//AddReturnMarker: True",
+                "//AddDescriptionAsComments: True",
+                "//AddDataContractAttributes: False",
+                "//AddIndexesToDataMembers: False",
+                "//AddGeneratedCodeAttributes: False",
+                "//AddResponseStatus: False",
+                "//AddImplicitVersion: ",
+                "//InitializeCollections: True",
+                "//IncludeTypes: ",
+                "//ExcludeTypes: ",
+                "//AddDefaultXmlNamespace: http://schemas.servicestack.net/types",
+                "using System;",
+                "public partial class ACodeGenTest",
+                "public virtual int FirstField { get; set; }",
+                "IReturn<ACodeGenTestResponse>",
+                "///Description for ACodeGenTest",
+                "///Description for FirstField",
+                "///Description for FirstResult",
+                "///Description for SecondResult",
+                "[ApiMember(Description=\"Description for SecondResult\")]",
+                "[DataContract]{0}    public partial class ACodeGenTestResponse".Fmt(Environment.NewLine),
+                "[DataMember]{0}        public virtual int FirstResult".Fmt(Environment.NewLine)
+            );
+
+            Assert200(Host + "/types/csharp");
+            Assert200(Host + "/types/csharp?MakePartial=false", "MakePartial: False", "public class ACodeGenTest");
+            Assert200(Host + "/types/csharp?MakeVirtual=false", "MakeVirtual: False", "public int FirstField");
+            Assert200(Host + "/types/csharp?MakeDataContractsExtensible=true", "MakeDataContractsExtensible: True", "ExtensionDataObject ExtensionData");
+            Assert200(Host + "/types/csharp?AddDescriptionAsComments=false", "AddDescriptionAsComments: False", "[Description(\"Description for ACodeGenTest\")]", "[Description(\"Description for FirstField\")]");
+            Assert200Without(Host + "/types/csharp?AddDescriptionAsComments=false", "AddDescriptionAsComments: True", "///Description for ACodeGenTest", "///Description for FirstField");
+            Assert200(Host + "/types/csharp?AddDataContractAttributes=true", "AddDataContractAttributes: True",
+                "[DataContract]{0}    public partial class ACodeGenTest".Fmt(Environment.NewLine),
+                "[DataMember]{0}        public virtual int FirstField".Fmt(Environment.NewLine));
+            Assert200(Host + "/types/csharp?AddIndexesToDataMembers=true", "AddIndexesToDataMembers: True",
+                "[DataMember(Order=1)]{0}        public virtual int FirstResult".Fmt(Environment.NewLine));
+            Assert200(Host + "/types/csharp?AddResponseStatus=true", "AddResponseStatus: True",
+                "public virtual int SecondResult {{ get; set; }}{0}{0}        public virtual ResponseStatus ResponseStatus".Fmt(Environment.NewLine));
+            Assert200(Host + "/types/csharp?AddGeneratedCodeAttributes=true", "AddGeneratedCodeAttributes: True", "[GeneratedCode(");
+            Assert200(Host + "/types/csharp?AddImplicitVersion=1", "AddImplicitVersion: 1", "Version = 1");
+            Assert200(Host + "/types/csharp?InitializeCollections=true", "InitializeCollections: True", "SecondFields = new List<string>");
+            Assert200(Host + "/types/csharp?IncludeTypes=ACodeGenTest", "IncludeTypes: ACodeGenTest", "public partial class ACodeGenTest");
+            Assert200Without(Host + "/types/csharp?IncludeTypes=ACodeGenTest", "public partial class ACodeGenTestResponse");
+            Assert200(Host + "/types/csharp?IncludeTypes=ACodeGenTest.*", "public partial class ACodeGenTestResponse");
+            Assert200Without(Host + "/types/csharp?ExcludeTypes=ACodeGenTestResponse", "public partial class ACodeGenTestResponse");
+            Assert200(Host + "/types/csharp?AddDefaultXmlNamespace=example.org&AddDataContractAttributes=true", "AddDefaultXmlNamespace: example.org", "[assembly: ContractNamespace(\"example.org\",");
+
             Assert200(Host + "/types/fsharp", "(* Options:", "open System");
             Assert200(Host + "/types/vbnet", "' Options:", "Imports System");
             Assert200(Host + "/types/swift", "/* Options:", "import Foundation;");
