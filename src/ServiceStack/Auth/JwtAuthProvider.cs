@@ -265,6 +265,9 @@ namespace ServiceStack.Auth
                 throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
 
             var session = Request.GetSession();
+            if (session.FromToken)
+                return new ConvertSessionToTokenResponse();
+
             var token = jwtAuthProvider.CreateJwtBearerToken(session);
 
             if (!request.PreserveSession)

@@ -291,9 +291,16 @@ namespace ServiceStack
         {
             var httpRes = response as IHttpResponse;
             if (httpRes == null) return;
-            httpRes.Cookies.DeleteCookie(SessionFeature.SessionId);
-            httpRes.Cookies.DeleteCookie(SessionFeature.PermanentSessionId);
+            httpRes.Cookies.DeleteCookie(Keywords.SessionId);
+            httpRes.Cookies.DeleteCookie(Keywords.PermanentSessionId);
             httpRes.Cookies.DeleteCookie(HttpHeaders.XUserAuthId);
+        }
+
+        public static void DeleteJwtCookie(this IResponse response)
+        {
+            var httpRes = response as IHttpResponse;
+            if (httpRes == null) return;
+            httpRes.Cookies.DeleteCookie(Keywords.JwtSessionToken);
         }
 
         public static void GenerateNewSessionCookies(this IRequest req, IAuthSession session)
