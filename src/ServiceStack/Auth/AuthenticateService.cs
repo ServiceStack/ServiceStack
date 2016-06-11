@@ -259,7 +259,7 @@ namespace ServiceStack.Auth
             var generateNewCookies = authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication;
 
             object response = null;
-            if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider), request))
+            if (!oAuthConfig.IsAuthorized(session, session.GetAuthTokens(provider), request))
             {
                 if (generateNewCookies)
                     this.Request.GenerateNewSessionCookies(session);

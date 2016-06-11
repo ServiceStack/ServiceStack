@@ -60,7 +60,7 @@ namespace ServiceStack
 
         public virtual bool IsAuthorized(string provider)
         {
-            var tokens = ProviderOAuthAccess.FirstOrDefault(x => x.Provider == provider);
+            var tokens = this.GetAuthTokens(provider);
             return AuthenticateService.GetAuthProvider(provider).IsAuthorizedSafe(this, tokens);
         }
 
@@ -121,14 +121,36 @@ namespace ServiceStack
 
     public static class AuthSessionExtensions
     {
-        public static IAuthTokens GetOAuthTokens(this IAuthSession session, string provider)
+        public static void AddAuthToken(this IAuthSession session, IAuthTokens tokens)
         {
-            foreach (var tokens in session.ProviderOAuthAccess)
+            if (session.ProviderOAuthAccess == null)
+                session.ProviderOAuthAccess = new List<IAuthTokens>();
+
+            session.ProviderOAuthAccess.Add(tokens);
+        }
+
+        public static List<IAuthTokens> GetAuthTokens(this IAuthSession session)
+        {
+            return session.ProviderOAuthAccess ?? TypeConstants<IAuthTokens>.EmptyList;
+        }
+
+        public static IAuthTokens GetAuthTokens(this IAuthSession session, string provider)
+        {
+            if (session.ProviderOAuthAccess != null)
             {
-                if (string.Compare(tokens.Provider, provider, StringComparison.InvariantCultureIgnoreCase) == 0)
-                    return tokens;
+                foreach (var tokens in session.ProviderOAuthAccess)
+                {
+                    if (string.Compare(tokens.Provider, provider, StringComparison.InvariantCultureIgnoreCase) == 0)
+                        return tokens;
+                }
             }
             return null;
+        }
+
+        [Obsolete("Use GetAuthTokens()")]
+        public static IAuthTokens GetOAuthTokens(this IAuthSession session, string provider)
+        {
+            return GetAuthTokens(session, provider);
         }
 
         public static string GetProfileUrl(this IAuthSession authSession, string defaultUrl = null)

@@ -118,9 +118,9 @@ namespace ServiceStack.Auth
 
             session.ReferrerUrl = GetReferrerUrl(authService, session, request);
 
-            var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == Provider);
+            var tokens = session.GetAuthTokens(Provider);
             if (tokens == null)
-                session.ProviderOAuthAccess.Add(tokens = new AuthTokens { Provider = Provider });
+                session.AddAuthToken(tokens = new AuthTokens { Provider = Provider });
 
             return tokens;
         }

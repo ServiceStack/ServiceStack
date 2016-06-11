@@ -214,10 +214,10 @@ namespace ServiceStack.Authentication.OAuth2
                     ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1, StringComparison.Ordinal));
             }
 
-            var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == this.Provider);
+            var tokens = session.GetAuthTokens(this.Provider);
             if (tokens == null)
             {
-                session.ProviderOAuthAccess.Add(tokens = new AuthTokens { Provider = this.Provider });
+                session.AddAuthToken(tokens = new AuthTokens { Provider = this.Provider });
             }
 
             return tokens;

@@ -202,7 +202,7 @@ namespace ServiceStack.Auth
                     session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens).UserAuthId.ToString();
                 }
 
-                foreach (var oAuthToken in session.ProviderOAuthAccess)
+                foreach (var oAuthToken in session.GetAuthTokens())
                 {
                     var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
                     if (authProvider == null)

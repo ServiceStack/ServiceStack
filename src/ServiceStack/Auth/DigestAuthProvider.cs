@@ -111,21 +111,23 @@ namespace ServiceStack.Auth
             }
 
             var authRepo = authService.TryResolve<IAuthRepository>();
-            if (authRepo != null) {
-                if (tokens != null) {
+            if (authRepo != null)
+            {
+                if (tokens != null)
+                {
                     authInfo.ForEach((x, y) => tokens.Items[x] = y);
                     session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens).UserAuthId.ToString();
                 }
 
-                foreach (var oAuthToken in session.ProviderOAuthAccess) {
+                foreach (var oAuthToken in session.GetAuthTokens())
+                {
                     var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
-                    if (authProvider == null) {
+                    if (authProvider == null)
                         continue;
-                    }
+
                     var userAuthProvider = authProvider as OAuthProvider;
-                    if (userAuthProvider != null) {
+                    if (userAuthProvider != null)
                         userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
-                    }
                 }
 
                 var failed = ValidateAccount(authService, authRepo, session, tokens);
