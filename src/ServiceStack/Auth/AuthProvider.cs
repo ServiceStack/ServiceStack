@@ -92,8 +92,8 @@ namespace ServiceStack.Auth
             var referrerUrl = (request != null ? request.Continue : null)
                 ?? (feature.HtmlLogoutRedirect != null ? service.Request.ResolveAbsoluteUrl(feature.HtmlLogoutRedirect) : null)
                 ?? session.ReferrerUrl
-                ?? service.Request.GetHeader("Referer")
-                ?? this.CallbackUrl;
+                ?? service.Request.GetHeader("Referer").NotLogoutUrl()
+                ?? this.RedirectUrl;
 
             session.OnLogout(service);
             AuthEvents.OnLogout(service.Request, session, service);
@@ -103,6 +103,7 @@ namespace ServiceStack.Auth
             if (feature != null && feature.DeleteSessionCookiesOnLogout)
             {
                 service.Request.Response.DeleteSessionCookies();
+                service.Request.Response.DeleteJwtCookie();
             }
 
             if (service.Request.ResponseContentType == MimeTypes.Html && !string.IsNullOrEmpty(referrerUrl))
@@ -125,7 +126,7 @@ namespace ServiceStack.Auth
 
             authRepo.LoadUserAuth(session, tokens);
 
-            foreach (var oAuthToken in session.ProviderOAuthAccess)
+            foreach (var oAuthToken in session.GetAuthTokens())
             {
                 var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
                 if (authProvider == null) continue;
@@ -214,7 +215,7 @@ namespace ServiceStack.Auth
 
                 authRepo.LoadUserAuth(session, tokens);
 
-                foreach (var oAuthToken in session.ProviderOAuthAccess)
+                foreach (var oAuthToken in session.GetAuthTokens())
                 {
                     var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
                     if (authProvider == null) continue;
@@ -279,20 +280,19 @@ namespace ServiceStack.Auth
             if (session.Email.IsNullOrEmpty())
                 session.Email = tokens.Email;
 
-            var oAuthProvider = session.ProviderOAuthAccess.FirstOrDefault(
-                x => x.Provider == tokens.Provider && x.UserId == tokens.UserId);
-            if (oAuthProvider != null)
+            var oAuthTokens = session.GetAuthTokens(tokens.Provider);
+            if (oAuthTokens != null && oAuthTokens.UserId == tokens.UserId)
             {
-                if (!oAuthProvider.UserName.IsNullOrEmpty())
-                    session.UserName = oAuthProvider.UserName;
-                if (!oAuthProvider.DisplayName.IsNullOrEmpty())
-                    session.DisplayName = oAuthProvider.DisplayName;
-                if (!oAuthProvider.Email.IsNullOrEmpty())
-                    session.Email = oAuthProvider.Email;
-                if (!oAuthProvider.FirstName.IsNullOrEmpty())
-                    session.FirstName = oAuthProvider.FirstName;
-                if (!oAuthProvider.LastName.IsNullOrEmpty())
-                    session.LastName = oAuthProvider.LastName;
+                if (!oAuthTokens.UserName.IsNullOrEmpty())
+                    session.UserName = oAuthTokens.UserName;
+                if (!oAuthTokens.DisplayName.IsNullOrEmpty())
+                    session.DisplayName = oAuthTokens.DisplayName;
+                if (!oAuthTokens.Email.IsNullOrEmpty())
+                    session.Email = oAuthTokens.Email;
+                if (!oAuthTokens.FirstName.IsNullOrEmpty())
+                    session.FirstName = oAuthTokens.FirstName;
+                if (!oAuthTokens.LastName.IsNullOrEmpty())
+                    session.LastName = oAuthTokens.LastName;
             }
 
             var key = tokens.Provider + ":" + (tokens.UserId ?? tokens.UserName);
@@ -489,6 +489,13 @@ namespace ServiceStack.Auth
                 return true;
             }
             return false;
+        }
+
+        internal static string NotLogoutUrl(this string url)
+        {
+            return url == null || url.EndsWith("/auth/logout")
+                ? null
+                : url;
         }
     }
 
