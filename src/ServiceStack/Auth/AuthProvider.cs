@@ -248,22 +248,10 @@ namespace ServiceStack.Auth
             }
             finally
             {
-                SaveSession(authService, session, SessionExpiry);
+                this.SaveSession(authService, session, SessionExpiry);
             }
 
             return null;
-        }
-
-        public virtual void SaveSession(IServiceBase authService, IAuthSession session, TimeSpan? sessionExpiry = null)
-        {
-            if (PersistSession)
-            {
-                authService.SaveSession(session, SessionExpiry);
-            }
-            else
-            {
-                authService.Request.Items[Keywords.Session] = session;
-            }
         }
 
         // Keep in-memory map of userAuthId's when no IAuthRepository exists 
@@ -496,6 +484,20 @@ namespace ServiceStack.Auth
             return url == null || url.EndsWith("/auth/logout")
                 ? null
                 : url;
+        }
+
+        public static void SaveSession(this IAuthProvider provider, IServiceBase authService, IAuthSession session, TimeSpan? sessionExpiry = null)
+        {
+            var authProvider = provider as AuthProvider;
+            var persistSession = authProvider == null || authProvider.PersistSession;
+            if (persistSession)
+            {
+                authService.SaveSession(session, sessionExpiry);
+            }
+            else
+            {
+                authService.Request.Items[Keywords.Session] = session;
+            }
         }
     }
 

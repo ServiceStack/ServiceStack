@@ -126,7 +126,7 @@ namespace ServiceStack.Auth
                         session.Roles.AddIfNotExists(role);
                 }
 
-                SaveSession(authService, session, SessionExpiry);
+                this.SaveSession(authService, session, SessionExpiry);
                 
                 if (response != null)
                     return response;

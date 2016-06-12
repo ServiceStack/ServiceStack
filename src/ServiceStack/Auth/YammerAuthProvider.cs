@@ -101,7 +101,7 @@ namespace ServiceStack.Auth
                     this.ClientId,
                     this.RedirectUrl.UrlEncode());
 
-                SaveSession(authService, session, SessionExpiry);
+                this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 

@@ -278,7 +278,7 @@ namespace ServiceStack.Auth
                 if (generateNewCookies)
                 {
                     this.Request.GenerateNewSessionCookies(session);
-                    this.Request.SaveSession(session);
+                    oAuthConfig.SaveSession(this, session);
                 }
             }
             return response;
