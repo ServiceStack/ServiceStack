@@ -252,6 +252,20 @@ namespace ServiceStack
                             return Task.FromResult((TResponse)cachedResponse);
                     }
 
+                    if (typeof(TResponse) == typeof(string))
+                    {
+                        return httpRes.Content.ReadAsStringAsync().ContinueWith(task =>
+                        {
+                            ThrowIfError<TResponse>(task, httpRes, request, absoluteUrl, task.Result);
+
+                            var response = (TResponse)(object)task.Result;
+
+                            if (ResultsFilterResponse != null)
+                                ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
+
+                            return response;
+                        }, token);
+                    }
                     if (typeof(TResponse) == typeof(byte[]))
                     {
                         return httpRes.Content.ReadAsByteArrayAsync().ContinueWith(task =>
