@@ -201,7 +201,8 @@ namespace ServiceStack.Auth
                 var aspReqBase = aspReq.OriginalRequest as HttpRequestBase;
                 if (aspReqBase != null)
                 {
-                    return aspReqBase.RequestContext.HttpContext.GetUser();
+                    var user = aspReqBase.RequestContext.HttpContext.GetUser();
+                    return user.GetUserName() == null ? null : user;
                 }
             }
             return null;
@@ -209,7 +210,10 @@ namespace ServiceStack.Auth
 
         public static string GetUserName(this IPrincipal user)
         {
-            return user != null ? user.Identity.Name : null;
+            var userName = user != null ? user.Identity.Name : null;
+            return string.IsNullOrEmpty(userName) //can be ""
+                ? null
+                : userName;
         }
     }
 }
