@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
+using ServiceStack.Host;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth
@@ -68,7 +69,12 @@ namespace ServiceStack.Auth
 
             Func<byte[], byte[], byte[]> hmac;
             if (HmacAlgorithms.TryGetValue(HashAlgorithm, out hmac))
+            {
+                if (AuthKey == null)
+                    throw new NotSupportedException("AuthKey required to use: " + HashAlgorithm);
+
                 hashAlgoritm = data => hmac(AuthKey, data);
+            }
 
             Func<RSAParameters, byte[], byte[]> rsa;
             if (RsaSignAlgorithms.TryGetValue(HashAlgorithm, out rsa))
@@ -276,7 +282,7 @@ namespace ServiceStack.Auth
             return new HttpResult(new ConvertSessionToTokenResponse())
             {
                 Cookies = {
-                    new Cookie(Keywords.TokenCookie, token) {
+                    new Cookie(Keywords.TokenCookie, token, Cookies.RootPath) {
                         HttpOnly = true,
                         Secure = Request.IsSecureConnection,
                         Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),
