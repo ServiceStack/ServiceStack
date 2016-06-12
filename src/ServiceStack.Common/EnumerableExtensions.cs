@@ -97,6 +97,35 @@ namespace ServiceStack
             return default(T);
         }
 
+        public static bool EquivalentTo(this byte[] bytes, byte[] other)
+        {
+            var compare = 0;
+            for (var i = 0; i < other.Length; i++)
+                compare |= other[i] ^ bytes[i];
+
+            return compare == 0;
+        }
+
+        public static bool EquivalentTo<T>(this T[] array, T[] otherArray, Func<T, T, bool> comparer = null)
+        {
+            if (array == null || otherArray == null)
+                return array == otherArray;
+
+            if (array.Length != otherArray.Length)
+                return false;
+
+            if (comparer == null)
+                comparer = (v1, v2) => v1.Equals(v2);
+
+            for (var i = 0; i < array.Length; i++)
+            {
+                if (!comparer(array[i], otherArray[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
         public static bool EquivalentTo<T>(this IEnumerable<T> thisList, IEnumerable<T> otherList, Func<T, T, bool> comparer = null)
         {
             if (comparer == null)
