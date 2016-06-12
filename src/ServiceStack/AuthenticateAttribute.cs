@@ -72,6 +72,11 @@ namespace ServiceStack
 
             req.PopulateFromRequestIfHasSessionId(requestDto);
 
+            //Call before GetSession so Exceptions can bubble
+            req.Items[Keywords.HasPreAuthenticated] = true;
+            matchingOAuthConfigs.OfType<IAuthWithRequest>()
+                .Each(x => x.PreAuthenticate(req, res));
+
             var session = req.GetSession();
             if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
             {
