@@ -276,7 +276,7 @@ namespace ServiceStack.Auth
             return new HttpResult(new ConvertSessionToTokenResponse())
             {
                 Cookies = {
-                    new Cookie(Keywords.JwtSessionToken, token) {
+                    new Cookie(Keywords.TokenCookie, token) {
                         HttpOnly = true,
                         Secure = Request.IsSecureConnection,
                         Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),

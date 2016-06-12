@@ -29,7 +29,9 @@ namespace ServiceStack
         [DataMember(Order = 13)] public string nc { get; set; }
         [DataMember(Order = 14)] public string cnonce { get; set; }
 
-        [DataMember(Order = 15)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 15)] public bool? UseTokenCookie { get; set; }
+
+        [DataMember(Order = 16)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]

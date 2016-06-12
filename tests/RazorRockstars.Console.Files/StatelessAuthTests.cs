@@ -781,15 +781,15 @@ namespace RazorRockstars.Console.Files
             Assert.That(authResponse.BearerToken, Is.Not.Null);
 
             var jwtClient = GetClient();
-            jwtClient.SetCookie("ss-jwt", authResponse.BearerToken);
+            jwtClient.SetTokenCookie(authResponse.BearerToken);
 
             var request = new Secured { Name = "test" };
             var response = jwtClient.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             var newClient = GetClient();
-            var cookieValue = jwtClient.GetCookieValues()["ss-jwt"];
-            newClient.SetCookie("ss-jwt", cookieValue);
+            var cookieValue = jwtClient.GetTokenCookie();
+            newClient.SetTokenCookie(cookieValue);
             response = newClient.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
         }
@@ -1304,6 +1304,47 @@ namespace RazorRockstars.Console.Files
 
             response = newClient.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
+        public void Can_ConvertSessionToToken_when_authenticating()
+        {
+            var client = GetClient();
+
+            var authResponse = client.Send(new Authenticate
+            {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password,
+                UseTokenCookie = true
+            });
+
+            var token = client.GetTokenCookie();
+            Assert.That(token, Is.Not.Null);
+            Assert.That(token, Is.EqualTo(authResponse.BearerToken));
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var clientWithToken = GetClient();
+            clientWithToken.SetTokenCookie(client.GetTokenCookie());
+
+            response = clientWithToken.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var clientWithSession = GetClient();
+            clientWithSession.SetSessionId(client.GetSessionId());
+
+            try
+            {
+                response = clientWithSession.Send(request);
+                Assert.Fail("should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
         }
     }
 

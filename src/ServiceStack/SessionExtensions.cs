@@ -300,7 +300,7 @@ namespace ServiceStack
         {
             var httpRes = response as IHttpResponse;
             if (httpRes == null) return;
-            httpRes.Cookies.DeleteCookie(Keywords.JwtSessionToken);
+            httpRes.Cookies.DeleteCookie(Keywords.TokenCookie);
         }
 
         public static void GenerateNewSessionCookies(this IRequest req, IAuthSession session)

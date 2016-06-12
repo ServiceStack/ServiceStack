@@ -1961,9 +1961,9 @@ namespace ServiceStack
 
         public static string GetTokenCookie(this IServiceClient client)
         {
-            string sessionId;
-            client.GetCookieValues().TryGetValue("ss-jwt", out sessionId);
-            return sessionId;
+            string token;
+            client.GetCookieValues().TryGetValue("ss-tok", out token);
+            return token;
         }
 
         public static void SetTokenCookie(this IServiceClient client, string token)
@@ -1971,7 +1971,7 @@ namespace ServiceStack
             if (token == null)
                 return;
 
-            client.SetCookie("ss-jwt", token, expiresIn: TimeSpan.FromDays(365 * 20));
+            client.SetCookie("ss-tok", token, expiresIn: TimeSpan.FromDays(365 * 20));
         }
     }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Configuration;
 using System.Linq;
+using System.Net;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -35,6 +36,7 @@ namespace ServiceStack.Auth
         public static string DefaultOAuthProvider { get; private set; }
         public static string DefaultOAuthRealm { get; private set; }
         public static string HtmlRedirect { get; internal set; }
+        public static Func<IServiceBase, Authenticate, AuthenticateResponse, object> AuthResponseDecorator { get; internal set; }
         internal static IAuthProvider[] AuthProviders = TypeConstants<IAuthProvider>.EmptyArray;
         internal static IAuthWithRequest[] AuthWithRequestProviders = TypeConstants<IAuthWithRequest>.EmptyArray;
         internal static IAuthResponseFilter[] AuthResponseFilters = TypeConstants<IAuthResponseFilter>.EmptyArray;
@@ -171,6 +173,11 @@ namespace ServiceStack.Auth
                     foreach (var responseFilter in AuthResponseFilters)
                     {
                         authResponse = responseFilter.Execute(this, authProvider, session, authResponse) ?? authResponse;
+                    }
+
+                    if (AuthResponseDecorator != null)
+                    {
+                        return AuthResponseDecorator(this, request, authResponse);
                     }
                 }
 

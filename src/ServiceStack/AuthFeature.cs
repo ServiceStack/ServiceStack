@@ -45,6 +45,8 @@ namespace ServiceStack
 
         public int? MaxLoginAttempts { get; set; }
 
+        public Func<IServiceBase, Authenticate, AuthenticateResponse, object> AuthResponseDecorator { get; set; }
+
         public bool IncludeAssignRoleServices
         {
             set
@@ -109,7 +111,6 @@ namespace ServiceStack
         public void Register(IAppHost appHost)
         {
             AuthenticateService.Init(sessionFactory, authProviders);
-            AuthenticateService.HtmlRedirect = HtmlRedirect;
 
             var unitTest = appHost == null;
             if (unitTest) return;
@@ -129,6 +130,9 @@ namespace ServiceStack
                 appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
 
             authProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
+
+            AuthenticateService.HtmlRedirect = HtmlRedirect;
+            AuthenticateService.AuthResponseDecorator = AuthResponseDecorator;
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

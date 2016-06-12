@@ -23,7 +23,7 @@
         public static string SessionId = "ss-id";
         public static string PermanentSessionId = "ss-pid";
         public static string SessionOptionsKey = "ss-opt";
-        public static string JwtSessionToken = "ss-jwt";
+        public static string TokenCookie = "ss-tok";
     }
 
     public static class LocalizedStrings

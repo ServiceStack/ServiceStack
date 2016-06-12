@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -234,7 +235,7 @@ namespace ServiceStack.Auth
         public void PreAuthenticate(IRequest req, IResponse res)
         {
             var bearerToken = req.GetBearerToken()
-                ?? req.GetCookieValue(Keywords.JwtSessionToken);
+                ?? req.GetCookieValue(Keywords.TokenCookie);
 
             if (bearerToken != null)
             {
@@ -436,6 +437,27 @@ namespace ServiceStack.Auth
             {
                 appHost.RegisterService(registerService.Key, registerService.Value);
             }
+
+            feature.AuthResponseDecorator = AuthenticateResponseDecorator;
+        }
+
+        public object AuthenticateResponseDecorator(IServiceBase authService, Authenticate request, AuthenticateResponse authResponse)
+        {
+            if (authResponse.BearerToken == null || request.UseTokenCookie != true)
+                return authResponse;
+
+            authService.Request.RemoveSession(authService.GetSessionId());
+
+            return new HttpResult(authResponse)
+            {
+                Cookies = {
+                    new Cookie(Keywords.TokenCookie, authResponse.BearerToken) {
+                        HttpOnly = true,
+                        Secure = authService.Request.IsSecureConnection,
+                        Expires = DateTime.UtcNow.Add(ExpireTokensIn),
+                    }
+                }
+            };
         }
     }
 }
