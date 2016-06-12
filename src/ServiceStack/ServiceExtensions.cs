@@ -163,8 +163,6 @@ namespace ServiceStack
 
             if (oSession == null && !httpReq.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {
-                httpReq.Items[Keywords.HasPreAuthenticated] = true;
-
                 try
                 {
                     HostContext.AppHost.ApplyPreAuthenticateFilters(httpReq, httpReq.Response);

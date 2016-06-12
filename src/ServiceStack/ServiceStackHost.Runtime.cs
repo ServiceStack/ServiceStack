@@ -68,6 +68,7 @@ namespace ServiceStack
         /// </summary>
         public virtual void ApplyPreAuthenticateFilters(IRequest httpReq, IResponse httpRes)
         {
+            httpReq.Items[Keywords.HasPreAuthenticated] = true;
             foreach (var authProvider in AuthenticateService.AuthWithRequestProviders)
             {
                 authProvider.PreAuthenticate(httpReq, httpRes);
