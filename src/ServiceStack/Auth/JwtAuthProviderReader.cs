@@ -5,6 +5,7 @@ using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -19,6 +20,11 @@ namespace ServiceStack.Auth
 
         public const string Name = AuthenticateService.JwtProvider;
         public const string Realm = "/auth/" + AuthenticateService.JwtProvider;
+
+        public static HashSet<string> IgnoreForOperationTypes = new HashSet<string>
+        {
+            typeof(StaticFileHandler).Name,
+        };
 
         /// <summary>
         /// Different HMAC Algorithms supported
@@ -151,6 +157,18 @@ namespace ServiceStack.Auth
         public TimeSpan ExpireTokensIn { get; set; }
 
         /// <summary>
+        /// Convenient overload to initialize ExpireTokensIn with an Integer
+        /// </summary>
+        public int ExpireTokensInDays
+        {
+            set
+            {
+                if (value > 0)
+                    ExpireTokensIn = TimeSpan.FromDays(value);
+            }
+        }
+
+        /// <summary>
         /// Whether to invalidate all JWT Tokens issued before a specified date.
         /// </summary>
         public DateTime? InvalidateTokensIssuedBefore { get; set; }
@@ -185,7 +203,6 @@ namespace ServiceStack.Auth
 
                 Issuer = appSettings.GetString("jwt.Issuer");
                 Audience = appSettings.GetString("jwt.Audience");
-                ExpireTokensIn = appSettings.Get("jwt.ExpireTokensIn", ExpireTokensIn);
                 KeyId = appSettings.GetString("jwt.KeyId");
 
                 var hashAlg = appSettings.GetString("jwt.HashAlgorithm");
@@ -206,6 +223,11 @@ namespace ServiceStack.Auth
                 if (!string.IsNullOrEmpty(dateStr))
                     InvalidateTokensIssuedBefore = dateStr.FromJsv<DateTime>();
 
+                ExpireTokensIn = appSettings.Get("jwt.ExpireTokensIn", ExpireTokensIn);
+
+                var intStr = appSettings.GetString("jwt.ExpireTokensInDays");
+                if (intStr != null)
+                    ExpireTokensInDays = int.Parse(intStr);
             }
         }
 
@@ -234,6 +256,9 @@ namespace ServiceStack.Auth
 
         public void PreAuthenticate(IRequest req, IResponse res)
         {
+            if (req.OperationName != null && IgnoreForOperationTypes.Contains(req.OperationName)) 
+                return;
+
             var bearerToken = req.GetBearerToken()
                 ?? req.GetCookieValue(Keywords.TokenCookie);
 
@@ -451,7 +476,7 @@ namespace ServiceStack.Auth
             return new HttpResult(authResponse)
             {
                 Cookies = {
-                    new Cookie(Keywords.TokenCookie, authResponse.BearerToken) {
+                    new Cookie(Keywords.TokenCookie, authResponse.BearerToken, Cookies.RootPath) {
                         HttpOnly = true,
                         Secure = authService.Request.IsSecureConnection,
                         Expires = DateTime.UtcNow.Add(ExpireTokensIn),
