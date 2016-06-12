@@ -164,8 +164,17 @@ namespace ServiceStack
             if (oSession == null && !httpReq.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {
                 httpReq.Items[Keywords.HasPreAuthenticated] = true;
-                HostContext.AppHost.ApplyPreAuthenticateFilters(httpReq, httpReq.Response);
-                httpReq.Items.TryGetValue(Keywords.Session, out oSession);
+
+                try
+                {
+                    HostContext.AppHost.ApplyPreAuthenticateFilters(httpReq, httpReq.Response);
+                    httpReq.Items.TryGetValue(Keywords.Session, out oSession);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error in GetSession() when ApplyPreAuthenticateFilters", ex);
+                    /*treat errors as non-existing session*/
+                }
             }
 
             var sessionId = httpReq.GetSessionId();
