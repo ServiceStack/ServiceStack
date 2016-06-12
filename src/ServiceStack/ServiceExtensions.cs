@@ -161,6 +161,12 @@ namespace ServiceStack
             if (!reload)
                 httpReq.Items.TryGetValue(Keywords.Session, out oSession);
 
+            if (oSession == null)
+            {
+                HostContext.AppHost.ApplyPreAuthenticateFilters(httpReq, httpReq.Response);
+                httpReq.Items.TryGetValue(Keywords.Session, out oSession);
+            }
+
             var sessionId = httpReq.GetSessionId();
             var session = oSession as IAuthSession;
             if (session != null)

@@ -10,7 +10,7 @@ namespace ServiceStack.Host
     public class Cookies : ICookies
     {
         readonly IHttpResponse httpRes;
-        private const string RootPath = "/";
+        public const string RootPath = "/";
 
         public Cookies(IHttpResponse httpRes)
         {
