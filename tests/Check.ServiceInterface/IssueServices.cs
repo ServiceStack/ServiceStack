@@ -63,4 +63,25 @@ namespace Check.ServiceInterface
             throw new Exception("Batch Throws");
         }
     }
+
+    [Route("/code/objectid", "get", Summary = "Objenin", Notes = "")]
+    public class ObjectId : IReturn<IntegerResponse>
+    {
+        public string objectName { get; set; }
+    }
+
+    public class IntegerResponse
+    {
+        public int data { get; set; }
+    }
+
+    public class CodeServices : Service
+    {
+        public object Get(ObjectId request)
+        {
+            int data;
+            int.TryParse(request.objectName ?? "-1", out data);
+            return new IntegerResponse { data =  data };
+        }
+    }
 }
