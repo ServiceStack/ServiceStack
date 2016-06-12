@@ -60,7 +60,6 @@ namespace ServiceStack
         /// </summary>
         public virtual bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
         {
-            ApplyPreAuthenticateFilters(httpReq, httpRes);
             return ApplyPreRequestFilters(httpReq, httpRes);
         }
 

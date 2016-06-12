@@ -24,6 +24,7 @@
         public static string PermanentSessionId = "ss-pid";
         public static string SessionOptionsKey = "ss-opt";
         public static string TokenCookie = "ss-tok";
+        public static string HasPreAuthenticated = "__haspreauth";
     }
 
     public static class LocalizedStrings
