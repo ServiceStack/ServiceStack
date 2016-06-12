@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using Funq;
@@ -356,6 +357,50 @@ namespace RazorRockstars.Console.Files
             {
                 View = "/" + request.PathInfo
             };
+        }
+    }
+
+    [Route("/test/session")]
+    public class TestSession : IReturn<TestSessionResponse> { }
+
+    [Route("/test/session/view")]
+    public class TestSessionView : IReturn<TestSessionResponse> { }
+
+    public class TestSessionResponse
+    {
+        public string UserAuthId { get; set; }
+        public bool IsAuthenticated { get; set; }
+    }
+
+    public class TestSessionAttribute : RequestFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object requestDto)
+        {
+            var session = req.GetSession();
+            if (!session.IsAuthenticated)
+            {
+                res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                res.EndRequestWithNoContent();
+            }
+        }
+    }
+
+    public class TestSessionService : Service
+    {
+        [TestSession]
+        public object Any(TestSession request)
+        {
+            var session = base.Request.GetSession();
+            return new TestSessionResponse
+            {
+                UserAuthId = session.UserAuthId,
+                IsAuthenticated = session.IsAuthenticated,
+            };
+        }
+
+        public object Any(TestSessionView request)
+        {
+            return new TestSessionResponse();
         }
     }
 }
