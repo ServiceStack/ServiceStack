@@ -134,6 +134,8 @@ namespace ServiceStack.AuthWeb.Tests
                         //        ? HttpResult.Redirect("https://youtu.be/dQw4w9WgXcQ")
                         //        : null
                     },
+                    new JwtAuthProvider(appSettings), 
+                    new ApiKeyAuthProvider(appSettings), 
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
                     new DigestAuthProvider(appSettings),        //Sign-in with Digest Auth
