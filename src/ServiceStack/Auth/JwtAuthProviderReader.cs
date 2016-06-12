@@ -287,7 +287,8 @@ namespace ServiceStack.Auth
                     if (RequireHashAlgorithm && algorithm != HashAlgorithm)
                         throw new NotSupportedException("Invalid algoritm '{0}', expected '{1}'".Fmt(algorithm, HashAlgorithm));
 
-                    VerifyPayload(algorithm, bytesToSign, signatureBytes);
+                    if (!VerifyPayload(algorithm, bytesToSign, signatureBytes))
+                        return;
 
                     var payloadJson = payloadBytes.FromUtf8Bytes();
                     var jwtPayload = JsonObject.Parse(payloadJson);
@@ -334,15 +335,8 @@ namespace ServiceStack.Auth
 
                             var calcTag = hmac.ComputeHash(encryptedStream.ToArray());
 
-                            if (sentTag.Length != calcTag.Length)
-                                throw new ArgumentException("Invalid JWE Authentication Tag");
-
-                            var compare = 0;
-                            for (var i = 0; i < sentTag.Length; i++)
-                                compare |= sentTag[i] ^ calcTag[i];
-
-                            if (compare != 0)
-                                throw new ArgumentException("Invalid JWE Authentication Tag");
+                            if (!calcTag.EquivalentTo(sentTag))
+                                return;
                         }
                     }
 
@@ -401,7 +395,7 @@ namespace ServiceStack.Auth
             return session;
         }
 
-        public void VerifyPayload(string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
+        public bool VerifyPayload(string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
         {
             var isHmac = HmacAlgorithms.ContainsKey(algorithm);
             var isRsa = RsaSignAlgorithms.ContainsKey(algorithm);
@@ -410,20 +404,25 @@ namespace ServiceStack.Auth
 
             if (isHmac)
             {
+                if (AuthKey == null)
+                    throw new NotSupportedException("AuthKey required to use: " + HashAlgorithm);
+
                 var calcSignatureBytes = HmacAlgorithms[algorithm](AuthKey, bytesToSign);
 
                 if (!calcSignatureBytes.EquivalentTo(sentSignatureBytes))
-                    throw new TokenException(ErrorMessages.InvalidSignature);
+                    return false;
             }
             else
             {
                 if (PublicKey == null)
-                    throw new NotSupportedException("Invalid algoritm: " + algorithm);
+                    throw new NotSupportedException("PrivateKey required to use: " + HashAlgorithm);
 
                 var verified = RsaVerifyAlgorithms[algorithm](PublicKey.Value, bytesToSign, sentSignatureBytes);
                 if (!verified)
-                    throw new TokenException(ErrorMessages.InvalidSignature);
+                    return false;
             }
+
+            return true;
         }
 
         static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
