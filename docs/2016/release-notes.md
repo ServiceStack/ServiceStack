@@ -1,14 +1,14 @@
-# [v4.0.60 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md)
+# [v4.0.60 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md)
 
 v4.0.60 is another jam-packed release starting with exciting new API Key and JWT Auth Providers enabling fast, stateless and centralized Auth Services, a modernized API surface for OrmLite, new GEO capabilities in Redis, Logging for Slack, performance and memory improvements across all ServiceStack and libraries including useful utilities you can reuse to improve performance in your own Apps! 
 
-I'll try highlight the main points but I welcome you to checkout the [full v4.0.58 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#v4058-release-notes) when you can.
+I'll try highlight the main points but I welcome you to checkout the [full v4.0.60 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#v4060-release-notes) when you can.
 
 ## Authentication
 
 Auth Providers that authenticate with each request (i.e. implement `IAuthWithRequest`) no longer persist Users Sessions to the cache, they're just attached to the `IRequest` and only last for the duration of the Request. This should be a transparent change but can be reverted by setting `PersistSession=true`.
 
-### [API Key Auth Provider](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#api-key-auth-provider)
+### [API Key Auth Provider](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#api-key-auth-provider)
 
 The new `ApiKeyAuthProvider` provides an alternative method for allowing external 3rd Parties access to 
 your protected Services without needing to specify a password. API Keys is the preferred approach for 
@@ -93,7 +93,7 @@ public override IDbConnection GetDbConnection(IRequest req = null)
 }
 ```
 
-## [JWT Auth Provider](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#jwt-auth-provider)
+## [JWT Auth Provider](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#jwt-auth-provider)
 
 Even more exciting than the new API Key Provider is the new integrated Auth solution for the popular
 [JSON Web Tokens](https://jwt.io/) (JWT) industry standard which is easily enabled by registering
@@ -245,7 +245,7 @@ Which just like `ConvertSessionToToken` adds returns a populated session in the 
 both [techstacks.io](http://techstacks.io) and [servicestack.net](https://servicestack.net) can maintain 
 uninterrupted Sessions across multiple redeployments without a persistent Sessions cache.
 
-## [Modernized OrmLite API Surface](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#cleaner-modernized-api-surface)
+## [Modernized OrmLite API Surface](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#cleaner-modernized-api-surface)
 
 As [mentioned in the last release](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/release-notes.md#deprecating-legacy-ormlite-apis) we've moved OrmLite's deprecated APIs into the `ServiceStack.OrmLite.Legacy` namespace leaving a clean, modern API surface in OrmLite's default namespace.
 
@@ -403,7 +403,7 @@ block.Area.Print(); //= 50
 block.DateFormat.Print(); //= 2016-06-08
 ```
 
-## [New Redis GEO Operations](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#new-redis-geo-operations)
+## [New Redis GEO Operations](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#new-redis-geo-operations)
 
 The latest [release of Redis 3.2.0](http://antirez.com/news/104) brings it exciting new [GEO capabilities](http://redis.io/commands/geoadd) which will let you store Lat/Long coordinates in Redis and query locations within a specified radius. 
 
@@ -413,7 +413,7 @@ To demonstrate this functionality we've created a new [Redis GEO Live Demo](http
 
 > Live Demo: http://redisgeo.servicestack.net
 
-## [Slack Logger](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#slack-logger)
+## [Slack Logger](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#slack-logger)
 
 The new Slack Logger can be used to send Logging to a custom Slack Channel which is a nice interactive way 
 for your development team on Slack to see and discuss logging messages as they come in.
@@ -525,7 +525,7 @@ Plugins can use the new `RegisterServicesInAssembly()` API to register multiple 
 appHost.RegisterServicesInAssembly(GetType().Assembly);
 ```
 
-This summary touches on the the main highlights, more features and further details are available in the [full v4.0.58 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#v4058-release-notes).
+This summary touches on the the main highlights, more features and further details are available in the [full v4.0.60 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#v4060-release-notes).
 
 # [v4.0.56 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.56.md)
 
