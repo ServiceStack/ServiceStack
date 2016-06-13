@@ -1,6 +1,6 @@
-# [v4.0.58 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md)
+# [v4.0.60 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md)
 
-v4.0.58 is another jam-packed release starting with exciting new API Key and JWT Auth Providers enabling fast, stateless and centralized Auth Services, a modernized API surface for OrmLite, new GEO capabilities in Redis, Logging for Slack, performance and memory improvements across all ServiceStack and libraries including useful utilities you can reuse to improve performance in your own Apps! 
+v4.0.60 is another jam-packed release starting with exciting new API Key and JWT Auth Providers enabling fast, stateless and centralized Auth Services, a modernized API surface for OrmLite, new GEO capabilities in Redis, Logging for Slack, performance and memory improvements across all ServiceStack and libraries including useful utilities you can reuse to improve performance in your own Apps! 
 
 I'll try highlight the main points but I welcome you to checkout the [full v4.0.58 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#v4058-release-notes) when you can.
 
@@ -221,6 +221,29 @@ $.post("/session-to-token");
 
 Likewise this API lets you convert Sessions created by any of the OAuth providers into a stateless JWT Token.
 
+### Switching existing Sites to JWT
+
+Thanks to the flexibility and benefits of using stateless JWT Tokens, we've upgraded both our Single Page App
+http://techstacks.io which uses Twitter and GitHub OAuth to [use JWT with a single Ajax call](https://github.com/ServiceStackApps/TechStacks/blob/78ecd5e390e585c14f616bb27b24e0072b756040/src/TechStacks/TechStacks/js/user/services.js#L30):
+
+```javascript
+$.post("/session-to-token");
+```
+
+We've also upgraded https://servicestack.net which as it uses normal Username/Password Credentials Authentication 
+(i.e. instead of redirects in OAuth), it doesn't need any additional network calls as we can add the `UseTokenCookie`
+option as a hidden variable in our FORM request:
+
+```html
+<form id="form-login" action="/auth/login">
+    <input type="hidden" name="UseTokenCookie" value="true" />
+    ...
+</form>
+```
+
+Which just like `ConvertSessionToToken` adds returns a populated session in the **ss-tok** Cookie so now 
+both [techstacks.io](http://techstacks.io) and [servicestack.net](https://servicestack.net) can maintain 
+uninterrupted Sessions across multiple redeployments without a persistent Sessions cache.
 
 ## [Modernized OrmLite API Surface](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#cleaner-modernized-api-surface)
 
