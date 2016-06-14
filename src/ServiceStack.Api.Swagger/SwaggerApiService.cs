@@ -35,6 +35,10 @@ namespace ServiceStack.Api.Swagger
         public Dictionary<string, SwaggerModel> Models { get; set; }
     }
 
+    /// <summary>
+    /// https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v1.2/dataType.json
+    /// https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v1.2/modelsObject.json
+    /// </summary>
     [DataContract]
     public class SwaggerModel
     {
@@ -55,10 +59,13 @@ namespace ServiceStack.Api.Swagger
         public List<MethodOperation> Operations { get; set; }
     }
 
+    /// <summary>
+    /// https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v1.2/operationObject.json
+    /// </summary>
     [DataContract]
     public class MethodOperation
     {
-        [DataMember(Name = "httpMethod")]
+        [DataMember(Name = "method")]
         public string HttpMethod { get; set; }
         [DataMember(Name = "nickname")]
         public string Nickname { get; set; }
@@ -70,19 +77,25 @@ namespace ServiceStack.Api.Swagger
         public List<MethodOperationParameter> Parameters { get; set; }
         [DataMember(Name = "responseClass")]
         public string ResponseClass { get; set; }
-        [DataMember(Name = "errorResponses")]
-        public List<ErrorResponseStatus> ErrorResponses { get; set; }
+        [DataMember(Name = "responseMessages")]
+        public List<ResponseMessage> ResponseMessages { get; set; }
     }
 
+    /// <summary>
+    /// https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v1.2/operationObject.json
+    /// </summary>
     [DataContract]
-    public class ErrorResponseStatus
+    public class ResponseMessage
     {
         [DataMember(Name = "code")]
         public int StatusCode { get; set; }
-        [DataMember(Name = "reason")]
+        [DataMember(Name = "message")]
         public string Reason { get; set; }
     }
 
+    /// <summary>
+    /// https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v1.2/dataType.json
+    /// </summary>
     [DataContract]
     public class ModelProperty
     {
@@ -98,6 +111,10 @@ namespace ServiceStack.Api.Swagger
         public bool Required { get; set; }
     }
 
+    /// <summary>
+    /// https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v1.2/parameterObject.json
+    /// https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v1.2/dataTypeBase.json
+    /// </summary>
     [DataContract]
     public class MethodOperationParameter
     {
@@ -107,29 +124,32 @@ namespace ServiceStack.Api.Swagger
         public string Description { get; set; }
         [DataMember(Name = "paramType")]
         public string ParamType { get; set; }
-        [DataMember(Name = "allowMultiple")]
+        [DataMember(Name = "uniqueItems")]
         public bool AllowMultiple { get; set; }
         [DataMember(Name = "required")]
         public bool Required { get; set; }
-        [DataMember(Name = "dataType")]
+        [DataMember(Name = "type")]
         public string DataType { get; set; }
         [DataMember(Name = "allowableValues")]
         public ParameterAllowableValues AllowableValues { get; set; }
     }
-
+    
+    /// <summary>
+    /// https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v1.2/dataTypeBase.json
+    /// </summary>
     [DataContract]
     public class ParameterAllowableValues
     {
-        [DataMember(Name = "valueType")]
+        [DataMember(Name = "type")]
         public string ValueType { get; set; }
 
         [DataMember(Name = "values")]
         public string[] Values { get; set; }
 
-        [DataMember(Name = "min")]
+        [DataMember(Name = "minimum")]
         public int? Min { get; set; }
 
-        [DataMember(Name = "max")]
+        [DataMember(Name = "maximum")]
         public int? Max { get; set; }
     }
 
@@ -376,12 +396,12 @@ namespace ServiceStack.Api.Swagger
             return null;
         }
 
-        private static List<ErrorResponseStatus> GetMethodResponseCodes(Type requestType)
+        private static List<ResponseMessage> GetMethodResponseCodes(Type requestType)
         {
             return requestType
                 .GetCustomAttributes(typeof(IApiResponseDescription), true)
                 .OfType<IApiResponseDescription>()
-                .Select(x => new ErrorResponseStatus
+                .Select(x => new ResponseMessage
                 {
                     StatusCode = (int)x.StatusCode,
                     Reason = x.Description
@@ -416,7 +436,7 @@ namespace ServiceStack.Api.Swagger
                         Notes = notes,
                         Parameters = ParseParameters(verb, restPath.RequestType, models),
                         ResponseClass = GetResponseClass(restPath, models),
-                        ErrorResponses = GetMethodResponseCodes(restPath.RequestType)
+                        ResponseMessages = GetMethodResponseCodes(restPath.RequestType)
                     }).ToList()
             };
             return md;

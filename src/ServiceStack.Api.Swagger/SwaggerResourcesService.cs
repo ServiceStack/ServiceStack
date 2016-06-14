@@ -17,6 +17,9 @@ namespace ServiceStack.Api.Swagger
         public string ApiKey { get; set; }
     }
 
+    /// <summary>
+    /// https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v1.2/apiDeclaration.json
+    /// </summary>
     [DataContract]
     public class ResourcesResponse
     {
@@ -59,7 +62,7 @@ namespace ServiceStack.Api.Swagger
 
             var result = new ResourcesResponse
             {
-                SwaggerVersion = "1.1",
+                SwaggerVersion = "1.2",
                 BasePath = basePath,
                 Apis = new List<RestService>()
             };
