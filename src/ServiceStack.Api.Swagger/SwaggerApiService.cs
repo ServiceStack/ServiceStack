@@ -105,10 +105,24 @@ namespace ServiceStack.Api.Swagger
         public string Type { get; set; }
         [DataMember(Name = "items")]
         public Dictionary<string, string> Items { get; set; }
-        [DataMember(Name = "allowableValues")]
-        public ParameterAllowableValues AllowableValues { get; set; }
+        [DataMember(Name = "enum")]
+        public string[] AllowedValues { get; set; }
         [DataMember(Name = "required")]
         public bool Required { get; set; }
+        [DataMember(Name = "minimum")]
+        public string Min { get; set; }
+        [DataMember(Name = "maximum")]
+        public string Max { get; set; }
+        public ApiAllowableValuesAttribute AllowableValues
+        {
+            set
+            {
+                Items.Add("type", value.Type);
+                AllowedValues = value.Values;
+                Max = value.Max.ToString();
+                Min = value.Min.ToString();
+            }
+        }
     }
 
     /// <summary>
@@ -124,14 +138,31 @@ namespace ServiceStack.Api.Swagger
         public string Description { get; set; }
         [DataMember(Name = "paramType")]
         public string ParamType { get; set; }
-        [DataMember(Name = "uniqueItems")]
+        [DataMember(Name = "allowMultiple")]
         public bool AllowMultiple { get; set; }
         [DataMember(Name = "required")]
         public bool Required { get; set; }
         [DataMember(Name = "type")]
         public string DataType { get; set; }
-        [DataMember(Name = "allowableValues")]
-        public ParameterAllowableValues AllowableValues { get; set; }
+        [DataMember(Name = "enum")]
+        public string[] AllowedValues { get; set; }
+        [DataMember(Name = "minimum")]
+        public int? Min { get; set; }
+        [DataMember(Name = "maximum")]
+        public int? Max { get; set; }
+        [DataMember(Name = "items")]
+        public ParameterAllowableValues Items { get; set; }
+
+        public ApiAllowableValuesAttribute AllowableValues
+        {
+            set
+            {
+                Items = new ParameterAllowableValues { ValueType = value.Type };
+                AllowedValues = value.Values;
+                Max = value.Max;
+                Min = value.Min;
+            }
+        }
     }
     
     /// <summary>
@@ -142,15 +173,6 @@ namespace ServiceStack.Api.Swagger
     {
         [DataMember(Name = "type")]
         public string ValueType { get; set; }
-
-        [DataMember(Name = "values")]
-        public string[] Values { get; set; }
-
-        [DataMember(Name = "minimum")]
-        public int? Min { get; set; }
-
-        [DataMember(Name = "maximum")]
-        public int? Max { get; set; }
     }
 
     [DefaultRequest(typeof(ResourceRequest))]
@@ -319,20 +341,12 @@ namespace ServiceStack.Api.Swagger
                     {
                         var underlyingType = Enum.GetUnderlyingType(enumType);
                         modelProp.Type = GetSwaggerTypeName(underlyingType);
-                        modelProp.AllowableValues = new ParameterAllowableValues
-                        {
-                            Values = GetNumericValues(enumType, underlyingType).ToArray(),
-                            ValueType = "LIST"
-                        };
+                        modelProp.AllowedValues = GetNumericValues(enumType, underlyingType).ToArray();
                     }
                     else
                     {
                         modelProp.Type = SwaggerType.String;
-                        modelProp.AllowableValues = new ParameterAllowableValues
-                        {
-                            Values = Enum.GetNames(enumType),
-                            ValueType = "LIST"
-                        };
+                        modelProp.AllowedValues = Enum.GetNames(enumType);
                     }                 
                 }
                 else
@@ -349,7 +363,9 @@ namespace ServiceStack.Api.Swagger
 
                 var allowableValues = prop.GetCustomAttributes(typeof(ApiAllowableValuesAttribute), true).OfType<ApiAllowableValuesAttribute>().FirstOrDefault();
                 if (allowableValues != null)
-                    modelProp.AllowableValues = GetAllowableValue(allowableValues);
+                {
+                    modelProp.AllowableValues = allowableValues;
+                }
 
                 model.Properties[GetModelPropertyName(prop, dataMemberAttribute)] = modelProp;
             }
@@ -442,21 +458,6 @@ namespace ServiceStack.Api.Swagger
             return md;
         }
 
-        private static ParameterAllowableValues GetAllowableValue(ApiAllowableValuesAttribute attr)
-        {
-            if (attr != null)
-            {
-                return new ParameterAllowableValues()
-                {
-                    ValueType = attr.Type,
-                    Values = attr.Values,
-                    Max = attr.Max,
-                    Min = attr.Min
-                };
-            }
-            return null;
-        }
-
         private static List<MethodOperationParameter> ParseParameters(string verb, Type operationType, IDictionary<string, SwaggerModel> models)
         {
             var hasDataContract = operationType.GetCustomAttributes(typeof(DataContractAttribute), inherit: true).Length > 0;
@@ -496,7 +497,7 @@ namespace ServiceStack.Api.Swagger
                         Name = member.Name ?? key,
                         ParamType = member.ParameterType,
                         Required = member.IsRequired,
-                        AllowableValues = GetAllowableValue(allowableParams.FirstOrDefault(attr => attr.Name == member.Name))
+                        AllowableValues = allowableParams.FirstOrDefault(attr => attr.Name == member.Name)
                     });
             }
 
@@ -505,11 +506,13 @@ namespace ServiceStack.Api.Swagger
                 if (!ServiceStack.Common.Web.HttpMethods.Get.Equals(verb, StringComparison.OrdinalIgnoreCase) && !methodOperationParameters.Any(p => p.ParamType.Equals("body", StringComparison.OrdinalIgnoreCase)))
                 {
                     ParseModel(models, operationType);
-                    methodOperationParameters.Add(new MethodOperationParameter()
+                    var param = new MethodOperationParameter()
                     {
                         DataType = GetSwaggerTypeName(operationType),
                         ParamType = "body"
-                    });
+                    };
+                    param.Name = param.DataType;
+                    methodOperationParameters.Add(param);
                 }
             }
             return methodOperationParameters;
