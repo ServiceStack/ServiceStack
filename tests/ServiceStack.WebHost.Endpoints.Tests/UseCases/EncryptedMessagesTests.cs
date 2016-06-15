@@ -68,6 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
+            ((IClearable)appHost.TryResolve<IAuthRepository>()).Clear(); //Flush InMemoryAuthProvider
             appHost.Dispose();
         }
 
