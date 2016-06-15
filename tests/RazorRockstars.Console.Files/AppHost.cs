@@ -12,6 +12,7 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
+using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 
@@ -27,6 +28,7 @@ namespace RazorRockstars.Console.Files
         public RSAParameters? JwtRsaPrivateKey;
         public RSAParameters? JwtRsaPublicKey;
         public bool JwtEncryptPayload = false;
+        public Func<IRequest, IAuthRepository> GetAuthRepositoryFn;
 
         public Action<Container> Use;
 
@@ -100,6 +102,13 @@ namespace RazorRockstars.Console.Files
             return apiKey != null && apiKey.Environment == "test"
                 ? TryResolve<IDbConnectionFactory>().OpenDbConnection("testdb")
                 : base.GetDbConnection(req);
+        }
+
+        public override IAuthRepository GetAuthRepository(IRequest req = null)
+        {
+            return GetAuthRepositoryFn != null
+                ? GetAuthRepositoryFn(req)
+                : base.GetAuthRepository(req);
         }
 
         private static void Main(string[] args)

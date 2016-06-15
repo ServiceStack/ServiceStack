@@ -19,7 +19,7 @@ namespace ServiceStack.Host
 
         public static string GetBasicAuth(this IRequest httpReq)
         {
-            var auth = httpReq.Headers[HttpHeaders.Authorization];
+            var auth = httpReq.Authorization;
             if (auth == null) return null;
 
             var pos = auth.IndexOf(' ');

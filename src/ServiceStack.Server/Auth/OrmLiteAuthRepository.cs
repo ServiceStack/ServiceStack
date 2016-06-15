@@ -53,30 +53,107 @@ namespace ServiceStack.Auth
         }
     }
 
-    public class OrmLiteAuthRepositoryConnection<TUserAuth, TUserAuthDetails> : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>, IDisposable
+    public class OrmLiteAuthRepositoryMultitenancy : OrmLiteAuthRepositoryMultitenancy<UserAuth, UserAuthDetails>, IUserAuthRepository
+    {
+        public OrmLiteAuthRepositoryMultitenancy(IDbConnection db) : base(db) { }
+
+        public OrmLiteAuthRepositoryMultitenancy(IDbConnectionFactory dbFactory, string[] connectionStrings)
+            : base(dbFactory, connectionStrings) { }
+    }
+
+    public class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetails> : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>, IDisposable
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
         private readonly IDbConnection db;
 
-        public OrmLiteAuthRepositoryConnection(IDbConnection db)
+        public OrmLiteAuthRepositoryMultitenancy(IDbConnection db)
         {
             this.db = db;
         }
 
+        private readonly IDbConnectionFactory dbFactory;
+        private readonly string[] connectionStrings;
+
+        public OrmLiteAuthRepositoryMultitenancy(IDbConnectionFactory dbFactory, string[] connectionStrings)
+        {
+            this.dbFactory = dbFactory;
+            this.connectionStrings = connectionStrings;
+        }
+
         public override void Exec(Action<IDbConnection> fn)
         {
+            if (db == null)
+                throw new NotSupportedException("This operation can only be called within context of a Request");
+
             fn(db);
         }
 
         public override T Exec<T>(Func<IDbConnection, T> fn)
         {
+            if (db == null)
+                throw new NotSupportedException("This operation can only be called within context of a Request");
+
             return fn(db);
+        }
+
+        public void EachDb(Action<IDbConnection> fn)
+        {
+            if (dbFactory == null)
+                throw new NotSupportedException("This operation can only be called on Startup");
+
+            var ormLiteDbFactory = (OrmLiteConnectionFactory)dbFactory;
+
+            foreach (var connStr in connectionStrings)
+            {
+                //Required by In Memory Sqlite
+                var db = connStr == ormLiteDbFactory.ConnectionString
+                    ? dbFactory.OpenDbConnection()
+                    : dbFactory.OpenDbConnectionString(connStr);
+
+                using (db)
+                {
+                    fn(db);
+                }
+            }
+        }
+
+        public override void InitSchema()
+        {
+            hasInitSchema = true;
+
+            EachDb(db =>
+            {
+                db.CreateTableIfNotExists<TUserAuth>();
+                db.CreateTableIfNotExists<TUserAuthDetails>();
+                db.CreateTableIfNotExists<UserAuthRole>();
+            });
+        }
+
+        public override void DropAndReCreateTables()
+        {
+            hasInitSchema = true;
+
+            EachDb(db =>
+            {
+                db.CreateTableIfNotExists<TUserAuth>();
+                db.CreateTableIfNotExists<TUserAuthDetails>();
+                db.CreateTableIfNotExists<UserAuthRole>();
+            });
+        }
+
+        public override void InitApiKeySchema()
+        {
+            EachDb(db =>
+            {
+                db.CreateTableIfNotExists<ApiKey>();
+            });
         }
 
         public void Dispose()
         {
-            db.Dispose();
+            if (db != null)
+                db.Dispose();
         }
     }
 
@@ -85,7 +162,7 @@ namespace ServiceStack.Auth
         where TUserAuthDetails : class, IUserAuthDetails
     {
         private readonly IDbConnectionFactory dbFactory;
-        private bool hasInitSchema;
+        public bool hasInitSchema;
 
         public bool UseDistinctRoleTables { get; set; }
 
@@ -93,7 +170,7 @@ namespace ServiceStack.Auth
 
         public abstract T Exec<T>(Func<IDbConnection, T> fn);
 
-        public void InitSchema()
+        public virtual void InitSchema()
         {
             hasInitSchema = true;
             Exec(db =>
@@ -104,8 +181,9 @@ namespace ServiceStack.Auth
             });
         }
 
-        public void DropAndReCreateTables()
+        public virtual void DropAndReCreateTables()
         {
+            hasInitSchema = true;
             Exec(db =>
             {
                 db.DropAndCreateTable<TUserAuth>();
@@ -443,6 +521,9 @@ namespace ServiceStack.Auth
             if (!UseDistinctRoleTables)
             {
                 var userAuth = GetUserAuth(userAuthId);
+                if (userAuth == null)
+                    return TypeConstants.EmptyStringArray;
+
                 return userAuth.Roles;
             }
             else
@@ -459,6 +540,9 @@ namespace ServiceStack.Auth
             if (!UseDistinctRoleTables)
             {
                 var userAuth = GetUserAuth(userAuthId);
+                if (userAuth == null)
+                    return TypeConstants.EmptyStringArray;
+
                 return userAuth.Permissions;
             }
             else
@@ -614,7 +698,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void InitApiKeySchema()
+        public virtual void InitApiKeySchema()
         {
             Exec(db => 
             {
