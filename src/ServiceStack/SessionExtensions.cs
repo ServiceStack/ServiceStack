@@ -192,13 +192,20 @@ namespace ServiceStack
 
         public static void UpdateFromUserAuthRepo(this IAuthSession session, IRequest req, IAuthRepository userAuthRepo = null)
         {
+            if (session == null)
+                return;
+
             if (userAuthRepo == null)
-                userAuthRepo = req.TryResolve<IAuthRepository>();
+                userAuthRepo = HostContext.AppHost.GetAuthRepository(req);
 
-            if (userAuthRepo == null) return;
+            if (userAuthRepo == null)
+                return;
 
-            var userAuth = userAuthRepo.GetUserAuth(session, null);
-            session.UpdateSession(userAuth);
+            using (userAuthRepo as IDisposable)
+            {
+                var userAuth = userAuthRepo.GetUserAuth(session, null);
+                session.UpdateSession(userAuth);
+            }
         }
 
         public static HashSet<string> AddSessionOptions(this IRequest req, params string[] options)

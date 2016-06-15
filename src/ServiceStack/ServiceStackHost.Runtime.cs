@@ -653,6 +653,11 @@ namespace ServiceStack
                 : Container.TryResolve<IServiceGateway>()
                 ?? new InProcessServiceGateway(req);
         }
+
+        public virtual IAuthRepository GetAuthRepository(IRequest req = null)
+        {
+            return TryResolve<IAuthRepository>();
+        }
     }
 
 }

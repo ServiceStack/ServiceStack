@@ -74,10 +74,14 @@ namespace ServiceStack
                 var userSession = req.GetSession();
                 if (userSession != null)
                 {
-                    foreach (var role in VaryByRoles)
+                    var authRepo = HostContext.AppHost.GetAuthRepository(req);
+                    using (authRepo as IDisposable)
                     {
-                        if (userSession.HasRole(role))
-                            modifiers += (modifiers.Length > 0 ? "+" : "") + "role:" + role;
+                        foreach (var role in VaryByRoles)
+                        {
+                            if (userSession.HasRole(role, authRepo))
+                                modifiers += (modifiers.Length > 0 ? "+" : "") + "role:" + role;
+                        }
                     }
                 }
             }

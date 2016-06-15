@@ -80,24 +80,27 @@ namespace ServiceStack
                 return false;
 
             var httpReq = hasProvider.ServiceStackProvider.Request;
-            var userAuthRepo = httpReq.TryResolve<IAuthRepository>();
-            var hasRoles = roleAttrs.All(x => x.HasAllRoles(httpReq, authSession, userAuthRepo));
-            if (!hasRoles)
-                return false;
+            var userAuthRepo = HostContext.AppHost.GetAuthRepository(hasProvider.ServiceStackProvider.Request);
+            using (userAuthRepo as IDisposable)
+            {
+                var hasRoles = roleAttrs.All(x => x.HasAllRoles(httpReq, authSession, userAuthRepo));
+                if (!hasRoles)
+                    return false;
 
-            var hasAnyRole = anyRoleAttrs.All(x => x.HasAnyRoles(httpReq, authSession, userAuthRepo));
-            if (!hasAnyRole)
-                return false;
+                var hasAnyRole = anyRoleAttrs.All(x => x.HasAnyRoles(httpReq, authSession, userAuthRepo));
+                if (!hasAnyRole)
+                    return false;
 
-            var hasPermssions = permAttrs.All(x => x.HasAllPermissions(httpReq, authSession, userAuthRepo));
-            if (!hasPermssions)
-                return false;
+                var hasPermssions = permAttrs.All(x => x.HasAllPermissions(httpReq, authSession, userAuthRepo));
+                if (!hasPermssions)
+                    return false;
 
-            var hasAnyPermission = anyPermAttrs.All(x => x.HasAnyPermissions(httpReq, authSession, userAuthRepo));
-            if (!hasAnyPermission)
-                return false;
+                var hasAnyPermission = anyPermAttrs.All(x => x.HasAnyPermissions(httpReq, authSession, userAuthRepo));
+                if (!hasAnyPermission)
+                    return false;
 
-            return true;
+                return true;
+            }
         }
     }
 

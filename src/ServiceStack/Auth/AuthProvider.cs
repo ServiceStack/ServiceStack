@@ -169,74 +169,76 @@ namespace ServiceStack.Auth
                 authInfo.ForEach((x, y) => tokens.Items[x] = y);
             }
 
-            var authRepo = authService.TryResolve<IAuthRepository>();
-
-            if (CustomValidationFilter != null)
+            var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request);
+            using (authRepo as IDisposable)
             {
-                var ctx = new AuthContext
+                if (CustomValidationFilter != null)
                 {
-                    Request = authService.Request,
-                    Service = authService,
-                    AuthProvider = this,
-                    Session = session,
-                    AuthTokens = tokens,
-                    AuthInfo = authInfo,
-                    AuthRepository = authRepo,
-                };
-                var response = CustomValidationFilter(ctx);
-                if (response != null)
-                {
-                    authService.RemoveSession();
-                    return response;
-                }
-            }
-
-            if (authRepo != null)
-            {
-                var failed = ValidateAccount(authService, authRepo, session, tokens);
-                if (failed != null)
-                {
-                    authService.RemoveSession();
-                    return failed;
-                }
-
-                if (hasTokens)
-                {
-                    var authDetails = authRepo.CreateOrMergeAuthSession(session, tokens);
-                    session.UserAuthId = authDetails.UserAuthId.ToString();
-
-                    var firstTimeAuthenticated = authDetails.CreatedDate == authDetails.ModifiedDate;
-                    if (firstTimeAuthenticated)
+                    var ctx = new AuthContext
                     {
-                        session.OnRegistered(authService.Request, session, authService);
-                        AuthEvents.OnRegistered(authService.Request, session, authService);
+                        Request = authService.Request,
+                        Service = authService,
+                        AuthProvider = this,
+                        Session = session,
+                        AuthTokens = tokens,
+                        AuthInfo = authInfo,
+                        AuthRepository = authRepo,
+                    };
+                    var response = CustomValidationFilter(ctx);
+                    if (response != null)
+                    {
+                        authService.RemoveSession();
+                        return response;
                     }
                 }
 
-                authRepo.LoadUserAuth(session, tokens);
-
-                foreach (var oAuthToken in session.GetAuthTokens())
+                if (authRepo != null)
                 {
-                    var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
-                    if (authProvider == null) continue;
-                    var userAuthProvider = authProvider as OAuthProvider;
-                    if (userAuthProvider != null)
+                    var failed = ValidateAccount(authService, authRepo, session, tokens);
+                    if (failed != null)
                     {
-                        userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
+                        authService.RemoveSession();
+                        return failed;
+                    }
+
+                    if (hasTokens)
+                    {
+                        var authDetails = authRepo.CreateOrMergeAuthSession(session, tokens);
+                        session.UserAuthId = authDetails.UserAuthId.ToString();
+
+                        var firstTimeAuthenticated = authDetails.CreatedDate == authDetails.ModifiedDate;
+                        if (firstTimeAuthenticated)
+                        {
+                            session.OnRegistered(authService.Request, session, authService);
+                            AuthEvents.OnRegistered(authService.Request, session, authService);
+                        }
+                    }
+
+                    authRepo.LoadUserAuth(session, tokens);
+
+                    foreach (var oAuthToken in session.GetAuthTokens())
+                    {
+                        var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
+                        if (authProvider == null) continue;
+                        var userAuthProvider = authProvider as OAuthProvider;
+                        if (userAuthProvider != null)
+                        {
+                            userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
+                        }
+                    }
+
+                    var httpRes = authService.Request.Response as IHttpResponse;
+                    if (session.UserAuthId != null && httpRes != null)
+                    {
+                        httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
                     }
                 }
-
-                var httpRes = authService.Request.Response as IHttpResponse;
-                if (session.UserAuthId != null && httpRes != null)
+                else
                 {
-                    httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
-                }
-            }
-            else
-            {
-                if (hasTokens)
-                {
-                    session.UserAuthId = CreateOrMergeAuthSession(session, tokens);
+                    if (hasTokens)
+                    {
+                        session.UserAuthId = CreateOrMergeAuthSession(session, tokens);
+                    }
                 }
             }
 
@@ -420,6 +422,9 @@ namespace ServiceStack.Auth
 
         protected void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
         {
+            if (authRepo == null)
+                return;
+
             var holdSessionId = session.Id;
             session.PopulateWith(userAuth); //overwrites session.Id
             session.Id = holdSessionId;
@@ -446,21 +451,6 @@ namespace ServiceStack.Auth
         public static bool IsAuthorizedSafe(this IAuthProvider authProvider, IAuthSession session, IAuthTokens tokens)
         {
             return authProvider != null && authProvider.IsAuthorized(session, tokens);
-        }
-
-        public static IUserAuthRepository AsUserAuthRepository(this IAuthRepository authRepo, IResolver resolver = null)
-        {
-            if (resolver == null)
-                resolver = HostContext.AppHost;
-
-            var userAuthRepo = resolver.TryResolve<IUserAuthRepository>()
-                ?? (authRepo as IUserAuthRepository);
-
-            if (userAuthRepo == null)
-                throw new ConfigurationErrorsException(
-                    "Required dependency IAuthRepository or IUserAuthRepository could not be found.");
-
-            return userAuthRepo;
         }
 
         public static string SanitizeOAuthUrl(this string url)

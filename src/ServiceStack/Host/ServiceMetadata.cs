@@ -224,19 +224,23 @@ namespace ServiceStack.Host
             if (operation.RequiresAuthentication && !session.IsAuthenticated)
                 return false;
 
-            if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(session.HasRole))
-                return false;
+            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            using (authRepo as IDisposable)
+            {
+                if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(x => session.HasRole(x, authRepo)))
+                    return false;
 
-            if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(session.HasPermission))
-                return false;
+                if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(x => session.HasPermission(x, authRepo)))
+                    return false;
 
-            if (!operation.RequiresAnyRole.IsEmpty() && !operation.RequiresAnyRole.Any(session.HasRole))
-                return false;
+                if (!operation.RequiresAnyRole.IsEmpty() && !operation.RequiresAnyRole.Any(x => session.HasRole(x, authRepo)))
+                    return false;
 
-            if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(session.HasPermission))
-                return false;
+                if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(x => session.HasPermission(x, authRepo)))
+                    return false;
 
-            return true;
+                return true;
+            }
         }
 
         public bool IsVisible(IRequest httpReq, Operation operation)

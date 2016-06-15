@@ -58,10 +58,11 @@ namespace ServiceStack.Common.Tests.OAuth
                 requestContext.ResponseContentType = contentType;
             }
             var userAuthRepository = authRepo ?? GetStubRepo();
+            HostContext.Container.Register<IAuthRepository>(userAuthRepository);
+
             var service = new RegisterService
             {
                 RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = userAuthRepository },
-                AuthRepo = userAuthRepository,
                 Request = requestContext,
             };
 
@@ -152,7 +153,6 @@ namespace ServiceStack.Common.Tests.OAuth
             var service = new RegisterService
             {
                 RegistrationValidator = new RegistrationValidator { UserAuthRepo = mockUserAuth },
-                AuthRepo = mockUserAuth,
             };
 
             var request = new Register

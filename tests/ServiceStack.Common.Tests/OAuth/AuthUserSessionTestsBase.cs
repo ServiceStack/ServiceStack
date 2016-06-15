@@ -137,7 +137,6 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var registrationService = new RegisterService
             {
-                AuthRepo = userAuthRepository,
                 Request = request,
                 RegistrationValidator =
                     new RegistrationValidator { UserAuthRepo = RegistrationServiceTests.GetStubRepo() },

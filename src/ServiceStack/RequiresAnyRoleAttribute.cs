@@ -38,10 +38,14 @@ namespace ServiceStack
 
             var session = req.GetSession();
 
-            if (session != null && session.HasRole(RoleNames.Admin))
-                return;
+            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            using (authRepo as IDisposable)
+            {
+                if (session != null && session.HasRole(RoleNames.Admin, authRepo))
+                    return;
 
-            if (HasAnyRoles(req, session)) return;
+                if (HasAnyRoles(req, session, authRepo)) return;
+            }
 
             if (DoHtmlRedirectIfConfigured(req, res)) return;
 
@@ -50,13 +54,13 @@ namespace ServiceStack
             res.EndRequest();
         }
 
-        public virtual bool HasAnyRoles(IRequest req, IAuthSession session, IAuthRepository userAuthRepo = null)
+        public virtual bool HasAnyRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
-            if (HasAnyRoles(session)) return true;
+            if (HasAnyRoles(session, authRepo)) return true;
 
-            session.UpdateFromUserAuthRepo(req, userAuthRepo);
+            session.UpdateFromUserAuthRepo(req, authRepo);
 
-            if (HasAnyRoles(session))
+            if (HasAnyRoles(session, authRepo))
             {
                 req.SaveSession(session);
                 return true;
@@ -64,11 +68,11 @@ namespace ServiceStack
             return false;
         }
 
-        public virtual bool HasAnyRoles(IAuthSession session)
+        public virtual bool HasAnyRoles(IAuthSession session, IAuthRepository authRepo)
         {
             return this.RequiredRoles
                 .Any(requiredRole => session != null
-                    && session.HasRole(requiredRole));
+                    && session.HasRole(requiredRole, authRepo));
         }
 
         /// <summary>
@@ -85,16 +89,20 @@ namespace ServiceStack
 
             var session = req.GetSession();
 
-            if (session != null && session.HasRole(RoleNames.Admin))
-                return;
+            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            using (authRepo as IDisposable)
+            {
+                if (session != null && session.HasRole(RoleNames.Admin, authRepo))
+                    return;
 
-            if (session != null && session.UserAuthId != null && requiredRoles.Any(session.HasRole))
-                return;
+                if (session != null && session.UserAuthId != null && requiredRoles.Any(x => session.HasRole(x, authRepo)))
+                    return;
 
-            session.UpdateFromUserAuthRepo(req);
+                session.UpdateFromUserAuthRepo(req);
 
-            if (session != null && session.UserAuthId != null && requiredRoles.Any(session.HasRole))
-                return;
+                if (session != null && session.UserAuthId != null && requiredRoles.Any(x => session.HasRole(x, authRepo)))
+                    return;
+            }
 
             var statusCode = session != null && session.IsAuthenticated
                 ? (int)HttpStatusCode.Forbidden

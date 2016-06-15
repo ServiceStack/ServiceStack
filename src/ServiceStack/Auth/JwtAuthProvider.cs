@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
@@ -33,22 +34,24 @@ namespace ServiceStack.Auth
             if (response.BearerToken == null && session.IsAuthenticated)
             {
                 if (!RequireSecureConnection || authService.Request.IsSecureConnection)
-                    response.BearerToken = CreateJwtBearerToken(session);
+                {
+                    IEnumerable<string> roles = null, perms = null;
+                    var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request) as IManageRoles;
+                    if (authRepo != null)
+                    {
+                        roles = authRepo.GetRoles(session.UserAuthId);
+                        perms = authRepo.GetPermissions(session.UserAuthId);
+                    }
+
+                    response.BearerToken = CreateJwtBearerToken(session, roles, perms);
+                }
             }
 
             return response;
         }
 
-        public string CreateJwtBearerToken(IAuthSession session)
+        public string CreateJwtBearerToken(IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null)
         {
-            IEnumerable<string> roles = null, perms = null;
-            var authRepo = HostContext.TryResolve<IAuthRepository>() as IManageRoles;
-            if (authRepo != null)
-            {
-                roles = authRepo.GetRoles(session.UserAuthId);
-                perms = authRepo.GetPermissions(session.UserAuthId);
-            }
-
             var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audience, roles, perms);
             if (CreatePayloadFilter != null)
                 CreatePayloadFilter(jwtPayload, session);
