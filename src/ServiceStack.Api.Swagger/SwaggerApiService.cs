@@ -157,10 +157,13 @@ namespace ServiceStack.Api.Swagger
         {
             set
             {
-                Items = new ParameterAllowableValues { ValueType = value.Type };
-                AllowedValues = value.Values;
-                Max = value.Max;
-                Min = value.Min;
+                if (value != null)
+                {
+                    Items = new ParameterAllowableValues {ValueType = value.Type};
+                    AllowedValues = value.Values;
+                    Max = value.Max;
+                    Min = value.Min;
+                }
             }
         }
     }

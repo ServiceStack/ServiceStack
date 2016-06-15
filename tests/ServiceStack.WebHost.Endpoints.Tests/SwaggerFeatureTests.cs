@@ -311,7 +311,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var resources = client.Get<ResourcesResponse>("/resources");
             Assert.That(resources.BasePath, Is.EqualTo(BaseUrl));
-            Assert.That(resources.SwaggerVersion, Is.EqualTo("1.1"));
+            Assert.That(resources.SwaggerVersion, Is.EqualTo("1.2"));
             Assert.That(resources.Apis, Is.Not.Null);
 
             var swagger = resources.Apis.FirstOrDefault(t => t.Path == "/resource/swagger");
