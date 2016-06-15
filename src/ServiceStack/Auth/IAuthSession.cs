@@ -27,8 +27,9 @@ namespace ServiceStack.Auth
         //Used for digest authentication replay protection
         string Sequence { get; set; }
 
-        bool HasRole(string role);
-        bool HasPermission(string permission);
+        bool HasRole(string role, IAuthRepository authRepo);
+        bool HasPermission(string permission, IAuthRepository authRepo);
+
         bool IsAuthorized(string provider);
 
         void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service);
