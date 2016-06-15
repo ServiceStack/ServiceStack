@@ -137,7 +137,7 @@ namespace ServiceStack
         {
             if (Instance != null)
             {
-                throw new InvalidDataException("ServiceStackHost.Instance has already been set");
+                throw new InvalidDataException("ServiceStackHost.Instance has already been set ({0})".Fmt(Instance.GetType().Name));
             }
             Service.GlobalResolver = Instance = this;
 
