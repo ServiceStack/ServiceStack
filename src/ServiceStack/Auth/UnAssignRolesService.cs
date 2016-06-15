@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -9,24 +10,27 @@ namespace ServiceStack.Auth
     [DefaultRequest(typeof(UnAssignRoles))]
     public class UnAssignRolesService : Service
     {
-        public IAuthRepository UserAuthRepo { get; set; }
-
         public object Post(UnAssignRoles request)
         {
             RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
 
             request.UserName.ThrowIfNullOrEmpty();
 
-            var userAuth = UserAuthRepo.GetUserAuthByUserName(request.UserName);
-            if (userAuth == null)
-                throw HttpError.NotFound(request.UserName);
+            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+            using (authRepo as IDisposable)
+            {
+                var userAuth = authRepo.GetUserAuthByUserName(request.UserName);
+                if (userAuth == null)
+                    throw HttpError.NotFound(request.UserName);
 
-            UserAuthRepo.UnAssignRoles(userAuth, request.Roles, request.Permissions);
+                authRepo.UnAssignRoles(userAuth, request.Roles, request.Permissions);
 
-            return new UnAssignRolesResponse {
-                AllRoles = UserAuthRepo.GetRoles(userAuth).ToList(),
-                AllPermissions = UserAuthRepo.GetPermissions(userAuth).ToList(),
-            };
+                return new UnAssignRolesResponse
+                {
+                    AllRoles = authRepo.GetRoles(userAuth).ToList(),
+                    AllPermissions = authRepo.GetPermissions(userAuth).ToList(),
+                };
+            }
         }
     }
 }

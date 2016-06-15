@@ -14,8 +14,6 @@ namespace ServiceStack.Auth
 
     public class RegistrationValidator : AbstractValidator<Register>
     {
-        public IAuthRepository UserAuthRepo { get; set; }
-
         public RegistrationValidator()
         {
             RuleSet(
@@ -26,12 +24,12 @@ namespace ServiceStack.Auth
                     RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
                     RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.UserName.IsNullOrEmpty());
                     RuleFor(x => x.UserName)
-                        .Must(x => UserAuthRepo.GetUserAuthByUserName(x) == null)
+                        .Must(x => HostContext.AppHost.GetAuthRepository(base.Request).GetUserAuthByUserName(x) == null)
                         .WithErrorCode("AlreadyExists")
                         .WithMessage("UserName already exists")
                         .When(x => !x.UserName.IsNullOrEmpty());
                     RuleFor(x => x.Email)
-                        .Must(x => x.IsNullOrEmpty() || UserAuthRepo.GetUserAuthByUserName(x) == null)
+                        .Must(x => x.IsNullOrEmpty() || HostContext.AppHost.GetAuthRepository(base.Request).GetUserAuthByUserName(x) == null)
                         .WithErrorCode("AlreadyExists")
                         .WithMessage("Email already exists")
                         .When(x => !x.Email.IsNullOrEmpty());
