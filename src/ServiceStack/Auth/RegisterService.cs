@@ -24,12 +24,26 @@ namespace ServiceStack.Auth
                     RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
                     RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.UserName.IsNullOrEmpty());
                     RuleFor(x => x.UserName)
-                        .Must(x => HostContext.AppHost.GetAuthRepository(base.Request).GetUserAuthByUserName(x) == null)
+                        .Must(x =>
+                        {
+                            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+                            using (authRepo as IDisposable)
+                            {
+                                return authRepo.GetUserAuthByUserName(x) == null;
+                            }
+                        })
                         .WithErrorCode("AlreadyExists")
                         .WithMessage("UserName already exists")
                         .When(x => !x.UserName.IsNullOrEmpty());
                     RuleFor(x => x.Email)
-                        .Must(x => x.IsNullOrEmpty() || HostContext.AppHost.GetAuthRepository(base.Request).GetUserAuthByUserName(x) == null)
+                        .Must(x =>
+                        {
+                            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+                            using (authRepo as IDisposable)
+                            {
+                                return x.IsNullOrEmpty() || authRepo.GetUserAuthByUserName(x) == null;
+                            }
+                        })
                         .WithErrorCode("AlreadyExists")
                         .WithMessage("Email already exists")
                         .When(x => !x.Email.IsNullOrEmpty());
@@ -70,15 +84,6 @@ namespace ServiceStack.Auth
         /// </summary>
         public object Post(Register request)
         {
-            if (HostContext.GlobalRequestFilters == null
-                || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
-            {
-                if (RegistrationValidator != null)
-                {
-                    RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
-                }
-            }
-
             if (ValidateFn != null)
             {
                 var validateResponse = ValidateFn(this, HttpMethods.Post, request);
@@ -96,8 +101,17 @@ namespace ServiceStack.Auth
             using (userAuthRepo as IDisposable)
             {
                 var existingUser = userAuthRepo.GetUserAuth(session, null);
-
                 registerNewUser = existingUser == null;
+
+                if (HostContext.GlobalRequestFilters == null
+                    || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
+                {
+                    if (RegistrationValidator != null)
+                    {
+                        RegistrationValidator.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
+                    }
+                }
+
                 user = registerNewUser
                     ? userAuthRepo.CreateUserAuth(newUserAuth, request.Password)
                     : userAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);

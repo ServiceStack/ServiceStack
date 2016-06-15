@@ -76,7 +76,11 @@ namespace ServiceStack.Common.Tests.OAuth
 
         protected void InitTest(IUserAuthRepository userAuthRepository)
         {
-            ((IClearable)userAuthRepository).Clear();
+            try
+            {
+                ((IClearable)userAuthRepository).Clear();
+            }
+            catch { /*ignore*/ }
 
             var appsettingsMock = new Mock<IAppSettings>();
             var appSettings = appsettingsMock.Object;
@@ -139,7 +143,7 @@ namespace ServiceStack.Common.Tests.OAuth
             {
                 Request = request,
                 RegistrationValidator =
-                    new RegistrationValidator { UserAuthRepo = RegistrationServiceTests.GetStubRepo() },
+                    new RegistrationValidator(),
             };
             registrationService.SetResolver(mockAppHost);
 
