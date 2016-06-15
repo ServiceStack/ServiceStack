@@ -53,19 +53,44 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="swagger-ui\css\hightlight.default.css" />
+    <Content Include="swagger-ui\css\print.css" />
+    <Content Include="swagger-ui\css\reset.css" />
     <Content Include="swagger-ui\css\screen.css" />
+    <Content Include="swagger-ui\css\style.css" />
+    <Content Include="swagger-ui\css\typography.css" />
+    <Content Include="swagger-ui\images\collapse.gif" />
+    <Content Include="swagger-ui\images\expand.gif" />
+    <Content Include="swagger-ui\images\explorer_icons.png" />
+    <Content Include="swagger-ui\images\favicon-16x16.png" />
+    <Content Include="swagger-ui\images\favicon-32x32.png" />
+    <Content Include="swagger-ui\images\favicon.ico" />
     <Content Include="swagger-ui\images\logo_small.png" />
     <Content Include="swagger-ui\images\pet_store_api.png" />
     <Content Include="swagger-ui\images\throbber.gif" />
     <Content Include="swagger-ui\images\wordnik_api.png" />
     <Content Include="swagger-ui\index.html" />
+    <Content Include="swagger-ui\lang\en.js" />
+    <Content Include="swagger-ui\lang\es.js" />
+    <Content Include="swagger-ui\lang\fr.js" />
+    <Content Include="swagger-ui\lang\it.js" />
+    <Content Include="swagger-ui\lang\ja.js" />
+    <Content Include="swagger-ui\lang\pl.js" />
+    <Content Include="swagger-ui\lang\pt.js" />
+    <Content Include="swagger-ui\lang\ru.js" />
+    <Content Include="swagger-ui\lang\tr.js" />
+    <Content Include="swagger-ui\lang\translator.js" />
+    <Content Include="swagger-ui\lang\zh-cn.js" />
     <Content Include="swagger-ui\lib\backbone-min.js" />
     <Content Include="swagger-ui\lib\handlebars-1.0.rc.1.js" />
+    <Content Include="swagger-ui\lib\handlebars-2.0.0.js" />
     <Content Include="swagger-ui\lib\highlight.7.3.pack.js" />
     <Content Include="swagger-ui\lib\jquery-1.8.0.min.js" />
     <Content Include="swagger-ui\lib\jquery.ba-bbq.min.js" />
     <Content Include="swagger-ui\lib\jquery.slideto.min.js" />
     <Content Include="swagger-ui\lib\jquery.wiggle.min.js" />
+    <Content Include="swagger-ui\lib\jsoneditor.min.js" />
+    <Content Include="swagger-ui\lib\marked.js" />
+    <Content Include="swagger-ui\lib\swagger-oauth.js" />
     <Content Include="swagger-ui\lib\swagger.js" />
     <Content Include="swagger-ui\lib\underscore-min.js" />
     <Content Include="swagger-ui\swagger-ui.js" />
@@ -90,6 +115,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="swagger-ui\fonts\DroidSans-Bold.ttf" />
+    <None Include="swagger-ui\fonts\DroidSans.ttf" />
+    <None Include="swagger-ui\lib\underscore-min.map" />
     <None Include="swagger-ui\LICENSE" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
