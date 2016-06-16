@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Web;
 using System;
+using ServiceStack.FluentValidation;
+using ServiceStack.Validation;
 
 namespace ServiceStack
 {
@@ -48,6 +50,28 @@ namespace ServiceStack
 
         private TResponse ExecSync<TResponse>(object request)
         {
+            if (HostContext.AppHost.GatewayRequestFilter != null)
+            {
+                HostContext.AppHost.GatewayRequestFilter(req, request);
+                if (req.Response.IsClosed)
+                    return default(TResponse);
+            }
+
+            if (HostContext.HasPlugin<ValidationFeature>())
+            {
+                var validator = ValidatorCache.GetValidator(req, request.GetType());
+                if (validator != null)
+                {
+                    var ruleSet = (string)(req.GetItem(Keywords.InvokeVerb) ?? req.Verb);
+                    var result = validator.Validate(new ValidationContext(
+                        request, null, new MultiRuleSetValidatorSelector(ruleSet)) {
+                        Request = req
+                    });
+                    if (!result.IsValid)
+                        throw new ValidationException(result.Errors);
+                }
+            }
+
             var response = HostContext.ServiceController.Execute(request, req);
             var responseTask = response as Task;
             if (responseTask != null)
@@ -56,13 +80,21 @@ namespace ServiceStack
             return ConvertToResponse<TResponse>(response);
         }
 
-        private static TResponse ConvertToResponse<TResponse>(object response)
+        private TResponse ConvertToResponse<TResponse>(object response)
         {
             var error = response as HttpError;
             if (error != null)
                 throw error.ToWebServiceException();
 
             var responseDto = response.GetResponseDto();
+
+            if (HostContext.AppHost.GatewayResponseFilter != null)
+            {
+                HostContext.AppHost.GatewayResponseFilter(req, responseDto);
+                if (req.Response.IsClosed)
+                    return default(TResponse);
+            }
+
             return (TResponse) responseDto;
         }
 

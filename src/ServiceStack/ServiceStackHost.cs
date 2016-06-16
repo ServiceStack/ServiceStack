@@ -332,6 +332,10 @@ namespace ServiceStack
 
         public IVirtualPathProvider VirtualFileSources { get; set; }
 
+        public Action<IRequest, object> GatewayRequestFilter { get; set; }
+
+        public Action<IRequest, object> GatewayResponseFilter { get; set; }
+
         [Obsolete("Renamed to VirtualFileSources")]
         public IVirtualPathProvider VirtualPathProvider
         {
