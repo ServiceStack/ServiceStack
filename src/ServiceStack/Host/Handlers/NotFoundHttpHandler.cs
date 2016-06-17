@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Web;
 using ServiceStack.Text;
-using ServiceStack.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
     public class NotFoundHttpHandler : HttpAsyncTaskHandler
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(NotFoundHttpHandler));
-
         public NotFoundHttpHandler()
         {
             this.RequestName = GetType().Name;
@@ -26,7 +22,8 @@ namespace ServiceStack.Host.Handlers
 
         public override void ProcessRequest(IRequest request, IResponse response, string operationName)
         {
-            Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
+            HostContext.AppHost.OnLogError(typeof(NotFoundHttpHandler), 
+                string.Format("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl));
 
             var sb = StringBuilderCache.Allocate();
 
@@ -74,7 +71,8 @@ namespace ServiceStack.Host.Handlers
                 return;
             }
 
-            Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
+            HostContext.AppHost.OnLogError(typeof(NotFoundHttpHandler),
+                string.Format("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl));
 
             var sb = StringBuilderCache.Allocate();
             sb.AppendLine("Handler for Request not found: \n\n");
