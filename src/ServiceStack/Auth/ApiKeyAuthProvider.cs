@@ -62,7 +62,7 @@ namespace ServiceStack.Auth
         public static int DefaultKeySizeBytes = 24;
 
         /// <summary>
-        /// Modify the registration of GetApiKeys and RegenrateApiKeys Services
+        /// Modify the registration of GetApiKeys and RegenerateApiKeys Services
         /// </summary>
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
@@ -151,7 +151,7 @@ namespace ServiceStack.Auth
             ServiceRoutes = new Dictionary<Type, string[]>
             {
                 { typeof(GetApiKeysService), new[] { "/apikeys", "/apikeys/{Environment}" } },
-                { typeof(RegenrateApiKeysService), new [] { "/apikeys/regenerate", "/apikeys/regenerate/{Environment}" } },
+                { typeof(RegenerateApiKeysService), new [] { "/apikeys/regenerate", "/apikeys/regenerate/{Environment}" } },
             };
         }
 
@@ -381,10 +381,10 @@ namespace ServiceStack.Auth
     }
 
     [Authenticate]
-    [DefaultRequest(typeof(RegenrateApiKeys))]
-    public class RegenrateApiKeysService : Service
+    [DefaultRequest(typeof(RegenerateApiKeys))]
+    public class RegenerateApiKeysService : Service
     {
-        public object Any(RegenrateApiKeys request)
+        public object Any(RegenerateApiKeys request)
         {
             var apiKeyAuth = this.Request.AssertValidApiKeyRequest();
             if (string.IsNullOrEmpty(request.Environment) && apiKeyAuth.Environments.Length != 1)
@@ -407,7 +407,7 @@ namespace ServiceStack.Auth
 
                 apiRepo.StoreAll(updateKeys);
 
-                return new RegenrateApiKeysResponse
+                return new RegenerateApiKeysResponse
                 {
                     Results = newKeys.Map(k => new UserApiKey
                     {
