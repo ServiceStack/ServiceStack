@@ -698,7 +698,7 @@ namespace RazorRockstars.Console.Files
             var response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
-            var regenResponse = client.Send(new RegenrateApiKeys { Environment = "live" });
+            var regenResponse = client.Send(new RegenerateApiKeys { Environment = "live" });
 
             try
             {
@@ -765,7 +765,7 @@ namespace RazorRockstars.Console.Files
             {
                 Credentials = new NetworkCredential(ApiKey, ""),
             };
-            var regenResponse = client.Send(new RegenrateApiKeys { Environment = "test" });
+            var regenResponse = client.Send(new RegenerateApiKeys { Environment = "test" });
 
             //Change to new Valid Key
             client.BearerToken = regenResponse.Results[0].Key;

@@ -219,13 +219,13 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class RegenrateApiKeys : IPost, IReturn<GetApiKeysResponse>
+    public class RegenerateApiKeys : IPost, IReturn<GetApiKeysResponse>
     {
         [DataMember(Order = 1)] public string Environment { get; set; }
     }
 
     [DataContract]
-    public class RegenrateApiKeysResponse
+    public class RegenerateApiKeysResponse
     {
         [DataMember(Order = 1)] public List<UserApiKey> Results { get; set; }
 
