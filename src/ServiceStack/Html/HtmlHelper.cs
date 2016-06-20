@@ -150,6 +150,8 @@ namespace ServiceStack.Html
             var resBytes = ((MemoryStream)req.Response.OutputStream).ToArray();
             var html = resBytes.FromUtf8Bytes();
 
+            req.SetTemplate(null); //Restore previous default Layout
+
             return MvcHtmlString.Create(html);
         }
 
