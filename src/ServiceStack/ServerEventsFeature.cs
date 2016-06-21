@@ -429,12 +429,17 @@ namespace ServiceStack
 
         public void Publish(string selector, string message)
         {
+            var msg = message ?? "";
+            var frame = "id: " + Interlocked.Increment(ref msgId) + "\n"
+                      + "data: " + selector + " " + msg + "\n\n";
+
+            PublishRaw(frame);
+        }
+
+        public void PublishRaw(string frame)
+        {
             try
             {
-                var msg = message ?? "";
-                var frame = "id: " + Interlocked.Increment(ref msgId) + "\n"
-                          + "data: " + selector + " " + msg + "\n\n";
-
                 lock (response)
                 {
                     WriteEvent(response, frame);
@@ -445,7 +450,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                Log.Error("Error publishing notification to: " + selector, ex);
+                Log.Error("Error publishing notification to: " + frame.SafeSubstring(0, 50), ex);
 
                 // Mono: If we explicitly close OutputStream after the error socket wont leak (response.Close() doesn't work)
                 try
@@ -453,7 +458,10 @@ namespace ServiceStack
                     // This will throw an exception, but on Mono (Linux/OSX) the socket will leak if we not close the OutputStream
                     response.OutputStream.Close();
                 }
-                catch { }
+                catch(Exception innerEx)
+                {
+                    Log.Error("OutputStream.Close()", innerEx);
+                }
 
                 Unsubscribe();
             }
@@ -510,6 +518,7 @@ namespace ServiceStack
         void Unsubscribe();
 
         void Publish(string selector, string message);
+        void PublishRaw(string frame);
         void Pulse();
     }
 
@@ -664,6 +673,34 @@ namespace ServiceStack
                             string.Join(", ", sub.Channels));
 
                     sub.Publish(selector, Serialize(message));
+                }
+            }
+
+            foreach (var sub in expired)
+            {
+                sub.Unsubscribe();
+            }
+        }
+
+        protected void FlushNop(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map,
+            string key, string channel = null)
+        {
+            var subs = map.TryGet(key);
+            if (subs == null)
+                return;
+
+            var expired = new List<IEventSubscription>();
+            var now = DateTime.UtcNow;
+
+            foreach (var sub in subs.KeysWithoutLock())
+            {
+                if (sub.HasChannel(channel))
+                {
+                    if (now - sub.LastPulseAt > IdleTimeout)
+                    {
+                        expired.Add(sub);
+                    }
+                    sub.PublishRaw("\n");
                 }
             }
 
@@ -900,15 +937,29 @@ namespace ServiceStack
 
                     if (OnSubscribe != null)
                         OnSubscribe(subscription);
-                }
 
-                if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyJoin != null)
-                    NotifyJoin(subscription);
+                    if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyJoin != null)
+                        NotifyJoin(subscription);
+                    else
+                        FlushNopToChannels(subscription.Channels);
+                }
             }
             catch (Exception ex)
             {
                 Log.Error("Register: " + ex.Message, ex);
                 throw;
+            }
+        }
+
+        public void FlushNopToChannels(string[] channels)
+        {
+            //For some yet-to-be-determined reason we need to send something to all channels to determine
+            //which subscriptions are no longer connected so we can dispose of them right then and there.
+            //Failing to do this for 10 simultaneous requests on Local IIS will hang the entire Website instance
+            //ref: https://forums.servicestack.net/t/serversentevents-with-notifychannelofsubscriptions-set-to-false-leaks-requests/2552/2
+            foreach (var channel in channels)
+            {
+                FlushNop(ChannelSubcriptions, channel, channel);
             }
         }
 
@@ -989,10 +1040,10 @@ namespace ServiceStack
                     OnUnsubscribe(subscription);
 
                 subscription.Dispose();
-            }
 
-            if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyLeave != null)
-                NotifyLeave(subscription);
+                if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyLeave != null)
+                    NotifyLeave(subscription);
+            }
         }
 
         public void Dispose()
