@@ -41,6 +41,7 @@ namespace ServiceStack
         public int? MaxLimit { get; set; }
         public string UseNamedConnection { get; set; }
         public bool StripUpperInLike { get; set; }
+        public bool IncludeTotal { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableRawSqlFilters { get; set; }
         public bool EnableAutoQueryViewer { get; set; }
@@ -118,6 +119,7 @@ namespace ServiceStack
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
             ResponseFilters = new List<Action<QueryDbFilterContext>> { IncludeAggregates };
+            IncludeTotal = true;
             EnableUntypedQueries = true;
             EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
@@ -156,6 +158,7 @@ namespace ServiceStack
                     IgnoreProperties = IgnoreProperties,
                     IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
                     MaxLimit = MaxLimit,
+                    IncludeTotal = IncludeTotal,
                     EnableUntypedQueries = EnableUntypedQueries,
                     EnableSqlFilters = EnableRawSqlFilters,
                     OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
@@ -391,6 +394,7 @@ namespace ServiceStack
     public interface IAutoQueryOptions
     {
         int? MaxLimit { get; set; }
+        bool IncludeTotal { get; set; }
         bool EnableUntypedQueries { get; set; }
         bool EnableSqlFilters { get; set; }
         bool OrderByPrimaryKeyOnLimitQuery { get; set; }
@@ -403,6 +407,7 @@ namespace ServiceStack
     public class AutoQuery : IAutoQueryDb, IAutoQueryOptions, IDisposable
     {
         public int? MaxLimit { get; set; }
+        public bool IncludeTotal { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableSqlFilters { get; set; }
         public bool OrderByPrimaryKeyOnLimitQuery { get; set; }
@@ -473,13 +478,6 @@ namespace ServiceStack
 
             var commands = dto.Include.ParseCommands();
 
-            var totalCountRequested = commands.Any(x =>
-                "COUNT".EqualsIgnoreCase(x.Name) && 
-                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*"))); 
-
-            if (!totalCountRequested)
-                commands.Add(new Command { Name = "COUNT", Args = { "*" }});
-
             var ctx = new QueryDbFilterContext
             {
                 Db = Db,
@@ -489,22 +487,39 @@ namespace ServiceStack
                 Response = response,
             };
 
-            foreach (var responseFilter in ResponseFilters)
+            if (IncludeTotal)
             {
-                responseFilter(ctx);
+                var totalCountRequested = commands.Any(x =>
+                    "COUNT".EqualsIgnoreCase(x.Name) &&
+                    (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*")));
+
+                if (!totalCountRequested)
+                    commands.Add(new Command { Name = "COUNT", Args = { "*" } });
+
+                foreach (var responseFilter in ResponseFilters)
+                {
+                    responseFilter(ctx);
+                }
+
+                string total;
+                response.Total = response.Meta.TryGetValue("COUNT(*)", out total)
+                    ? total.ToInt()
+                    : (int)Db.Count(sqlExpression); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
+
+                //reduce payload on wire
+                if (!totalCountRequested)
+                {
+                    response.Meta.Remove("COUNT(*)");
+                    if (response.Meta.Count == 0)
+                        response.Meta = null;
+                }
             }
-
-            string total;
-            response.Total = response.Meta.TryGetValue("COUNT(*)", out total) 
-                ? total.ToInt() 
-                : (int) Db.Count(sqlExpression); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
-
-            //reduce payload on wire
-            if (!totalCountRequested)
+            else
             {
-                response.Meta.Remove("COUNT(*)");
-                if (response.Meta.Count == 0)
-                    response.Meta = null;
+                foreach (var responseFilter in ResponseFilters)
+                {
+                    responseFilter(ctx);
+                }
             }
 
             return response;
