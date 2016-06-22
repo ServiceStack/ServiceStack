@@ -146,7 +146,7 @@ namespace ServiceStack.Host.Handlers
             {
                 var msg = "Could not deserialize '{0}' request using {1}'\nError: {2}"
                     .Fmt(contentType, requestType, ex);
-                throw new SerializationException(msg);
+                throw new SerializationException(msg, ex);
             }
             return requestType.CreateInstance(); //Return an empty DTO, even for empty request bodies
         }
