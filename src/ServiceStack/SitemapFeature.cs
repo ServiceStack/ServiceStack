@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
@@ -212,7 +213,7 @@ namespace ServiceStack
                     if (url.ChangeFrequency != null)
                         xml.AppendLine("  <changefreq>{0}</changefreq>".Fmt(url.ChangeFrequency.Value.ToString().ToLower()));
                     if (url.Priority != null)
-                        xml.AppendLine("  <priority>{0}</priority>".Fmt(url.Priority));
+                        xml.AppendLine("  <priority>{0}</priority>".Fmt(url.Priority.Value.ToString(CultureInfo.InvariantCulture)));
 
                     if (url.CustomXml != null)
                         xml.AppendLine(url.CustomXml);
