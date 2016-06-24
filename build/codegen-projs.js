@@ -49,6 +49,7 @@ var SIGN_PROJS = [
 var SIGN_REPLACE_TEXTS = {
     '<HintPath>..\\..\\lib\\ServiceStack.Text.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Text.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.Common.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Common.dll</HintPath>',
+    '<HintPath>..\\..\\lib\\ServiceStack.Client.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Client.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.Redis.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.Redis.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.OrmLite.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.OrmLite.dll</HintPath>',
     '<HintPath>..\\..\\lib\\ServiceStack.dll</HintPath>': '<HintPath>..\\..\\lib\\signed\\ServiceStack.dll</HintPath>',
