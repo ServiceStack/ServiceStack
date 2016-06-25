@@ -49,6 +49,7 @@ namespace ServiceStack
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
+        public IAutoQueryMissingTypeGenerator AutoQueryMissingTypeGenerator { get; set; }
 
         public const string GreaterThanOrEqualFormat = "{Field} >= {Value}";
         public const string GreaterThanFormat =        "{Field} > {Value}";
@@ -125,6 +126,7 @@ namespace ServiceStack
             OrderByPrimaryKeyOnPagedQuery = true;
             StripUpperInLike = OrmLiteConfig.StripUpperInLike;
             LoadFromAssemblies = new HashSet<Assembly>();
+
         }
 
         public void Register(IAppHost appHost)
@@ -194,7 +196,7 @@ namespace ServiceStack
             if (misingRequestTypes.Count == 0)
                 return;
 
-            var serviceType = GenerateMissingServices(misingRequestTypes);
+            var serviceType = AutoQueryMissingTypeGenerator.GenerateMissingServices(misingRequestTypes, AutoQueryServiceBaseType);
             appHost.RegisterService(serviceType);
         }
 
@@ -343,6 +345,70 @@ namespace ServiceStack
             }
 
             ctx.Commands.RemoveAll(aggregateCommands.Contains);
+        }
+    }
+
+    public interface IAutoQueryMissingTypeGenerator
+    {
+        Type GenerateMissingServices(IEnumerable<Type> missingRequestTypes, Type autoQueryServiceBaseType);
+    }
+
+    public class AutoQueryMissingTypeGeneratorBase : IAutoQueryMissingTypeGenerator
+    {
+        public virtual Type GenerateMissingServices(IEnumerable<Type> missingRequestTypes, Type autoQueryServiceBaseType)
+        {
+            var assemblyName = new AssemblyName { Name = "tmpAssembly" };
+            var typeBuilder =
+                Thread.GetDomain().DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
+                .DefineDynamicModule("tmpModule")
+                .DefineType("__AutoQueryServices",
+                    TypeAttributes.Public | TypeAttributes.Class,
+                    autoQueryServiceBaseType);
+
+            foreach (var requestType in missingRequestTypes)
+            {
+                var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
+                var hasExplicitInto = genericDef != null;
+                if (genericDef == null)
+                    genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<>));
+                if (genericDef == null)
+                    continue;
+
+                var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
+                    CallingConventions.Standard,
+                    returnType: typeof(object),
+                    parameterTypes: new[] { requestType });
+
+                var customAttributeBuilder = AddCustomAttributes(requestType);
+                if(customAttributeBuilder != null)
+                    method.SetCustomAttribute(customAttributeBuilder);
+
+                var il = method.GetILGenerator();
+
+                var genericArgs = genericDef.GetGenericArguments();
+                var mi = autoQueryServiceBaseType.GetMethods()
+                    .First(x => x.GetGenericArguments().Length == genericArgs.Length);
+                var genericMi = mi.MakeGenericMethod(genericArgs);
+
+                var queryType = hasExplicitInto
+                    ? typeof(IQueryDb<,>).MakeGenericType(genericArgs)
+                    : typeof(IQueryDb<>).MakeGenericType(genericArgs);
+
+                il.Emit(OpCodes.Nop);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Box, queryType);
+                il.Emit(OpCodes.Callvirt, genericMi);
+                il.Emit(OpCodes.Ret);
+            }
+
+            var servicesType = typeBuilder.CreateType();
+            return servicesType;
+        }
+
+        protected virtual CustomAttributeBuilder AddCustomAttributes(Type requestType)
+        {
+            return null;
         }
     }
 
