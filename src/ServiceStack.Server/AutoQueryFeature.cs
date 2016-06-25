@@ -188,64 +188,17 @@ namespace ServiceStack
         {
             var scannedTypes = LoadFromAssemblies.SelectMany(x => x.GetTypes());
 
-            var misingRequestTypes = scannedTypes
+            var missingRequestTypes = scannedTypes
                 .Where(x => x.HasInterface(typeof(IQueryDb)))
                 .Where(x => !appHost.Metadata.OperationsMap.ContainsKey(x))
                 .ToList();
 
-            if (misingRequestTypes.Count == 0)
+            if (missingRequestTypes.Count == 0)
                 return;
 
-            var serviceType = AutoQueryMissingTypeGenerator.GenerateMissingServices(misingRequestTypes, AutoQueryServiceBaseType);
+            var serviceType = AutoQueryMissingTypeGenerator.GenerateMissingServices(missingRequestTypes, AutoQueryServiceBaseType);
             appHost.RegisterService(serviceType);
-        }
-
-        Type GenerateMissingServices(IEnumerable<Type> misingRequestTypes)
-        {
-            var assemblyName = new AssemblyName { Name = "tmpAssembly" };
-            var typeBuilder =
-                Thread.GetDomain().DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
-                .DefineDynamicModule("tmpModule")
-                .DefineType("__AutoQueryServices",
-                    TypeAttributes.Public | TypeAttributes.Class,
-                    AutoQueryServiceBaseType);
-
-            foreach (var requestType in misingRequestTypes)
-            {
-                var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
-                var hasExplicitInto = genericDef != null;
-                if (genericDef == null)
-                    genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<>));
-                if (genericDef == null)
-                    continue;
-
-                var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
-                    CallingConventions.Standard,
-                    returnType: typeof(object),
-                    parameterTypes: new[] { requestType });
-
-                var il = method.GetILGenerator();
-
-                var genericArgs = genericDef.GetGenericArguments();
-                var mi = AutoQueryServiceBaseType.GetMethods()
-                    .First(x => x.GetGenericArguments().Length == genericArgs.Length);
-                var genericMi = mi.MakeGenericMethod(genericArgs);
-
-                var queryType = hasExplicitInto
-                    ? typeof(IQueryDb<,>).MakeGenericType(genericArgs)
-                    : typeof(IQueryDb<>).MakeGenericType(genericArgs);
-
-                il.Emit(OpCodes.Nop);
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldarg_1);
-                il.Emit(OpCodes.Box, queryType);
-                il.Emit(OpCodes.Callvirt, genericMi);
-                il.Emit(OpCodes.Ret);
-            }
-
-            var servicesType = typeBuilder.CreateType();
-            return servicesType;
-        }
+        }        
 
         public AutoQueryFeature RegisterQueryFilter<Request, From>(Action<SqlExpression<From>, Request, IRequest> filterFn)
         {
