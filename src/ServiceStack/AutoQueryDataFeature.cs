@@ -84,6 +84,7 @@ namespace ServiceStack
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryDataFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDataFilterContext>> ResponseFilters { get; set; }
+        public Action<TypeBuilder, MethodBuilder, Type> GenerateServiceFilter { get; set; }
 
         public ConcurrentDictionary<Type, Func<QueryDataContext, IQueryDataSource>> DataSources { get; private set; }
 
@@ -275,6 +276,9 @@ namespace ServiceStack
                     CallingConventions.Standard,
                     returnType: typeof(object),
                     parameterTypes: new[] { requestType });
+
+                if (GenerateServiceFilter != null)
+                    GenerateServiceFilter(typeBuilder, method, requestType);
 
                 var il = method.GetILGenerator();
 
