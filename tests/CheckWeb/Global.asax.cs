@@ -39,6 +39,7 @@ namespace CheckWeb
             nativeTypes.MetadataTypesConfig.ExportTypes.Add(typeof(DayOfWeek));
             nativeTypes.MetadataTypesConfig.IgnoreTypes.Add(typeof(IgnoreInMetadataConfig));
             nativeTypes.InitializeCollectionsForType = NativeTypesFeature.DontInitializeAutoQueryCollections;
+            //nativeTypes.MetadataTypesConfig.GlobalNamespace = "Check.ServiceInterface";
 
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig

@@ -56,11 +56,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 ? Config.DefaultImports
                 : DefaultImports;
 
-            // Look first for shortest Namespace ending with `ServiceModel` convention, else shortest ns
-            var globalNamespace = Config.GlobalNamespace
-                ?? typeNamespaces.Where(x => x != null && x.EndsWith("ServiceModel"))
-                    .OrderBy(x => x).FirstOrDefault()
-                ?? typeNamespaces.OrderBy(x => x).First();
+            var globalNamespace = Config.GlobalNamespace;
 
             Func<string, string> defaultValue = k =>
                 request.QueryString[k].IsNullOrEmpty() ? "//" : "";
@@ -116,11 +112,16 @@ namespace ServiceStack.NativeTypes.TypeScript
                 .Map(x => x.Name);
 
             defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
-            sb.AppendLine();
 
-            var moduleDef = Config.ExportAsTypes ? "" : "declare ";
-            sb.AppendLine("{0}module {1}".Fmt(moduleDef, globalNamespace.SafeToken()));
-            sb.AppendLine("{");
+            if (!string.IsNullOrEmpty(globalNamespace))
+            {
+                var moduleDef = Config.ExportAsTypes ? "" : "declare ";
+                sb.AppendLine();
+                sb.AppendLine("{0}module {1}".Fmt(moduleDef, globalNamespace.SafeToken()));
+                sb.AppendLine("{");
+
+                sb = sb.Indent();
+            }
 
             //ServiceStack core interfaces
             foreach (var type in allTypes)
@@ -184,8 +185,12 @@ namespace ServiceStack.NativeTypes.TypeScript
                 }
             }
 
-            sb.AppendLine();
-            sb.AppendLine("}");
+            if (!string.IsNullOrEmpty(globalNamespace))
+            {
+                sb = sb.UnIndent();
+                sb.AppendLine();
+                sb.AppendLine("}");
+            }
 
             return StringBuilderCache.ReturnAndFree(sbInner);
         }
@@ -193,8 +198,6 @@ namespace ServiceStack.NativeTypes.TypeScript
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
             CreateTypeOptions options)
         {
-            sb = sb.Indent();
-
             sb.AppendLine();
             AppendComments(sb, type.Description);
             if (type.Routes != null)
@@ -290,8 +293,6 @@ namespace ServiceStack.NativeTypes.TypeScript
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
             }
-
-            sb = sb.UnIndent();
 
             return lastNS;
         }
