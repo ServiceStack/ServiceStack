@@ -16,5 +16,6 @@ namespace ServiceStack.Redis.Pipeline
         void CompleteStringQueuedCommand(Func<string> stringReadCommand);
         void CompleteMultiStringQueuedCommand(Func<List<string>> multiStringReadCommand);
         void CompleteDoubleQueuedCommand(Func<double> doubleReadCommand);
+        void CompleteRedisDataQueuedCommand(Func<RedisData> redisDataReadCommand);
     }
 }
