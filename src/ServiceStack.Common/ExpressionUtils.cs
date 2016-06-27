@@ -74,7 +74,7 @@ namespace ServiceStack
             var member = expr.Body as MemberExpression;
             if (member != null)
             {
-                if (member.Member.DeclaringType == typeof(T))
+                if (member.Member.DeclaringType.IsAssignableFrom(typeof(T)))
                     return new[] { member.Member.Name };
 
                 var array = CachedExpressionCompiler.Evaluate(member);
