@@ -240,12 +240,28 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (type.Inherits != null)
                     extends.Add(Type(type.Inherits).InDeclarationType());
 
+                string responseTypeExpression = null;
+
                 var interfaces = new List<string>();
                 if (options.ImplementsFn != null)
                 {
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
+                    {
                         interfaces.Add(implStr);
+
+                        if (implStr.StartsWith("IReturn<"))
+                        {
+                            var types = implStr.RightPart('<');
+                            var returnType = types.Substring(0, types.Length - 1);
+
+                            responseTypeExpression = "createResponse() {{ return new {0}(); }}".Fmt(returnType);
+                        }
+                        else if (implStr == "IReturnVoid")
+                        {
+                            responseTypeExpression = "createResponse() {}";
+                        }
+                    }
                 }
 
                 var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
@@ -289,6 +305,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+
+                if (responseTypeExpression != null)
+                {
+                    sb.AppendLine(responseTypeExpression);
+                }
 
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
