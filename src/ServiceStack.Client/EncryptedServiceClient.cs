@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if !(PCL || SL5)
+#if !(PCL || SL5) || __IOS__ || ANDROID
 
 using System;
 using System.Collections.Generic;
