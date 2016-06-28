@@ -34,6 +34,7 @@ namespace ServiceStack
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IResponse, string> OnPublish { get; set; }
         public Action<IResponse, string> WriteEvent { get; set; }
+        public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
         public bool LimitToAuthenticatedUsers { get; set; }
         public bool ValidateUserAddress { get; set; }
@@ -72,6 +73,7 @@ namespace ServiceStack
                     OnSubscribe = OnSubscribe,
                     OnUnsubscribe = OnUnsubscribe,
                     NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
+                    OnError = OnError,
                 };
                 container.Register<IServerEvents>(broker);
             }
@@ -170,6 +172,7 @@ namespace ServiceStack
                 IsAuthenticated = session != null && session.IsAuthenticated,
                 UserAddress = req.UserHostAddress,
                 OnPublish = feature.OnPublish,
+                OnError = feature.OnError,
                 Meta = {
                     { "userId", userId },
                     { "displayName", displayName },
@@ -421,6 +424,7 @@ namespace ServiceStack
         public Action<IEventSubscription> OnDispose { get; set; }
         public Action<IResponse, string> OnPublish { get; set; }
         public Action<IResponse, string> WriteEvent { get; set; }
+        public Action<IEventSubscription, Exception> OnError { get; set; }
 
         public void Publish(string selector)
         {
@@ -451,6 +455,8 @@ namespace ServiceStack
             catch (Exception ex)
             {
                 Log.Error("Error publishing notification to: " + frame.SafeSubstring(0, 50), ex);
+                if (OnError != null)
+                    OnError(this, ex);
 
                 // Mono: If we explicitly close OutputStream after the error socket wont leak (response.Close() doesn't work)
                 try
@@ -563,6 +569,8 @@ namespace ServiceStack
         public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> UserIdSubcriptions;
         public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> UserNameSubcriptions;
         public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> SessionSubcriptions;
+
+        public Action<IEventSubscription, Exception> OnError { get; set; }
 
         public MemoryServerEvents()
         {
@@ -947,6 +955,9 @@ namespace ServiceStack
             catch (Exception ex)
             {
                 Log.Error("Register: " + ex.Message, ex);
+                if (OnError != null)
+                    OnError(subscription, ex);
+
                 throw;
             }
         }
@@ -1009,6 +1020,8 @@ namespace ServiceStack
             catch (Exception ex)
             {
                 Log.Error("UnRegisterSubscription: " + ex.Message, ex);
+                if (OnError != null)
+                    OnError(subscription, ex);
                 throw;
             }
         }
