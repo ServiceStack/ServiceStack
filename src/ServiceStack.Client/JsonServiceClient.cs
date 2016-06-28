@@ -56,7 +56,7 @@ namespace ServiceStack
             }
         }
 
-        internal static T FromJson<T>(string json)
+        public static T FromJson<T>(string json)
         {
             using (__requestAccess())
             {
@@ -64,7 +64,7 @@ namespace ServiceStack
             }
         }
 
-        internal static string ToJson<T>(T o)
+        public static string ToJson<T>(T o)
         {
             using (__requestAccess())
             {

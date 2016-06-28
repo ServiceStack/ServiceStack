@@ -49,6 +49,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CryptUtils.cs" />
+    <Compile Include="EncryptedServiceClient.cs" />
     <Compile Include="Pcl.Dynamic.cs" />
     <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
     <Compile Include="PclExport.Net40.cs" />
