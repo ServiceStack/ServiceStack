@@ -105,15 +105,12 @@
   </ItemGroup>
   <!--ItemGroup,Content-->
   <!--ItemGroup,None-->
-  <ItemGroup>
-  <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-    <Project>{55942102-033A-4DA8-A6AF-1DB7B2F34A2D}</Project>
-    <Name>ServiceStack.Interfaces</Name>
-  </ProjectReference>
-</ItemGroup>
 <ItemGroup>
   <Reference Include="ServiceStack.Text">
     <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
+  </Reference>
+  <Reference Include="ServiceStack.Interfaces">
+    <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
   </Reference>
 </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
