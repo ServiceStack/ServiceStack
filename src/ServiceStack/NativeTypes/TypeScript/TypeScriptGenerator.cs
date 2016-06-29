@@ -223,9 +223,9 @@ namespace ServiceStack.NativeTypes.TypeScript
                     {
                         var name = type.EnumNames[i];
                         var value = type.EnumValues != null ? type.EnumValues[i] : null;
-                        sb.AppendLine(value == null
-                            ? "{0},".Fmt(name.PropertyStyle())
-                            : "{0} = {1},".Fmt(name.PropertyStyle(), value));
+                        sb.AppendLine(value == null //Enum Value's are not impacted by JS Style
+                            ? "{0},".Fmt(name)
+                            : "{0} = {1},".Fmt(name, value));
                     }
                 }
 
