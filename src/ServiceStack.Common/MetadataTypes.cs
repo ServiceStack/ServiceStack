@@ -123,6 +123,7 @@ namespace ServiceStack
         public bool ReturnVoidMarker { get; set; }
         public bool? IsNested { get; set; }
         public bool? IsEnum { get; set; }
+        public bool? IsEnumInt { get; set; }
         public bool? IsInterface { get; set; }
         public bool? IsAbstract { get; set; }
 
