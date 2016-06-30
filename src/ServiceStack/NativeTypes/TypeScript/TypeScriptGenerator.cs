@@ -338,7 +338,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (responseTypeExpression != null)
                 {
                     sb.AppendLine(responseTypeExpression);
-                    sb.AppendLine("toString() {{ return \"{0}\"; }}".Fmt(type.Name));
+                    sb.AppendLine("getTypeName() {{ return \"{0}\"; }}".Fmt(type.Name));
                 }
 
                 sb = sb.UnIndent();
