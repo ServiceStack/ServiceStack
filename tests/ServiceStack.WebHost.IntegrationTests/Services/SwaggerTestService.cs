@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Net;
 using System.Runtime.Serialization;
@@ -43,6 +44,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
                    DataType = "string", IsRequired = true)]
         [DataMember]
         public string NotAliased { get; set; }
+
+        [DataMember]
+        [ApiMember(IsRequired = false, AllowMultiple = true)]
+        public DateTime[] MyDateBetween { get; set; }
 
         [ApiMember(Description = "Nested model 1", DataType = "SwaggerNestedModel")]
         [DataMember]

@@ -281,6 +281,9 @@ namespace ServiceStack.NativeTypes.TypeScript
                             var types = implStr.RightPart('<');
                             var returnType = types.Substring(0, types.Length - 1);
 
+                            if (returnType == "any")
+                                returnType = "Object";
+
                             responseTypeExpression = "createResponse() {{ return new {0}(); }}".Fmt(returnType);
                         }
                         else if (implStr == "IReturnVoid")
@@ -335,6 +338,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (responseTypeExpression != null)
                 {
                     sb.AppendLine(responseTypeExpression);
+                    sb.AppendLine("toString() {{ return \"{0}\"; }}".Fmt(type.Name));
                 }
 
                 sb = sb.UnIndent();
