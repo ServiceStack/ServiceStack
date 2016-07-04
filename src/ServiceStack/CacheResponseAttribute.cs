@@ -39,6 +39,11 @@ namespace ServiceStack
         /// </summary>
         public bool LocalCache { get; set; }
 
+        /// <summary>
+        /// Skip compression for this Cache Result
+        /// </summary>
+        public bool NoCompression { get; set; }
+
         public CacheResponseAttribute()
         {
             MaxAge = -1;
@@ -98,6 +103,7 @@ namespace ServiceStack
                 CacheControl = CacheControl,
                 VaryByUser = VaryByUser,
                 LocalCache = LocalCache,
+                NoCompression = NoCompression,
             };
 
             if (req.HandleValidCache(cacheInfo))
@@ -135,7 +141,9 @@ namespace ServiceStack
                 }
             }
 
-            var encoding = req.GetCompressionType();
+            var encoding = !cacheInfo.NoCompression 
+                ? req.GetCompressionType()
+                : null;
 
             var responseBytes = encoding != null
                 ? cache.Get<byte[]>(cacheInfo.CacheKey + "." + encoding)

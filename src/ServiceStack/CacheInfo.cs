@@ -61,6 +61,11 @@ namespace ServiceStack
         /// Use HostContext.LocalCache or HostContext.Cache
         /// </summary>
         public bool LocalCache { get; set; }
+
+        /// <summary>
+        /// Skip compression for this Cache Result
+        /// </summary>
+        public bool NoCompression { get; set; }
     }
 
     public static class CacheInfoExtensions
