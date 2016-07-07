@@ -15,7 +15,7 @@ namespace ServiceStack
         {
             var type = value != null ? value.GetType() : null;
 
-            if (type == null || !type.IsClass)
+            if (type == null || !type.IsClass || value is string)
                 return false;
 
             if (parentValues == null)
@@ -25,7 +25,7 @@ namespace ServiceStack
             }
 
             var valueEnumerable = value as IEnumerable;
-            if (valueEnumerable != null && !(value is string))
+            if (valueEnumerable != null)
             {
                 foreach (var item in valueEnumerable)
                 {
