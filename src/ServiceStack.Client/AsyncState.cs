@@ -45,7 +45,9 @@ namespace ServiceStack
 
         public int RequestCount;
 
+#if !NETSTANDARD
         public ITimer Timer;
+#endif
 
         public CancellationToken Token;
 
@@ -101,16 +103,20 @@ namespace ServiceStack
 
         public void StartTimer(TimeSpan timeOut)
         {
+#if !NETSTANDARD
             this.Timer = PclExportClient.Instance.CreateTimer(this.TimedOut, timeOut, this);
+#endif
         }
 
         public void StopTimer()
         {
+#if !NETSTANDARD
             if (this.Timer != null)
             {
                 this.Timer.Cancel();
                 this.Timer = null;
             }
+#endif
         }
 
 #if NETFX_CORE
@@ -159,11 +165,13 @@ namespace ServiceStack
                 this.BytesData.Dispose();
                 this.BytesData = null;
             }
+#if !NETSTANDARD
             if (this.Timer != null)
             {
                 this.Timer.Dispose();
                 this.Timer = null;
             }
+#endif
         }
     }
 }

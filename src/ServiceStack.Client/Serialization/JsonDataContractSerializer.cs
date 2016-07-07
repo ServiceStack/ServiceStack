@@ -25,7 +25,7 @@ namespace ServiceStack.Serialization
                 return TextSerializer.SerializeToString(obj);
             }
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD)
             if (!UseBcl)
                 return JsonSerializer.SerializeToString(obj);
 
@@ -65,7 +65,7 @@ namespace ServiceStack.Serialization
                     streamSerializer.SerializeToStream(obj, stream);
                 }
             }
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD)
             else if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(obj.GetType());

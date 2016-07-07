@@ -739,7 +739,7 @@ namespace ServiceStack
         {
             var webEx = ex as WebException;
             if (webEx != null && webEx.Response != null
-#if !(SL5 || PCL)
+#if !(SL5 || PCL || NETSTANDARD)
                  && webEx.Status == WebExceptionStatus.ProtocolError
 #endif
             )
@@ -1780,7 +1780,7 @@ namespace ServiceStack
 
     public static partial class ServiceClientExtensions
     {
-#if !(NETFX_CORE || SL5 || PCL)
+#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD)
         public static TResponse PostFile<TResponse>(this IRestClient client,
             string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {

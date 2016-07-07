@@ -1,4 +1,4 @@
-#if !(SL5 || XBOX || ANDROID || __IOS__  || __MAC__|| PCL)
+#if !(SL5 || XBOX || ANDROID || __IOS__  || __MAC__|| PCL || NETSTANDARD)
 namespace ServiceStack
 {
     using System;

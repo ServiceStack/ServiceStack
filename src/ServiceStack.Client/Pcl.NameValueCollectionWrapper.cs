@@ -34,13 +34,13 @@ using System.Collections;
 using System.Collections.Generic;
 using ServiceStack.Web;
 
-#if PCL || SL5
+#if PCL || SL5 || NETSTANDARD
 using ServiceStack.Pcl;
 #else
 using System.Collections.Specialized;
 #endif
 
-#if NETFX_CORE || ANDROID || __IOS__ || __MAC__ || PCL || SL5
+#if NETFX_CORE || ANDROID || __IOS__ || __MAC__ || PCL || SL5 || NETSTANDARD
 //namespace System.Collections.Specialized
 namespace ServiceStack.Pcl
 {
