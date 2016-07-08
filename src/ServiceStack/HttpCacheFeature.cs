@@ -100,7 +100,10 @@ namespace ServiceStack
                 }
             }
 
-            var encoding = req.GetCompressionType();
+            var encoding = !cacheInfo.NoCompression
+                ? req.GetCompressionType()
+                : null;
+
             var cacheKeyEncoded = encoding != null ? cacheInfo.CacheKey + "." + encoding : null;
             if (responseBytes != null || req.ResponseContentType.IsBinary())
             {

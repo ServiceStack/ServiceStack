@@ -209,28 +209,54 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             if (type.IsEnum.GetValueOrDefault())
             {
-                var typeDeclaration = !Config.ExportAsTypes
-                    ? "enum"
-                    : "export const enum";
-
-                sb.AppendLine("{0} {1}".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs)));
-                sb.AppendLine("{");
-                sb = sb.Indent();
-
-                if (type.EnumNames != null)
+                if (type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty())
                 {
+                    var typeDeclaration = !Config.ExportAsTypes
+                        ? "enum"
+                        : "export enum";
+
+                    sb.AppendLine("{0} {1}".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs)));
+                    sb.AppendLine("{");
+                    sb = sb.Indent();
+
+                    if (type.EnumNames != null)
+                    {
+                        for (var i = 0; i < type.EnumNames.Count; i++)
+                        {
+                            var name = type.EnumNames[i];
+                            var value = type.EnumValues != null ? type.EnumValues[i] : null;
+
+                            sb.AppendLine(value == null //Enum Value's are not impacted by JS Style
+                                ? "{0},".Fmt(name)
+                                : "{0} = {1},".Fmt(name, value));
+                        }
+                    }
+
+                    sb = sb.UnIndent();
+                    sb.AppendLine("}");
+                }
+                else
+                {
+                    var sbType = StringBuilderCache.Allocate();
+
+                    var typeDeclaration = !Config.ExportAsTypes
+                        ? "type"
+                        : "export type";
+
+                    sbType.Append("{0} {1} = ".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs)));
+
                     for (var i = 0; i < type.EnumNames.Count; i++)
                     {
-                        var name = type.EnumNames[i];
-                        var value = type.EnumValues != null ? type.EnumValues[i] : null;
-                        sb.AppendLine(value == null
-                            ? "{0},".Fmt(name.PropertyStyle())
-                            : "{0} = {1},".Fmt(name.PropertyStyle(), value));
-                    }
-                }
+                        if (i > 0)
+                            sbType.Append(" | ");
 
-                sb = sb.UnIndent();
-                sb.AppendLine("}");
+                        sbType.Append('"').Append(type.EnumNames[i]).Append('"');
+                    }
+
+                    sbType.Append(";");
+
+                    sb.AppendLine(StringBuilderCache.ReturnAndFree(sbType));
+                }
             }
             else
             {
@@ -254,6 +280,9 @@ namespace ServiceStack.NativeTypes.TypeScript
                         {
                             var types = implStr.RightPart('<');
                             var returnType = types.Substring(0, types.Length - 1);
+
+                            if (returnType == "any")
+                                returnType = "Object";
 
                             responseTypeExpression = "createResponse() {{ return new {0}(); }}".Fmt(returnType);
                         }
@@ -309,6 +338,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (responseTypeExpression != null)
                 {
                     sb.AppendLine(responseTypeExpression);
+                    sb.AppendLine("getTypeName() {{ return \"{0}\"; }}".Fmt(type.Name));
                 }
 
                 sb = sb.UnIndent();

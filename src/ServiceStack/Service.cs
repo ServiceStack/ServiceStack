@@ -145,7 +145,7 @@ namespace ServiceStack
             if (HostContext.TestMode)
             {
                 var mockSession = TryResolve<TUserSession>();
-                if (!Equals(mockSession, default(TUserSession)))
+                if (Equals(mockSession, default(TUserSession)))
                     mockSession = TryResolve<IAuthSession>() is TUserSession 
                         ? (TUserSession)TryResolve<IAuthSession>() 
                         : default(TUserSession);

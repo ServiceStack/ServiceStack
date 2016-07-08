@@ -5,6 +5,7 @@ using Funq;
 using ServiceStack;
 using ServiceStack.Mvc;
 using ServiceStack.Redis;
+using ServiceStack.Text;
 
 namespace CheckMvc
 {
@@ -31,6 +32,9 @@ namespace CheckMvc
     {
         protected void Application_Start()
         {
+            JsConfig.DateHandler = DateHandler.ISO8601;
+            JsConfig.EmitCamelCaseNames = true;
+
             AreaRegistration.RegisterAllAreas();
 
             //WebApiConfig.Register(GlobalConfiguration.Configuration);

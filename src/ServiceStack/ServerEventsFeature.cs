@@ -175,6 +175,7 @@ namespace ServiceStack
                 OnError = feature.OnError,
                 Meta = {
                     { "userId", userId },
+                    { "isAuthenticated", session != null && session.IsAuthenticated ? "true": "false" },
                     { "displayName", displayName },
                     { "channels", string.Join(",", channels) },
                     { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },

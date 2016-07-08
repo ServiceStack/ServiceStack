@@ -1,4 +1,5 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Web.Mvc;
 using ServiceStack;
 using ServiceStack.Mvc;
 
@@ -8,6 +9,13 @@ namespace CheckMvc.Controllers
     {
         public string Name { get; set; }
         public long Counter { get; set; }
+        public string Json { get; set; }
+    }
+
+    public class TestObj
+    {
+        public int Id { get; set; }
+        public DateTime CurrentDate { get; set; }
     }
 
     public class HomeController : ServiceStackController
@@ -22,7 +30,12 @@ namespace CheckMvc.Controllers
             return new HomeViewModel
             {
                 Name = name,
-                Counter = Redis.IncrementValue("counter:" + name)
+                Counter = Redis.IncrementValue("counter:" + name),
+                Json = new TestObj
+                {
+                    Id = 1,
+                    CurrentDate = DateTime.Now
+                }.ToJson()
             };
         }
 

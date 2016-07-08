@@ -132,6 +132,7 @@
     <Compile Include="MiniProfiler\Data\ProfiledDbDataReader.cs" />
     <Compile Include="MiniProfiler\Data\ProfiledProviderFactory.cs" />
     <Compile Include="MiniProfiler\Data\ProfiledDbTransaction.cs" />
+    <Compile Include="ObjectUtils.cs" />
     <Compile Include="Reflection\DelegateFactory.cs">
       <SubType>Code</SubType>
     </Compile>

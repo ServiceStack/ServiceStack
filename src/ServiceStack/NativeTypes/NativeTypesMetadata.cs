@@ -307,6 +307,7 @@ namespace ServiceStack.NativeTypes
                 Properties = ToProperties(type),
                 IsNested = type.IsNested ? true : (bool?)null,
                 IsEnum = type.IsEnum ? true : (bool?)null,
+                IsEnumInt = JsConfig.TreatEnumAsInteger || type.IsEnumFlags() ? true : (bool?)null,
                 IsInterface = type.IsInterface ? true : (bool?)null,
                 IsAbstract = type.IsAbstract ? true : (bool?)null,
             };
