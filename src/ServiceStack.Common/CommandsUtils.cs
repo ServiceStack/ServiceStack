@@ -18,6 +18,7 @@ namespace ServiceStack
             return ExecuteAsyncCommandList(timeout, commands);
         }
 
+#if !NETSTANDARD
         public static List<T> ExecuteAsyncCommandList<T>(TimeSpan timeout, IEnumerable<ICommandList<T>> commands)
         {
             var results = new List<T>();
@@ -27,7 +28,6 @@ namespace ServiceStack
                 var waitHandle = new AutoResetEvent(false);
                 waitHandles.Add(waitHandle);
                 var commandResultsHandler = new CommandResultsHandler<T>(results, command, waitHandle);
-
 #if NETFX_CORE
                 ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandList(commandResultsHandler)));
 #else
@@ -37,14 +37,14 @@ namespace ServiceStack
             WaitAll(waitHandles.ToArray(), timeout);
             return results;
         }
-
+#endif
 
         public static void WaitAll(WaitHandle[] waitHandles, TimeSpan timeout)
         {
             // throws an exception if there are no wait handles
             if (waitHandles != null && waitHandles.Length > 0)
             {
-#if !SL5 && !IOS && !XBOX
+#if !SL5 && !IOS && !XBOX && !NETSTANDARD
                 if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
                 {
                     // WaitAll for multiple handles on an STA thread is not supported.
@@ -82,6 +82,7 @@ namespace ServiceStack
             command.Execute();
         }
 
+#if !NETSTANDARD
         public static void ExecuteAsyncCommandExec(TimeSpan timeout, IEnumerable<ICommandExec> commands)
         {
             foreach (ICommandExec command in commands)
@@ -115,5 +116,6 @@ namespace ServiceStack
             }
             return waitHandles;
         }
+#endif
     }
 }

@@ -19,12 +19,13 @@ namespace ServiceStack
         /// </summary>
         /// <param name="enum"></param>
         /// <returns></returns>
-#if !NETFX_CORE
+#if !(NETFX_CORE || NETSTANDARD)
         public static string ToDescription(this Enum @enum)
         {
             var type = @enum.GetType();
 
             var memInfo = type.GetMember(@enum.ToString());
+
             if (memInfo.Length > 0)
             {
                 var description = memInfo[0].GetDescription();
@@ -48,7 +49,7 @@ namespace ServiceStack
 
         public static TypeCode GetTypeCode(this Enum @enum)
         {
-            return Type.GetTypeCode(Enum.GetUnderlyingType(@enum.GetType()));
+            return Enum.GetUnderlyingType(@enum.GetType()).GetTypeCode();
         }
 
         public static bool Has<T>(this Enum @enum, T value)

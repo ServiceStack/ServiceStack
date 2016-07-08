@@ -135,8 +135,11 @@ namespace ServiceStack
             var rand = new Random(Guid.NewGuid().GetHashCode());
             var nextTry = rand.Next(
                 (int)Math.Pow(i, 2), (int)Math.Pow(i + 1, 2) + 1);
-
+#if !NETSTANDARD
             Thread.Sleep(nextTry);
+else
+            await Task.Delay(nextTry);		
+#endif
         }
     }
 }

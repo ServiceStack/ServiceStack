@@ -62,14 +62,20 @@ namespace ServiceStack.MiniProfiler.Data
             get { return _reader[ordinal]; }
         }
 
-        public override void Close()
+        public
+#if !NETSTANDARD
+	override
+#endif 
+	void Close()
         {
             // this can occur when we're not profiling, but we've inherited from ProfiledDbCommand and are returning a
             // an unwrapped reader from the base command
+#if !NETSTANDARD
             if (_reader != null)
             {
                 _reader.Close();
             }
+#endif 
 
             if (_profiler != null)
             {
@@ -167,10 +173,12 @@ namespace ServiceStack.MiniProfiler.Data
             return _reader.GetOrdinal(name);
         }
 
+#if !NETSTANDARD
         public override DataTable GetSchemaTable()
         {
             return _reader.GetSchemaTable();
         }
+#endif
 
         public override string GetString(int ordinal)
         {

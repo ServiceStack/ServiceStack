@@ -147,7 +147,7 @@ namespace ServiceStack
             return to;
         }
 
-#if !SL5
+#if !(SL5 || NETSTANDARD)
         static readonly Regex StripHtmlUnicodeRegEx = new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);", RegexOptions.Compiled);
 #else
         static readonly Regex StripHtmlUnicodeRegEx = new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);");
@@ -189,12 +189,20 @@ namespace ServiceStack
                     return match.Value; // ambiguous ampersand
                 }
             }
+#if !NETSTANDARD
             return ((char)decimalValue).ToString(CultureInfo.InvariantCulture);
+#else
+            return ((char)decimalValue).ToString();
+#endif
         }
 
         public static string ToChar(this int codePoint)
         {
+#if !NETSTANDARD
             return Convert.ToChar(codePoint).ToString(CultureInfo.InvariantCulture);
+#else
+            return Convert.ToChar(codePoint).ToString();
+#endif
         }
 
         // http://www.w3.org/TR/html5/entities.json

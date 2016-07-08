@@ -15,7 +15,7 @@ namespace ServiceStack
         {
             var type = value != null ? value.GetType() : null;
 
-            if (type == null || !type.IsClass || value is string)
+            if (type == null || !type.IsClass() || value is string)
                 return false;
 
             if (parentValues == null)
@@ -42,7 +42,7 @@ namespace ServiceStack
                     if (pi.GetIndexParameters().Length > 0)
                         continue;
 
-                    var mi = pi.GetGetMethod();
+                    var mi = pi.PropertyGetMethod();
                     var pValue = mi != null ? mi.Invoke(value, null) : null;
                     if (pValue == null)
                         continue;
