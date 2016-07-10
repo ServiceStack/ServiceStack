@@ -202,7 +202,6 @@
     <Compile Include="OAuth\CredentialsServiceTests.cs" />
     <Compile Include="OAuth\MockAuthHttpGateway.cs" />
     <Compile Include="OAuth\RequiredRolesTests.cs" />
-    <Compile Include="ObjectUtilsTests.cs" />
     <Compile Include="PerfUtilsTests.cs" />
     <Compile Include="Perf\DateTimePerf.cs" />
     <Compile Include="Perf\IdUtilsPerf.cs" />
