@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -189,6 +190,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class ErrorStream {}
+    public class ErrorStreamService : Service
+    {
+        [AddHeader(ContentType = "application/pdf")]
+        public Stream Any(ErrorStream request)
+        {
+            throw new NotImplementedException("Exception in Stream Response");
+        }
+    }
+
     [TestFixture]
     public class ExceptionHandlingTests
     {
@@ -332,6 +343,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(!ex.IsAny500());
                 Assert.That(ex.ErrorCode, Is.EqualTo("ArgumentException"));
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.BadRequest));
+            }
+        }
+
+        [Test, TestCaseSource("ServiceClients")]
+        public void Handles_Exception_in_Stream_Response(IRestClient client)
+        {
+            try
+            {
+                var response = client.Get<Stream>(new ErrorStream());
+                Assert.Fail();
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.IsAny400());
+                Assert.That(!ex.IsAny500());
+                Assert.That(ex.ErrorCode, Is.EqualTo("NotImplementedException"));
+                Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.MethodNotAllowed));
             }
         }
 
