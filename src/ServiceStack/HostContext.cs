@@ -415,5 +415,23 @@ namespace ServiceStack
         {
             return AssertAppHost().TryGetCurrentRequest();
         }
+
+        public static int FindFreeTcpPort(int startingFrom=5000, int endingAt=65535)
+        {
+            var tcpEndPoints = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners();
+            var activePorts = new HashSet<int>();
+            foreach (var endPoint in tcpEndPoints)
+            {
+                activePorts.Add(endPoint.Port);
+            }
+
+            for (var port = startingFrom; port < endingAt; port++)
+            {
+                if (!activePorts.Contains(port))
+                    return port;
+            }
+
+            return -1;
+        }
     }
 }

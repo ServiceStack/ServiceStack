@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
@@ -49,11 +50,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private readonly ServiceStackHost appHost;
 
+        private readonly string ListeningOn;
+
         public AppSelfHostTests()
         {
+            var port = HostContext.FindFreeTcpPort(startingFrom: 5000);
+            if (port < 5000)
+                throw new Exception("Expected port >= 5000, got: " + port);
+
+            ListeningOn = "http://localhost:{0}/".Fmt(port);
+
             appHost = new AppHostSmartPool()
                 .Init()
-                .Start(Config.ListeningOn);
+                .Start(ListeningOn);
         }
 
         [TestFixtureTearDown]
@@ -65,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_call_SelfHost_Services()
         {
-            var client = new JsonServiceClient(Config.ServiceStackBaseUri);
+            var client = new JsonServiceClient(ListeningOn);
 
             client.Get(new Sleep { ForMs = 100 });
             client.Get(new SpinWait { Iterations = 1000 });
@@ -74,7 +83,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_call_SelfHost_Services_async()
         {
-            var client = new JsonServiceClient(Config.ServiceStackBaseUri);
+            var client = new JsonServiceClient(ListeningOn);
 
             var sleep = await client.GetAsync(new Sleep { ForMs = 100 });
             var spin = await client.GetAsync(new SpinWait { Iterations = 1000 });
