@@ -82,9 +82,9 @@ namespace ServiceStack.Common.Tests
         public void Can_PopulateRecursiveDto()
         {
             var obj = (RecursiveDto)AutoMappingUtils.PopulateWith(new RecursiveDto());
-            Assert.IsNotNullOrEmpty(obj.Name);
+            Assert.That(obj.Name, Is.Not.Null.And.Not.Empty);
             Assert.IsNotNull(obj.Child);
-            Assert.IsNotNullOrEmpty(obj.Child.Name);
+            Assert.That(obj.Child.Name, Is.Not.Null.And.Not.Empty);
         }
 
         [Test]
@@ -94,20 +94,20 @@ namespace ServiceStack.Common.Tests
             Assert.IsNotNull(obj.Paths);
             Assert.Greater(obj.Paths.Length, 0);
             Assert.IsNotNull(obj.Paths[0]);
-            Assert.IsNotNullOrEmpty(obj.Paths[0].Name);
+            Assert.That(obj.Paths[0].Name, Is.Not.Null.And.Not.Empty);
             Assert.IsNotNull(obj.Paths[0].Child);
-            Assert.IsNotNullOrEmpty(obj.Paths[0].Child.Name);
+            Assert.That(obj.Paths[0].Child.Name, Is.Not.Null.And.Not.Empty);
         }
 
         [Test]
         public void Can_PopulateRecursiveArrayDto()
         {
             var obj = (RecursiveArrayDto)AutoMappingUtils.PopulateWith(new RecursiveArrayDto());
-            Assert.IsNotNullOrEmpty(obj.Name);
+            Assert.That(obj.Name, Is.Not.Null.And.Not.Empty);
             Assert.IsNotNull(obj.Nodes[0]);
-            Assert.IsNotNullOrEmpty(obj.Nodes[0].Name);
+            Assert.That(obj.Nodes[0].Name, Is.Not.Null.And.Not.Empty);
             Assert.IsNotNull(obj.Nodes[0].Nodes);
-            Assert.IsNotNullOrEmpty(obj.Nodes[0].Nodes[0].Name);
+            Assert.That(obj.Nodes[0].Nodes[0].Name, Is.Not.Null.And.Not.Empty);
         }
 
         [Test]

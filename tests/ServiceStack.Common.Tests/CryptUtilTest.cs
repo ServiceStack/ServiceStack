@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETCORE_SUPPORT
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,7 +30,7 @@ namespace ServiceStack.Common.Tests
         }
 
         [TestCase]
-        [Test, ExpectedException(typeof(ArgumentNullException))]
+        [Test]
         public void CanEncryptWithStringExtensionFailsWithoutKeyPair()
         {
             RsaUtils.KeyLength = RsaKeyLengths.Bit1024;
@@ -37,7 +38,7 @@ namespace ServiceStack.Common.Tests
             string TestStart = "Mr. Watson--come here--I want to see you.";
             string Encrypted;
 
-            Encrypted = TestStart.Encrypt();
+            Asset.Throws(typeof(ArgumentNullException), () => Encrypted = TestStart.Encrypt());
         }
 
         [Test]
@@ -57,3 +58,4 @@ namespace ServiceStack.Common.Tests
         }
     }
 }
+#endif

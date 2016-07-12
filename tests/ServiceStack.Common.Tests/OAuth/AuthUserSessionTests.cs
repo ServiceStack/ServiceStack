@@ -1,3 +1,4 @@
+#if !NETCORE_SUPPORT
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -459,3 +460,4 @@ namespace ServiceStack.Common.Tests.OAuth
 
     }
 }
+#endif

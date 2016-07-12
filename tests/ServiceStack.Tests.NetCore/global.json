@@ -1,0 +1,6 @@
+{
+    "projects": [
+       "../../src/ServiceStack.NetCore",
+       "ServiceStack.Common.Tests"
+    ]
+}

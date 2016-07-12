@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if !NETCORE_SUPPORT
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
@@ -65,3 +66,4 @@ namespace ServiceStack.Common.Tests
         }
     }
 }
+#endif

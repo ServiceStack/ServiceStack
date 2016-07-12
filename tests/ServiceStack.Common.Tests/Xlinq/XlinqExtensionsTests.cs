@@ -1,3 +1,4 @@
+#if !NETCORE_SUPPORT
 using System;
 using System.Xml.Linq;
 using NUnit.Framework;
@@ -72,3 +73,4 @@ namespace ServiceStack.Common.Tests.Xlinq
 
     }
 }
+#endif

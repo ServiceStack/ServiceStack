@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETCORE_SUPPORT
+using System;
 using System.Collections.Generic;
 using Amazon.DynamoDBv2;
 using NUnit.Framework;
@@ -197,3 +198,4 @@ namespace ServiceStack.Common.Tests
 
     }
 }
+#endif

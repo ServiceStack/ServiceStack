@@ -49,7 +49,11 @@ namespace ServiceStack.Common.Tests.Expressions
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
+#if NETCORE
+            var methodInfo = typeof(string).GetTypeInfo().GetDeclaredMethod("ToUpper");
+#else
             var methodInfo = typeof(string).GetMethod("ToUpper", new Type[] { });
+#endif
 
             for (var i = 0; i < Times; i++)
             {
@@ -66,7 +70,11 @@ namespace ServiceStack.Common.Tests.Expressions
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
+#if NETCORE
+            var methodInfo = typeof(string).GetTypeInfo().GetDeclaredMethod("ToUpper");
+#else
             var methodInfo = typeof(string).GetMethod("ToUpper", new Type[] { });
+#endif
             var delMethod = DelegateFactory.Create(methodInfo);
 
             for (var i = 0; i < Times; i++)

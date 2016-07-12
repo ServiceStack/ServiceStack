@@ -1,3 +1,4 @@
+#if !NETCORE_SUPPORT
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -732,3 +733,4 @@ namespace ServiceStack.Common.Tests
     }
 
 }
+#endif
