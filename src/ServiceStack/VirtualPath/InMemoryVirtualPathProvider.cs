@@ -53,19 +53,27 @@ namespace ServiceStack.VirtualPath
 
         public IVirtualDirectory GetDirectory(string dirPath)
         {
-            return new InMemoryVirtualDirectory(this, dirPath);
+            var dir = new InMemoryVirtualDirectory(this, dirPath);
+            return dir.Files.Any()
+                ? dir
+                : null;
         }
 
         public override bool DirectoryExists(string virtualPath)
         {
-            return GetDirectory(virtualPath).Files.Any();
+            return GetDirectory(virtualPath) != null;
+        }
+
+        private IVirtualDirectory CreateDirectory(string dirPath)
+        {
+            return new InMemoryVirtualDirectory(this, dirPath);
         }
 
         public void WriteFile(string filePath, string textContents)
         {
             filePath = SanitizePath(filePath);
             DeleteFile(filePath);
-            this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
+            this.files.Add(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
                 TextContents = textContents,
@@ -77,7 +85,7 @@ namespace ServiceStack.VirtualPath
         {
             filePath = SanitizePath(filePath);
             DeleteFile(filePath);
-            this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
+            this.files.Add(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
                 ByteContents = stream.ReadFully(),
@@ -101,7 +109,7 @@ namespace ServiceStack.VirtualPath
 
             DeleteFile(filePath);
 
-            this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
+            this.files.Add(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
                 TextContents = text,
@@ -120,7 +128,7 @@ namespace ServiceStack.VirtualPath
 
             DeleteFile(filePath);
 
-            this.files.Add(new InMemoryVirtualFile(this, GetDirectory(GetDirPath(filePath)))
+            this.files.Add(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
                 ByteContents = bytes,
