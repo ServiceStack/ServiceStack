@@ -120,7 +120,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 .Select(x => x.Response).ToHashSet();
 
             // Base Types need to be written first
-            var types = metadata.Types.OrderBy(x => x.Inherits == null ? 0 : 1);
+            var types = metadata.Types.OrderBy(x => x.Inherits == null ? 0 : 1).ToHashSet();
 
             var allTypes = new List<MetadataType>();
             allTypes.AddRange(types);
