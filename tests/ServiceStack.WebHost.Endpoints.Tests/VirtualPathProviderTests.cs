@@ -202,6 +202,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(!pathProvider.IsDirectory("testfile.txt"));
             Assert.That(!pathProvider.IsDirectory("a/testfile-a1.txt"));
 
+            Assert.That(pathProvider.DirectoryExists("a"));
+            Assert.That(pathProvider.GetDirectory("a"), Is.Not.Null);
+            Assert.That(pathProvider.DirectoryExists("a/b"));
+            Assert.That(pathProvider.GetDirectory("a/b"), Is.Not.Null);
+            Assert.That(!pathProvider.DirectoryExists("b"));
+            Assert.That(pathProvider.GetDirectory("b"), Is.Null);
+            Assert.That(!pathProvider.DirectoryExists("a/c"));
+            Assert.That(pathProvider.GetDirectory("a/c"), Is.Null);
+
             AssertContents(pathProvider.RootDirectory, new[] {
                     "testfile.txt",
                 }, new[] {
