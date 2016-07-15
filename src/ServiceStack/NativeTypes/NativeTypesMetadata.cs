@@ -29,6 +29,7 @@ namespace ServiceStack.NativeTypes
                 BaseUrl = req.BaseUrl ?? defaults.BaseUrl,
                 MakePartial = req.MakePartial ?? defaults.MakePartial,
                 MakeVirtual = req.MakeVirtual ?? defaults.MakeVirtual,
+                MakeInternal = req.MakeInternal ?? defaults.MakeInternal,
                 AddReturnMarker = req.AddReturnMarker ?? defaults.AddReturnMarker,
                 AddDescriptionAsComments = req.AddDescriptionAsComments ?? defaults.AddDescriptionAsComments,
                 AddDataContractAttributes = req.AddDataContractAttributes ?? defaults.AddDataContractAttributes,
@@ -48,6 +49,7 @@ namespace ServiceStack.NativeTypes
                 MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
                 ExportAsTypes = req.ExportAsTypes ?? defaults.ExportAsTypes,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
+                AddNamespaces = req.AddNamespaces ?? defaults.AddNamespaces,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
                 DefaultImports = req.DefaultImports ?? defaults.DefaultImports,
                 IncludeTypes = TrimArgs(req.IncludeTypes ?? defaults.IncludeTypes),
@@ -723,6 +725,7 @@ namespace ServiceStack.NativeTypes
         public static HashSet<string> GetDefaultNamespaces(this MetadataTypesConfig config, MetadataTypes metadata)
         {
             var namespaces = config.DefaultNamespaces.ToHashSet();
+            config.AddNamespaces.Safe().Each(x => namespaces.Add(x));
 
             //Add any ignored namespaces used
             foreach (var ns in metadata.Namespaces)
