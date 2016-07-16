@@ -35,6 +35,7 @@
   </metadata>
   <files>
     <file src="lib\**\*.*" target="lib" />
+    <file src="content\**\*.*" target="content" />
     <file src="..\..\src\ServiceStack.Razor\**\*.cs" target="src" />
   </files>
 </package>
