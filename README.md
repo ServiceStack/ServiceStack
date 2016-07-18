@@ -349,6 +349,7 @@ Each library is released under its respective licence:
   - [HtmlCompressor](https://code.google.com/archive/p/htmlcompressor) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
   - [JSMin](https://github.com/douglascrockford/JSMin/blob/master/jsmin.c) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
   - [RecyclableMemoryStream](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream) [(License)](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream/blob/master/LICENSE)
+  - [ASP.NET MVC](https://github.com/aspnet/Mvc) [(License)](https://github.com/aspnet/Mvc/blob/dev/LICENSE.txt)
 
 ## Similar open source projects
 
@@ -369,6 +370,7 @@ Follow [@ServiceStack](https://twitter.com/ServiceStack) and
 
  - [mythz](https://github.com/mythz) (Demis Bellot)
  - [layoric](https://github.com/layoric) (Darren Reid) / [@layoric](https://twitter.com/layoric)
+ - [xplicit](https://github.com/xplicit) (Sergey Zhukov) / [@quantumcalc](https://twitter.com/quantumcalc)
  - [arxisos](https://github.com/arxisos) (Steffen Müller) / [@arxisos](https://twitter.com/arxisos)
  - [desunit](https://github.com/desunit) (Sergey Bogdanov) / [@desunit](https://twitter.com/desunit)
 
