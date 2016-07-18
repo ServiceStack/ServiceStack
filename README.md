@@ -351,14 +351,6 @@ Each library is released under its respective licence:
   - [RecyclableMemoryStream](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream) [(License)](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream/blob/master/LICENSE)
   - [ASP.NET MVC](https://github.com/aspnet/Mvc) [(License)](https://github.com/aspnet/Mvc/blob/dev/LICENSE.txt)
 
-## Similar open source projects
-
-Similar Open source .NET projects for developing or accessing web services include:
-
- * [Nancy Fx](http://nancyfx.org) - A Sinatra-inspired lightweight Web Framework for .NET:
- * [Fubu MVC](http://mvc.fubu-project.org) - A "Front Controller" pattern-style MVC framework designed for use in web applications built on ASP.NET:
- * [Rest Sharp](http://restsharp.org) - An open source REST client for .NET
-
 ## Find out More
 
 Follow [@ServiceStack](https://twitter.com/ServiceStack) and 
@@ -680,4 +672,10 @@ A big thanks to GitHub and all of ServiceStack's contributors:
 
 ***
 
-Runs on both Mono and .NET _(Live preview hosted on Mono / Ubuntu)_
+## Similar open source projects
+
+Similar Open source .NET projects for developing or accessing web services include:
+
+ * [Nancy Fx](http://nancyfx.org) - A Sinatra-inspired lightweight Web Framework for .NET:
+ * [Fubu MVC](http://mvc.fubu-project.org) - A "Front Controller" pattern-style MVC framework designed for use in web applications built on ASP.NET:
+ * [Rest Sharp](http://restsharp.org) - An open source REST client for .NET
