@@ -2,7 +2,7 @@
   "configurations": {
     "Debug": {
       "buildOptions": {
-        "define": ["NETFX_CORE", "DEBUG", "TRACE"],
+        "define": ["NETSTANDARD", "DEBUG", "TRACE"],
 	"compile": {
 		"include" : ["../../ServiceStack.Interfaces/**/*.cs"]
 	}
@@ -10,7 +10,7 @@
     },
     "Release": {
       "buildOptions": {
-        "define": ["NETFX_CORE", "TRACE"],
+        "define": ["NETSTANDARD", "TRACE"],
         "optimize": true,
 	"compile": {
 		"include" : ["../../ServiceStack.Interfaces/**/*.cs"]

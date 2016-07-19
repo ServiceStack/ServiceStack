@@ -30,7 +30,7 @@ namespace ServiceStack
         public ApiAllowableValuesAttribute(string name, Type enumType)
             : this(name)
         {
-#if NETFX_CORE
+#if NETFX_CORE || NETSTANDARD
 			if (enumType.GetTypeInfo().IsEnum)
 #else
             if (enumType.IsEnum)
