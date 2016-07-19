@@ -15,12 +15,17 @@ namespace ServiceStack.Auth
     /// </summary>
     public class JwtAuthProvider : JwtAuthProviderReader, IAuthResponseFilter
     {
+        public bool SetBearerTokenOnAuthenticateResponse { get; set; }
+
         public JwtAuthProvider() {}
 
         public JwtAuthProvider(IAppSettings appSettings) : base(appSettings) { }
 
         public override void Init(IAppSettings appSettings = null)
         {
+            this.SetBearerTokenOnAuthenticateResponse = appSettings == null 
+                || appSettings.Get("jwt.SetBearerTokenOnAuthenticateResponse", true);
+
             ServiceRoutes = new Dictionary<Type, string[]>
             {
                 { typeof(ConvertSessionToTokenService), new[] { "/session-to-token" } },
@@ -31,7 +36,7 @@ namespace ServiceStack.Auth
 
         public AuthenticateResponse Execute(IServiceBase authService, IAuthProvider authProvider, IAuthSession session, AuthenticateResponse response)
         {
-            if (response.BearerToken == null && session.IsAuthenticated)
+            if (SetBearerTokenOnAuthenticateResponse && response.BearerToken == null && session.IsAuthenticated)
             {
                 if (!RequireSecureConnection || authService.Request.IsSecureConnection)
                 {

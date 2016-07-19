@@ -222,7 +222,8 @@ namespace ServiceStack
                     res.EndHttpHandlerRequest(skipHeaders: true);
                 }
                 catch { }
-                tcs.SetResult(true);
+                if (!tcs.Task.IsCompleted)
+                    tcs.SetResult(true);
             };
 
             return tcs.Task;
@@ -426,6 +427,7 @@ namespace ServiceStack
         public Action<IResponse, string> OnPublish { get; set; }
         public Action<IResponse, string> WriteEvent { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
+        public bool IsClosed { get { return this.response.IsClosed; } }
 
         public void Publish(string selector)
         {
@@ -518,6 +520,7 @@ namespace ServiceStack
         string SubscriptionId { get; }
         string UserAddress { get; set; }
         bool IsAuthenticated { get; set; }
+        bool IsClosed { get; }
 
         void UpdateChannels(string[] channels);
 
@@ -668,7 +671,7 @@ namespace ServiceStack
             {
                 if (sub.HasChannel(channel))
                 {
-                    if (now - sub.LastPulseAt > IdleTimeout)
+                    if (now - sub.LastPulseAt > IdleTimeout || sub.IsClosed)
                     {
                         if (Log.IsDebugEnabled)
                             Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,

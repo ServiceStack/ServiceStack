@@ -26,6 +26,17 @@ namespace Funq
         }
 
         /// <summary>
+        /// Register an autowired dependency
+        /// </summary>
+        /// <param name="name">Name of dependency</param>
+        /// <typeparam name="T"></typeparam>
+        public IRegistration<T> RegisterAutoWired<T>(string name)
+        {
+            var serviceFactory = GenerateAutoWireFn<T>();
+            return this.Register(name, serviceFactory);
+        }
+
+        /// <summary>
         /// Register an autowired dependency as a separate type
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -38,6 +49,18 @@ namespace Funq
         }
 
         /// <summary>
+        /// Register an autowired dependency as a separate type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public IRegistration<TAs> RegisterAutoWiredAs<T, TAs>(string name)
+            where T : TAs
+        {
+            var serviceFactory = GenerateAutoWireFn<T>();
+            Func<Container, TAs> fn = c => serviceFactory(c);
+            return this.Register(name, fn);
+        }
+
+        /// <summary>
         /// Alias for RegisterAutoWiredAs
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -45,6 +68,16 @@ namespace Funq
             where T : TAs
         {
             return this.RegisterAutoWiredAs<T, TAs>();
+        }
+
+        /// <summary>
+        /// Alias for RegisterAutoWiredAs
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public IRegistration<TAs> RegisterAs<T, TAs>(string name)
+            where T : TAs
+        {
+            return this.RegisterAutoWiredAs<T, TAs>(name);
         }
 
         /// <summary>

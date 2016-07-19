@@ -44,6 +44,32 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Decimal", "number"},
             {"List", "Array"},
         };
+        private static string declaredEmptyString = "\"\"";
+        private static Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
+        {
+            {"String", declaredEmptyString},
+            {"string", declaredEmptyString},
+            {"Boolean", "false"},
+            {"DateTime", declaredEmptyString},
+            {"DateTimeOffset", declaredEmptyString},
+            {"TimeSpan", declaredEmptyString},
+            {"Guid", declaredEmptyString},
+            {"Char", declaredEmptyString},
+            {"int", "0"},
+            {"float", "0"},
+            {"double", "0"},
+            {"Byte", "0"},
+            {"Int16", "0"},
+            {"Int32", "0"},
+            {"Int64", "0"},
+            {"UInt16", "0"},
+            {"UInt32", "0"},
+            {"UInt64", "0"},
+            {"Single", "0"},
+            {"Double", "0"},
+            {"Decimal", "0"},
+            {"List", "[]"}
+        };
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
@@ -92,7 +118,9 @@ namespace ServiceStack.NativeTypes.TypeScript
             var responseTypes = metadata.Operations
                 .Where(x => x.Response != null)
                 .Select(x => x.Response).ToHashSet();
-            var types = metadata.Types.ToHashSet();
+
+            // Base Types need to be written first
+            var types = metadata.Types.OrderBy(x => x.Inherits == null ? 0 : 1).ToHashSet();
 
             var allTypes = new List<MetadataType>();
             allTypes.AddRange(types);
@@ -284,7 +312,14 @@ namespace ServiceStack.NativeTypes.TypeScript
                             if (returnType == "any")
                                 returnType = "Object";
 
-                            responseTypeExpression = "createResponse() {{ return new {0}(); }}".Fmt(returnType);
+                            // This is to avoid invalid syntax such as "return new string()"
+                            string replaceReturnType;
+                            if (primitiveDefaultValues.TryGetValue(returnType, out replaceReturnType))
+                                returnType = replaceReturnType;
+
+                            responseTypeExpression = replaceReturnType == null ?
+                                "createResponse() {{ return new {0}(); }}".Fmt(returnType) :
+                                "createResponse() {{ return {0}; }}".Fmt(returnType);
                         }
                         else if (implStr == "IReturnVoid")
                         {

@@ -28,6 +28,25 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Registers a named instance of type in the IoC container and
+        /// adds auto-wiring to the specified type.
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <param name="inFunqAsType"></param>
+        public static void RegisterAutoWiredType(this Container container, string name, Type serviceType, Type inFunqAsType,
+            ReuseScope scope = ReuseScope.None)
+        {
+            if (serviceType.IsAbstract || serviceType.ContainsGenericParameters)
+                return;
+
+            var methodInfo = typeof(Container).GetMethod("RegisterAutoWiredAs", new[] { typeof(string) });
+            var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType, inFunqAsType });
+
+            var registration = registerMethodInfo.Invoke(container, new[] { name }) as IRegistration;
+            registration.ReusedWithin(scope);
+        }
+
+        /// <summary>
         /// Registers the type in the IoC container and
         /// adds auto-wiring to the specified type.
         /// The reuse scope is set to none (transient).
@@ -44,6 +63,26 @@ namespace ServiceStack
             var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType });
 
             var registration = registerMethodInfo.Invoke(container, TypeConstants.EmptyObjectArray) as IRegistration;
+            registration.ReusedWithin(scope);
+        }
+
+        /// <summary>
+        /// Registers the type in the IoC container and
+        /// adds auto-wiring to the specified type.
+        /// The reuse scope is set to none (transient).
+        /// </summary>
+        /// <param name="serviceTypes"></param>
+        public static void RegisterAutoWiredType(this Container container, string name, Type serviceType,
+            ReuseScope scope = ReuseScope.None)
+        {
+            //Don't try to register base service classes
+            if (serviceType.IsAbstract || serviceType.ContainsGenericParameters)
+                return;
+
+            var methodInfo = typeof(Container).GetMethod("RegisterAutoWired", new[] { typeof(string) });
+            var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType });
+
+            var registration = registerMethodInfo.Invoke(container, new[] { name }) as IRegistration;
             registration.ReusedWithin(scope);
         }
 

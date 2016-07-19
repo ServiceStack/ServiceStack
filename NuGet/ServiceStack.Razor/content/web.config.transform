@@ -1,9 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <configuration>
   <configSections>
-    <sectionGroup name="system.web.webPages.razor" type="System.Web.WebPages.Razor.Configuration.RazorWebSectionGroup, System.Web.WebPages.Razor">
-      <section name="host" type="System.Web.WebPages.Razor.Configuration.HostSection, System.Web.WebPages.Razor" requirePermission="false" />
-      <section name="pages" type="System.Web.WebPages.Razor.Configuration.RazorPagesSection, System.Web.WebPages.Razor" requirePermission="false" />
+    <sectionGroup name="system.web.webPages.razor" type="System.Web.WebPages.Razor.Configuration.RazorWebSectionGroup, System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35">
+      <section name="host" type="System.Web.WebPages.Razor.Configuration.HostSection, System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" requirePermission="false" />
+      <section name="pages" type="System.Web.WebPages.Razor.Configuration.RazorPagesSection, System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" requirePermission="false" />
     </sectionGroup>
   </configSections>
   <appSettings>
@@ -17,16 +17,18 @@
     </compilation>
   </system.web>
   <system.web.webPages.razor>
-    <host factoryType="System.Web.Mvc.MvcWebRazorHostFactory, System.Web.Mvc" />
+    <host factoryType="System.Web.Mvc.MvcWebRazorHostFactory, System.Web.Mvc, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31BF3856AD364E35" />
     <pages pageBaseType="ServiceStack.Razor.ViewPage">
       <namespaces>
         <add namespace="System" />
+        <add namespace="System.Linq" />
         <add namespace="ServiceStack" />
         <add namespace="ServiceStack.Html" />
         <add namespace="ServiceStack.Razor" />
         <add namespace="ServiceStack.Text" />
         <add namespace="ServiceStack.OrmLite" />
         <add namespace="$rootnamespace$" />
+        <add namespace="$rootnamespace$.ServiceModel" />
       </namespaces>
     </pages>
   </system.web.webPages.razor>
