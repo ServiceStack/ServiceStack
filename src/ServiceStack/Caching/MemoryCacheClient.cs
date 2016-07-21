@@ -11,8 +11,6 @@ namespace ServiceStack.Caching
         private static readonly ILog Log = LogManager.GetLogger(typeof(MemoryCacheClient));
 
         private ConcurrentDictionary<string, CacheEntry> memory;
-        private ConcurrentDictionary<string, int> counters;
-
         public bool FlushOnDispose { get; set; }
 
         private class CacheEntry
@@ -53,7 +51,6 @@ namespace ServiceStack.Caching
         public MemoryCacheClient()
         {
             this.memory = new ConcurrentDictionary<string, CacheEntry>();
-            this.counters = new ConcurrentDictionary<string, int>();
         }
 
         private bool TryGetValue(string key, out CacheEntry entry)
@@ -123,7 +120,6 @@ namespace ServiceStack.Caching
             if (!FlushOnDispose) return;
 
             this.memory = new ConcurrentDictionary<string, CacheEntry>();
-            this.counters = new ConcurrentDictionary<string, int>();
         }
 
         public bool Remove(string key)
@@ -178,27 +174,40 @@ namespace ServiceStack.Caching
             return default(T);
         }
 
-        private int UpdateCounter(string key, int value)
+        private long UpdateCounter(string key, long value)
         {
-            lock (counters)
+            CacheEntry cacheEntry;
+            if (this.memory.TryGetValue(key, out cacheEntry))
             {
-                if (!this.counters.ContainsKey(key))
+                try
                 {
-                    this.counters[key] = 0;
+                    lock (cacheEntry)
+                    {
+                        var int64 = Convert.ToInt64(cacheEntry.Value);
+                        int64 += value;
+                        cacheEntry.Value = int64;
+                        return int64;
+                    }
                 }
-                this.counters[key] += value;
-                return this.counters[key];
+                catch (Exception)
+                {
+                    Set(key, value);
+                    return value;
+                }
             }
+
+            Set(key, value);
+            return value;
         }
 
         public long Increment(string key, uint amount)
         {
-            return UpdateCounter(key, (int)amount);
+            return UpdateCounter(key, amount);
         }
 
         public long Decrement(string key, uint amount)
         {
-            return UpdateCounter(key, (int)amount * -1);
+            return UpdateCounter(key, amount * -1);
         }
 
         /// <summary>

@@ -170,6 +170,14 @@ namespace ServiceStack.Server.Tests.Shared
         }
 
         [Test]
+        public void Can_increment_and_reset_values()
+        {
+            Assert.That(Cache.Increment("incr:counter", 10), Is.EqualTo(10));
+            Cache.Set("incr:counter", 0);
+            Assert.That(Cache.Increment("incr:counter", 10), Is.EqualTo(10));
+        }
+
+        [Test]
         public void Can_remove_multiple_items()
         {
             var map = 5.Times(i => new Item { Id = i, Name = "Name" + i })
