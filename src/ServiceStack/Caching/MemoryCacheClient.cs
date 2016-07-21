@@ -191,7 +191,7 @@ namespace ServiceStack.Caching
                 }
                 catch (Exception)
                 {
-                    Set(key, value);
+                    cacheEntry.Value = value;
                     return value;
                 }
             }
