@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if !NETSTANDARD
 using System;
 using System.Reflection;
 
@@ -17,12 +16,13 @@ namespace ServiceStack
                 return apiAttr.Description;
             }
 
+#if !NETSTANDARD
             var componentDescAttr = type.FirstAttribute<System.ComponentModel.DescriptionAttribute>();
             if (componentDescAttr != null)
             {
                 return componentDescAttr.Description;
             }
-
+#endif
             var ssDescAttr = type.FirstAttribute<ServiceStack.DataAnnotations.DescriptionAttribute>();
             if (ssDescAttr != null)
             {
@@ -40,11 +40,13 @@ namespace ServiceStack
                 return apiAttr.Description;
             }
 
+#if !NETSTANDARD
             var componentDescAttr = mi.FirstAttribute<System.ComponentModel.DescriptionAttribute>();
             if (componentDescAttr != null)
             {
                 return componentDescAttr.Description;
             }
+#endif
 
             var ssDescAttr = mi.FirstAttribute<ServiceStack.DataAnnotations.DescriptionAttribute>();
             if (ssDescAttr != null)
@@ -57,11 +59,13 @@ namespace ServiceStack
 
         public static string GetDescription(this ParameterInfo pi)
         {
+#if !NETSTANDARD
             var componentDescAttr = pi.FirstAttribute<System.ComponentModel.DescriptionAttribute>();
             if (componentDescAttr != null)
             {
                 return componentDescAttr.Description;
             }
+#endif
 
             var ssDescAttr = pi.FirstAttribute<ServiceStack.DataAnnotations.DescriptionAttribute>();
             if (ssDescAttr != null)
@@ -73,4 +77,3 @@ namespace ServiceStack
         }
     }
 }
-#endif

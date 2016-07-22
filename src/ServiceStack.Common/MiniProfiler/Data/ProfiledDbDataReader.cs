@@ -70,12 +70,14 @@ namespace ServiceStack.MiniProfiler.Data
         {
             // this can occur when we're not profiling, but we've inherited from ProfiledDbCommand and are returning a
             // an unwrapped reader from the base command
-#if !NETSTANDARD
             if (_reader != null)
             {
+#if NETSTANDARD
+                _reader.Dispose();
+#else
                 _reader.Close();
-            }
 #endif 
+            }
 
             if (_profiler != null)
             {

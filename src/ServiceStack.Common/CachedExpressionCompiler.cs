@@ -466,12 +466,15 @@ namespace ServiceStack.ExpressionUtil
             _currentChain.Elements.Add(new DefaultExpressionFingerprint(node.NodeType, node.Type));
             return base.VisitDefault(node);
         }
+
+        protected
 #if !NETSTANDARD
-        protected override Expression VisitDynamic(DynamicExpression node)
+	override
+#endif
+	Expression VisitDynamic(DynamicExpression node)
         {
             return GiveUp(node);
         }
-#endif
 
         protected override ElementInit VisitElementInit(ElementInit node)
         {

@@ -85,12 +85,14 @@ namespace ServiceStack.MiniProfiler.Data
             get { return _conn; }
         }
 
+        protected
 #if !NETSTANDARD
-        protected override bool CanRaiseEvents
+        override
+#endif
+        bool CanRaiseEvents
         {
             get { return true; }
         }
-#endif
 
         public override string ConnectionString
         {

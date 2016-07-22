@@ -138,7 +138,7 @@ namespace ServiceStack
 #if !NETSTANDARD
             Thread.Sleep(nextTry);
 else
-            await Task.Delay(nextTry);		
+            Task.Delay(nextTry).Wait();
 #endif
         }
     }
