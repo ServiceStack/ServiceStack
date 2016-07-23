@@ -194,20 +194,23 @@ namespace ServiceStack.NativeTypes.CSharp
             if (type.IsNested.GetValueOrDefault() && !options.IsNestedType)
                 return lastNS;
 
-            var ns = Config.GlobalNamespace ?? type.Namespace;
-            if (ns != lastNS)
+            if (!Config.ExcludeNamespace)
             {
-                if (lastNS != null)
-                    sb.AppendLine("}");
+                var ns = Config.GlobalNamespace ?? type.Namespace;
+                if (ns != lastNS)
+                {
+                    if (lastNS != null)
+                        sb.AppendLine("}");
 
-                lastNS = ns;
+                    lastNS = ns;
 
-                sb.AppendLine();
-                sb.AppendLine("namespace {0}".Fmt(ns.SafeToken()));
-                sb.AppendLine("{");
+                    sb.AppendLine();
+                    sb.AppendLine("namespace {0}".Fmt(ns.SafeToken()));
+                    sb.AppendLine("{");
+                }
+
+                sb = sb.Indent();
             }
-
-            sb = sb.Indent();
 
             sb.AppendLine();
             AppendComments(sb, type.Description);
@@ -295,7 +298,11 @@ namespace ServiceStack.NativeTypes.CSharp
                 sb.AppendLine("}");
             }
 
-            sb = sb.UnIndent();
+            if (!Config.ExcludeNamespace)
+            {
+                sb = sb.UnIndent();
+            }
+
             return lastNS;
         }
 
