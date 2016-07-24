@@ -42,14 +42,17 @@ namespace ServiceStack.NativeTypes.CSharp
 
             metadata.RemoveIgnoredTypesForNet(Config);
 
-            if (Config.GlobalNamespace == null)
+            if (!Config.ExcludeNamespace)
             {
-                metadata.Types.Each(x => namespaces.Add(x.Namespace));
-                metadata.Operations.Each(x => namespaces.Add(x.Request.Namespace));
-            }
-            else
-            {
-                namespaces.Add(Config.GlobalNamespace);
+                if (Config.GlobalNamespace == null)
+                {
+                    metadata.Types.Each(x => namespaces.Add(x.Namespace));
+                    metadata.Operations.Each(x => namespaces.Add(x.Request.Namespace));
+                }
+                else
+                {
+                    namespaces.Add(Config.GlobalNamespace);
+                }
             }
 
             Func<string,string> defaultValue = k =>
