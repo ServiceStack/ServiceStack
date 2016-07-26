@@ -83,6 +83,7 @@ namespace ServiceStack
         public List<string> TreatTypesAsStrings { get; set; }
 
         public string GlobalNamespace { get; set; }
+        public bool ExcludeNamespace { get; set; }
 
         public HashSet<Type> IgnoreTypes { get; set; }
         public HashSet<Type> ExportTypes { get; set; }

@@ -71,6 +71,49 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"List", "[]"}
         };
 
+        private void AddTypeToSortedList(List<MetadataType> allTypes, List<MetadataType> sortedTypes, MetadataType metadataType)
+        {
+            if (sortedTypes.Contains(metadataType))
+                return;
+
+            if (metadataType == null)
+                return;
+
+            if (metadataType.Inherits == null)
+            {
+                sortedTypes.Add(metadataType);
+                return;
+            }
+
+            var inheritedMetadataType = FindMetadataTypeByMetadataTypeName(allTypes, metadataType.Inherits);
+            // Find and add base class first
+            AddTypeToSortedList(allTypes,sortedTypes, inheritedMetadataType);
+
+            if (!sortedTypes.Contains(metadataType))
+                sortedTypes.Add(metadataType);
+        }
+
+        private MetadataType FindMetadataTypeByMetadataTypeName(List<MetadataType> allTypes,
+            MetadataTypeName metadataTypeName)
+        {
+            if (metadataTypeName == null)
+                return null;
+            var metaDataType = allTypes.Where(x => x.Name == metadataTypeName.Name &&
+                                                   x.Namespace == metadataTypeName.Namespace)
+                .FirstNonDefault();
+            return metaDataType;
+        }
+
+        private List<MetadataType> CreateSortedTypeList(List<MetadataType> allTypes)
+        {
+            List<MetadataType> result = new List<MetadataType>();
+            foreach (var metadataType in allTypes)
+            {
+                AddTypeToSortedList(allTypes,result,metadataType);
+            }
+            return result;
+        }
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
@@ -120,7 +163,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 .Select(x => x.Response).ToHashSet();
 
             // Base Types need to be written first
-            var types = metadata.Types.OrderBy(x => x.Inherits == null ? 0 : 1).ToHashSet();
+            var types = CreateSortedTypeList(metadata.Types);
 
             var allTypes = new List<MetadataType>();
             allTypes.AddRange(types);

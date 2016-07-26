@@ -83,6 +83,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Value { get; set; }
     }
 
+    [Route("/cache/alwaysthrows")]
+    public class CacheAlwaysThrows : IReturn<CacheAlwaysThrows>
+    {
+        public string Message { get; set; }
+    }
+
     public interface ICacheDto
     {
         int Id { get; set; }
@@ -166,6 +172,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Interlocked.Increment(ref ServerCustomCacheKey.Count);
             return request;
         }
+
+        [CacheResponse(Duration = 5000)]
+        public object Any(CacheAlwaysThrows request)
+        {
+            throw new Exception(request.Message);
+        }
     }
 
     [TestFixture]
@@ -190,6 +202,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         UserAuthName = "test",
                         Roles = new List<string> { roleHeader }
                     };
+                });
+
+                ServiceExceptionHandlers.Add((req, dto, ex) =>
+                {
+                    return DtoUtils.CreateErrorResponse(dto, ex);
                 });
             }
         }
@@ -525,6 +542,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(ServerCustomCacheKey.Count, Is.EqualTo(2));
             AssertEquals(response, request);
+        }
+
+        [Test]
+        public void Does_not_cache_Error_Responses()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            try
+            {
+                var response = client.Get(new CacheAlwaysThrows { Message = "foo" });
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ErrorMessage, Is.EqualTo("foo"));
+            }
+
+            try
+            {
+                var response = client.Get(new CacheAlwaysThrows { Message = "bar" });
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ErrorMessage, Is.EqualTo("bar"));
+            }
         }
     }
 }

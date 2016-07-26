@@ -59,7 +59,8 @@ namespace ServiceStack.NativeTypes
                 ExportTypes = defaults.ExportTypes,
                 IgnoreTypes = defaults.IgnoreTypes,
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
-                GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace
+                GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace,
+                ExcludeNamespace = req.ExcludeNamespace ?? defaults.ExcludeNamespace
             };
         }
 

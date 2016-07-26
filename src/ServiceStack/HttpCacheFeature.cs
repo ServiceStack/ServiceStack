@@ -33,6 +33,9 @@ namespace ServiceStack
             if (req.IsInProcessRequest())
                 return;
 
+            if (response is Exception || res.StatusCode >= 300)
+                return;
+
             var cacheInfo = req.GetItem(Keywords.CacheInfo) as CacheInfo;
             if (cacheInfo != null && cacheInfo.CacheKey != null)
             {
