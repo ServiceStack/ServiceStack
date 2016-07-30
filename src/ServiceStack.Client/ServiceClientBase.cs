@@ -1836,6 +1836,7 @@ namespace ServiceStack
             return to;
         }
 
+        [Obsolete("Use: using (client.Get<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Get(this IRestClient client, object request)
         {
             var c = client as ServiceClientBase;
@@ -1844,6 +1845,7 @@ namespace ServiceStack
             return c.Get(request);
         }
 
+        [Obsolete("Use: using (client.Delete<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Delete(this IRestClient client, object request)
         {
             var c = client as ServiceClientBase;
@@ -1852,6 +1854,7 @@ namespace ServiceStack
             return c.Delete(request);
         }
 
+        [Obsolete("Use: using (client.Post<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Post(this IRestClient client, object request)
         {
             var c = client as ServiceClientBase;
@@ -1860,6 +1863,7 @@ namespace ServiceStack
             return c.Post(request);
         }
 
+        [Obsolete("Use: using (client.Put<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Put(this IRestClient client, object request)
         {
             var c = client as ServiceClientBase;
@@ -1868,6 +1872,7 @@ namespace ServiceStack
             return c.Put(request);
         }
 
+        [Obsolete("Use: using (client.Patch<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Patch(this IRestClient client, object request)
         {
             var c = client as ServiceClientBase;
@@ -1876,6 +1881,7 @@ namespace ServiceStack
             return c.Patch(request);
         }
 
+        [Obsolete("Use: using (client.CustomMethod<HttpWebResponse>(httpVerb, request) { }")]
         public static HttpWebResponse CustomMethod(this IRestClient client, string httpVerb, object requestDto)
         {
             var c = client as ServiceClientBase;
@@ -1884,6 +1890,7 @@ namespace ServiceStack
             return c.CustomMethod(httpVerb, requestDto);
         }
 
+        [Obsolete("Use: using (client.Head<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Head(this IRestClient client, IReturn requestDto)
         {
             var c = client as ServiceClientBase;
@@ -1892,6 +1899,7 @@ namespace ServiceStack
             return c.Head(requestDto);
         }
 
+        [Obsolete("Use: using (client.Head<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Head(this IRestClient client, object requestDto)
         {
             var c = client as ServiceClientBase;
@@ -1900,6 +1908,7 @@ namespace ServiceStack
             return c.Head(requestDto);
         }
 
+        [Obsolete("Use: using (client.Head<HttpWebResponse>(relativeOrAbsoluteUrl) { }")]
         public static HttpWebResponse Head(this IRestClient client, string relativeOrAbsoluteUrl)
         {
             var c = client as ServiceClientBase;
