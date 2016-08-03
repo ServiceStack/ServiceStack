@@ -114,6 +114,11 @@ namespace ServiceStack.Auth
         }
 
         /// <summary>
+        /// Allow verification using multiple Auth keys
+        /// </summary>
+        public List<byte[]> FallbackAuthKeys { get; set; }
+
+        /// <summary>
         /// The RSA Private Key used to Sign the JWT Token when RSA is used
         /// </summary>
         public RSAParameters? privateKey;
@@ -150,6 +155,11 @@ namespace ServiceStack.Auth
             get { return PublicKey != null ? PublicKey.Value.FromPublicRSAParameters() : null; }
             set { PublicKey = value != null ? value.ToPublicRSAParameters() : (RSAParameters?)null; }
         }
+
+        /// <summary>
+        /// Allow verification using multiple public keys
+        /// </summary>
+        public List<RSAParameters> FallbackPublicKeys { get; set; }
 
         /// <summary>
         /// How long should JWT Tokens be valid for. (default 14 days)
@@ -196,6 +206,8 @@ namespace ServiceStack.Auth
             RequireHashAlgorithm = true;
             Issuer = "ssjwt";
             ExpireTokensIn = TimeSpan.FromDays(14);
+            FallbackAuthKeys = new List<byte[]>();
+            FallbackPublicKeys = new List<RSAParameters>();
 
             if (appSettings != null)
             {
@@ -228,6 +240,21 @@ namespace ServiceStack.Auth
                 var intStr = appSettings.GetString("jwt.ExpireTokensInDays");
                 if (intStr != null)
                     ExpireTokensInDays = int.Parse(intStr);
+
+                var i = 1;
+                string base64Key;
+                while ((base64Key = appSettings.GetString("jwt.PublicKeyXml." + i++)) != null)
+                {
+                    var publicKey = base64Key.ToPublicRSAParameters();
+                    FallbackPublicKeys.Add(publicKey);
+                }
+
+                i = 1;
+                while ((base64Key = appSettings.GetString("jwt.AuthKeyBase64." + i++)) != null)
+                {
+                    var authKey = Convert.FromBase64String(base64Key);
+                    FallbackAuthKeys.Add(authKey);
+                }
             }
         }
 
@@ -407,22 +434,31 @@ namespace ServiceStack.Auth
                 if (AuthKey == null)
                     throw new NotSupportedException("AuthKey required to use: " + HashAlgorithm);
 
-                var calcSignatureBytes = HmacAlgorithms[algorithm](AuthKey, bytesToSign);
-
-                if (!calcSignatureBytes.EquivalentTo(sentSignatureBytes))
-                    return false;
+                var authKeys = new List<byte[]> { AuthKey };
+                authKeys.AddRange(FallbackAuthKeys);
+                foreach (var authKey in authKeys)
+                {
+                    var calcSignatureBytes = HmacAlgorithms[algorithm](authKey, bytesToSign);
+                    if (calcSignatureBytes.EquivalentTo(sentSignatureBytes))
+                        return true;
+                }
             }
             else
             {
                 if (PublicKey == null)
-                    throw new NotSupportedException("PrivateKey required to use: " + HashAlgorithm);
+                    throw new NotSupportedException("PublicKey required to use: " + HashAlgorithm);
 
-                var verified = RsaVerifyAlgorithms[algorithm](PublicKey.Value, bytesToSign, sentSignatureBytes);
-                if (!verified)
-                    return false;
+                var publicKeys = new List<RSAParameters> { PublicKey.Value };
+                publicKeys.AddRange(FallbackPublicKeys);
+                foreach (var publicKey in publicKeys)
+                {
+                    var verified = RsaVerifyAlgorithms[algorithm](publicKey, bytesToSign, sentSignatureBytes);
+                    if (verified)
+                        return true;
+                }
             }
 
-            return true;
+            return false;
         }
 
         static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)

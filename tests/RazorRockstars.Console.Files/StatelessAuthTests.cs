@@ -240,6 +240,81 @@ namespace RazorRockstars.Console.Files
         }
     }
 
+    public class FallbackAuthKeyTests
+    {
+        public const string ListeningOn = "http://localhost:2337/";
+
+        protected readonly ServiceStackHost appHost;
+
+        private readonly byte[] authKey;
+        private readonly byte[] fallbackAuthKey;
+
+        class JwtAuthProviderReaderAppHost : AppHostHttpListenerBase
+        {
+            public JwtAuthProviderReaderAppHost() : base(typeof(FallbackAuthKeyTests).Name, typeof(AppHost).Assembly) { }
+
+            public override void Configure(Container container)
+            {
+                Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                    new IAuthProvider[] {
+                        new JwtAuthProviderReader(AppSettings),
+                    }));
+            }
+        }
+
+        public FallbackAuthKeyTests()
+        {
+            authKey = AesUtils.CreateKey();
+            fallbackAuthKey = AesUtils.CreateKey();
+
+            appHost = new JwtAuthProviderReaderAppHost
+            {
+                AppSettings = new DictionarySettings(new Dictionary<string, string> {
+                    { "jwt.AuthKeyBase64", Convert.ToBase64String(authKey) },
+                    { "jwt.AuthKeyBase64.1", Convert.ToBase64String(fallbackAuthKey) },
+                    { "jwt.RequireSecureConnection", "False" },
+                })
+            }
+            .Init()
+            .Start("http://*:2337/");
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
+        [Test]
+        public void Can_authenticate_with_HM256_token_created_from_fallback_AuthKey()
+        {
+            var jwtProvider = (JwtAuthProviderReader)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+
+            var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+            var payload = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com"
+            }, "external-jwt", TimeSpan.FromDays(14));
+
+            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
+                data => JwtAuthProviderReader.HmacAlgorithms["HS256"](fallbackAuthKey, data));
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = token
+            };
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+    }
+
     public class RsaJwtStatelessAuthTests : StatelessAuthTests
     {
         protected override ServiceStackHost CreateAppHost()
@@ -310,6 +385,7 @@ namespace RazorRockstars.Console.Files
         protected readonly ServiceStackHost appHost;
 
         private readonly RSAParameters privateKey;
+        private readonly RSAParameters fallbackPrivakeKey;
 
         class JwtAuthProviderReaderAppHost : AppHostHttpListenerBase
         {
@@ -327,12 +403,14 @@ namespace RazorRockstars.Console.Files
         public JwtAuthProviderReaderTests()
         {
             privateKey = RsaUtils.CreatePrivateKeyParams(RsaKeyLengths.Bit2048);
+            fallbackPrivakeKey = RsaUtils.CreatePrivateKeyParams(RsaKeyLengths.Bit2048);
 
             appHost = new JwtAuthProviderReaderAppHost
             {
                 AppSettings = new DictionarySettings(new Dictionary<string, string> {
                     { "jwt.HashAlgorithm", "RS256" },
                     { "jwt.PublicKeyXml", privateKey.ToPublicKeyXml() },
+                    { "jwt.PublicKeyXml.1", fallbackPrivakeKey.ToPublicKeyXml() },
                     { "jwt.RequireSecureConnection", "False" },
                 })
             }
@@ -361,6 +439,35 @@ namespace RazorRockstars.Console.Files
 
             var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
                 data => RsaUtils.Authenticate(data, privateKey, "SHA256", RsaKeyLengths.Bit2048));
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = token
+            };
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
+        public void Can_authenticate_with_RSA_token_created_from_fallback_PrivateKey()
+        {
+            var jwtProvider = (JwtAuthProviderReader)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+
+            var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+            var payload = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com"
+            }, "external-jwt", TimeSpan.FromDays(14));
+
+            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
+                data => RsaUtils.Authenticate(data, fallbackPrivakeKey, "SHA256", RsaKeyLengths.Bit2048));
 
             var client = new JsonServiceClient(ListeningOn)
             {

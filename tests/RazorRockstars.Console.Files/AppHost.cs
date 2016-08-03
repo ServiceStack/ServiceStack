@@ -28,6 +28,8 @@ namespace RazorRockstars.Console.Files
         public RSAParameters? JwtRsaPrivateKey;
         public RSAParameters? JwtRsaPublicKey;
         public bool JwtEncryptPayload = false;
+        public List<byte[]> FallbackAuthKeys = new List<byte[]>();
+        public List<RSAParameters> FallbackPublicKeys = new List<RSAParameters>();
         public Func<IRequest, IAuthRepository> GetAuthRepositoryFn;
 
         public Action<Container> Use;
@@ -86,6 +88,8 @@ namespace RazorRockstars.Console.Files
                             PublicKey = JwtRsaPublicKey,
                             PrivateKey = JwtRsaPrivateKey,
                             EncryptPayload = JwtEncryptPayload,
+                            FallbackAuthKeys = FallbackAuthKeys,
+                            FallbackPublicKeys = FallbackPublicKeys,
                         },
                     })
                 {
