@@ -1897,6 +1897,27 @@
             Clear InsertFields list ( all fields will be inserted)
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.IsBooleanComparison(System.Linq.Expressions.Expression)">
+            <summary>
+            Determines whether the expression is the parameter inside MemberExpression which should be compared with TrueExpression.
+            </summary>
+            <returns>Returns true if the specified expression is the parameter inside MemberExpression which should be compared with TrueExpression;
+            otherwise, false.</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.IsParameterAccess(System.Linq.Expressions.Expression)">
+            <summary>
+            Determines whether the expression is the parameter.
+            </summary>
+            <returns>Returns true if the specified expression is parameter;
+            otherwise, false.</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.IsParameterOrConvertAccess(System.Linq.Expressions.Expression)">
+            <summary>
+            Determines whether the expression is a Parameter or Convert Expression.
+            </summary>
+            <returns>Returns true if the specified expression is parameter or convert;
+            otherwise, false.</returns>
+        </member>
         <member name="T:ServiceStack.OrmLite.PredicateBuilder">
             <summary>
             Enables the efficient, dynamic composition of query predicates.
@@ -2899,6 +2920,16 @@
             <para>db.SaveReferences(customer, customer.Orders)</para> 
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.ToUpdateStatement``1(System.Data.IDbConnection,``0,System.Collections.Generic.ICollection{System.String})">
+            <summary>
+            Generates inline UPDATE SQL Statement
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.ToInsertStatement``1(System.Data.IDbConnection,``0,System.Collections.Generic.ICollection{System.String})">
+            <summary>
+            Generates inline INSERT SQL Statement
+            </summary>
+        </member>
         <member name="T:ServiceStack.OrmLite.OrmLiteConnection">
             <summary>
             Wrapper IDbConnection class to allow for connection sharing, mocking, etc.
@@ -2958,6 +2989,26 @@
             Nice SqlBuilder class by @samsaffron from Dapper.Contrib:
             http://samsaffron.com/archive/2011/09/05/Digging+ourselves+out+of+the+mess+Linq-2-SQL+created
             Modified to work in .NET 3.5
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.SelectItem.Alias">
+            <summary>
+            Unquoted alias for the column or expression being selected.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.SelectItemExpression.SelectExpression">
+            <summary>
+            The SQL expression being selected, including any necessary quoting.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.SelectItemColumn.ColumnName">
+            <summary>
+            Unquoted column name being selected.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.SelectItemColumn.QuotedTableAlias">
+            <summary>
+            Table name or alias used to prefix the column name, if any. Already quoted.
             </summary>
         </member>
     </members>
