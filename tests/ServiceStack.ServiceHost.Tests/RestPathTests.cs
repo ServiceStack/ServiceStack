@@ -17,6 +17,16 @@ namespace ServiceStack.ServiceHost.Tests
         }
 
         [Test]
+        public void Can_deserialize_SimpleType_wildcard_in_middle_of_path_mixed_case()
+        {
+            var restPath = new RestPath(typeof(SimpleType), "/simple/{Name*}/MixedCase");
+            var request = restPath.CreateRequest("/simple/Hello/World/MixedCase") as SimpleType;
+
+            Assert.That(request, Is.Not.Null);
+            Assert.That(request.Name, Is.EqualTo("Hello/World"));
+        }
+
+        [Test]
         public void Can_deserialize_SimpleType_path()
         {
             var restPath = new RestPath(typeof(SimpleType), "/simple/{Name}");

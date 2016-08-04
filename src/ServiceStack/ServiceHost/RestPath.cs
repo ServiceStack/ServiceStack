@@ -421,11 +421,11 @@ namespace ServiceStack.ServiceHost
                         // hits a match for the next element in the definition (which must be a literal)
                         // It may consume 0 or more path parts
                         var stopLiteral = i == this.TotalComponentsCount - 1 ? null : this.literalsToMatch[i + 1];
-                        if (requestComponents[pathIx] != stopLiteral)
+                        if (string.Compare(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase) != 0)
                         {
                             var sb = new StringBuilder(value);
                             pathIx++;
-                            while (requestComponents[pathIx] != stopLiteral)
+                            while (string.Compare(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase) != 0)
                             {
                                 sb.Append(PathSeperatorChar + requestComponents[pathIx++]);
                             }
