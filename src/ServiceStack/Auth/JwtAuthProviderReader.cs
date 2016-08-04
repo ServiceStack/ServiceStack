@@ -213,6 +213,7 @@ namespace ServiceStack.Auth
             if (appSettings != null)
             {
                 RequireSecureConnection = appSettings.Get("jwt.RequireSecureConnection", RequireSecureConnection);
+                RequireHashAlgorithm = appSettings.Get("jwt.RequireHashAlgorithm", RequireHashAlgorithm);
                 EncryptPayload = appSettings.Get("jwt.EncryptPayload", EncryptPayload);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
@@ -223,11 +224,13 @@ namespace ServiceStack.Auth
                 if (!string.IsNullOrEmpty(hashAlg))
                     HashAlgorithm = hashAlg;
 
-                RequireHashAlgorithm = appSettings.Get("jwt.RequireHashAlgorithm", RequireSecureConnection);
+                var privateKeyXml = appSettings.GetString("jwt.PrivateKeyXml");
+                if (privateKeyXml != null)
+                    PrivateKeyXml = privateKeyXml;
 
-                PrivateKeyXml = appSettings.GetString("jwt.PrivateKeyXml");
-
-                PublicKeyXml = appSettings.GetString("jwt.PublicKeyXml");
+                var publicKeyXml = appSettings.GetString("jwt.PublicKeyXml");
+                if (publicKeyXml != null)
+                    PublicKeyXml = publicKeyXml;
 
                 var base64 = appSettings.GetString("jwt.AuthKeyBase64");
                 if (base64 != null)
