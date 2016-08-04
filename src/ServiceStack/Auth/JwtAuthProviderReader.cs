@@ -202,6 +202,7 @@ namespace ServiceStack.Auth
         public virtual void Init(IAppSettings appSettings = null)
         {
             RequireSecureConnection = true;
+            EncryptPayload = false;
             HashAlgorithm = "HS256";
             RequireHashAlgorithm = true;
             Issuer = "ssjwt";
@@ -212,6 +213,7 @@ namespace ServiceStack.Auth
             if (appSettings != null)
             {
                 RequireSecureConnection = appSettings.Get("jwt.RequireSecureConnection", RequireSecureConnection);
+                EncryptPayload = appSettings.Get("jwt.EncryptPayload", EncryptPayload);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
                 Audience = appSettings.GetString("jwt.Audience");
