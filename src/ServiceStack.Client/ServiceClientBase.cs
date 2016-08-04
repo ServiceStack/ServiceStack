@@ -505,10 +505,7 @@ namespace ServiceStack
 
         internal void AsyncSerializeToStream(IRequest requestContext, object request, Stream stream)
         {
-            using (__requestAccess())
-            {
-                SerializeRequestToStream(requestContext, request, stream);
-            }
+            SerializeRequestToStream(requestContext, request, stream);
         }
 
         public abstract void SerializeToStream(IRequest requestContext, object request, Stream stream);
@@ -519,15 +516,11 @@ namespace ServiceStack
 
         internal object AsyncDeserializeFromStream(Type type, Stream fromStream)
         {
-            using (__requestAccess())
-            {
-                return StreamDeserializer(type, fromStream);
-            }
+            return StreamDeserializer(type, fromStream);
         }
 
         protected T Deserialize<T>(string text)
         {
-            using (__requestAccess())
             using (var ms = MemoryStreamFactory.GetStream(text.ToUtf8Bytes()))
             {
                 return DeserializeFromStream<T>(ms);
@@ -764,15 +757,12 @@ namespace ServiceStack
                     if (string.IsNullOrEmpty(errorResponse.ContentType) || errorResponse.ContentType.MatchesContentType(ContentType))
                     {
                         var bytes = errorResponse.GetResponseStream().ReadFully();
-                        using (__requestAccess())
-                        {
-                            var stream = MemoryStreamFactory.GetStream(bytes);
-                            serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                            serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
+                        var stream = MemoryStreamFactory.GetStream(bytes);
+                        serviceEx.ResponseBody = bytes.FromUtf8Bytes();
+                        serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
 
-                            if (stream.CanRead)
-                                stream.Dispose(); //alt ms throws when you dispose twice
-                        }
+                        if (stream.CanRead)
+                            stream.Dispose(); //alt ms throws when you dispose twice
                     }
                     else
                     {
@@ -805,7 +795,6 @@ namespace ServiceStack
         {
             return PrepareWebRequest(httpMethod, requestUri, request, client =>
             {
-                using (__requestAccess())
                 using (var requestStream = PclExport.Instance.GetRequestStream(client))
                 {
                     SerializeRequestToStream(null, request, requestStream);
@@ -916,11 +905,6 @@ namespace ServiceStack
 
             if (GlobalRequestFilter != null)
                 GlobalRequestFilter(client);
-        }
-
-        protected static IDisposable __requestAccess()
-        {
-            return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
         }
 
         private byte[] DownloadBytes(string httpMethod, string requestUri, object request)
@@ -1767,11 +1751,8 @@ namespace ServiceStack
                     return (TResponse)(object)responseStream.ReadFully();
                 }
 
-                using (__requestAccess())
-                {
-                    var response = DeserializeFromStream<TResponse>(responseStream);
-                    return response;
-                }
+                var response = DeserializeFromStream<TResponse>(responseStream);
+                return response;
             }
         }
 

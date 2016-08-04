@@ -520,33 +520,6 @@ namespace ServiceStack
             return key;
         }
 
-        public override void VerifyInAssembly(Type accessType, ICollection<string> assemblyNames)
-        {
-            //might get merged/mangled on alt platforms
-            if (assemblyNames.Contains(accessType.Assembly.ManifestModule.Name))
-                return;
-
-            try
-            {
-                if (typeof(PclExport).Assembly.ManifestModule.Name != "ServiceStack.Text.dll")
-                    return; //Smart/Packaged Assembly
-
-                if (assemblyNames.Contains(accessType.Assembly.Location.SplitOnLast(Path.DirectorySeparatorChar).Last()))
-                    return;
-            }
-            catch (Exception)
-            {
-                return; //dynamic assembly
-            }
-
-            var errorDetails = " Type: '{0}', Assembly: '{1}', '{2}'".Fmt(
-                accessType.Name,
-                accessType.Assembly.ManifestModule.Name,
-                accessType.Assembly.Location);
-
-            throw new LicenseException(LicenseUtils.ErrorMessages.UnauthorizedAccessRequest + errorDetails);
-        }
-
         public override void BeginThreadAffinity()
         {
             Thread.BeginThreadAffinity();
@@ -732,10 +705,6 @@ namespace ServiceStack
         {
             PlatformName = "IOS";
             SupportsEmit = SupportsExpression = false;
-        }
-
-        public override void VerifyInAssembly(Type accessType, ICollection<string> assemblyNames)
-        {
         }
 
         public new static void Configure()
@@ -976,10 +945,6 @@ namespace ServiceStack
         public AndroidPclExport()
         {
             PlatformName = "Android";
-        }
-
-        public override void VerifyInAssembly(Type accessType, ICollection<string> assemblyNames)
-        {
         }
 
         public new static void Configure()

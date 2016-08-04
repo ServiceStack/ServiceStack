@@ -30,7 +30,7 @@ namespace ServiceStack
 
         public override string ContentType
         {
-            get { return String.Format("application/{0}", Format); }
+            get { return string.Format("application/{0}", Format); }
         }
 
         public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
@@ -50,26 +50,19 @@ namespace ServiceStack
 
         internal static JsonObject ParseObject(string json)
         {
-            using (__requestAccess())
-            {
-                return JsonObject.Parse(json);
-            }
+            return JsonObject.Parse(json);
         }
 
+        [Obsolete("No longer required, use json.FromJson<T>()")]
         public static T FromJson<T>(string json)
         {
-            using (__requestAccess())
-            {
-                return json.FromJson<T>();
-            }
+            return json.FromJson<T>();
         }
 
+        [Obsolete("No longer required, use obj.ToJson()")]
         public static string ToJson<T>(T o)
         {
-            using (__requestAccess())
-            {
-                return o.ToJson();
-            }
+            return o.ToJson();
         }
     }
 }
