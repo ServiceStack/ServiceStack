@@ -13,6 +13,7 @@ namespace ServiceStack
     public class InProcessServiceGateway : IServiceGateway, IServiceGatewayAsync
     {
         private readonly IRequest req;
+        public IRequest Request { get { return req; } }
 
         public InProcessServiceGateway(IRequest req)
         {

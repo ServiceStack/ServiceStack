@@ -45,7 +45,7 @@ namespace ServiceStack
                 }
             }
 
-            var rsMap = JsvServiceClient.FromJsv<Dictionary<string, string>>(responseStatus);
+            var rsMap = responseStatus.FromJsv<Dictionary<string, string>>();
             if (rsMap == null) return;
 
             rsMap = new Dictionary<string, string>(rsMap, PclExport.Instance.InvariantComparerIgnoreCase);
@@ -61,8 +61,8 @@ namespace ServiceStack
             {
                 if (ResponseDto == null)
                     return false;
-                var jsv = JsvServiceClient.ToJsv(ResponseDto);
-                var map = JsvServiceClient.FromJsv<Dictionary<string, string>>(jsv);
+                var jsv = ResponseDto.ToJsv();
+                var map = jsv.FromJsv<Dictionary<string, string>>();
                 map = new Dictionary<string, string>(map, PclExport.Instance.InvariantComparerIgnoreCase);
 
                 return map.TryGetValue("ResponseStatus", out responseStatus);
@@ -79,7 +79,7 @@ namespace ServiceStack
             try
             {
                 if (string.IsNullOrEmpty(ResponseBody)) return false;
-                var map = JsvServiceClient.FromJsv<Dictionary<string, string>>(ResponseBody);
+                var map = ResponseBody.FromJsv<Dictionary<string, string>>();
                 map = new Dictionary<string, string>(map, PclExport.Instance.InvariantComparerIgnoreCase);
                 return map.TryGetValue("ResponseStatus", out responseStatus);
             }

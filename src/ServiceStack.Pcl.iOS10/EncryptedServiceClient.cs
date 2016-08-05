@@ -69,7 +69,7 @@ namespace ServiceStack
                 var decryptedBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
 
                 var responseJson = decryptedBytes.FromUtf8Bytes();
-                var response = JsonServiceClient.FromJson<TResponse>(responseJson);
+                var response = responseJson.FromJson<TResponse>();
 
                 return response;
             }
@@ -103,7 +103,7 @@ namespace ServiceStack
                 var decryptedBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
 
                 var responseJson = decryptedBytes.FromUtf8Bytes();
-                var response = JsonServiceClient.FromJson<List<TResponse>>(responseJson);
+                var response = responseJson.FromJson<List<TResponse>>();
 
                 return response;
             }
@@ -159,7 +159,7 @@ namespace ServiceStack
             var authRsaEncCryptAuthKeys = HmacUtils.Authenticate(rsaEncCryptAuthKeys, authKey, iv);
 
             var timestamp = DateTime.UtcNow.ToUnixTime();
-            var requestBody = timestamp + " " + verb + " " + operationName + " " + JsonServiceClient.ToJson(request);
+            var requestBody = timestamp + " " + verb + " " + operationName + " " + request.ToJson();
 
             var encryptedBytes = AesUtils.Encrypt(requestBody.ToUtf8Bytes(), cryptKey, iv);
             var authEncryptedBytes = HmacUtils.Authenticate(encryptedBytes, authKey, iv);
@@ -180,7 +180,7 @@ namespace ServiceStack
             if (ex.StatusCode != (int) HttpStatusCode.BadRequest)
             {
                 if (ex.ResponseStatus == null)
-                    ex.ResponseDto = JsonServiceClient.FromJson<ErrorResponse>(ex.ResponseBody);
+                    ex.ResponseDto = ex.ResponseBody.FromJson<ErrorResponse>();
 
                 return ex;
             }
@@ -195,7 +195,7 @@ namespace ServiceStack
 
                 var responseBytes = HmacUtils.DecryptAuthenticated(authEncryptedBytes, cryptKey);
                 var responseJson = responseBytes.FromUtf8Bytes();
-                var errorResponse = JsonServiceClient.FromJson<ErrorResponse>(responseJson);
+                var errorResponse = responseJson.FromJson<ErrorResponse>();
 
                 ex.ResponseDto = errorResponse;
             }

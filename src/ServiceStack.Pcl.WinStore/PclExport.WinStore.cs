@@ -129,10 +129,6 @@ namespace ServiceStack
         //    return TimeZoneInfo.ConvertTimeToUtc(dateTime);
         //}
 
-        public override void VerifyInAssembly(Type accessType, ICollection<string> assemblyNames)
-        {
-        }
-
         public static void InitForAot()
         {
         }

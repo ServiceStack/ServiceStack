@@ -230,6 +230,7 @@
     <Compile Include="RestHandlerTests.cs" />
     <Compile Include="RouteInferenceTests.cs" />
     <Compile Include="RuntimeAttributeTests.cs" />
+    <Compile Include="ServerEventIntegrationTests.cs" />
     <Compile Include="ServerEventTests.cs" />
     <Compile Include="ServiceClientResolverTests.cs" />
     <Compile Include="ServiceClientsBuiltInResponseTests.cs" />

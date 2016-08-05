@@ -8,10 +8,13 @@ namespace ServiceStack
 {
     public abstract class ServiceGatewayFactoryBase : IServiceGatewayFactory, IServiceGateway, IServiceGatewayAsync
     {
+        public IRequest Request { get; private set; }
+
         protected InProcessServiceGateway localGateway;
 
         public virtual IServiceGateway GetServiceGateway(IRequest request)
         {
+            this.Request = request;
             localGateway = new InProcessServiceGateway(request);
             return this;
         }
