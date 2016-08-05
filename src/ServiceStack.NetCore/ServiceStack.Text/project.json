@@ -34,5 +34,5 @@
 	"bin" : { "assembly":"../../../lib/netcore/ServiceStack.Text.dll", "pdb" : "../../../lib/netcore/ServiceStack.Text.pdb" }
      }
   },
-  "version": "4.0.61"
+  "version": "1.0.0"
 }

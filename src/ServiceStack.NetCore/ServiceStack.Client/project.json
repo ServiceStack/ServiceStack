@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "NETStandard.Library": "1.6.0",
-    "ServiceStack.Interfaces" : "4.0.*",
-    "ServiceStack.Text" : "4.0.*"	
+    "ServiceStack.Interfaces" : "1.0.*",
+    "ServiceStack.Text" : "1.0.*"	
   },
   "compile": ["../../ServiceStack.Client/**/*.cs"],
   "frameworks": {
@@ -40,5 +40,5 @@
      }
    
   },
-  "version": "4.0.61"
+  "version": "1.0.0"
 }
