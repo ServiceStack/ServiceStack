@@ -49,7 +49,7 @@ namespace ServiceStack
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
-        public Action<TypeBuilder, MethodBuilder, Type> GenerateServiceFilter { get; set; }
+        public Action<Type, TypeBuilder, MethodBuilder, ILGenerator> GenerateServiceFilter { get; set; }
 
         public const string GreaterThanOrEqualFormat = "{Field} >= {Value}";
         public const string GreaterThanFormat =        "{Field} > {Value}";
@@ -223,10 +223,10 @@ namespace ServiceStack
                     returnType: typeof(object),
                     parameterTypes: new[] { requestType });
 
-                if (GenerateServiceFilter != null)
-                    GenerateServiceFilter(typeBuilder, method, requestType);
-
                 var il = method.GetILGenerator();
+                
+                if (GenerateServiceFilter != null)
+                    GenerateServiceFilter(requestType, typeBuilder, method, il);
 
                 var genericArgs = genericDef.GetGenericArguments();
                 var mi = AutoQueryServiceBaseType.GetMethods()
