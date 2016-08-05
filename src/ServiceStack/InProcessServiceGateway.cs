@@ -51,9 +51,9 @@ namespace ServiceStack
 
         private TResponse ExecSync<TResponse>(object request)
         {
-            if (HostContext.AppHost.GatewayRequestFilter != null)
+            foreach (var filter in HostContext.AppHost.GatewayRequestFilters)
             {
-                HostContext.AppHost.GatewayRequestFilter(req, request);
+                filter(req, request);
                 if (req.Response.IsClosed)
                     return default(TResponse);
             }
@@ -89,9 +89,9 @@ namespace ServiceStack
 
             var responseDto = response.GetResponseDto();
 
-            if (HostContext.AppHost.GatewayResponseFilter != null)
+            foreach (var filter in HostContext.AppHost.GatewayResponseFilters)
             {
-                HostContext.AppHost.GatewayResponseFilter(req, responseDto);
+                filter(req, responseDto);
                 if (req.Response.IsClosed)
                     return default(TResponse);
             }
