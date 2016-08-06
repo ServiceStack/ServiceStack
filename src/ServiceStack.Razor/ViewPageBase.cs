@@ -458,6 +458,12 @@ namespace ServiceStack.Razor
             get { return messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request)); }
         }
 
+        private IAuthRepository authRepository;
+        public IAuthRepository AuthRepository
+        {
+            get { return authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request)); }
+        }
+
         private ISessionFactory sessionFactory;
         private ISession session;
         public virtual ISession SessionBag
