@@ -246,8 +246,16 @@ namespace ServiceStack.Auth
                 if (intStr != null)
                     ExpireTokensInDays = int.Parse(intStr);
 
-                var i = 1;
                 string base64Key;
+
+                var i = 1;
+                while ((base64Key = appSettings.GetString("jwt.PrivateKeyXml." + i++)) != null)
+                {
+                    var publicKey = base64Key.ToPublicRSAParameters();
+                    FallbackPublicKeys.Add(publicKey);
+                }
+
+                i = 1;
                 while ((base64Key = appSettings.GetString("jwt.PublicKeyXml." + i++)) != null)
                 {
                     var publicKey = base64Key.ToPublicRSAParameters();

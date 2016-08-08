@@ -184,9 +184,7 @@
     <Compile Include="Services\TemplateService.cs" />
     <Compile Include="Shared\IocService.cs" />
     <Compile Include="Tests\AsyncProgressTests.cs" />
-    <Compile Include="PageBase.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
+    <Compile Include="PageBase.cs" />
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
