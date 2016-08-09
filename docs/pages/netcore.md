@@ -1,9 +1,9 @@
-# How to run ServiceStack.Client on .NET Core
+# Using ServiceStack.Client on .NET Core
 
 This guide shows how to create and execute .NET Core console application which
 uses ServiceStack.Client 
 
-## Install .NET Core                                                                                                                                                           
+### Install .NET Core                                                                                                                                                           
 
 At the first step you need to install [Visual Studio 2015 update 3](https://go.microsoft.com/fwlink/?LinkId=691129)  and [.NET Core 1.0.0 - VS 2015 Tooling Preview](https://go.microsoft.com/fwlink/?LinkId=817245).
 Also you need to install [ServiceStack Templates for Visual Studio](https://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7).
@@ -11,9 +11,9 @@ Also you need to install [ServiceStack Templates for Visual Studio](https://visu
 To get more details about Visual Studio 2015 update 3 and .NET Core installation 
 you can visit [.NET Core](https://www.microsoft.com/net/core#windows) site
 
-## Create .NET Core Application
+### Create .NET Core Application
 
-In Visual Studio click File->New->Project and select .NET Core/Console Application (.NET Core) 
+In Visual Studio click `File-> New-> Project` and select **.NET Core/Console Application (.NET Core)** 
 from VS templates.
 
 ![Create .NET Core Project](images/1-CreateProject.png)
@@ -22,11 +22,11 @@ You will get following structure in Solution Explorer.
 
 ![Solution Explorer](images/2-SolutionExplorer.png)
 
-Right click on the project and select "Add ServiceStack Reference"
+Right click on the project and select **Add ServiceStack Reference**
 
 ![Add Reference](images/3-AddReference.png)
 
-Then type in address field `http://techstacks.io` and `TechStacks` in name field and click "OK".
+Then type in address field `http://techstacks.io` and `TechStacks` in name field and click **OK**.
 
 ![Add Reference](images/4-AddReference2.png)
 
@@ -36,43 +36,44 @@ You should get following project structure
 
 Please note that if you see yellow exclamation mark near ServiceStack references, 
 this means you use old ServiceStackVS template and you should update it. Or just open `project.json`
-and change `"ServiceStack.Text" : "4.0.60"` to `"ServiceStack.Text.Core" : "1.0.1"`
-and `"ServiceStack.Client" : "4.0.60"` to `"ServiceStack.Client.Core" : "1.0.1"`
+and change `"ServiceStack.Text" : "4.0.62"` to `"ServiceStack.Text.Core" : "1.0.1"`
+and `"ServiceStack.Client" : "4.0.62"` to `"ServiceStack.Client.Core" : "1.0.1"`
 
 ![project.json](images/6-projectjson.png)
 
 Then open file `Program.cs` and write the code
 
-    using System;
-    using ServiceStack;
-    using TechStacks.ServiceModel;
+```csharp
+using System;
+using ServiceStack;
+using ServiceStack.Text;
+using TechStacks.ServiceModel;
 
-    namespace ConsoleApplication
+namespace ConsoleApplication
+{
+    public class Program
     {
-        public class Program
+        public static void Main(string[] args)
         {
-            public static void Main(string[] args)
-            {
-                using (var client = new JsonServiceClient("http://techstacks.io/"))
-                {
-                    var result = client.Get(new GetAllTechnologies());
+            var client = new JsonServiceClient("http://techstacks.io/");
+            var response = client.Get(new GetAllTechnologies());
 
-                    //show the first technology from returned technologies
-                    Console.WriteLine(result.Results[0].ToJson());
-                }
-            }
+            //Print contents of the first technology to the Console
+            response.Results[0].PrintDump();
         }
     }
+}
+```
 
-Then hit "run" button (F5). You should get following output in JSON form
+Then hit "run" button **(F5)**. You should get following JSON output:
 
 ![project.json](images/7-result.png)
 
-# Run ServiceStack.Client on Linux
+## Run ServiceStack.Client on Linux
 
-## Install .NET Core
+### Install .NET Core
 
-Supposed that you have ubuntu 16.04 installed (to see installation instructions for other OS you can 
+Suppose that you have ubuntu 16.04 installed (to see installation instructions for other OS you can 
 visit [.NET Core site](https://www.microsoft.com/net/core)). Run commands in the console:
 
     sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
@@ -80,7 +81,7 @@ visit [.NET Core site](https://www.microsoft.com/net/core)). Run commands in the
     sudo apt-get update
     sudo apt-get install curl dotnet-dev-1.0.0-preview2-003121
 
-## Create Project
+### Create Project
 
     dotnet new
 
@@ -105,33 +106,33 @@ type `Ctrl+X` to exit. Answer 'yes' to save changes in the file.
 
 then open and edit `Program.cs` file. Type `nano Program.cs` and copy the code:
 
-    using System;
-    using ServiceStack;
-    using TechStacks.ServiceModel;
+```csharp
+using System;
+using ServiceStack;
+using ServiceStack.Text;
+using TechStacks.ServiceModel;
 
-    namespace ConsoleApplication
+namespace ConsoleApplication
+{
+    public class Program
     {
-        public class Program
+        public static void Main(string[] args)
         {
-            public static void Main(string[] args)
-            {
-                using (var client = new JsonServiceClient("http://techstacks.io/"))
-                {
-                    var result = client.Get(new GetAllTechnologies());
+            var client = new JsonServiceClient("http://techstacks.io/");
+            var response = client.Get(new GetAllTechnologies());
 
-                    //show the first technology from returned technologies
-                    Console.WriteLine(result.Results[0].ToJson());
-                }
-            }
+            //Print contents of the first technology to the Console
+            response.Results[0].PrintDump();
         }
     }
+}
+```
 
-Finally, download Techstacks CS types.
+Finally, download Techstacks CS types:
 
     curl -L http://techstacks.io/types/csharp -o TechStacks.dto.cs
 
-
-## Run the Project
+### Run the Project
 
 In console type:
 
@@ -144,11 +145,12 @@ The first command restores packages and second compiles and runs the application
 
 ![dotnet new](images/11-dotnetrun.png)
 
-# Limitations
+## Limitations
 
 `ServiceStack.Client.Core` is implemented to support [.NETStandard 1.1](https://github.com/dotnet/corefx/blob/master/Documentation/architecture/net-platform-standard.md) interface. 
 This means that `ServiceStack.Client.Core` has limited support of the API methods
 which are available in .NET 4.5 version of this library. These clients are not supported:
+
  - ServerEventsClient
  - WcsServiceClient
  - EncryptedServiceClient
