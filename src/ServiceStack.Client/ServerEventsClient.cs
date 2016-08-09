@@ -34,6 +34,7 @@ namespace ServiceStack
         public string UserId { get; set; }
         public string DisplayName { get; set; }
         public string ProfileUrl { get; set; }
+        public bool IsAuthenticated { get; set; }
         public string[] Channels { get; set; }
     }
 
@@ -594,6 +595,7 @@ namespace ServiceStack
             ConnectionInfo.UnRegisterUrl = msg.Get("unRegisterUrl");
             ConnectionInfo.UserId = msg.Get("userId");
             ConnectionInfo.DisplayName = msg.Get("displayName");
+            ConnectionInfo.IsAuthenticated = msg.Get("isAuthenticated") == "true";
             ConnectionInfo.ProfileUrl = msg.Get("profileUrl");
 
             OnConnectReceived();
@@ -804,7 +806,7 @@ namespace ServiceStack
             return dst;
         }
 
-        private static T Populate<T>(this T dst, Dictionary<string, string> msg) where T : ServerEventMessage
+        private static void Populate<T>(this T dst, Dictionary<string, string> msg) where T : ServerEventMessage
         {
             if (dst.Meta == null)
                 dst.Meta = new Dictionary<string, string>();
@@ -819,14 +821,13 @@ namespace ServiceStack
             {
                 cmd.UserId = msg.Get("userId");
                 cmd.DisplayName = msg.Get("displayName");
+                cmd.IsAuthenticated = msg.Get("isAuthenticated") == "true";
                 cmd.ProfileUrl = msg.Get("profileUrl");
 
                 var channels = msg.Get("channels");
                 if (!string.IsNullOrEmpty(channels))
                     cmd.Channels = channels.Split(',');
             }
-
-            return dst;
         }
 
         public static ServerEventsClient RegisterHandlers(this ServerEventsClient client, Dictionary<string, ServerEventCallback> handlers)
