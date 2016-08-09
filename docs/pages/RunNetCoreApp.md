@@ -68,6 +68,82 @@ Then hit "run" button (F5). You should get following output in JSON form
 
 ![project.json](images/7-result.png)
 
+# Run ServiceStack.Client on Linux
+
+## Install .NET Core
+
+Supposed that you have ubuntu 16.04 installed (to see installation instructions for other OS you can 
+visit [.NET Core site](https://www.microsoft.com/net/core)). Run commands in the console:
+
+    sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
+    sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
+    sudo apt-get update
+    sudo apt-get install curl dotnet-dev-1.0.0-preview2-003121
+
+## Create Project
+
+    dotnet new
+
+This command will create `project.json` and `Program.cs` files in current folder.
+
+![dotnet new](images/8-dotnetnew.png)
+
+Open `project.json` for edit:
+
+    nano project.json
+
+and edit empty `dependencies: {}` section add ServiceStack references:
+    
+    dependencies: {
+        "ServiceStack.Text.Core" : "1.0.1",
+        "ServiceStack.Text.Client": "1.0.1"
+    }
+
+![dotnet new](images/9-projectjson.png)
+
+type `Ctrl+X` to exit. Answer 'yes' to save changes in the file.
+
+then open and edit `Program.cs` file. Type `nano Program.cs` and copy the code:
+
+    using System;
+    using ServiceStack;
+    using TechStacks.ServiceModel;
+
+    namespace ConsoleApplication
+    {
+        public class Program
+        {
+            public static void Main(string[] args)
+            {
+                using (var client = new JsonServiceClient("http://techstacks.io/"))
+                {
+                    var result = client.Get(new GetAllTechnologies());
+
+                    //show the first technology from returned technologies
+                    Console.WriteLine(result.Results[0].ToJson());
+                }
+            }
+        }
+    }
+
+Finally, download Techstacks CS types.
+
+    curl -L http://techstacks.io/types/csharp -o TechStacks.dto.cs
+
+
+## Run the Project
+
+In console type:
+
+    dotnet restore
+    dotnet run
+
+The first command restores packages and second compiles and runs the application and outputs json of the first TechStack technology to console.
+
+![dotnet new](images/10-dotnetrestore.png)
+
+![dotnet new](images/11-dotnetrun.png)
+
 # Limitations
 
 `ServiceStack.Client.Core` is implemented to support [.NETStandard 1.1](https://github.com/dotnet/corefx/blob/master/Documentation/architecture/net-platform-standard.md) interface. 
