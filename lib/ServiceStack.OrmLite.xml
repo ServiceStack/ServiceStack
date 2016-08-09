@@ -2596,6 +2596,12 @@
             </summary>
             <returns>number of rows affected</returns>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.ExecuteNonQuery(System.Data.IDbConnection,System.String,System.Action{System.Data.IDbCommand})">
+            <summary>
+            Executes a raw sql non-query using a parameterized query with a dbCmd filter. E.g:
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteReadApi.SqlProcedure``1(System.Data.IDbConnection,System.Object)">
             <summary>
             Returns results from a Stored Procedure, using a parameterized query.
