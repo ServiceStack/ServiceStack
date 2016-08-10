@@ -268,6 +268,9 @@ namespace ServiceStack.Auth
         public void Register(IAppHost appHost, AuthFeature feature)
         {
             var authRepo = HostContext.AppHost.GetAuthRepository();
+            if (authRepo == null)
+                throw new NotSupportedException("ApiKeyAuthProvider requires a registered IAuthRepository");
+
             var apiRepo = authRepo as IManageApiKeys;
             if (apiRepo == null)
                 throw new NotSupportedException(authRepo.GetType().Name + " does not implement IManageApiKeys");

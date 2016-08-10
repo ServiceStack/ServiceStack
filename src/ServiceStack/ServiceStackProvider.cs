@@ -30,6 +30,7 @@ namespace ServiceStack
         IDbConnection Db { get; }
         IRedisClient Redis { get; }
         IMessageProducer MessageProducer { get; }
+        IAuthRepository AuthRepository { get; }
         ISessionFactory SessionFactory { get; }
         ISession SessionBag { get; }
         bool IsAuthenticated { get; }
@@ -210,6 +211,12 @@ namespace ServiceStack
         public virtual IMessageProducer MessageProducer
         {
             get { return messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request)); }
+        }
+
+        private IAuthRepository authRepository;
+        public IAuthRepository AuthRepository
+        {
+            get { return authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request)); }
         }
 
         private ISessionFactory sessionFactory;

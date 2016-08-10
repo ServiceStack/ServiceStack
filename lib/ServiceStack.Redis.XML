@@ -255,7 +255,7 @@
         </member>
         <member name="F:ServiceStack.Redis.RedisConfig.DefaultRetryTimeout">
             <summary>
-            The default RetryTimeout for auto retry of failed operations (default 3000ms)
+            The default RetryTimeout for auto retry of failed operations (default 10,000ms)
             </summary>
         </member>
         <member name="F:ServiceStack.Redis.RedisConfig.DefaultMaxPoolSize">

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}"
 EndProject
@@ -63,6 +63,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signed", "Signed", "{C57AF9
 		..\NuGet.Signed\ServiceStack.Client.Signed\servicestack.client.signed.nuspec = ..\NuGet.Signed\ServiceStack.Client.Signed\servicestack.client.signed.nuspec
 		..\NuGet.Signed\ServiceStack.Common.Signed\servicestack.common.signed.nuspec = ..\NuGet.Signed\ServiceStack.Common.Signed\servicestack.common.signed.nuspec
 		..\NuGet.Signed\ServiceStack.Mvc.Signed\servicestack.mvc.signed.nuspec = ..\NuGet.Signed\ServiceStack.Mvc.Signed\servicestack.mvc.signed.nuspec
+		..\NuGet.Signed\ServiceStack.ProtoBuf.Signed\servicestack.protobuf.signed.nuspec = ..\NuGet.Signed\ServiceStack.ProtoBuf.Signed\servicestack.protobuf.signed.nuspec
 		..\NuGet.Signed\ServiceStack.Razor.Signed\servicestack.razor.signed.nuspec = ..\NuGet.Signed\ServiceStack.Razor.Signed\servicestack.razor.signed.nuspec
 		..\NuGet.Signed\ServiceStack.Server.Signed\servicestack.server.signed.nuspec = ..\NuGet.Signed\ServiceStack.Server.Signed\servicestack.server.signed.nuspec
 		..\NuGet.Signed\ServiceStack.Signed\servicestack.signed.nuspec = ..\NuGet.Signed\ServiceStack.Signed\servicestack.signed.nuspec

@@ -80,6 +80,8 @@ namespace ServiceStack
             GlobalTypedMessageRequestFilters = new Dictionary<Type, ITypedFilter>();
             GlobalMessageResponseFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalTypedMessageResponseFilters = new Dictionary<Type, ITypedFilter>();
+            GatewayRequestFilters = new List<Action<IRequest, object>>();
+            GatewayResponseFilters = new List<Action<IRequest, object>>();
             ViewEngines = new List<IViewEngine>();
             ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
@@ -332,9 +334,9 @@ namespace ServiceStack
 
         public IVirtualPathProvider VirtualFileSources { get; set; }
 
-        public Action<IRequest, object> GatewayRequestFilter { get; set; }
+        public List<Action<IRequest, object>> GatewayRequestFilters { get; set; }
 
-        public Action<IRequest, object> GatewayResponseFilter { get; set; }
+        public List<Action<IRequest, object>> GatewayResponseFilters { get; set; }
 
         [Obsolete("Renamed to VirtualFileSources")]
         public IVirtualPathProvider VirtualPathProvider

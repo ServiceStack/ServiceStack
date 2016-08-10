@@ -193,6 +193,10 @@ namespace ServiceStack.Mvc
         {
             get { return ServiceStackProvider.MessageProducer; }
         }
+        public virtual IAuthRepository AuthRepository
+        {
+            get { return ServiceStackProvider.AuthRepository; }
+        }
         public virtual ISessionFactory SessionFactory
         {
             get { return ServiceStackProvider.SessionFactory; }

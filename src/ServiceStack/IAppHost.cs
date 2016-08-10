@@ -109,6 +109,16 @@ namespace ServiceStack
         void RegisterTypedMessageResponseFilter<T>(Action<IRequest, IResponse, T> filterFn);
 
         /// <summary>
+        /// Add Request Filter for Service Gateway Requests
+        /// </summary>
+        List<Action<IRequest, object>> GatewayRequestFilters { get; }
+
+        /// <summary>
+        /// Add Response Filter for Service Gateway Responses
+        /// </summary>
+        List<Action<IRequest, object>> GatewayResponseFilters { get; }
+
+        /// <summary>
         /// Add alternative HTML View Engines
         /// </summary>
         List<IViewEngine> ViewEngines { get; }
