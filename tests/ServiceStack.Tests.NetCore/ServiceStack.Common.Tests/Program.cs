@@ -26,7 +26,7 @@ namespace NUnitLite.Tests
             Licensing.RegisterLicense(licenseKey);
             //"ActivatedLicenseFeatures: ".Print(LicenseUtils.ActivatedLicenseFeatures());
 
-	    CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
+    	    CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
             JsConfig.InitStatics();
             //JsonServiceClient client = new JsonServiceClient();
             var writer = new ExtendedTextWrapper(Console.Out);

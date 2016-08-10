@@ -40,7 +40,7 @@ namespace ServiceStack.Common.Tests
             const string url = "http://www.servicestack.net/a?b=c&d=f";
             var urlEncoded = url.UrlEncode();
 
-            Assert.That(urlEncoded, Is.EqualTo(HttpUtility.UrlEncode(url)));
+            Assert.That(urlEncoded.ToUpper(), Is.EqualTo(HttpUtility.UrlEncode(url).ToUpper()));
         }
 
         [Test]
