@@ -14,10 +14,14 @@ namespace ServiceStack
         static IdUtils()
         {
 
-#if !SL5 && !IOS && !XBOX && !NETSTANDARD
+#if !SL5 && !IOS && !XBOX
+#if NETSTANDARD
+            var hasIdInterfaces = typeof(T).GetTypeInfo().ImplementedInterfaces.Where(t => t.GetTypeInfo().IsGenericType 
+                && t.GetTypeInfo().GetGenericTypeDefinition() == typeof(IHasId<>)).ToArray();
+#else
             var hasIdInterfaces = typeof(T).FindInterfaces(
                 (t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IHasId<>), null);
-
+#endif
             if (hasIdInterfaces.Length > 0)
             {
                 CanGetId = HasId<T>.GetId;
