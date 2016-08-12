@@ -88,7 +88,7 @@ namespace ServiceStack.Metadata
                 var description = operationType.GetDescription();
                 if (!description.IsNullOrEmpty())
                 {
-                    sb.AppendFormat("<h3 id='desc'>{0}</div>", ConvertToHtml(description));
+                    sb.AppendFormat("<h3 id='desc'>{0}</h3>", ConvertToHtml(description));
                 }
 
                 if (op.RequiresAuthentication)
