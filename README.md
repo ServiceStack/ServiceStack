@@ -251,12 +251,26 @@ Same code also works with [PCL Clients in Xamarin iOS/Android, Windows Store App
 [VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference) can re-use same 
 [.NET Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) and DTO's
 
+### [Calling from TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference#ideal-typed-message-based-api)
+
+```ts
+const client = new JsonServiceClient(baseUrl);
+
+client.get(new GetCustomers())
+    .then(r => {
+        const results = r.results;
+    });
+```
+
 ### [Calling from Swift](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference#jsonserviceclientswift)
 
-```java
-var client = JsonServiceClient(baseUrl: BaseUri)
+```swift
+let client = JsonServiceClient(baseUrl: BaseUri)
 
-let response = client.get(GetCustomers())
+client.getAsync(GetCustomers())
+    .then {
+        let results = $0.results;
+    }
 ```
 
 ### [Calling from Java](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference#jsonserviceclient-usage)
@@ -264,7 +278,8 @@ let response = client.get(GetCustomers())
 ```java
 JsonServiceClient client = new JsonServiceClient(BaseUri);
 
-GetCustomersResponse all = client.get(new GetCustomers());
+GetCustomersResponse response = client.get(new GetCustomers());
+List<Customer> results = response.results; 
 ```
 
 ### [Calling from Kotlin](https://github.com/ServiceStack/ServiceStack/wiki/Kotlin-Add-ServiceStack-Reference#jsonserviceclient-usage)
@@ -273,9 +288,10 @@ GetCustomersResponse all = client.get(new GetCustomers());
 val client = JsonServiceClient(BaseUri)
 
 val response = client.get(GetCustomers())
+val results = response.results
 ```
 
-### [Calling from jQuery using TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference)
+### [Calling from jQuery using TypeScript Defintions](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference#typescript-interface-definitions)
 
 ```js
 $.getJSON($.ss.createUrl("/customers", request), request, 
