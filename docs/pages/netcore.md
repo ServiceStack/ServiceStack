@@ -34,10 +34,7 @@ You should get following project structure
 
 ![Solution Explorer](images/5-SolutionExplorer.png)
 
-Please note that if you see yellow exclamation mark near ServiceStack references, 
-this means you use old ServiceStackVS template and you should update it. Or just open `project.json`
-and change `"ServiceStack.Text" : "4.0.62"` to `"ServiceStack.Text.Core" : "1.0.1"`
-and `"ServiceStack.Client" : "4.0.62"` to `"ServiceStack.Client.Core" : "1.0.1"`
+And following `project.json` file
 
 ![project.json](images/6-projectjson.png)
 
