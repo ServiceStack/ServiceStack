@@ -16,7 +16,7 @@ namespace ServiceStack
                 return apiAttr.Description;
             }
 
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
             var componentDescAttr = type.FirstAttribute<System.ComponentModel.DescriptionAttribute>();
             if (componentDescAttr != null)
             {
@@ -40,7 +40,7 @@ namespace ServiceStack
                 return apiAttr.Description;
             }
 
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
             var componentDescAttr = mi.FirstAttribute<System.ComponentModel.DescriptionAttribute>();
             if (componentDescAttr != null)
             {
@@ -59,7 +59,7 @@ namespace ServiceStack
 
         public static string GetDescription(this ParameterInfo pi)
         {
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
             var componentDescAttr = pi.FirstAttribute<System.ComponentModel.DescriptionAttribute>();
             if (componentDescAttr != null)
             {

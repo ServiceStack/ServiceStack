@@ -2,12 +2,12 @@
   "configurations": {
     "Debug": {
       "buildOptions": {
-        "define": ["NETSTANDARD", "DEBUG", "TRACE"]
+        "define": ["NETSTANDARD1_1", "DEBUG", "TRACE"]
       }
     },
     "Release": {
       "buildOptions": {
-        "define": ["NETSTANDARD", "TRACE"],
+        "define": ["TRACE"],
         "optimize": true
       }
     }
@@ -20,6 +20,9 @@
   "compile": ["../../ServiceStack.Common/**/*.cs"],
   "frameworks": {
     "netstandard1.2": { 
+	"buildOptions" : {
+	    "define": ["NETSTANDARD1_1"]
+	},
         "dependencies" : {
              "System.Linq.Expressions" : "4.1.0",
 	     "System.Runtime.Serialization.Primitives" : "4.1.1-*",

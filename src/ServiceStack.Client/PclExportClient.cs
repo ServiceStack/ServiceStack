@@ -37,7 +37,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 
-#if NETFX_CORE || PCL || SL5 || NETSTANDARD
+#if NETFX_CORE || PCL || SL5 || NETSTANDARD1_1
 //namespace System.Collections.Specialized
 namespace ServiceStack.Pcl
 {
@@ -1586,7 +1586,7 @@ namespace ServiceStack
           = IosPclExportClient.Configure()
 #elif ANDROID
           = AndroidPclExportClient.Configure()
-#elif NETSTANDARD
+#elif NETSTANDARD1_1
           = NetStandardPclExportClient.Configure()
 #else
           = Net40PclExportClient.Configure()
@@ -1636,7 +1636,7 @@ namespace ServiceStack
 
         public virtual INameValueCollection ParseQueryString(string query)
         {
-#if SL5 || PCL || NETSTANDARD
+#if SL5 || PCL || NETSTANDARD1_1
             return ServiceStack.Pcl.HttpUtility.ParseQueryString(query).InWrapper();
 #else
 			return System.Web.HttpUtility.ParseQueryString(query).InWrapper();
@@ -1647,7 +1647,7 @@ namespace ServiceStack
         {
 #if SL5
             return System.Windows.Browser.HttpUtility.UrlEncode(url);
-#elif PCL || NETSTANDARD
+#elif PCL || NETSTANDARD1_1
             return WebUtility.UrlEncode(url);
 #else
             return System.Web.HttpUtility.UrlEncode(url);
@@ -1658,7 +1658,7 @@ namespace ServiceStack
         {
 #if SL5
             return System.Windows.Browser.HttpUtility.UrlDecode(url);
-#elif PCL || NETSTANDARD
+#elif PCL || NETSTANDARD1_1
             return WebUtility.UrlDecode(url);
 #else
             return System.Web.HttpUtility.UrlDecode(url);
@@ -1669,7 +1669,7 @@ namespace ServiceStack
         {
 #if SL5
             return System.Windows.Browser.HttpUtility.HtmlEncode(html);
-#elif PCL || NETSTANDARD
+#elif PCL || NETSTANDARD1_1
             return WebUtility.HtmlEncode(html);
 #else
             return System.Web.HttpUtility.HtmlEncode(html);
@@ -1680,7 +1680,7 @@ namespace ServiceStack
         {
 #if SL5
             return System.Windows.Browser.HttpUtility.HtmlDecode(html);
-#elif PCL || NETSTANDARD
+#elif PCL || NETSTANDARD1_1
             return WebUtility.HtmlDecode(html);
 #else
             return System.Web.HttpUtility.HtmlDecode(html);
@@ -1717,7 +1717,7 @@ namespace ServiceStack
         {
         }
 
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
         public virtual ITimer CreateTimer(TimerCallback cb, TimeSpan timeOut, object state)
         {
 #if PCL
@@ -1735,7 +1735,7 @@ namespace ServiceStack
                 throw new ArgumentOutOfRangeException("waitForMs");
 
             var tcs = new TaskCompletionSource<bool>();
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
             Timer timer = null;
             timer = new Timer(self => {
                 tcs.TrySetResult(true);
@@ -1786,7 +1786,7 @@ namespace ServiceStack
 
         public virtual void SetIfModifiedSince(HttpWebRequest webReq, DateTime lastModified)
         {
-#if !(PCL || SL5 || NETSTANDARD)
+#if !(PCL || SL5 || NETSTANDARD1_1)
             webReq.IfModifiedSince = lastModified;
 #endif
         }

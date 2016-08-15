@@ -63,7 +63,7 @@ namespace ServiceStack.MiniProfiler.Data
         }
 
         public
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
 	override
 #endif 
 	void Close()
@@ -72,7 +72,7 @@ namespace ServiceStack.MiniProfiler.Data
             // an unwrapped reader from the base command
             if (_reader != null)
             {
-#if NETSTANDARD
+#if NETSTANDARD1_1
                 _reader.Dispose();
 #else
                 _reader.Close();
@@ -175,7 +175,7 @@ namespace ServiceStack.MiniProfiler.Data
             return _reader.GetOrdinal(name);
         }
 
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
         public override DataTable GetSchemaTable()
         {
             return _reader.GetSchemaTable();

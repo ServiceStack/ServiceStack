@@ -1,7 +1,7 @@
 ﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if !(XBOX || SL5 || NETFX_CORE || WP || PCL || NETSTANDARD)
+#if !(XBOX || SL5 || NETFX_CORE || WP || PCL || NETSTANDARD1_1)
 using System;
 using System.Collections.Specialized;
 using System.IO;

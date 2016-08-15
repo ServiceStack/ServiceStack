@@ -21,7 +21,7 @@ namespace ServiceStack.Serialization
             {
                 var bytes = Encoding.UTF8.GetBytes(xml);
                 using (var reader = XmlDictionaryReader.CreateTextReader(bytes,
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
 			new XmlDictionaryReaderQuotas()
 #else
 			XmlDictionaryReaderQuotas.Max
@@ -61,7 +61,7 @@ namespace ServiceStack.Serialization
             try
             {
                 using (var reader = XmlDictionaryReader.CreateTextReader(from,
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
 			new XmlDictionaryReaderQuotas()
 #else
 			XmlDictionaryReaderQuotas.Max

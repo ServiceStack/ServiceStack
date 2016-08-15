@@ -6,7 +6,7 @@ using System.IO;
 using System.Text;
 using ServiceStack.Caching;
 using ServiceStack.Text;
-#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD)
+#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
 using System.Security.Cryptography;
 #endif
 
@@ -131,7 +131,7 @@ namespace ServiceStack
             stream.Dispose();
         }
 
-#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD)
+#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
         public static string ToMd5Hash(this Stream stream)
         {
             var hash = MD5.Create().ComputeHash(stream);

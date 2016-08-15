@@ -2,12 +2,12 @@
   "configurations": {
     "Debug": {
       "buildOptions": {
-        "define": ["NETSTANDARD", "DEBUG", "TRACE"]
+        "define": ["DEBUG", "TRACE"]
       }
     },
     "Release": {
       "buildOptions": {
-        "define": ["NETSTANDARD", "TRACE"],
+        "define": ["TRACE"],
         "optimize": true
       }
     }

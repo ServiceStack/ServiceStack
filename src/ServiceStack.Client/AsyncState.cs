@@ -45,7 +45,7 @@ namespace ServiceStack
 
         public int RequestCount;
 
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
         public ITimer Timer;
 #endif
 
@@ -103,14 +103,14 @@ namespace ServiceStack
 
         public void StartTimer(TimeSpan timeOut)
         {
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
             this.Timer = PclExportClient.Instance.CreateTimer(this.TimedOut, timeOut, this);
 #endif
         }
 
         public void StopTimer()
         {
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
             if (this.Timer != null)
             {
                 this.Timer.Cancel();
@@ -165,7 +165,7 @@ namespace ServiceStack
                 this.BytesData.Dispose();
                 this.BytesData = null;
             }
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
             if (this.Timer != null)
             {
                 this.Timer.Dispose();

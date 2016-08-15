@@ -349,7 +349,7 @@ namespace ServiceStack.ExpressionUtil
         public override int GetHashCode()
         {
             HashCodeCombiner combiner = new HashCodeCombiner();
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
             Elements.ForEach(combiner.AddFingerprint);
 #else
 	    foreach(var e in Elements)
@@ -468,7 +468,7 @@ namespace ServiceStack.ExpressionUtil
         }
 
         protected
-#if !NETSTANDARD
+#if !NETSTANDARD1_1
 	override
 #endif
 	Expression VisitDynamic(DynamicExpression node)

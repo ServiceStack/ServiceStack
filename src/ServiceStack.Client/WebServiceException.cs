@@ -11,7 +11,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack
 {
-#if !(NETFX_CORE || WP || SL5 || PCL || NETSTANDARD)
+#if !(NETFX_CORE || WP || SL5 || PCL || NETSTANDARD1_1)
     [Serializable]
 #endif
     public class WebServiceException

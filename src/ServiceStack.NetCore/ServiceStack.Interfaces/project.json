@@ -2,7 +2,7 @@
   "configurations": {
     "Debug": {
       "buildOptions": {
-        "define": ["NETSTANDARD", "DEBUG", "TRACE"],
+        "define": ["DEBUG", "TRACE"],
 	"compile": {
 		"include" : ["../../ServiceStack.Interfaces/**/*.cs"]
 	}
@@ -10,7 +10,7 @@
     },
     "Release": {
       "buildOptions": {
-        "define": ["NETSTANDARD", "TRACE"],
+        "define": ["TRACE"],
         "optimize": true,
 	"compile": {
 		"include" : ["../../ServiceStack.Interfaces/**/*.cs"]

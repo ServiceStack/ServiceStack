@@ -187,7 +187,7 @@ namespace ServiceStack
         }
 #endif
 
-#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD)
+#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
         internal static string CalculateMD5Hash(string input)
         {
             // copied/pasted by adamfowleruk
@@ -236,7 +236,7 @@ namespace ServiceStack
         {
             //Silverlight MD5 impl at: http://archive.msdn.microsoft.com/SilverlightMD5
 
-#if !(SL5 || PCL || NETSTANDARD)
+#if !(SL5 || PCL || NETSTANDARD1_1)
             // by adamfowleruk
             // See Client Request at http://en.wikipedia.org/wiki/Digest_access_authentication
 
