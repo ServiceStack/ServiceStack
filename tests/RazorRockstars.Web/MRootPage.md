@@ -2,7 +2,7 @@
 
 ^<div style="float:right">
 
-**view this page in: **
+**view this page in:**
 [json](?format=json),
 [xml](?format=xml),
 [jsv](?format=jsv),
@@ -19,5 +19,7 @@
 ### All Rockstars
 
 source files for this demo
+
+Time is: @DateTime.UtcNow
 
 <!--view:MRootPage.md-->

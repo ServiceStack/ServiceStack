@@ -23,6 +23,8 @@ namespace CheckMvc
                 new RedisManagerPool());
 
             container.Register(c => c.Resolve<IRedisClientsManager>().GetCacheClient());
+
+            SetConfig(new HostConfig { DebugMode = true });
         }
     }
 

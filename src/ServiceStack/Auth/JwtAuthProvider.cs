@@ -15,6 +15,9 @@ namespace ServiceStack.Auth
     /// </summary>
     public class JwtAuthProvider : JwtAuthProviderReader, IAuthResponseFilter
     {
+        /// <summary>
+        /// Whether to populate the Bearer Token in the AuthenticateResponse
+        /// </summary>
         public bool SetBearerTokenOnAuthenticateResponse { get; set; }
 
         public JwtAuthProvider() {}
