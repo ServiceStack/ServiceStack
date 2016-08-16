@@ -3,7 +3,7 @@
 This guide shows how to create and execute .NET Core console application which
 uses ServiceStack.Client 
 
-### Pre-requisite [Install ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project#step-1-download-and-install-servicestackvs)
+### Prerequisite [Install ServiceStackVS](https://github.com/ServiceStack/ServiceStack/wiki/Creating-your-first-project#step-1-download-and-install-servicestackvs)
 
 ### Install .NET Core                                                                                                                                                           
 At the first step you need to install [Visual Studio 2015 update 3](https://go.microsoft.com/fwlink/?LinkId=691129)  and [.NET Core 1.0.0 - VS 2015 Tooling Preview](https://go.microsoft.com/fwlink/?LinkId=817245).
