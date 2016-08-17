@@ -3,7 +3,7 @@
   <metadata>
     <id>ServiceStack.Interfaces.Core</id>
     <version>1.0.0</version>
-    <title>Lightweight and implementation-free interfaces for ServiceStack</title>
+    <title>ServiceStack.Interfaces.Core</title>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

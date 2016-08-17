@@ -3,7 +3,7 @@
   <metadata>
     <id>ServiceStack.Client.Core</id>
     <version>1.0.0</version>
-    <title>Service Clients for ServiceStack</title>
+    <title>ServiceStack.Client.Core</title>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
