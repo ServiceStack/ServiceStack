@@ -5,12 +5,12 @@ using System.Web;
 
 namespace ServiceStack.Logging.Elmah
 {
-	/// <summary>	Writes Elmah intercepting logger.  </summary>
-	/// <remarks>	9/2/2011. </remarks>
-	public class ElmahInterceptingLogger
-		: ILog
-	{
-		private readonly ILog log;
+    /// <summary>	Writes Elmah intercepting logger.  </summary>
+    /// <remarks>	9/2/2011. </remarks>
+    public class ElmahInterceptingLogger
+        : ILog
+    {
+        private readonly ILog log;
         private readonly HttpApplication application;
 
         /// <summary>	Constructor. </summary>

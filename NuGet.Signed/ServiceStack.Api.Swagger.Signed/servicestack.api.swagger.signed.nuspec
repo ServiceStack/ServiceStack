@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Api.Swagger.Signed</id>
     <title>ServiceStack.Api.Swagger.Signed</title>
-    <version>4.0.0</version>
+    <version>4.5.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <summary>ServiceStack integration with Swagger</summary>
@@ -18,7 +18,7 @@
     <language>en-US</language>
     <copyright>StackExpress.net 2012 and contributors</copyright>
     <dependencies>
-      <dependency id="ServiceStack.Signed" version="4.0" />
+      <dependency id="ServiceStack.Signed" version="4.5" />
     </dependencies>
   </metadata>
   <files>

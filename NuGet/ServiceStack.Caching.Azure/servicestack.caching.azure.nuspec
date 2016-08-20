@@ -2,7 +2,7 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Caching.Azure</id> 
-    <version>4.0.0</version>
+    <version>4.5.0</version>
     <authors>Manuel Nelson, ServiceStack contributors</authors> 
     <owners>Manuel Nelson, ServiceStack contributors</owners>
     <description>
@@ -16,8 +16,8 @@
     <language>en-US</language> 
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
-      <dependency id="ServiceStack.Common" version="4.0" />
-      <dependency id="Microsoft.WindowsAzure.Caching" version="2.8.0.0" />
+      <dependency id="ServiceStack.Common" version="4.5" />
+      <dependency id="Microsoft.WindowsAzure.Caching" version="2.9.1" />
     </dependencies>
   </metadata>
   <files>

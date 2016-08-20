@@ -5,29 +5,29 @@ SET BUILD=Release
 
 REM %MSBUILD% build.msbuild
 
-MD ..\NuGet\ServiceStack\lib\net40
-MD ..\NuGet\ServiceStack.Api.Swagger\lib\net40
-MD ..\NuGet\ServiceStack.Common\lib\net40
-MD ..\NuGet\ServiceStack.Mvc\lib\net40
-MD ..\NuGet\ServiceStack.Razor\lib\net40
-MD ..\NuGet\ServiceStack.Authentication.OpenId\lib\net40
-MD ..\NuGet\ServiceStack.Authentication.OAuth2\lib\net40
-MD ..\NuGet\ServiceStack.ProtoBuf\lib\net40
-MD ..\NuGet\ServiceStack.MsgPack\lib\net40
+MD ..\NuGet\ServiceStack\lib\net45
+MD ..\NuGet\ServiceStack.Api.Swagger\lib\net45
+MD ..\NuGet\ServiceStack.Common\lib\net45
+MD ..\NuGet\ServiceStack.Mvc\lib\net45
+MD ..\NuGet\ServiceStack.Razor\lib\net45
+MD ..\NuGet\ServiceStack.Authentication.OpenId\lib\net45
+MD ..\NuGet\ServiceStack.Authentication.OAuth2\lib\net45
+MD ..\NuGet\ServiceStack.ProtoBuf\lib\net45
+MD ..\NuGet\ServiceStack.MsgPack\lib\net45
 
-COPY ..\src\ServiceStack.Razor\bin\%BUILD%\ServiceStack.Razor.* ..\NuGet\ServiceStack.Razor\lib\net40
+COPY ..\src\ServiceStack.Razor\bin\%BUILD%\ServiceStack.Razor.* ..\NuGet\ServiceStack.Razor\lib\net45
 
-COPY ..\src\ServiceStack.Mvc\bin\%BUILD%\ServiceStack.Mvc.* ..\NuGet\ServiceStack.Mvc\lib\net40
-COPY ..\src\ServiceStack.Mvc\bin\%BUILD%\ServiceStack.Mvc.* ..\NuGet\ServiceStack.Mvc\lib\net40
+COPY ..\src\ServiceStack.Mvc\bin\%BUILD%\ServiceStack.Mvc.* ..\NuGet\ServiceStack.Mvc\lib\net45
+COPY ..\src\ServiceStack.Mvc\bin\%BUILD%\ServiceStack.Mvc.* ..\NuGet\ServiceStack.Mvc\lib\net45
 
-COPY ..\src\ServiceStack.Authentication.OpenId\bin\%BUILD%\ServiceStack.Authentication.OpenId.* ..\NuGet\ServiceStack.Authentication.OpenId\lib\net40
+COPY ..\src\ServiceStack.Authentication.OpenId\bin\%BUILD%\ServiceStack.Authentication.OpenId.* ..\NuGet\ServiceStack.Authentication.OpenId\lib\net45
 
-COPY ..\src\ServiceStack.Authentication.OAuth2\bin\%BUILD%\ServiceStack.Authentication.OAuth2.* ..\NuGet\ServiceStack.Authentication.OAuth2\lib\net40
+COPY ..\src\ServiceStack.Authentication.OAuth2\bin\%BUILD%\ServiceStack.Authentication.OAuth2.* ..\NuGet\ServiceStack.Authentication.OAuth2\lib\net45
 
-COPY ..\src\ServiceStack.ProtoBuf\bin\%BUILD%\ServiceStack.ProtoBuf.* ..\NuGet\ServiceStack.ProtoBuf\lib\net40
+COPY ..\src\ServiceStack.ProtoBuf\bin\%BUILD%\ServiceStack.ProtoBuf.* ..\NuGet\ServiceStack.ProtoBuf\lib\net45
 
-COPY ..\lib\MsgPack.dll ..\NuGet\ServiceStack.MsgPack\lib\net40
-COPY ..\src\ServiceStack.MsgPack\bin\%BUILD%\ServiceStack.MsgPack.* ..\NuGet\ServiceStack.MsgPack\lib\net40
+COPY ..\lib\MsgPack.dll ..\NuGet\ServiceStack.MsgPack\lib\net45
+COPY ..\src\ServiceStack.MsgPack\bin\%BUILD%\ServiceStack.MsgPack.* ..\NuGet\ServiceStack.MsgPack\lib\net45
 
 IF EXIST ..\..\swagger-ui\dist-disable (    
     RMDIR ..\NuGet\ServiceStack.Api.Swagger\content\swagger-ui /s /q

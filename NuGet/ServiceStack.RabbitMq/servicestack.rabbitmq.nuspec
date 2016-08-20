@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.RabbitMq</id>
     <title>ServiceStack.RabbitMq</title>
-    <version>4.0.0</version>
+    <version>4.5.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
@@ -19,8 +19,8 @@
     <language>en-US</language>
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
-      <dependency id="RabbitMQ.Client" version="3.5.7" />
-      <dependency id="ServiceStack" version="4.0" />
+      <dependency id="RabbitMQ.Client" version="3.6.5" />
+      <dependency id="ServiceStack" version="4.5" />
     </dependencies>
   </metadata>
   <files>
