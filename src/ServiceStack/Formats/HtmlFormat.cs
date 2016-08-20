@@ -72,6 +72,13 @@ namespace ServiceStack.Formats
                 response = DtoUtils.CreateErrorResponse(req.Dto, ex);
             }
 
+            //Handle Exceptions returning string
+            if (req.ResponseContentType == MimeTypes.PlainText)
+            {
+                req.ResponseContentType = MimeTypes.Html;
+                res.ContentType = MimeTypes.Html;
+            }
+
             if (req.ResponseContentType != MimeTypes.Html
                 && req.ResponseContentType != MimeTypes.JsonReport) return;
 
