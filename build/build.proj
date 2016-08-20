@@ -125,7 +125,6 @@
       <AuthenticationNHibernateFiles Include="$(SrcDir)/ServiceStack.Authentication.NHibernate/bin/$(Configuration)/ServiceStack.Authentication.NHibernate.*"></AuthenticationNHibernateFiles>
       <AuthenticationRavenDbFiles Include="$(SrcDir)/ServiceStack.Authentication.RavenDb/bin/$(Configuration)/ServiceStack.Authentication.RavenDb.*"></AuthenticationRavenDbFiles>
 
-      <CachingAwsDynamoDbFiles Include="$(SrcDir)/ServiceStack.Caching.AwsDynamoDb/bin/$(Configuration)/ServiceStack.Caching.AwsDynamoDb.*"></CachingAwsDynamoDbFiles>
       <CachingAzureFiles Include="$(SrcDir)/ServiceStack.Caching.Azure/bin/$(Configuration)/ServiceStack.Caching.Azure.*"></CachingAzureFiles>
       <CachingMemcachedFiles Include="$(SrcDir)/ServiceStack.Caching.Memcached/bin/$(Configuration)/ServiceStack.Caching.Memcached.*"></CachingMemcachedFiles>
 
@@ -228,18 +227,6 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Authentication.RavenDb/servicestack.authentication.ravendb.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
         LogStandardErrorAsError="true" />
-
-    <!-- ServiceStack.Caching.AwsDynamoDb -->
-
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Caching.AwsDynamoDb/ServiceStack.Caching.AwsDynamoDb.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Caching.AwsDynamoDb/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Caching.AwsDynamoDb/lib/net45')" />
-    <Copy SourceFiles="%(CachingAwsDynamoDbFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Caching.AwsDynamoDb/lib/net45" />
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Caching.AwsDynamoDb/servicestack.caching.awsdynamodb.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
-            LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Caching.Azure -->
 
