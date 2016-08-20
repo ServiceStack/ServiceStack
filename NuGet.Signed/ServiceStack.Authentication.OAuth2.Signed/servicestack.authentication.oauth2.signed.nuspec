@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Authentication.OAuth2.Signed</id> 
     <title>OAuth2 Providers for ServiceStack - inc. Google, LinkedIn</title>
-    <version>4.0.0</version> 
+    <version>4.5.0</version> 
     <authors>Service Stack</authors> 
     <owners>Service Stack</owners>
     <summary>OpenId Auth Providers for ServiceStack - inc. Google, LinkedIn</summary>
@@ -21,7 +21,7 @@
     <language>en-US</language>
     <copyright>Copyright 2015 Service Stack</copyright>
     <dependencies>
-        <dependency id="ServiceStack.Signed" version="4.0" />
+        <dependency id="ServiceStack.Signed" version="4.5" />
         <dependency id="DotNetOpenAuth.Ultimate" version="4.3.4.13329" />
         <dependency id="Microsoft.Net.Http" version="2.2.29" />
     </dependencies> 

@@ -643,7 +643,8 @@ namespace ServiceStack
 
         public virtual IMessageProducer GetMessageProducer(IRequest req = null)
         {
-            return Container.TryResolve<IMessageFactory>().CreateMessageProducer();
+            return (Container.TryResolve<IMessageFactory>()
+                ?? Container.TryResolve<IMessageService>().MessageFactory).CreateMessageProducer();
         }
 
         public virtual IServiceGateway GetServiceGateway(IRequest req)

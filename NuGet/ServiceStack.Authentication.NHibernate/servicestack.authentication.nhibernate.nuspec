@@ -2,9 +2,9 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Authentication.NHibernate</id> 
-    <version>4.0.0</version>
-    <authors>Joshua Lewis, ServiceStack contributors</authors> 
-    <owners>Joshua Lewis, ServiceStack contributors</owners>
+    <version>4.5.0</version>
+    <authors>ServiceStack contributors</authors> 
+    <owners>ServiceStack contributors</owners>
     <summary>An NHibernate IUserAuthRepository to persist User registration and auth info in any RDBMS NHibernate supports</summary>
     <description>
         An NHibernate IUserAuthRepository to persist User registration and authentication info in any RDBMS NHibernate supports.
@@ -19,10 +19,10 @@
     <language>en-US</language> 
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
-      <dependency id="ServiceStack" version="4.0" />
+      <dependency id="ServiceStack" version="4.5" />
       <dependency id="NHibernate" version="4.0.4.4000" />
       <dependency id="Iesi.Collections" version="4.0.1.4000" />
-      <dependency id="FluentNHibernate" version="2.0.1.0" />
+      <dependency id="FluentNHibernate" version="2.0.3.0" />
     </dependencies>
   </metadata>
   <files>

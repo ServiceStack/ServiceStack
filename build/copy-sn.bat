@@ -14,9 +14,7 @@ COPY ..\src\ServiceStack\bin\%BUILD%\ServiceStack.dll ..\lib\signed
 
 COPY ..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\bin\%BUILD%\ServiceStack.OrmLite.dll ..\lib\signed
 COPY ..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\bin\%BUILD%\ServiceStack.OrmLite.dll ..\..\ServiceStack.OrmLite\lib\signed
-COPY ..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLiteV45\bin\%BUILD%\ServiceStack.OrmLite.dll ..\lib\net45\signed
 
 COPY ..\..\ServiceStack.Redis\src\ServiceStack.Redis\bin\%BUILD%\ServiceStack.Redis.dll ..\lib\signed
 COPY ..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer\bin\%BUILD%\ServiceStack.OrmLite.SqlServer.dll ..\lib\signed
-COPY ..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServerV45\bin\%BUILD%\ServiceStack.OrmLite.SqlServer.dll ..\lib\net45\signed
 

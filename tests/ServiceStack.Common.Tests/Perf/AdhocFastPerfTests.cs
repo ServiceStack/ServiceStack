@@ -6,7 +6,7 @@ using ServiceStack.Text.Common;
 
 namespace ServiceStack.Common.Tests.Perf
 {
-    [Ignore("Long-running performance tests")]
+    [Ignore("Benchmarks")]
     [TestFixture]
     public class AdhocFastPerfTests
         : PerfTestBase

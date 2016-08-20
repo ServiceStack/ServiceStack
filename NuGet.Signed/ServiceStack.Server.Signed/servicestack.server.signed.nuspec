@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Server.Signed</id>
     <title>ServiceStack.Server.Signed</title>
-    <version>4.0.0</version>
+    <version>4.5.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
@@ -21,10 +21,10 @@
     <language>en-US</language>
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
-      <dependency id="ServiceStack.Common.Signed" version="4.0" />
-      <dependency id="ServiceStack.Redis.Signed" version="4.0" />
-      <dependency id="ServiceStack.OrmLite.SqlServer.Signed" version="4.0" />
-      <dependency id="ServiceStack.Signed" version="4.0" />
+      <dependency id="ServiceStack.Common.Signed" version="4.5" />
+      <dependency id="ServiceStack.Redis.Signed" version="4.5" />
+      <dependency id="ServiceStack.OrmLite.SqlServer.Signed" version="4.5" />
+      <dependency id="ServiceStack.Signed" version="4.5" />
     </dependencies>
   </metadata>
   <files>

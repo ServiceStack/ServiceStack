@@ -54,9 +54,14 @@
             Can async queries be pipelined?
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.CommandDefinition.#ctor(System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType},ServiceStack.OrmLite.Dapper.CommandFlags)">
+        <member name="M:ServiceStack.OrmLite.Dapper.CommandDefinition.#ctor(System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType},ServiceStack.OrmLite.Dapper.CommandFlags,System.Threading.CancellationToken)">
             <summary>
             Initialize the command definition
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.CommandDefinition.CancellationToken">
+            <summary>
+            For asynchronous operations, the cancellation-token
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.CommandFlags">
@@ -379,6 +384,343 @@
             Dapper, a light weight object mapper for ADO.NET
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a query asynchronously using .NET 4.5 Task.
+            </summary>
+            <remarks>Note: each row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a query asynchronously using .NET 4.5 Task.
+            </summary>
+            <remarks>Note: each row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefaultAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefaultAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefaultAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefaultAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstAsync(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefaultAsync(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleAsync(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefaultAsync(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync(System.Data.IDbConnection,System.Type,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstAsync(System.Data.IDbConnection,System.Type,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefaultAsync(System.Data.IDbConnection,System.Type,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleAsync(System.Data.IDbConnection,System.Type,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefaultAsync(System.Data.IDbConnection,System.Type,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a command asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a command asynchronously using .NET 4.5 Task.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``3(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Maps a query to objects
+            </summary>
+            <typeparam name="TFirst">The first type in the recordset</typeparam>
+            <typeparam name="TSecond">The second type in the recordset</typeparam>
+            <typeparam name="TReturn">The return type</typeparam>
+            <param name="cnn"></param>
+            <param name="sql"></param>
+            <param name="map"></param>
+            <param name="param"></param>
+            <param name="transaction"></param>
+            <param name="buffered"></param>
+            <param name="splitOn">The field we should split and read the second object from (default: id)</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``3(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2},System.String)">
+            <summary>
+            Maps a query to objects
+            </summary>
+            <typeparam name="TFirst">The first type in the recordset</typeparam>
+            <typeparam name="TSecond">The second type in the recordset</typeparam>
+            <typeparam name="TReturn">The return type</typeparam>
+            <param name="cnn"></param>
+            <param name="splitOn">The field we should split and read the second object from (default: id)</param>
+            <param name="command">The command to execute</param>
+            <param name="map"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``4(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Maps a query to objects
+            </summary>
+            <typeparam name="TFirst"></typeparam>
+            <typeparam name="TSecond"></typeparam>
+            <typeparam name="TThird"></typeparam>
+            <typeparam name="TReturn"></typeparam>
+            <param name="cnn"></param>
+            <param name="sql"></param>
+            <param name="map"></param>
+            <param name="param"></param>
+            <param name="transaction"></param>
+            <param name="buffered"></param>
+            <param name="splitOn">The Field we should split and read the second object from (default: id)</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout</param>
+            <param name="commandType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``4(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2,``3},System.String)">
+            <summary>
+            Maps a query to objects
+            </summary>
+            <typeparam name="TFirst"></typeparam>
+            <typeparam name="TSecond"></typeparam>
+            <typeparam name="TThird"></typeparam>
+            <typeparam name="TReturn"></typeparam>
+            <param name="cnn"></param>
+            <param name="splitOn">The field we should split and read the second object from (default: id)</param>
+            <param name="command">The command to execute</param>
+            <param name="map"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``5(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Perform a multi mapping query with 4 input parameters
+            </summary>
+            <typeparam name="TFirst"></typeparam>
+            <typeparam name="TSecond"></typeparam>
+            <typeparam name="TThird"></typeparam>
+            <typeparam name="TFourth"></typeparam>
+            <typeparam name="TReturn"></typeparam>
+            <param name="cnn"></param>
+            <param name="sql"></param>
+            <param name="map"></param>
+            <param name="param"></param>
+            <param name="transaction"></param>
+            <param name="buffered"></param>
+            <param name="splitOn"></param>
+            <param name="commandTimeout"></param>
+            <param name="commandType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``5(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2,``3,``4},System.String)">
+            <summary>
+            Perform a multi mapping query with 4 input parameters
+            </summary>
+            <typeparam name="TFirst"></typeparam>
+            <typeparam name="TSecond"></typeparam>
+            <typeparam name="TThird"></typeparam>
+            <typeparam name="TFourth"></typeparam>
+            <typeparam name="TReturn"></typeparam>
+            <param name="cnn"></param>
+            <param name="splitOn">The field we should split and read the second object from (default: id)</param>
+            <param name="command">The command to execute</param>
+            <param name="map"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``6(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Perform a multi mapping query with 5 input parameters
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``6(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2,``3,``4,``5},System.String)">
+            <summary>
+            Perform a multi mapping query with 5 input parameters
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``7(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Perform a multi mapping query with 6 input parameters
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``7(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2,``3,``4,``5,``6},System.String)">
+            <summary>
+            Perform a multi mapping query with 6 input parameters
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``8(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Perform a multi mapping query with 7 input parameters
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``8(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.String)">
+            <summary>
+            Perform a multi mapping query with 7 input parameters
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``1(System.Data.IDbConnection,System.String,System.Type[],System.Func{System.Object[],``0},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Perform a multi mapping query with arbitrary input parameters
+            </summary>
+            <typeparam name="TReturn">The return type</typeparam>
+            <param name="cnn"></param>
+            <param name="sql"></param>
+            <param name="types">array of types in the recordset</param>
+            <param name="map"></param>
+            <param name="param"></param>
+            <param name="transaction"></param>
+            <param name="buffered"></param>
+            <param name="splitOn">The Field we should split and read the second object from (default: id)</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryMultipleAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a command that returns multiple result sets, and access each in turn
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryMultipleAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a command that returns multiple result sets, and access each in turn
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteReaderAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>
+            </summary>
+            <returns>An <see cref="T:System.Data.IDataReader"/> that can be used to iterate over the results of the SQL query.</returns>
+            <remarks>
+            This is typically used when the results of a query are not processed by Dapper, for example, used to fill a <see cref="T:System.Data.DataTable"/>
+            or <see cref="T:DataSet"/>.
+            </remarks>
+            <example>
+            <code>
+            <![CDATA[
+            DataTable table = new DataTable("MyTable");
+            using (var reader = ExecuteReader(cnn, sql, param))
+            {
+                table.Load(reader);
+            }
+            ]]>
+            </code>
+            </example>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteReaderAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>
+            </summary>
+            <returns>An <see cref="T:System.Data.IDataReader"/> that can be used to iterate over the results of the SQL query.</returns>
+            <remarks>
+            This is typically used when the results of a query are not processed by Dapper, for example, used to fill a <see cref="T:System.Data.DataTable"/>
+            or <see cref="T:DataSet"/>.
+            </remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalarAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute parameterized SQL that selects a single value
+            </summary>
+            <returns>The first cell selected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalarAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute parameterized SQL that selects a single value
+            </summary>
+            <returns>The first cell selected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalarAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute parameterized SQL that selects a single value
+            </summary>
+            <returns>The first cell selected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalarAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute parameterized SQL that selects a single value
+            </summary>
+            <returns>The first cell selected</returns>
+        </member>
         <member name="E:ServiceStack.OrmLite.Dapper.SqlMapper.QueryCachePurged">
             <summary>
             Called if the query cache is purged via PurgeQueryCache
@@ -442,7 +784,6 @@
             <summary>
             OBSOLETE: For internal usage only. Lookup the DbType and handler for a given Type and member
             </summary>
-            <exception cref="T:System.NotSupportedException"></exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AsList``1(System.Collections.Generic.IEnumerable{``0})">
             <summary>
@@ -952,6 +1293,86 @@
             The grid reader provides interfaces for reading multiple result sets from a Dapper query
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadAsync(System.Boolean)">
+            <summary>
+            Read the next grid of results, returned as a dynamic object
+            </summary>
+            <remarks>Note: each row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstAsync">
+            <summary>
+            Read an individual row of the next grid of results, returned as a dynamic object
+            </summary>
+            <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstOrDefaultAsync">
+            <summary>
+            Read an individual row of the next grid of results, returned as a dynamic object
+            </summary>
+            <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleAsync">
+            <summary>
+            Read an individual row of the next grid of results, returned as a dynamic object
+            </summary>
+            <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleOrDefaultAsync">
+            <summary>
+            Read an individual row of the next grid of results, returned as a dynamic object
+            </summary>
+            <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadAsync(System.Type,System.Boolean)">
+            <summary>
+            Read the next grid of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstAsync(System.Type)">
+            <summary>
+            Read an individual row of the next grid of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstOrDefaultAsync(System.Type)">
+            <summary>
+            Read an individual row of the next grid of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleAsync(System.Type)">
+            <summary>
+            Read an individual row of the next grid of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleOrDefaultAsync(System.Type)">
+            <summary>
+            Read an individual row of the next grid of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadAsync``1(System.Boolean)">
+            <summary>
+            Read the next grid of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstAsync``1">
+            <summary>
+            Read an individual row of the next grid of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstOrDefaultAsync``1">
+            <summary>
+            Read an individual row of the next grid of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleAsync``1">
+            <summary>
+            Read an individual row of the next grid of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleOrDefaultAsync``1">
+            <summary>
+            Read an individual row of the next grid of results
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read(System.Boolean)">
             <summary>
             Read the next grid of results, returned as a dynamic object
@@ -1416,6 +1837,12 @@
             default and must be enabled.
             </remarks>
         </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.Settings.InListStringSplitCount">
+            <summary>
+            If set (non-negative), when performing in-list expansions of integer types ("where id in @ids", etc), switch to a string_split based
+            operation if there are more than this many elements. Note that this feautre requires SQL Server 2016 / compatibility level 130 (or above).
+            </summary>
+        </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandler`1">
             <summary>
             Base-class for simple type-handlers
@@ -1566,6 +1993,68 @@
             For Types that are natively supported by RDBMS's and shouldn't be quoted
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiAsyncLegacy.SelectFmtAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,System.String,System.Object[])">
+            <summary>
+            Returns results from using an SqlFormat query. E.g:
+            <para>db.SelectFmt&lt;Person&gt;("Age &gt; {0}", 40)</para>
+            <para>db.SelectFmt&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; {0}", 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiAsyncLegacy.SelectFmtAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,System.Type,System.String,System.Object[])">
+            <summary>
+            Returns a partial subset of results from the specified tableType using a SqlFormat query. E.g:
+            <para>db.SelectFmt&lt;EntityWithId&gt;(typeof(Person), "Age &gt; {0}", 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiAsyncLegacy.ScalarFmtAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,System.String,System.Object[])">
+            <summary>
+            Returns a single scalar value using an SqlFormat query. E.g:
+            <para>db.ScalarFmt&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &gt; {0}", 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiAsyncLegacy.ColumnFmtAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,System.String,System.Object[])">
+            <summary>
+            Returns the first column in a List using a SqlFormat query. E.g:
+            <para>db.ColumnFmt&lt;string&gt;("SELECT LastName FROM Person WHERE Age = {0}", 27)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiAsyncLegacy.ColumnDistinctFmtAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,System.String,System.Object[])">
+            <summary>
+            Returns the distinct first column values in a HashSet using an SqlFormat query. E.g:
+            <para>db.ColumnDistinctFmt&lt;int&gt;("SELECT Age FROM Person WHERE Age &lt; {0}", 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiAsyncLegacy.LookupFmtAsync``2(System.Data.IDbConnection,System.Threading.CancellationToken,System.String,System.Object[])">
+            <summary>
+            Returns an Dictionary&lt;K, List&lt;V&gt;&gt; grouping made from the first two columns using an SqlFormat query. E.g:
+            <para>db.LookupFmt&lt;int, string&gt;("SELECT Age, LastName FROM Person WHERE Age &lt; {0}", 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiAsyncLegacy.DictionaryFmtAsync``2(System.Data.IDbConnection,System.Threading.CancellationToken,System.String,System.Object[])">
+            <summary>
+            Returns a Dictionary from the first 2 columns: Column 1 (Keys), Column 2 (Values) using an SqlFormat query. E.g:
+            <para>db.DictionaryFmt&lt;int, string&gt;("SELECT Id, LastName FROM Person WHERE Age &lt; {0}", 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiAsyncLegacy.ExistsFmtAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,System.String,System.Object[])">
+            <summary>
+            Returns true if the Query returns any records, using an SqlFormat query. E.g:
+            <para>db.ExistsFmt&lt;Person&gt;("Age = {0}", 42)</para>
+            <para>db.ExistsFmt&lt;Person&gt;("SELECT * FROM Person WHERE Age = {0}", 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiAsyncLegacy.ExistsAsync``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}},System.Threading.CancellationToken)">
+            <summary>
+            Returns true if the Query returns any records that match the SqlExpression lambda, E.g:
+            <para>db.Exists&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &lt; 50))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiAsyncLegacy.SqlProcedureFmtAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,System.Object,System.String,System.Object[])">
+            <summary>
+            Returns results from a Stored Procedure using an SqlFormat query. E.g:
+            <para></para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiLegacy.SelectFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
             <summary>
             Returns results from using an SqlFormat query. E.g:
@@ -1634,6 +2123,41 @@
             <para>db.Exists&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &lt; 50))</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiAsyncLegacy.SelectAsync``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}},System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using an SqlExpression lambda. E.g:
+            <para>db.Select&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiAsyncLegacy.SelectAsync``2(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``1},ServiceStack.OrmLite.SqlExpression{``1}},System.Threading.CancellationToken)">
+            <summary>
+            Project results from a number of joined tables into a different model
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiAsyncLegacy.SingleAsync``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}},System.Threading.CancellationToken)">
+            <summary>
+            Returns a single result from using an SqlExpression lambda. E.g:
+            <para>db.Single&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age == 42))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiAsyncLegacy.SingleFmtAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,System.String,System.Object[])">
+            <summary>
+            Returns the first result using a SqlFormat query. E.g:
+            <para>db.SingleFmt&lt;Person&gt;("Age = {0}", 42)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiAsyncLegacy.CountAsync``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}},System.Threading.CancellationToken)">
+            <summary>
+            Returns the count of rows that match the SqlExpression lambda, E.g:
+            <para>db.Count&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &lt; 50))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiAsyncLegacy.LoadSelectAsync``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}},System.String[],System.Threading.CancellationToken)">
+            <summary>
+            Returns results with references from using an SqlExpression lambda. E.g:
+            <para>db.LoadSelectAsync&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadExpressionsApiLegacy.SqlExpression``1(System.Data.IDbConnection)">
             <summary>
             Create a new SqlExpression builder allowing typed LINQ-like queries.
@@ -1679,6 +2203,19 @@
             <para>db.LoadSelect&lt;Person&gt;(q =&gt; q.Where(x =&gt; x.Age &gt; 40), include: x => new { x.PrimaryAddress })</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteApiAsyncLegacy.DeleteFmtAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,System.String,System.Object[])">
+            <summary>
+            Delete rows using a SqlFormat filter. E.g:
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteApiAsyncLegacy.DeleteFmtAsync(System.Data.IDbConnection,System.Threading.CancellationToken,System.Type,System.String,System.Object[])">
+            <summary>
+            Delete rows from the runtime table type using a SqlFormat filter. E.g:
+            </summary>
+            <para>db.DeleteFmt(typeof(Person), "Age = {0}", 27)</para>
+            <returns>number of rows deleted</returns>
+        </member>
         <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteCommandExtensionsLegacy.DeleteFmt``1(System.Data.IDbConnection,System.String,System.Object[])">
             <summary>
             Delete rows using a SqlFormat filter. E.g:
@@ -1692,6 +2229,73 @@
             </summary>
             <para>db.DeleteFmt(typeof(Person), "Age = {0}", 27)</para>
             <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteExpressionsApiAsyncLegacy.InsertOnlyAsync``1(System.Data.IDbConnection,``0,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}},System.Threading.CancellationToken)">
+            <summary>
+            Insert only fields in POCO specified by the SqlExpression lambda. E.g:
+            <para>db.InsertOnly(new Person { FirstName = "Amy", Age = 27 }, q =&gt; q.Insert(p =&gt; new { p.FirstName, p.Age }))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteExpressionsApiAsyncLegacy.InsertOnlyAsync``1(System.Data.IDbConnection,``0,ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+            <summary>
+            Using an SqlExpression to only Insert the fields specified, e.g:
+            
+              db.InsertOnly(new Person { FirstName = "Amy" }, q => q.Insert(p => new { p.FirstName }));
+              INSERT INTO "Person" ("FirstName") VALUES ('Amy');
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteExpressionsApiAsyncLegacy.UpdateOnlyAsync``1(System.Data.IDbConnection,``0,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}},System.Threading.CancellationToken)">
+            <summary>
+            Use an SqlExpression to select which fields to update and construct the where expression, E.g: 
+            
+              db.UpdateOnly(new Person { FirstName = "JJ" }, ev => ev.Update(p => p.FirstName).Where(x => x.FirstName == "Jimi"));
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("FirstName" = 'Jimi')
+            
+              What's not in the update expression doesn't get updated. No where expression updates all rows. E.g:
+            
+              db.UpdateOnly(new Person { FirstName = "JJ", LastName = "Hendo" }, ev => ev.Update(p => p.FirstName));
+              UPDATE "Person" SET "FirstName" = 'JJ'
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteExpressionsApiAsyncLegacy.UpdateFmtAsync``1(System.Data.IDbConnection,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Flexible Update method to succinctly execute a free-text update statement using optional params. E.g:
+            
+              db.Update&lt;Person&gt;(set:"FirstName = {0}".Params("JJ"), where:"LastName = {0}".Params("Hendrix"));
+              UPDATE "Person" SET FirstName = 'JJ' WHERE LastName = 'Hendrix'
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteExpressionsApiAsyncLegacy.UpdateFmtAsync(System.Data.IDbConnection,System.String,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Flexible Update method to succinctly execute a free-text update statement using optional params. E.g.
+            
+              db.Update(table:"Person", set: "FirstName = {0}".Params("JJ"), where: "LastName = {0}".Params("Hendrix"));
+              UPDATE "Person" SET FirstName = 'JJ' WHERE LastName = 'Hendrix'
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteExpressionsApiAsyncLegacy.DeleteFmtAsync``1(System.Data.IDbConnection,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Flexible Delete method to succinctly execute a delete statement using free-text where expression. E.g.
+            
+              db.Delete&lt;Person&gt;(where:"Age = {0}".Params(27));
+              DELETE FROM "Person" WHERE Age = 27
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteExpressionsApiAsyncLegacy.DeleteFmtAsync(System.Data.IDbConnection,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Flexible Delete method to succinctly execute a delete statement using free-text where expression. E.g.
+            
+              db.Delete(table:"Person", where: "Age = {0}".Params(27));
+              DELETE FROM "Person" WHERE Age = 27
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteExpressionsApiAsyncLegacy.DeleteAsync``1(System.Data.IDbConnection,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}},System.Threading.CancellationToken)">
+            <summary>
+            Delete the rows that matches the where expression, e.g:
+            
+              db.Delete&lt;Person&gt;(ev => ev.Where(p => p.Age == 27));
+              DELETE FROM "Person" WHERE ("Age" = 27)
+            </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteWriteExpressionsApiLegacy.InsertOnly``1(System.Data.IDbConnection,``0,System.Func{ServiceStack.OrmLite.SqlExpression{``0},ServiceStack.OrmLite.SqlExpression{``0}})">
             <summary>
@@ -1769,6 +2373,736 @@
         <member name="P:ServiceStack.OrmLite.OrmLiteContext.Items">
             <summary>
             Gets a list of items for this context. 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SelectAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken)">
+            <summary>
+            Returns results from the active connection.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SelectAsync``1(System.Data.IDbConnection,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using sql. E.g:
+            <para>db.Select&lt;Person&gt;("Age &gt; 40")</para>
+            <para>db.Select&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; 40")</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SelectAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter},System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using a parameterized query. E.g:
+            <para>db.Select&lt;Person&gt;("Age &gt; @age", new { age = 40})</para>
+            <para>db.Select&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; @age", new[] { db.CreateParam("age",40) })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SelectAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using a parameterized query. E.g:
+            <para>db.Select&lt;Person&gt;("Age &gt; @age", new { age = 40})</para>
+            <para>db.Select&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; @age", new { age = 40})</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SelectAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using a parameterized query. E.g:
+            <para>db.Select&lt;Person&gt;("Age &gt; @age", new Dictionary&lt;string, object&gt; { { "age", 40 } })</para>
+            <para>db.Select&lt;Person&gt;("SELECT * FROM Person WHERE Age &gt; @age", new Dictionary&lt;string, object&gt; { { "age", 40 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SelectAsync``1(System.Data.IDbConnection,System.Type,System.Threading.CancellationToken)">
+            <summary>
+            Returns a partial subset of results from the specified tableType. E.g:
+            <para>db.Select&lt;EntityWithId&gt;(typeof(Person))</para>
+            <para></para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SelectAsync``1(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns a partial subset of results from the specified tableType. E.g:
+            <para>db.Select&lt;EntityWithId&gt;(typeof(Person), "Age = @age", new { age = 27 })</para>
+            <para></para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.WhereAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using a single name, value filter. E.g:
+            <para>db.Where&lt;Person&gt;("Age", 27)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.WhereAsync``1(System.Data.IDbConnection,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using an anonymous type filter. E.g:
+            <para>db.Where&lt;Person&gt;(new { Age = 27 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SelectByIdsAsync``1(System.Data.IDbConnection,System.Collections.IEnumerable,System.Threading.CancellationToken)">
+            <summary>
+            Returns results using the supplied primary key ids. E.g:
+            <para>db.SelectByIds&lt;Person&gt;(new[] { 1, 2, 3 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SelectNonDefaultsAsync``1(System.Data.IDbConnection,``0,System.Threading.CancellationToken)">
+            <summary>
+            Query results using the non-default values in the supplied partially populated POCO example. E.g:
+            <para>db.SelectNonDefaults(new Person { Id = 1 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SelectNonDefaultsAsync``1(System.Data.IDbConnection,System.String,``0,System.Threading.CancellationToken)">
+            <summary>
+            Query results using the non-default values in the supplied partially populated POCO example. E.g:
+            <para>db.SelectNonDefaults("Age &gt; @Age", new Person { Age = 42 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SingleAsync``1(System.Data.IDbConnection,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns the first result using a parameterized query. E.g:
+            <para>db.Single&lt;Person&gt;(new { Age = 42 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SingleAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter},System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using a single name, value filter. E.g:
+            <para>db.Single&lt;Person&gt;("Age = @age", new[] { db.CreateParam("age",42) })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SingleAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using a single name, value filter. E.g:
+            <para>db.Single&lt;Person&gt;("Age = @age", new { age = 42 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SingleByIdAsync``1(System.Data.IDbConnection,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns the first result using a primary key id. E.g:
+            <para>db.SingleById&lt;Person&gt;(1)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SingleWhereAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns the first result using a name, value filter. E.g:
+            <para>db.SingleWhere&lt;Person&gt;("Age", 42)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ScalarAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Threading.CancellationToken)">
+            <summary>
+            Returns a single scalar value using an SqlExpression. E.g:
+            <para>db.Column&lt;int&gt;(db.From&lt;Persion&gt;().Select(x => Sql.Count("*")).Where(q => q.Age > 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ScalarAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter},System.Threading.CancellationToken)">
+            <summary>
+            Returns a single scalar value using a parameterized query. E.g:
+            <para>db.Scalar&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &gt; @age", new[] { db.CreateParam("age",40) })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ScalarAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns a single scalar value using a parameterized query. E.g:
+            <para>db.Scalar&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &gt; @age", new { age = 40 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ColumnAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Threading.CancellationToken)">
+            <summary>
+            Returns the distinct first column values in a HashSet using an SqlExpression. E.g:
+            <para>db.Column&lt;int&gt;(db.From&lt;Persion&gt;().Select(x => x.LastName).Where(q => q.Age == 27))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ColumnAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter},System.Threading.CancellationToken)">
+            <summary>
+            Returns the first column in a List using a SqlFormat query. E.g:
+            <para>db.Column&lt;string&gt;("SELECT LastName FROM Person WHERE Age = @age", new[] { db.CreateParam("age",27) })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ColumnAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns the first column in a List using a SqlFormat query. E.g:
+            <para>db.Column&lt;string&gt;("SELECT LastName FROM Person WHERE Age = @age", new { age = 27 })</para>
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ColumnDistinctAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Threading.CancellationToken)" -->
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ColumnDistinctAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter},System.Threading.CancellationToken)">
+            <summary>
+            Returns the distinct first column values in a HashSet using an SqlFormat query. E.g:
+            <para>db.ColumnDistinct&lt;int&gt;("SELECT Age FROM Person WHERE Age &lt; @age", new[] { db.CreateParam("age",50) })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ColumnDistinctAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns the distinct first column values in a HashSet using an SqlFormat query. E.g:
+            <para>db.ColumnDistinct&lt;int&gt;("SELECT Age FROM Person WHERE Age &lt; @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteReadApiAsync.LookupAsync``2(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Threading.CancellationToken)" -->
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.LookupAsync``2(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter},System.Threading.CancellationToken)">
+            <summary>
+            Returns an Dictionary&lt;K, List&lt;V&gt;&gt; grouping made from the first two columns using an parameterized query. E.g:
+            <para>db.Lookup&lt;int, string&gt;("SELECT Age, LastName FROM Person WHERE Age &lt; @age", new[] { db.CreateParam("age",50) })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.LookupAsync``2(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns an Dictionary&lt;K, List&lt;V&gt;&gt; grouping made from the first two columns using an parameterized query. E.g:
+            <para>db.Lookup&lt;int, string&gt;("SELECT Age, LastName FROM Person WHERE Age &lt; @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteReadApiAsync.DictionaryAsync``2(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Threading.CancellationToken)" -->
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.DictionaryAsync``2(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter},System.Threading.CancellationToken)">
+            <summary>
+            Returns a Dictionary from the first 2 columns: Column 1 (Keys), Column 2 (Values) using sql. E.g:
+            <para>db.Dictionary&lt;int, string&gt;("SELECT Id, LastName FROM Person WHERE Age &lt; @age", new[] { db.CreateParam("age",50) })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.DictionaryAsync``2(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns a Dictionary from the first 2 columns: Column 1 (Keys), Column 2 (Values) using sql. E.g:
+            <para>db.Dictionary&lt;int, string&gt;("SELECT Id, LastName FROM Person WHERE Age &lt; @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ExistsAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Returns true if the Query returns any records that match the LINQ expression, E.g:
+            <para>db.Exists&lt;Person&gt;(x =&gt; x.Age &lt; 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ExistsAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+            <summary>
+            Returns true if the Query returns any records that match the supplied SqlExpression, E.g:
+            <para>db.Exists(db.From&lt;Person&gt;().Where(x =&gt; x.Age &lt; 50))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ExistsAsync``1(System.Data.IDbConnection,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns true if the Query returns any records, using an SqlFormat query. E.g:
+            <para>db.Exists&lt;Person&gt;(new { Age = 42 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ExistsAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns true if the Query returns any records, using a parameterized query. E.g:
+            <para>db.Exists&lt;Person&gt;("Age = @age", new { age = 42 })</para>
+            <para>db.Exists&lt;Person&gt;("SELECT * FROM Person WHERE Age = @age", new { age = 42 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlListAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Threading.CancellationToken)">
+            <summary>
+            Returns results from an arbitrary SqlExpression. E.g:
+            <para>db.SqlList&lt;Person&gt;(db.From&lt;Person&gt;().Select("*").Where(q => q.Age &lt; 50))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlListAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter},System.Threading.CancellationToken)">
+            <summary>
+            Returns results from an arbitrary parameterized raw sql query. E.g:
+            <para>db.SqlList&lt;Person&gt;("EXEC GetRockstarsAged @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlListAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns results from an arbitrary parameterized raw sql query. E.g:
+            <para>db.SqlList&lt;Person&gt;("EXEC GetRockstarsAged @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlListAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.Threading.CancellationToken)">
+            <summary>
+            Returns results from an arbitrary parameterized raw sql query. E.g:
+            <para>db.SqlList&lt;Person&gt;("EXEC GetRockstarsAged @age", new Dictionary&lt;string, object&gt; { { "age", 42 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlListAsync``1(System.Data.IDbConnection,System.String,System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
+            <summary>
+            Returns results from an arbitrary parameterized raw sql query with a dbCmd filter. E.g:
+            <para>db.SqlList&lt;Person&gt;("EXEC GetRockstarsAged @age", dbCmd => ...)</para>
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlColumnAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Threading.CancellationToken)" -->
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlColumnAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter},System.Threading.CancellationToken)">
+            <summary>
+            Returns the first column in a List using a parameterized query. E.g:
+            <para>db.SqlColumn&lt;string&gt;("SELECT LastName FROM Person WHERE Age &lt; @age", new[] { db.CreateParam("age",50) })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlColumnAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns the first column in a List using a parameterized query. E.g:
+            <para>db.SqlColumn&lt;string&gt;("SELECT LastName FROM Person WHERE Age &lt; @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlColumnAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.Threading.CancellationToken)">
+            <summary>
+            Returns the first column in a List using a parameterized query. E.g:
+            <para>db.SqlColumn&lt;string&gt;("SELECT LastName FROM Person WHERE Age &lt; @age", new Dictionary&lt;string, object&gt; { { "age", 50 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlScalarAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Threading.CancellationToken)">
+            <summary>
+            Returns a single Scalar value using an SqlExpression. E.g:
+            <para>db.SqlScalar&lt;int&gt;(db.From&lt;Person&gt;().Select(Sql.Count("*")).Where(q => q.Age &lt; 50))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlScalarAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{System.Data.IDbDataParameter},System.Threading.CancellationToken)">
+            <summary>
+            Returns a single Scalar value using a parameterized query. E.g:
+            <para>db.SqlScalar&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &lt; @age", new[] { db.CreateParam("age",50) })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlScalarAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns a single Scalar value using a parameterized query. E.g:
+            <para>db.SqlScalar&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &lt; @age", new { age = 50 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlScalarAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.Threading.CancellationToken)">
+            <summary>
+            Returns a single Scalar value using a parameterized query. E.g:
+            <para>db.SqlScalar&lt;int&gt;("SELECT COUNT(*) FROM Person WHERE Age &lt; @age", new Dictionary&lt;string, object&gt; { { "age", 50 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ExecuteNonQueryAsync(System.Data.IDbConnection,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Executes a raw sql non-query using sql. E.g:
+            <para>var rowsAffected = db.ExecuteNonQueryAsync("UPDATE Person SET LastName={0} WHERE Id={1}".SqlFormat("WaterHouse", 7))</para>
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ExecuteNonQueryAsync(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Executes a raw sql non-query using a parameterized query. E.g:
+            <para>var rowsAffected = db.ExecuteNonQueryAsync("UPDATE Person SET LastName=@name WHERE Id=@id", new { name = "WaterHouse", id = 7 })</para>
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.ExecuteNonQueryAsync(System.Data.IDbConnection,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.Threading.CancellationToken)">
+            <summary>
+            Executes a raw sql non-query using a parameterized query.
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.SqlProcedureAsync``1(System.Data.IDbConnection,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Returns results from a Stored Procedure, using a parameterized query.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.LongScalarAsync(System.Data.IDbConnection,System.Threading.CancellationToken)">
+            <summary>
+            Returns the scalar result as a long.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.LoadSingleByIdAsync``1(System.Data.IDbConnection,System.Object,System.String[],System.Threading.CancellationToken)">
+            <summary>
+            Returns the first result with all its references loaded, using a primary key id. E.g:
+            <para>db.LoadSingleById&lt;Person&gt;(1)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.LoadSingleByIdAsync``1(System.Data.IDbConnection,System.Object,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Threading.CancellationToken)">
+            <summary>
+            Returns the first result with all its references loaded, using a primary key id. E.g:
+            <para>db.LoadSingleById&lt;Person&gt;(1, include = x => new { x.Address })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadApiAsync.LoadReferencesAsync``1(System.Data.IDbConnection,``0,System.String[],System.Threading.CancellationToken)">
+            <summary>
+            Loads all the related references onto the instance. E.g:
+            <para>db.LoadReferencesAsync(customer)</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.ExecuteSqlAsync(System.Data.IDbConnection,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Execute any arbitrary raw SQL.
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.ExecuteSqlAsync(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Execute any arbitrary raw SQL with db params.
+            </summary>
+            <returns>number of rows affected</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.InsertAsync``1(System.Data.IDbConnection,``0,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Insert 1 POCO, use selectIdentity to retrieve the last insert AutoIncrement id (if any). E.g:
+            <para>var id = db.Insert(new Person { Id = 1, FirstName = "Jimi }, selectIdentity:true)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.InsertAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,``0[])">
+            <summary>
+            Insert 1 or more POCOs in a transaction. E.g:
+            <para>db.Insert(new Person { Id = 1, FirstName = "Tupac", LastName = "Shakur", Age = 25 },</para>
+            <para>          new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.InsertAllAsync``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0},System.Threading.CancellationToken)">
+            <summary>
+            Insert a collection of POCOs in a transaction. E.g:
+            <para>db.InsertAll(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.UpdateAsync``1(System.Data.IDbConnection,``0,System.Threading.CancellationToken)">
+            <summary>
+            Updates 1 POCO. All fields are updated except for the PrimaryKey which is used as the identity selector. E.g:
+            <para>db.Update(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.UpdateAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,``0[])">
+            <summary>
+            Updates 1 or more POCOs in a transaction. E.g:
+            <para>db.Update(new Person { Id = 1, FirstName = "Tupac", LastName = "Shakur", Age = 25 },</para>
+            <para>new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.UpdateAllAsync``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0},System.Threading.CancellationToken)">
+            <summary>
+            Updates 1 or more POCOs in a transaction. E.g:
+            <para>db.UpdateAll(new[] { new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteAsync``1(System.Data.IDbConnection,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Delete rows using an anonymous type filter. E.g:
+            <para>db.Delete&lt;Person&gt;(new { FirstName = "Jimi", Age = 27 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteAsync``1(System.Data.IDbConnection,``0,System.Threading.CancellationToken)">
+            <summary>
+            Delete 1 row using all fields in the filter. E.g:
+            <para>db.Delete(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,``0[])">
+            <summary>
+            Delete 1 or more rows in a transaction using all fields in the filter. E.g:
+            <para>db.Delete(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteNonDefaultsAsync``1(System.Data.IDbConnection,``0,System.Threading.CancellationToken)">
+            <summary>
+            Delete 1 or more rows using only field with non-default values in the filter. E.g:
+            <para>db.DeleteNonDefaults(new Person { FirstName = "Jimi", Age = 27 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteNonDefaultsAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,``0[])">
+            <summary>
+            Delete 1 or more rows in a transaction using only field with non-default values in the filter. E.g:
+            <para>db.DeleteNonDefaults(new Person { FirstName = "Jimi", Age = 27 }, 
+            new Person { FirstName = "Janis", Age = 27 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteByIdAsync``1(System.Data.IDbConnection,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Delete 1 row by the PrimaryKey. E.g:
+            <para>db.DeleteById&lt;Person&gt;(1)</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteByIdAsync``1(System.Data.IDbConnection,System.Object,System.UInt64,System.Threading.CancellationToken)">
+            <summary>
+            Delete 1 row by the PrimaryKey where the rowVersion matches the optimistic concurrency field. 
+            Will throw <exception cref="T:ServiceStack.Data.OptimisticConcurrencyException">RowModefiedExeption</exception> if the 
+            row does not exist or has a different row version.
+            E.g: <para>db.DeleteById&lt;Person&gt;(1)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteByIdsAsync``1(System.Data.IDbConnection,System.Collections.IEnumerable,System.Threading.CancellationToken)">
+            <summary>
+            Delete all rows identified by the PrimaryKeys. E.g:
+            <para>db.DeleteById&lt;Person&gt;(new[] { 1, 2, 3 })</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteAllAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken)">
+            <summary>
+            Delete all rows in the generic table type. E.g:
+            <para>db.DeleteAll&lt;Person&gt;()</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteAll(System.Data.IDbConnection,System.Type,System.Threading.CancellationToken)">
+            <summary>
+            Delete all rows in the runtime table type. E.g:
+            <para>db.DeleteAll(typeof(Person))</para>
+            </summary>
+            <returns>number of rows deleted</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.SaveAsync``1(System.Data.IDbConnection,``0,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Insert a new row or update existing row. Returns true if a new row was inserted. 
+            Optional references param decides whether to save all related references as well. E.g:
+            <para>db.SaveAsync(customer, references:true)</para>
+            </summary>
+            <returns>true if a row was inserted; false if it was updated</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.SaveAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,``0[])">
+            <summary>
+            Insert new rows or update existing rows. Return number of rows added E.g:
+            <para>db.SaveAsync(new Person { Id = 10, FirstName = "Amy", LastName = "Winehouse", Age = 27 })</para>
+            </summary>
+            <returns>number of rows added</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.SaveAllAsync``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0},System.Threading.CancellationToken)">
+            <summary>
+            Insert new rows or update existing rows. Return number of rows added E.g:
+            <para>db.SaveAllAsync(new [] { new Person { Id = 10, FirstName = "Amy", LastName = "Winehouse", Age = 27 } })</para>
+            </summary>
+            <returns>number of rows added</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.SaveAllReferencesAsync``1(System.Data.IDbConnection,``0,System.Threading.CancellationToken)">
+            <summary>
+            Populates all related references on the instance with its primary key and saves them. Uses '(T)Id' naming convention. E.g:
+            <para>db.SaveAllReferences(customer)</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.SaveReferencesAsync``2(System.Data.IDbConnection,System.Threading.CancellationToken,``0,``1[])">
+            <summary>
+            Populates the related references with the instance primary key and saves them. Uses '(T)Id' naming convention. E.g:
+            <para>db.SaveReference(customer, customer.Orders)</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.SaveReferencesAsync``2(System.Data.IDbConnection,``0,System.Collections.Generic.List{``1},System.Threading.CancellationToken)">
+            <summary>
+            Populates the related references with the instance primary key and saves them. Uses '(T)Id' naming convention. E.g:
+            <para>db.SaveReference(customer, customer.Orders)</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.SaveReferencesAsync``2(System.Data.IDbConnection,``0,System.Collections.Generic.IEnumerable{``1},System.Threading.CancellationToken)">
+            <summary>
+            Populates the related references with the instance primary key and saves them. Uses '(T)Id' naming convention. E.g:
+            <para>db.SaveReferences(customer, customer.Orders)</para> 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.SelectAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using a LINQ Expression. E.g:
+            <para>db.Select&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.SelectAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using an SqlExpression lambda. E.g:
+            <para>db.Select(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.SelectAsync``2(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``1},System.Threading.CancellationToken)">
+            <summary>
+            Project results from a number of joined tables into a different model
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.SelectAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using an SqlExpression lambda. E.g:
+            <para>db.SelectAsync(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.SingleAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Returns a single result from using a LINQ Expression. E.g:
+            <para>db.Single&lt;Person&gt;(x =&gt; x.Age == 42)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.SingleAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using an SqlExpression lambda. E.g:
+            <para>db.SingleAsync&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.SingleAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.ISqlExpression,System.Threading.CancellationToken)">
+            <summary>
+            Returns results from using an SqlExpression lambda. E.g:
+            <para>db.SingleAsync(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.ScalarAsync``2(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Threading.CancellationToken)">
+            <summary>
+            Returns a scalar result from using an SqlExpression lambda. E.g:
+            <para>db.Scalar&lt;Person, int&gt;(x =&gt; Sql.Max(x.Age))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.ScalarAsync``2(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Returns a scalar result from using an SqlExpression lambda. E.g:
+            <para>db.Scalar&lt;Person, int&gt;(x =&gt; Sql.Max(x.Age), , x =&gt; x.Age &lt; 50)</para>
+            </summary>        
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.CountAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Returns the count of rows that match the LINQ expression, E.g:
+            <para>db.Count&lt;Person&gt;(x =&gt; x.Age &lt; 50)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.CountAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+            <summary>
+            Returns the count of rows that match the supplied SqlExpression, E.g:
+            <para>db.Count(db.From&lt;Person&gt;().Where(x =&gt; x.Age &lt; 50))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.RowCountAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+            <summary>
+            Return the number of rows returned by the supplied expression
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.RowCountAsync(System.Data.IDbConnection,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Return the number of rows returned by the supplied sql
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.LoadSelectAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.String[],System.Threading.CancellationToken)">
+            <summary>
+            Returns results with references from using a LINQ Expression. E.g:
+            <para>db.LoadSelectAsync&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.LoadSelectAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0},System.String[],System.Threading.CancellationToken)">
+            <summary>
+            Returns results with references from using an SqlExpression lambda. E.g:
+            <para>db.LoadSelectAsync(db.From&lt;Person&gt;().Where(x =&gt; x.Age &gt; 40))</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.LoadSelectAsync``2(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``1},System.String[],System.Threading.CancellationToken)">
+            <summary>
+            Project results with references from a number of joined tables into a different model
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,``0,ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+            <summary>
+            Use an SqlExpression to select which fields to update and construct the where expression, E.g: 
+            
+              var q = db.From&gt;Person&lt;());
+              db.UpdateOnly(new Person { FirstName = "JJ" }, q.Update(p => p.FirstName).Where(x => x.FirstName == "Jimi"));
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("FirstName" = 'Jimi')
+            
+              What's not in the update expression doesn't get updated. No where expression updates all rows. E.g:
+            
+              db.UpdateOnly(new Person { FirstName = "JJ", LastName = "Hendo" }, ev.Update(p => p.FirstName));
+              UPDATE "Person" SET "FirstName" = 'JJ'
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+             <summary>
+             Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
+             
+               db.UpdateOnlyAsync(() => new Person { FirstName = "JJ" }, where: p => p.LastName == "Hendrix");
+               UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
+            
+               db.UpdateOnlyAsync(() => new Person { FirstName = "JJ" });
+               UPDATE "Person" SET "FirstName" = 'JJ'
+             </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+            <summary>
+            Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
+            
+              db.UpdateOnlyAsync(() => new Person { FirstName = "JJ" }, db.From&lt;Person&gt;().Where(p => p.LastName == "Hendrix"));
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+             <summary>
+             Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
+             
+               db.UpdateOnly(new Person { FirstName = "JJ" }, p => p.FirstName, p => p.LastName == "Hendrix");
+               UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
+            
+               db.UpdateOnly(new Person { FirstName = "JJ" }, p => p.FirstName);
+               UPDATE "Person" SET "FirstName" = 'JJ'
+             </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAddAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+             <summary>
+             Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
+             Numeric fields generates an increment sql which is usefull to increment counters, etc...
+             avoiding concurrency conflicts
+             
+               db.UpdateAddAsync(() => new Person { Age = 5 }, where: p => p.LastName == "Hendrix");
+               UPDATE "Person" SET "Age" = "Age" + 5 WHERE ("LastName" = 'Hendrix')
+            
+               db.UpdateAddAsync(() => new Person { Age = 5 });
+               UPDATE "Person" SET "Age" = "Age" + 5
+             </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,``0,System.String[],System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
+            
+              db.UpdateOnly(new Person { FirstName = "JJ" }, new[]{ "FirstName" }, p => p.LastName == "Hendrix");
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAddAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+            <summary>
+            Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
+            Numeric fields generates an increment sql which is usefull to increment counters, etc...
+            avoiding concurrency conflicts
+            
+              db.UpdateAddAsync(() => new Person { Age = 5 }, db.From&lt;Person&gt;().Where(p => p.LastName == "Hendrix"));
+              UPDATE "Person" SET "Age" = "Age" + 5 WHERE ("LastName" = 'Hendrix')
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateNonDefaultsAsync``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Updates all non-default values set on item matching the where condition (if any). E.g
+            
+              db.UpdateNonDefaults(new Person { FirstName = "JJ" }, p => p.FirstName == "Jimi");
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("FirstName" = 'Jimi')
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAsync``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Updates all values set on item matching the where condition (if any). E.g
+            
+              db.Update(new Person { Id = 1, FirstName = "JJ" }, p => p.LastName == "Hendrix");
+              UPDATE "Person" SET "Id" = 1,"FirstName" = 'JJ',"LastName" = NULL,"Age" = 0 WHERE ("LastName" = 'Hendrix')
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAsync``1(System.Data.IDbConnection,System.Object,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Updates all matching fields populated on anonymousType that matches where condition (if any). E.g:
+            
+              db.Update&lt;Person&gt;(new { FirstName = "JJ" }, p => p.LastName == "Hendrix");
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.InsertOnlyAsync``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Threading.CancellationToken)">
+            <summary>
+            Using an SqlExpression to only Insert the fields specified, e.g:
+            
+              db.InsertOnlyAsync(new Person { FirstName = "Amy" }, p => p.FirstName));
+              INSERT INTO "Person" ("FirstName") VALUES ('Amy');
+            
+              db.InsertOnlyAsync(new Person { Id =1 , FirstName="Amy" }, p => new { p.Id, p.FirstName }));
+              INSERT INTO "Person" ("Id", "FirstName") VALUES (1, 'Amy');
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.InsertOnlyAsync``1(System.Data.IDbConnection,``0,System.String[],System.Threading.CancellationToken)">
+            <summary>
+            Using an SqlExpression to only Insert the fields specified, e.g:
+            
+              db.InsertOnly(new Person { FirstName = "Amy" }, new[]{ "FirstName" }));
+              INSERT INTO "Person" ("FirstName") VALUES ('Amy');
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.InsertOnlyAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Threading.CancellationToken)">
+            <summary>
+            Using an SqlExpression to only Insert the fields specified, e.g:
+            
+              db.InsertOnlyAsync(() => new Person { FirstName = "Amy" }));
+              INSERT INTO "Person" ("FirstName") VALUES (@FirstName);
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.DeleteAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+            <summary>
+            Delete the rows that matches the where expression, e.g:
+            
+              db.Delete&lt;Person&gt;(p => p.Age == 27);
+              DELETE FROM "Person" WHERE ("Age" = 27)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.DeleteAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+            <summary>
+            Delete the rows that matches the where expression, e.g:
+            
+              var q = db.From&gt;Person&lt;());
+              db.Delete&lt;Person&gt;(q.Where(p => p.Age == 27));
+              DELETE FROM "Person" WHERE ("Age" = 27)
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select">

@@ -3,7 +3,7 @@
     <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Mvc.Signed</id>
     <title>MVC Adapters for integrating with ServiceStack webservices</title>
-    <version>4.0.0</version>
+    <version>4.5.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <summary>.NET 4.0 project Integration of ServiceStack with MVC3</summary>
@@ -20,7 +20,7 @@
     <language>en-US</language>
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
-      <dependency id="ServiceStack.Signed" version="4.0" />
+      <dependency id="ServiceStack.Signed" version="4.5" />
     </dependencies>
   </metadata>
   <files>

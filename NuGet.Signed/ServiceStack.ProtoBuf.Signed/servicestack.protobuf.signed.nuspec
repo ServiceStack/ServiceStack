@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.ProtoBuf.Signed</id> 
     <title>Protocol Buffers support for ServiceStack. Includes typed ProtoBuf Client</title>
-    <version>4.0.0</version> 
+    <version>4.5.0</version> 
     <authors>Service Stack</authors> 
     <owners>Service Stack</owners>
     <summary>ProtoBuf Format Serializer ContentType ServiceClients for ServiceStack</summary>
@@ -18,7 +18,7 @@
     <copyright>Copyright 2013 Service Stack</copyright>
     <dependencies>
       <dependency id="protobuf-net" version="2.1.0" />
-      <dependency id="ServiceStack.Client.Signed" version="4.0" />
+      <dependency id="ServiceStack.Client.Signed" version="4.5" />
     </dependencies> 
   </metadata>
   <files>
