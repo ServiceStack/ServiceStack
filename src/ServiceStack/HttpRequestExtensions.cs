@@ -806,27 +806,32 @@ namespace ServiceStack
 
         public static string GetBaseUrl(this IRequest httpReq)
         {
+            var useHttps = HostContext.AppHost.UseHttps(httpReq);
             var baseUrl = HttpHandlerFactory.GetBaseUrl();
             if (baseUrl != null)
-                return baseUrl.NormalizeScheme();
+                return baseUrl.NormalizeScheme(useHttps);
 
             baseUrl = httpReq.AbsoluteUri.InferBaseUrl(fromPathInfo: httpReq.PathInfo);
             if (baseUrl != null)
-                return baseUrl.NormalizeScheme();
+                return baseUrl.NormalizeScheme(useHttps);
 
             var handlerPath = HostContext.Config.HandlerFactoryPath;
 
             return new Uri(httpReq.AbsoluteUri).GetLeftPart(UriPartial.Authority)
-                .NormalizeScheme()
+                .NormalizeScheme(useHttps)
                 .CombineWith(handlerPath)
                 .TrimEnd('/');
         }
 
-        public static string NormalizeScheme(this string url)
+        public static bool UseHttps(this IRequest httpReq)
         {
-            if (url == null)
-                return null;
-            if (!HostContext.Config.UseHttpsLinks)
+            return HostContext.Config.UseHttpsLinks ||
+                httpReq.GetHeader(HttpHeaders.XForwardedProtocol) == "https";
+        }
+
+        public static string NormalizeScheme(this string url, bool useHttps)
+        {
+            if (url == null || !useHttps)
                 return url;
 
             url = url.TrimStart();
