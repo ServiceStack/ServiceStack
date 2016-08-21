@@ -8,6 +8,7 @@ using Funq;
 using ServiceStack;
 using ServiceStack.Admin;
 using ServiceStack.Api.Swagger;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Html;
 using ServiceStack.IO;
@@ -65,21 +66,6 @@ namespace CheckWeb
                     CaptureSynchronizationContext = true,
                 });
 
-            // Configure JSON serialization properties.
-            this.ConfigureSerialization(container);
-
-            // Configure ServiceStack database connections.
-            this.ConfigureDataConnection(container);
-
-            // Configure ServiceStack Authentication plugin.
-            this.ConfigureAuth(container);
-
-            // Configure ServiceStack Fluent Validation plugin.
-            this.ConfigureValidation(container);
-
-            // Configure ServiceStack Razor views.
-            this.ConfigureView(container);
-
             Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
 
             Plugins.Add(new AutoQueryDataFeature()
@@ -130,7 +116,20 @@ namespace CheckWeb
 
             this.GlobalHtmlErrorHttpHandler = new RazorHandler("GlobalErrorHandler.cshtml");
 
-            //JavaGenerator.AddGsonImport = true;
+            // Configure JSON serialization properties.
+            this.ConfigureSerialization(container);
+
+            // Configure ServiceStack database connections.
+            this.ConfigureDataConnection(container);
+
+            // Configure ServiceStack Authentication plugin.
+            this.ConfigureAuth(container);
+
+            // Configure ServiceStack Fluent Validation plugin.
+            this.ConfigureValidation(container);
+
+            // Configure ServiceStack Razor views.
+            this.ConfigureView(container);
         }
 
         public static Rockstar[] GetRockstars()
@@ -179,7 +178,42 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         private void ConfigureAuth(Container container)
         {
-            // ...
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+                new IAuthProvider[]
+                {
+                    new BasicAuthProvider(AppSettings), 
+                    new ApiKeyAuthProvider(AppSettings), 
+                }));
+
+            var authRepo = new OrmLiteAuthRepository(container.Resolve<IDbConnectionFactory>());
+            container.Register<IAuthRepository>(c => authRepo);
+            authRepo.InitSchema();
+
+            5.Times(x => authRepo.CreateUserAuth(new UserAuth {
+                UserName = $"user{x}",
+                Email = $"user{x}@email.com",
+            }, "test"));
+
+            AfterInitCallbacks.Add(host =>
+            {
+                var authProvider = (ApiKeyAuthProvider)
+                    AuthenticateService.GetAuthProvider(ApiKeyAuthProvider.Name);
+                using (var db = host.TryResolve<IDbConnectionFactory>().Open())
+                {
+                    var userWithKeysIds = db.Column<string>(db.From<ApiKey>()
+                        .SelectDistinct(x => x.UserAuthId)).Map(int.Parse);
+
+                    var userIdsMissingKeys = db.Column<string>(db.From<UserAuth>()
+                        .Where(x => userWithKeysIds.Count == 0 || !userWithKeysIds.Contains(x.Id))
+                        .Select(x => x.Id));
+
+                    foreach (var userId in userIdsMissingKeys)
+                    {
+                        var apiKeys = authProvider.GenerateNewApiKeys(userId.ToString());
+                        authRepo.StoreAll(apiKeys);
+                    }
+                }
+            });
         }
 
         /// <summary>
