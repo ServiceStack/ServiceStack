@@ -224,14 +224,14 @@ namespace ServiceStack.Auth
                 var existingUser = GetUserAuthByUserName(db, newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException("User {0} already exists".Fmt(newUser.UserName));
+                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName));
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(db, newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException("Email {0} already exists".Fmt(newUser.Email));
+                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email));
             }
         }
 
@@ -371,7 +371,8 @@ namespace ServiceStack.Auth
 
         public virtual void LoadUserAuth(IAuthSession session, IAuthTokens tokens)
         {
-            session.ThrowIfNull("session");
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
 
             var userAuth = GetUserAuth(session, tokens);
             LoadUserAuth(session, userAuth);
@@ -394,7 +395,7 @@ namespace ServiceStack.Auth
         public virtual void SaveUserAuth(IAuthSession authSession)
         {
             if (authSession == null)
-                throw new ArgumentNullException("authSession");
+                throw new ArgumentNullException(nameof(authSession));
 
             Exec(db =>
             {
@@ -416,7 +417,7 @@ namespace ServiceStack.Auth
         public virtual void SaveUserAuth(IUserAuth userAuth)
         {
             if (userAuth == null)
-                throw new ArgumentNullException("userAuth");
+                throw new ArgumentNullException(nameof(userAuth));
 
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default(DateTime))
@@ -557,7 +558,7 @@ namespace ServiceStack.Auth
         public virtual bool HasRole(string userAuthId, string role)
         {
             if (role == null)
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
 
             if (userAuthId == null)
                 return false;
@@ -580,7 +581,7 @@ namespace ServiceStack.Auth
         public virtual bool HasPermission(string userAuthId, string permission)
         {
             if (permission == null)
-                throw new ArgumentNullException("permission");
+                throw new ArgumentNullException(nameof(permission));
 
             if (userAuthId == null)
                 return false;

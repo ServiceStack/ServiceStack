@@ -33,7 +33,7 @@ namespace ServiceStack.Auth
                             }
                         })
                         .WithErrorCode("AlreadyExists")
-                        .WithMessage("UserName already exists")
+                        .WithMessage(ErrorMessages.UsernameAlreadyExists)
                         .When(x => !x.UserName.IsNullOrEmpty());
                     RuleFor(x => x.Email)
                         .Must(x =>
@@ -45,7 +45,7 @@ namespace ServiceStack.Auth
                             }
                         })
                         .WithErrorCode("AlreadyExists")
-                        .WithMessage("Email already exists")
+                        .WithMessage(ErrorMessages.EmailAlreadyExists)
                         .When(x => !x.Email.IsNullOrEmpty());
                 });
             RuleSet(
