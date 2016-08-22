@@ -373,6 +373,16 @@ namespace ServiceStack.AuthWeb.Tests
     {
         public string ProfileUrl64 { get; set; }
 
+        public override bool HasPermission(string permission, IAuthRepository authRepo)
+        {
+            return base.HasPermission(permission, authRepo);
+        }
+
+        public override bool HasRole(string role, IAuthRepository authRepo)
+        {
+            return base.HasRole(role, authRepo);
+        }
+
         public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             base.OnAuthenticated(authService, session, tokens, authInfo);
