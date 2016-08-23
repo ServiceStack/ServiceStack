@@ -514,34 +514,41 @@ namespace ServiceStack.Razor
         {
             try
             {
-                if (this.ChildPage != null) this.ChildPage.Dispose();
+                this.ChildPage?.Dispose();
                 this.ChildPage = null;
             }
             catch { }
             try
             {
-                if (cache != null) cache.Dispose();
+                cache?.Dispose();
                 cache = null;
             }
             catch { }
             try
             {
-                if (db != null) db.Dispose();
+                db?.Dispose();
                 db = null;
             }
             catch { }
             try
             {
-                if (redis != null) redis.Dispose();
+                redis?.Dispose();
                 redis = null;
             }
             catch { }
             try
             {
-                if (messageProducer != null) messageProducer.Dispose();
+                messageProducer?.Dispose();
                 messageProducer = null;
             }
             catch { }
+            try
+            {
+                using (authRepository as IDisposable) { }
+                authRepository = null;
+            }
+            catch { }
+
         }
 
         public string Href(string url)

@@ -97,10 +97,10 @@ namespace ServiceStack.Auth
             bool registerNewUser;
             IUserAuth user;
 
-            var userAuthRepo = (IUserAuthRepository)HostContext.AppHost.GetAuthRepository(base.Request);
-            using (userAuthRepo as IDisposable)
+            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+            using (authRepo as IDisposable)
             {
-                var existingUser = userAuthRepo.GetUserAuth(session, null);
+                var existingUser = authRepo.GetUserAuth(session, null);
                 registerNewUser = existingUser == null;
 
                 if (HostContext.GlobalRequestFilters == null
@@ -113,8 +113,8 @@ namespace ServiceStack.Auth
                 }
 
                 user = registerNewUser
-                    ? userAuthRepo.CreateUserAuth(newUserAuth, request.Password)
-                    : userAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
+                    ? authRepo.CreateUserAuth(newUserAuth, request.Password)
+                    : authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
             }
 
             if (request.AutoLogin.GetValueOrDefault())
@@ -208,15 +208,15 @@ namespace ServiceStack.Auth
 
             var session = this.GetSession();
 
-            var userAuthRepo = (IUserAuthRepository)HostContext.AppHost.GetAuthRepository(base.Request);
-            using (userAuthRepo as IDisposable)
+            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+            using (authRepo as IDisposable)
             {
-                var existingUser = userAuthRepo.GetUserAuth(session, null);
+                var existingUser = authRepo.GetUserAuth(session, null);
                 if (existingUser == null)
                     throw HttpError.NotFound(ErrorMessages.UserNotExists);
 
                 var newUserAuth = ToUserAuth(request);
-                userAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
+                authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
 
                 return new RegisterResponse
                 {

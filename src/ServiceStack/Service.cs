@@ -177,14 +177,10 @@ namespace ServiceStack
 
         public virtual void Dispose()
         {
-            if (db != null)
-                db.Dispose();
-            if (redis != null)
-                redis.Dispose();
-            if (messageProducer != null)
-                messageProducer.Dispose();
-            if (authRepository != null)
-                using (authRepository as IDisposable) {}
+            db?.Dispose();
+            redis?.Dispose();
+            messageProducer?.Dispose();
+            using (authRepository as IDisposable) { }
 
             RequestContext.Instance.ReleaseDisposables();
 
