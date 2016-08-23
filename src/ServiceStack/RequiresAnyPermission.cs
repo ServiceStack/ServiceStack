@@ -78,11 +78,10 @@ namespace ServiceStack
             }
         }
 
-        public bool HasAnyPermissions(IAuthSession session, IAuthRepository authRepo)
+        public virtual bool HasAnyPermissions(IAuthSession session, IAuthRepository authRepo)
         {
             return this.RequiredPermissions
                 .Any(requiredPermission => session != null
-                    && session.UserAuthId != null
                     && session.HasPermission(requiredPermission, authRepo));
         }
     }
