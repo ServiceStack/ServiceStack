@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading;
 using MsgPack;
@@ -26,11 +27,11 @@ namespace ServiceStack.MsgPack
             if (isGenericCollection)
             {
                 var elType = genericType.GetGenericArguments()[0];
-                var methods = typeof(CollectionExtensions).GetMethods();
+                var methods = typeof(CollectionExtensions).GetTypeInfo().GetMethods();
                 var genericMi = methods.FirstOrDefault(x => x.Name == "Convert");
                 var mi = genericMi.MakeGenericMethod(elType);
                 collectionConvertFn = (Func<object, Type, object>)
-                    Delegate.CreateDelegate(typeof(Func<object, Type, object>), mi);
+                    mi.CreateDelegate(typeof(Func<object, Type, object>), null);
             }
 
             type = isGenericCollection ? genericType : typeof(T);
