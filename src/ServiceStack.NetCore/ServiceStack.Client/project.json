@@ -21,20 +21,8 @@
   "frameworks": {
     "netstandard1.1": { 
         "dependencies" : {
-             "System.Linq.Expressions" : "4.1.0",
-	     "System.Runtime.Serialization.Primitives" : "4.1.1-*",
-	     "System.Runtime.Serialization.Xml" : "4.1.1",
-	     "System.Net.Http" : "4.1.0",
 	     "System.Net.Requests" : "4.0.11",
-	     "System.IO" : "4.1.0",
-	     "System.Dynamic.Runtime" : "4.0.11",
-	     "Microsoft.CSharp" : "4.0.1-*",
-	     "System.Reflection": "4.1.0-*",
-	     "System.Reflection.Extensions" : "4.0.1",
-	     "System.Reflection.Emit" : "4.0.1",
-	     "System.Reflection.Emit.Lightweight": "4.0.1",
 	     "System.ServiceModel.Primitives" : "4.1.0",
-	     "System.ServiceModel.Http" : "4.1.0",
 	     "System.Xml.XmlSerializer" : "4.0.11"
          }
      }
