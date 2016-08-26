@@ -26,11 +26,10 @@ namespace ServiceStack.MsgPack
             if (isGenericCollection)
             {
                 var elType = genericType.GetGenericArguments()[0];
-                var methods = typeof(CollectionExtensions).GetMethods();
-                var genericMi = methods.FirstOrDefault(x => x.Name == "Convert");
+                var genericMi = typeof(CollectionExtensions).GetStaticMethod("Convert");
                 var mi = genericMi.MakeGenericMethod(elType);
                 collectionConvertFn = (Func<object, Type, object>)
-                    Delegate.CreateDelegate(typeof(Func<object, Type, object>), mi);
+                    mi.CreateDelegate(typeof(Func<object, Type, object>));
             }
 
             type = isGenericCollection ? genericType : typeof(T);
@@ -85,8 +84,7 @@ namespace ServiceStack.MsgPack
             do
             {
                 snapshot = msgPackTypeCache;
-                newCache = new Dictionary<Type, IMsgPackType>(msgPackTypeCache);
-                newCache[type] = msgPackType;
+                newCache = new Dictionary<Type, IMsgPackType>(msgPackTypeCache) {[type] = msgPackType};
 
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref msgPackTypeCache, newCache, snapshot), snapshot));
