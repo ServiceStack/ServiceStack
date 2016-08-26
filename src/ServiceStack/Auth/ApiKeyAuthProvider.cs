@@ -107,6 +107,7 @@ namespace ServiceStack.Auth
         public Action<ApiKey> CreateApiKeyFilter { get; set; }
 
         public ApiKeyAuthProvider()
+            : base(null, Realm, Name)
         {
             Init();
         }

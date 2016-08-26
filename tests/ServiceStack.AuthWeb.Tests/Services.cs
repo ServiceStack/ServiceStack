@@ -200,4 +200,28 @@ namespace ServiceStack.AuthWeb.Tests
             };
         }
     }
+
+    [Route("/has-permission")]
+    public class HasPermission : IReturn<CustomUserSession> { }
+
+    [RequiredPermission("ThePermission")]
+    public class RequiresPermissionService : Service
+    {
+        public object Any(HasPermission request)
+        {
+            return SessionAs<CustomUserSession>();
+        }
+    }
+
+    [Route("/has-role")]
+    public class HasRole : IReturn<CustomUserSession> { }
+
+    [RequiredRole("TheRole")]
+    public class RequiresRoleService : Service
+    {
+        public object Any(HasRole request)
+        {
+            return SessionAs<CustomUserSession>();
+        }
+    }
 }

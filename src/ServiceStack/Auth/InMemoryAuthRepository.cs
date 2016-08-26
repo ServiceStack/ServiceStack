@@ -166,8 +166,10 @@ namespace ServiceStack.Auth
 
             public string GetValueFromHash(string hashId, string key)
             {
-                hashId.ThrowIfNull("hashId");
-                key.ThrowIfNull("key");
+                if (hashId == null)
+                    throw new ArgumentNullException(nameof(hashId));
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
 
                 lock (root.Hashes)
                 {
@@ -182,8 +184,10 @@ namespace ServiceStack.Auth
 
             public void SetEntryInHash(string hashId, string key, string value)
             {
-                hashId.ThrowIfNull("hashId");
-                key.ThrowIfNull("key");
+                if (hashId == null)
+                    throw new ArgumentNullException(nameof(hashId));
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
 
                 lock (root.Hashes)
                 {
@@ -197,8 +201,10 @@ namespace ServiceStack.Auth
 
             public void RemoveEntryFromHash(string hashId, string key)
             {
-                hashId.ThrowIfNull("hashId");
-                key.ThrowIfNull("key");
+                if (hashId == null)
+                    throw new ArgumentNullException(nameof(hashId));
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
 
                 lock (root.Hashes)
                 {

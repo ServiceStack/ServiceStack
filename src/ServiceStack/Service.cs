@@ -86,11 +86,16 @@ namespace ServiceStack
             get { return messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request)); }
         }
 
-
         private ISessionFactory sessionFactory;
         public virtual ISessionFactory SessionFactory
         {
             get { return sessionFactory ?? (sessionFactory = TryResolve<ISessionFactory>()) ?? new SessionFactory(Cache); }
+        }
+
+        private IAuthRepository authRepository;
+        public virtual IAuthRepository AuthRepository
+        {
+            get { return authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request)); }
         }
 
 
@@ -172,12 +177,10 @@ namespace ServiceStack
 
         public virtual void Dispose()
         {
-            if (db != null)
-                db.Dispose();
-            if (redis != null)
-                redis.Dispose();
-            if (messageProducer != null)
-                messageProducer.Dispose();
+            db?.Dispose();
+            redis?.Dispose();
+            messageProducer?.Dispose();
+            using (authRepository as IDisposable) { }
 
             RequestContext.Instance.ReleaseDisposables();
 

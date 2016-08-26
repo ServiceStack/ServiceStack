@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Globalization;
 using ServiceStack.Auth;
 using NHibernate;
 
@@ -29,7 +27,8 @@ namespace ServiceStack.Authentication.NHibernate
 
         public void LoadUserAuth(IAuthSession session, IAuthTokens tokens)
         {
-            session.ThrowIfNull("session");
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
 
             var userAuth = GetUserAuth(session, tokens);
             LoadUserAuth(session, (UserAuth)userAuth);
@@ -236,7 +235,7 @@ namespace ServiceStack.Authentication.NHibernate
                 var existingUser = GetUserAuthByUserName(newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format("User {0} already exists", newUser.UserName));
+                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName));
             }
 
             if (newUser.Email != null)
@@ -244,7 +243,7 @@ namespace ServiceStack.Authentication.NHibernate
                 var existingUser = GetUserAuthByUserName(newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format("Email {0} already exists", newUser.Email));
+                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email));
             }
         }
 

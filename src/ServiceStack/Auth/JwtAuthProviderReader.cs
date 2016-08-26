@@ -189,6 +189,7 @@ namespace ServiceStack.Auth
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
         public JwtAuthProviderReader()
+            : base(null, Realm, Name)
         {
             Init();
         }

@@ -19,29 +19,11 @@ namespace ServiceStack.Authentication.MongoDb
         private readonly MongoDatabase mongoDatabase;
 
         // UserAuth collection name
-        private static string UserAuth_Col
-        {
-            get
-            {
-                return typeof(UserAuth).Name;
-            }
-        }
+        private static string UserAuth_Col => typeof(UserAuth).Name;
         // UserOAuthProvider collection name
-        private static string UserOAuthProvider_Col
-        {
-            get
-            {
-                return typeof(UserAuthDetails).Name;
-            }
-        }
+        private static string UserOAuthProvider_Col => typeof(UserAuthDetails).Name;
         // Counters collection name
-        private static string Counters_Col
-        {
-            get
-            {
-                return typeof(Counters).Name;
-            }
-        }
+        private static string Counters_Col => typeof(Counters).Name;
 
         public MongoDbAuthRepository(MongoDatabase mongoDatabase, bool createMissingCollections)
         {
@@ -154,14 +136,14 @@ namespace ServiceStack.Authentication.MongoDb
                 var existingUser = GetUserAuthByUserName(mongoDatabase, newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException("User {0} already exists".Fmt(newUser.UserName));
+                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName));
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(mongoDatabase, newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException("Email {0} already exists".Fmt(newUser.Email));
+                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email));
             }
         }
 
@@ -277,7 +259,8 @@ namespace ServiceStack.Authentication.MongoDb
 
         public void LoadUserAuth(IAuthSession session, IAuthTokens tokens)
         {
-            session.ThrowIfNull("session");
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
 
             var userAuth = GetUserAuth(session, tokens);
             LoadUserAuth(session, userAuth);

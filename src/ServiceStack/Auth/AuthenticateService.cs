@@ -71,7 +71,7 @@ namespace ServiceStack.Auth
         public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
         {
             if (authProviders.Length == 0)
-                throw new ArgumentNullException("authProviders");
+                throw new ArgumentNullException(nameof(authProviders));
 
             DefaultOAuthProvider = authProviders[0].Provider;
             DefaultOAuthRealm = authProviders[0].AuthRealm;
@@ -153,7 +153,7 @@ namespace ServiceStack.Auth
 
                 var referrerUrl = request.Continue
                     ?? session.ReferrerUrl
-                    ?? this.Request.GetHeader("Referer")
+                    ?? this.Request.GetHeader(HttpHeaders.Referer)
                     ?? authProvider.CallbackUrl;
 
                 var alreadyAuthenticated = response == null;
@@ -162,7 +162,7 @@ namespace ServiceStack.Auth
                     UserName = session.UserAuthName,
                     DisplayName = session.DisplayName 
                         ?? session.UserName 
-                        ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim(),
+                        ?? $"{session.FirstName} {session.LastName}".Trim(),
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl,
                 };
@@ -198,7 +198,7 @@ namespace ServiceStack.Auth
             }
             catch (HttpError ex)
             {
-                var errorReferrerUrl = this.Request.GetHeader("Referer");
+                var errorReferrerUrl = this.Request.GetHeader(HttpHeaders.Referer);
                 if (isHtml && errorReferrerUrl != null)
                 {
                     errorReferrerUrl = errorReferrerUrl.SetParam("f", ex.Message.Localize(Request));

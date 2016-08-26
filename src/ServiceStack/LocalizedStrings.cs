@@ -63,6 +63,13 @@
         //Register
         public static string UserNotExists = "User does not exist";
         public static string AuthRepositoryNotExists = "No IAuthRepository registered or failed to resolve. Check your IoC registrations.";
+        public static string UsernameAlreadyExists = "Username already exists";
+        public static string EmailAlreadyExists = "Email already exists";
+
+        //AuthRepo
+        public static string UserAlreadyExistsTemplate1 = "User '{0}' already exists";
+        public static string EmailAlreadyExistsTemplate1 = "Email '{0}' already exists";
+
 
         //StaticFileHandler
         public static string FileNotExistsFmt = "Static File '{0}' not found";

@@ -721,6 +721,11 @@ namespace ServiceStack
             return httpReq.GetAbsoluteUrl(virtualPath); //Http Listener, TODO: ASP.NET overrides
         }
 
+        public virtual bool UseHttps(IRequest httpReq)
+        {
+            return Config.UseHttpsLinks || httpReq.GetHeader(HttpHeaders.XForwardedProtocol) == "https";
+        }
+
         public virtual string ResolvePhysicalPath(string virtualPath, IRequest httpReq)
         {
             return VirtualFileSources.CombineVirtualPath(VirtualFileSources.RootDirectory.RealPath, virtualPath);

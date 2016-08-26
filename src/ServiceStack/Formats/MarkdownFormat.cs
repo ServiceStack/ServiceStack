@@ -321,7 +321,19 @@ namespace ServiceStack.Formats
 
             MarkdownPage markdownPage;
             if ((markdownPage = GetViewPageByResponse(dto, request)) == null)
+            {
+                if (response is ErrorResponse || response is IHttpResult)
+                {
+                    var html = HostContext.GetPlugin<HtmlFormat>();
+                    if (html != null)
+                    {
+                        html.SerializeToStream(request, response, request.Response);
+                        return;
+                    }
+                }
+
                 throw new InvalidDataException(ErrorPageNotFound.FormatWith(GetPageName(dto, request)));
+            }
 
             ReloadModifiedPageAndTemplates(markdownPage);
 
