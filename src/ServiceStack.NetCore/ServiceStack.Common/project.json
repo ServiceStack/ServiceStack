@@ -19,13 +19,16 @@
   },
   "compile": ["../../ServiceStack.Common/**/*.cs"],
   "frameworks": {
-    "netstandard1.2": { 
+    "netstandard1.3": { 
 	"buildOptions" : {
 	    "define": ["NETSTANDARD1_1"]
 	},
         "dependencies" : {
-	     "System.Dynamic.Runtime" : "4.0.11",
-	     "System.Data.Common" : "4.1.0"
+	     "System.Dynamic.Runtime": "4.0.11",
+	     "System.Data.Common": "4.1.0",
+	     "System.ComponentModel.Primitives": "4.1.0",
+	     "System.Net.Primitives": "4.0.11",
+	     "System.Net.NetworkInformation": "4.1.0"
          }
      }
    

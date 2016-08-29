@@ -41,7 +41,7 @@ namespace ServiceStack.MiniProfiler.Data
             WrappedFactory = wrappedFactory;
         }
 
-#if !NETSTANDARD1_1
+#if !NETSTANDARD1_3
         /// <summary>
         /// proxy
         /// </summary>
