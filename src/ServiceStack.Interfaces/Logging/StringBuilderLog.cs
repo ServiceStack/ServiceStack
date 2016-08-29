@@ -1,4 +1,4 @@
-#if !(NETFX_CORE || NETSTANDARD1_1)
+#if !NETFX_CORE
 using System;
 using System.Text;
 
