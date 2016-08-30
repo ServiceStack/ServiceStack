@@ -537,7 +537,7 @@
                         }, parseInt(opt.heartbeatIntervalMs) || 10000);
                     }
                     if (opt.unRegisterUrl) {
-                        $(window).unload(function () {
+                        $(window).on("unload", function () {
                             $.post(opt.unRegisterUrl, null, function (r) { });
                         });
                     }
