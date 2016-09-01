@@ -17,14 +17,8 @@
     <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
     <dependencies>
       <group targetFramework=".NETStandard1.1">
-        <dependency id="System.Linq.Expressions" version="[4.1.0, )" />
+        <dependency id="System.Runtime" version="[4.1.0, )" />
         <dependency id="System.Runtime.Serialization.Primitives" version="[4.1.1, )" />
-        <dependency id="System.Runtime.Serialization.Xml" version="[4.1.1, )" />
-        <dependency id="System.Net.Http" version="[4.1.0, )" />
-        <dependency id="System.Net.Requests" version="[4.0.11, )" />
-        <dependency id="System.IO" version="[4.1.0, )" />
-        <dependency id="System.Dynamic.Runtime" version="[4.0.11, )" />
-        <dependency id="Microsoft.CSharp" version="[4.0.1, )" />
         <dependency id="NETStandard.Library" version="[1.6.0, )" />
       </group>
     </dependencies>
