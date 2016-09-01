@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETCORE_SUPPORT
+using System;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -392,3 +393,4 @@ namespace ServiceStack.Common.Tests.Messaging
         }
     }
 }
+#endif

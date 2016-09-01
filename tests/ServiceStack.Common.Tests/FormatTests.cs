@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-
+#if !NETCORE_SUPPORT
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.MsgPack;
@@ -49,3 +49,4 @@ namespace ServiceStack.Common.Tests
         }
     }
 }
+#endif

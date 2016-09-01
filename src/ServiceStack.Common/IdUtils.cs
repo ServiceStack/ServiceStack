@@ -15,9 +15,13 @@ namespace ServiceStack
         {
 
 #if !SL5 && !IOS && !XBOX
+#if NETSTANDARD1_1
+            var hasIdInterfaces = typeof(T).GetTypeInfo().ImplementedInterfaces.Where(t => t.GetTypeInfo().IsGenericType 
+                && t.GetTypeInfo().GetGenericTypeDefinition() == typeof(IHasId<>)).ToArray();
+#else
             var hasIdInterfaces = typeof(T).FindInterfaces(
                 (t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IHasId<>), null);
-
+#endif
             if (hasIdInterfaces.Length > 0)
             {
                 CanGetId = HasId<T>.GetId;
@@ -25,7 +29,7 @@ namespace ServiceStack
             }
 #endif
 
-            if (typeof(T).IsClass() || typeof(T).IsInterface)
+            if (typeof(T).IsClass() || typeof(T).IsInterface())
             {
                 foreach (var pi in typeof(T).GetPublicProperties()
                     .Where(pi => pi.AllAttributes<Attribute>()
@@ -89,7 +93,7 @@ namespace ServiceStack
         static HasId()
         {
 
-#if IOS || SL5
+#if IOS || SL5 || NETSTANDARD1_1
             GetIdFn = HasPropertyId<TEntity>.GetId;
 #else
             var hasIdInterfaces = typeof(TEntity).FindInterfaces(

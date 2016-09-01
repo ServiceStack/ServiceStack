@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETCORE_SUPPORT
+using System;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -103,3 +104,4 @@ namespace ServiceStack.Common.Tests
         }
     }
 }
+#endif

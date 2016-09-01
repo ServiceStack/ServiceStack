@@ -100,6 +100,7 @@ namespace ServiceStack.Common.Tests
                 Is.EquivalentTo(testB.FromUserFileTypes.ConvertAll(x => x.ToEnum<UserFileType>())));
         }
 
+#if !NETCORE
         [Test]
         public void Can_cache_a_geneneric_tuple_activator()
         {
@@ -139,5 +140,6 @@ namespace ServiceStack.Common.Tests
 
             Assert.That(list, Is.Not.Null);
         }
+#endif
     }
 }

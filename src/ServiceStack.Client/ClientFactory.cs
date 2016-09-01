@@ -20,7 +20,7 @@ namespace ServiceStack
             if (endpointUrl.IndexOf("format=xml") >= 0)
                 return new XmlServiceClient(endpointUrl);
 #endif
-#if !(SL5 || XBOX || ANDROID || __IOS__ || __MAC__ || PCL || LITE)
+#if !(SL5 || XBOX || ANDROID || __IOS__ || __MAC__ || PCL || LITE || NETSTANDARD1_1)
             if (endpointUrl.IndexOf("format=soap11") >= 0)
                  return new Soap11ServiceClient(endpointUrl);
 

@@ -1,4 +1,5 @@
-﻿using Funq;
+﻿#if !NETCORE_SUPPORT
+using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Host;
@@ -74,3 +75,4 @@ namespace ServiceStack.Common.Tests.OAuth
         }
     }
 }
+#endif

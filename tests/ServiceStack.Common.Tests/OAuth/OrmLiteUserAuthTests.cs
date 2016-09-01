@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿#if !NETCORE_SUPPORT
+using System.Data;
 using System.IO;
 using NUnit.Framework;
 using ServiceStack.Auth;
@@ -47,3 +48,4 @@ namespace ServiceStack.Common.Tests.OAuth
 
 	}
 }
+#endif

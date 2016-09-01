@@ -1,4 +1,4 @@
-#if !SL5
+#if !(SL5 || NETSTANDARD1_1)
 using System.Collections.Generic;
 using System.IO;
 

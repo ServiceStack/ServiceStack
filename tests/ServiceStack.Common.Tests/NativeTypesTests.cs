@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !NETCORE_SUPPORT
+using NUnit.Framework;
 
 namespace ServiceStack.Common.Tests
 {
@@ -243,3 +244,4 @@ namespace ServiceStack.Common.Tests
     public class EmbeddedResponse { }
     public class EmbeddedRequest { }
 }
+#endif

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-
+#if !NETCORE_SUPPORT
 using NUnit.Framework;
 using ServiceStack.Testing;
 
@@ -65,3 +65,4 @@ namespace ServiceStack.Common.Tests
         public string Verb { get; set; }
     }
 }
+#endif

@@ -1,4 +1,5 @@
-﻿using Amazon.DynamoDBv2;
+﻿#if !NETCORE_SUPPORT
+using Amazon.DynamoDBv2;
 using ServiceStack.Configuration;
 
 namespace ServiceStack.Common.Tests
@@ -16,3 +17,4 @@ namespace ServiceStack.Common.Tests
         }
     }
 }
+#endif

@@ -21,17 +21,17 @@ namespace ServiceStack
 
         public static void AddReferencedTypes(Type type, HashSet<Type> refTypes)
         {
-            if (type.BaseType != null)
+            if (type.BaseType() != null)
             {
-                if (!refTypes.Contains(type.BaseType))
+                if (!refTypes.Contains(type.BaseType()))
                 {
-                    refTypes.Add(type.BaseType);
-                    AddReferencedTypes(type.BaseType, refTypes);
+                    refTypes.Add(type.BaseType());
+                    AddReferencedTypes(type.BaseType(), refTypes);
                 }
 
-                if (!type.BaseType.GetGenericArguments().IsEmpty())
+                if (!type.BaseType().GetGenericArguments().IsEmpty())
                 {
-                    foreach (var arg in type.BaseType.GetGenericArguments())
+                    foreach (var arg in type.BaseType().GetGenericArguments())
                     {
                         if (!refTypes.Contains(arg))
                         {
@@ -42,7 +42,7 @@ namespace ServiceStack
                 }
             }
 
-            var properties = type.GetProperties();
+            var properties = type.GetPropertyInfos();
             if (!properties.IsEmpty())
             {
                 foreach (var p in properties)

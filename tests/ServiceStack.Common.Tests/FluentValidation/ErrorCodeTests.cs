@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if !NETCORE_SUPPORT
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
@@ -175,3 +176,4 @@ namespace ServiceStack.Common.Tests.FluentValidation
         }
     }
 }
+#endif

@@ -309,7 +309,7 @@ namespace ServiceStack.Common.Tests.Perf
             var byteArrayValue = new byte[] { 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, };
 
             CompareMultipleRuns(
-                "Encoding.Default.GetString(byteArrayValue)", () => Encoding.Default.GetString(byteArrayValue),
+                "Encoding.Default.GetString(byteArrayValue)", () => Encoding.GetEncoding(0).GetString(byteArrayValue),
                 "SCU.ToString(byteArrayValue)", () => TypeSerializer.SerializeToString(byteArrayValue)
             );
         }

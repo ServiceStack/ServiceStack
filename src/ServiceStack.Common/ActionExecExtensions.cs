@@ -7,6 +7,9 @@ using ServiceStack.Support;
 #if NETFX_CORE
 using Windows.System.Threading;
 #endif
+#if NETSTANDARD1_1
+using System.Threading.Tasks;
+#endif
 
 namespace ServiceStack
 {
@@ -32,7 +35,9 @@ namespace ServiceStack
                 var waitHandle = new AutoResetEvent(false);
                 waitHandles.Add(waitHandle);
                 var commandExecsHandler = new ActionExecHandler(action, waitHandle);
-#if NETFX_CORE
+#if NETSTANDARD1_1
+                Task.Run(() => commandExecsHandler.Execute());
+#elif NETFX_CORE
                 ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => commandExecsHandler.Execute()));
 #else
                 ThreadPool.QueueUserWorkItem(x => ((ActionExecHandler)x).Execute(), commandExecsHandler);
@@ -74,6 +79,9 @@ namespace ServiceStack
             if (waitHandles == null) throw new ArgumentNullException("waitHandles");
             if (waitHandles.Length == 0) return true;
 
+#if NETSTANDARD1_1
+            return WaitHandle.WaitAll(waitHandles, timeOutMs);
+#else
             if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
             {
                 // WaitAll for multiple handles on an STA thread is not supported.
@@ -88,6 +96,7 @@ namespace ServiceStack
             }
 
             return WaitHandle.WaitAll(waitHandles, timeOutMs, false);
+#endif
         }
 #endif
 

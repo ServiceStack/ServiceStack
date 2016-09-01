@@ -41,6 +41,7 @@ namespace ServiceStack.MiniProfiler.Data
             WrappedFactory = wrappedFactory;
         }
 
+#if !NETSTANDARD1_3
         /// <summary>
         /// proxy
         /// </summary>
@@ -58,6 +59,8 @@ namespace ServiceStack.MiniProfiler.Data
         {
             return WrappedFactory.CreateDataSourceEnumerator();
         }
+#endif
+
         /// <summary>
         /// proxy
         /// </summary>
@@ -86,6 +89,7 @@ namespace ServiceStack.MiniProfiler.Data
         {
             return WrappedFactory.CreateConnectionStringBuilder();
         }
+#if !NETSTANDARD1_1
         /// <summary>
         /// proxy
         /// </summary>
@@ -107,5 +111,6 @@ namespace ServiceStack.MiniProfiler.Data
         {
             return WrappedFactory.CreatePermission(state);
         }
+#endif
     }
 }

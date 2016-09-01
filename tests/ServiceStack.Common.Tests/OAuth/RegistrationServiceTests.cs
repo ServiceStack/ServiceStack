@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if !NETCORE_SUPPORT
+using System.Collections.Generic;
 using Moq;
 using NUnit.Framework;
 using ServiceStack.Auth;
@@ -221,3 +222,4 @@ namespace ServiceStack.Common.Tests.OAuth
         }
     }
 }
+#endif

@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using NUnit.Framework;
 using ServiceStack.Reflection;
+using System.Linq;
 
 namespace ServiceStack.Common.Tests.Expressions
 {
@@ -49,7 +50,11 @@ namespace ServiceStack.Common.Tests.Expressions
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
+#if NETCORE
+            var methodInfo = typeof(string).GetTypeInfo().GetDeclaredMethods("ToUpper").First(m => m.GetParameters().Length == 0);
+#else
             var methodInfo = typeof(string).GetMethod("ToUpper", new Type[] { });
+#endif
 
             for (var i = 0; i < Times; i++)
             {
@@ -66,7 +71,11 @@ namespace ServiceStack.Common.Tests.Expressions
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
+#if NETCORE
+            var methodInfo = typeof(string).GetTypeInfo().GetDeclaredMethods("ToUpper").First(m => m.GetParameters().Length == 0);
+#else
             var methodInfo = typeof(string).GetMethod("ToUpper", new Type[] { });
+#endif
             var delMethod = DelegateFactory.Create(methodInfo);
 
             for (var i = 0; i < Times; i++)

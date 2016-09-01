@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !NETCORE_SUPPORT
+using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
@@ -59,3 +60,4 @@ namespace ServiceStack.Common.Tests
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if !NETCORE_SUPPORT
 using ServiceStack.Auth;
 using ServiceStack.Text;
 
@@ -140,3 +141,4 @@ namespace ServiceStack.Common.Tests.OAuth
         }
     }
 }
+#endif
