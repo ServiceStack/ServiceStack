@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace ServiceStack
 {
@@ -18,6 +19,18 @@ namespace ServiceStack
             }
 
             return true;
+        }
+
+        public static byte[] ToSha1Hash(this byte[] bytes)
+        {
+#if NETSTANDARD1_1
+            using (var sha1 = SHA1.Create())
+#else
+            using (var sha1 = new SHA1CryptoServiceProvider())
+#endif
+            {
+                return sha1.ComputeHash(bytes);
+            }
         }
     }
 

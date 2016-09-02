@@ -34,7 +34,8 @@
         "System.Data.Common": "4.1.0",
         "System.ComponentModel.Primitives": "4.1.0",
         "System.Net.Primitives": "4.0.11",
-        "System.Net.NetworkInformation": "4.1.0"
+        "System.Net.NetworkInformation": "4.1.0",
+        "System.Net.Security" : "4.0.0"
       }
     }
   },
