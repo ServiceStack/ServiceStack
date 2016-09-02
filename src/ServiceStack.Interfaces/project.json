@@ -1,0 +1,35 @@
+{
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": ["DEBUG", "TRACE"],
+	"compile": {
+		"include" : ["../../ServiceStack.Interfaces/**/*.cs"]
+	}
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": ["TRACE"],
+        "optimize": true,
+	"compile": {
+		"include" : ["../../ServiceStack.Interfaces/**/*.cs"]
+	}
+      }
+    }
+  },
+  //have to add this deprecated option, because compile.include does not work
+  "compile" : ["../../ServiceStack.Interfaces/**/*.cs"],
+  "dependencies": {
+    "NETStandard.Library": "1.6.0"
+  },
+  "frameworks": {
+    "netstandard1.1": { 
+        "dependencies" : {
+             "System.Runtime" : "4.1.0",
+	     "System.Runtime.Serialization.Primitives" : "4.1.1",
+         }
+     }
+  },
+  "version": "1.0.0"
+}
