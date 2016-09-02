@@ -125,12 +125,6 @@ namespace ServiceStack
             stream.Write(bytes, 0, bytes.Length);
         }
 
-        public static void Close(this Stream stream)
-        {
-            PclExport.Instance.CloseStream(stream);
-            stream.Dispose();
-        }
-
 #if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
         public static string ToMd5Hash(this Stream stream)
         {
