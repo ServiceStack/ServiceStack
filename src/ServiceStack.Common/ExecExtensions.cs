@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using ServiceStack.Logging;
-#if NETSTANDARD1_1
+#if NETSTANDARD1_3
 using System.Threading.Tasks;
 #endif
 
@@ -138,7 +138,7 @@ namespace ServiceStack
             var rand = new Random(Guid.NewGuid().GetHashCode());
             var nextTry = rand.Next(
                 (int)Math.Pow(i, 2), (int)Math.Pow(i + 1, 2) + 1);
-#if NETSTANDARD1_1
+#if NETSTANDARD1_3
             Task.Delay(nextTry).Wait();
 #else
             Thread.Sleep(nextTry);

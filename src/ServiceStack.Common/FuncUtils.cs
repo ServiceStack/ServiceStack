@@ -51,7 +51,7 @@ namespace ServiceStack
             var timer = System.Diagnostics.Stopwatch.StartNew();
             while (condition())
             {
-#if NETSTANDARD1_1
+#if NETSTANDARD1_3
 	        System.Threading.Tasks.Task.Delay(millsecondPollPeriod).Wait();
 #else
                 System.Threading.Thread.Sleep(millsecondPollPeriod);

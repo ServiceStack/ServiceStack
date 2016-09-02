@@ -89,7 +89,7 @@ namespace ServiceStack.MiniProfiler.Data
         {
             return WrappedFactory.CreateConnectionStringBuilder();
         }
-#if !NETSTANDARD1_1
+#if !NETSTANDARD1_3
         /// <summary>
         /// proxy
         /// </summary>

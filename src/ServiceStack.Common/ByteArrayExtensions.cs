@@ -23,7 +23,7 @@ namespace ServiceStack
 
         public static byte[] ToSha1Hash(this byte[] bytes)
         {
-#if NETSTANDARD1_1
+#if NETSTANDARD1_3
             using (var sha1 = SHA1.Create())
 #else
             using (var sha1 = new SHA1CryptoServiceProvider())

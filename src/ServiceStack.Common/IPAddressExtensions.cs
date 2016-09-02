@@ -1,4 +1,4 @@
-#if !(NETFX_CORE || (NETSTANDARD1_1 && !NETSTANDARD1_3))
+#if !(NETFX_CORE || (NETSTANDARD1_3 && !NETSTANDARD1_3))
 using System;
 using System.Collections.Generic;
 using System.Net;
