@@ -568,6 +568,15 @@ namespace ServiceStack
                 : CreateIlFieldSetter(fieldInfo);
         }
 
+        public override Type UseType(Type type)
+        {
+            if (type.IsInterface || type.IsAbstract)
+            {
+                return DynamicProxy.GetInstanceFor(type).GetType();
+            }
+            return type;
+        }
+
         public override DataContractAttribute GetWeakDataContract(Type type)
         {
             return type.GetWeakDataContract();
