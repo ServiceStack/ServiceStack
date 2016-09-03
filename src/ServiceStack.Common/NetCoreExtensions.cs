@@ -3,7 +3,7 @@ using System.Net.Sockets;
 
 namespace ServiceStack
 {
-    public static class SocketExtensions
+    public static class NetCoreExtensions
     {
         public static void Close(this Socket socket)
         {
