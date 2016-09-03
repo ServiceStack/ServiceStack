@@ -491,12 +491,6 @@ namespace ServiceStack.Host
 
             var type = metadataTypes.Types.FirstOrDefault(x => x.Name == name
                 && (@namespace == null || x.Namespace == @namespace));
-            if (type != null)
-                return type;
-
-            //Inner Type
-            type = metadataTypes.Types.FirstOrDefault(x => x.Name.LastRightPart('.') == name
-                && (@namespace == null || x.Namespace == @namespace));
 
             return type;
         }
