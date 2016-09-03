@@ -120,13 +120,10 @@ namespace ServiceStack
 
         public static string ExpandTypeName(this Type type)
         {
-            var typeName = type.IsGenericType()
-                ?  ExpandGenericTypeName(type) 
-                : type.Name;
+            if (type.IsGenericType())
+                return ExpandGenericTypeName(type);
 
-            typeName = typeName.Replace('+', '.');
-
-            return type.IsGenericParameter ? "'" + typeName : typeName;
+            return type.GetOperationName();
         }
 
         public static string ExpandGenericTypeName(Type type)
