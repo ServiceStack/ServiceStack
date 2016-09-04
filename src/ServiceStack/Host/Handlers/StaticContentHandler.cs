@@ -13,7 +13,7 @@ namespace ServiceStack.Host.Handlers
         private StaticContentHandler(string contentType)
         {
             if (string.IsNullOrEmpty(contentType))
-                throw new ArgumentNullException("contentType");
+                throw new ArgumentNullException(nameof(contentType));
 
             this.contentType = contentType;
             this.RequestName = GetType().Name;

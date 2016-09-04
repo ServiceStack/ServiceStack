@@ -40,50 +40,26 @@ namespace ServiceStack.Host
         }
 
         private HttpWorkerRequest httpWorkerRequest;
-        private HttpWorkerRequest HttpWorkerRequest
-        {
-            get
-            {
-                if (this.httpWorkerRequest == null)
-                {
-                    this.httpWorkerRequest = GetWorker(this.httpContext);
-                }
-                return this.httpWorkerRequest;
-            }
-        }
+        private HttpWorkerRequest HttpWorkerRequest => 
+            this.httpWorkerRequest ?? (this.httpWorkerRequest = GetWorker(this.httpContext));
 
         private string acceptEncoding;
         public string AcceptEncoding
         {
             get
             {
-                if (acceptEncoding == null)
-                {
-                    if (!Env.IsMono)
-                    {
-                        acceptEncoding = HttpWorkerRequest.GetKnownRequestHeader(HttpWorkerRequest.HeaderAcceptEncoding);
-                        if (acceptEncoding != null) acceptEncoding = acceptEncoding.ToLower();
-                    }
-                }
+                if (acceptEncoding != null)
+                    return acceptEncoding;
+                if (Env.IsMono)
+                    return acceptEncoding;
+
+                acceptEncoding = HttpWorkerRequest.GetKnownRequestHeader(HttpWorkerRequest.HeaderAcceptEncoding)?.ToLower();
                 return acceptEncoding;
             }
         }
 
-        public bool AcceptsGzip
-        {
-            get
-            {
-                return AcceptEncoding != null && AcceptEncoding.Contains("gzip");
-            }
-        }
+        public bool AcceptsGzip => AcceptEncoding != null && AcceptEncoding.Contains("gzip");
 
-        public bool AcceptsDeflate
-        {
-            get
-            {
-                return AcceptEncoding != null && AcceptEncoding.Contains("deflate");
-            }
-        }
-
+        public bool AcceptsDeflate => AcceptEncoding != null && AcceptEncoding.Contains("deflate");
     }
 }

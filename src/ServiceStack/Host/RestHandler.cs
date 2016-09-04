@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -61,10 +59,7 @@ namespace ServiceStack.Host
         // Set from SSHHF.GetHandlerForPathInfo()
         public string ResponseContentType { get; set; }
 
-        public override bool RunAsAsync()
-        {
-            return true;
-        }
+        public override bool RunAsAsync() => true;
 
         public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
@@ -178,7 +173,7 @@ namespace ServiceStack.Host
         public override object CreateRequest(IRequest httpReq, string operationName)
         {
             if (this.RestPath == null)
-                throw new ArgumentNullException("No RestPath found");
+                throw new ArgumentNullException(nameof(RestPath), "No RestPath found");
 
             return CreateRequest(httpReq, this.RestPath);
         }

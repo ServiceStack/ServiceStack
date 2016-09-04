@@ -262,10 +262,7 @@ namespace ServiceStack.Host.Handlers
             return indexDirs;
         }
 
-        public override bool IsReusable
-        {
-            get { return true; }
-        }
+        public override bool IsReusable => true;
 
         public static bool DirectoryExists(string dirPath, string appFilePath)
         {

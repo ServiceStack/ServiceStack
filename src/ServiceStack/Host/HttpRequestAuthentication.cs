@@ -97,7 +97,7 @@ namespace ServiceStack.Host
         {
             Cookie cookie;
             httpReq.Cookies.TryGetValue(cookieName, out cookie);
-            return cookie != null ? cookie.Value : null;
+            return cookie?.Value;
         }
 
         public static string GetItemStringValue(this IRequest httpReq, string itemName)

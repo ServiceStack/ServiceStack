@@ -235,9 +235,7 @@ namespace ServiceStack.Host.Handlers
                         if (winUser != null)
                         {
                             response.LogonUserInfo["User"] = winUser.Value;
-                            response.LogonUserInfo["User.AccountDomainSid"] = winUser.AccountDomainSid != null
-                                ? winUser.AccountDomainSid.ToString()
-                                : "null";
+                            response.LogonUserInfo["User.AccountDomainSid"] = winUser.AccountDomainSid?.ToString() ?? "null";
                             response.LogonUserInfo["User.IsAccountSid"] = winUser.IsAccountSid().ToString();
                         }
                     }
@@ -298,7 +296,7 @@ namespace ServiceStack.Host.Handlers
             {
                 Usage = "append '?debug=requestinfo' to any querystring. Optional params: virtualPathCount",
                 Host = HostContext.ServiceName + "_" + HostContext.Config.DebugHttpListenerHostEnvironment + "_" + Env.ServerUserAgent,
-                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType != null ? hostType.BaseType.Name : hostType.Name),
+                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType?.Name ?? hostType.Name),
                 Date = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                 ServiceName = HostContext.ServiceName,
                 HandlerFactoryPath = HostContext.Config.HandlerFactoryPath,

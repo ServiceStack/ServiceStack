@@ -38,7 +38,7 @@ namespace ServiceStack.Host
 
         public virtual void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
         {
-            var requestType = requestDto != null ? requestDto.GetType() : null;
+            var requestType = requestDto?.GetType();
 
             if (ExcludeRequestType(requestType)) 
                 return;
@@ -117,10 +117,7 @@ namespace ServiceStack.Host
             var to = new Dictionary<string, string>();
             foreach (var item in items)
             {
-                var value = item.Value == null
-                    ? "(null)"
-                    : item.Value.ToString();
-
+                var value = item.Value?.ToString() ?? "(null)";
                 to[item.Key] = value;
             }
 
@@ -142,7 +139,7 @@ namespace ServiceStack.Host
                 return errorResult.Response;
 
             var ex = response as Exception;
-            return ex != null ? ex.ToResponseStatus() : null;
+            return ex?.ToResponseStatus();
         }
     }
 }

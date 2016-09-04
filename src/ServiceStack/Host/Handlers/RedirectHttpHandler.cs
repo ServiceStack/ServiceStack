@@ -25,7 +25,7 @@ namespace ServiceStack.Host.Handlers
         public override void ProcessRequest(IRequest request, IResponse response, string operationName)
         {
             if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
-                throw new ArgumentNullException("RelativeUrl or AbsoluteUrl");
+                throw new ArgumentException("RelativeUrl and AbsoluteUrl is Required");
 
             if (!string.IsNullOrEmpty(AbsoluteUrl))
             {
@@ -61,7 +61,7 @@ namespace ServiceStack.Host.Handlers
             var response = context.Response;
 
             if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
-                throw new ArgumentNullException("RelativeUrl or AbsoluteUrl");
+                throw new ArgumentException("RelativeUrl and AbsoluteUrl is Required");
 
             if (!string.IsNullOrEmpty(AbsoluteUrl))
             {

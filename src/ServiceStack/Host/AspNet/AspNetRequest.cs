@@ -8,7 +8,6 @@ using System.Net;
 using System.Web;
 using Funq;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.AspNet
@@ -55,29 +54,17 @@ namespace ServiceStack.Host.AspNet
             }
         }
 
-        public HttpRequestBase HttpRequest
-        {
-            get { return request; }
-        }
+        public HttpRequestBase HttpRequest => request;
 
-        public object OriginalRequest
-        {
-            get { return request; }
-        }
+        public object OriginalRequest => request;
 
-        public IResponse Response
-        {
-            get { return response; }
-        }
+        public IResponse Response => response;
 
-        public IHttpResponse HttpResponse
-        {
-            get { return response; }
-        }
+        public IHttpResponse HttpResponse => response;
 
         public RequestAttributes RequestAttributes { get; set; }
 
-        public IRequestPreferences RequestPreferences { get; private set; }
+        public IRequestPreferences RequestPreferences { get; }
 
         public T TryResolve<T>()
         {
@@ -96,26 +83,14 @@ namespace ServiceStack.Host.AspNet
 
         public object Dto { get; set; }
 
-        public string ContentType
-        {
-            get { return request.ContentType; }
-        }
-        
-        private string httpMethod;
-        public string HttpMethod
-        {
-            get
-            {
-                return httpMethod
-                    ?? (httpMethod = this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
-                    ?? request.HttpMethod);
-            }
-        }
+        public string ContentType => request.ContentType;
 
-        public string Verb
-        {
-            get { return HttpMethod; }
-        }
+        private string httpMethod;
+        public string HttpMethod => httpMethod
+            ?? (httpMethod = this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
+            ?? request.HttpMethod);
+
+        public string Verb => HttpMethod;
 
         public string Param(string name)
         {
@@ -124,15 +99,9 @@ namespace ServiceStack.Host.AspNet
                 ?? FormData[name];
         }
 
-        public bool IsLocal
-        {
-            get { return request.IsLocal; }
-        }
+        public bool IsLocal => request.IsLocal;
 
-        public string UserAgent
-        {
-            get { return request.UserAgent; }
-        }
+        public string UserAgent => request.UserAgent;
 
         private Dictionary<string, object> items;
         public Dictionary<string, object> Items
@@ -208,22 +177,13 @@ namespace ServiceStack.Host.AspNet
         }
 
         private NameValueCollectionWrapper headers;
-        public INameValueCollection Headers
-        {
-            get { return headers ?? (headers = new NameValueCollectionWrapper(request.Headers)); }
-        }
+        public INameValueCollection Headers => headers ?? (headers = new NameValueCollectionWrapper(request.Headers));
 
         private NameValueCollectionWrapper queryString;
-        public INameValueCollection QueryString
-        {
-            get { return queryString ?? (queryString = new NameValueCollectionWrapper(request.QueryString)); }
-        }
+        public INameValueCollection QueryString => queryString ?? (queryString = new NameValueCollectionWrapper(request.QueryString));
 
         private NameValueCollectionWrapper formData;
-        public INameValueCollection FormData
-        {
-            get { return formData ?? (formData = new NameValueCollectionWrapper(request.Form)); }
-        }
+        public INameValueCollection FormData => formData ?? (formData = new NameValueCollectionWrapper(request.Form));
 
         public string GetRawBody()
         {
@@ -238,10 +198,7 @@ namespace ServiceStack.Host.AspNet
             }
         }
 
-        public string RawUrl
-        {
-            get { return request.RawUrl; }
-        }
+        public string RawUrl => request.RawUrl;
 
         public string AbsoluteUri
         {
@@ -279,82 +236,36 @@ namespace ServiceStack.Host.AspNet
             }
         }
 
-        public string XForwardedFor
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedFor]) ? null : request.Headers[HttpHeaders.XForwardedFor];
-            }
-        }
+        public string XForwardedFor => 
+            string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedFor]) ? null : request.Headers[HttpHeaders.XForwardedFor];
 
-        public int? XForwardedPort
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedPort]) ? (int?) null : int.Parse(request.Headers[HttpHeaders.XForwardedPort]);
-            }
-        }
+        public int? XForwardedPort => 
+            string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedPort]) ? (int?) null : int.Parse(request.Headers[HttpHeaders.XForwardedPort]);
 
-        public string XForwardedProtocol
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedProtocol]) ? null : request.Headers[HttpHeaders.XForwardedProtocol];
-            }
-        }
+        public string XForwardedProtocol => 
+            string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedProtocol]) ? null : request.Headers[HttpHeaders.XForwardedProtocol];
 
-        public string XRealIp
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XRealIp]) ? null : request.Headers[HttpHeaders.XRealIp];
-            }
-        }
+        public string XRealIp => 
+            string.IsNullOrEmpty(request.Headers[HttpHeaders.XRealIp]) ? null : request.Headers[HttpHeaders.XRealIp];
 
-        public string Accept
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.Accept]) ? null : request.Headers[HttpHeaders.Accept];
-            }
-        }
+        public string Accept => 
+            string.IsNullOrEmpty(request.Headers[HttpHeaders.Accept]) ? null : request.Headers[HttpHeaders.Accept];
 
         private string remoteIp;
-        public string RemoteIp
-        {
-            get
-            {
-                return remoteIp ?? (remoteIp = XForwardedFor ?? (XRealIp ?? request.UserHostAddress));
-            }
-        }
+        public string RemoteIp => 
+            remoteIp ?? (remoteIp = XForwardedFor ?? (XRealIp ?? request.UserHostAddress));
 
-        public string Authorization
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.Authorization]) ? null : request.Headers[HttpHeaders.Authorization];
-            }
-        }
+        public string Authorization => 
+            string.IsNullOrEmpty(request.Headers[HttpHeaders.Authorization]) ? null : request.Headers[HttpHeaders.Authorization];
 
-        public bool IsSecureConnection
-        {
-            get { return request.IsSecureConnection || XForwardedProtocol == "https"; }
-        }
+        public bool IsSecureConnection => 
+            request.IsSecureConnection || XForwardedProtocol == "https";
 
-        public string[] AcceptTypes
-        {
-            get { return request.AcceptTypes; }
-        }
+        public string[] AcceptTypes => request.AcceptTypes;
 
-        public string PathInfo
-        {
-            get { return request.GetPathInfo(); }
-        }
+        public string PathInfo => request.GetPathInfo();
 
-        public string UrlHostName
-        {
-            get { return request.GetUrlHostName(); }
-        }
+        public string UrlHostName => request.GetUrlHostName();
 
         public bool UseBufferedStream
         {
@@ -368,15 +279,9 @@ namespace ServiceStack.Host.AspNet
         }
 
         public MemoryStream BufferedStream { get; set; }
-        public Stream InputStream
-        {
-            get { return BufferedStream ?? request.InputStream; }
-        }
+        public Stream InputStream => BufferedStream ?? request.InputStream;
 
-        public long ContentLength
-        {
-            get { return request.ContentLength; }
-        }
+        public long ContentLength => request.ContentLength;
 
         private IHttpFile[] httpFiles;
         public IHttpFile[] Files
@@ -403,10 +308,7 @@ namespace ServiceStack.Host.AspNet
             }
         }
 
-        public Uri UrlReferrer
-        {
-            get { return request.UrlReferrer; }
-        }
+        public Uri UrlReferrer => request.UrlReferrer;
     }
 
 }

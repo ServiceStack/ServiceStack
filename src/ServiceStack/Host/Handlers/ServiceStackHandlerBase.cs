@@ -36,10 +36,7 @@ namespace ServiceStack.Host.Handlers
 
         public RequestAttributes HandlerAttributes { get; set; }
 
-        public override bool IsReusable
-        {
-            get { return false; }
-        }
+        public override bool IsReusable => false;
 
         public abstract object CreateRequest(IRequest request, string operationName);
         public abstract object GetResponse(IRequest request, object requestDto);
@@ -144,8 +141,7 @@ namespace ServiceStack.Host.Handlers
             }
             catch (Exception ex)
             {
-                var msg = "Could not deserialize '{0}' request using {1}'\nError: {2}"
-                    .Fmt(contentType, requestType, ex);
+                var msg = $"Could not deserialize '{contentType}' request using {requestType}'\nError: {ex}";
                 throw new SerializationException(msg, ex);
             }
             return requestType.CreateInstance(); //Return an empty DTO, even for empty request bodies
@@ -157,7 +153,7 @@ namespace ServiceStack.Host.Handlers
             HostContext.ServiceController.RequestTypeFactoryMap.TryGetValue(
                 requestType, out requestFactoryFn);
 
-            return requestFactoryFn != null ? requestFactoryFn(httpReq) : null;
+            return requestFactoryFn?.Invoke(httpReq);
         }
 
         public static Type GetOperationType(string operationName)
@@ -206,15 +202,14 @@ namespace ServiceStack.Host.Handlers
         {
             if (type == null)
             {
-                throw new NotImplementedException(
-                    string.Format("The operation '{0}' does not exist for this service", operationName));
+                throw new NotImplementedException($"The operation '{operationName}' does not exist for this service");
             }
         }
 
         protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, Feature feature, string operationName)
         {
             if (operationName == null)
-                throw new ArgumentNullException("operationName");
+                throw new ArgumentNullException(nameof(operationName));
 
             if (HostContext.Config.EnableFeatures != Feature.All)
             {

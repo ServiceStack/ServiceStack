@@ -22,8 +22,8 @@ namespace ServiceStack.Host.Handlers
 
         public override void ProcessRequest(IRequest request, IResponse response, string operationName)
         {
-            HostContext.AppHost.OnLogError(typeof(NotFoundHttpHandler), 
-                string.Format("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl));
+            HostContext.AppHost.OnLogError(typeof(NotFoundHttpHandler),
+                $"{request.UserHostAddress} Request not found: {request.RawUrl}");
 
             var sb = StringBuilderCache.Allocate();
 
@@ -126,9 +126,6 @@ namespace ServiceStack.Host.Handlers
             context.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text));
         }
 
-        public override bool IsReusable
-        {
-            get { return true; }
-        }
+        public override bool IsReusable => true;
     }
 }

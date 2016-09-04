@@ -17,7 +17,7 @@ namespace ServiceStack.Host.Handlers
             this.appHost = HostContext.AppHost;
         }
 
-        private ServiceStackHost appHost;
+        private readonly ServiceStackHost appHost;
         private readonly Feature format;
         public string HandlerContentType { get; set; }
 

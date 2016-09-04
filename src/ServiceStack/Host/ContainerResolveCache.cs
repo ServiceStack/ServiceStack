@@ -9,7 +9,7 @@ namespace ServiceStack.Host
 {
     public class ContainerResolveCache : ITypeFactory
     {
-        private Container container;
+        private readonly Container container;
         private static Dictionary<Type, Func<Container, object>> resolveFnMap = new Dictionary<Type, Func<Container, object>>();
 
         public ContainerResolveCache(Container container)
@@ -51,8 +51,7 @@ namespace ServiceStack.Host
                 do
                 {
                     snapshot = resolveFnMap;
-                    newCache = new Dictionary<Type, Func<Container, object>>(resolveFnMap);
-                    newCache[type] = resolveFn;
+                    newCache = new Dictionary<Type, Func<Container, object>>(resolveFnMap) { [type] = resolveFn };
                 } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref resolveFnMap, newCache, snapshot), snapshot));
             }

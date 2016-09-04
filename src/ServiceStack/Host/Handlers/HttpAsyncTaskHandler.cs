@@ -9,7 +9,6 @@ using System.Web;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -20,20 +19,11 @@ namespace ServiceStack.Host.Handlers
 
         public string RequestName { get; set; }
 
-        protected static bool DefaultHandledRequest(HttpListenerContext context)
-        {
-            return false;
-        }
+        protected static bool DefaultHandledRequest(HttpListenerContext context) => false;
 
-        protected static bool DefaultHandledRequest(HttpContextBase context)
-        {
-            return false;
-        }
+        protected static bool DefaultHandledRequest(HttpContextBase context) => false;
 
-        public virtual bool RunAsAsync()
-        {
-            return false;
-        }
+        public virtual bool RunAsAsync() => false;
 
         public virtual Task ProcessRequestAsync(HttpContextBase context)
         {
@@ -41,7 +31,7 @@ namespace ServiceStack.Host.Handlers
 
             RememberLastRequestInfo(operationName, context.Request.PathInfo);
 
-            if (String.IsNullOrEmpty(operationName)) return TypeConstants.EmptyTask;
+            if (string.IsNullOrEmpty(operationName)) return TypeConstants.EmptyTask;
 
             if (DefaultHandledRequest(context)) return TypeConstants.EmptyTask;
 
@@ -125,15 +115,12 @@ namespace ServiceStack.Host.Handlers
             ProcessRequest(httpReq, httpReq.Response, operationName);
         }
 
-        public virtual bool IsReusable
-        {
-            get { return false; }
-        }
+        public virtual bool IsReusable => false;
 
         IAsyncResult IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData)
         {
             if (cb == null)
-                throw new ArgumentNullException("cb");
+                throw new ArgumentNullException(nameof(cb));
 
             var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
 
@@ -160,7 +147,7 @@ namespace ServiceStack.Host.Handlers
 
         protected Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
-            var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
+            var errorMessage = $"Error occured while Processing Request: {ex.Message}";
             HostContext.AppHost.OnLogError(typeof(HttpAsyncTaskHandler), errorMessage, ex);
 
             try

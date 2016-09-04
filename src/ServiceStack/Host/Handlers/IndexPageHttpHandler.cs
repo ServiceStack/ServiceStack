@@ -56,9 +56,6 @@ namespace ServiceStack.Host.Handlers
             context.EndHttpHandlerRequest(skipHeaders: true);
         }
 
-        public override bool IsReusable
-        {
-            get { return true; }
-        }
+        public override bool IsReusable => true;
     }
 }

@@ -202,8 +202,8 @@ namespace ServiceStack.Host
                 if (defaultAttr != null)
                 {
                     if (appHost.Config.FallbackRestPath != null)
-                        throw new NotSupportedException(string.Format(
-                            "Config.FallbackRestPath is already defined. Only 1 [FallbackRoute] is allowed."));
+                        throw new NotSupportedException(
+                            "Config.FallbackRestPath is already defined. Only 1 [FallbackRoute] is allowed.");
 
                     appHost.Config.FallbackRestPath = (httpMethod, pathInfo, filePath) =>
                     {
@@ -215,8 +215,8 @@ namespace ServiceStack.Host
                 }
 
                 if (!restPath.IsValid)
-                    throw new NotSupportedException(string.Format(
-                        "RestPath '{0}' on Type '{1}' is not Valid", attr.Path, requestType.GetOperationName()));
+                    throw new NotSupportedException(
+                        $"RestPath '{attr.Path}' on Type '{requestType.GetOperationName()}' is not Valid");
 
                 RegisterRestPath(restPath);
             }
@@ -227,10 +227,10 @@ namespace ServiceStack.Host
         public void RegisterRestPath(RestPath restPath)
         {
             if (!restPath.Path.StartsWith("/"))
-                throw new ArgumentException("Route '{0}' on '{1}' must start with a '/'".Fmt(restPath.Path, restPath.RequestType.GetOperationName()));
+                throw new ArgumentException($"Route '{restPath.Path}' on '{restPath.RequestType.GetOperationName()}' must start with a '/'");
             if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
-                throw new ArgumentException(("Route '{0}' on '{1}' contains invalid chars. " +
-                                            "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.").Fmt(restPath.Path, restPath.RequestType.GetOperationName()));
+                throw new ArgumentException($"Route '{restPath.Path}' on '{restPath.RequestType.GetOperationName()}' contains invalid chars. " +
+                                            "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.");
 
             List<RestPath> pathsAtFirstMatch;
             if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out pathsAtFirstMatch))
@@ -384,10 +384,8 @@ namespace ServiceStack.Host
             if (requestExecMap.ContainsKey(requestType))
             {
                 throw new AmbiguousMatchException(
-                    string.Format(
-                    "Could not register Request '{0}' with service '{1}' as it has already been assigned to another service.\n"
-                    + "Each Request DTO can only be handled by 1 service.",
-                    requestType.FullName, serviceType.FullName));
+                    $"Could not register Request '{requestType.FullName}' with service '{serviceType.FullName}' as it has already been assigned to another service.\n" +
+                    "Each Request DTO can only be handled by 1 service.");
             }
 
             requestExecMap.Add(requestType, handlerFn);
@@ -580,8 +578,7 @@ namespace ServiceStack.Host
 
             if (appHost.Config.EnableAccessRestrictions)
             {
-                AssertServiceRestrictions(requestType,
-                    req != null ? req.RequestAttributes : RequestAttributes.None);
+                AssertServiceRestrictions(requestType, req.RequestAttributes);
             }
 
             var handlerFn = GetService(requestType);
@@ -633,7 +630,7 @@ namespace ServiceStack.Host
                     }
                 }
 
-                throw new NotImplementedException(string.Format("Unable to resolve service '{0}'", requestType.GetOperationName()));
+                throw new NotImplementedException($"Unable to resolve service '{requestType.GetOperationName()}'");
             }
 
             return handlerFn;
@@ -742,7 +739,7 @@ namespace ServiceStack.Host
                 var passed = requiredScenario & actualAttributes;
                 var failed = requiredScenario & ~(passed);
 
-                failedScenarios.AppendFormat("\n -[{0}]", failed);
+                failedScenarios.Append($"\n -[{failed}]");
             }
 
             var internalDebugMsg = (RequestAttributes.InternalNetworkAccess & actualAttributes) != 0
@@ -750,8 +747,8 @@ namespace ServiceStack.Host
                 : "";
 
             throw new UnauthorizedAccessException(
-                string.Format("Could not execute service '{0}', The following restrictions were not met: '{1}'" + internalDebugMsg,
-                    requestType.GetOperationName(), StringBuilderCache.ReturnAndFree(failedScenarios)));
+                $"Could not execute service '{requestType.GetOperationName()}', The following restrictions were not met: " +
+                $"'{StringBuilderCache.ReturnAndFree(failedScenarios)}'{internalDebugMsg}");
         }
     }
 

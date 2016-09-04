@@ -57,7 +57,7 @@ namespace ServiceStack.Host
         public void Register(string contentType, StreamSerializerDelegate streamSerializer, StreamDeserializerDelegate streamDeserializer)
         {
             if (contentType.IsNullOrEmpty())
-                throw new ArgumentNullException("contentType");
+                throw new ArgumentNullException(nameof(contentType));
 
             var parts = contentType.Split('/');
             var format = parts[parts.Length - 1];
@@ -71,7 +71,7 @@ namespace ServiceStack.Host
                              StreamDeserializerDelegate streamDeserializer)
         {
             if (contentType.IsNullOrEmpty())
-                throw new ArgumentNullException("contentType");
+                throw new ArgumentNullException(nameof(contentType));
 
             var parts = contentType.Split('/');
             var format = parts[parts.Length - 1];

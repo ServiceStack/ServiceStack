@@ -29,12 +29,9 @@ namespace ServiceStack.Host
         public HashSet<Type> RequestTypes { get; protected set; }
         public HashSet<Type> ServiceTypes { get; protected set; }
         public HashSet<Type> ResponseTypes { get; protected set; }
-        private List<RestPath> restPaths;
+        private readonly List<RestPath> restPaths;
 
-        public IEnumerable<Operation> Operations
-        {
-            get { return OperationsMap.Values; }
-        }
+        public IEnumerable<Operation> Operations => OperationsMap.Values;
 
         public void Add(Type serviceType, Type requestType, Type responseType)
         {
@@ -43,7 +40,6 @@ namespace ServiceStack.Host
 
             var restrictTo = requestType.FirstAttribute<RestrictAttribute>()
                           ?? serviceType.FirstAttribute<RestrictAttribute>();
-
 
             var reqFilterAttrs = new[] { requestType, serviceType }
                 .SelectMany(x => x.AllAttributes<IHasRequestFilter>()).ToList();
@@ -155,33 +151,31 @@ namespace ServiceStack.Host
                 {
                     opName = opName.Substring(0, arrayPos);
                     OperationNamesMap.TryGetValue(opName, out operation);
-                    return operation != null
-                        ? operation.RequestType.MakeArrayType()
-                        : null;
+                    return operation?.RequestType.MakeArrayType();
                 }
             }
-            return operation != null ? operation.RequestType : null;
+            return operation?.RequestType;
         }
 
         public Type GetServiceTypeByRequest(Type requestType)
         {
             Operation operation;
             OperationsMap.TryGetValue(requestType, out operation);
-            return operation != null ? operation.ServiceType : null;
+            return operation?.ServiceType;
         }
 
         public Type GetServiceTypeByResponse(Type responseType)
         {
             Operation operation;
             OperationsResponseMap.TryGetValue(responseType, out operation);
-            return operation != null ? operation.ServiceType : null;
+            return operation?.ServiceType;
         }
 
         public Type GetResponseTypeByRequest(Type requestType)
         {
             Operation operation;
             OperationsMap.TryGetValue(requestType, out operation);
-            return operation != null ? operation.ResponseType : null;
+            return operation?.ResponseType;
         }
 
         public List<Type> GetAllOperationTypes()
@@ -498,13 +492,7 @@ namespace ServiceStack.Host
 
     public class Operation
     {
-        public string Name
-        {
-            get
-            {
-                return RequestType.GetOperationName();
-            }
-        }
+        public string Name => RequestType.GetOperationName();
 
         public Type RequestType { get; set; }
         public Type ServiceType { get; set; }
@@ -512,7 +500,7 @@ namespace ServiceStack.Host
         public RestrictAttribute RestrictTo { get; set; }
         public List<string> Actions { get; set; }
         public List<RestPath> Routes { get; set; }
-        public bool IsOneWay { get { return ResponseType == null; } }
+        public bool IsOneWay => ResponseType == null;
         public List<IHasRequestFilter> RequestFilterAttributes { get; set; }
         public List<IHasResponseFilter> ResponseFilterAttributes { get; set; }
         public bool RequiresAuthentication { get; set; }
@@ -683,37 +671,22 @@ namespace ServiceStack.Host
             "Stack`1",
         };
 
-        public static bool IsCollection(this MetadataPropertyType prop)
-        {
-            return CollectionTypes.Contains(prop.Type)
-                || IsArray(prop);
-        }
+        public static bool IsCollection(this MetadataPropertyType prop) => 
+            CollectionTypes.Contains(prop.Type) || IsArray(prop);
 
-        public static bool IsArray(this MetadataPropertyType prop)
-        {
-            return prop.Type.IndexOf('[') >= 0;
-        }
+        public static bool IsArray(this MetadataPropertyType prop) => 
+            prop.Type.IndexOf('[') >= 0;
 
-        public static bool IsInterface(this MetadataType type)
-        {
-            return type != null && type.IsInterface.GetValueOrDefault();
-        }
+        public static bool IsInterface(this MetadataType type) => 
+            type != null && type.IsInterface.GetValueOrDefault();
 
-        public static bool IsAbstract(this MetadataType type)
-        {
-            return type.IsAbstract.GetValueOrDefault()
-                || type.Name == typeof(AuthUserSession).Name; //not abstract but treat it as so
-        }
+        public static bool IsAbstract(this MetadataType type) => 
+            type.IsAbstract.GetValueOrDefault() || type.Name == typeof(AuthUserSession).Name;
 
-        public static bool ExcludesFeature(this Type type, Feature feature)
-        {
-            var excludeAttr = type.FirstAttribute<ExcludeAttribute>();
-            return excludeAttr != null && excludeAttr.Feature.Has(feature);
-        }
+        public static bool ExcludesFeature(this Type type, Feature feature) => 
+            type.FirstAttribute<ExcludeAttribute>()?.Feature.Has(feature) == true;
 
-        public static bool Has(this Feature feature, Feature flag)
-        {
-            return (flag & feature) != 0;
-        }
+        public static bool Has(this Feature feature, Feature flag) => 
+            (flag & feature) != 0;
     }
 }
