@@ -21,19 +21,12 @@ namespace ServiceStack.Messaging
 
         void factory_MessageReceived(object sender, EventArgs e)
         {
-            //var Factory = (MessageQueueClientFactory) sender;
             this.Start();
         }
 
-        public override IMessageFactory MessageFactory
-        {
-            get { return Factory; }
-        }
+        public override IMessageFactory MessageFactory => Factory;
 
-        public MessageQueueClientFactory MessageQueueFactory
-        {
-            get { return Factory.MqFactory; }
-        }
+        public MessageQueueClientFactory MessageQueueFactory => Factory.MqFactory;
     }
 }
 #endif

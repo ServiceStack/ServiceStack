@@ -38,9 +38,8 @@ namespace ServiceStack.Metadata
                 var schemas = schemaSet.Schemas();
                 var i = 0;
                 if (xsdNo >= schemas.Count)
-                {
                     throw new ArgumentOutOfRangeException("xsd");
-                }
+
                 httpRes.ContentType = "text/xml";
                 foreach (XmlSchema schema in schemaSet.Schemas())
                 {

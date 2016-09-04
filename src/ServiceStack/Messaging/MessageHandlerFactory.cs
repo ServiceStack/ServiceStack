@@ -26,10 +26,10 @@ namespace ServiceStack.Messaging
             Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
         {
             if (messageService == null)
-                throw new ArgumentNullException("messageService");
+                throw new ArgumentNullException(nameof(messageService));
 
             if (processMessageFn == null)
-                throw new ArgumentNullException("processMessageFn");
+                throw new ArgumentNullException(nameof(processMessageFn));
 
             this.messageService = messageService;
             this.processMessageFn = processMessageFn;

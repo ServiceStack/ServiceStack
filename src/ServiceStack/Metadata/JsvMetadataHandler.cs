@@ -5,7 +5,7 @@ namespace ServiceStack.Metadata
 {
     public class JsvMetadataHandler : BaseMetadataHandler
     {
-        public override Format Format { get { return Format.Jsv; } }
+        public override Format Format => Format.Jsv;
 
         protected override string CreateMessage(Type dtoType)
         {

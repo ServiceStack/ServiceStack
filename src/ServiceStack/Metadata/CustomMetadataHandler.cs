@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Text;
 using ServiceStack.Host;
 using ServiceStack.Logging;
@@ -18,10 +17,7 @@ namespace ServiceStack.Metadata
             base.ContentFormat = format;
         }
 
-        public override Format Format
-        {
-            get { return base.ContentFormat.ToFormat(); }
-        }
+        public override Format Format => base.ContentFormat.ToFormat();
 
         protected override string CreateMessage(Type dtoType)
         {
@@ -39,12 +35,10 @@ namespace ServiceStack.Metadata
             }
             catch (Exception ex)
             {
-                var error = string.Format("Error serializing type '{0}' with custom format '{1}'",
-                    dtoType.GetOperationName(), this.ContentFormat);
+                var error = $"Error serializing type '{dtoType.GetOperationName()}' with custom format '{this.ContentFormat}'";
                 Log.Error(error, ex);
 
-                return string.Format("{{Unable to show example output for type '{0}' using the custom '{1}' filter}}" + ex.Message,
-                    dtoType.GetOperationName(), this.ContentFormat);
+                return $"{{Unable to show example output for type '{dtoType.GetOperationName()}' using the custom '{this.ContentFormat}' filter}}{ex.Message}";
             }
         }
     }

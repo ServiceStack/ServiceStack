@@ -1,12 +1,11 @@
 using System;
 using ServiceStack.Serialization;
-using ServiceStack.Text;
 
 namespace ServiceStack.Metadata
 {
     public class XmlMetadataHandler : BaseMetadataHandler
     {
-        public override Format Format { get { return Format.Xml; } }
+        public override Format Format => Format.Xml;
 
         protected override string CreateMessage(Type dtoType)
         {

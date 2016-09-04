@@ -7,8 +7,8 @@ namespace ServiceStack.Metadata
 {
     public class MetadataPagesConfig
     {
-        private ServiceMetadata metadata;
-        private HashSet<string> ignoredFormats;
+        private readonly ServiceMetadata metadata;
+        private readonly HashSet<string> ignoredFormats;
         private readonly Dictionary<string, MetadataConfig> metadataConfigMap;
         public List<MetadataConfig> AvailableFormatConfigs { get; private set; }
 
@@ -83,9 +83,7 @@ namespace ServiceStack.Metadata
         {
             Operation operation;
             metadata.OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
-            if (operation == null || operation.RestrictTo == null) return false;
-
-            return operation.RestrictTo.VisibilityTo == RequestAttributes.None;
+            return operation?.RestrictTo?.VisibilityTo == RequestAttributes.None;
         }
     }
 }

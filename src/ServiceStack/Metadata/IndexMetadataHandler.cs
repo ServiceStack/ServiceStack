@@ -4,12 +4,8 @@ namespace ServiceStack.Metadata
 {
     public class IndexMetadataHandler : BaseSoapMetadataHandler
     {
-        public override Format Format { get { return Format.Soap12; } }
+        public override Format Format => Format.Soap12;
 
-        protected override string CreateMessage(Type dtoType)
-        {
-            return null;
-            //throw new System.NotImplementedException();
-        }
+        protected override string CreateMessage(Type dtoType) => null;
     }
 }

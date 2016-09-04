@@ -88,7 +88,7 @@ namespace ServiceStack.Metadata
                 var description = operationType.GetDescription();
                 if (!description.IsNullOrEmpty())
                 {
-                    sb.AppendFormat("<h3 id='desc'>{0}</h3>", ConvertToHtml(description));
+                    sb.Append($"<h3 id='desc'>{ConvertToHtml(description)}</h3>");
                 }
 
                 if (op.RequiresAuthentication)
@@ -144,11 +144,11 @@ namespace ServiceStack.Metadata
                         {
                             var path = "/" + PathUtils.CombinePaths(HostContext.Config.HandlerFactoryPath, route.Path);
 
-                            sb.AppendFormat("<th>{0}</th>", verbs);
-                            sb.AppendFormat("<th>{0}</th>", path);
+                            sb.Append($"<th>{verbs}</th>");
+                            sb.Append($"<th>{path}</th>");
                         }
-                        sb.AppendFormat("<td>{0}</td>", route.Summary);
-                        sb.AppendFormat("<td><i>{0}</i></td>", route.Notes);
+                        sb.Append($"<td>{route.Summary}</td>");
+                        sb.Append($"<td><i>{route.Notes}</i></td>");
                         sb.Append("</tr>");
                     }
 
@@ -197,10 +197,10 @@ namespace ServiceStack.Metadata
             foreach (var p in metadataType.Properties)
             {
                 sb.Append("<tr>");
-                sb.AppendFormat("<td>{0}</td>", ConvertToHtml(p.Name));
-                sb.AppendFormat("<td>{0}</td>", p.GetParamType(metadataType, op));
-                sb.AppendFormat("<td>{0}</td>", ConvertToHtml(p.DisplayType ?? p.Type));
-                sb.AppendFormat("<td>{0}</td>", p.IsRequired.GetValueOrDefault() ? "Yes" : "No");
+                sb.Append($"<td>{ConvertToHtml(p.Name)}</td>");
+                sb.Append($"<td>{p.GetParamType(metadataType, op)}</td>");
+                sb.Append($"<td>{ConvertToHtml(p.DisplayType ?? p.Type)}</td>");
+                sb.Append($"<td>{(p.IsRequired.GetValueOrDefault() ? "Yes" : "No")}</td>");
 
                 var desc = p.Description;
                 if (!p.AllowableValues.IsEmpty())
@@ -214,7 +214,7 @@ namespace ServiceStack.Metadata
                 {
                     desc += "<h4>Valid Range: {0} - {1}</h4>".Fmt(p.AllowableMin, p.AllowableMax);
                 }
-                sb.AppendFormat("<td>{0}</td>", desc);
+                sb.Append($"<td>{desc}</td>");
                 
                 sb.Append("</tr>");
             }
@@ -235,10 +235,7 @@ namespace ServiceStack.Metadata
             };
 
             var metadataFeature = HostContext.GetPlugin<MetadataFeature>();
-            if (metadataFeature != null && metadataFeature.IndexPageFilter != null)
-            {
-                metadataFeature.IndexPageFilter(defaultPage);
-            }
+            metadataFeature?.IndexPageFilter?.Invoke(defaultPage);
 
             defaultPage.RenderControl(writer);
         }
@@ -293,11 +290,7 @@ namespace ServiceStack.Metadata
             }
 
             var metadataFeature = HostContext.GetPlugin<MetadataFeature>();
-            if (metadataFeature != null && metadataFeature.DetailPageFilter != null)
-            {
-                metadataFeature.DetailPageFilter(operationControl);
-            }
-
+            metadataFeature?.DetailPageFilter?.Invoke(operationControl);
             operationControl.Render(writer);
         }
 
