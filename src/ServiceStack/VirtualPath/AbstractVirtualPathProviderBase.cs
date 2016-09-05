@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.IO;
-using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
@@ -15,7 +14,7 @@ namespace ServiceStack.VirtualPath
         protected AbstractVirtualPathProviderBase(IAppHost appHost)
         {
             if (appHost == null)
-                throw new ArgumentNullException("appHost");
+                throw new ArgumentNullException(nameof(appHost));
 
             AppHost = appHost;
         }
@@ -79,20 +78,17 @@ namespace ServiceStack.VirtualPath
         public virtual bool IsSharedFile(IVirtualFile virtualFile)
         {
             return virtualFile.RealPath != null
-                && virtualFile.RealPath.Contains("{0}{1}".Fmt(RealPathSeparator, "Shared"));
+                && virtualFile.RealPath.Contains($"{RealPathSeparator}Shared");
         }
 
         public virtual bool IsViewFile(IVirtualFile virtualFile)
         {
             return virtualFile.RealPath != null
-                && virtualFile.RealPath.Contains("{0}{1}".Fmt(RealPathSeparator, "Views"));
+                && virtualFile.RealPath.Contains($"{RealPathSeparator}Views");
         }
 
         protected abstract void Initialize();
 
-        public override string ToString()
-        {
-            return "[{0}: {1}]".Fmt(GetType().Name, RootDirectory.RealPath);
-        }
+        public override string ToString() => $"[{GetType().Name}: {RootDirectory.RealPath}]";
     }
 }

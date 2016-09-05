@@ -8,31 +8,19 @@ namespace ServiceStack.VirtualPath
     {
         protected FileInfo BackingFile;
         
-        public override string Name
-        {
-            get { return BackingFile.Name; }
-        }
+        public override string Name => BackingFile.Name;
 
-        public override string RealPath
-        {
-            get { return BackingFile.FullName; }
-        }
+        public override string RealPath => BackingFile.FullName;
 
-        public override DateTime LastModified
-        {
-            get { return BackingFile.LastWriteTime; }
-        }
+        public override DateTime LastModified => BackingFile.LastWriteTime;
 
-        public override long Length
-        {
-            get { return BackingFile.Length; }
-        }
+        public override long Length => BackingFile.Length;
 
         public FileSystemVirtualFile(IVirtualPathProvider owningProvider, IVirtualDirectory directory, FileInfo fInfo) 
             : base(owningProvider, directory)
         {
             if (fInfo == null)
-                throw new ArgumentNullException("fInfo");
+                throw new ArgumentNullException(nameof(fInfo));
 
             this.BackingFile = fInfo;
         }

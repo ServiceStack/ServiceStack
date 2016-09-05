@@ -10,17 +10,14 @@ namespace ServiceStack.VirtualPath
     {
         public IVirtualPathProvider VirtualPathProvider { get; set; }
 
-        public string Extension
-        {
-            get { return Name.LastRightPart('.'); }
-        }
+        public string Extension => Name.LastRightPart('.');
 
         public IVirtualDirectory Directory { get; set; }
 
         public abstract string Name { get; }
-        public virtual string VirtualPath { get { return GetVirtualPathToRoot(); } }
-        public virtual string RealPath { get { return GetRealPathToRoot(); } }
-        public virtual bool IsDirectory { get { return false; } }
+        public virtual string VirtualPath => GetVirtualPathToRoot();
+        public virtual string RealPath => GetRealPathToRoot();
+        public virtual bool IsDirectory => false;
         public abstract DateTime LastModified { get; }
         public abstract long Length { get; }
 
@@ -28,10 +25,10 @@ namespace ServiceStack.VirtualPath
             IVirtualPathProvider owningProvider, IVirtualDirectory directory)
         {
             if (owningProvider == null)
-                throw new ArgumentNullException("owningProvider");
+                throw new ArgumentNullException(nameof(owningProvider));
 
             if (directory == null)
-                throw new ArgumentNullException("directory");
+                throw new ArgumentNullException(nameof(directory));
 
             this.VirtualPathProvider = owningProvider;
             this.Directory = directory;
@@ -106,7 +103,7 @@ namespace ServiceStack.VirtualPath
 
         public override string ToString()
         {
-            return string.Format("{0} -> {1}", RealPath, VirtualPath);
+            return $"{RealPath} -> {VirtualPath}";
         }
 
         public virtual void Refresh()

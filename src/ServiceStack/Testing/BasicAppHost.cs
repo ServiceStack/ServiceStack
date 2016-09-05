@@ -18,11 +18,8 @@ namespace ServiceStack.Testing
 
         public override void Configure(Container container)
         {
-            if (ConfigureAppHost != null)
-                ConfigureAppHost(this);
-
-            if (ConfigureContainer != null)
-                ConfigureContainer(container);
+            ConfigureAppHost?.Invoke(this);
+            ConfigureContainer?.Invoke(container);
         }
 
         public Action<Container> ConfigureContainer { get; set; }
@@ -36,17 +33,11 @@ namespace ServiceStack.Testing
             set { ServiceController = value(this); }
         }
 
-        public override void OnBeforeInit()
-        {
-            base.OnBeforeInit();
-        }
-
         public override void OnConfigLoad()
         {
             base.OnConfigLoad();
 
-            if (ConfigFilter != null)
-                ConfigFilter(Config);
+            ConfigFilter?.Invoke(Config);
         }
     }
 }

@@ -35,10 +35,7 @@ namespace ServiceStack.Formats
         public static string[] PageExts = new[] { MarkdownExt, TemplateExt };
 
         private static MarkdownFormat instance;
-        public static MarkdownFormat Instance
-        {
-            get { return instance ?? (instance = new MarkdownFormat()); }
-        }
+        public static MarkdownFormat Instance => instance ?? (instance = new MarkdownFormat());
 
         // ~/View - Dynamic Pages
         public Dictionary<string, MarkdownPage> ViewPages = new Dictionary<string, MarkdownPage>(
@@ -205,7 +202,7 @@ namespace ServiceStack.Formats
         {
             var view = GetViewPage(viewName);
             if (view != null) return view;
-            if (httpReq == null || httpReq.PathInfo == null) return null;
+            if (httpReq?.PathInfo == null) return null;
 
             var normalizedPathInfo = httpReq.PathInfo;
             if (!httpReq.RawUrl.EndsWith("/"))
@@ -350,8 +347,9 @@ namespace ServiceStack.Formats
             {
                 dto = httpResult.Response;
             }
-            if (dto != null) return dto.GetType().GetOperationName();
-            return req != null ? req.OperationName : null;
+            return dto != null 
+                ? dto.GetType().GetOperationName() 
+                : req?.OperationName;
         }
 
         public MarkdownPage GetViewPageByResponse(object dto, IRequest httpReq)
@@ -592,7 +590,7 @@ namespace ServiceStack.Formats
         public string RenderStaticPage(string filePath, bool renderHtml)
         {
             if (filePath == null)
-                throw new ArgumentNullException("filePath");
+                throw new ArgumentNullException(nameof(filePath));
 
             filePath = filePath.WithoutExtension();
 

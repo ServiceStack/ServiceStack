@@ -135,7 +135,7 @@ namespace ServiceStack.Configuration
 
             var parseMethodInfo = type.GetMethod(parseMethod,
                 BindingFlags.Public | BindingFlags.Static, null,
-                new Type[] { typeof(string) }, null);
+                new[] { typeof(string) }, null);
 
             return parseMethodInfo;
         }
@@ -145,7 +145,7 @@ namespace ServiceStack.Configuration
         /// </summary>
         private static ConstructorInfo GetConstructorInfo(Type type)
         {
-            foreach (ConstructorInfo ci in type.GetConstructors())
+            foreach (var ci in type.GetConstructors())
             {
                 var ciTypes = ci.GetGenericArguments();
                 var matchFound = (ciTypes.Length == 1 && ciTypes[0] == typeof(string)); //e.g. T(string)

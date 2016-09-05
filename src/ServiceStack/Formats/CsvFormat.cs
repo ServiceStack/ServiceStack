@@ -17,8 +17,7 @@ namespace ServiceStack.Formats
             {
                 if (req.ResponseContentType == MimeTypes.Csv)
                 {
-                    res.AddHeader(HttpHeaders.ContentDisposition,
-                        string.Format("attachment;filename={0}.csv", req.OperationName));
+                    res.AddHeader(HttpHeaders.ContentDisposition, $"attachment;filename={req.OperationName}.csv");
                 }
             });
         }

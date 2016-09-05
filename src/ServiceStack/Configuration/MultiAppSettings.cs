@@ -21,7 +21,7 @@ namespace ServiceStack.Configuration
             public MultiSettingsWrapper(IAppSettings[] appSettings)
             {
                 if (appSettings.Length == 0)
-                    throw new ArgumentNullException("appSettings");
+                    throw new ArgumentNullException(nameof(appSettings));
 
                 this.appSettings = appSettings;
             }

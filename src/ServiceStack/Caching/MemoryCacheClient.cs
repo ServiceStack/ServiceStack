@@ -30,10 +30,7 @@ namespace ServiceStack.Caching
             /// <summary>UTC time at which CacheEntry expires.</summary>
             internal DateTime? ExpiresAt { get; set; }
 
-            internal bool HasExpired
-            {
-                get { return ExpiresAt != null && ExpiresAt < DateTime.UtcNow; }
-            }
+            internal bool HasExpired => ExpiresAt != null && ExpiresAt < DateTime.UtcNow;
 
             internal object Value
             {
@@ -138,7 +135,7 @@ namespace ServiceStack.Caching
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(string.Format("Error trying to remove {0} from the cache", key), ex);
+                    Log.Error($"Error trying to remove {key} from the cache", ex);
                 }
             }
         }
@@ -350,7 +347,7 @@ namespace ServiceStack.Caching
             }
             catch (Exception ex)
             {
-                Log.Error(string.Format("Error trying to remove items from cache with this {0} pattern", pattern), ex);
+                Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
             }
         }
 
@@ -389,7 +386,7 @@ namespace ServiceStack.Caching
             }
             catch (Exception ex)
             {
-                Log.Error(string.Format("Error trying to remove items from cache with this {0} pattern", pattern), ex);
+                Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
             }
             return keys;
         }

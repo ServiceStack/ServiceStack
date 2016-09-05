@@ -9,14 +9,14 @@ namespace ServiceStack.VirtualPath
     {
         protected IVirtualPathProvider VirtualPathProvider;
         public IVirtualDirectory ParentDirectory { get; set; }
-        public IVirtualDirectory Directory { get { return this; } }
+        public IVirtualDirectory Directory => this;
 
         public abstract DateTime LastModified { get; }
-        public virtual string VirtualPath { get { return GetVirtualPathToRoot(); } }
-        public virtual string RealPath { get { return GetRealPathToRoot(); } }
+        public virtual string VirtualPath => GetVirtualPathToRoot();
+        public virtual string RealPath => GetRealPathToRoot();
 
-        public virtual bool IsDirectory { get { return true; } }
-        public virtual bool IsRoot { get { return ParentDirectory == null; } }
+        public virtual bool IsDirectory => true;
+        public virtual bool IsRoot => ParentDirectory == null;
 
         public abstract IEnumerable<IVirtualFile> Files { get; }
         public abstract IEnumerable<IVirtualDirectory> Directories { get; }
@@ -29,7 +29,7 @@ namespace ServiceStack.VirtualPath
         protected AbstractVirtualDirectoryBase(IVirtualPathProvider owningProvider, IVirtualDirectory parentDirectory)
         {
             if (owningProvider == null)
-                throw new ArgumentNullException("owningProvider");
+                throw new ArgumentNullException(nameof(owningProvider));
 
             this.VirtualPathProvider = owningProvider;
             this.ParentDirectory = parentDirectory;
@@ -57,9 +57,7 @@ namespace ServiceStack.VirtualPath
                 return GetFileFromBackingDirectoryOrDefault(pathToken);
             
             var virtDir = GetDirectoryFromBackingDirectoryOrDefault(pathToken);
-            return virtDir != null
-                   ? virtDir.GetFile(virtualPath)
-                   : null;
+            return virtDir?.GetFile(virtualPath);
         }
 
         public virtual IVirtualDirectory GetDirectory(Stack<string> virtualPath)
@@ -139,7 +137,7 @@ namespace ServiceStack.VirtualPath
 
         public override string ToString()
         {
-            return string.Format("{0} -> {1}", RealPath, VirtualPath);
+            return $"{RealPath} -> {VirtualPath}";
         }
 
         public abstract IEnumerator<IVirtualNode> GetEnumerator();

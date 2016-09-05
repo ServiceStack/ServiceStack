@@ -28,20 +28,11 @@ namespace ServiceStack.VirtualPath
 
         public const char DirSep = '/';
 
-        public override IVirtualDirectory RootDirectory
-        {
-            get { return rootDirectory; }
-        }
+        public override IVirtualDirectory RootDirectory => rootDirectory;
 
-        public override string VirtualPathSeparator
-        {
-            get { return "/"; }
-        }
+        public override string VirtualPathSeparator => "/";
 
-        public override string RealPathSeparator
-        {
-            get { return "/"; }
-        }
+        public override string RealPathSeparator => "/";
 
         protected override void Initialize() {}
 
@@ -212,9 +203,7 @@ namespace ServiceStack.VirtualPath
                 ? null
                 : (filePath[0] == DirSep ? filePath.Substring(1) : filePath);
 
-            return sanitizedPath != null
-                ? sanitizedPath.Replace('\\', DirSep)
-                : null;
+            return sanitizedPath?.Replace('\\', DirSep);
         }
     }
 
@@ -230,32 +219,17 @@ namespace ServiceStack.VirtualPath
         }
         
         public DateTime DirLastModified { get; set; }
-        public override DateTime LastModified
-        {
-            get { return DirLastModified; }
-        }
+        public override DateTime LastModified => DirLastModified;
 
-        public override IEnumerable<IVirtualFile> Files
-        {
-            get { return pathProvider.GetImmediateFiles(DirPath); }
-        }
+        public override IEnumerable<IVirtualFile> Files => pathProvider.GetImmediateFiles(DirPath);
 
-        public override IEnumerable<IVirtualDirectory> Directories
-        {
-            get { return pathProvider.GetImmediateDirectories(DirPath); }
-        }
+        public override IEnumerable<IVirtualDirectory> Directories => pathProvider.GetImmediateDirectories(DirPath);
 
         public string DirPath { get; set; }
 
-        public override string VirtualPath
-        {
-            get { return DirPath; }
-        }
+        public override string VirtualPath => DirPath;
 
-        public override string Name
-        {
-            get { return DirPath != null ? DirPath.LastRightPart(InMemoryVirtualPathProvider.DirSep) : null; }
-        }
+        public override string Name => DirPath?.LastRightPart(InMemoryVirtualPathProvider.DirSep);
 
         public override IVirtualFile GetFile(string virtualPath)
         {
@@ -311,40 +285,18 @@ namespace ServiceStack.VirtualPath
             this.FileLastModified = DateTime.MinValue;            
         }
 
-        public string DirPath
-        {
-            get { return base.Directory.VirtualPath; }
-        }
+        public string DirPath => base.Directory.VirtualPath;
 
         public string FilePath { get; set; }
 
-        public override string Name
-        {
-            get { return FilePath.LastRightPart(InMemoryVirtualPathProvider.DirSep); }
-        }
+        public override string Name => FilePath.LastRightPart(InMemoryVirtualPathProvider.DirSep);
 
-        public override string VirtualPath
-        {
-            get { return FilePath; }
-        }
+        public override string VirtualPath => FilePath;
 
         public DateTime FileLastModified { get; set; }
-        public override DateTime LastModified
-        {
-            get { return FileLastModified; }
-        }
+        public override DateTime LastModified => FileLastModified;
 
-        public override long Length
-        {
-            get
-            {
-                return TextContents != null ? 
-                    TextContents.Length 
-                  : ByteContents != null ? 
-                    ByteContents.Length : 
-                    0;
-            }
-        }
+        public override long Length => TextContents?.Length ?? (ByteContents?.Length ?? 0);
 
         public string TextContents { get; set; }
 

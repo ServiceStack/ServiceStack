@@ -1,7 +1,5 @@
 ﻿using System;
 using ServiceStack.Redis;
-using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.Validation
 {
@@ -59,10 +57,7 @@ namespace ServiceStack.Validation
             {
                 Rollback();
             }
-            if (redis != null)
-            {
-                redis.Dispose(); //release back into the pool.
-            }
+            redis?.Dispose(); //release back into the pool.
         }
     }
 }

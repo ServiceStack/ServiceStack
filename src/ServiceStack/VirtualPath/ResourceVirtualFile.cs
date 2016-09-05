@@ -10,26 +10,13 @@ namespace ServiceStack.VirtualPath
         protected Assembly BackingAssembly;
         protected string FileName;
         
-        public override string Name
-        {
-            get { return FileName; }
-        }
+        public override string Name => FileName;
 
-        public override string VirtualPath
-        {
-            get { return GetVirtualPathToRoot(); }
-        }
+        public override string VirtualPath => GetVirtualPathToRoot();
 
-        public override string RealPath
-        {
-            get { return GetRealPathToRoot(); }
-        }
+        public override string RealPath => GetRealPathToRoot();
 
-        public override DateTime LastModified
-        {
-            get { return GetLastWriteTimeOfBackingAsm(); }
-        }
-
+        public override DateTime LastModified => GetLastWriteTimeOfBackingAsm();
 
         private long? length;
         public override long Length
@@ -39,7 +26,9 @@ namespace ServiceStack.VirtualPath
                 if (length == null)
                 {
                     using (var s = OpenRead())
-                        length = s.Length;                    
+                    {
+                        length = s.Length;
+                    }
                 }
                 return length.Value;
             }
@@ -49,10 +38,10 @@ namespace ServiceStack.VirtualPath
             : base(owningProvider, directory)
         {
             if (string.IsNullOrEmpty(fileName))
-                throw new ArgumentException("fileName");
+                throw new ArgumentNullException(nameof(fileName));
 
             if (directory.BackingAssembly == null)
-                throw new ArgumentException("parentDirectory");
+                throw new ArgumentNullException("parentDirectory");
 
             this.FileName = fileName;
             this.BackingAssembly = directory.BackingAssembly;
@@ -68,12 +57,6 @@ namespace ServiceStack.VirtualPath
         {
             var fInfo = new FileInfo(BackingAssembly.Location);
             return fInfo.LastWriteTime;
-        }
-
-        private long GetLengthOfBackingAsm()
-        {
-            var fInfo = new FileInfo(BackingAssembly.Location);
-            return fInfo.Length;
         }
     }
 }

@@ -5,7 +5,7 @@ namespace ServiceStack.Configuration
 {
     public class DictionarySettings : AppSettingsBase, ISettings
     {
-        private DictionaryWrapper instance;
+        private readonly DictionaryWrapper instance;
 
         class DictionaryWrapper : ISettingsWriter
         {
