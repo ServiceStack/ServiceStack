@@ -286,11 +286,9 @@ namespace ServiceStack.Auth
 
         public object Delete(Authenticate request)
         {
-            if (ValidateFn != null)
-            {
-                var response = ValidateFn(this, HttpMethods.Delete, request);
-                if (response != null) return response;
-            }
+            var response = ValidateFn?.Invoke(this, HttpMethods.Delete, request);
+            if (response != null)
+                return response;
 
             this.RemoveSession();
 

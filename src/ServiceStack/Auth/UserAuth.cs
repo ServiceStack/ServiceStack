@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 
@@ -134,10 +133,10 @@ namespace ServiceStack.Auth
         public static void PopulateMissing(this IUserAuthDetails instance, IAuthTokens tokens, bool overwriteReserved = false)
         {
             if (instance == null)
-                throw new ArgumentNullException("instance");
+                throw new ArgumentNullException(nameof(instance));
 
             if (tokens == null)
-                throw new ArgumentNullException("tokens");
+                throw new ArgumentNullException(nameof(tokens));
 
             if (!tokens.UserId.IsNullOrEmpty())
                 instance.UserId = tokens.UserId;
@@ -178,10 +177,10 @@ namespace ServiceStack.Auth
             IUserAuthDetailsExtended other, bool overwriteReserved = false)
         {
             if (instance == null)
-                throw new ArgumentNullException("instance");
+                throw new ArgumentNullException(nameof(instance));
 
             if (other == null)
-                throw new ArgumentNullException("other");
+                throw new ArgumentNullException(nameof(other));
 
             // Don't override the Master UserAuth table's reserved fields if they already exists
             if (!other.UserName.IsNullOrEmpty() && (overwriteReserved || instance.UserName.IsNullOrEmpty()))
@@ -259,7 +258,7 @@ namespace ServiceStack.Auth
         public static T Get<T>(this IMeta instance)
         {
             if (instance == null)
-                throw new ArgumentNullException("instance");
+                throw new ArgumentNullException(nameof(instance));
  
             if (instance.Meta == null)
                 return default(T);
@@ -273,7 +272,7 @@ namespace ServiceStack.Auth
         {
             value = default(T);
             if (instance == null)
-                throw new ArgumentNullException("instance");
+                throw new ArgumentNullException(nameof(instance));
 
             string str;
             if (!instance.Meta.TryGetValue(typeof(T).GetOperationName(), out str))
@@ -286,7 +285,7 @@ namespace ServiceStack.Auth
         public static T Set<T>(this IMeta instance, T value)
         {
             if (instance == null)
-                throw new ArgumentNullException("instance");
+                throw new ArgumentNullException(nameof(instance));
 
             if (instance.Meta == null)
                 instance.Meta = new Dictionary<string, string>();
@@ -313,7 +312,7 @@ namespace ServiceStack.Auth
         public static void RecordSuccessfulLogin(this IUserAuthRepository repo, IUserAuth userAuth)
         {
             var feature = HostContext.GetPlugin<AuthFeature>();
-            if (feature == null || feature.MaxLoginAttempts == null) return;
+            if (feature?.MaxLoginAttempts == null) return;
 
             userAuth.InvalidLoginAttempts = 0;
             userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
@@ -323,7 +322,7 @@ namespace ServiceStack.Auth
         public static void RecordInvalidLoginAttempt(this IUserAuthRepository repo, IUserAuth userAuth)
         {
             var feature = HostContext.GetPlugin<AuthFeature>();
-            if (feature == null || feature.MaxLoginAttempts == null) return;
+            if (feature?.MaxLoginAttempts == null) return;
 
             userAuth.InvalidLoginAttempts += 1;
             userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;

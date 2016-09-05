@@ -49,7 +49,7 @@ namespace ServiceStack.Auth
             bool hasError = !error.IsNullOrEmpty();
             if (hasError)
             {
-                Log.Error("Odnoklassniki error callback. {0}".Fmt(httpRequest.QueryString));
+                Log.Error($"Odnoklassniki error callback. {httpRequest.QueryString}");
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
             }
 
@@ -57,8 +57,7 @@ namespace ServiceStack.Auth
             bool isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                string preAuthUrl = PreAuthUrl + "?client_id={0}&redirect_uri={1}&response_type=code&layout=m"
-                  .Fmt(ApplicationId, CallbackUrl.UrlEncode());
+                string preAuthUrl = $"{PreAuthUrl}?client_id={ApplicationId}&redirect_uri={CallbackUrl.UrlEncode()}&response_type=code&layout=m";
 
                 this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
@@ -66,8 +65,7 @@ namespace ServiceStack.Auth
 
             try
             {
-                string payload = "client_id={0}&client_secret={1}&code={2}&redirect_uri={3}&grant_type=authorization_code"
-                  .Fmt(ApplicationId, SecretKey, code, CallbackUrl.UrlEncode());
+                string payload = $"client_id={ApplicationId}&client_secret={SecretKey}&code={code}&redirect_uri={CallbackUrl.UrlEncode()}&grant_type=authorization_code";
 
                 string contents = AccessTokenUrlFilter(this, AccessTokenUrl).PostToUrl(payload, "*/*", RequestFilter);
 
@@ -78,7 +76,7 @@ namespace ServiceStack.Auth
 
                 if (!accessTokenError.IsNullOrEmpty())
                 {
-                    Log.Error("Odnoklassniki access_token error callback. {0}".Fmt(authInfo.ToString()));
+                    Log.Error($"Odnoklassniki access_token error callback. {authInfo}");
                     return authService.Redirect(session.ReferrerUrl.SetParam("f", "AccessTokenFailed"));
                 }
                 tokens.AccessTokenSecret = authInfo.Get("access_token");
@@ -113,9 +111,9 @@ namespace ServiceStack.Auth
                 //sig = md5( request_params_composed_string + md5(access_token + application_secret_key)  )
 
                 string innerSignature = Encoding.UTF8.GetBytes(tokens.AccessTokenSecret + ConsumerSecret).ToMd5Hash();
-                string signature = Encoding.UTF8.GetBytes("application_key={0}".Fmt(PublicKey) + innerSignature).ToMd5Hash();
+                string signature = Encoding.UTF8.GetBytes($"application_key={PublicKey}" + innerSignature).ToMd5Hash();
 
-                string payload = "access_token={0}&sig={1}&application_key={2}".Fmt(tokens.AccessTokenSecret, signature, PublicKey);
+                string payload = $"access_token={tokens.AccessTokenSecret}&sig={signature}&application_key={PublicKey}";
 
                 string json = "http://api.odnoklassniki.ru/api/users/getCurrentUser".PostToUrl(payload, "*/*", RequestFilter);
 
@@ -123,7 +121,7 @@ namespace ServiceStack.Auth
 
                 if (!obj.Get("error").IsNullOrEmpty())
                 {
-                    Log.Error("Could not retrieve Odnoklassniki user info for '{0}', Response:{1}".Fmt(tokens.DisplayName, json));
+                    Log.Error($"Could not retrieve Odnoklassniki user info for '{tokens.DisplayName}', Response:{json}");
                     return;
                 }
 
@@ -147,7 +145,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error("Could not retrieve Odnoklassniki user info for '{0}'".Fmt(tokens.DisplayName), ex);
+                Log.Error($"Could not retrieve Odnoklassniki user info for '{tokens.DisplayName}'", ex);
             }
 
             LoadUserOAuthProvider(userSession, tokens);

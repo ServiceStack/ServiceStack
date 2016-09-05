@@ -26,15 +26,15 @@ namespace ServiceStack.Auth
 
         public string NamespacePrefix { get; set; }
 
-        private string UsePrefix { get { return NamespacePrefix ?? ""; } }
+        private string UsePrefix => NamespacePrefix ?? "";
 
         private string IndexUserAuthAndProviderIdsSet(long userAuthId) { return UsePrefix + "urn:UserAuth>UserOAuthProvider:" + userAuthId; }
 
         private string IndexProviderToUserIdHash(string provider) { return UsePrefix + "hash:ProviderUserId>OAuthProviderId:" + provider; }
 
-        private string IndexUserNameToUserId { get { return UsePrefix + "hash:UserAuth:UserName>UserId"; } }
+        private string IndexUserNameToUserId => UsePrefix + "hash:UserAuth:UserName>UserId";
 
-        private string IndexEmailToUserId { get { return UsePrefix + "hash:UserAuth:Email>UserId"; } }
+        private string IndexEmailToUserId => UsePrefix + "hash:UserAuth:Email>UserId";
 
         private string IndexUserAuthAndApiKeyIdsSet(long userAuthId) { return UsePrefix + "urn:UserAuth>ApiKey:" + userAuthId; }
 

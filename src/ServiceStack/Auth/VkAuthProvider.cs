@@ -51,7 +51,7 @@ namespace ServiceStack.Auth
             bool hasError = !error.IsNullOrEmpty();
             if (hasError)
             {
-                Log.Error("VK error callback. {0}".Fmt(httpRequest.QueryString));
+                Log.Error($"VK error callback. {httpRequest.QueryString}");
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
             }
 
@@ -59,8 +59,7 @@ namespace ServiceStack.Auth
             bool isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                string preAuthUrl = PreAuthUrl + "?client_id={0}&scope={1}&redirect_uri={2}&response_type=code&v={3}"
-                  .Fmt(ApplicationId, Scope, CallbackUrl.UrlEncode(), ApiVersion);
+                string preAuthUrl = $"{PreAuthUrl}?client_id={ApplicationId}&scope={Scope}&redirect_uri={CallbackUrl.UrlEncode()}&response_type=code&v={ApiVersion}";
 
                 this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
@@ -70,8 +69,7 @@ namespace ServiceStack.Auth
             {
                 code = EnsureLatestCode(code);
 
-                string accessTokeUrl = AccessTokenUrl + "?client_id={0}&client_secret={1}&code={2}&redirect_uri={3}"
-                  .Fmt(ApplicationId, SecureKey, code, CallbackUrl.UrlEncode());
+                string accessTokeUrl = $"{AccessTokenUrl}?client_id={ApplicationId}&client_secret={SecureKey}&code={code}&redirect_uri={CallbackUrl.UrlEncode()}";
 
                 string contents = AccessTokenUrlFilter(this, accessTokeUrl).GetStringFromUrl("*/*", RequestFilter);
 
@@ -150,7 +148,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error("Could not retrieve VK user info for '{0}'".Fmt(tokens.DisplayName), ex);
+                Log.Error($"Could not retrieve VK user info for '{tokens.DisplayName}'", ex);
             }
 
             LoadUserOAuthProvider(userSession, tokens);

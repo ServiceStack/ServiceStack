@@ -101,10 +101,7 @@ namespace ServiceStack.Auth
     {
         public static void SafeAddMetadata(this IAuthMetadataProvider provider, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
-            if (provider == null)
-                return;
-
-            provider.AddMetadata(tokens, authInfo);
+            provider?.AddMetadata(tokens, authInfo);
         }
     }
 }

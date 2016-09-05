@@ -214,7 +214,7 @@ namespace ServiceStack.Auth
                     SessionId = session.Id,
                     DisplayName = session.DisplayName
                         ?? session.UserName
-                        ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim(),
+                        ?? $"{session.FirstName} {session.LastName}".Trim(),
                     ReferrerUrl = request.Continue,
                 };
             }
@@ -324,8 +324,7 @@ namespace ServiceStack.Auth
                         ExpiryDate = ExpireKeysAfter != null ? now.Add(ExpireKeysAfter.Value) : (DateTime?) null
                     };
 
-                    if (CreateApiKeyFilter != null)
-                        CreateApiKeyFilter(apiKey);
+                    CreateApiKeyFilter?.Invoke(apiKey);
 
                     apiKeys.Add(apiKey);
                 }
@@ -373,8 +372,7 @@ namespace ServiceStack.Auth
                 {
                     Results = apiRepo.GetUserApiKeys(GetSession().UserAuthId)
                         .Where(x => x.Environment == env)
-                        .Map(k => new UserApiKey
-                        {
+                        .Map(k => new UserApiKey {
                             Key = k.Id,
                             KeyType = k.KeyType,
                             ExpiryDate = k.ExpiryDate,

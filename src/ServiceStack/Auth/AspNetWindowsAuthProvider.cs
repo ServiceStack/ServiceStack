@@ -97,7 +97,7 @@ namespace ServiceStack.Auth
 
                 var loginUser = aspReq.ServerVariables["LOGON_USER"].ToNullIfEmpty();
                 var remoteUser = aspReq.ServerVariables["REMOTE_USER"].ToNullIfEmpty();
-                var identityName = aspReq.LogonUserIdentity != null ? aspReq.LogonUserIdentity.Name : null;
+                var identityName = aspReq.LogonUserIdentity?.Name;
                 session.DisplayName = loginUser
                     ?? remoteUser
                     ?? identityName;
@@ -146,10 +146,7 @@ namespace ServiceStack.Auth
         public static void AuthenticateIfWindowsAuth(IRequest req, IResponse res)
         {
             var winAuthProvider = AuthenticateService.GetAuthProvider(Name) as AspNetWindowsAuthProvider;
-            if (winAuthProvider != null)
-            {
-                winAuthProvider.IsAuthorized(req.GetUser());
-            }
+            winAuthProvider?.IsAuthorized(req.GetUser());
         }
 
         public void PreAuthenticate(IRequest req, IResponse res)
@@ -175,42 +172,25 @@ namespace ServiceStack.Auth
 
     public static class HttpContextExtensions
     {
-        public static IPrincipal GetUser(this HttpContext ctx)
-        {
-            if (ctx != null && ctx.User != null)
-            {
-                return ctx.User;
-            }
-            return null;
-        }
+        public static IPrincipal GetUser(this HttpContext ctx) => ctx?.User;
 
-        public static IPrincipal GetUser(this HttpContextBase ctx)
-        {
-            if (ctx != null && ctx.User != null)
-            {
-                return ctx.User;
-            }
-            return null;
-        }
+        public static IPrincipal GetUser(this HttpContextBase ctx) => ctx?.User;
 
         public static IPrincipal GetUser(this IRequest req)
         {
             var aspReq = req as AspNetRequest;
-            if (aspReq != null)
+            var aspReqBase = aspReq?.OriginalRequest as HttpRequestBase;
+            if (aspReqBase != null)
             {
-                var aspReqBase = aspReq.OriginalRequest as HttpRequestBase;
-                if (aspReqBase != null)
-                {
-                    var user = aspReqBase.RequestContext.HttpContext.GetUser();
-                    return user.GetUserName() == null ? null : user;
-                }
+                var user = aspReqBase.RequestContext.HttpContext.GetUser();
+                return user.GetUserName() == null ? null : user;
             }
             return null;
         }
 
         public static string GetUserName(this IPrincipal user)
         {
-            var userName = user != null ? user.Identity.Name : null;
+            var userName = user?.Identity.Name;
             return string.IsNullOrEmpty(userName) //can be ""
                 ? null
                 : userName;

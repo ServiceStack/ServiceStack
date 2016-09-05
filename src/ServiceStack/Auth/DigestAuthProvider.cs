@@ -58,8 +58,10 @@ namespace ServiceStack.Auth
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
-            if (request != null) {
-                if (!LoginMatchesSession(session, request.UserName)) {
+            if (request != null)
+            {
+                if (!LoginMatchesSession(session, request.UserName))
+                {
                     return false;
                 }
             }
@@ -75,7 +77,8 @@ namespace ServiceStack.Auth
 
         protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password)
         {
-            if (!LoginMatchesSession(session, userName)) {
+            if (!LoginMatchesSession(session, userName))
+            {
                 authService.RemoveSession();
                 session = authService.GetSession();
             }
@@ -84,14 +87,15 @@ namespace ServiceStack.Auth
             {
                 session.IsAuthenticated = true;
 
-                if (session.UserAuthName == null) 
+                if (session.UserAuthName == null)
                     session.UserAuthName = userName;
 
                 var response = OnAuthenticated(authService, session, null, null);
                 if (response != null)
                     return response;
 
-                return new AuthenticateResponse {
+                return new AuthenticateResponse
+                {
                     UserId = session.UserAuthId,
                     UserName = userName,
                     SessionId = session.Id,
@@ -104,7 +108,8 @@ namespace ServiceStack.Auth
         public override IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             var userSession = session as AuthUserSession;
-            if (userSession != null) {
+            if (userSession != null)
+            {
                 LoadUserAuthInfo(userSession, tokens, authInfo);
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
             }
@@ -123,12 +128,9 @@ namespace ServiceStack.Auth
                     foreach (var oAuthToken in session.GetAuthTokens())
                     {
                         var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
-                        if (authProvider == null)
-                            continue;
 
                         var userAuthProvider = authProvider as OAuthProvider;
-                        if (userAuthProvider != null)
-                            userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
+                        userAuthProvider?.LoadUserOAuthProvider(session, oAuthToken);
                     }
 
                     var failed = ValidateAccount(authService, authRepo, session, tokens);
@@ -153,10 +155,10 @@ namespace ServiceStack.Auth
         public override void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             var digestHelper = new DigestAuthFunctions();
-            httpRes.StatusCode = (int) HttpStatusCode.Unauthorized;
+            httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(
                 HttpHeaders.WwwAuthenticate,
-                "{0} realm=\"{1}\", nonce=\"{2}\", qop=\"auth\"".Fmt(Provider, AuthRealm, digestHelper.GetNonce(httpReq.UserHostAddress, PrivateKey)));
+                $"{Provider} realm=\"{AuthRealm}\", nonce=\"{digestHelper.GetNonce(httpReq.UserHostAddress, PrivateKey)}\", qop=\"auth\"");
             httpRes.EndRequest();
         }
 

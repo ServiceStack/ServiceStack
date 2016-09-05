@@ -95,23 +95,14 @@ namespace ServiceStack.Auth
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                var preAuthUrl = string.Format(
-                    "{0}?client_id={1}&redirect_uri={2}",
-                    this.PreAuthUrl,
-                    this.ClientId,
-                    this.RedirectUrl.UrlEncode());
+                var preAuthUrl = $"{this.PreAuthUrl}?client_id={this.ClientId}&redirect_uri={this.RedirectUrl.UrlEncode()}";
 
                 this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
             // If access code exists, get access token to be able to call APIs.
-            var accessTokenUrl = string.Format(
-                "{0}?client_id={1}&client_secret={2}&code={3}",
-                this.AccessTokenUrl,
-                this.ClientId,
-                this.ClientSecret,
-                code);
+            var accessTokenUrl = $"{this.AccessTokenUrl}?client_id={this.ClientId}&client_secret={this.ClientSecret}&code={code}";
 
             try
             {
@@ -221,7 +212,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error("Could not retrieve Yammer user info for '{0}'".Fmt(tokens.DisplayName), ex);
+                Log.Error($"Could not retrieve Yammer user info for '{tokens.DisplayName}'", ex);
             }
 
             this.LoadUserOAuthProvider(userSession, tokens);

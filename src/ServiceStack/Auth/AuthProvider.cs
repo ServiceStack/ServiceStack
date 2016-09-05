@@ -60,10 +60,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public IAuthEvents AuthEvents
-        {
-            get { return HostContext.TryResolve<IAuthEvents>() ?? new AuthEvents(); }
-        }
+        public IAuthEvents AuthEvents => HostContext.TryResolve<IAuthEvents>() ?? new AuthEvents();
 
         /// <summary>
         /// Allows specifying a global fallback config that if exists is formatted with the Provider as the first arg.
@@ -75,7 +72,7 @@ namespace ServiceStack.Auth
         /// <returns></returns>
         protected string FallbackConfig(string fallback)
         {
-            return fallback != null ? fallback.Fmt(Provider) : null;
+            return fallback?.Fmt(Provider);
         }
 
         /// <summary>
@@ -89,7 +86,7 @@ namespace ServiceStack.Auth
             var feature = HostContext.GetPlugin<AuthFeature>();
 
             var session = service.GetSession();
-            var referrerUrl = (request != null ? request.Continue : null)
+            var referrerUrl = request?.Continue
                 ?? (feature.HtmlLogoutRedirect != null ? service.Request.ResolveAbsoluteUrl(feature.HtmlLogoutRedirect) : null)
                 ?? session.ReferrerUrl
                 ?? service.Request.GetHeader("Referer").NotLogoutUrl()
@@ -129,21 +126,14 @@ namespace ServiceStack.Auth
             foreach (var oAuthToken in session.GetAuthTokens())
             {
                 var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
-                if (authProvider == null) continue;
                 var userAuthProvider = authProvider as OAuthProvider;
-                if (userAuthProvider != null)
-                {
-                    userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
-                }
+                userAuthProvider?.LoadUserOAuthProvider(session, oAuthToken);
             }
 
             authRepo.SaveUserAuth(session);
 
             var httpRes = authService.Request.Response as IHttpResponse;
-            if (httpRes != null)
-            {
-                httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
-            }
+            httpRes?.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
             OnSaveUserAuth(authService, session);
         }
 
@@ -157,10 +147,7 @@ namespace ServiceStack.Auth
                 LoadUserAuthInfo(userSession, tokens, authInfo);
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
 
-                if (LoadUserAuthFilter != null)
-                {
-                    LoadUserAuthFilter(userSession, tokens, authInfo);
-                }
+                LoadUserAuthFilter?.Invoke(userSession, tokens, authInfo);
             }
 
             var hasTokens = tokens != null && authInfo != null;
@@ -219,18 +206,14 @@ namespace ServiceStack.Auth
                     foreach (var oAuthToken in session.GetAuthTokens())
                     {
                         var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
-                        if (authProvider == null) continue;
                         var userAuthProvider = authProvider as OAuthProvider;
-                        if (userAuthProvider != null)
-                        {
-                            userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
-                        }
+                        userAuthProvider?.LoadUserOAuthProvider(session, oAuthToken);
                     }
 
                     var httpRes = authService.Request.Response as IHttpResponse;
-                    if (session.UserAuthId != null && httpRes != null)
+                    if (session.UserAuthId != null)
                     {
-                        httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
+                        httpRes?.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
                     }
                 }
                 else
@@ -372,8 +355,7 @@ namespace ServiceStack.Auth
 
         protected virtual bool IsAccountLocked(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens=null)
         {
-            if (userAuth == null) return false;
-            return userAuth.LockedDate != null;
+            return userAuth?.LockedDate != null;
         }
 
         protected virtual IHttpResult ValidateAccount(IServiceBase authService, IAuthRepository authRepo, IAuthSession session, IAuthTokens tokens)
@@ -407,7 +389,7 @@ namespace ServiceStack.Auth
 
             var referrerUrl = session.ReferrerUrl;
             if (referrerUrl.IsNullOrEmpty())
-                referrerUrl = (request != null ? request.Continue : null)
+                referrerUrl = request?.Continue
                     ?? authService.Request.GetHeader("Referer");
 
             var requestUri = authService.Request.AbsoluteUri;
@@ -461,7 +443,7 @@ namespace ServiceStack.Auth
         internal static bool PopulateFromRequestIfHasSessionId(this IRequest req, object requestDto)
         {
             var hasSession = requestDto as IHasSessionId;
-            if (hasSession != null && hasSession.SessionId != null)
+            if (hasSession?.SessionId != null)
             {
                 req.SetSessionId(hasSession.SessionId);
                 return true;

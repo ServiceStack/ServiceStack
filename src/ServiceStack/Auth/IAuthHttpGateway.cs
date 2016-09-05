@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {

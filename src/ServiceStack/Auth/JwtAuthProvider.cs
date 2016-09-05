@@ -61,8 +61,7 @@ namespace ServiceStack.Auth
         public string CreateJwtBearerToken(IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null)
         {
             var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audience, roles, perms);
-            if (CreatePayloadFilter != null)
-                CreatePayloadFilter(jwtPayload, session);
+            CreatePayloadFilter?.Invoke(jwtPayload, session);
 
             if (EncryptPayload)
             {
@@ -73,8 +72,7 @@ namespace ServiceStack.Auth
             }
 
             var jwtHeader = CreateJwtHeader(HashAlgorithm, GetKeyId());
-            if (CreateHeaderFilter != null)
-                CreateHeaderFilter(jwtHeader, session);
+            CreateHeaderFilter?.Invoke(jwtHeader, session);
 
             Func<byte[], byte[]> hashAlgoritm = null;
 

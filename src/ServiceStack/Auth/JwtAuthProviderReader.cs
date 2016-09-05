@@ -138,8 +138,8 @@ namespace ServiceStack.Auth
         /// </summary>
         public string PrivateKeyXml
         {
-            get { return PrivateKey != null ? PrivateKey.Value.FromPrivateRSAParameters() : null; }
-            set { PrivateKey = value != null ? value.ToPrivateRSAParameters() : (RSAParameters?) null; }
+            get { return PrivateKey?.FromPrivateRSAParameters(); }
+            set { PrivateKey = value?.ToPrivateRSAParameters(); }
         }
 
         /// <summary>
@@ -152,8 +152,8 @@ namespace ServiceStack.Auth
         /// </summary>
         public string PublicKeyXml
         {
-            get { return PublicKey != null ? PublicKey.Value.FromPublicRSAParameters() : null; }
-            set { PublicKey = value != null ? value.ToPublicRSAParameters() : (RSAParameters?)null; }
+            get { return PublicKey?.FromPublicRSAParameters(); }
+            set { PublicKey = value?.ToPublicRSAParameters(); }
         }
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace ServiceStack.Auth
 
         public void PreAuthenticate(IRequest req, IResponse res)
         {
-            if (req.OperationName != null && IgnoreForOperationTypes.Contains(req.OperationName)) 
+            if (req.OperationName != null && IgnoreForOperationTypes.Contains(req.OperationName))
                 return;
 
             var bearerToken = req.GetBearerToken()
@@ -429,8 +429,7 @@ namespace ServiceStack.Auth
 
             session.PopulateFromMap(jwtPayload);
 
-            if (PopulateSessionFilter != null)
-                PopulateSessionFilter(session, jwtPayload, req);
+            PopulateSessionFilter?.Invoke(session, jwtPayload, req);
 
             HostContext.AppHost.OnSessionFilter(session, sessionId);
             return session;
@@ -486,7 +485,7 @@ namespace ServiceStack.Auth
                 }
                 catch (Exception)
                 {
-                    throw new TokenException("Claim '{0}' must be a Unix Timestamp".Fmt(key));
+                    throw new TokenException($"Claim '{key}' must be a Unix Timestamp");
                 }
             }
             return null;

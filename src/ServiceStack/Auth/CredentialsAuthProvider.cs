@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
 using ServiceStack.Web;
@@ -120,7 +119,7 @@ namespace ServiceStack.Auth
                     SessionId = session.Id,
                     DisplayName = session.DisplayName
                         ?? session.UserName
-                        ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim(),
+                        ?? $"{session.FirstName} {session.LastName}".Trim(),
                     ReferrerUrl = referrerUrl
                 };
             }
@@ -169,11 +168,7 @@ namespace ServiceStack.Auth
             {
                 LoadUserAuthInfo(userSession, tokens, authInfo);
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
-
-                if (LoadUserAuthFilter != null)
-                {
-                    LoadUserAuthFilter(userSession, tokens, authInfo);
-                }
+                LoadUserAuthFilter?.Invoke(userSession, tokens, authInfo);
             }
 
             var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request);
@@ -210,22 +205,12 @@ namespace ServiceStack.Auth
                     foreach (var oAuthToken in session.GetAuthTokens())
                     {
                         var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
-                        if (authProvider == null)
-                        {
-                            continue;
-                        }
                         var userAuthProvider = authProvider as OAuthProvider;
-                        if (userAuthProvider != null)
-                        {
-                            userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
-                        }
+                        userAuthProvider?.LoadUserOAuthProvider(session, oAuthToken);
                     }
 
                     var httpRes = authService.Request.Response as IHttpResponse;
-                    if (httpRes != null)
-                    {
-                        httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
-                    }
+                    httpRes?.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
 
                     var failed = ValidateAccount(authService, authRepo, session, tokens);
                     if (failed != null)

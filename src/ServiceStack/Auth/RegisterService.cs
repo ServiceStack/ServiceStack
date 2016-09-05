@@ -84,12 +84,9 @@ namespace ServiceStack.Auth
         /// </summary>
         public object Post(Register request)
         {
-            if (ValidateFn != null)
-            {
-                var validateResponse = ValidateFn(this, HttpMethods.Post, request);
-                if (validateResponse != null)
-                    return validateResponse;
-            }
+            var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);
+            if (validateResponse != null)
+                return validateResponse;
 
             RegisterResponse response = null;
             var session = this.GetSession();
@@ -106,10 +103,7 @@ namespace ServiceStack.Auth
                 if (HostContext.GlobalRequestFilters == null
                     || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
                 {
-                    if (RegistrationValidator != null)
-                    {
-                        RegistrationValidator.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
-                    }
+                    RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
                 }
 
                 user = registerNewUser
@@ -152,9 +146,8 @@ namespace ServiceStack.Auth
                 if (!request.AutoLogin.GetValueOrDefault())
                     session.PopulateSession(user, new List<IAuthTokens>());
 
-                session.OnRegistered(this.Request, session, this);
-                if (AuthEvents != null)
-                    AuthEvents.OnRegistered(this.Request, session, this);
+                session.OnRegistered(Request, session, this);
+                AuthEvents?.OnRegistered(this.Request, session, this);
             }
 
             if (response == null)
@@ -199,12 +192,9 @@ namespace ServiceStack.Auth
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
             }
 
-            if (ValidateFn != null)
-            {
-                var response = ValidateFn(this, HttpMethods.Put, request);
-                if (response != null)
-                    return response;
-            }
+            var response = ValidateFn?.Invoke(this, HttpMethods.Put, request);
+            if (response != null)
+                return response;
 
             var session = this.GetSession();
 

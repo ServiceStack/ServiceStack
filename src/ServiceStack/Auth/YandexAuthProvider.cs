@@ -47,7 +47,7 @@ namespace ServiceStack.Auth
             bool hasError = !error.IsNullOrEmpty();
             if (hasError)
             {
-                Log.Error("Yandex error callback. {0}".Fmt(httpRequest.QueryString));
+                Log.Error($"Yandex error callback. {httpRequest.QueryString}");
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
             }
 
@@ -55,15 +55,14 @@ namespace ServiceStack.Auth
             bool isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                string preAuthUrl = PreAuthUrl + "?response_type=code&client_id={0}&redirect_uri={1}&display=popup&state={2}".Fmt(ApplicationId, CallbackUrl.UrlEncode(), Guid.NewGuid().ToString("N"));
-
+                string preAuthUrl = $"{PreAuthUrl}?response_type=code&client_id={ApplicationId}&redirect_uri={CallbackUrl.UrlEncode()}&display=popup&state={Guid.NewGuid().ToString("N")}";
                 this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
             try
             {
-                string payload = "grant_type=authorization_code&code={0}&client_id={1}&client_secret={2}".Fmt(code, ApplicationId, ApplicationPassword);
+                string payload = $"grant_type=authorization_code&code={code}&client_id={ApplicationId}&client_secret={ApplicationPassword}";
                 string contents = AccessTokenUrl.PostStringToUrl(payload);
 
                 var authInfo = JsonObject.Parse(contents);
@@ -87,7 +86,7 @@ namespace ServiceStack.Auth
             catch (WebException webException)
             {
                 //just in case Yandex will start throwing exceptions 
-                HttpStatusCode statusCode = ((HttpWebResponse)webException.Response).StatusCode;
+                var statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
                     return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));

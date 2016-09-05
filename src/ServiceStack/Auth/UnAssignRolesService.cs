@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Configuration;
-using ServiceStack.Host;
-using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {

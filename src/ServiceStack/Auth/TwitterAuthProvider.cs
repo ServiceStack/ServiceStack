@@ -58,7 +58,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error("Could not retrieve twitter user info for '{0}'".Fmt(userSession.TwitterUserId), ex);
+                Log.Error($"Could not retrieve twitter user info for '{userSession.TwitterUserId}'", ex);
             }
 
             LoadUserOAuthProvider(userSession, tokens);
