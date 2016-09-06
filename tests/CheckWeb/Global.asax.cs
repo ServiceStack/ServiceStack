@@ -183,37 +183,16 @@ namespace CheckWeb
                 {
                     new BasicAuthProvider(AppSettings), 
                     new ApiKeyAuthProvider(AppSettings), 
-                }));
+                })
+            {
+                ServiceRoutes = new Dictionary<Type, string[]> {
+                  { typeof(AuthenticateService), new[] { "/api/auth", "/api/auth/{provider}" } },
+                }
+            });
 
             var authRepo = new OrmLiteAuthRepository(container.Resolve<IDbConnectionFactory>());
             container.Register<IAuthRepository>(c => authRepo);
             authRepo.InitSchema();
-
-            5.Times(x => authRepo.CreateUserAuth(new UserAuth {
-                UserName = $"user{x}",
-                Email = $"user{x}@email.com",
-            }, "test"));
-
-            AfterInitCallbacks.Add(host =>
-            {
-                var authProvider = (ApiKeyAuthProvider)
-                    AuthenticateService.GetAuthProvider(ApiKeyAuthProvider.Name);
-                using (var db = host.TryResolve<IDbConnectionFactory>().Open())
-                {
-                    var userWithKeysIds = db.Column<string>(db.From<ApiKey>()
-                        .SelectDistinct(x => x.UserAuthId)).Map(int.Parse);
-
-                    var userIdsMissingKeys = db.Column<string>(db.From<UserAuth>()
-                        .Where(x => userWithKeysIds.Count == 0 || !userWithKeysIds.Contains(x.Id))
-                        .Select(x => x.Id));
-
-                    foreach (var userId in userIdsMissingKeys)
-                    {
-                        var apiKeys = authProvider.GenerateNewApiKeys(userId.ToString());
-                        authRepo.StoreAll(apiKeys);
-                    }
-                }
-            });
         }
 
         /// <summary>
