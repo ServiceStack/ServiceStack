@@ -263,8 +263,7 @@ namespace ServiceStack
 
             response.UserInfo.QueryCount = response.Operations.Count;
 
-            if (feature.MetadataFilter != null)
-                feature.MetadataFilter(response);
+            feature.MetadataFilter?.Invoke(response);
 
             return response;
         }

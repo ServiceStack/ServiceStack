@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Web;
 using System.Web.Hosting;
 using ServiceStack.Data;
@@ -15,9 +13,9 @@ using ServiceStack.Host.Handlers;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.IO;
 using ServiceStack.Logging;
-using ServiceStack.Model;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using static System.String;
 
 namespace ServiceStack
 {
@@ -57,7 +55,7 @@ namespace ServiceStack
 
             //IIS will assign null to params without a name: .../?some_value can be retrieved as req.Params[null]
             //TryGetValue is not happy with null dictionary keys, so we should bail out here
-            if (string.IsNullOrEmpty(name)) return null;
+            if (IsNullOrEmpty(name)) return null;
 
             Cookie cookie;
             if (httpReq.Cookies.TryGetValue(name, out cookie)) return cookie.Value;
@@ -79,8 +77,7 @@ namespace ServiceStack
 
             var pos = httpReq.RawUrl.IndexOf(resolvedPathInfo, StringComparison.OrdinalIgnoreCase);
             if (pos == -1)
-                throw new ArgumentException(
-                    String.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
+                throw new ArgumentException($"PathInfo '{resolvedPathInfo}' is not in Url '{httpReq.RawUrl}'");
 
             return httpReq.RawUrl.Substring(0, pos + resolvedPathInfo.Length);
         }
@@ -96,7 +93,7 @@ namespace ServiceStack
 
             int pos;
 
-            if (resolvedPathInfo == string.Empty)
+            if (resolvedPathInfo == Empty)
             {
                 pos = httpReq.AbsoluteUri.IndexOf('?');
                 if (pos == -1)
@@ -108,8 +105,7 @@ namespace ServiceStack
             }
 
             if (pos == -1)
-                throw new ArgumentException(
-                    String.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
+                throw new ArgumentException($"PathInfo '{resolvedPathInfo}' is not in Url '{httpReq.RawUrl}'");
 
             return httpReq.AbsoluteUri.Substring(0, pos + resolvedPathInfo.Length);
         }
@@ -123,7 +119,7 @@ namespace ServiceStack
             }
             var uri = httpReq.AbsoluteUri;
 
-            var pos = uri.IndexOf("://") + "://".Length;
+            var pos = uri.IndexOf("://", StringComparison.Ordinal) + "://".Length;
             var partialUrl = uri.Substring(pos);
             var endPos = partialUrl.IndexOf('/');
             if (endPos == -1) endPos = partialUrl.Length;
@@ -131,25 +127,13 @@ namespace ServiceStack
             return hostName;
         }
 
-        public static string GetPhysicalPath(this IRequest httpReq)
-        {
-            return HostContext.ResolvePhysicalPath(httpReq.PathInfo, httpReq);
-        }
+        public static string GetPhysicalPath(this IRequest httpReq) => HostContext.ResolvePhysicalPath(httpReq.PathInfo, httpReq);
 
-        public static IVirtualFile GetVirtualFile(this IRequest httpReq)
-        {
-            return HostContext.ResolveVirtualFile(httpReq.PathInfo, httpReq);
-        }
+        public static IVirtualFile GetVirtualFile(this IRequest httpReq) => HostContext.ResolveVirtualFile(httpReq.PathInfo, httpReq);
 
-        public static IVirtualDirectory GetVirtualDirectory(this IRequest httpReq)
-        {
-            return HostContext.ResolveVirtualDirectory(httpReq.PathInfo, httpReq);
-        }
+        public static IVirtualDirectory GetVirtualDirectory(this IRequest httpReq) => HostContext.ResolveVirtualDirectory(httpReq.PathInfo, httpReq);
 
-        public static IVirtualNode GetVirtualNode(this IRequest httpReq)
-        {
-            return HostContext.ResolveVirtualNode(httpReq.PathInfo, httpReq);
-        }
+        public static IVirtualNode GetVirtualNode(this IRequest httpReq) => HostContext.ResolveVirtualNode(httpReq.PathInfo, httpReq);
 
         public static string GetDirectoryPath(this IRequest request)
         {
@@ -157,7 +141,7 @@ namespace ServiceStack
                 return null;
 
             var path = request.PathInfo;
-            return string.IsNullOrEmpty(path) || path[path.Length - 1] == '/'
+            return IsNullOrEmpty(path) || path[path.Length - 1] == '/'
                 ? path
                 : path.Substring(0, path.LastIndexOf('/') + 1);
         }
@@ -259,7 +243,7 @@ namespace ServiceStack
 
         public static string GetJsonpCallback(this IRequest httpReq)
         {
-            return httpReq == null ? null : httpReq.QueryString[Keywords.Callback];
+            return httpReq?.QueryString[Keywords.Callback];
         }
 
 
@@ -284,7 +268,7 @@ namespace ServiceStack
                     for (var i = 0; i < httpListener.Cookies.Count; i++)
                     {
                         var cookie = httpListener.Cookies[i];
-                        if (cookie == null || cookie.Name == null) continue;
+                        if (cookie?.Name == null) continue;
                         map[cookie.Name] = cookie.Value;
                     }
                 }
@@ -320,7 +304,7 @@ namespace ServiceStack
         public static string ToErrorCode(this Exception ex)
         {
             var hasErrorCode = ex as IHasErrorCode;
-            return (hasErrorCode != null ? hasErrorCode.ErrorCode : null)
+            return hasErrorCode?.ErrorCode
                 ?? ex.GetType().Name;
         }
 
@@ -368,7 +352,7 @@ namespace ServiceStack
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(HttpRequestExtensions));
 
-        private static string WebHostDirectoryName = "";
+        private static readonly string WebHostDirectoryName = "";
 
         static HttpRequestExtensions()
         {
@@ -383,7 +367,7 @@ namespace ServiceStack
 
         public static string GetOperationNameFromLastPathInfo(string lastPathInfo)
         {
-            if (String.IsNullOrEmpty(lastPathInfo)) return null;
+            if (IsNullOrEmpty(lastPathInfo)) return null;
 
             var operationName = lastPathInfo.Substring("/".Length);
 
@@ -392,11 +376,11 @@ namespace ServiceStack
 
         private static string GetLastPathInfoFromRawUrl(string rawUrl)
         {
-            var pathInfo = rawUrl.IndexOf("?") != -1
-                ? rawUrl.Substring(0, rawUrl.IndexOf("?"))
+            var pathInfo = rawUrl.IndexOf("?", StringComparison.Ordinal) != -1
+                ? rawUrl.Substring(0, rawUrl.IndexOf("?", StringComparison.Ordinal))
                 : rawUrl;
 
-            pathInfo = pathInfo.Substring(pathInfo.LastIndexOf("/"));
+            pathInfo = pathInfo.Substring(pathInfo.LastIndexOf("/", StringComparison.Ordinal));
 
             return pathInfo;
         }
@@ -404,7 +388,7 @@ namespace ServiceStack
         public static string GetLastPathInfo(this HttpRequestBase request)
         {
             var pathInfo = request.PathInfo;
-            if (String.IsNullOrEmpty(pathInfo))
+            if (IsNullOrEmpty(pathInfo))
             {
                 pathInfo = GetLastPathInfoFromRawUrl(request.RawUrl);
             }
@@ -477,10 +461,10 @@ namespace ServiceStack
 
         public static string GetPathInfo(this HttpRequestBase request)
         {
-            if (!String.IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
+            if (!IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
 
             var mode = HostContext.Config.HandlerFactoryPath;
-            var appPath = String.IsNullOrEmpty(request.ApplicationPath)
+            var appPath = IsNullOrEmpty(request.ApplicationPath)
                           ? WebHostDirectoryName
                           : request.ApplicationPath.TrimStart('/');
 
@@ -492,11 +476,11 @@ namespace ServiceStack
         public static string GetPathInfo(string fullPath, string mode, string appPath)
         {
             var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
-            if (!String.IsNullOrEmpty(pathInfo)) return pathInfo;
+            if (!IsNullOrEmpty(pathInfo)) return pathInfo;
 
             //Wildcard mode relies on this to work out the handlerPath
             pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
-            if (!String.IsNullOrEmpty(pathInfo)) return pathInfo;
+            if (!IsNullOrEmpty(pathInfo)) return pathInfo;
 
             return fullPath;
         }
@@ -522,7 +506,7 @@ namespace ServiceStack
                     pathRootFound = true;
                     for (var mappedPathRootIndex = 0; mappedPathRootIndex < mappedPathRootParts.Length; mappedPathRootIndex++)
                     {
-                        if (!String.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.OrdinalIgnoreCase))
+                        if (!string.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.OrdinalIgnoreCase))
                         {
                             pathRootFound = false;
                             break;
@@ -630,7 +614,7 @@ namespace ServiceStack
         public static string GetQueryStringContentType(this IRequest httpReq)
         {
             var callback = httpReq.QueryString[Keywords.Callback];
-            if (!string.IsNullOrEmpty(callback)) return MimeTypes.Json;
+            if (!IsNullOrEmpty(callback)) return MimeTypes.Json;
 
             var format = httpReq.QueryString[Keywords.Format];
             if (format == null)
@@ -674,7 +658,7 @@ namespace ServiceStack
         public static string GetResponseContentType(this IRequest httpReq)
         {
             var specifiedContentType = GetQueryStringContentType(httpReq);
-            if (!String.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
+            if (!IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
 
             var acceptContentTypes = httpReq.AcceptTypes;
             var defaultContentType = httpReq.ContentType;
@@ -687,7 +671,7 @@ namespace ServiceStack
             var preferredContentTypes = HostContext.Config.PreferredContentTypesArray;
 
             var acceptsAnything = false;
-            var hasDefaultContentType = !String.IsNullOrEmpty(defaultContentType);
+            var hasDefaultContentType = !IsNullOrEmpty(defaultContentType);
             if (acceptContentTypes != null)
             {
                 var hasPreferredContentTypes = new bool[preferredContentTypes.Length];
@@ -786,7 +770,7 @@ namespace ServiceStack
 
         public static string InferBaseUrl(this string absoluteUri, string fromPathInfo = null)
         {
-            if (string.IsNullOrEmpty(fromPathInfo))
+            if (IsNullOrEmpty(fromPathInfo))
             {
                 fromPathInfo = "/" + (HostContext.Config.HandlerFactoryPath ?? "");
             }
@@ -797,7 +781,7 @@ namespace ServiceStack
                     return null;
             }
 
-            if (string.IsNullOrEmpty(absoluteUri))
+            if (IsNullOrEmpty(absoluteUri))
                 return null;
 
             var pos = absoluteUri.IndexOf(fromPathInfo, "https://".Length + 1, StringComparison.Ordinal);

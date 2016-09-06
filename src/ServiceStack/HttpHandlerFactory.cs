@@ -14,14 +14,14 @@ namespace ServiceStack
     public class HttpHandlerFactory : IHttpHandlerFactory
     {
         static readonly List<string> WebHostRootFileNames = new List<string>();
-        static private readonly string WebHostPhysicalPath = null;
-        static private readonly string DefaultRootFileName = null;
+        private static readonly string WebHostPhysicalPath = null;
+        private static readonly string DefaultRootFileName = null;
         //internal static string ApplicationBaseUrl = null;
-        static private readonly IHttpHandler DefaultHttpHandler = null;
-        static private readonly RedirectHttpHandler NonRootModeDefaultHttpHandler = null;
-        static private readonly IHttpHandler ForbiddenHttpHandler = null;
-        static private readonly IHttpHandler NotFoundHttpHandler = null;
-        static private readonly IHttpHandler StaticFilesHandler = new StaticFileHandler();
+        private static readonly IHttpHandler DefaultHttpHandler = null;
+        private static readonly RedirectHttpHandler NonRootModeDefaultHttpHandler = null;
+        private static readonly IHttpHandler ForbiddenHttpHandler = null;
+        private static readonly IHttpHandler NotFoundHttpHandler = null;
+        private static readonly IHttpHandler StaticFilesHandler = new StaticFileHandler();
         private static readonly bool IsIntegratedPipeline = false;
         private static readonly bool HostAutoRedirectsDirs = false;
 

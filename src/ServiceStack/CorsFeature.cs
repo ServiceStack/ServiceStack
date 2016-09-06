@@ -25,10 +25,7 @@ namespace ServiceStack
 
         private readonly ICollection<string> allowOriginWhitelist;
 
-        public ICollection<string> AllowOriginWhitelist
-        {
-            get { return allowOriginWhitelist; }
-        }
+        public ICollection<string> AllowOriginWhitelist => allowOriginWhitelist;
 
         public bool AutoHandleOptionsRequests { get; set; }
 
@@ -77,11 +74,9 @@ namespace ServiceStack
             if (maxAge != null)
                 appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AccessControlMaxAge, maxAge.Value.ToString());
 
-            Action<IRequest, IResponse> allowOriginFilter = null;
-
             if (allowOriginWhitelist != null)
             {
-                allowOriginFilter = (httpReq, httpRes) =>
+                Action<IRequest, IResponse> allowOriginFilter = (httpReq, httpRes) =>
                 {
                     var origin = httpReq.Headers.Get(HttpHeaders.Origin);
                     if (allowOriginWhitelist.Contains(origin))

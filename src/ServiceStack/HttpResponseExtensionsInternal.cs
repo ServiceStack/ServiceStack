@@ -50,7 +50,7 @@ namespace ServiceStack
             var bytes = result as byte[];
             if (bytes != null)
             {
-                var bodyPadding = bodyPrefix != null ? bodyPrefix.Length : 0;
+                var bodyPadding = bodyPrefix?.Length ?? 0;
                 if (bodySuffix != null)
                     bodyPadding += bodySuffix.Length;
 
@@ -145,7 +145,7 @@ namespace ServiceStack
                         if (httpResult.RequestContext == null)
                             httpResult.RequestContext = request;
 
-                        var paddingLength = bodyPrefix != null ? bodyPrefix.Length : 0;
+                        var paddingLength = bodyPrefix?.Length ?? 0;
                         if (bodySuffix != null)
                             paddingLength += bodySuffix.Length;
 
@@ -202,7 +202,7 @@ namespace ServiceStack
                             }
 
                             if (Log.IsDebugEnabled)
-                                Log.DebugFormat("Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
+                                Log.Debug($"Setting Custom HTTP Header: {responseHeaders.Key}: {responseHeaders.Value}");
 
                             if (Env.IsMono && responseHeaders.Key.EqualsIgnoreCase(HttpHeaders.ContentType))
                             {
@@ -238,7 +238,7 @@ namespace ServiceStack
                         if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
                         {
                             response.Flush(); //required for Compression
-                            if (disposableResult != null) disposableResult.Dispose();
+                            disposableResult?.Dispose();
                             return TypeConstants.TrueTask;
                         }
 
@@ -260,9 +260,8 @@ namespace ServiceStack
 
                         if (defaultAction == null)
                         {
-                            throw new ArgumentNullException("defaultAction", String.Format(
-                                "As result '{0}' is not a supported responseType, a defaultAction must be supplied",
-                                (result != null ? result.GetType().GetOperationName() : "")));
+                            throw new ArgumentNullException(nameof(defaultAction),
+                                $"As result '{(result != null ? result.GetType().GetOperationName() : "")}' is not a supported responseType, a defaultAction must be supplied");
                         }
 
                         if (bodyPrefix != null)
@@ -274,8 +273,7 @@ namespace ServiceStack
                         if (bodySuffix != null)
                             response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
 
-                        if (disposableResult != null)
-                            disposableResult.Dispose();
+                        disposableResult?.Dispose();
                     }
 
                     return TypeConstants.FalseTask;
@@ -298,8 +296,7 @@ namespace ServiceStack
             if (!HostContext.Config.WriteErrorsToResponse)
                 return originalEx.AsTaskException<bool>();
 
-            var errorMessage = string.Format(
-                "Error occured while Processing Request: [{0}] {1}", originalEx.GetType().GetOperationName(), originalEx.Message);
+            var errorMessage = $"Error occured while Processing Request: [{originalEx.GetType().GetOperationName()}] {originalEx.Message}";
 
             try
             {
@@ -381,10 +378,7 @@ namespace ServiceStack
                 : hold;
 
             var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
-            if (serializer != null)
-            {
-                serializer(httpReq, errorDto, httpRes);
-            }
+            serializer?.Invoke(httpReq, errorDto, httpRes);
 
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
 

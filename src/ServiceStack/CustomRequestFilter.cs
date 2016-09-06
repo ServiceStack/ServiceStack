@@ -12,7 +12,7 @@ namespace ServiceStack
         public CustomRequestFilter(Action<IRequest, IResponse, object> filter)
         {
             if (filter == null)
-                throw new ArgumentNullException("filter");
+                throw new ArgumentNullException(nameof(filter));
 
             this.filter = filter;
         }
@@ -35,7 +35,7 @@ namespace ServiceStack
         public CustomResponseFilter(Action<IRequest, IResponse, object> filter)
         {
             if (filter == null)
-                throw new ArgumentNullException("filter");
+                throw new ArgumentNullException(nameof(filter));
 
             this.filter = filter;
         }

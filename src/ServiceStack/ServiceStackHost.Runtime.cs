@@ -295,17 +295,11 @@ namespace ServiceStack
             }
         }
 
-        public MetadataPagesConfig MetadataPagesConfig
-        {
-            get
-            {
-                return new MetadataPagesConfig(
-                    Metadata,
-                    Config.ServiceEndpointsMetadataConfig,
-                    Config.IgnoreFormatsInMetadata,
-                    ContentTypes.ContentTypeFormats.Keys.ToList());
-            }
-        }
+        public MetadataPagesConfig MetadataPagesConfig => new MetadataPagesConfig(
+            Metadata,
+            Config.ServiceEndpointsMetadataConfig,
+            Config.IgnoreFormatsInMetadata,
+            ContentTypes.ContentTypeFormats.Keys.ToList());
 
         public virtual TimeSpan GetDefaultSessionExpiry(IRequest req)
         {
@@ -334,7 +328,7 @@ namespace ServiceStack
             if (!HasFeature(usesFeatures))
             {
                 throw new UnauthorizedAccessException(
-                    String.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
+                    $"'{usesFeatures}' Features have been disabled by your administrator");
             }
         }
 
@@ -463,21 +457,18 @@ namespace ServiceStack
             }
 
             var serializationEx = ex as SerializationException;
-            if (serializationEx != null)
+            var errors = serializationEx?.Data["errors"] as List<RequestBindingError>;
+            if (errors != null)
             {
-                var errors = serializationEx.Data["errors"] as List<RequestBindingError>;
-                if (errors != null)
-                {
-                    if (responseStatus.Errors == null)
-                        responseStatus.Errors = new List<ResponseError>();
+                if (responseStatus.Errors == null)
+                    responseStatus.Errors = new List<ResponseError>();
 
-                    responseStatus.Errors = errors.Select(e => new ResponseError
-                    {
-                        ErrorCode = ex.GetType().Name,
-                        FieldName = e.PropertyName,
-                        Message = e.PropertyValueString != null ? "'{0}' is an Invalid value for '{1}'".Fmt(e.PropertyValueString, e.PropertyName) : "Invalid Value for '{0}'".Fmt(e.PropertyName)
-                    }).ToList();
-                }
+                responseStatus.Errors = errors.Select(e => new ResponseError
+                {
+                    ErrorCode = ex.GetType().Name,
+                    FieldName = e.PropertyName,
+                    Message = e.PropertyValueString != null ? "'{0}' is an Invalid value for '{1}'".Fmt(e.PropertyValueString, e.PropertyName) : "Invalid Value for '{0}'".Fmt(e.PropertyName)
+                }).ToList();
             }
         }
 
@@ -514,8 +505,7 @@ namespace ServiceStack
 
             if (Log.IsDebugEnabled)
             {
-                Log.Debug("ignoring cached sessionId '{0}' which is different to request '{1}'"
-                    .Fmt(session.Id, withSessionId));
+                Log.Debug($"ignoring cached sessionId '{session.Id}' which is different to request '{withSessionId}'");
             }
             return null;
         }

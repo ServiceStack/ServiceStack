@@ -45,7 +45,7 @@ namespace ServiceStack
         void Limit(int? skip, int? take);
     }
 
-    public interface IQueryDataSource<T> : IQueryDataSource {}
+    public interface IQueryDataSource<T> : IQueryDataSource { }
     public interface IQueryDataSource : IDisposable
     {
         IDataQuery From<T>();
@@ -76,7 +76,7 @@ namespace ServiceStack
     public class AutoQueryDataFeature : IPlugin, IPostInitPlugin
     {
         public HashSet<string> IgnoreProperties { get; set; }
-        public HashSet<Assembly> LoadFromAssemblies { get; set; } 
+        public HashSet<Assembly> LoadFromAssemblies { get; set; }
         public int? MaxLimit { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableAutoQueryViewer { get; set; }
@@ -106,10 +106,10 @@ namespace ServiceStack
             new CaseInsensitiveEqualCondition(),
         };
 
-        public Dictionary<string, QueryCondition> ConditionsAliases = 
+        public Dictionary<string, QueryCondition> ConditionsAliases =
             new Dictionary<string, QueryCondition>(StringComparer.OrdinalIgnoreCase);
 
-        public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
+        public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string>
         {
             {"%Above%",         ConditionAlias.Greater},
             {"Begin%",          ConditionAlias.Greater},
@@ -162,7 +162,7 @@ namespace ServiceStack
 
         public AutoQueryDataFeature()
         {
-            IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "OrderBy", "OrderByDesc", "Fields" }, 
+            IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "OrderBy", "OrderByDesc", "Fields" },
                 StringComparer.OrdinalIgnoreCase);
             AutoQueryServiceBaseType = typeof(AutoQueryDataServiceBase);
             QueryFilters = new Dictionary<Type, QueryDataFilterDelegate>();
@@ -187,7 +187,7 @@ namespace ServiceStack
                 var conditioAlias = entry.Value;
                 QueryCondition query;
                 if (!ConditionsAliases.TryGetValue(conditioAlias, out query))
-                    throw new NotSupportedException("No Condition registered with name '{0}'".Fmt(conditioAlias));
+                    throw new NotSupportedException($"No Condition registered with name '{conditioAlias}'");
 
                 if (entry.Key.EndsWith("%"))
                 {
@@ -214,7 +214,7 @@ namespace ServiceStack
             appHost.GetContainer().Register<IAutoQueryData>(c =>
                 new AutoQueryData
                 {
-                    IgnoreProperties = IgnoreProperties,                    
+                    IgnoreProperties = IgnoreProperties,
                     MaxLimit = MaxLimit,
                     EnableUntypedQueries = EnableUntypedQueries,
                     OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
@@ -228,7 +228,8 @@ namespace ServiceStack
             appHost.Metadata.GetOperationAssemblies()
                 .Each(x => LoadFromAssemblies.Add(x));
 
-            ((ServiceStackHost)appHost).ServiceAssemblies.Each(x => {
+            ((ServiceStackHost)appHost).ServiceAssemblies.Each(x =>
+            {
                 if (!LoadFromAssemblies.Contains(x))
                     LoadFromAssemblies.Add(x);
             });
@@ -277,8 +278,7 @@ namespace ServiceStack
                     returnType: typeof(object),
                     parameterTypes: new[] { requestType });
 
-                if (GenerateServiceFilter != null)
-                    GenerateServiceFilter(typeBuilder, method, requestType);
+                GenerateServiceFilter?.Invoke(typeBuilder, method, requestType);
 
                 var il = method.GetILGenerator();
 
@@ -423,7 +423,7 @@ namespace ServiceStack
         public bool[] OrderAsc { get; private set; }
 
         public OrderByExpression(string fieldName, Func<object, object> fieldGetter, bool orderAsc = true)
-            : this(new[] { fieldName }, new[] { fieldGetter }, new []{ orderAsc }) { }
+            : this(new[] { fieldName }, new[] { fieldGetter }, new[] { orderAsc }) { }
 
         public OrderByExpression(string[] fieldNames, Func<object, object>[] fieldGetters, bool[] orderAsc)
         {
@@ -476,7 +476,7 @@ namespace ServiceStack
         public IQueryData Dto { get; private set; }
         public Dictionary<string, string> DynamicParams { get; private set; }
         public List<ConditionExpression> Conditions { get; set; }
-        public OrderByExpression OrderBy { get; set; } 
+        public OrderByExpression OrderBy { get; set; }
         public HashSet<string> OnlyFields { get; set; }
         public int? Offset { get; set; }
         public int? Rows { get; set; }
@@ -498,10 +498,7 @@ namespace ServiceStack
             this.Conditions = new List<ConditionExpression>();
         }
 
-        public virtual bool HasConditions
-        {
-            get { return Conditions.Count > 0; }
-        }
+        public virtual bool HasConditions => Conditions.Count > 0;
 
         public virtual void Limit(int? skip, int? take)
         {
@@ -512,7 +509,7 @@ namespace ServiceStack
         public void Take(int take)
         {
             this.Rows = take;
-        } 
+        }
 
         public virtual void Select(string[] fields)
         {
@@ -540,7 +537,7 @@ namespace ServiceStack
             OrderByFieldsImpl(fieldNames, x => x[0] == '-');
         }
 
-        void OrderByFieldsImpl(string[] fieldNames, Func<string,bool> orderFn)
+        void OrderByFieldsImpl(string[] fieldNames, Func<string, bool> orderFn)
         {
             var getters = new List<Func<object, object>>();
             var orderAscs = new List<bool>();
@@ -672,8 +669,7 @@ namespace ServiceStack
 
         public virtual void Dispose()
         {
-            if (Db != null)
-                Db.Dispose();
+            Db?.Dispose();
         }
 
         private static Dictionary<Type, ITypedQueryData> TypedQueries = new Dictionary<Type, ITypedQueryData>();
@@ -690,8 +686,7 @@ namespace ServiceStack
             do
             {
                 snapshot = TypedQueries;
-                newCache = new Dictionary<Type, ITypedQueryData>(TypedQueries);
-                newCache[dtoType] = defaultValue;
+                newCache = new Dictionary<Type, ITypedQueryData>(TypedQueries) { [dtoType] = defaultValue };
 
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref TypedQueries, newCache, snapshot), snapshot));
@@ -714,8 +709,7 @@ namespace ServiceStack
                 }
             }
 
-            if (filterFn != null)
-                filterFn(q, dto, req);
+            filterFn?.Invoke(q, dto, req);
 
             return (DataQuery<From>)q;
         }
@@ -727,11 +721,11 @@ namespace ServiceStack
             var commands = dto.Include.ParseCommands();
 
             var totalCountRequested = commands.Any(x =>
-                "COUNT".EqualsIgnoreCase(x.Name) && 
-                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*"))); 
+                "COUNT".EqualsIgnoreCase(x.Name) &&
+                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*")));
 
             if (!totalCountRequested)
-                commands.Add(new Command { Name = "COUNT", Args = { "*" }});
+                commands.Add(new Command { Name = "COUNT", Args = { "*" } });
 
             var ctx = new QueryDataFilterContext
             {
@@ -748,9 +742,9 @@ namespace ServiceStack
             }
 
             string total;
-            response.Total = response.Meta.TryGetValue("COUNT(*)", out total) 
-                ? total.ToInt() 
-                : (int) Db.Count(expr); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
+            response.Total = response.Meta.TryGetValue("COUNT(*)", out total)
+                ? total.ToInt()
+                : (int)Db.Count(expr); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
 
             //reduce payload on wire
             if (!totalCountRequested)
@@ -770,7 +764,7 @@ namespace ServiceStack
 
             var dataSourceFactory = HostContext.GetPlugin<AutoQueryDataFeature>().GetDataSource(typeof(From));
             if (dataSourceFactory == null)
-                throw new NotSupportedException("No datasource was registered on AutoQueryDataFeature for Type '{0}'".Fmt(typeof(From).Name));
+                throw new NotSupportedException($"No datasource was registered on AutoQueryDataFeature for Type '{typeof(From).Name}'");
 
             return Db = dataSourceFactory(ctx);
         }
@@ -810,7 +804,7 @@ namespace ServiceStack
 
     public class MemoryDataSource<T> : QueryDataSource<T>
     {
-        public IEnumerable<T> Data { get; private set; }
+        public IEnumerable<T> Data { get; }
 
         public MemoryDataSource(QueryDataContext context, IEnumerable<T> data) : base(context)
         {
@@ -818,11 +812,13 @@ namespace ServiceStack
         }
 
         public MemoryDataSource(IEnumerable<T> data, IQueryData dto, IRequest req)
-            : this(new QueryDataContext {
+            : this(new QueryDataContext
+            {
                 Dto = dto,
                 Request = req,
                 DynamicParams = req.GetRequestParams(),
-            }, data) {}
+            }, data)
+        { }
 
         public override IEnumerable<T> GetDataSource(IDataQuery q)
         {
@@ -859,7 +855,7 @@ namespace ServiceStack
             }
 
             return source;
-        } 
+        }
 
         public virtual List<Into> LoadSelect<Into, From>(IDataQuery q)
         {
@@ -877,7 +873,7 @@ namespace ServiceStack
                     : item.ConvertTo<Into>();
 
                 //ConvertTo<T> short-circuits to instance cast when types match, we to mutate a copy instead
-                if (typeof(From) == typeof(Into) && q.OnlyFields != null) 
+                if (typeof(From) == typeof(Into) && q.OnlyFields != null)
                 {
                     into = typeof(Into).CreateInstance<Into>();
                     into.PopulateWith(item);
@@ -928,10 +924,10 @@ namespace ServiceStack
         public virtual object SelectAggregate(IDataQuery q, string name, IEnumerable<string> args)
         {
             if (name == null)
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
 
             name = name.ToUpper();
-            if (name != "COUNT" && name != "MIN" && name != "MAX" && name != "AVG" && name != "SUM" 
+            if (name != "COUNT" && name != "MIN" && name != "MAX" && name != "AVG" && name != "SUM"
                 && name != "FIRST" && name != "LAST")
                 return null;
 
@@ -972,7 +968,7 @@ namespace ServiceStack
                         return results.Count;
                     }
 
-                    return CompareTypeUtils.Aggregate(source, 
+                    return CompareTypeUtils.Aggregate(source,
                         (acc, next) => CompareTypeUtils.Add(acc, firstGetter(next)), 0);
 
                 case "MIN":
@@ -995,13 +991,13 @@ namespace ServiceStack
                     return source.Length > 0 ? firstGetter(source[0]) : null;
 
                 case "LAST":
-                    return source.Length > 0 ? firstGetter(source[source.Length -1]) : null;
+                    return source.Length > 0 ? firstGetter(source[source.Length - 1]) : null;
             }
 
             return null;
         }
 
-        public virtual void Dispose() {}
+        public virtual void Dispose() { }
     }
 
     public interface ITypedQueryData
@@ -1010,7 +1006,7 @@ namespace ServiceStack
             IQueryDataSource db,
             IQueryData request,
             Dictionary<string, string> dynamicParams,
-            IAutoQueryDataOptions options=null);
+            IAutoQueryDataOptions options = null);
 
         QueryResponse<Into> Execute<Into>(
             IQueryDataSource db,
@@ -1070,7 +1066,7 @@ namespace ServiceStack
             foreach (var pi in props)
             {
                 var attr = pi.FirstAttribute<DataMemberAttribute>();
-                if (attr == null || attr.Name == null) continue;
+                if (attr?.Name == null) continue;
                 aliases[attr.Name] = pi.Name;
             }
 
@@ -1098,7 +1094,7 @@ namespace ServiceStack
             return q;
         }
 
-        private static readonly char[] FieldSeperators = new[] {',', ';'};
+        private static readonly char[] FieldSeperators = new[] { ',', ';' };
 
         private static void AppendLimits(IDataQuery q, IQueryData dto, IAutoQueryDataOptions options)
         {
@@ -1118,7 +1114,7 @@ namespace ServiceStack
                 q.OrderByPrimaryKey();
             }
 
-            var maxLimit = options != null ? options.MaxLimit : null;
+            var maxLimit = options?.MaxLimit;
             var take = dto.Take ?? maxLimit;
             if (take > maxLimit)
                 take = maxLimit;
@@ -1130,7 +1126,7 @@ namespace ServiceStack
             if (dto is IJoin)
             {
                 var dtoInterfaces = dto.GetType().GetInterfaces();
-                foreach(var innerJoin in dtoInterfaces.Where(x => x.Name.StartsWith("IJoin`")))
+                foreach (var innerJoin in dtoInterfaces.Where(x => x.Name.StartsWith("IJoin`")))
                 {
                     var joinTypes = innerJoin.GetGenericArguments();
                     for (var i = 1; i < joinTypes.Length; i++)
@@ -1139,13 +1135,13 @@ namespace ServiceStack
                     }
                 }
 
-                foreach(var leftJoin in dtoInterfaces.Where(x => x.Name.StartsWith("ILeftJoin`")))
+                foreach (var leftJoin in dtoInterfaces.Where(x => x.Name.StartsWith("ILeftJoin`")))
                 {
                     var joinTypes = leftJoin.GetGenericArguments();
                     for (var i = 1; i < joinTypes.Length; i++)
                     {
                         q.LeftJoin(joinTypes[i - 1], joinTypes[i]);
-                    } 
+                    }
                 }
             }
         }
@@ -1184,7 +1180,7 @@ namespace ServiceStack
 
                 dynamicParams.Remove(entry.Key);
 
-                AddCondition(q, defaultTerm, match.FieldDef, value, attr != null ? attr.QueryCondition : null);
+                AddCondition(q, defaultTerm, match.FieldDef, value, attr?.QueryCondition);
             }
         }
 
@@ -1203,7 +1199,7 @@ namespace ServiceStack
             else
             {
                 condition = !isMultiple
-                    ? (QueryCondition) EqualsCondition.Instance
+                    ? (QueryCondition)EqualsCondition.Instance
                     : InCollectionCondition.Instance;
             }
 
@@ -1239,11 +1235,11 @@ namespace ServiceStack
                         : InCollectionCondition.Instance;
                 }
 
-                var value = strValue == null ? 
-                      null 
-                    : isMultiple ? 
+                var value = strValue == null ?
+                      null
+                    : isMultiple ?
                       TypeSerializer.DeserializeFromString(strValue, Array.CreateInstance(fieldType, 0).GetType())
-                    : fieldType == typeof(string) ? 
+                    : fieldType == typeof(string) ?
                       strValue
                     : strValue.ChangeTo(fieldType);
 
@@ -1258,7 +1254,7 @@ namespace ServiceStack
                 ModelDef = match.Item1;
                 FieldDef = match.Item2;
                 QueryField = queryField;
-                Condition = queryField != null ? queryField.QueryCondition : null;
+                Condition = queryField?.QueryCondition;
             }
             public readonly Type ModelDef;
             public readonly PropertyInfo FieldDef;
@@ -1268,7 +1264,7 @@ namespace ServiceStack
 
         private const string Pluralized = "s";
 
-        private static MatchQuery GetQueryMatch(IDataQuery q, string name, IAutoQueryDataOptions options, Dictionary<string,string> aliases)
+        private static MatchQuery GetQueryMatch(IDataQuery q, string name, IAutoQueryDataOptions options, Dictionary<string, string> aliases)
         {
             var match = GetQueryMatch(q, name, options);
 
@@ -1318,8 +1314,8 @@ namespace ServiceStack
                 }
             }
 
-            return match != null 
-                ? new MatchQuery(match, null) 
+            return match != null
+                ? new MatchQuery(match, null)
                 : null;
         }
 
@@ -1359,7 +1355,7 @@ namespace ServiceStack
             {
                 QueryCondition queryCondition;
                 if (!feature.ConditionsAliases.TryGetValue(attr.Condition, out queryCondition))
-                    throw new NotSupportedException("No Condition registered with name '{0}' on [QueryDataField({1})]".Fmt(attr.Condition, attr.Field ?? pi.Name));
+                    throw new NotSupportedException($"No Condition registered with name '{attr.Condition}' on [QueryDataField({attr.Field ?? pi.Name})]");
 
                 to.QueryCondition = queryCondition;
             }
@@ -1382,7 +1378,7 @@ namespace ServiceStack
             return new MemoryDataSource<T>(ctx, soruce);
         }
 
-        public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, Func<IEnumerable<T>> soruceFn, ICacheClient cache, TimeSpan? expiresIn=null, string cacheKey = null)
+        public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, Func<IEnumerable<T>> soruceFn, ICacheClient cache, TimeSpan? expiresIn = null, string cacheKey = null)
         {
             if (cacheKey == null)
                 cacheKey = "aqd:" + typeof(T).Name;

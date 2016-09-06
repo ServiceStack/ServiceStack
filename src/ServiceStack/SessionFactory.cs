@@ -18,7 +18,7 @@ namespace ServiceStack
         public class SessionCacheClient : ISession
         {
             private readonly ICacheClient cacheClient;
-            private string prefixNs;
+            private readonly string prefixNs;
 
             public SessionCacheClient(ICacheClient cacheClient, string sessionId)
             {

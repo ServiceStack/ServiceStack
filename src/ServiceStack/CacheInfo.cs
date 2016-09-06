@@ -7,10 +7,7 @@ namespace ServiceStack
         /// <summary>
         /// The CacheKey to be use store the response against
         /// </summary>
-        public string CacheKey
-        {
-            get { return KeyBase + KeyModifiers; }
-        }
+        public string CacheKey => KeyBase + KeyModifiers;
 
         /// <summary>
         /// The base Cache Key used to cache the Service response

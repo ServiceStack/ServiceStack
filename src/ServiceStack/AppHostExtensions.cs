@@ -12,7 +12,7 @@ namespace ServiceStack
 {
     public static class AppHostExtensions
     {
-        private static ILog log = LogManager.GetLogger(typeof(AppHostExtensions));
+        private static readonly ILog log = LogManager.GetLogger(typeof(AppHostExtensions));
 
         public static void RegisterService<TService>(this IAppHost appHost, params string[] atRestPaths)
         {
@@ -76,10 +76,8 @@ namespace ServiceStack
         /// <returns></returns>
         public static Container GetContainer(this IAppHost appHost)
         {
-            if (appHost == null) return null;
-
             var hasContainer = appHost as IHasContainer;
-            return hasContainer != null ? hasContainer.Container : null;
+            return hasContainer?.Container;
         }
 
         public static bool NotifyStartupException(this IAppHost appHost, Exception ex)

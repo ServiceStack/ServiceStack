@@ -139,7 +139,7 @@ namespace ServiceStack
 
         public override void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
         {
-            var requestType = requestDto != null ? requestDto.GetType() : null;
+            var requestType = requestDto?.GetType();
 
             if (ExcludeRequestType(requestType))
                 return;

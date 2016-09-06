@@ -23,10 +23,7 @@ namespace ServiceStack
         public static string ServiceStackPath = null;
 
         private static HostConfig instance;
-        public static HostConfig Instance
-        {
-            get { return instance ?? (instance = NewInstance()); }
-        }
+        public static HostConfig Instance => instance ?? (instance = NewInstance());
 
         public static HostConfig ResetInstance()
         {
@@ -401,13 +398,10 @@ namespace ServiceStack
             if (pathsNotSet)
             {
                 var webServerSection = config.GetSection("system.webServer");
-                if (webServerSection != null)
+                var rawXml = webServerSection?.SectionInformation.GetRawXml();
+                if (!string.IsNullOrEmpty(rawXml))
                 {
-                    var rawXml = webServerSection.SectionInformation.GetRawXml();
-                    if (!String.IsNullOrEmpty(rawXml))
-                    {
-                        SetPaths(ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
-                    }
+                    SetPaths(ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
                 }
 
                 //In some MVC Hosts auto-inferencing doesn't work, in these cases assume the most likely default of "/api" path
@@ -429,7 +423,7 @@ namespace ServiceStack
 
             if (locationPath == null)
             {
-                handlerPath = handlerPath.Replace("*", String.Empty);
+                handlerPath = handlerPath.Replace("*", string.Empty);
             }
 
             HandlerFactoryPath = locationPath ??
@@ -453,7 +447,7 @@ namespace ServiceStack
             {
                 return handler.Attribute("type").Value;
             }
-            return String.Empty;
+            return string.Empty;
         }
     }
 

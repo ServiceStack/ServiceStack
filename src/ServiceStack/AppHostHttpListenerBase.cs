@@ -65,7 +65,7 @@ namespace ServiceStack
                 return task;
             }
 
-            return new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo)
+            return new NotImplementedException($"Cannot execute handler: {handler} at PathInfo: {httpReq.PathInfo}")
                 .AsTaskException();
         }
 

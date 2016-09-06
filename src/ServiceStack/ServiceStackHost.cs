@@ -28,6 +28,7 @@ using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Redis;
+using static System.String;
 
 namespace ServiceStack
 {
@@ -45,15 +46,9 @@ namespace ServiceStack
 
         public Assembly[] ServiceAssemblies { get; private set; }
 
-        public bool HasStarted
-        {
-            get { return ReadyAt != null; }
-        }
+        public bool HasStarted => ReadyAt != null;
 
-        public static bool IsReady()
-        {
-            return Instance != null && Instance.ReadyAt != null;
-        }
+        public static bool IsReady() => Instance?.ReadyAt != null;
 
         protected ServiceStackHost(string serviceName, params Assembly[] assembliesWithServices)
         {
@@ -138,9 +133,8 @@ namespace ServiceStack
         public virtual ServiceStackHost Init()
         {
             if (Instance != null)
-            {
                 throw new InvalidDataException("ServiceStackHost.Instance has already been set ({0})".Fmt(Instance.GetType().Name));
-            }
+
             Service.GlobalResolver = Instance = this;
 
             Config = HostConfig.ResetInstance();
@@ -169,7 +163,7 @@ namespace ServiceStack
             }
 
             if (VirtualFiles == null)
-                VirtualFiles = (pathProviders != null ? pathProviders.FirstOrDefault(x => x is FileSystemVirtualPathProvider) : null) as IVirtualFiles
+                VirtualFiles = pathProviders?.FirstOrDefault(x => x is FileSystemVirtualPathProvider) as IVirtualFiles
                     ?? GetVirtualFileSources().FirstOrDefault(x => x is FileSystemVirtualPathProvider) as IVirtualFiles;
 
             OnAfterInit();
@@ -271,12 +265,9 @@ namespace ServiceStack
 
         public IServiceRoutes Routes { get; set; }
 
-        public List<RestPath> RestPaths = new List<RestPath>();
+        public List<RestPath> RestPaths;
 
-        public Dictionary<Type, Func<IRequest, object>> RequestBinders
-        {
-            get { return ServiceController.RequestTypeFactoryMap; }
-        }
+        public Dictionary<Type, Func<IRequest, object>> RequestBinders => ServiceController.RequestTypeFactoryMap;
 
         public IContentTypes ContentTypes { get; set; }
 
@@ -294,11 +285,11 @@ namespace ServiceStack
 
         public Dictionary<Type, ITypedFilter> GlobalTypedResponseFilters { get; set; }
 
-        public List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; private set; }
+        public List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; }
 
         public Dictionary<Type, ITypedFilter> GlobalTypedMessageRequestFilters { get; set; }
 
-        public List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; private set; }
+        public List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; }
 
         public Dictionary<Type, ITypedFilter> GlobalTypedMessageResponseFilters { get; set; }
 
@@ -392,7 +383,7 @@ namespace ServiceStack
         {
             //Only add custom error messages to StatusDescription
             var httpError = ex as IHttpError;
-            var errorMessage = httpError != null ? httpError.Message : null;
+            var errorMessage = httpError?.Message;
             var statusCode = ex.ToStatusCode();
 
             //httpRes.WriteToResponse always calls .Close in it's finally statement so 
@@ -598,9 +589,9 @@ namespace ServiceStack
 
         private void AfterPluginsLoaded(string specifiedContentType)
         {
-            if (!String.IsNullOrEmpty(specifiedContentType))
+            if (!IsNullOrEmpty(specifiedContentType))
                 config.DefaultContentType = specifiedContentType;
-            else if (String.IsNullOrEmpty(config.DefaultContentType))
+            else if (IsNullOrEmpty(config.DefaultContentType))
                 config.DefaultContentType = MimeTypes.Json;
 
             Config.PreferredContentTypes.Remove(Config.DefaultContentType);
@@ -639,8 +630,7 @@ namespace ServiceStack
                 else
                 {
                     var disposable = instance as IDisposable;
-                    if (disposable != null)
-                        disposable.Dispose();
+                    disposable?.Dispose();
                 }
             }
             catch (Exception ex)

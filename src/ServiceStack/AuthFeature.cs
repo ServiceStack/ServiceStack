@@ -146,7 +146,7 @@ namespace ServiceStack
                     ? AuthEvents.First()
                     : new MultiAuthEvents(AuthEvents);
 
-                appHost.GetContainer().Register<IAuthEvents>(authEvents);
+                appHost.GetContainer().Register(authEvents);
             }
             else if (AuthEvents.Count > 0)
             {
@@ -173,9 +173,8 @@ namespace ServiceStack
             if (feature == null)
                 return ValidUserNameRegEx.IsMatch(userName);
 
-            return feature.IsValidUsernameFn != null
-                ? feature.IsValidUsernameFn(userName)
-                : feature.ValidUserNameRegEx.IsMatch(userName);
+            return feature.IsValidUsernameFn?.Invoke(userName) 
+                ?? feature.ValidUserNameRegEx.IsMatch(userName);
         }
     }
 }

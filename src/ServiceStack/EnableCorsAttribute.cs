@@ -9,7 +9,7 @@ namespace ServiceStack
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class EnableCorsAttribute : AttributeBase, IHasRequestFilter
     {
-        public int Priority { get { return 0; } }
+        public int Priority => 0;
 
         public bool AutoHandleOptionRequests { get; set; }
 

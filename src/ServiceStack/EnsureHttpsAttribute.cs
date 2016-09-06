@@ -29,7 +29,7 @@ namespace ServiceStack
                 if (SkipIfXForwardedFor)
                 {
                     var httpReq = req as IHttpRequest;
-                    if (httpReq != null && httpReq.XForwardedFor != null)
+                    if (httpReq?.XForwardedFor != null)
                         return;
                 }
 

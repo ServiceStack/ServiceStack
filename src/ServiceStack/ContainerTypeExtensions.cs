@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Funq;
-using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -40,7 +39,7 @@ namespace ServiceStack
                 return;
 
             var methodInfo = typeof(Container).GetMethod("RegisterAutoWiredAs", new[] { typeof(string) });
-            var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType, inFunqAsType });
+            var registerMethodInfo = methodInfo.MakeGenericMethod(serviceType, inFunqAsType);
 
             var registration = registerMethodInfo.Invoke(container, new[] { name }) as IRegistration;
             registration.ReusedWithin(scope);
@@ -60,7 +59,7 @@ namespace ServiceStack
                 return;
 
             var methodInfo = typeof(Container).GetMethod("RegisterAutoWired", Type.EmptyTypes);
-            var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType });
+            var registerMethodInfo = methodInfo.MakeGenericMethod(serviceType);
 
             var registration = registerMethodInfo.Invoke(container, TypeConstants.EmptyObjectArray) as IRegistration;
             registration.ReusedWithin(scope);
@@ -80,7 +79,7 @@ namespace ServiceStack
                 return;
 
             var methodInfo = typeof(Container).GetMethod("RegisterAutoWired", new[] { typeof(string) });
-            var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType });
+            var registerMethodInfo = methodInfo.MakeGenericMethod(serviceType);
 
             var registration = registerMethodInfo.Invoke(container, new[] { name }) as IRegistration;
             registration.ReusedWithin(scope);

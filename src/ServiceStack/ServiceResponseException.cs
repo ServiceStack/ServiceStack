@@ -6,14 +6,10 @@ namespace ServiceStack
     public class ServiceResponseException
         : Exception
     {
-        public ServiceResponseException()
-        {
-        }
+        public ServiceResponseException() {}
 
         public ServiceResponseException(string message)
-            : base(message)
-        {
-        }
+            : base(message) {}
 
         public ServiceResponseException(string errorCode, string errorMessage)
             : base(GetErrorMessage(errorCode, errorMessage))
@@ -36,7 +32,7 @@ namespace ServiceStack
 
         private static string GetErrorMessage(string errorCode, string errorMessage)
         {
-            return errorMessage ?? (errorCode != null ? errorCode.ToEnglish() : null);
+            return errorMessage ?? errorCode?.ToEnglish();
         }
 
         public string ErrorCode { get; set; }

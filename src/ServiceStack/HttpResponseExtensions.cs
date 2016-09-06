@@ -140,15 +140,14 @@ namespace ServiceStack
         public static void ReturnAuthRequired(this IResponse httpRes, AuthenticationHeaderType AuthType, string authRealm)
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
-            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, string.Format("{0} realm=\"{1}\"", AuthType.ToString(), authRealm));
+            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"{AuthType} realm=\"{authRealm}\"");
             httpRes.EndRequest();
         }
 
         public static void ClearCookies(this IResponse response)
         {
             var httpRes = response as IHttpResponse;
-            if (httpRes != null)
-                httpRes.ClearCookies();
+            httpRes?.ClearCookies();
         }
 
         /// <summary>
@@ -157,8 +156,7 @@ namespace ServiceStack
         public static void SetPermanentCookie(this IResponse response, string cookieName, string cookieValue)
         {
             var httpRes = response as IHttpResponse;
-            if (httpRes != null)
-                httpRes.Cookies.AddPermanentCookie(cookieName, cookieValue);
+            httpRes?.Cookies.AddPermanentCookie(cookieName, cookieValue);
         }
 
         /// <summary>
@@ -167,8 +165,7 @@ namespace ServiceStack
         public static void SetSessionCookie(this IResponse response, string cookieName, string cookieValue)
         {
             var httpRes = response as IHttpResponse;
-            if (httpRes != null)
-                httpRes.Cookies.AddSessionCookie(cookieName, cookieValue);
+            httpRes?.Cookies.AddSessionCookie(cookieName, cookieValue);
         }
 
         /// <summary>
@@ -185,10 +182,7 @@ namespace ServiceStack
         public static void SetCookie(this IResponse response, Cookie cookie)
         {
             var httpRes = response as IHttpResponse;
-            if (httpRes != null)
-            {
-                httpRes.SetCookie(cookie);
-            }
+            httpRes?.SetCookie(cookie);
         }
 
         /// <summary>
@@ -209,8 +203,7 @@ namespace ServiceStack
         public static void DeleteCookie(this IResponse response, string cookieName)
         {
             var httpRes = response as IHttpResponse;
-            if (httpRes != null)
-                httpRes.Cookies.DeleteCookie(cookieName);
+            httpRes?.Cookies.DeleteCookie(cookieName);
         }
 
         public static Dictionary<string, string> CookiesAsDictionary(this IResponse httpRes)
@@ -234,7 +227,7 @@ namespace ServiceStack
                     for (var i = 0; i < httpListener.Cookies.Count; i++)
                     {
                         var cookie = httpListener.Cookies[i];
-                        if (cookie == null || cookie.Name == null) continue;
+                        if (cookie?.Name == null) continue;
                         map[cookie.Name] = cookie.Value;
                     }
                 }

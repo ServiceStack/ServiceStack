@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Web;
 using ServiceStack.Caching;
 using ServiceStack.Host;
 using ServiceStack.Web;
@@ -157,9 +155,7 @@ namespace ServiceStack
 
         public static bool IsInProcessRequest(this IRequest httpReq)
         {
-            if (httpReq == null) return false;
-
-            return (RequestAttributes.InProcess & httpReq.RequestAttributes) == RequestAttributes.InProcess;
+            return (RequestAttributes.InProcess & httpReq?.RequestAttributes) == RequestAttributes.InProcess;
         }
 
         public static void ReleaseIfInProcessRequest(this IRequest httpReq)

@@ -94,7 +94,7 @@ namespace ServiceStack
         {
             unchecked
             {
-                return (base.GetHashCode() * 397) ^ (RequiredPermissions != null ? RequiredPermissions.GetHashCode() : 0);
+                return (base.GetHashCode() * 397) ^ (RequiredPermissions?.GetHashCode() ?? 0);
             }
         }
     }

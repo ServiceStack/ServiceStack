@@ -20,10 +20,7 @@ namespace ServiceStack
 
         public Dictionary<string, string> Headers { get; private set; }
 
-        public IDictionary<string, string> Options
-        {
-            get { return this.Headers; }
-        }
+        public IDictionary<string, string> Options => this.Headers;
 
         public CompressedFileResult(string filePath)
             : this(filePath, CompressionTypes.Deflate)
@@ -36,9 +33,7 @@ namespace ServiceStack
         public CompressedFileResult(string filePath, string compressionType, string contentMimeType)
         {
             if (!CompressionTypes.IsValid(compressionType))
-            {
                 throw new ArgumentException("Must be either 'deflate' or 'gzip'", compressionType);
-            }
 
             this.FilePath = filePath;
             this.Headers = new Dictionary<string, string> {

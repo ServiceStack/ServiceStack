@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ServiceStack.Caching;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -37,8 +36,8 @@ namespace ServiceStack
             var response = HostContext.AppHost.GetServiceGateway(ctx.Request).Send<object>(requestDto);
             var results = GetResults<T>(response);
             if (results == null)
-                throw new NotSupportedException("IEnumerable<{0}> could not be derived from Response {1} from Request {2}"
-                    .Fmt(typeof(T).Name, response.GetType().Name, requestDto.GetType().Name));
+                throw new NotSupportedException(
+                    $"IEnumerable<{typeof(T).Name}> could not be derived from Response {response.GetType().Name} from Request {requestDto.GetType().Name}");
 
             return new MemoryDataSource<T>(ctx, results);
         }

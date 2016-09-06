@@ -43,10 +43,7 @@ namespace ServiceStack
 
         public bool HasWebSudo(IRequest req, IWebSudoAuthSession session)
         {
-            if (session == null)
-                return false;
-
-            if (!session.AuthenticatedWebSudoUntil.HasValue)
+            if (session?.AuthenticatedWebSudoUntil == null)
                 return false;
 
             var now = DateTime.UtcNow;

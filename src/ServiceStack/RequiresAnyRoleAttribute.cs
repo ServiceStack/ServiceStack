@@ -95,12 +95,12 @@ namespace ServiceStack
                 if (session != null && session.HasRole(RoleNames.Admin, authRepo))
                     return;
 
-                if (session != null && session.UserAuthId != null && requiredRoles.Any(x => session.HasRole(x, authRepo)))
+                if (session?.UserAuthId != null && requiredRoles.Any(x => session.HasRole(x, authRepo)))
                     return;
 
                 session.UpdateFromUserAuthRepo(req);
 
-                if (session != null && session.UserAuthId != null && requiredRoles.Any(x => session.HasRole(x, authRepo)))
+                if (session?.UserAuthId != null && requiredRoles.Any(x => session.HasRole(x, authRepo)))
                     return;
             }
 

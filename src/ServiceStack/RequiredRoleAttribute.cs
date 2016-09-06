@@ -162,7 +162,7 @@ namespace ServiceStack
         {
             unchecked
             {
-                return (base.GetHashCode() * 397) ^ (RequiredRoles != null ? RequiredRoles.GetHashCode() : 0);
+                return (base.GetHashCode() * 397) ^ (RequiredRoles?.GetHashCode() ?? 0);
             }
         }
     }

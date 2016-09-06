@@ -134,7 +134,7 @@ namespace ServiceStack
             return base64Id;
         }
 
-        static readonly char[] UrlUnsafeBase64Chars = new[] { '+', '/' };
+        static readonly char[] UrlUnsafeBase64Chars = { '+', '/' };
         public static bool Base64StringContainsUrlUnfriendlyChars(string base64)
         {
             return base64.IndexOfAny(UrlUnsafeBase64Chars) >= 0;
@@ -145,11 +145,8 @@ namespace ServiceStack
             var sessionId = CreateRandomSessionId();
 
             var httpRes = res as IHttpResponse;
-            if (httpRes != null)
-            {
-                httpRes.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId,
-                    (HostContext.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
-            }
+            httpRes?.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId,
+                HostContext.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection);
 
             req.Items[SessionFeature.PermanentSessionId] = sessionId;
             return sessionId;
@@ -160,11 +157,8 @@ namespace ServiceStack
             var sessionId = CreateRandomSessionId();
 
             var httpRes = res as IHttpResponse;
-            if (httpRes != null)
-            {
-                httpRes.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId,
-                    (HostContext.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection));
-            }
+            httpRes?.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId,
+                HostContext.Config.OnlySendSessionCookiesSecurely && req.IsSecureConnection);
 
             req.Items[SessionFeature.SessionId] = sessionId;
             return sessionId;
@@ -229,8 +223,7 @@ namespace ServiceStack
             var strOptions = string.Join(",", existingOptions.ToArray());
 
             var httpRes = req.Response as IHttpResponse;
-            if (httpRes != null)
-                httpRes.Cookies.AddPermanentCookie(SessionFeature.SessionOptionsKey, strOptions);
+            httpRes?.Cookies.AddPermanentCookie(SessionFeature.SessionOptionsKey, strOptions);
 
             req.Items[SessionFeature.SessionOptionsKey] = strOptions;
 
@@ -306,8 +299,7 @@ namespace ServiceStack
         public static void DeleteJwtCookie(this IResponse response)
         {
             var httpRes = response as IHttpResponse;
-            if (httpRes == null) return;
-            httpRes.Cookies.DeleteCookie(Keywords.TokenCookie);
+            httpRes?.Cookies.DeleteCookie(Keywords.TokenCookie);
         }
 
         public static void GenerateNewSessionCookies(this IRequest req, IAuthSession session)

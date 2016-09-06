@@ -18,7 +18,7 @@ namespace ServiceStack
         public RedisErrorLoggerFeature(IRedisClientsManager redisManager)
         {
             if (redisManager == null)
-                throw new ArgumentNullException("redisManager");
+                throw new ArgumentNullException(nameof(redisManager));
 
             this.redisManager = redisManager;
         }

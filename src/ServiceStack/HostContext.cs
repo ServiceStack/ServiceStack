@@ -14,20 +14,15 @@ using ServiceStack.IO;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
+using static System.String;
 
 namespace ServiceStack
 {
     public static class HostContext
     {
-        public static RequestContext RequestContext
-        {
-            get { return RequestContext.Instance; }
-        }
+        public static RequestContext RequestContext => RequestContext.Instance;
 
-        public static ServiceStackHost AppHost
-        {
-            get { return ServiceStackHost.Instance; }
-        }
+        public static ServiceStackHost AppHost => ServiceStackHost.Instance;
 
         private static ServiceStackHost AssertAppHost()
         {
@@ -40,70 +35,31 @@ namespace ServiceStack
             return ServiceStackHost.Instance;
         }
 
-        public static bool IsAspNetHost
-        {
-            get { return ServiceStackHost.Instance is AppHostBase; }
-        }
+        public static bool IsAspNetHost => ServiceStackHost.Instance is AppHostBase;
 
-        public static bool IsHttpListenerHost
-        {
-            get { return ServiceStackHost.Instance is HttpListenerBase; }
-        }
+        public static bool IsHttpListenerHost => ServiceStackHost.Instance is HttpListenerBase;
 
-        public static T TryResolve<T>()
-        {
-            return AssertAppHost().TryResolve<T>();
-        }
+        public static T TryResolve<T>() => AssertAppHost().TryResolve<T>();
 
-        public static T Resolve<T>()
-        {
-            return AssertAppHost().Resolve<T>();
-        }
+        public static T Resolve<T>() => AssertAppHost().Resolve<T>();
 
-        public static Container Container
-        {
-            get { return AssertAppHost().Container; }
-        }
+        public static Container Container => AssertAppHost().Container;
 
-        public static ServiceController ServiceController
-        {
-            get { return AssertAppHost().ServiceController; }
-        }
+        public static ServiceController ServiceController => AssertAppHost().ServiceController;
 
-        public static MetadataPagesConfig MetadataPagesConfig
-        {
-            get { return AssertAppHost().MetadataPagesConfig; }
-        }
+        public static MetadataPagesConfig MetadataPagesConfig => AssertAppHost().MetadataPagesConfig;
 
-        public static IContentTypes ContentTypes
-        {
-            get { return AssertAppHost().ContentTypes; }
-        }
+        public static IContentTypes ContentTypes => AssertAppHost().ContentTypes;
 
-        public static HostConfig Config
-        {
-            get { return AssertAppHost().Config; }
-        }
+        public static HostConfig Config => AssertAppHost().Config;
 
-        public static IAppSettings AppSettings
-        {
-            get { return AssertAppHost().AppSettings; }
-        }
+        public static IAppSettings AppSettings => AssertAppHost().AppSettings;
 
-        public static ServiceMetadata Metadata
-        {
-            get { return AssertAppHost().Metadata; }
-        }
+        public static ServiceMetadata Metadata => AssertAppHost().Metadata;
 
-        public static string ServiceName
-        {
-            get { return AssertAppHost().ServiceName; }
-        }
+        public static string ServiceName => AssertAppHost().ServiceName;
 
-        public static bool DebugMode
-        {
-            get { return Config.DebugMode; }
-        }
+        public static bool DebugMode => Config.DebugMode;
 
         public static bool TestMode
         {
@@ -111,35 +67,17 @@ namespace ServiceStack
             set { ServiceStackHost.Instance.TestMode = value; }
         }
 
-        public static List<HttpHandlerResolverDelegate> CatchAllHandlers
-        {
-            get { return AssertAppHost().CatchAllHandlers; }
-        }
+        public static List<HttpHandlerResolverDelegate> CatchAllHandlers => AssertAppHost().CatchAllHandlers;
 
-        public static List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers
-        {
-            get { return AssertAppHost().RawHttpHandlers; }
-        }
+        public static List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers => AssertAppHost().RawHttpHandlers;
 
-        public static List<Action<IRequest, IResponse, object>> GlobalRequestFilters
-        {
-            get { return AssertAppHost().GlobalRequestFilters; }
-        }
+        public static List<Action<IRequest, IResponse, object>> GlobalRequestFilters => AssertAppHost().GlobalRequestFilters;
 
-        public static List<Action<IRequest, IResponse, object>> GlobalResponseFilters
-        {
-            get { return AssertAppHost().GlobalResponseFilters; }
-        }
+        public static List<Action<IRequest, IResponse, object>> GlobalResponseFilters => AssertAppHost().GlobalResponseFilters;
 
-        public static List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters
-        {
-            get { return AssertAppHost().GlobalMessageRequestFilters; }
-        }
+        public static List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters => AssertAppHost().GlobalMessageRequestFilters;
 
-        public static List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters
-        {
-            get { return AssertAppHost().GlobalMessageResponseFilters; }
-        }
+        public static List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters => AssertAppHost().GlobalMessageResponseFilters;
 
         public static bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
         {
@@ -164,34 +102,19 @@ namespace ServiceStack
         /// <summary>
         /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
         /// </summary>
-        public static IVirtualFiles VirtualFiles
-        {
-            get { return AssertAppHost().VirtualFiles; }
-        }
+        public static IVirtualFiles VirtualFiles => AssertAppHost().VirtualFiles;
 
         /// <summary>
         /// Cascading collection of virtual file sources, inc. Embedded Resources, File System, In Memory, S3
         /// </summary>
-        public static IVirtualPathProvider VirtualFileSources
-        {
-            get { return AssertAppHost().VirtualFileSources; }
-        }
+        public static IVirtualPathProvider VirtualFileSources => AssertAppHost().VirtualFileSources;
 
         [Obsolete("Renamed to VirtualFileSources")]
-        public static IVirtualPathProvider VirtualPathProvider
-        {
-            get { return AssertAppHost().VirtualFileSources; }
-        }
+        public static IVirtualPathProvider VirtualPathProvider => AssertAppHost().VirtualFileSources;
 
-        public static ICacheClient Cache
-        {
-            get { return TryResolve<ICacheClient>(); }
-        }
+        public static ICacheClient Cache => TryResolve<ICacheClient>();
 
-        public static MemoryCacheClient LocalCache
-        {
-            get { return TryResolve<MemoryCacheClient>(); }
-        }
+        public static MemoryCacheClient LocalCache => TryResolve<MemoryCacheClient>();
 
         /// <summary>
         /// Call to signal the completion of a ServiceStack-handled Request
@@ -221,7 +144,7 @@ namespace ServiceStack
         public static T GetPlugin<T>() where T : class, IPlugin
         {
             var appHost = AppHost;
-            return appHost == null ? default(T) : appHost.GetPlugin<T>();
+            return appHost?.GetPlugin<T>();
         }
 
         public static bool HasPlugin<T>() where T : class, IPlugin
@@ -298,23 +221,13 @@ namespace ServiceStack
         private static string defaultOperationNamespace;
         public static string DefaultOperationNamespace
         {
-            get
-            {
-                if (defaultOperationNamespace == null)
-                {
-                    defaultOperationNamespace = GetDefaultNamespace();
-                }
-                return defaultOperationNamespace;
-            }
-            set
-            {
-                defaultOperationNamespace = value;
-            }
+            get { return defaultOperationNamespace ?? (defaultOperationNamespace = GetDefaultNamespace()); }
+            set { defaultOperationNamespace = value; }
         }
 
         public static string GetDefaultNamespace()
         {
-            if (!String.IsNullOrEmpty(defaultOperationNamespace)) return null;
+            if (!IsNullOrEmpty(defaultOperationNamespace)) return null;
 
             foreach (var operationType in Metadata.RequestTypes)
             {
@@ -323,7 +236,7 @@ namespace ServiceStack
                 if (attrs.Length <= 0) continue;
 
                 var attr = attrs[0];
-                if (String.IsNullOrEmpty(attr.Namespace)) continue;
+                if (IsNullOrEmpty(attr.Namespace)) continue;
 
                 return attr.Namespace;
             }
