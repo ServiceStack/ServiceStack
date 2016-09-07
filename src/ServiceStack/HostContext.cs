@@ -153,23 +153,6 @@ namespace ServiceStack
             return appHost != null && appHost.HasPlugin<T>();
         }
 
-        public static string GetAppConfigPath()
-        {
-            if (ServiceStackHost.Instance == null) return null;
-
-            var configPath = "~/web.config".MapHostAbsolutePath();
-            if (File.Exists(configPath))
-                return configPath;
-
-            configPath = "~/Web.config".MapHostAbsolutePath(); //*nix FS FTW!
-            if (File.Exists(configPath))
-                return configPath;
-
-            var appHostDll = new FileInfo(ServiceStackHost.Instance.GetType().Assembly.Location).Name;
-            configPath = $"~/{appHostDll}.config".MapAbsolutePath();
-            return File.Exists(configPath) ? configPath : null;
-        }
-
         public static void Release(object service)
         {
             if (ServiceStackHost.Instance != null)
