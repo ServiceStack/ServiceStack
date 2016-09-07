@@ -9,7 +9,7 @@ namespace ServiceStack
 #if NETSTANDARD1_3
             new PlatformNetCore();
 #else
-            new PlatformNet45();
+            new PlatformNet();
 #endif
 
         public virtual HashSet<string> GetRazorNamespaces()
@@ -18,5 +18,30 @@ namespace ServiceStack
         }
 
         public virtual void InitHostConifg(HostConfig config) {}
+
+        public virtual string GetNullableAppSetting(string key)
+        {
+            return null;
+        }
+
+        public virtual string GetAppSetting(string key)
+        {
+            return null;
+        }
+
+        public virtual string GetAppSetting(string key, string defaultValue)
+        {
+            return defaultValue;
+        }
+
+        public virtual T GetAppSetting<T>(string key, T defaultValue)
+        {
+            return defaultValue;
+        }
+
+        public virtual string GetConnectionString(string key)
+        {
+            return null;
+        }
     }
 }

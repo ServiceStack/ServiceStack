@@ -11,7 +11,7 @@ using ServiceStack.Configuration;
 
 namespace ServiceStack.Platforms
 {
-    public class PlatformNet45 : Platform
+    public partial class PlatformNet : Platform
     {
         const string NamespacesAppSettingsKey = "servicestack.razor.namespaces";
 
@@ -136,7 +136,7 @@ namespace ServiceStack.Platforms
             {
                 var webServerSection = webConfig.GetSection("system.webServer");
                 var rawXml = webServerSection?.SectionInformation.GetRawXml();
-                if (!string.IsNullOrEmpty(rawXml))
+                if (!String.IsNullOrEmpty(rawXml))
                 {
                     SetPaths(config, ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
                 }
@@ -165,11 +165,11 @@ namespace ServiceStack.Platforms
 
         private static string EnsureHandlerTypeAttribute(XElement handler)
         {
-            if (handler.Attribute("type") != null && !string.IsNullOrEmpty(handler.Attribute("type").Value))
+            if (handler.Attribute("type") != null && !String.IsNullOrEmpty(handler.Attribute("type").Value))
             {
                 return handler.Attribute("type").Value;
             }
-            return string.Empty;
+            return String.Empty;
         }
 
         private static void SetPaths(HostConfig config, string handlerPath, string locationPath)
@@ -178,11 +178,11 @@ namespace ServiceStack.Platforms
 
             if (locationPath == null)
             {
-                handlerPath = handlerPath.Replace("*", string.Empty);
+                handlerPath = handlerPath.Replace("*", String.Empty);
             }
 
             config.HandlerFactoryPath = locationPath ??
-                                        (string.IsNullOrEmpty(handlerPath) ? null : handlerPath);
+                                        (String.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
             config.MetadataRedirectPath = "metadata";
         }

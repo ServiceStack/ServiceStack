@@ -125,7 +125,8 @@
     <Compile Include="MiniProfiler\Data\ProfiledDbProviderFactory.cs" />
     <Compile Include="NativeTypes\Kotlin\KotlinGenerator.cs" />
     <Compile Include="Platform.cs" />
-    <Compile Include="Platforms\PlatformNet45.cs" />
+    <Compile Include="Platforms\PlatformNet.Config.cs" />
+    <Compile Include="Platforms\PlatformNet.cs" />
     <Compile Include="Platforms\PlatformNetCore.cs" />
     <Compile Include="RequiresSchemaProviders.cs" />
     <Compile Include="CancellableRequestsFeature.cs" />
@@ -632,6 +633,7 @@
     <EmbeddedResource Include="MiniProfiler\UI\includes.tmpl">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <Compile Include="Platforms\PlatformNet.HostConfig.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
