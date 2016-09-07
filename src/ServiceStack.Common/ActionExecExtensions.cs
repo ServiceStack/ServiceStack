@@ -76,8 +76,10 @@ namespace ServiceStack
         public static bool WaitAll(WaitHandle[] waitHandles, int timeOutMs)
         {
             // throws an exception if there are no wait handles
-            if (waitHandles == null) throw new ArgumentNullException("waitHandles");
-            if (waitHandles.Length == 0) return true;
+            if (waitHandles == null)
+                throw new ArgumentNullException(nameof(waitHandles));
+            if (waitHandles.Length == 0)
+                return true;
 
 #if NETSTANDARD1_3
             return WaitHandle.WaitAll(waitHandles, timeOutMs);

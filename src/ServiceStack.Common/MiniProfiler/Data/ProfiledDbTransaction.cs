@@ -9,50 +9,44 @@ namespace ServiceStack.MiniProfiler.Data
 {
     public class ProfiledDbTransaction : DbTransaction, IHasDbTransaction
     {
-        private ProfiledConnection _conn;
-        private DbTransaction _trans;
+        private ProfiledConnection db;
+        private DbTransaction trans;
 
         public ProfiledDbTransaction(DbTransaction transaction, ProfiledConnection connection)
         {
-            if (transaction == null) throw new ArgumentNullException("transaction");
-            if (connection == null) throw new ArgumentNullException("connection");
-            this._trans = transaction;
-            this._conn = connection;
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
+            this.trans = transaction;
+            this.db = connection;
         }
 
-        protected override DbConnection DbConnection
-        {
-            get { return _conn; }
-        }
+        protected override DbConnection DbConnection => db;
 
-        public IDbTransaction DbTransaction
-        {
-            get { return _trans; }
-        }
+        public IDbTransaction DbTransaction => trans;
 
-        public override IsolationLevel IsolationLevel
-        {
-            get { return _trans.IsolationLevel; }
-        }
+        public override IsolationLevel IsolationLevel => trans.IsolationLevel;
 
         public override void Commit()
         {
-            _trans.Commit();
+            trans.Commit();
         }
 
         public override void Rollback()
         {
-            _trans.Rollback();
+            trans.Rollback();
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && _trans != null)
+            if (disposing)
             {
-                _trans.Dispose();
+                trans?.Dispose();
             }
-            _trans = null;
-            _conn = null;
+            trans = null;
+            db = null;
             base.Dispose(disposing);
         }
     }

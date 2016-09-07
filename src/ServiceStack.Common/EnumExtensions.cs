@@ -94,13 +94,13 @@ namespace ServiceStack
             switch (typeCode)
             {
                 case TypeCode.Byte:
-                    return (T)(object)(((byte)(object)@enum | (byte)(object)value));
+                    return (T)(object)((byte)(object)@enum | (byte)(object)value);
                 case TypeCode.Int16:
-                    return (T)(object)(((short)(object)@enum | (short)(object)value));
+                    return (T)(object)((short)(object)@enum | (short)(object)value);
                 case TypeCode.Int32:
-                    return (T)(object)(((int)(object)@enum | (int)(object)value));
+                    return (T)(object)((int)(object)@enum | (int)(object)value);
                 case TypeCode.Int64:
-                    return (T)(object)(((long)(object)@enum | (long)(object)value));
+                    return (T)(object)((long)(object)@enum | (long)(object)value);
                 default:
                     throw new NotSupportedException($"Enums of type {@enum.GetType().Name}");
             }
@@ -112,13 +112,13 @@ namespace ServiceStack
             switch (typeCode)
             {
                 case TypeCode.Byte:
-                    return (T)(object)(((byte)(object)@enum & ~(byte)(object)value));
+                    return (T)(object)((byte)(object)@enum & ~(byte)(object)value);
                 case TypeCode.Int16:
-                    return (T)(object)(((short)(object)@enum & ~(short)(object)value));
+                    return (T)(object)((short)(object)@enum & ~(short)(object)value);
                 case TypeCode.Int32:
-                    return (T)(object)(((int)(object)@enum & ~(int)(object)value));
+                    return (T)(object)((int)(object)@enum & ~(int)(object)value);
                 case TypeCode.Int64:
-                    return (T)(object)(((long)(object)@enum & ~(long)(object)value));
+                    return (T)(object)((long)(object)@enum & ~(long)(object)value);
                 default:
                     throw new NotSupportedException($"Enums of type {@enum.GetType().Name}");
             }

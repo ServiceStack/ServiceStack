@@ -51,8 +51,7 @@ namespace ServiceStack
             Action warmup = null,
             Action teardown = null)
         {
-            if (setup != null)
-                setup();
+            setup?.Invoke();
 
             // Warmup for at least 100ms. Discard result.
             if (warmup == null)
@@ -69,8 +68,7 @@ namespace ServiceStack
                     fn();
             }, runForMs);
 
-            if (teardown != null)
-                teardown();
+            teardown?.Invoke();
 
             return result;
         }

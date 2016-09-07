@@ -40,8 +40,7 @@ namespace ServiceStack
                 }
 
                 var piId = typeof(T).GetIdProperty();
-                if (piId != null
-                    && piId.GetMethodInfo() != null)
+                if (piId?.GetMethodInfo() != null)
                 {
                     CanGetId = HasPropertyId<T>.GetId;
                     return;
@@ -53,7 +52,7 @@ namespace ServiceStack
                 CanGetId = x =>
                 {
                     var piId = x.GetType().GetIdProperty();
-                    if (piId != null && piId.GetMethodInfo() != null)
+                    if (piId?.GetMethodInfo() != null)
                         return x.GetObjectId();
 
                     return x.GetHashCode();
@@ -154,12 +153,12 @@ namespace ServiceStack
 
         public static string ToSafePathCacheKey<T>(this string idValue)
         {
-            return IdUtils.CreateCacheKeyPath<T>(idValue);
+            return CreateCacheKeyPath<T>(idValue);
         }
 
         public static string ToUrn<T>(this object id)
         {
-            return IdUtils.CreateUrn<T>(id);
+            return CreateUrn<T>(id);
         }
 
         public static object GetId<T>(this T entity)
@@ -169,18 +168,18 @@ namespace ServiceStack
 
         public static string CreateUrn<T>(object id)
         {
-            return string.Format("urn:{0}:{1}", typeof(T).Name.ToLowerInvariant(), id);
+            return $"urn:{typeof(T).Name.ToLowerInvariant()}:{id}";
         }
 
         public static string CreateUrn(Type type, object id)
         {
-            return string.Format("urn:{0}:{1}", type.Name.ToLowerInvariant(), id);
+            return $"urn:{type.Name.ToLowerInvariant()}:{id}";
         }
 
         public static string CreateUrn<T>(this T entity)
         {
             var id = GetId(entity);
-            return string.Format("urn:{0}:{1}", typeof(T).Name.ToLowerInvariant(), id);
+            return $"urn:{typeof(T).Name.ToLowerInvariant()}:{id}";
         }
 
         public static string CreateCacheKeyPath<T>(string idValue)
@@ -195,8 +194,7 @@ namespace ServiceStack
             var dir1 = idValue.Substring(0, 2);
             var dir2 = idValue.Substring(2, 2);
 
-            var path = string.Format("{1}{0}{2}{0}{3}{0}{4}", PclExport.Instance.DirSep,
-                rootDir, dir1, dir2, idValue);
+            var path = $"{rootDir}{PclExport.Instance.DirSep}{dir1}{PclExport.Instance.DirSep}{dir2}{PclExport.Instance.DirSep}{idValue}";
 
             return path;
         }

@@ -34,12 +34,12 @@ namespace ServiceStack.Logging
         /// </summary>
         private static void Log(object message, Exception exception)
         {
-            string msg = message == null ? string.Empty : message.ToString();
+            string msg = message?.ToString() ?? string.Empty;
             if (exception != null)
             {
                 msg += ", Exception: " + exception.Message;
             }
-			System.Diagnostics.Debug.WriteLine(msg);
+            System.Diagnostics.Debug.WriteLine(msg);
         }
 
         /// <summary>
@@ -47,8 +47,8 @@ namespace ServiceStack.Logging
         /// </summary>
         private static void LogFormat(object message, params object[] args)
         {
-            string msg = message == null ? string.Empty : message.ToString();
-			System.Diagnostics.Debug.WriteLine(string.Format(msg, args));
+            string msg = message?.ToString() ?? string.Empty;
+            System.Diagnostics.Debug.WriteLine(string.Format(msg, args));
         }
 
         /// <summary>
@@ -56,8 +56,8 @@ namespace ServiceStack.Logging
         /// </summary>
         private static void Log(object message)
         {
-            string msg = message == null ? string.Empty : message.ToString();
-			System.Diagnostics.Debug.WriteLine(msg);
+            string msg = message?.ToString() ?? string.Empty;
+            System.Diagnostics.Debug.WriteLine(msg);
         }
 
         public void Debug(object message, Exception exception)
@@ -67,7 +67,7 @@ namespace ServiceStack.Logging
 
         public bool IsDebugEnabled { get; set; }
 
-    	public void Debug(object message)
+        public void Debug(object message)
         {
             Log(DEBUG + message);
         }

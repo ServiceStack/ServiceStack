@@ -100,7 +100,7 @@ namespace ServiceStack
             return ctorFn;
         }
 
-        static Dictionary<ConstructorInfo, ObjectActivator> ActivatorCache = 
+        static Dictionary<ConstructorInfo, ObjectActivator> ActivatorCache =
             new Dictionary<ConstructorInfo, ObjectActivator>();
 
         public static ObjectActivator GetActivator(this ConstructorInfo ctor)
@@ -115,8 +115,7 @@ namespace ServiceStack
             do
             {
                 snapshot = ActivatorCache;
-                newCache = new Dictionary<ConstructorInfo, ObjectActivator>(ActivatorCache);
-                newCache[ctor] = fn;
+                newCache = new Dictionary<ConstructorInfo, ObjectActivator>(ActivatorCache) { [ctor] = fn };
 
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref ActivatorCache, newCache, snapshot), snapshot));
