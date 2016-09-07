@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_3
+
 using System;
 using System.IO;
 using System.Linq;
@@ -386,3 +388,5 @@ namespace ServiceStack.Host.Handlers
         }
     }
 }
+
+#endif

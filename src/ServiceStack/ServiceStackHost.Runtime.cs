@@ -561,39 +561,6 @@ namespace ServiceStack
                         .Any(attr => attr.Feature.Has(Feature.Soap));
         }
 
-        public virtual void WriteSoapMessage(IRequest req, System.ServiceModel.Channels.Message message, Stream outputStream)
-        {
-            try
-            {
-                using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
-                {
-                    message.WriteMessage(writer);
-                }
-            }
-            catch (Exception ex)
-            {
-                var response = OnServiceException(req, req.Dto, ex);
-                if (response == null || !outputStream.CanSeek)
-                    return;
-
-                outputStream.Position = 0;
-                try
-                {
-                    message = SoapHandler.CreateResponseMessage(response, message.Version, req.Dto.GetType(),
-                        req.GetSoapMessage().Headers.Action == null);
-                    using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
-                    {
-                        message.WriteMessage(writer);
-                    }
-                }
-                catch { }
-            }
-            finally
-            {
-                HostContext.CompleteRequest(req);
-            }
-        }
-
         public virtual IDbConnection GetDbConnection(IRequest req = null)
         {
             var dbFactory = Container.TryResolve<IDbConnectionFactory>();

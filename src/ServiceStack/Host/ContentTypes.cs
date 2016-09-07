@@ -131,12 +131,13 @@ namespace ServiceStack.Host
 
                 case RequestAttributes.Jsv:
                     return TypeSerializer.SerializeToString(response).ToUtf8Bytes();
-
+#if !NETSTANDARD1_3
                 case RequestAttributes.Soap11:
                     return SoapHandler.SerializeSoap11ToBytes(req, response);
 
                 case RequestAttributes.Soap12:
                     return SoapHandler.SerializeSoap12ToBytes(req, response);
+#endif
             }
 
             throw new NotSupportedException("ContentType not supported: " + contentType);
@@ -190,12 +191,14 @@ namespace ServiceStack.Host
                 case RequestAttributes.Jsv:
                     return TypeSerializer.SerializeToString(response);
 
+#if !NETSTANDARD1_3
                 case RequestAttributes.Soap11:
                     return SoapHandler.SerializeSoap11ToBytes(req, response).FromUtf8Bytes();
 
                 case RequestAttributes.Soap12:
                     return SoapHandler.SerializeSoap12ToBytes(req, response).FromUtf8Bytes();
             }
+#endif
 
             throw new NotSupportedException("ContentType not supported: " + contentType);
         }
@@ -259,11 +262,13 @@ namespace ServiceStack.Host
                 case RequestAttributes.Jsv:
                     return (r, o, s) => TypeSerializer.SerializeToStream(o, s);
 
+#if !NETSTANDARD1_3
                 case RequestAttributes.Soap11:
                     return SoapHandler.SerializeSoap11ToStream;
 
                 case RequestAttributes.Soap12:
                     return SoapHandler.SerializeSoap12ToStream;
+#endif
             }
 
             return null;

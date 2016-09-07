@@ -80,9 +80,7 @@
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.ServiceModel">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Abstractions" />
     <Reference Include="System.Xml" />
@@ -125,6 +123,7 @@
     <Compile Include="MiniProfiler\Data\ProfiledDbProviderFactory.cs" />
     <Compile Include="NativeTypes\Kotlin\KotlinGenerator.cs" />
     <Compile Include="Platform.cs" />
+    <Compile Include="Platforms\PlatformNet.Wcf.cs" />
     <Compile Include="Platforms\PlatformNet.Config.cs" />
     <Compile Include="Platforms\PlatformNet.cs" />
     <Compile Include="Platforms\PlatformNetCore.cs" />
@@ -150,6 +149,7 @@
     <Compile Include="NativeTypes\TypeScript\TypeScriptGenerator.cs" />
     <Compile Include="NativeTypes\VbNet\VbNetGenerator.cs" />
     <Compile Include="ServiceGatewayFactoryBase.cs" />
+    <Compile Include="ServiceStackHost.Runtime.Net.cs" />
     <Compile Include="ServiceStackProvider.cs" />
     <Compile Include="AsyncExtensions.cs" />
     <Compile Include="Auth\AspNetWindowsAuthProvider.cs" />

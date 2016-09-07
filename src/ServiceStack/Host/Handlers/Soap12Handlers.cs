@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_3
+
 using System.Web;
 using ServiceStack.Metadata;
 using ServiceStack.Web;
@@ -79,5 +81,6 @@ namespace ServiceStack.Host.Handlers
             HostContext.AppHost.WriteSoapMessage(httpReq, responseMessage, httpRes.OutputStream);
         }
     }
-
 }
+
+#endif
