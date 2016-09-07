@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.Redis;
-using ServiceStack.Text;
 
 namespace ServiceStack.Messaging
 {
@@ -79,18 +78,12 @@ namespace ServiceStack.Messaging
             this.ReadWriteClient.LPush(queueName, messageBytes);
             this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
 
-            if (onPublishedCallback != null)
-            {
-                onPublishedCallback();
-            }
+            onPublishedCallback?.Invoke();
         }
 
         public void Dispose()
         {
-            if (readWriteClient != null)
-            {
-                readWriteClient.Dispose();
-            }
+            readWriteClient?.Dispose();
         }
     }
 }

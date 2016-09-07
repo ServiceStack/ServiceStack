@@ -15,24 +15,18 @@ namespace ServiceStack
 {
     public class TokenException : AuthenticationException
     {
-        public TokenException(string message) : base(message) { }
+        public TokenException(string message) : base(message) {}
     }
 
     public class AuthenticationException : Exception
     {
-        public AuthenticationException()
-        {
-        }
+        public AuthenticationException() {}
 
         public AuthenticationException(string message)
-            : base(message)
-        {
-        }
+            : base(message) {}
 
         public AuthenticationException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+            : base(message, innerException) {}
     }
 
     // by adamfowleruk
@@ -89,7 +83,7 @@ namespace ServiceStack
             // now go through each part, splitting on first = character, and removing leading and trailing spaces and " quotes
             for (int i = 0; i < maxnewpars; i++)
             {
-                int pos2 = newpars[i].IndexOf("=");
+                int pos2 = newpars[i].IndexOf("=", StringComparison.Ordinal);
                 string name = newpars[i].Substring(0, pos2).Trim();
                 string value = newpars[i].Substring(pos2 + 1).Trim();
                 if (value.StartsWith("\""))
@@ -122,31 +116,26 @@ namespace ServiceStack
 
         public override string ToString()
         {
-            return string.Format("[AuthenticationInfo: method={0}, realm={1}, qop={2}, nonce={3}, opaque={4}, cnonce={5}, nc={6}]", method, realm, qop, nonce, opaque, cnonce, nc);
+            return $"[AuthenticationInfo: method={method}, realm={realm}, qop={qop}, nonce={nonce}, opaque={opaque}, cnonce={cnonce}, nc={nc}]";
         }
     }
 
     public static class WebRequestUtils
     {
-
-        private static readonly ILog Log = LogManager.GetLogger(typeof(WebRequestUtils));
-
         internal static AuthenticationException CreateCustomException(string uri, AuthenticationException ex)
         {
             if (uri.StartsWith("https"))
             {
                 return new AuthenticationException(
-                    String.Format("Invalid remote SSL certificate, overide with: \nServicePointManager.ServerCertificateValidationCallback += ((sender, certificate, chain, sslPolicyErrors) => isValidPolicy);"),
-                    ex);
+                    "Invalid remote SSL certificate, overide with: \nServicePointManager.ServerCertificateValidationCallback += ((sender, certificate, chain, sslPolicyErrors) => isValidPolicy);", ex);
             }
             return null;
         }
 
         internal static bool ShouldAuthenticate(WebException webEx, bool hasAuthInfo)
         {
-            return webEx != null
-                && webEx.Response != null
-                && ((HttpWebResponse)webEx.Response).StatusCode == HttpStatusCode.Unauthorized
+            return webEx?.Response != null 
+                && ((HttpWebResponse)webEx.Response).StatusCode == HttpStatusCode.Unauthorized 
                 && hasAuthInfo;
        }
 
@@ -198,9 +187,9 @@ namespace ServiceStack
 
             // step 2, convert byte array to hex string
             var sb = StringBuilderCache.Allocate();
-            for (int i = 0; i < hash.Length; i++)
+            foreach (byte b in hash)
             {
-                sb.Append(hash[i].ToString("X2"));
+                sb.Append(b.ToString("X2"));
             }
             return StringBuilderCache.ReturnAndFree(sb).ToLower(); // The RFC requires the hex values are lowercase
         }
@@ -340,10 +329,8 @@ namespace ServiceStack
                 return hasResponseStatus.ResponseStatus;
 
             var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");
-            if (propertyInfo == null)
-                return null;
 
-            return propertyInfo.GetProperty(response) as ResponseStatus;
+            return propertyInfo?.GetProperty(response) as ResponseStatus;
         }
     }
 }

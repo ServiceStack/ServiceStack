@@ -60,10 +60,7 @@ namespace ServiceStack.Serialization
             if (TextSerializer != null)
             {
                 var streamSerializer = TextSerializer as IStringStreamSerializer;
-                if (streamSerializer != null)
-                {
-                    streamSerializer.SerializeToStream(obj, stream);
-                }
+                streamSerializer?.SerializeToStream(obj, stream);
             }
 #if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1)
             else if (UseBcl)

@@ -8,14 +8,9 @@ namespace ServiceStack
     public class CsvServiceClient
         : ServiceClientBase
     {
-        public override string Format
-        {
-            get { return "csv"; }
-        }
+        public override string Format => "csv";
 
-        public CsvServiceClient()
-        {
-        }
+        public CsvServiceClient() {}
 
         public CsvServiceClient(string baseUri) 
         {
@@ -27,10 +22,7 @@ namespace ServiceStack
         {
         }
 
-        public override string ContentType
-        {
-            get { return string.Format("text/{0}", Format); }
-        }
+        public override string ContentType => $"text/{Format}";
 
         public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
         {
@@ -45,9 +37,6 @@ namespace ServiceStack
             return CsvSerializer.DeserializeFromStream<T>(stream);
         }
 
-        public override StreamDeserializerDelegate StreamDeserializer
-        {
-            get { return CsvSerializer.DeserializeFromStream; }
-        }
+        public override StreamDeserializerDelegate StreamDeserializer => CsvSerializer.DeserializeFromStream;
     }
 }

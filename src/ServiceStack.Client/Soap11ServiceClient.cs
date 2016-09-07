@@ -28,15 +28,9 @@ namespace ServiceStack
             }
         }
 
-        protected override System.ServiceModel.Channels.Binding Binding
-        {
-            get { return this.BasicHttpBinding; }
-        }
+        protected override System.ServiceModel.Channels.Binding Binding => this.BasicHttpBinding;
 
-        protected override System.ServiceModel.Channels.MessageVersion MessageVersion
-        {
-            get { return this.BasicHttpBinding.MessageVersion; }
-        }
+        protected override System.ServiceModel.Channels.MessageVersion MessageVersion => this.BasicHttpBinding.MessageVersion;
 
         public override void SetProxy(Uri proxyAddress)
         {

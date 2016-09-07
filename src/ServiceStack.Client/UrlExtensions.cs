@@ -67,13 +67,13 @@ namespace ServiceStack
         public static string ToOneWayUrlOnly(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            return "/{0}/oneway/{1}".Fmt(format, requestType.GetOperationName());
+            return $"/{format}/oneway/{requestType.GetOperationName()}";
         }
 
         public static string ToOneWayUrl(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            var predefinedRoute = "/{0}/oneway/{1}".Fmt(format, requestType.GetOperationName());
+            var predefinedRoute = $"/{format}/oneway/{requestType.GetOperationName()}";
             var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
             var queryString = RestRoute.GetQueryString(requestDto, queryProperties);
             if (!IsNullOrEmpty(queryString))
@@ -85,13 +85,13 @@ namespace ServiceStack
         public static string ToReplyUrlOnly(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            return "/{0}/reply/{1}".Fmt(format, requestType.GetOperationName());
+            return $"/{format}/reply/{requestType.GetOperationName()}";
         }
 
         public static string ToReplyUrl(this object requestDto, string format = "json")
         {
             var requestType = requestDto.GetType();
-            var predefinedRoute = "/{0}/reply/{1}".Fmt(format, requestType.GetOperationName());
+            var predefinedRoute = $"/{format}/reply/{requestType.GetOperationName()}";
             var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
             var queryString = RestRoute.GetQueryString(requestDto, queryProperties);
             if (!IsNullOrEmpty(queryString))
@@ -109,11 +109,9 @@ namespace ServiceStack
 
         public static string GetOperationName(this Type type)
         {
-            var typeName = type.FullName != null //can be null, e.g. generic types
-                ? type.FullName.LeftPart("[[")   //Generic Fullname
-                    .Replace(type.Namespace + ".", "") //Trim Namespaces
-                    .Replace("+", ".") //Convert nested into normal type
-                : type.Name;
+            var typeName = type.FullName?.LeftPart("[[")   //Generic Fullname
+                .Replace(type.Namespace + ".", "") //Trim Namespaces
+                .Replace("+", ".") ?? type.Name;
 
             return type.IsGenericParameter ? "'" + typeName : typeName;
         }
@@ -139,7 +137,7 @@ namespace ServiceStack
                 sb.Append(arg.ExpandTypeName());
             }
 
-            var fullName = "{0}<{1}>".Fmt(nameOnly, StringBuilderCache.ReturnAndFree(sb));
+            var fullName = $"{nameOnly}<{StringBuilderCache.ReturnAndFree(sb)}>";
             return fullName;
         }
 
@@ -367,21 +365,15 @@ namespace ServiceStack
 
         public Type Type { get; private set; }
 
-        public bool IsValid
-        {
-            get { return IsNullOrEmpty(this.ErrorMsg); }
-        }
+        public bool IsValid => IsNullOrEmpty(this.ErrorMsg);
 
-        public string Path { get; private set; }
+        public string Path { get; }
 
-        public int Priority { get; private set; }
+        public int Priority { get; }
 
-        public string[] HttpMethods { get; private set; }
+        public string[] HttpMethods { get; }
 
-        public ICollection<string> Variables
-        {
-            get { return this.variablesMap.Keys; }
-        }
+        public ICollection<string> Variables => this.variablesMap.Keys;
 
         public List<string> QueryStringVariables
         {
@@ -397,8 +389,8 @@ namespace ServiceStack
 
             if (HttpMethods != null && HttpMethods.Length != 0 && httpMethod != null && !HttpMethods.Contains(httpMethod) && !HttpMethods.Contains("ANY"))
             {
-                return RouteResolutionResult.Error(this, "Allowed HTTP methods '{0}' does not support the specified '{1}' method."
-                    .Fmt(HttpMethods.Join(", "), httpMethod));
+                return RouteResolutionResult.Error(this,
+                    $"Allowed HTTP methods '{HttpMethods.Join(", ")}' does not support the specified '{httpMethod}' method.");
             }
 
             var uri = this.Path;
@@ -551,10 +543,7 @@ namespace ServiceStack
         public string Uri { get; private set; }
         public RestRoute Route { get; private set; }
 
-        public bool Matches
-        {
-            get { return IsNullOrEmpty(this.FailReason); }
-        }
+        public bool Matches => IsNullOrEmpty(this.FailReason);
 
         public static RouteResolutionResult Error(RestRoute route, string errorMsg)
         {
@@ -568,15 +557,9 @@ namespace ServiceStack
 
         internal int Priority { get; set; }
 
-        internal int VariableCount
-        {
-            get { return Route.Variables.Count; }
-        }
+        internal int VariableCount => Route.Variables.Count;
 
-        internal int PathLength
-        {
-            get { return Route.Path.Length; }
-        }
+        internal int PathLength => Route.Path.Length;
 
         internal bool HasSameVariables(RouteResolutionResult other)
         {

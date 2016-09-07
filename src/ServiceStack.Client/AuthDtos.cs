@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack

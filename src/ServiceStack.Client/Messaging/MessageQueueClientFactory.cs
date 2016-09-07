@@ -21,7 +21,7 @@ namespace ServiceStack.Messaging
         void InvokeMessageReceived(EventArgs e)
         {
             var received = MessageReceived;
-            if (received != null) received(this, e);
+            received?.Invoke(this, e);
         }
 
         private readonly Dictionary<string, Queue<byte[]>> queueMessageBytesMap

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.Validation;
+using static System.String;
 
 namespace ServiceStack
 {
@@ -38,23 +39,20 @@ namespace ServiceStack
                     };
                     to.Errors.Add(error);
 
-                    if (string.IsNullOrEmpty(to.ErrorCode))
+                    if (IsNullOrEmpty(to.ErrorCode))
                     {
                         to.ErrorCode = validationError.ErrorCode;
                     }
-                    if (string.IsNullOrEmpty(to.Message))
+                    if (IsNullOrEmpty(to.Message))
                     {
                         to.Message = validationError.ErrorMessage;
                     }
                 }
             }
-            if (string.IsNullOrEmpty(errorCode))
-            {
-                if (string.IsNullOrEmpty(to.ErrorCode))
-                {
-                    throw new ArgumentException("Cannot create a valid error response with a en empty errorCode and an empty validationError list");
-                }
-            }
+
+            if (IsNullOrEmpty(errorCode) && IsNullOrEmpty(to.ErrorCode))
+                throw new ArgumentException("Cannot create a valid error response with a en empty errorCode and an empty validationError list");
+
             return to;
         }
     }

@@ -3,7 +3,6 @@ using System.IO;
 using System.Xml;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
-using System;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -11,14 +10,9 @@ namespace ServiceStack
     public class XmlServiceClient
         : ServiceClientBase
     {
-        public override string Format
-        {
-            get { return "xml"; }
-        }
+        public override string Format => "xml";
 
-        public XmlServiceClient()
-        {
-        }
+        public XmlServiceClient() {}
 
         public XmlServiceClient(string baseUri) 
         {
@@ -28,10 +22,7 @@ namespace ServiceStack
         public XmlServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
             : base(syncReplyBaseUri, asyncOneWayBaseUri) {}
 
-        public override string ContentType
-        {
-            get { return String.Format("application/{0}", Format); }
-        }
+        public override string ContentType => $"application/{Format}";
 
         public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
         {
@@ -54,10 +45,7 @@ namespace ServiceStack
             }
         }
 
-        public override StreamDeserializerDelegate StreamDeserializer
-        {
-            get { return XmlSerializer.DeserializeFromStream; }
-        }
+        public override StreamDeserializerDelegate StreamDeserializer => XmlSerializer.DeserializeFromStream;
     }
 }
 #endif

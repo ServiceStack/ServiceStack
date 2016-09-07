@@ -121,8 +121,8 @@ namespace ServiceStack
         {
             if (DefaultKeyPair != null)
                 return Encrypt(text, DefaultKeyPair.PublicKey, KeyLength);
-            else
-                throw new ArgumentNullException("No KeyPair given for encryption in CryptUtils");
+
+            throw new ArgumentNullException("DefaultKeyPair", "No KeyPair given for encryption in CryptUtils");
         }
 
         public static string Decrypt(this string text)
@@ -130,7 +130,7 @@ namespace ServiceStack
             if (DefaultKeyPair != null)
                 return Decrypt(text, DefaultKeyPair.PrivateKey, KeyLength);
             else
-                throw new ArgumentNullException("No KeyPair given for encryption in CryptUtils");
+                throw new ArgumentNullException("DefaultKeyPair", "No KeyPair given for encryption in CryptUtils");
         }
 
         public static string Encrypt(string text, string publicKeyXml, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)

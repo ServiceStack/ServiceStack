@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -8,14 +7,9 @@ namespace ServiceStack
     public class JsvServiceClient
         : ServiceClientBase
     {
-        public override string Format
-        {
-            get { return "jsv"; }
-        }
+        public override string Format => "jsv";
 
-        public JsvServiceClient()
-        {
-        }
+        public JsvServiceClient() {}
 
         public JsvServiceClient(string baseUri) 
         {
@@ -23,14 +17,9 @@ namespace ServiceStack
         }
 
         public JsvServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
-            : base(syncReplyBaseUri, asyncOneWayBaseUri)
-        {
-        }
+            : base(syncReplyBaseUri, asyncOneWayBaseUri) {}
 
-        public override string ContentType
-        {
-            get { return String.Format("application/{0}", Format); }
-        }
+        public override string ContentType => $"application/{Format}";
 
         public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
         {
@@ -48,9 +37,6 @@ namespace ServiceStack
             }
         }
 
-        public override StreamDeserializerDelegate StreamDeserializer
-        {
-            get { return TypeSerializer.DeserializeFromStream; }
-        }
+        public override StreamDeserializerDelegate StreamDeserializer => TypeSerializer.DeserializeFromStream;
     }
 }

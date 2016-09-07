@@ -1,5 +1,3 @@
-using ServiceStack.Text;
-
 namespace ServiceStack
 {
     public static class ContentFormat
@@ -54,9 +52,7 @@ namespace ServiceStack
 
         public static string GetRealContentType(string contentType)
         {
-            return contentType == null
-                       ? null
-                       : contentType.Split(';')[0].ToLower().Trim();
+            return contentType?.Split(';')[0].ToLower().Trim();
         }
 
         public static bool MatchesContentType(this string contentType, string matchesContentType)
@@ -140,11 +136,8 @@ namespace ServiceStack
 
         public static string GetContentFormat(string contentType)
         {
-            if (contentType == null)
-                return null;
-
-            var parts = contentType.Split('/');
-            return parts[parts.Length - 1];
+            var parts = contentType?.Split('/');
+            return parts?[parts.Length - 1];
         }
 
         public static string ToContentFormat(this string contentType)

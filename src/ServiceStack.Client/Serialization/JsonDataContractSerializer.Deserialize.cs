@@ -50,13 +50,10 @@ namespace ServiceStack.Serialization
 
         public T DeserializeFromStream<T>(Stream stream)
         {
-            if (TextSerializer != null)
+            var streamSerializer = TextSerializer as IStringStreamSerializer;
+            if (streamSerializer != null)
             {
-                var streamSerializer = TextSerializer as IStringStreamSerializer;
-                if (streamSerializer != null)
-                {
-                    return streamSerializer.DeserializeFromStream<T>(stream);
-                }
+                return streamSerializer.DeserializeFromStream<T>(stream);
             }
 
 #if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1)
@@ -71,13 +68,10 @@ namespace ServiceStack.Serialization
 
         public object DeserializeFromStream(Type type, Stream stream)
         {
-            if (TextSerializer != null)
+            var streamSerializer = TextSerializer as IStringStreamSerializer;
+            if (streamSerializer != null)
             {
-                var streamSerializer = TextSerializer as IStringStreamSerializer;
-                if (streamSerializer != null)
-                {
-                    return streamSerializer.DeserializeFromStream(type, stream);
-                }
+                return streamSerializer.DeserializeFromStream(type, stream);
             }
 
 #if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1)

@@ -27,30 +27,12 @@ namespace ServiceStack.Messaging
         }
 
         private IRedisNativeClient readWriteClient;
-        public IRedisNativeClient ReadWriteClient
-        {
-            get
-            {
-                if (this.readWriteClient == null)
-                {
-                    this.readWriteClient = (IRedisNativeClient)clientsManager.GetClient();
-                }
-                return readWriteClient;
-            }
-        }
+        public IRedisNativeClient ReadWriteClient => 
+            readWriteClient ?? (readWriteClient = (IRedisNativeClient) clientsManager.GetClient());
 
         private IRedisNativeClient readOnlyClient;
-        public IRedisNativeClient ReadOnlyClient
-        {
-            get
-            {
-                if (this.readOnlyClient == null)
-                {
-                    this.readOnlyClient = (IRedisNativeClient)clientsManager.GetReadOnlyClient();
-                }
-                return readOnlyClient;
-            }
-        }
+        public IRedisNativeClient ReadOnlyClient => 
+            readOnlyClient ?? (readOnlyClient = (IRedisNativeClient) clientsManager.GetReadOnlyClient());
 
         public void Publish<T>(T messageBody)
         {
@@ -95,10 +77,7 @@ namespace ServiceStack.Messaging
             this.ReadWriteClient.LPush(queueName, messageBytes);
             this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
 
-            if (onPublishedCallback != null)
-            {
-                onPublishedCallback();
-            }
+            onPublishedCallback?.Invoke();
         }
 
         public void Notify(string queueName, IMessage message)
@@ -151,14 +130,8 @@ namespace ServiceStack.Messaging
 
         public void Dispose()
         {
-            if (this.readOnlyClient != null)
-            {
-                this.readOnlyClient.Dispose();
-            }
-            if (this.readWriteClient != null)
-            {
-                this.readWriteClient.Dispose();
-            }
+            this.readOnlyClient?.Dispose();
+            this.readWriteClient?.Dispose();
         }
     }
 }

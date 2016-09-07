@@ -183,7 +183,7 @@ namespace ServiceStack
         private void SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token, 
             Action<TResponse> onSuccess, Action<object, Exception> onError, Action<WebResponse> onResponseInit = null)
         {
-            if (httpMethod == null) throw new ArgumentNullException("httpMethod");
+            if (httpMethod == null) throw new ArgumentNullException(nameof(httpMethod));
 
             this.PopulateRequestMetadata(request);
 
@@ -306,10 +306,7 @@ namespace ServiceStack
 
                 requestState.WebResponse = (HttpWebResponse)webRequest.EndGetResponse(asyncResult);
 
-                if (requestState.OnResponseInit != null)
-                {
-                    requestState.OnResponseInit(requestState.WebResponse);
-                }
+                requestState.OnResponseInit?.Invoke(requestState.WebResponse);
 
                 if (requestState.ResponseContentLength == default(long))
                 {
@@ -343,8 +340,7 @@ namespace ServiceStack
                 {
                     try
                     {
-                        if (OnAuthenticationRequired != null)
-                            OnAuthenticationRequired();
+                        OnAuthenticationRequired?.Invoke();
 
                         requestState.WebRequest = (HttpWebRequest)WebRequest.Create(requestState.Url);
 
@@ -417,10 +413,7 @@ namespace ServiceStack
                         var responeStreamTask = responseStream.ReadAsync(requestState.BufferRead, 0, BufferSize);
 
                         requestState.ResponseBytesRead += read;
-                        if (OnDownloadProgress != null)
-                        {
-                            OnDownloadProgress(requestState.ResponseBytesRead, requestState.ResponseContentLength);
-                        }
+                        OnDownloadProgress?.Invoke(requestState.ResponseBytesRead, requestState.ResponseContentLength);
 
                         ReadCallBack(responeStreamTask, requestState);
                         return;
@@ -470,7 +463,7 @@ namespace ServiceStack
                     }
                     catch (Exception ex)
                     {
-                        Log.Debug(string.Format("Error Reading Response Error: {0}", ex.Message), ex);
+                        Log.Debug($"Error Reading Response Error: {ex.Message}", ex);
                         requestState.HandleError(default(T), ex);
                     }
                     finally
@@ -496,8 +489,8 @@ namespace ServiceStack
                 Log.Error(webEx);
                 if (Log.IsDebugEnabled)
                 {
-                    Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
-                    Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
+                    Log.Debug($"Status Code : {errorResponse.StatusCode}");
+                    Log.Debug($"Status Description : {errorResponse.StatusDescription}");
                 }
 
                 var serviceEx = new WebServiceException(errorResponse.StatusDescription)
@@ -533,7 +526,7 @@ namespace ServiceStack
                 catch (Exception innerEx)
                 {
                     // Oh, well, we tried
-                    Log.Debug(string.Format("WebException Reading Response Error: {0}", innerEx.Message), innerEx);
+                    Log.Debug($"WebException Reading Response Error: {innerEx.Message}", innerEx);
                     state.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx) {
                         StatusCode = (int)errorResponse.StatusCode,
                         StatusDescription = errorResponse.StatusDescription,
@@ -548,11 +541,11 @@ namespace ServiceStack
             {
                 var customEx = WebRequestUtils.CreateCustomException(state.Url, authEx);
 
-                Log.Debug(string.Format("AuthenticationException: {0}", customEx.Message), customEx);
+                Log.Debug($"AuthenticationException: {customEx.Message}", customEx);
                 state.HandleError(default(TResponse), authEx);
             }
 
-            Log.Debug(string.Format("Exception Reading Response Error: {0}", exception.Message), exception);
+            Log.Debug($"Exception Reading Response Error: {exception.Message}", exception);
             state.HandleError(default(TResponse), exception);
 
             CancelAsyncFn = null;
@@ -562,20 +555,14 @@ namespace ServiceStack
         {
             if (!(webResponse is HttpWebResponse)) return;
 
-            if (ResponseFilter != null)
-                ResponseFilter((HttpWebResponse)webResponse);
-
-            if (GlobalResponseFilter != null)
-                GlobalResponseFilter((HttpWebResponse)webResponse);
+            ResponseFilter?.Invoke((HttpWebResponse)webResponse);
+            GlobalResponseFilter?.Invoke((HttpWebResponse)webResponse);
         }
 
         private void ApplyWebRequestFilters(HttpWebRequest client)
         {
-            if (RequestFilter != null)
-                RequestFilter(client);
-
-            if (GlobalRequestFilter != null)
-                GlobalRequestFilter(client);
+            RequestFilter?.Invoke(client);
+            GlobalRequestFilter?.Invoke(client);
         }
 
         public void Dispose() { }

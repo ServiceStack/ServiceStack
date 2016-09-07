@@ -104,7 +104,8 @@ namespace ServiceStack
 
         public static string ToUtf8String(this Stream stream)
         {
-            if (stream == null) throw new ArgumentNullException("stream");
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
 
             using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -114,7 +115,8 @@ namespace ServiceStack
 
         public static byte[] ToBytes(this Stream stream)
         {
-            if (stream == null) throw new ArgumentNullException("stream");
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
 
             return stream.ReadFully();
         }
@@ -130,9 +132,9 @@ namespace ServiceStack
         {
             var hash = MD5.Create().ComputeHash(stream);
             var sb = StringBuilderCache.Allocate();
-            for (var i = 0; i < hash.Length; i++)
+            foreach (byte b in hash)
             {
-                sb.Append(hash[i].ToString("x2"));
+                sb.Append(b.ToString("x2"));
             }
             return StringBuilderCache.ReturnAndFree(sb);
         }
@@ -141,9 +143,9 @@ namespace ServiceStack
         {
             var hash = MD5.Create().ComputeHash(bytes);
             var sb = StringBuilderCache.Allocate();
-            for (var i = 0; i < hash.Length; i++)
+            foreach (byte b in hash)
             {
-                sb.Append(hash[i].ToString("x2"));
+                sb.Append(b.ToString("x2"));
             }
             return StringBuilderCache.ReturnAndFree(sb);
         }

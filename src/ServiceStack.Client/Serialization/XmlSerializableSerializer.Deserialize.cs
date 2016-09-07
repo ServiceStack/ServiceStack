@@ -34,7 +34,7 @@ namespace ServiceStack.Serialization
             }
             catch (Exception ex)
             {
-                throw new SerializationException(string.Format("Error serializing object of type {0}", type.FullName), ex);
+                throw new SerializationException($"Error serializing object of type {type.FullName}", ex);
             }
         }
 
@@ -51,7 +51,7 @@ namespace ServiceStack.Serialization
             }
             catch (Exception ex)
             {
-                throw new SerializationException(string.Format("Error serializing object of type {0}", type.FullName), ex);
+                throw new SerializationException($"Error serializing object of type {type.FullName}", ex);
             }
         }
 
@@ -74,7 +74,7 @@ namespace ServiceStack.Serialization
             }
             catch (Exception ex)
             {
-                throw new SerializationException(string.Format("Error serializing object of type {0}", type.FullName), ex);
+                throw new SerializationException($"Error serializing object of type {type.FullName}", ex);
             }
         }
     }

@@ -31,10 +31,7 @@ namespace ServiceStack
             return v;
         }
 
-        public override Type GetMemberType()
-        {
-            return field.FieldType;
-        }
+        public override Type GetMemberType() => field.FieldType;
     }
 
     internal class PropertyRouteMember : RouteMember
@@ -53,9 +50,6 @@ namespace ServiceStack
             return v;
         }
 
-        public override Type GetMemberType()
-        {
-            return property.PropertyType;
-        }
+        public override Type GetMemberType() => property.PropertyType;
     }
 }
