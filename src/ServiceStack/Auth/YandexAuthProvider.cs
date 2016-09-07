@@ -73,7 +73,7 @@ namespace ServiceStack.Auth
 
                 if (!accessTokenError.IsNullOrEmpty())
                 {
-                    Log.Error("Yandex access_token error callback. {0}".Fmt(authInfo.ToString()));
+                    Log.Error($"Yandex access_token error callback. {authInfo}");
                     return authService.Redirect(session.ReferrerUrl.SetParam("f", "AccessTokenFailed"));
                 }
                 tokens.AccessTokenSecret = authInfo.Get("access_token");
@@ -99,7 +99,7 @@ namespace ServiceStack.Auth
         {
             try
             {
-                string json = "https://login.yandex.ru/info?format=json&oauth_token={0}".Fmt(tokens.AccessTokenSecret).GetJsonFromUrl();
+                string json = $"https://login.yandex.ru/info?format=json&oauth_token={tokens.AccessTokenSecret}".GetJsonFromUrl();
                 JsonObject obj = JsonObject.Parse(json);
 
                 tokens.UserId = obj.Get("id");
@@ -114,7 +114,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error("Could not retrieve Yandex user info for '{0}'".Fmt(tokens.DisplayName), ex);
+                Log.Error($"Could not retrieve Yandex user info for '{tokens.DisplayName}'", ex);
             }
         }
 

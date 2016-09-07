@@ -296,7 +296,7 @@ namespace ServiceStack.Auth
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             //Needs to be 'Basic ' in order for HttpWebRequest to accept challenge and send NetworkCredentials
-            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "Basic realm=\"{0}\"".Fmt(this.AuthRealm));
+            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"Basic realm=\"{this.AuthRealm}\""));
             httpRes.EndRequest();
         }
 

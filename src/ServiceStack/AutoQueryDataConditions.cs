@@ -127,7 +127,7 @@ namespace ServiceStack
 
             var bList = bValues.Map(x => x);
             if (bList.Count != 2)
-                throw new ArgumentException("InBetweenCondition expected 2 values, got {0} instead.".Fmt(bList.Count));
+                throw new ArgumentException($"InBetweenCondition expected 2 values, got {bList.Count} instead.");
 
             return GreaterEqualCondition.Instance.Match(a, bList[0]) &&
                    LessEqualCondition.Instance.Match(a, bList[1]);

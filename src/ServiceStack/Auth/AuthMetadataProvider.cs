@@ -39,12 +39,12 @@ namespace ServiceStack.Auth
                 if (tokens.Provider == FacebookAuthProvider.Name)
                 {
                     items[ProfileUrlKey] = GetRedirectUrlIfAny(
-                        "http://avatars.io/facebook/{0}?size=medium".Fmt(tokens.UserName));
+                        $"http://avatars.io/facebook/{tokens.UserName}?size=medium");
                 }
                 else if (tokens.Provider == TwitterAuthProvider.Name)
                 {
                     items[ProfileUrlKey] = GetRedirectUrlIfAny(
-                        "http://avatars.io/twitter/{0}?size=medium".Fmt(tokens.UserName));
+                        $"http://avatars.io/twitter/{tokens.UserName}?size=medium");
                 }
 
                 if (!items.ContainsKey(ProfileUrlKey) && !tokens.Email.IsNullOrEmpty())

@@ -166,7 +166,7 @@ namespace ServiceStack
                 return configPath;
 
             var appHostDll = new FileInfo(ServiceStackHost.Instance.GetType().Assembly.Location).Name;
-            configPath = "~/{0}.config".Fmt(appHostDll).MapAbsolutePath();
+            configPath = $"~/{appHostDll}.config".MapAbsolutePath();
             return File.Exists(configPath) ? configPath : null;
         }
 
@@ -184,8 +184,7 @@ namespace ServiceStack
 
         public static UnauthorizedAccessException UnauthorizedAccess(RequestAttributes requestAttrs)
         {
-            return new UnauthorizedAccessException(
-                "Request with '{0}' is not allowed".Fmt(requestAttrs));
+            return new UnauthorizedAccessException($"Request with '{requestAttrs}' is not allowed");
         }
 
         public static string ResolveLocalizedString(string text, IRequest request = null)

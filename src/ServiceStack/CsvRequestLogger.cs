@@ -67,7 +67,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                log.Error("Could not read last entry from '{0}'".Fmt(log), ex);
+                log.Error($"Could not read last entry from '{log}'", ex);
             }
             return null;
         }

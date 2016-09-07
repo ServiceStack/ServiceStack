@@ -41,7 +41,7 @@ namespace ServiceStack
             }
 
             var appHostDll = new FileInfo(ProjectTargetPath).Name;
-            configPath = ProjectDir + "{0}.config".Fmt(appHostDll);
+            configPath = ProjectDir + $"{appHostDll}.config";
             if (!File.Exists(configPath))
                 return null;
 

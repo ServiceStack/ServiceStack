@@ -876,7 +876,7 @@ namespace ServiceStack
             foreach (string key in nameValueCollection)
             {
                 var value = nameValueCollection[key];
-                content.Add(new StringContent(value), "\"{0}\"".Fmt(key));
+                content.Add(new StringContent(value), $"\"{key}\"");
             }
 
             var fileBytes = fileToUpload.ReadFully();
@@ -930,7 +930,7 @@ namespace ServiceStack
             foreach (string key in nameValueCollection)
             {
                 var value = nameValueCollection[key];
-                content.Add(new StringContent(value), "\"{0}\"".Fmt(key));
+                content.Add(new StringContent(value), $"\"{key}\"");
             }
 
             var disposables = new List<IDisposable> { content };
@@ -941,8 +941,8 @@ namespace ServiceStack
                 var fileBytes = file.Stream.ReadFully();
                 var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
                 disposables.Add(fileContent);
-                var fieldName = file.FieldName ?? "upload{0}".Fmt(i);
-                var fileName = file.FileName ?? "upload{0}".Fmt(i);
+                var fieldName = file.FieldName ?? $"upload{i}";
+                var fileName = file.FileName ?? $"upload{i}";
                 fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
                 {
                     Name = fieldName,

@@ -284,7 +284,7 @@ namespace ServiceStack
             if (!serverEvents.Pulse(subscriptionId))
             {
                 res.StatusCode = 404;
-                res.StatusDescription = "Subscription {0} does not exist".Fmt(subscriptionId);
+                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId);
             }
             res.EndHttpHandlerRequest(skipHeaders: true);
             return TypeConstants.EmptyTask;

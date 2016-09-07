@@ -467,7 +467,9 @@ namespace ServiceStack
                 {
                     ErrorCode = ex.GetType().Name,
                     FieldName = e.PropertyName,
-                    Message = e.PropertyValueString != null ? "'{0}' is an Invalid value for '{1}'".Fmt(e.PropertyValueString, e.PropertyName) : "Invalid Value for '{0}'".Fmt(e.PropertyName)
+                    Message = e.PropertyValueString != null 
+                        ? $"'{e.PropertyValueString}' is an Invalid value for '{e.PropertyName}'"
+                        : $"Invalid Value for '{e.PropertyName}'"
                 }).ToList();
             }
         }

@@ -115,7 +115,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error("Could not retrieve facebook user info for '{0}'".Fmt(tokens.DisplayName), ex);
+                Log.Error($"Could not retrieve facebook user info for '{tokens.DisplayName}'", ex);
             }
 
             LoadUserOAuthProvider(userSession, tokens);

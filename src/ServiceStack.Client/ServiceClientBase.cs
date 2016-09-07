@@ -1525,8 +1525,8 @@ namespace ServiceStack
                     foreach (var key in nameValueCollection.AllKeys)
                     {
                         outputStream.Write(boundary + newLine);
-                        outputStream.Write("Content-Disposition: form-data;name=\"{0}\"{1}".FormatWith(key, newLine));
-                        outputStream.Write("Content-Type: text/plain;charset=utf-8{0}{1}".FormatWith(newLine, newLine));
+                        outputStream.Write($"Content-Disposition: form-data;name=\"{key}\"{newLine}");
+                        outputStream.Write($"Content-Type: text/plain;charset=utf-8{newLine}{newLine}");
                         outputStream.Write(nameValueCollection[key] + newLine);
                     }
 
@@ -1536,11 +1536,9 @@ namespace ServiceStack
                         var file = files[fileCount];
                         currentStreamPosition = file.Stream.Position;
                         outputStream.Write(boundary + newLine);
-                        var fileName = file.FileName ?? "upload{0}".Fmt(fileCount);
-                        var fieldName = file.FieldName ?? "upload{0}".Fmt(fileCount);
-                        outputStream.Write(string.Format(
-                            "Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}Content-Type: application/octet-stream{3}{4}",
-                                fieldName, fileName, newLine, newLine, newLine));
+                        var fileName = file.FileName ?? $"upload{fileCount}";
+                        var fieldName = file.FieldName ?? $"upload{fileCount}";
+                        outputStream.Write($"Content-Disposition: form-data;name=\"{fieldName}\";filename=\"{fileName}\"{newLine}Content-Type: application/octet-stream{newLine}{newLine}");
 
                         int byteCount;
                         int bytesWritten = 0;

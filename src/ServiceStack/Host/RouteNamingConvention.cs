@@ -35,7 +35,7 @@ namespace ServiceStack.Host
 
             if (membersWithAttribute.Count == 0) return;
 
-            membersWithAttribute.Insert(0, "/{0}".Fmt(requestType.GetOperationName()));
+            membersWithAttribute.Insert(0, $"/{requestType.GetOperationName()}");
 
             var restPath = membersWithAttribute.Join("/");
             routes.Add(requestType, restPath: restPath, verbs: allowedVerbs, priority: AutoGenPriority);
@@ -50,7 +50,7 @@ namespace ServiceStack.Host
 
             if (membersWithName.Count == 0) return;
 
-            membersWithName.Insert(0, "/{0}".Fmt(requestType.GetOperationName()));
+            membersWithName.Insert(0, $"/{requestType.GetOperationName()}");
 
             var restPath = membersWithName.Join("/");
             routes.Add(requestType, restPath: restPath, verbs: allowedVerbs, priority: AutoGenPriority);

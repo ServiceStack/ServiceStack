@@ -342,7 +342,7 @@ namespace ServiceStack.Host.HttpListener
             {
                 if (ex.ErrorCode != RequestThreadAbortedException) throw;
 
-                Log.Error("Swallowing HttpListenerException({0}) Thread exit or aborted request".Fmt(RequestThreadAbortedException), ex);
+                Log.Error($"Swallowing HttpListenerException({RequestThreadAbortedException}) Thread exit or aborted request", ex);
             }
             this.IsStarted = false;
             this.Listener = null;

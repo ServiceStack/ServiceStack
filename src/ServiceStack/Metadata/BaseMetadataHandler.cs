@@ -162,8 +162,8 @@ namespace ServiceStack.Metadata
 
                 sb.Append(@"<div class=""call-info"">");
                 var overrideExtCopy = HostContext.Config.AllowRouteContentTypeExtensions
-                   ? " the <b>.{0}</b> suffix or ".Fmt(ContentFormat)
-                   : "";
+                   ? $" the <b>.{ContentFormat}</b> suffix or "
+                    : "";
                 sb.AppendFormat(@"<p>To override the Content-type in your clients, use the HTTP <b>Accept</b> Header, append {1} <b>?format={0}</b></p>", ContentFormat, overrideExtCopy);
                 if (ContentFormat == "json")
                 {
@@ -184,7 +184,7 @@ namespace ServiceStack.Metadata
             if (metadataType.Properties.IsEmpty()) return;
             
             sb.Append("<table class='params'>");
-            sb.Append("<caption><b>{0}</b> Parameters:</caption>".Fmt(ConvertToHtml(metadataType.DisplayType ?? metadataType.Name)));
+            sb.Append($"<caption><b>{ConvertToHtml(metadataType.DisplayType ?? metadataType.Name)}</b> Parameters:</caption>");
             sb.Append("<thead><tr>");
             sb.Append("<th>Name</th>");
             sb.Append("<th>Parameter</th>");
@@ -207,12 +207,12 @@ namespace ServiceStack.Metadata
                 {
                     desc += "<h4>Allowable Values</h4>";
                     desc += "<ul>";
-                    p.AllowableValues.Each(x => desc += "<li>{0}</li>".Fmt(x));
+                    p.AllowableValues.Each(x => desc += $"<li>{x}</li>");
                     desc += "</ul>";
                 }
                 if (p.AllowableMin != null)
                 {
-                    desc += "<h4>Valid Range: {0} - {1}</h4>".Fmt(p.AllowableMin, p.AllowableMax);
+                    desc += $"<h4>Valid Range: {p.AllowableMin} - {p.AllowableMax}</h4>";
                 }
                 sb.Append($"<td>{desc}</td>");
                 

@@ -66,7 +66,7 @@ namespace ServiceStack
                 case TypeCode.Int64:
                     return (((long)(object)@enum & (long)(object)value) == (long)(object)value);
                 default:
-                    throw new NotSupportedException("Enums of type {0}".Fmt(@enum.GetType().Name));
+                    throw new NotSupportedException($"Enums of type {@enum.GetType().Name}");
             }
         }
 
@@ -84,7 +84,7 @@ namespace ServiceStack
                 case TypeCode.Int64:
                     return (long)(object)@enum == (long)(object)value;
                 default:
-                    throw new NotSupportedException("Enums of type {0}".Fmt(@enum.GetType().Name));
+                    throw new NotSupportedException($"Enums of type {@enum.GetType().Name}");
             }
         }
 
@@ -102,7 +102,7 @@ namespace ServiceStack
                 case TypeCode.Int64:
                     return (T)(object)(((long)(object)@enum | (long)(object)value));
                 default:
-                    throw new NotSupportedException("Enums of type {0}".Fmt(@enum.GetType().Name));
+                    throw new NotSupportedException($"Enums of type {@enum.GetType().Name}");
             }
         }
 
@@ -120,7 +120,7 @@ namespace ServiceStack
                 case TypeCode.Int64:
                     return (T)(object)(((long)(object)@enum & ~(long)(object)value));
                 default:
-                    throw new NotSupportedException("Enums of type {0}".Fmt(@enum.GetType().Name));
+                    throw new NotSupportedException($"Enums of type {@enum.GetType().Name}");
             }
         }
 

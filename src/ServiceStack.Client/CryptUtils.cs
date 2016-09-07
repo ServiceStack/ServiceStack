@@ -381,10 +381,10 @@ namespace ServiceStack
         public static bool Verify(byte[] authEncryptedBytes, byte[] authKey)
         {
             if (authKey == null || authKey.Length != KeySizeBytes)
-                throw new ArgumentException("AuthKey needs to be {0} bit!".Fmt(KeySize), "authKey");
+                throw new ArgumentException($"AuthKey needs to be {KeySize} bits", nameof(authKey));
 
             if (authEncryptedBytes == null || authEncryptedBytes.Length == 0)
-                throw new ArgumentException("Encrypted Message Required!", "authEncryptedBytes");
+                throw new ArgumentException("Encrypted Message Required!", nameof(authEncryptedBytes));
 
             using (var hmac = CreateHashAlgorithm(authKey))
             {
@@ -416,7 +416,7 @@ namespace ServiceStack
         public static byte[] DecryptAuthenticated(byte[] authEncryptedBytes, byte[] cryptKey)
         {
             if (cryptKey == null || cryptKey.Length != KeySizeBytes)
-                throw new ArgumentException("CryptKey needs to be {0} bit!".Fmt(KeySize), "cryptKey");
+                throw new ArgumentException($"CryptKey needs to be {KeySize} bits", nameof(cryptKey));
 
             //Grab IV from message
             var iv = new byte[AesUtils.BlockSizeBytes];

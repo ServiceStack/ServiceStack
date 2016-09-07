@@ -38,7 +38,7 @@ namespace ServiceStack
                 StatusCode = HttpStatusCode.Unauthorized,
                 ContentType = service.Request.ResponseContentType,
                 Headers = {
-                    { HttpHeaders.WwwAuthenticate, AuthenticateService.DefaultOAuthProvider + " realm=\"{0}\"".Fmt(AuthenticateService.DefaultOAuthRealm) }
+                    { HttpHeaders.WwwAuthenticate, $"{AuthenticateService.DefaultOAuthProvider} realm=\"{AuthenticateService.DefaultOAuthRealm}\"" }
                 },
             };
         }

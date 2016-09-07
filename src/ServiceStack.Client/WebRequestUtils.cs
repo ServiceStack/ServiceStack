@@ -50,7 +50,7 @@ namespace ServiceStack
         public string cnonce { get; set; }
         public int nc { get; set; }
 
-        public AuthenticationInfo(String authHeader)
+        public AuthenticationInfo(string authHeader)
         {
             cnonce = "0a4f113b";
             nc = 1;
@@ -58,9 +58,9 @@ namespace ServiceStack
             // Example Digest header: WWW-Authenticate: Digest realm="testrealm@host.com", qop="auth,auth-int", nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093", opaque="5ccc069c403ebaf9f0171e9517f40e41"
 
             // get method from first word
-            int pos = authHeader.IndexOf(" ");
+            int pos = authHeader.IndexOf(" ", StringComparison.Ordinal);
             if (pos < 0)
-                throw new AuthenticationException("Authentication header not supported: {0}".Fmt(authHeader));
+                throw new AuthenticationException($"Authentication header not supported: {authHeader}");
 
             method = authHeader.Substring(0, pos).ToLower();
             string remainder = authHeader.Substring(pos + 1);

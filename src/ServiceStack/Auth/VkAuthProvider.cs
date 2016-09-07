@@ -80,7 +80,7 @@ namespace ServiceStack.Auth
 
                 if (!accessTokenError.IsNullOrEmpty())
                 {
-                    Log.Error("VK access_token error callback. {0}".Fmt(authInfo.ToString()));
+                    Log.Error($"VK access_token error callback. {authInfo}");
                     return authService.Redirect(session.ReferrerUrl.SetParam("f", "AccessTokenFailed"));
                 }
                 tokens.AccessTokenSecret = authInfo.Get("access_token");

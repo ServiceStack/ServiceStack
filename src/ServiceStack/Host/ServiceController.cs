@@ -98,7 +98,7 @@ namespace ServiceStack.Host
             }
             catch (Exception ex)
             {
-                var msg = string.Format("Failed loading types, last assembly '{0}', type: '{1}'", assemblyName, typeName);
+                var msg = $"Failed loading types, last assembly '{assemblyName}', type: '{typeName}'";
                 Log.Error(msg, ex);
                 throw new Exception(msg, ex);
             }
@@ -116,7 +116,7 @@ namespace ServiceStack.Host
             try
             {
                 if (!IsServiceType(serviceType))
-                    throw new ArgumentException("Type {0} is not a Web Service that implements IService".Fmt(serviceType.FullName));
+                    throw new ArgumentException($"Type {serviceType.FullName} is not a Web Service that implements IService");
                 
                 RegisterService(typeFactory, serviceType);
                 appHost.Container.RegisterAutoWiredType(serviceType);

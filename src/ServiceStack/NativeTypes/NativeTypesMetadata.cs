@@ -599,7 +599,7 @@ namespace ServiceStack.NativeTypes
                     else if (pi.PropertyType == typeof(Type))
                     {
                         var type = (Type)value;
-                        property.Value = "typeof({0})".Fmt(type.FullName);
+                        property.Value = $"typeof({type.FullName})";
                     }
                     else
                     {
@@ -967,7 +967,7 @@ namespace ServiceStack.NativeTypes
         public static string SafeToken(this string token)
         {
             if (!NativeTypesFeature.DisableTokenVerification && token.ContainsAny("\"", "-", "+", "\\", "*", "=", "!"))
-                throw new InvalidDataException("MetaData is potentially malicious. Expected token, Received: {0}".Fmt(token));
+                throw new InvalidDataException($"MetaData is potentially malicious. Expected token, Received: {token}");
 
             return token;
         }
@@ -975,7 +975,7 @@ namespace ServiceStack.NativeTypes
         public static string SafeValue(this string value)
         {
             if (!NativeTypesFeature.DisableTokenVerification && value.Contains('"'))
-                throw new InvalidDataException("MetaData is potentially malicious. Expected scalar value, Received: {0}".Fmt(value));
+                throw new InvalidDataException($"MetaData is potentially malicious. Expected scalar value, Received: {value}");
 
             return value;
         }
@@ -983,7 +983,7 @@ namespace ServiceStack.NativeTypes
         public static string QuotedSafeValue(this string value)
         {
             value = value.Replace("\r", "").Replace("\n", "");
-            return "\"{0}\"".Fmt(value.SafeValue());
+            return $"\"{value.SafeValue()}\"";
         }
 
         public static MetadataAttribute ToMetadataAttribute(this MetadataRoute route)

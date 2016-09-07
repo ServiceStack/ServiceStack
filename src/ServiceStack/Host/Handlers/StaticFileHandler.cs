@@ -137,7 +137,7 @@ namespace ServiceStack.Host.Handlers
                         if (file == null)
                         {
                             var msg = ErrorMessages.FileNotExistsFmt.Fmt(request.PathInfo);
-                            log.WarnFormat("{0} in path: {1}", msg, originalFileName);
+                            log.Warn($"{msg} in path: {originalFileName}");
                             response.StatusCode = 404;
                             response.StatusDescription = msg;
                             return;
@@ -230,7 +230,7 @@ namespace ServiceStack.Host.Handlers
                 }
                 catch (Exception ex)
                 {
-                    log.ErrorFormat("Static file {0} forbidden: {1}", request.PathInfo, ex.Message);
+                    log.ErrorFormat($"Static file {request.PathInfo} forbidden: {ex.Message}");
                     throw new HttpException(403, "Forbidden.");
                 }
             });

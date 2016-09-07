@@ -141,9 +141,9 @@ namespace ServiceStack
                     xml.AppendLine("<sitemap>");
 
                     if (sitemap.Location != null || sitemap.AtPath != null)
-                        xml.AppendLine("  <loc>{0}</loc>".Fmt((sitemap.Location ?? sitemap.AtPath.ToAbsoluteUri()).EncodeXml()));
+                        xml.AppendLine($"  <loc>{(sitemap.Location ?? sitemap.AtPath.ToAbsoluteUri()).EncodeXml()}</loc>");
                     if (sitemap.LastModified != null)
-                        xml.AppendLine("  <lastmod>{0}</lastmod>".Fmt(sitemap.LastModified.Value.ToString("yyyy-MM-dd")));
+                        xml.AppendLine($"  <lastmod>{sitemap.LastModified.Value.ToString("yyyy-MM-dd")}</lastmod>");
 
                     if (sitemap.CustomXml != null)
                         xml.AppendLine(sitemap.CustomXml);
@@ -197,13 +197,13 @@ namespace ServiceStack
                     xml.AppendLine("<url>");
 
                     if (url.Location != null)
-                        xml.AppendLine("  <loc>{0}</loc>".Fmt(url.Location.EncodeXml()));
+                        xml.AppendLine($"  <loc>{url.Location.EncodeXml()}</loc>");
                     if (url.LastModified != null)
-                        xml.AppendLine("  <lastmod>{0}</lastmod>".Fmt(url.LastModified.Value.ToString("yyyy-MM-dd")));
+                        xml.AppendLine($"  <lastmod>{url.LastModified.Value.ToString("yyyy-MM-dd")}</lastmod>");
                     if (url.ChangeFrequency != null)
-                        xml.AppendLine("  <changefreq>{0}</changefreq>".Fmt(url.ChangeFrequency.Value.ToString().ToLower()));
+                        xml.AppendLine($"  <changefreq>{url.ChangeFrequency.Value.ToString().ToLower()}</changefreq>");
                     if (url.Priority != null)
-                        xml.AppendLine("  <priority>{0}</priority>".Fmt(url.Priority.Value.ToString(CultureInfo.InvariantCulture)));
+                        xml.AppendLine($"  <priority>{url.Priority.Value.ToString(CultureInfo.InvariantCulture)}</priority>");
 
                     if (url.CustomXml != null)
                         xml.AppendLine(url.CustomXml);

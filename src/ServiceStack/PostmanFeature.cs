@@ -320,7 +320,7 @@ namespace ServiceStack
             {
                 var args = type.GetGenericArguments().Map(x =>
                     x.AsFriendlyName(feature));
-                suffix = "<{0}>".Fmt(string.Join(",", args.ToArray()));
+                suffix = $"<{string.Join(",", args.ToArray())}>";
             }
 
             string frindlyName;

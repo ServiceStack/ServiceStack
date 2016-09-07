@@ -32,8 +32,8 @@ namespace ServiceStack.Host.Handlers
             {
                 sb.AppendLine(
                     responseStatus.ErrorCode != responseStatus.Message
-                    ? "Error ({0}): {1}\n".Fmt(responseStatus.ErrorCode, responseStatus.Message)
-                    : "Error: {0}\n".Fmt(responseStatus.Message ?? responseStatus.ErrorCode));
+                    ? $"Error ({responseStatus.ErrorCode}): {responseStatus.Message}\n"
+                    : $"Error: {responseStatus.Message ?? responseStatus.ErrorCode}\n");
             }
 
             if (HostContext.DebugMode)
@@ -72,7 +72,7 @@ namespace ServiceStack.Host.Handlers
             }
 
             HostContext.AppHost.OnLogError(typeof(NotFoundHttpHandler),
-                string.Format("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl));
+                $"{request.UserHostAddress} Request not found: {request.RawUrl}");
 
             var sb = StringBuilderCache.Allocate();
             sb.AppendLine("Handler for Request not found: \n\n");

@@ -110,8 +110,8 @@ namespace ServiceStack.Auth
         {
             try
             {
-                var json = "https://api.github.com/user?access_token={0}".Fmt(tokens.AccessTokenSecret)
-                  .GetStringFromUrl("*/*", UserRequestFilter);
+                var json = $"https://api.github.com/user?access_token={tokens.AccessTokenSecret}"
+                    .GetStringFromUrl("*/*", UserRequestFilter);
                 var obj = JsonObject.Parse(json);
                 tokens.UserId = obj.Get("id");
                 tokens.UserName = obj.Get("login");
@@ -131,7 +131,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error("Could not retrieve github user info for '{0}'".Fmt(tokens.DisplayName), ex);
+                Log.Error($"Could not retrieve github user info for '{tokens.DisplayName}'", ex);
             }
 
             LoadUserOAuthProvider(userSession, tokens);
