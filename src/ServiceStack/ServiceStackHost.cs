@@ -21,7 +21,6 @@ using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Metadata;
-using ServiceStack.MiniProfiler.UI;
 using ServiceStack.NativeTypes;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
@@ -85,7 +84,9 @@ namespace ServiceStack
             OnEndRequestCallbacks = new List<Action<IRequest>>();
             RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
                  HttpHandlerFactory.ReturnRequestInfo,
-                 MiniProfilerHandler.MatchesRequest,
+#if !NETSTANDARD1_3
+                 ServiceStack.MiniProfiler.UI.MiniProfilerHandler.MatchesRequest,
+#endif
             };
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
             CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHandler> {

@@ -1665,6 +1665,15 @@ namespace ServiceStack
 #endif
         }
 
+        public virtual string HtmlAttributeEncode(string html)
+        {
+#if SL5 || PCL || NETSTANDARD1_1
+            return HtmlEncode(html).Replace("\"","&quot;").Replace("'","&#x27;");
+#else
+            return System.Web.HttpUtility.HtmlAttributeEncode(html);
+#endif
+        }
+
         public virtual string HtmlEncode(string html)
         {
 #if SL5

@@ -26,6 +26,6 @@ Content-Type: text/xml; charset=utf-8
 Content-Length: <span class=""value"">length</span>
 SOAPAction: {OperationName}
 
-{HttpUtility.HtmlEncode(RequestMessage)}";
+{PclExportClient.Instance.HtmlEncode(RequestMessage)}";
     }
 }

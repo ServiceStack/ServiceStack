@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NETSTANDARD1_3
+
+using System;
 using System.Data;
 using System.Web;
 using System.Web.UI;
@@ -156,3 +158,5 @@ namespace ServiceStack.AspNet
         }
     }
 }
+
+#endif

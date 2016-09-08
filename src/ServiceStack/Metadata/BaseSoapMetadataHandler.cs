@@ -16,11 +16,13 @@ namespace ServiceStack.Metadata
 
         public string OperationName { get; set; }
 
+#if !NETSTANDARD1_3
         public override void Execute(HttpContextBase context)
         {
             var httpReq = context.ToRequest(OperationName);
             ProcessRequestAsync(httpReq, httpReq.Response, OperationName);
         }
+#endif
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {

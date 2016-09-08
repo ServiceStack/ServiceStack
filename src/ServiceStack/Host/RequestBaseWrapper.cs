@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NETSTANDARD1_3
+
+using System;
 using System.Collections.Specialized;
 using System.Web;
 using ServiceStack.Web;
@@ -116,3 +118,5 @@ namespace ServiceStack.Host
         public override NameValueCollection ServerVariables => serverVariables ?? Original.ServerVariables;
     }
 }
+
+#endif

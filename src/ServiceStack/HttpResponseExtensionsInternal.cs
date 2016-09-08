@@ -445,6 +445,7 @@ namespace ServiceStack
             return false;
         }
 
+#if !NETSTANDARD1_3
         public static void ApplyGlobalResponseHeaders(this HttpListenerResponse httpRes)
         {
             if (HostContext.Config == null) return;
@@ -462,6 +463,7 @@ namespace ServiceStack
                 httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
             }
         }
+#endif
 
         public static void ApplyGlobalResponseHeaders(this IResponse httpRes)
         {

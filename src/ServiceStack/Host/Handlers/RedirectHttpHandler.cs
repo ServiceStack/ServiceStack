@@ -51,6 +51,7 @@ namespace ServiceStack.Host.Handlers
             response.EndHttpHandlerRequest(skipClose: true);
         }
 
+#if !NETSTANDARD1_3
         /// <summary>
         /// ASP.NET requests
         /// </summary>
@@ -86,5 +87,7 @@ namespace ServiceStack.Host.Handlers
 
             context.EndHttpHandlerRequest(closeOutputStream: true);
         }
+#endif
+
     }
 }

@@ -65,7 +65,7 @@ namespace ServiceStack.Auth
             try
             {
                 var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
-                var authInfo = HttpUtility.ParseQueryString(contents);
+                var authInfo = PclExportClient.Instance.ParseQueryString(contents);
 
                 //GitHub does not throw exception, but just return error with descriptions
                 //https://developer.github.com/v3/oauth/#common-errors-for-the-access-token-request

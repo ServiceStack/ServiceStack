@@ -141,10 +141,12 @@ namespace ServiceStack
             return value;
         }
 
+#if !NETSTANDARD1_3
         public static RequestBaseWrapper ToHttpRequestBase(this IRequest httpReq)
         {
             return new RequestBaseWrapper((IHttpRequest)httpReq);
         }
+#endif
 
         public static void SetInProcessRequest(this IRequest httpReq)
         {

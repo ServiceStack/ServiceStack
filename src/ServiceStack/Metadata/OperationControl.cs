@@ -62,7 +62,7 @@ Host: {HostName}
 Content-Type: {ContentType}
 Content-Length: <span class=""value"">length</span>
 
-{HttpUtility.HtmlEncode(RequestMessage)}";
+{PclExportClient.Instance.HtmlEncode(RequestMessage)}";
 
         public virtual string ResponseTemplate
         {
@@ -90,7 +90,7 @@ $@"HTTP/1.1 200 OK
 Content-Type: {ContentType}
 Content-Length: length
 
-{HttpUtility.HtmlEncode(ResponseMessage)}";
+{PclExportClient.Instance.HtmlEncode(ResponseMessage)}";
             }
         }
     }

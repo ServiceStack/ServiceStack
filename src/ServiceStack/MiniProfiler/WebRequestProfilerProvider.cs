@@ -1,4 +1,6 @@
-﻿using System.Web;
+﻿#if !NETSTANDARD1_3
+
+using System.Web;
 using ServiceStack.MiniProfiler.Helpers;
 //using System.Web.Routing;
 
@@ -101,21 +103,21 @@ namespace ServiceStack.MiniProfiler
         private static void EnsureName(Profiler profiler, HttpRequest request)
         {
             // also set the profiler name to Controller/Action or /url
-			if (profiler.Name.IsNullOrWhiteSpace())
+            if (profiler.Name.IsNullOrWhiteSpace())
             {
                 //var rc = request.RequestContext;
                 //RouteValueDictionary values;
 
-				//if (rc != null && rc.RouteData != null && (values = rc.RouteData.Values).Count > 0)
-				//{
-				//    var controller = values["Controller"];
-				//    var action = values["Action"];
+                //if (rc != null && rc.RouteData != null && (values = rc.RouteData.Values).Count > 0)
+                //{
+                //    var controller = values["Controller"];
+                //    var action = values["Action"];
 
-				//    if (controller != null && action != null)
-				//        profiler.Name = controller.ToString() + "/" + action.ToString();
-				//}
+                //    if (controller != null && action != null)
+                //        profiler.Name = controller.ToString() + "/" + action.ToString();
+                //}
 
-				if (profiler.Name.IsNullOrWhiteSpace())
+                if (profiler.Name.IsNullOrWhiteSpace())
                 {
                     profiler.Name = request.Path ?? "";
                     if (profiler.Name.Length > 70)
@@ -144,9 +146,7 @@ namespace ServiceStack.MiniProfiler
             get
             {
                 var context = HttpContext.Current;
-                if (context == null) return null;
-
-                return context.Items[CacheKey] as Profiler;
+                return context?.Items[CacheKey] as Profiler;
             }
             set
             {
@@ -158,3 +158,5 @@ namespace ServiceStack.MiniProfiler
         }
     }
 }
+
+#endif

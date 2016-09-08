@@ -197,8 +197,8 @@ namespace ServiceStack.Host
 
                 case RequestAttributes.Soap12:
                     return SoapHandler.SerializeSoap12ToBytes(req, response).FromUtf8Bytes();
-            }
 #endif
+            }
 
             throw new NotSupportedException("ContentType not supported: " + contentType);
         }

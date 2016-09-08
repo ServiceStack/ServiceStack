@@ -63,12 +63,13 @@ namespace ServiceStack.Host.Handlers
             VirtualNode = virtualDir;
         }
 
+#if !NETSTANDARD1_3
         public override void ProcessRequest(HttpContextBase context)
         {
             var httpReq = context.ToRequest(GetType().GetOperationName());
             ProcessRequest(httpReq, httpReq.Response, httpReq.OperationName);
         }
-
+#endif
         public int BufferSize { get; set; }
         private static DateTime DefaultFileModified { get; set; }
         private static string DefaultFilePath { get; set; }

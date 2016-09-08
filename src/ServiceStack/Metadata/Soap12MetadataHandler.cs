@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_3
+
 using System;
 using ServiceStack.Serialization;
 using ServiceStack.Web;
@@ -51,3 +53,5 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
     }
 }
+
+#endif

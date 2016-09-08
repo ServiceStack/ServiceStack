@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿#if !NETSTANDARD1_3
+
+using System.Net;
 using System.Web;
 using System.Web.Security;
 
@@ -27,3 +29,5 @@ namespace ServiceStack.Host
         }
     }
 }
+
+#endif

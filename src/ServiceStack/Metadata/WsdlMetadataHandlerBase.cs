@@ -14,6 +14,7 @@ namespace ServiceStack.Metadata
 
         protected abstract WsdlTemplateBase GetWsdlTemplate();
 
+#if !NETSTANDARD1_3
         public override void Execute(HttpContextBase context)
         {
             HostContext.AppHost.AssertFeatures(Feature.Metadata);
@@ -38,6 +39,7 @@ namespace ServiceStack.Metadata
                     + (Env.IsMono ? "on Mono" : "with this configuration"));
             }
         }
+#endif
 
         public void Execute(IRequest httpReq, IResponse httpRes)
         {

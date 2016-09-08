@@ -222,7 +222,7 @@ namespace ServiceStack.Support.Markdown
 				if (staticValueFn != null)
 				{
 					var strValue = this.staticValueFn();
-					textWriter.Write(HttpUtility.HtmlEncode(strValue));
+					textWriter.Write(PclExportClient.Instance.HtmlEncode(strValue));
 				}
 				else
 				{
@@ -248,7 +248,7 @@ namespace ServiceStack.Support.Markdown
 					? Convert.ToString(memberExprValue)
 					: valueFn(memberExprValue);
 
-				textWriter.Write(HttpUtility.HtmlEncode(strValue));
+				textWriter.Write(PclExportClient.Instance.HtmlEncode(strValue));
 			}
 			catch (Exception ex)
 			{
@@ -919,12 +919,14 @@ namespace ServiceStack.Support.Markdown
 			var methodName = usesBaseType ? parts[0] : parts[1];
 
 			Type type = null;
-			if (typePropertyName == "Html")
+#if !NETSTANDARD1_3
+            if (typePropertyName == "Html")
 			{
                 type = markdownPage.ExecutionContext.BaseType.HasGenericType()
 					   ? typeof(HtmlHelper<>)
 					   : typeof(HtmlHelper);
 			}
+#endif
 			if (type == null)
 			{
 				type = usesBaseType
@@ -943,13 +945,14 @@ namespace ServiceStack.Support.Markdown
                     ? type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                         .FirstOrDefault(m => m.GetParameters().Length == 2 && m.Name == methodName)
                     : type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
-
+#if !NETSTANDARD1_3
                 if (mi == null)
                 {
                     mi = HtmlHelper.GetMethod(methodName);
                     if (mi == null)
                         throw new ArgumentException("Unable to resolve method '" + methodExpr + "' on type " + type.GetOperationName());
                 }
+#endif
 
                 base.ReturnType = mi.ReturnType;
             }
@@ -985,7 +988,7 @@ namespace ServiceStack.Support.Markdown
 			}
 
 			if (!WriteRawHtml)
-				strResult = HttpUtility.HtmlEncode(strResult);
+				strResult = PclExportClient.Instance.HtmlEncode(strResult);
 
 			textWriter.Write(strResult);
 		}

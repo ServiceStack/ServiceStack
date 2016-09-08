@@ -46,19 +46,20 @@ namespace ServiceStack
         /// <summary>
         /// End a ServiceStack Request
         /// </summary>
+        public static void EndRequest(this IResponse httpRes, bool skipHeaders = false)
+        {
+            httpRes.EndHttpHandlerRequest(skipHeaders: skipHeaders);
+        }
+
+#if !NETSTANDARD1_3
+        /// <summary>
+        /// End a ServiceStack Request
+        /// </summary>
         public static void EndRequest(this HttpResponseBase httpRes, bool skipHeaders = false)
         {
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
             httpRes.Close();
             HostContext.CompleteRequest(null);
-        }
-
-        /// <summary>
-        /// End a ServiceStack Request
-        /// </summary>
-        public static void EndRequest(this IResponse httpRes, bool skipHeaders = false)
-        {
-            httpRes.EndHttpHandlerRequest(skipHeaders: skipHeaders);
         }
 
         /// <summary>
@@ -77,6 +78,7 @@ namespace ServiceStack
             //response.OutputStream.Flush();
             //response.Close();
         }
+#endif
 
         /// <summary>
         /// End a HttpHandler Request

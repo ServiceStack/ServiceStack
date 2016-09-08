@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NETSTANDARD1_3
+
+using System;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -138,3 +140,5 @@ namespace ServiceStack
         }
     }
 }
+
+#endif

@@ -201,11 +201,13 @@ namespace ServiceStack.Host.Handlers
             var response = this.RequestInfo ?? GetRequestInfo(httpReq);
             response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
             response.DebugString = "";
+#if !NETSTANDARD1_3
             if (HttpContext.Current != null)
             {
                 response.DebugString += HttpContext.Current.Request.GetType().FullName
                     + "|" + HttpContext.Current.Response.GetType().FullName;
             }
+
             if (HostContext.IsAspNetHost)
             {
                 var aspReq = (HttpRequestBase)httpReq.OriginalRequest;
@@ -240,7 +242,8 @@ namespace ServiceStack.Host.Handlers
                         }
                     }
                 }
-            }
+        }
+#endif
 
             var json = JsonSerializer.SerializeToString(response);
             httpRes.ContentType = MimeTypes.Json;
@@ -248,12 +251,13 @@ namespace ServiceStack.Host.Handlers
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
 
+#if !NETSTANDARD1_3
         public override void ProcessRequest(HttpContextBase context)
         {
             var request = context.ToRequest(GetType().GetOperationName());
             ProcessRequestAsync(request, request.Response, request.OperationName);
         }
-
+#endif
         public static Dictionary<string, string> ToDictionary(INameValueCollection nvc)
         {
             var map = new Dictionary<string, string>();

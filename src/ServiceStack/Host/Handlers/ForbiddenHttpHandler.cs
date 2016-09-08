@@ -54,6 +54,7 @@ namespace ServiceStack.Host.Handlers
             });
         }
 
+#if !NETSTANDARD1_3
         public override void ProcessRequest(HttpContextBase context)
         {
             var request = context.Request;
@@ -87,6 +88,7 @@ namespace ServiceStack.Host.Handlers
                 }
             });
         }
+#endif
 
         public override bool IsReusable => true;
     }

@@ -9,13 +9,13 @@ namespace ServiceStack.Html
         private readonly string _value;
 
         public MvcHtmlString(string value)
-            : base(value ?? String.Empty)
+            : base(value ?? string.Empty)
         {
-            _value = value ?? String.Empty;
+            _value = value ?? string.Empty;
         }
 
         [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "MvcHtmlString is immutable")]
-        public static readonly MvcHtmlString Empty = Create(String.Empty);
+        public static readonly MvcHtmlString Empty = Create(string.Empty);
 
         public static MvcHtmlString Create(string value)
         {

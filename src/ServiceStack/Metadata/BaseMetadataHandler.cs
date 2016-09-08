@@ -22,11 +22,15 @@ namespace ServiceStack.Metadata
 
         public override void Execute(HttpContextBase context)
         {
+#if !NETSTANDARD1_3
             var writer = new HtmlTextWriter(context.Response.Output);
             context.Response.ContentType = "text/html; charset=utf-8";
 
             var request = context.ToRequest();
             ProcessOperations(writer, request, request.Response);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)

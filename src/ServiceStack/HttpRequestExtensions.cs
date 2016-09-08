@@ -8,14 +8,17 @@ using System.Web;
 using System.Web.Hosting;
 using ServiceStack.Data;
 using ServiceStack.Host;
-using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Host.HttpListener;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using static System.String;
+
+#if !NETSTANDARD1_3
+using ServiceStack.Host.AspNet;
+using ServiceStack.Host.HttpListener;
+#endif
 
 namespace ServiceStack
 {
@@ -112,11 +115,13 @@ namespace ServiceStack
 
         public static string GetUrlHostName(this IRequest httpReq)
         {
-            var aspNetReq = httpReq as AspNetRequest;
+#if !NETSTANDARD1_3
+            var aspNetReq = httpReq as ServiceStack.Host.AspNet.AspNetRequest;
             if (aspNetReq != null)
             {
                 return aspNetReq.UrlHostName;
             }
+#endif
             var uri = httpReq.AbsoluteUri;
 
             var pos = uri.IndexOf("://", StringComparison.Ordinal) + "://".Length;
@@ -249,31 +254,7 @@ namespace ServiceStack
 
         public static Dictionary<string, string> CookiesAsDictionary(this IRequest httpReq)
         {
-            var map = new Dictionary<string, string>();
-            var aspNet = httpReq.OriginalRequest as HttpRequest;
-            if (aspNet != null)
-            {
-                foreach (var name in aspNet.Cookies.AllKeys)
-                {
-                    var cookie = aspNet.Cookies[name];
-                    if (cookie == null) continue;
-                    map[name] = cookie.Value;
-                }
-            }
-            else
-            {
-                var httpListener = httpReq.OriginalRequest as HttpListenerRequest;
-                if (httpListener != null)
-                {
-                    for (var i = 0; i < httpListener.Cookies.Count; i++)
-                    {
-                        var cookie = httpListener.Cookies[i];
-                        if (cookie?.Name == null) continue;
-                        map[cookie.Name] = cookie.Value;
-                    }
-                }
-            }
-            return map;
+            return Platform.Instance.GetCookiesAsDictionary(httpReq);
         }
 
         public static int ToStatusCode(this Exception ex)
@@ -934,6 +915,7 @@ namespace ServiceStack
             return false;
         }
 
+#if !NETSTANDARD1_3
         public static HttpContextBase ToHttpContextBase(this HttpRequestBase aspnetHttpReq)
         {
             return aspnetHttpReq.RequestContext.HttpContext;
@@ -981,11 +963,13 @@ namespace ServiceStack
         {
             return httpCtx.ToRequest().HttpResponse;
         }
+#endif
 
         public static void SetOperationName(this IRequest httpReq, string operationName)
         {
             if (httpReq.OperationName == null)
             {
+#if !NETSTANDARD1_3
                 var aspReq = httpReq as AspNetRequest;
                 if (aspReq != null)
                 {
@@ -998,6 +982,7 @@ namespace ServiceStack
                 {
                     listenerReq.OperationName = operationName;
                 }
+#endif
             }
         }
 

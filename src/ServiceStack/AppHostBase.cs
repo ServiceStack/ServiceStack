@@ -1,3 +1,4 @@
+#if !NETSTANDARD1_3
 using System;
 using System.Reflection;
 using System.Web;
@@ -44,3 +45,4 @@ namespace ServiceStack
         }
     }
 }
+#endif

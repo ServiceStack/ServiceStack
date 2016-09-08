@@ -59,6 +59,7 @@ namespace ServiceStack.Host.Handlers
             response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text));
         }
 
+#if !NETSTANDARD1_3
         public override void ProcessRequest(HttpContextBase context)
         {
             var request = context.Request;
@@ -125,6 +126,7 @@ namespace ServiceStack.Host.Handlers
             var text = StringBuilderCache.ReturnAndFree(sb);
             context.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text));
         }
+#endif
 
         public override bool IsReusable => true;
     }

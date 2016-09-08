@@ -146,7 +146,7 @@ namespace ServiceStack.Auth
 
             var signatureHeaders = new Dictionary<string, string>(headers);
 
-            var nvc = HttpUtility.ParseQueryString(uri.Query);
+            var nvc = PclExportClient.Instance.ParseQueryString(uri.Query);
             foreach (string key in nvc)
             {
                 if (key != null)
@@ -163,7 +163,7 @@ namespace ServiceStack.Auth
 
             try
             {
-                var result = HttpUtility.ParseQueryString(wc.UploadString(new Uri(provider.RequestTokenUrl), ""));
+                var result = PclExportClient.Instance.ParseQueryString(wc.UploadString(new Uri(provider.RequestTokenUrl), ""));
 
                 if (result["oauth_callback_confirmed"] != null)
                 {
@@ -225,7 +225,7 @@ namespace ServiceStack.Auth
 
             try
             {
-                var result = HttpUtility.ParseQueryString(wc.UploadString(new Uri(provider.AccessTokenUrl), content));
+                var result = PclExportClient.Instance.ParseQueryString(wc.UploadString(new Uri(provider.AccessTokenUrl), content));
 
                 if (result["oauth_token"] != null)
                 {
@@ -265,14 +265,14 @@ namespace ServiceStack.Auth
             // Add the data and URL query string to the copy of the headers for computing the signature
             if (!string.IsNullOrEmpty(data))
             {
-                var parsed = HttpUtility.ParseQueryString(data);
-                foreach (string k in parsed.Keys)
+                var parsed = PclExportClient.Instance.ParseQueryString(data);
+                foreach (string k in parsed)
                 {
                     signatureHeaders.Add(k, OAuthUtils.PercentEncode(parsed[k]));
                 }
             }
 
-            var nvc = HttpUtility.ParseQueryString(uri.Query);
+            var nvc = PclExportClient.Instance.ParseQueryString(uri.Query);
             foreach (string key in nvc)
             {
                 if (key != null)

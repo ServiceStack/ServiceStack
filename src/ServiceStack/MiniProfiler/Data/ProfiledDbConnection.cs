@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NETSTANDARD1_3
+
+using System;
 using System.Data;
 using System.Data.Common;
 
@@ -64,3 +66,5 @@ namespace ServiceStack.MiniProfiler.Data
         object ICloneable.Clone() { return Clone(); }
     }
 }
+
+#endif

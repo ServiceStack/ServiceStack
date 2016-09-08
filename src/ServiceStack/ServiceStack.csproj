@@ -111,6 +111,9 @@
     <Compile Include="CustomRequestFilter.cs" />
     <Compile Include="FluentValidation\Internal\CollectionPropertyRule.cs" />
     <Compile Include="Host\Handlers\StaticContentHandler.cs" />
+    <Compile Include="AppHostBase.NetCore.cs" />
+    <Compile Include="Host\NetCore\NetCoreRequest.cs" />
+    <Compile Include="Host\NetCore\NetCoreResponse.cs" />
     <Compile Include="HttpCacheFeature.cs" />
     <Compile Include="InProcessServiceGateway.cs" />
     <Compile Include="MiniProfiler\Data\Link.cs" />
@@ -126,7 +129,9 @@
     <Compile Include="Platforms\PlatformNet.Wcf.cs" />
     <Compile Include="Platforms\PlatformNet.Config.cs" />
     <Compile Include="Platforms\PlatformNet.cs" />
+    <Compile Include="Platforms\PlatformNet.Web.cs" />
     <Compile Include="Platforms\PlatformNetCore.cs" />
+    <Compile Include="Platforms\PlatformNetCore.Web.cs" />
     <Compile Include="RequiresSchemaProviders.cs" />
     <Compile Include="CancellableRequestsFeature.cs" />
     <Compile Include="Configuration\EnvironmentVariableSettings.cs" />

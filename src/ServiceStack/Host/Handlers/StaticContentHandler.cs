@@ -49,10 +49,12 @@ namespace ServiceStack.Host.Handlers
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
         }
 
+#if !NETSTANDARD1_3
         public override void ProcessRequest(HttpContextBase context)
         {
             var httpReq = context.ToRequest("StaticContent");
             ProcessRequest(httpReq, httpReq.Response, "StaticContent");
         }
+#endif
     }
 }
