@@ -16,6 +16,8 @@
 // The latest version of this file can be found at http://www.codeplex.com/FluentValidation
 #endregion
 
+using ServiceStack.Web;
+
 namespace ServiceStack.FluentValidation.Results
 {
     using System;
@@ -25,19 +27,17 @@ namespace ServiceStack.FluentValidation.Results
 #if !SL5
     [Serializable]
 #endif
-    public class ValidationResult {
+    public class ValidationResult
+    {
         private readonly List<ValidationFailure> errors = new List<ValidationFailure>();
 
-        public bool IsValid {
-            get { return Errors.Count == 0; }
-        }
+        public bool IsValid => Errors.Count == 0;
 
-        public IList<ValidationFailure> Errors {
-            get { return errors; }
-        }
+        public IList<ValidationFailure> Errors => errors;
 
-        public ValidationResult() {
-        }
+        public IRequest Request { get; set; }
+
+        public ValidationResult() {}
 
         public ValidationResult(IEnumerable<ValidationFailure> failures) {
             errors.AddRange(failures.Where(failure => failure != null));

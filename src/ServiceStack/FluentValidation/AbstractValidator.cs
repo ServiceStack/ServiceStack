@@ -95,7 +95,7 @@ namespace ServiceStack.FluentValidation
                 Request = context.Request;
 
             var failures = nestedValidators.SelectMany(x => x.Validate(context)).ToList();
-            return new ValidationResult(failures);
+            return new ValidationResult(failures) { Request = Request };
         }
 
         /// <summary>
