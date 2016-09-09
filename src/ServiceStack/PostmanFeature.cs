@@ -112,7 +112,7 @@ namespace ServiceStack
                 if (feature.EnableSessionExport != true)
                     throw new ArgumentException("PostmanFeature.EnableSessionExport is not enabled");
 
-                var url = Request.ResolveBaseUrl()
+                var url = Request.GetBaseUrl()
                     .CombineWith(Request.PathInfo)
                     .AddQueryParam("ssopt", Request.GetItemOrCookie(SessionFeature.SessionOptionsKey))
                     .AddQueryParam("sspid", Request.GetPermanentSessionId())

@@ -735,14 +735,9 @@ namespace ServiceStack
             return HostContext.ResolveAbsoluteUrl(url, httpReq);
         }
 
-        public static string ResolveBaseUrl(this IRequest httpReq)
-        {
-            return HostContext.ResolveAbsoluteUrl("~/", httpReq);
-        }
-
         public static string GetAbsoluteUrl(this IRequest httpReq, string url)
         {
-            if (url.SafeSubstring(0, 2) == "~/")
+            if (url?.SafeSubstring(0, 2) == "~/")
             {
                 url = httpReq.GetBaseUrl().CombineWith(url.Substring(2));
             }

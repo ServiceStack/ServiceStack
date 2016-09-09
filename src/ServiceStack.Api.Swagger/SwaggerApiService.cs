@@ -202,7 +202,7 @@ namespace ServiceStack.Api.Swagger
             var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
-            var basePath = base.Request.ResolveBaseUrl();
+            var basePath = base.Request.GetBaseUrl();
 
             var meta = HostContext.Metadata;
             foreach (var key in map.Keys)
