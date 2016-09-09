@@ -771,21 +771,7 @@ namespace ServiceStack
 
         public static string GetBaseUrl(this IRequest httpReq)
         {
-            var useHttps = HostContext.AppHost.UseHttps(httpReq);
-            var baseUrl = HttpHandlerFactory.GetBaseUrl();
-            if (baseUrl != null)
-                return baseUrl.NormalizeScheme(useHttps);
-
-            baseUrl = httpReq.AbsoluteUri.InferBaseUrl(fromPathInfo: httpReq.PathInfo);
-            if (baseUrl != null)
-                return baseUrl.NormalizeScheme(useHttps);
-
-            var handlerPath = HostContext.Config.HandlerFactoryPath;
-
-            return new Uri(httpReq.AbsoluteUri).GetLeftPart(UriPartial.Authority)
-                .NormalizeScheme(useHttps)
-                .CombineWith(handlerPath)
-                .TrimEnd('/');
+            return HostContext.AppHost.GetBaseUrl(httpReq);
         }
 
         public static bool UseHttps(this IRequest httpReq)

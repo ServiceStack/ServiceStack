@@ -717,6 +717,25 @@ namespace ServiceStack
             return Config.UseHttpsLinks || httpReq.GetHeader(HttpHeaders.XForwardedProtocol) == "https";
         }
 
+        public virtual string GetBaseUrl(IRequest httpReq)
+        {
+            var useHttps = UseHttps(httpReq);
+            var baseUrl = HttpHandlerFactory.GetBaseUrl();
+            if (baseUrl != null)
+                return baseUrl.NormalizeScheme(useHttps);
+
+            baseUrl = httpReq.AbsoluteUri.InferBaseUrl(fromPathInfo: httpReq.PathInfo);
+            if (baseUrl != null)
+                return baseUrl.NormalizeScheme(useHttps);
+
+            var handlerPath = Config.HandlerFactoryPath;
+
+            return new Uri(httpReq.AbsoluteUri).GetLeftPart(UriPartial.Authority)
+                .NormalizeScheme(useHttps)
+                .CombineWith(handlerPath)
+                .TrimEnd('/');
+        }
+
         public virtual string ResolvePhysicalPath(string virtualPath, IRequest httpReq)
         {
             return VirtualFileSources.CombineVirtualPath(VirtualFileSources.RootDirectory.RealPath, virtualPath);
