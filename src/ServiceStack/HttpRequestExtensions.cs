@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Hosting;
 using ServiceStack.Data;
@@ -771,18 +772,20 @@ namespace ServiceStack
 
         public static string GetBaseUrl(this IRequest httpReq)
         {
+            var proxyPort = ProxyPort(httpReq);
             var useHttps = HostContext.AppHost.UseHttps(httpReq);
             var baseUrl = HttpHandlerFactory.GetBaseUrl();
             if (baseUrl != null)
-                return baseUrl.NormalizeScheme(useHttps);
+                return HandleProxyPort(baseUrl.NormalizeScheme(useHttps), useHttps, proxyPort);
 
             baseUrl = httpReq.AbsoluteUri.InferBaseUrl(fromPathInfo: httpReq.PathInfo);
             if (baseUrl != null)
-                return baseUrl.NormalizeScheme(useHttps);
+                return HandleProxyPort(baseUrl.NormalizeScheme(useHttps), useHttps, proxyPort);
 
             var handlerPath = HostContext.Config.HandlerFactoryPath;
 
-            return new Uri(httpReq.AbsoluteUri).GetLeftPart(UriPartial.Authority)
+            var leftPart = new Uri(httpReq.AbsoluteUri).GetLeftPart(UriPartial.Authority);
+            return HandleProxyPort(leftPart, useHttps, proxyPort)
                 .NormalizeScheme(useHttps)
                 .CombineWith(handlerPath)
                 .TrimEnd('/');
@@ -792,6 +795,58 @@ namespace ServiceStack
         {
             return HostContext.Config.UseHttpsLinks ||
                 httpReq.GetHeader(HttpHeaders.XForwardedProtocol) == "https";
+        }
+
+        public static string HandleProxyPort(string url, bool useHttps, int? proxyPort)
+        {
+            // A port 80 for http and port 443 for https is implicit by the scheme and therefore removed.
+            // Any other port or combination is preserved.
+            // This allows ServiceStack to provide urls that work from the client,
+            // when connecting trough a loadbalancer.
+            if (!proxyPort.HasValue)
+            {
+                return url;
+            }
+
+            var uriBuilder = new UriBuilder(new Uri(url));
+
+            if (uriBuilder.Port == proxyPort.Value)
+                return url;
+
+            if (proxyPort.Value == 80 && !useHttps)
+                // Case: http://my.domain/ -> Loadbalancer -> http://a.b.c.d:2345/
+                // => Remove any port in the raw url.
+                uriBuilder.Port = proxyPort.Value;
+            else if (proxyPort.Value == 443 && useHttps)
+                // Case: https://my.domain/ -> LoadbalancerWithSSL -> http://a.b.c.d:2345/
+                // => Remove any port in the raw url
+                uriBuilder.Port = proxyPort.Value;
+            else
+                // Cases:
+                //   http://my.domain:1234/ -> Loadbalancer -> http://a.b.c.d:2345/
+                //   http://my.domain:1234/ -> Loadbalancer -> http://a.b.c.d/
+                //   https://my.domain:1234/ -> LoadbalancerWithSSL -> http://a.b.c.d:2345/
+                //   https://my.domain:1234/ -> LoadbalancerWithSSL -> http://a.b.c.d/
+                // => Replace the raw url port with the port from the proxy.
+                uriBuilder.Port = proxyPort.Value;
+
+            return uriBuilder.ToString();
+        }
+
+        public static int? ProxyPort(this IRequest httpReq)
+        {
+            var proxyPortStr = httpReq.GetHeader(HttpHeaders.XForwardedPort);
+            if (proxyPortStr == null)
+            {
+                return null;
+            }
+            int proxyPort;
+            var found = Int32.TryParse(proxyPortStr, out proxyPort);
+            if (found)
+            {
+                return proxyPort;
+            }
+            return null;
         }
 
         public static string NormalizeScheme(this string url, bool useHttps)
