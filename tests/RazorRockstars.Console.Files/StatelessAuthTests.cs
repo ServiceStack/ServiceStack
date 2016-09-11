@@ -8,9 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Funq;
+using MongoDB.Driver;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Auth;
+using ServiceStack.Authentication.MongoDb;
 using ServiceStack.Aws.DynamoDb;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
@@ -162,6 +164,22 @@ namespace RazorRockstars.Console.Files
             {
                 EnableAuth = true,
                 Use = container => container.Register<IAuthRepository>(c => new RedisAuthRepository(redisManager))
+            };
+        }
+    }
+
+    public class MongoDbAuthRepoStatelessAuthTests : StatelessAuthTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            var mongoClient = new MongoClient();
+            mongoClient.DropDatabase("testmongodbauth");
+            IMongoDatabase mongoDatabase =  mongoClient.GetDatabase("testmongodbauth");
+
+            return new AppHost
+            {
+                EnableAuth = true,
+                Use = container => container.Register<IAuthRepository>(c => new MongoDbAuthRepository(mongoDatabase, true))
             };
         }
     }
