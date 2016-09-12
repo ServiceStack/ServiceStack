@@ -23,10 +23,10 @@ echo replace AssemblyFileVersion
 find ./src -type f -name "AssemblyInfo.cs" -exec sed -i "s/AssemblyFileVersion(\"[^\"]\+\")/AssemblyFileVersion(\"${Version}\")/g" {} +
 
 echo replace project.json
-sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.NetCore/ServiceStack.Text/project.json
-sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.NetCore/ServiceStack.Client/project.json
-sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.NetCore/ServiceStack.Interfaces/project.json
-sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.NetCore/ServiceStack.Common/project.json
+sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Text/project.json
+sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Client/project.json
+sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Interfaces/project.json
+sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Common/project.json
 
 echo replace package
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/<version>[^<]\+/<version>${PackageVersion}/g" {} +
@@ -35,11 +35,11 @@ find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Interf
 
 
 #restore packages
-#(cd ./src/ServiceStack.NetCore && dotnet restore)
-#(cd ./tests/ServiceStack.Common.NetCore/ServiceStack.Common.Tests && dotnet restore)
+#(cd ./src && dotnet restore)
+#(cd ./tests/ServiceStack.Tests.NetCore/ServiceStack.Common.Tests && dotnet restore)
 
 #execute tests
-#(cd ./tests/ServiceStack.Text.Tests.NetCore/ServiceStack.Text.Tests && dotnet run -c Release)
+#(cd ./tests/ServiceStack.Tests.NetCore/ServiceStack.Common.Tests && dotnet run -c Release)
 
 #nuget pack
-#(cd ./NuGet.Core && ./nuget.exe pack ServiceStack.Text.Core/servicestack.text.core.nuspec -symbols)
+#(cd ./NuGet.Core && ./nuget.exe pack ServiceStack.Common.Core/servicestack.common.core.nuspec -symbols)
