@@ -6,6 +6,17 @@ using ServiceStack.Web;
 
 #if NETSTANDARD1_3
 
+namespace ServiceStack
+{
+    public class ConfigurationErrorsException : Exception
+    {
+        public ConfigurationErrorsException() {}
+        public ConfigurationErrorsException(string message) : base(message) {}
+        public ConfigurationErrorsException(string message, Exception innerException) 
+            : base(message, innerException) {}
+    }
+}
+
 namespace ServiceStack.MiniProfiler
 {
     public enum RenderPosition { Left = 0, Right = 1 }

@@ -944,6 +944,11 @@ namespace ServiceStack
         {
             return httpCtx.ToRequest().HttpResponse;
         }
+
+        public static System.ServiceModel.Channels.Message GetSoapMessage(this IRequest httpReq)
+        {
+            return httpReq.Items[Keywords.SoapMessage] as System.ServiceModel.Channels.Message;
+        }
 #endif
 
         public static void SetOperationName(this IRequest httpReq, string operationName)
@@ -993,11 +998,6 @@ namespace ServiceStack
                 return;
 
             req.Response.AddHeader(HttpHeaders.XAutoBatchCompleted, completed.ToString());
-        }
-
-        public static System.ServiceModel.Channels.Message GetSoapMessage(this IRequest httpReq)
-        {
-            return httpReq.Items[Keywords.SoapMessage] as System.ServiceModel.Channels.Message;
         }
 
         public static void SetRoute(this IRequest req, RestPath route)
