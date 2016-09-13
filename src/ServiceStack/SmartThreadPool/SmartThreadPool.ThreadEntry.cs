@@ -1,4 +1,5 @@
-﻿
+﻿#if !NETSTANDARD1_3
+
 using System;
 using Amib.Threading.Internal;
 
@@ -58,3 +59,5 @@ namespace Amib.Threading
         #endregion
     }
 }
+
+#endif

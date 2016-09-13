@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_3
+
 using System;
 
 namespace Amib.Threading
@@ -169,3 +171,5 @@ namespace Amib.Threading
 	    }
     }
 }
+
+#endif
