@@ -68,6 +68,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Single", "0"},
             {"Double", "0"},
             {"Decimal", "0"},
+            {"number", 0},
             {"List", "[]"}
         };
 
