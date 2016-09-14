@@ -1,4 +1,4 @@
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
 using System;
 using System.IO;
 using System.Runtime.Serialization;

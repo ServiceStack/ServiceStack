@@ -252,7 +252,7 @@ namespace ServiceStack
             if (heartbeatTimer != null)
                 heartbeatTimer.Cancel();
 
-#if !NETSTANDARD1_1
+#if !(NETSTANDARD1_1 || NETSTANDARD1_6)
             heartbeatTimer = PclExportClient.Instance.CreateTimer(Heartbeat,
                 TimeSpan.FromMilliseconds(ConnectionInfo.HeartbeatIntervalMs), this);
 #endif
