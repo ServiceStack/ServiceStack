@@ -198,13 +198,11 @@
     <Compile Include="SitemapFeature.cs" />
     <Compile Include="SmartThreadPool\CallerThreadContext.cs" />
     <Compile Include="SmartThreadPool\CanceledWorkItemsGroup.cs" />
-    <Compile Include="SmartThreadPool\EventWaitHandle.cs" />
     <Compile Include="SmartThreadPool\EventWaitHandleFactory.cs" />
     <Compile Include="SmartThreadPool\Exceptions.cs" />
     <Compile Include="SmartThreadPool\Interfaces.cs" />
     <Compile Include="SmartThreadPool\InternalInterfaces.cs" />
     <Compile Include="SmartThreadPool\PriorityQueue.cs" />
-    <Compile Include="SmartThreadPool\SLExt.cs" />
     <Compile Include="SmartThreadPool\SmartThreadPool.cs" />
     <Compile Include="SmartThreadPool\SmartThreadPool.ThreadEntry.cs" />
     <Compile Include="SmartThreadPool\STPEventWaitHandle.cs" />
