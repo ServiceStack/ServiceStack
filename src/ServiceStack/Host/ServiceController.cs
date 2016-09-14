@@ -463,7 +463,6 @@ namespace ServiceStack.Host
             var taskResponse = response as Task;
             if (taskResponse != null)
             {
-                taskResponse.Wait();
                 response = taskResponse.GetResult();
             }
 
@@ -498,7 +497,15 @@ namespace ServiceStack.Host
                 return req.Response.Dto;
 
             var response = Execute(dto.Body, req);
-            response = ApplyResponseFilters(response, req);
+
+            var taskResponse = response as Task;
+            if (taskResponse != null)
+                response = taskResponse.GetResult();
+
+            response = appHost.ApplyResponseConverters(req, response);
+
+            if (appHost.ApplyMessageResponseFilters(req, req.Response, response))
+                response = req.Response.Dto;
 
             req.Response.EndMqRequest();
 
