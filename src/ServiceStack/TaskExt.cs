@@ -34,7 +34,7 @@ namespace ServiceStack
                 task.Wait();
 
                 var fn = task.GetType().GetFastGetter("Result");
-                return fn(task);
+                return fn?.Invoke(task);
             }
             catch (TypeAccessException)
             {
