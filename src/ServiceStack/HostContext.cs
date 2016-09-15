@@ -62,7 +62,7 @@ namespace ServiceStack
 
         public static string ServiceName => AssertAppHost().ServiceName;
 
-        public static bool DebugMode => Config.DebugMode;
+        public static bool DebugMode => AppHost?.Config.DebugMode == true;
 
         public static bool TestMode
         {
@@ -295,11 +295,6 @@ namespace ServiceStack
         public static bool HasFeature(Feature feature)
         {
             return AssertAppHost().HasFeature(feature);
-        }
-
-        public static void OnExceptionTypeFilter(Exception exception, ResponseStatus responseStatus)
-        {
-            AssertAppHost().OnExceptionTypeFilter(exception, responseStatus);
         }
 
         public static IRequest GetCurrentRequest()

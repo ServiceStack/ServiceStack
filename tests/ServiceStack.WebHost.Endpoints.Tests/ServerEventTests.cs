@@ -334,7 +334,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_not_fire_UnobservedTaskException()
         {
             var unobservedTaskException = false;
-            TaskScheduler.UnobservedTaskException += (s, e) => { unobservedTaskException = true; };
+            TaskScheduler.UnobservedTaskException += (s, e) =>
+            {
+                unobservedTaskException = true;
+            };
             using (var client1 = CreateServerEventsClient())
             {
                 using (var connectedEvent = new ManualResetEvent(false))
@@ -369,7 +372,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var errors = new List<Exception>();
 
                 client1.OnConnect = e => connectMsg = e;
-                client1.OnCommand = commands.Add;
+                client1.OnCommand = e => commands.Add(e);
                 client1.OnMessage = msgs.Add;
                 client1.OnException = errors.Add;
 
@@ -414,7 +417,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 Assert.That(joinMsg, Is.Not.Null, "joinMsg == null");  //2nd connection
                 Assert.That(leaveMsg, Is.Not.Null, "leaveMsg == null");
-                Assert.That(commands.Count, Is.EqualTo(2)); //join + leave
+                Assert.That(commands.Count, Is.GreaterThanOrEqualTo(2)); //join + leave
                 Assert.That(errors.Count, Is.EqualTo(0));
             }
         }
@@ -583,8 +586,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         client2.PostChat("msg2 from client2");
                     }
 
-                    "Waiting for 30s...".Print();
-                    var msg2 = await msgTask.WaitAsync(3000);
+                    "Waiting for max 5s...".Print();
+                    var msg2 = await msgTask.WaitAsync(5000);
 
                     var chatMsg2 = msg2.Json.FromJson<ChatMessage>();
 
