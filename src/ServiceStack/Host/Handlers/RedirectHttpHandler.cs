@@ -51,7 +51,7 @@ namespace ServiceStack.Host.Handlers
             response.EndHttpHandlerRequest(skipClose: true);
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         /// <summary>
         /// ASP.NET requests
         /// </summary>

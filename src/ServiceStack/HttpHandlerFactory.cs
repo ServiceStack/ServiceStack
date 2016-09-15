@@ -133,7 +133,7 @@ namespace ServiceStack
             }
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         // Entry point for ASP.NET
         public IHttpHandler GetHandler(HttpContext ctx, string requestType, string url, string pathTranslated)
         {

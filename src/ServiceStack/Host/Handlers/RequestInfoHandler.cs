@@ -201,7 +201,7 @@ namespace ServiceStack.Host.Handlers
             var response = this.RequestInfo ?? GetRequestInfo(httpReq);
             response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
             response.DebugString = "";
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
             if (HttpContext.Current != null)
             {
                 response.DebugString += HttpContext.Current.Request.GetType().FullName
@@ -251,7 +251,7 @@ namespace ServiceStack.Host.Handlers
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var request = context.ToRequest(GetType().GetOperationName());
@@ -300,7 +300,7 @@ namespace ServiceStack.Host.Handlers
             {
                 Usage = "append '?debug=requestinfo' to any querystring. Optional params: virtualPathCount",
                 Host = HostContext.ServiceName + "_" + HostContext.Config.DebugHttpListenerHostEnvironment + "_" + Env.ServerUserAgent,
-                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType?.Name ?? hostType.Name),
+                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType()?.Name ?? hostType.Name),
                 Date = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                 ServiceName = HostContext.ServiceName,
                 HandlerFactoryPath = HostContext.Config.HandlerFactoryPath,

@@ -21,7 +21,7 @@ namespace ServiceStack.Host
             this.acceptEncoding = this.acceptEncoding.ToLower();
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         public RequestPreferences(HttpContextBase httpContext)
         {
             this.httpContext = httpContext;

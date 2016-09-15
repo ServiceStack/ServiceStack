@@ -59,7 +59,7 @@ namespace ServiceStack.Host.Handlers
             response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text));
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var request = context.Request;

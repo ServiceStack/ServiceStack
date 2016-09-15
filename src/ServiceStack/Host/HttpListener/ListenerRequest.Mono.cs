@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD1_3
+﻿#if !NETSTANDARD1_6
 // Most of this class is sourced from the MONO project in the existing file:
 //
 // https://github.com/mono/mono/blob/master/mcs/class/System.Web/System.Web/HttpRequest.cs

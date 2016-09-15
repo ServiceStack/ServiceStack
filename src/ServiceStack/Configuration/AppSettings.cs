@@ -13,7 +13,7 @@ namespace ServiceStack.Configuration
         {
             public string Get(string key)
             {
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
                 return ConfigurationManager.AppSettings[key];
 #else
                 return null;
@@ -22,7 +22,7 @@ namespace ServiceStack.Configuration
 
             public List<string> GetAllKeys()
             {
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
                 return new List<string>(ConfigurationManager.AppSettings.AllKeys);
 #else
                 return TypeConstants.EmptyStringList;

@@ -14,7 +14,7 @@ namespace ServiceStack.Support.WebHost
             this.log = LogManager.GetLogger(this.GetType());
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var before = DateTime.UtcNow;

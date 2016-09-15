@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD1_3
+﻿#if !NETSTANDARD1_6
 
 using System.Web;
 using ServiceStack.MiniProfiler.Helpers;

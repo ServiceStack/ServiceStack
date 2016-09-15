@@ -4,9 +4,9 @@ using System.IO;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Web;
 
-#if NETSTANDARD1_3
+#if NETSTANDARD1_6
 
-namespace ServiceStack
+namespace System.Configuration
 {
     public class ConfigurationErrorsException : Exception
     {

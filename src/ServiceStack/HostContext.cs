@@ -33,7 +33,7 @@ namespace ServiceStack
 
             return ServiceStackHost.Instance;
         }
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         public static bool IsAspNetHost => ServiceStackHost.Instance is AppHostBase;
         public static bool IsHttpListenerHost => ServiceStackHost.Instance is Host.HttpListener.HttpListenerBase;
         public static bool IsNetCore => false;
@@ -249,7 +249,7 @@ namespace ServiceStack
             AssertAppHost().HandleUncaughtException(httpReq, httpRes, operationName, ex);
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a ASP.NET HttpContext.
         /// </summary>

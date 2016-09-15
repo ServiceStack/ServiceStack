@@ -32,6 +32,7 @@ namespace ServiceStack
             IsHttpListener = HttpContext.Current == null;
         }
 
+#if !NETSTANDARD1_6
         public static void CloseOutputStream(this HttpResponseBase response)
         {
             try
@@ -63,6 +64,7 @@ namespace ServiceStack
                 Log.Error("Error in HttpListenerResponseWrapper: " + ex.Message, ex);
             }
         }
+#endif
 
         public static void RedirectToUrl(this IResponse httpRes, string url, HttpStatusCode redirectStatusCode = HttpStatusCode.Redirect)
         {
@@ -73,7 +75,7 @@ namespace ServiceStack
 
         public static void TransmitFile(this IResponse httpRes, string filePath)
         {
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
             var aspNetRes = httpRes as ServiceStack.Host.AspNet.AspNetResponse;
             if (aspNetRes != null)
             {
@@ -92,7 +94,7 @@ namespace ServiceStack
 
         public static void WriteFile(this IResponse httpRes, string filePath)
         {
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
             var aspNetRes = httpRes as ServiceStack.Host.AspNet.AspNetResponse;
             if (aspNetRes != null)
             {

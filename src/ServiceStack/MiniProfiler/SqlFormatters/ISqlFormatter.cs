@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD1_3
+﻿#if !NETSTANDARD1_6
 
 namespace ServiceStack.MiniProfiler.SqlFormatters
 {

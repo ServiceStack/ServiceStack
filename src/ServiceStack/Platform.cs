@@ -7,7 +7,7 @@ namespace ServiceStack
     public class Platform
     {
         public static Platform Instance =
-#if NETSTANDARD1_3
+#if NETSTANDARD1_6
             new PlatformNetCore();
 #else
             new PlatformNet();

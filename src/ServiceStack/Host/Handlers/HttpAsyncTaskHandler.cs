@@ -19,7 +19,7 @@ namespace ServiceStack.Host.Handlers
 
         public virtual bool RunAsAsync() => false;
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         protected static bool DefaultHandledRequest(HttpListenerContext context) => false;
 
         protected static bool DefaultHandledRequest(HttpContextBase context) => false;
@@ -45,18 +45,22 @@ namespace ServiceStack.Host.Handlers
 
         protected virtual Task CreateProcessRequestTask(IRequest httpReq, IResponse httpRes, string operationName)
         {
+#if !NETSTANDARD1_6
             var currentCulture = Thread.CurrentThread.CurrentCulture;
             var currentUiCulture = Thread.CurrentThread.CurrentUICulture;
             var ctx = HttpContext.Current;
+#endif
 
             //preserve Current Culture:
             return new Task(() =>
             {
+#if !NETSTANDARD1_6
                 Thread.CurrentThread.CurrentCulture = currentCulture;
                 Thread.CurrentThread.CurrentUICulture = currentUiCulture;
                 //HttpContext is not preserved in ThreadPool threads: http://stackoverflow.com/a/13558065/85785
                 if (HttpContext.Current == null)
                     HttpContext.Current = ctx;
+#endif
 
                 ProcessRequest(httpReq, httpRes, operationName);
             });
@@ -87,7 +91,7 @@ namespace ServiceStack.Host.Handlers
             return task;
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         public virtual void ProcessRequest(HttpContextBase context)
         {
             var operationName = this.RequestName ?? context.Request.GetOperationName();
@@ -171,7 +175,7 @@ namespace ServiceStack.Host.Handlers
 
         void IHttpHandler.ProcessRequest(HttpContext context)
         {
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
             var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
 
             if (task.Status == TaskStatus.Created)

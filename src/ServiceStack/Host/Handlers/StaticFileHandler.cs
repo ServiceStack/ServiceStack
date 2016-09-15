@@ -63,7 +63,7 @@ namespace ServiceStack.Host.Handlers
             VirtualNode = virtualDir;
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var httpReq = context.ToRequest(GetType().GetOperationName());
@@ -219,6 +219,7 @@ namespace ServiceStack.Host.Handlers
                         }
                     }
                 }
+#if !NETSTANDARD1_6
                 catch (System.Net.HttpListenerException ex)
                 {
                     if (ex.ErrorCode == 1229)
@@ -229,6 +230,7 @@ namespace ServiceStack.Host.Handlers
                     //with attribute in header "Range: bytes=newSeekPosition-"
                     throw;
                 }
+#endif
                 catch (Exception ex)
                 {
                     log.ErrorFormat($"Static file {request.PathInfo} forbidden: {ex.Message}");

@@ -141,7 +141,7 @@ namespace ServiceStack
             return value;
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         public static RequestBaseWrapper ToHttpRequestBase(this IRequest httpReq)
         {
             return new RequestBaseWrapper((IHttpRequest)httpReq);
