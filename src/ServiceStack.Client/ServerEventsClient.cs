@@ -638,14 +638,12 @@ namespace ServiceStack
 
             cancel?.Cancel();
 
-            Task task = TypeConstants.EmptyTask;
-
             if (ConnectionInfo?.UnRegisterUrl != null)
             {
                 EnsureSynchronizationContext();
-                task = ConnectionInfo.UnRegisterUrl.GetStringFromUrlAsync()
-                        .Error(ex => { /*ignore*/});
-                task.Wait();
+                try {
+                    ConnectionInfo.UnRegisterUrl.GetStringFromUrl();
+                } catch (Exception ignore) {}
             }
 
             using (response)
@@ -656,7 +654,7 @@ namespace ServiceStack
             ConnectionInfo = null;
             httpReq = null;
 
-            return task;
+            return TypeConstants.EmptyTask;
         }
 
         public void Update(string[] subscribe = null, string[] unsubscribe = null)
