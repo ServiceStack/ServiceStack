@@ -1,6 +1,0 @@
-{
-    "projects": [
-       "../../src",
-       "ServiceStack.Common.Tests"
-    ]
-}
