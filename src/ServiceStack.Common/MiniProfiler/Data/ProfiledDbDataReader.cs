@@ -41,7 +41,7 @@ namespace ServiceStack.MiniProfiler.Data
 
         public
 #if !NETSTANDARD1_3
-	override
+    	override
 #endif 
     	void Close()
         {

@@ -19,22 +19,22 @@ namespace ServiceStack.Support
         protected T Execute<T>(Func<T> action)
         {
             DateTime before = DateTime.UtcNow;
-#if !NETFX_CORE && !WP && !NETSTANDARD1_3
-            this.Log.Debug($"Executing action '{action.Method.Name}'");
+#if !NETFX_CORE && !WP
+            this.Log.Debug($"Executing action '{action.Method().Name}'");
 #endif
             try
             {
                 T result = action();
                 TimeSpan timeTaken = DateTime.UtcNow - before;
-#if !NETFX_CORE && !WP && !NETSTANDARD1_3
-                this.Log.Debug($"Action '{action.Method.Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
+#if !NETFX_CORE && !WP
+                this.Log.Debug($"Action '{action.Method().Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
 #endif
                 return result;
             }
             catch (Exception ex)
             {
-#if !NETFX_CORE && !WP && !NETSTANDARD1_3
-                this.Log.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}");
+#if !NETFX_CORE && !WP
+                this.Log.Error($"There was an error executing Action '{action.Method().Name}'. Message: {ex.Message}");
 #endif
                 throw;
             }
@@ -47,21 +47,21 @@ namespace ServiceStack.Support
         protected void Execute(Action action)
         {
             DateTime before = DateTime.UtcNow;
-#if !NETFX_CORE && !WP && !NETSTANDARD1_3
-            this.Log.Debug($"Executing action '{action.Method.Name}'");
+#if !NETFX_CORE && !WP
+            this.Log.Debug($"Executing action '{action.Method().Name}'");
 #endif
             try
             {
                 action();
                 TimeSpan timeTaken = DateTime.UtcNow - before;
-#if !NETFX_CORE && !WP && !NETSTANDARD1_3
-                this.Log.Debug($"Action '{action.Method.Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
+#if !NETFX_CORE && !WP
+                this.Log.Debug($"Action '{action.Method().Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
 #endif
             }
             catch (Exception ex)
             {
-#if !NETFX_CORE && !WP && !NETSTANDARD1_3
-                this.Log.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}");
+#if !NETFX_CORE && !WP
+                this.Log.Error($"There was an error executing Action '{action.Method().Name}'. Message: {ex.Message}");
 #endif
                 throw;
             }
