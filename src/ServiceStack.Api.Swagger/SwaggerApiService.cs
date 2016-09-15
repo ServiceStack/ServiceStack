@@ -603,7 +603,7 @@ namespace ServiceStack.Api.Swagger
                     var apiMembers = paramAttrs[key];
                     foreach (var member in apiMembers)
                     {
-                        if ((member.Verb == null || string.Compare(member.Verb, verb, StringComparison.InvariantCultureIgnoreCase) == 0)
+                        if ((member.Verb == null || string.Compare(member.Verb, verb, StringComparison.OrdinalIgnoreCase) == 0)
                             && (member.Route == null || (route ?? "").StartsWith(member.Route))
                             && !string.Equals(member.ParameterType, "model")
                             && methodOperationParameters.All(x => x.Name != (member.Name ?? key)))

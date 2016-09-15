@@ -160,7 +160,7 @@ namespace ServiceStack.Razor.BuildTask
             return allowedConfigurations.IsNullOrEmpty()
                 || allowedConfigurations.Replace(" ", String.Empty) // Configuration names do not contain spaces, so safe to remove all
                                         .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                                        .Any(config => currentConfiguration.Equals(config, StringComparison.InvariantCultureIgnoreCase));
+                                        .Any(config => currentConfiguration.Equals(config, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
