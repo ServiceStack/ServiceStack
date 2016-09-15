@@ -92,7 +92,7 @@ namespace ServiceStack
                 : tempId;
         }
 
-        static readonly RandomNumberGenerator randgen = new RNGCryptoServiceProvider();
+        static readonly RandomNumberGenerator randgen = RandomNumberGenerator.Create();
 
         [ThreadStatic] static byte[] SessionBytesCache;
 

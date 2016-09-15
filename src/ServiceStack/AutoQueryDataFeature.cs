@@ -258,7 +258,7 @@ namespace ServiceStack
         {
             var assemblyName = new AssemblyName { Name = "tmpAssembly" };
             var typeBuilder =
-                Thread.GetDomain().DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
+                AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
                 .DefineDynamicModule("tmpModule")
                 .DefineType("__AutoQueryDataServices",
                     TypeAttributes.Public | TypeAttributes.Class,
@@ -299,7 +299,7 @@ namespace ServiceStack
                 il.Emit(OpCodes.Ret);
             }
 
-            var servicesType = typeBuilder.CreateType();
+            var servicesType = typeBuilder.CreateTypeInfo().AsType();
             return servicesType;
         }
 
@@ -521,7 +521,7 @@ namespace ServiceStack
         public virtual Tuple<Type, PropertyInfo> FirstMatchingField(string field)
         {
             var pi = typeof(T).GetProperties()
-                .FirstOrDefault(x => string.Equals(x.Name, field, StringComparison.InvariantCultureIgnoreCase));
+                .FirstOrDefault(x => string.Equals(x.Name, field, StringComparison.OrdinalIgnoreCase));
             return pi != null
                 ? Tuple.Create(typeof(T), pi)
                 : null;
@@ -716,7 +716,7 @@ namespace ServiceStack
 
         public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, DataQuery<From> expr, IQueryData dto)
         {
-            response.Meta = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            response.Meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var commands = dto.Include.ParseCommands();
 
@@ -984,7 +984,7 @@ namespace ServiceStack
 
                 case "AVG":
                     object sum = CompareTypeUtils.Sum(source.Map(x => firstGetter(x)));
-                    var sumDouble = (double)Convert.ChangeType(sum, TypeCode.Double);
+                    var sumDouble = (double)Convert.ChangeType(sum, typeof(double));
                     return sumDouble / source.Length;
 
                 case "FIRST":
@@ -1061,7 +1061,7 @@ namespace ServiceStack
             var dtoAttr = request.GetType().FirstAttribute<QueryDataAttribute>();
             var defaultTerm = dtoAttr != null && dtoAttr.DefaultTerm == QueryTerm.Or ? QueryTerm.Or : QueryTerm.And;
 
-            var aliases = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            var aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var props = typeof(From).GetProperties();
             foreach (var pi in props)
             {

@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace ServiceStack.Html
 {
-	[Serializable]
 	public class ModelStateDictionary : IDictionary<string, ModelState>
 	{
 		private readonly Dictionary<string, ModelState> innerDictionary = new Dictionary<string, ModelState>(StringComparer.OrdinalIgnoreCase);

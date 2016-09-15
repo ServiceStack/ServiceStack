@@ -209,7 +209,7 @@ namespace ServiceStack.Host.AspNet
                 try
                 {
                     return HostContext.Config.StripApplicationVirtualPath
-                        ? request.Url.GetLeftPart(UriPartial.Authority)
+                        ? request.Url.GetLeftAuthority()
                             .CombineWith(HostContext.Config.HandlerFactoryPath)
                             .CombineWith(PathInfo)
                             .TrimEnd('/')

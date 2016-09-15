@@ -114,7 +114,7 @@ namespace ServiceStack.FluentValidation
         }
 
         bool IValidator.CanValidateInstancesOfType(Type type) {
-            return typeof(T).IsAssignableFrom(type);
+            return typeof(T).IsAssignableFromType(type);
         }
 
         /// <summary>

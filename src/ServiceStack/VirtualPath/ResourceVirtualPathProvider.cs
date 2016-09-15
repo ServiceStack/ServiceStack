@@ -16,7 +16,7 @@ namespace ServiceStack.VirtualPath
         public override string RealPathSeparator => ".";
 
         public ResourceVirtualPathProvider(IAppHost appHost, Type baseTypeInAssmebly)
-            : this(appHost, baseTypeInAssmebly.Assembly, GetNamespace(baseTypeInAssmebly)) { }
+            : this(appHost, baseTypeInAssmebly.GetAssembly(), GetNamespace(baseTypeInAssmebly)) { }
 
         public ResourceVirtualPathProvider(IAppHost appHost, Assembly backingAssembly, string rootNamespace=null)
             : base(appHost)
@@ -38,7 +38,7 @@ namespace ServiceStack.VirtualPath
 
         protected sealed override void Initialize()
         {
-            var asm = BackingAssembly ?? AppHost.GetType().Assembly;
+            var asm = BackingAssembly ?? AppHost.GetType().GetAssembly();
             RootDir = new ResourceVirtualDirectory(this, null, asm, RootNamespace);
         }
 

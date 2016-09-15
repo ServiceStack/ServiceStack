@@ -39,12 +39,12 @@ namespace ServiceStack.Support.WebHost
             IHasRequestFilter[] attrs;
             if (requestFilterAttributes.TryGetValue(requestDtoType, out attrs)) return attrs.ShallowCopy();
 
-            var attributes = requestDtoType.AllAttributes<IHasRequestFilter>().ToList();
+            var attributes = requestDtoType.AllAttributes().OfType<IHasRequestFilter>().ToList();
 
             var serviceType = HostContext.Metadata.GetServiceTypeByRequest(requestDtoType);
             if (serviceType != null)
             {
-                attributes.AddRange(serviceType.AllAttributes<IHasRequestFilter>());
+                attributes.AddRange(serviceType.AllAttributes().OfType<IHasRequestFilter>());
             }
 
             attributes.Sort((x, y) => x.Priority - y.Priority);
@@ -66,12 +66,12 @@ namespace ServiceStack.Support.WebHost
             IHasResponseFilter[] attrs;
             if (responseFilterAttributes.TryGetValue(responseDtoType, out attrs)) return attrs.ShallowCopy();
 
-            var attributes = responseDtoType.AllAttributes<IHasResponseFilter>().ToList();
+            var attributes = responseDtoType.AllAttributes().OfType<IHasResponseFilter>().ToList();
 
             var serviceType = HostContext.Metadata.GetServiceTypeByResponse(responseDtoType);
             if (serviceType != null)
             {
-                attributes.AddRange(serviceType.AllAttributes<IHasResponseFilter>());
+                attributes.AddRange(serviceType.AllAttributes().OfType<IHasResponseFilter>());
             }
 
             attributes.Sort((x, y) => x.Priority - y.Priority);

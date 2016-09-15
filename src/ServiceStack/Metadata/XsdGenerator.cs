@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 using System;
 using System.Collections.Generic;
 using ServiceStack.Host;
@@ -53,3 +55,5 @@ namespace ServiceStack.Metadata
         }
     }
 }
+
+#endif

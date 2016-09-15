@@ -312,7 +312,7 @@ namespace ServiceStack
         {
             var extendedCache = cache as ICacheClientExtended;
             if (extendedCache == null)
-                throw new NotFiniteNumberException("GetTimeToLive is not implemented by: " + cache.GetType().FullName);
+                throw new Exception("GetTimeToLive is not implemented by: " + cache.GetType().FullName);
 
             return extendedCache.GetTimeToLive(key);
         }

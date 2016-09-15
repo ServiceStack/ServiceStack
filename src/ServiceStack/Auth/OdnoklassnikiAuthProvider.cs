@@ -101,7 +101,7 @@ namespace ServiceStack.Auth
 
         protected virtual void RequestFilter(HttpWebRequest request)
         {
-            request.UserAgent = ServiceClientBase.DefaultUserAgent;
+            request.SetUserAgent(ServiceClientBase.DefaultUserAgent);
         }
 
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)

@@ -1,8 +1,9 @@
 ﻿using System;
-using System.CodeDom.Compiler;
+//using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using ServiceStack.Logging;
@@ -45,14 +46,14 @@ namespace ServiceStack.Support.Markdown
 		private IDictionary<string, Type> TypeProperties { get; set; }
 
         public static readonly List<Assembly> Assemblies = new List<Assembly> {
-            typeof(string).Assembly,       //"system.dll",
-            //			typeof(XmlDocument).Assembly,  //"system.xml.dll",
-            typeof(System.Web.HtmlString).Assembly, //"system.web.dll",
-            typeof(Expression).Assembly,   //"system.core.dll",
-            typeof(AppHostBase).Assembly,  //"ServiceStack.dll",
-            typeof(JsConfig).Assembly,     //"ServiceStack.Text.dll",
-            typeof(IService).Assembly,   //"ServiceStack.Interfaces.dll",
-            typeof(UrnId).Assembly, //"ServiceStack.Common.dll"
+            typeof(string).GetAssembly(),       //"system.dll",
+//			typeof(XmlDocument).GetAssembly(),  //"system.xml.dll",
+            typeof(System.Web.HtmlString).GetAssembly(), //"system.web.dll",
+            typeof(Expression).GetAssembly(),   //"system.core.dll",
+            typeof(AppHostBase).GetAssembly(),  //"ServiceStack.dll",
+            typeof(JsConfig).GetAssembly(),     //"ServiceStack.Text.dll",
+            typeof(IService).GetAssembly(),   //"ServiceStack.Interfaces.dll",
+            typeof(UrnId).GetAssembly(), //"ServiceStack.Common.dll"
         };
 
 	    public static readonly List<string> AssemblyNames = new List<string> {
@@ -80,7 +81,7 @@ namespace ServiceStack.Support.Markdown
             AssemblyNames.Add(assemblyName);
 
             try {
-                var assembly = Assembly.Load(assemblyName);
+                var assembly = Assembly.Load(new AssemblyName(assemblyName));
                 if (!Assemblies.Contains(assembly))
                     Assemblies.Add(assembly);
             } catch (System.IO.FileNotFoundException) {
@@ -99,6 +100,7 @@ namespace ServiceStack.Support.Markdown
 
         private static void FindNamespaceInLoadedAssemblies(string assemblyNamespace)
         {
+#if !NETSTANDARD1_6
             var assemblies = from assembly in AppDomain.CurrentDomain.GetAssemblies()
                              from type in assembly.GetTypes()
                              where type.Namespace == assemblyNamespace
@@ -108,6 +110,7 @@ namespace ServiceStack.Support.Markdown
                 if (!Assemblies.Contains(a))
                     Assemblies.Add(a);
             }
+#endif
         }
 
         public static Type FindType(string typeName)
@@ -180,7 +183,7 @@ namespace ServiceStack.Support.Markdown
 
 				if (type.HasGenericType()
 					//TODO: support GenericTypeDefinition properly
-					&& !type.IsGenericTypeDefinition
+					&& !type.IsGenericTypeDefinition()
 				)
 				{
 					var genericArgs = type.GetGenericArguments();
@@ -207,7 +210,10 @@ namespace ServiceStack.Support.Markdown
 
 		private static readonly bool IsVersion4AndUp = Type.GetType("System.Collections.Concurrent.Partitioner") != null;
         
-		private static void AddAssembly(CompilerParameters cp, string location)
+#if NETSTANDARD1_6
+		private void ConstructEvaluator(IEnumerable<EvaluatorItem> items) {}
+#else
+		private static void AddAssembly(System.CodeDom.Compiler.CompilerParameters cp, string location)
 		{
 			//Error if trying to re-add ref to mscorlib or System.Core for .NET 4.0
 			if (IsVersion4AndUp && 
@@ -218,12 +224,11 @@ namespace ServiceStack.Support.Markdown
 			cp.ReferencedAssemblies.Add(location);
 		}
 
-		private void ConstructEvaluator(IEnumerable<EvaluatorItem> items)
+        private void ConstructEvaluator(IEnumerable<EvaluatorItem> items)
 		{
-			//var codeCompiler = new CSharpCodeProvider(new Dictionary<string, string> { { "CompilerVersion", "v3.5" } });
-			var codeCompiler = CodeDomProvider.CreateProvider("CSharp");
+            var codeCompiler = System.CodeDom.Compiler.CodeDomProvider.CreateProvider("CSharp");
 
-			var cp = new CompilerParameters  //(new[] { "mscorlib.dll", "system.core.dll" })
+			var cp = new System.CodeDom.Compiler.CompilerParameters 
 			{
 				GenerateExecutable = false,
 				GenerateInMemory = true,
@@ -319,7 +324,7 @@ namespace CSharpEval
 			{
 				var error = StringBuilderCache.Allocate();
 				error.Append("Error Compiling Expression: ");
-				foreach (CompilerError err in compilerResults.Errors)
+				foreach (System.CodeDom.Compiler.CompilerError err in compilerResults.Errors)
 				{
 					error.AppendFormat("{0}\n", err.ErrorText);
 				}
@@ -332,7 +337,7 @@ namespace CSharpEval
 			compiledTypeCtorFn = ReflectionExtensions.GetConstructorMethodToCache(compiledType);
 		}
 
-		private static void ReferenceTypesIfNotExist(CompilerParameters cp, List<Assembly> assemblies, params Type[] paramTypes)
+		private static void ReferenceTypesIfNotExist(System.CodeDom.Compiler.CompilerParameters cp, List<Assembly> assemblies, params Type[] paramTypes)
 		{
 			foreach (var paramType in paramTypes)
 			{
@@ -344,7 +349,7 @@ namespace CSharpEval
 			}
 		}
 
-		private static void ReferenceAssembliesIfNotExists(CompilerParameters cp, Type paramType, List<Assembly> assemblies)
+		private static void ReferenceAssembliesIfNotExists(System.CodeDom.Compiler.CompilerParameters cp, Type paramType, List<Assembly> assemblies)
 		{
 			var typeAssemblies = new List<Assembly>();
 
@@ -366,8 +371,9 @@ namespace CSharpEval
 				AddAssembly(cp, assembly.Location);
 			}
 		}
+#endif
 
-		private void AddPropertiesToTypeIfAny(StringBuilder code)
+        private void AddPropertiesToTypeIfAny(StringBuilder code)
 		{
 			if (this.TypeProperties != null)
 			{

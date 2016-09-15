@@ -15,7 +15,7 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using static System.String;
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.HttpListener;
 #endif
@@ -115,7 +115,7 @@ namespace ServiceStack
 
         public static string GetUrlHostName(this IRequest httpReq)
         {
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
             var aspNetReq = httpReq as ServiceStack.Host.AspNet.AspNetRequest;
             if (aspNetReq != null)
             {
@@ -163,10 +163,15 @@ namespace ServiceStack
                 : virtualPath;
         }
 
+        public static string GetLeftAuthority(this Uri uri)
+        {
+            return $"{uri.Scheme}://{uri.Authority}";
+        }
+
         public static string GetApplicationUrl(this HttpRequestBase httpReq)
         {
             var appPath = httpReq.ApplicationPath.SanitizedVirtualPath();
-            var baseUrl = httpReq.Url.GetLeftPart(UriPartial.Authority);
+            var baseUrl = httpReq.Url.GetLeftAuthority();
             baseUrl = baseUrl.CombineWith(appPath, HostContext.Config.HandlerFactoryPath);
             return baseUrl;
         }
@@ -174,7 +179,7 @@ namespace ServiceStack
         public static string GetApplicationUrl(this IRequest httpReq)
         {
             var url = new Uri(httpReq.AbsoluteUri);
-            var baseUrl = url.GetLeftPart(UriPartial.Authority);
+            var baseUrl = url.GetLeftAuthority();
             var appUrl = baseUrl.CombineWith(HostContext.Config.HandlerFactoryPath);
             return appUrl;
         }
@@ -401,35 +406,22 @@ namespace ServiceStack
         {
             var rawUrl = request.RawUrl; // /Cambia3/Temp/Test.aspx/path/info
             var endpointsPath = rawUrl.Substring(0, rawUrl.LastIndexOf('/') + 1);  // /Cambia3/Temp/Test.aspx/path
-            return GetAuthority(request) + endpointsPath;
+            return request.Url.GetLeftAuthority() + endpointsPath;
         }
 
         public static string GetParentBaseUrl(this IRequest request)
         {
             var rawUrl = request.RawUrl;
             var endpointsPath = rawUrl.Substring(0, rawUrl.LastIndexOf('/') + 1);
-            return new Uri(request.AbsoluteUri).GetLeftPart(UriPartial.Authority) + endpointsPath;
+            return new Uri(request.AbsoluteUri).GetLeftAuthority() + endpointsPath;
         }
 
         public static string GetBaseUrl(this HttpRequestBase request)
         {
-            return GetAuthority(request) + request.RawUrl;
+            return request.Url.GetLeftAuthority() + request.RawUrl;
         }
 
-        //=> http://localhost:96 ?? ex=> http://localhost
-        private static string GetAuthority(HttpRequestBase request)
-        {
-            try
-            {
-                return request.Url.GetLeftPart(UriPartial.Authority);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error trying to get: request.Url.GetLeftPart(UriPartial.Authority): " + ex.Message, ex);
-                return "http://" + request.UserHostName;
-            }
-        }
-
+#if !NETSTANDARD1_6
         public static string GetOperationName(this HttpListenerRequest request)
         {
             return request.Url.Segments[request.Url.Segments.Length - 1];
@@ -439,6 +431,7 @@ namespace ServiceStack
         {
             return GetLastPathInfoFromRawUrl(request.RawUrl);
         }
+#endif
 
         public static string GetPathInfo(this HttpRequestBase request)
         {
@@ -818,7 +811,7 @@ namespace ServiceStack
             if (request.UserHostAddress != null)
             {
                 var isIpv4Address = request.UserHostAddress.IndexOf('.') != -1
-                    && request.UserHostAddress.IndexOf("::", StringComparison.InvariantCulture) == -1;
+                    && request.UserHostAddress.IndexOf("::", StringComparison.Ordinal) == -1;
 
                 string ipAddressNumber = null;
                 if (isIpv4Address)
@@ -833,7 +826,7 @@ namespace ServiceStack
                     }
                     else
                     {
-                        ipAddressNumber = request.UserHostAddress.LastIndexOf("%", StringComparison.InvariantCulture) > 0 ?
+                        ipAddressNumber = request.UserHostAddress.LastIndexOf("%", StringComparison.Ordinal) > 0 ?
                             request.UserHostAddress.LastLeftPart(":") :
                             request.UserHostAddress;
                     }
@@ -849,8 +842,8 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    throw new ArgumentException("Could not parse Ipv{0} Address: {1} / {2}"
-                        .Fmt((isIpv4Address ? 4 : 6), request.UserHostAddress, ipAddressNumber), ex);
+                    throw new ArgumentException(
+                        $"Could not parse Ipv{(isIpv4Address ? 4 : 6)} Address: {request.UserHostAddress} / {ipAddressNumber}", ex);
                 }
             }
 
@@ -896,7 +889,7 @@ namespace ServiceStack
             return false;
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
         public static HttpContextBase ToHttpContextBase(this HttpRequestBase aspnetHttpReq)
         {
             return aspnetHttpReq.RequestContext.HttpContext;
@@ -955,7 +948,7 @@ namespace ServiceStack
         {
             if (httpReq.OperationName == null)
             {
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
                 var aspReq = httpReq as AspNetRequest;
                 if (aspReq != null)
                 {

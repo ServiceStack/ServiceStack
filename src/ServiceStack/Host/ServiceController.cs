@@ -184,9 +184,9 @@ namespace ServiceStack.Host
         public static bool IsServiceType(Type serviceType)
         {
             return typeof(IService).IsAssignableFrom(serviceType)
-                && !serviceType.IsAbstract 
-                && !serviceType.IsGenericTypeDefinition 
-                && !serviceType.ContainsGenericParameters;
+                && !serviceType.IsAbstract() 
+                && !serviceType.IsGenericTypeDefinition() 
+                && !serviceType.ContainsGenericParameters();
         }
 
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();

@@ -11,7 +11,7 @@ namespace ServiceStack
         {
             var map = new Dictionary<string, string>
                 {
-                    {"CreatedDate",message.CreatedDate.ToLongDateString()},
+                    {"CreatedDate",message.CreatedDate.ToString("D")},
                     {"Priority",message.Priority.ToString(CultureInfo.InvariantCulture)},
                     {"RetryAttempts",message.RetryAttempts.ToString(CultureInfo.InvariantCulture)},
                     {"ReplyId",message.ReplyId?.ToString()},

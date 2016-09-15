@@ -118,7 +118,7 @@ namespace ServiceStack.Html
                 //Skip non-poco's, i.e. List
                 modelState = new ModelStateDictionary();
                 var modelType = model.GetType();
-                var listType = modelType.IsGenericType
+                var listType = modelType.IsGenericType()
                     ? modelType.GetTypeWithGenericInterfaceOf(typeof(IList<>))
                     : null;
                 if (listType != null || model.GetType().IsArray) return;
@@ -412,20 +412,25 @@ namespace ServiceStack.Html
 					return null;
 				}
 
-				// Second, we try to use PropertyDescriptors and treat the expression as a property name
-				var descriptor = TypeDescriptor.GetProperties(container).Find(propertyName, true);
-				if (descriptor == null)
-				{
-					return null;
-				}
+#if !NETSTANDARD1_6
+                // Second, we try to use PropertyDescriptors and treat the expression as a property name
+                var descriptor = TypeDescriptor.GetProperties(container).Find(propertyName, true);
+                if (descriptor == null)
+                {
+                    return null;
+                }
 
-				return new ViewDataInfo(() => descriptor.GetValue(container)) {
-					Container = container,
-					PropertyDescriptor = descriptor
-				};
-			}
+                return new ViewDataInfo(() => descriptor.GetValue(container))
+                {
+                    Container = container,
+                    PropertyDescriptor = descriptor
+                };
+#else
+                return null;
+#endif
+            }
 
-			private struct ExpressionPair
+            private struct ExpressionPair
 			{
 				public readonly string Left;
 				public readonly string Right;

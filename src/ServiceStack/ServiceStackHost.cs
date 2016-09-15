@@ -84,7 +84,7 @@ namespace ServiceStack
             OnEndRequestCallbacks = new List<Action<IRequest>>();
             RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
                  HttpHandlerFactory.ReturnRequestInfo,
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
                  ServiceStack.MiniProfiler.UI.MiniProfilerHandler.MatchesRequest,
 #endif
             };
@@ -141,7 +141,7 @@ namespace ServiceStack
             Config = HostConfig.ResetInstance();
             OnConfigLoad();
 
-            Config.DebugMode = GetType().Assembly.IsDebugBuild();
+            Config.DebugMode = GetType().GetAssembly().IsDebugBuild();
             if (Config.DebugMode)
             {
                 Plugins.Add(new RequestInfoFeature());
@@ -730,7 +730,7 @@ namespace ServiceStack
 
             var handlerPath = Config.HandlerFactoryPath;
 
-            return new Uri(httpReq.AbsoluteUri).GetLeftPart(UriPartial.Authority)
+            return new Uri(httpReq.AbsoluteUri).GetLeftAuthority()
                 .NormalizeScheme(useHttps)
                 .CombineWith(handlerPath)
                 .TrimEnd('/');

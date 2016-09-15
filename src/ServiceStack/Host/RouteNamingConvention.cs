@@ -45,7 +45,7 @@ namespace ServiceStack.Host
         {
             var membersWithName = (from property in requestType.GetPublicProperties().Select(p => p.Name)
                                    from name in PropertyNamesToMatch
-                                   where property.Equals(name, StringComparison.InvariantCultureIgnoreCase)
+                                   where property.Equals(name, StringComparison.OrdinalIgnoreCase)
                                    select $"{{{property}}}").ToList();
 
             if (membersWithName.Count == 0) return;

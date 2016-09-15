@@ -73,11 +73,11 @@ namespace ServiceStack.Validation
 
         public static void RegisterValidator(this Container container, Type validator, ReuseScope scope=ReuseScope.None)
         {
-            var baseType = validator.BaseType;
-            if (validator.IsInterface || baseType == null) return;
-            while (!baseType.IsGenericType)
+            var baseType = validator.BaseType();
+            if (validator.IsInterface() || baseType == null) return;
+            while (!baseType.IsGenericType())
             {
-                baseType = baseType.BaseType;
+                baseType = baseType.BaseType();
             }
 
             var dtoType = baseType.GetGenericArguments()[0];

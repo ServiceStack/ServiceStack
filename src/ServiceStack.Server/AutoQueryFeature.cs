@@ -203,7 +203,7 @@ namespace ServiceStack
         {
             var assemblyName = new AssemblyName { Name = "tmpAssembly" };
             var typeBuilder =
-                Thread.GetDomain().DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
+                AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
                 .DefineDynamicModule("tmpModule")
                 .DefineType("__AutoQueryServices",
                     TypeAttributes.Public | TypeAttributes.Class,
@@ -245,7 +245,7 @@ namespace ServiceStack
                 il.Emit(OpCodes.Ret);
             }
 
-            var servicesType = typeBuilder.CreateType();
+            var servicesType = typeBuilder.CreateTypeInfo().AsType();
             return servicesType;
         }
 

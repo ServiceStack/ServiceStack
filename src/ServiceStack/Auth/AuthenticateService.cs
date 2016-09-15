@@ -56,7 +56,7 @@ namespace ServiceStack.Auth
             foreach (var authConfig in AuthProviders)
             {
                 if (string.Compare(authConfig.Provider, provider,
-                    StringComparison.InvariantCultureIgnoreCase) == 0)
+                    StringComparison.OrdinalIgnoreCase) == 0)
                     return authConfig;
             }
 

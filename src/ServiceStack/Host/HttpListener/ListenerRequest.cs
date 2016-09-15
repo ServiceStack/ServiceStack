@@ -286,7 +286,7 @@ namespace ServiceStack.Host.HttpListener
         public static string GetHandlerPathIfAny(string listenerUrl)
         {
             if (listenerUrl == null) return null;
-            var pos = listenerUrl.IndexOf("://", StringComparison.InvariantCultureIgnoreCase);
+            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
             if (pos == -1) return null;
             var startHostUrl = listenerUrl.Substring(pos + "://".Length);
             var endPos = startHostUrl.IndexOf('/');
@@ -298,7 +298,7 @@ namespace ServiceStack.Host.HttpListener
         public static string NormalizePathInfo(string pathInfo, string handlerPath)
         {
             if (handlerPath != null && pathInfo.TrimStart('/').StartsWith(
-                handlerPath, StringComparison.InvariantCultureIgnoreCase))
+                handlerPath, StringComparison.OrdinalIgnoreCase))
             {
                 return pathInfo.TrimStart('/').Substring(handlerPath.Length);
             }

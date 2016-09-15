@@ -40,7 +40,7 @@ namespace ServiceStack.FluentValidation.Resources
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ServiceStack.FluentValidation.Resources.Messages", typeof(Messages).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ServiceStack.FluentValidation.Resources.Messages", typeof(Messages).GetAssembly());
                     resourceMan = temp;
                 }
                 return resourceMan;

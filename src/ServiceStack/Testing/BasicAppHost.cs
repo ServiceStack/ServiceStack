@@ -10,7 +10,14 @@ namespace ServiceStack.Testing
     {
         public BasicAppHost(params Assembly[] serviceAssemblies)
             : base(typeof (BasicAppHost).GetOperationName(),
-                   serviceAssemblies.Length > 0 ? serviceAssemblies : new[] {Assembly.GetExecutingAssembly()})
+                   serviceAssemblies.Length > 0 ? serviceAssemblies : new[]
+                   {
+#if !NETSTANDARD1_6
+                       Assembly.GetExecutingAssembly()
+#else
+                       typeof(BasicAppHost).GetTypeInfo().Assembly
+#endif
+                   })
         {
             this.ExcludeAutoRegisteringServiceTypes = new HashSet<Type>();
             this.TestMode = true;

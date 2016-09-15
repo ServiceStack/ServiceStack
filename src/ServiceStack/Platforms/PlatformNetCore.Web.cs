@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD1_3
+﻿#if NETSTANDARD1_6
 
 using System.CodeDom.Compiler;
 using System.Collections;
@@ -8,7 +8,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Security.Permissions;
 using System.Security.Principal;
 using ServiceStack;
 
@@ -131,7 +130,6 @@ namespace System.Web
         public HttpException() { }
         public HttpException(string message) : base(message) { }
         public HttpException(string message, Exception innerException) : base(message, innerException) { }
-        protected HttpException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
         public int StatusCode { get; }
 
@@ -163,37 +161,6 @@ namespace System.Web
     {
         public static string ToAbsolute(string path) => path;
         public static string ToAppRelative(string path) => path;
-    }
-
-    public sealed class HttpCompileException : HttpException
-    {
-        CompilerResults results;
-        string sourceCode;
-
-        public HttpCompileException() {}
-
-        public HttpCompileException(string message)
-            : base(message) {}
-
-        public HttpCompileException(string message, Exception innerException)
-            : base(message, innerException) {}
-
-        public HttpCompileException(CompilerResults results, string sourceCode)
-        {
-            this.results = results;
-            this.sourceCode = sourceCode;
-        }
-
-        public CompilerResults Results => results;
-
-        public string SourceCode => sourceCode;
-
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-            sourceCode = info.GetString("sourcecode");
-            results = (CompilerResults)info.GetValue("results", typeof(CompilerResults));
-        }
     }
 }
 
@@ -361,14 +328,18 @@ namespace System.Web.UI
             Type t = container.GetType();
 
             // MS does not seem to look for any other than "Item"!!!
-            object[] atts = t.GetCustomAttributes(typeof(DefaultMemberAttribute), false);
+            object[] atts = t.AllAttributes<DefaultMemberAttribute>();
             if (atts.Length != 1)
                 property = "Item";
             else
                 property = ((DefaultMemberAttribute)atts[0]).MemberName;
 
             Type[] argTypes = new Type[] { (is_string) ? typeof(string) : typeof(int) };
+#if !NETSTANDARD1_6
             PropertyInfo prop = t.GetProperty(property, argTypes);
+#else
+            PropertyInfo prop = t.GetTypeInfo().GetProperty(property, argTypes);
+#endif
             if (prop == null)
                 throw new ArgumentException(expr + " indexer not found.");
 
@@ -394,13 +365,16 @@ namespace System.Web.UI
             if (propName == null || propName.Length == 0)
                 throw new ArgumentNullException("propName");
 
+#if !NETSTANDARD1_6
             PropertyDescriptor prop = TypeDescriptor.GetProperties(container).Find(propName, true);
+#else
+            PropertyInfo prop = container.GetType().GetPropertyInfo(propName);            
+#endif
             if (prop == null)
             {
                 throw new HttpException("Property " + propName + " not found in " +
                              container.GetType());
             }
-
             return prop.GetValue(container);
         }
 

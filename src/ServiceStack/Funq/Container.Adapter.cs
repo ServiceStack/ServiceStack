@@ -154,7 +154,7 @@ namespace Funq
         private static bool IsPublicWritableUserPropertyType(PropertyInfo pi)
         {
             return pi.CanWrite
-                && !pi.PropertyType.IsValueType
+                && !pi.PropertyType.IsValueType()
                 && pi.PropertyType != typeof(string)
                 && !IgnorePropertyTypeFullNames.Contains(pi.PropertyType.FullName);
         }

@@ -5,7 +5,9 @@ using System.Globalization;
 
 namespace ServiceStack.Html
 {
-	[Serializable]
+#if !NETSTANDARD1_6
+    [Serializable]
+#endif
 	public class ValueProviderResult
 	{
 		private static readonly CultureInfo _staticCulture = CultureInfo.InvariantCulture;
@@ -51,7 +53,7 @@ namespace ServiceStack.Html
 
 		private static object ConvertSimpleType(CultureInfo culture, object value, Type destinationType)
 		{
-			if (value == null || destinationType.IsInstanceOfType(value))
+			if (value == null || destinationType.InstanceOfType(value))
 			{
 				return value;
 			}
@@ -63,6 +65,7 @@ namespace ServiceStack.Html
 				return null;
 			}
 
+#if !NETSTANDARD1_6
 			TypeConverter converter = TypeDescriptor.GetConverter(destinationType);
 			bool canConvertFrom = converter.CanConvertFrom(value.GetType());
 			if (!canConvertFrom)
@@ -89,9 +92,13 @@ namespace ServiceStack.Html
 					value.GetType().FullName, destinationType.FullName);
 				throw new InvalidOperationException(message, ex);
 			}
-		}
+#else
+		    return value.ConvertTo(destinationType);			
+#endif
 
-		public object ConvertTo(Type type)
+        }
+
+        public object ConvertTo(Type type)
 		{
 			return ConvertTo(type, null /* culture */);
 		}
@@ -109,7 +116,7 @@ namespace ServiceStack.Html
 
 		private static object UnwrapPossibleArrayType(CultureInfo culture, object value, Type destinationType)
 		{
-			if (value == null || destinationType.IsInstanceOfType(value))
+			if (value == null || destinationType.InstanceOfType(value))
 			{
 				return value;
 			}

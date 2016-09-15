@@ -24,7 +24,7 @@ namespace ServiceStack.FluentValidation.Results
     using System.Collections.Generic;
     using System.Linq;
 
-#if !SL5
+#if !(SL5 || NETSTANDARD1_6)
     [Serializable]
 #endif
     public class ValidationResult

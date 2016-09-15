@@ -211,7 +211,7 @@ namespace ServiceStack.Host.Handlers
             if (HostContext.IsAspNetHost)
             {
                 var aspReq = (HttpRequestBase)httpReq.OriginalRequest;
-                response.GetLeftPath = aspReq.Url.GetLeftPart(UriPartial.Authority);
+                response.GetLeftPath = aspReq.Url.GetLeftAuthority();
                 response.Path = aspReq.Path;
                 response.UserHostAddress = aspReq.UserHostAddress;
                 response.ApplicationPath = aspReq.ApplicationPath;

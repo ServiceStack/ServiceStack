@@ -25,16 +25,10 @@ namespace ServiceStack.Support.Markdown
 
 		private static Expression CallConvertToString(Expression body)
 		{
-			var method = typeof(Convert).GetMethod("ToString",
-				BindingFlags.Static | BindingFlags.Public,
-				null, new[] { body.Type }, null);
-			
+			var method = typeof(Convert).GetStaticMethod("ToString", new[] { body.Type });
 			if (method == null)
 			{
-				method = typeof(Convert).GetMethod("ToString",
-					BindingFlags.Static | BindingFlags.Public,
-					null, new[] { typeof(object) }, null);
-
+				method = typeof(Convert).GetStaticMethod("ToString", new[] { typeof(object) });
 				body = Expression.Call(method, Expression.Convert(body, typeof(object)));
 			}
 			else

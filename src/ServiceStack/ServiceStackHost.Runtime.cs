@@ -283,7 +283,7 @@ namespace ServiceStack
                 if (res.IsClosed) return;
             }
 
-            var dtoInterfaces = dtoType.GetInterfaces();
+            var dtoInterfaces = dtoType.GetTypeInterfaces();
             foreach (var dtoInterface in dtoInterfaces)
             {
                 typedFilters.TryGetValue(dtoInterface, out typedFilter);

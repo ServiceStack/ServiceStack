@@ -273,7 +273,7 @@ namespace ServiceStack
                     if (ms != null)
                     {
                         var bytes = ms.ToArray();
-                        response.SetContentLength(bytes.LongLength + paddingLength);
+                        response.SetContentLength(bytes.Length + paddingLength);
 
                         responseStream.Write(bytes, 0, bytes.Length);
                         return;
@@ -287,7 +287,7 @@ namespace ServiceStack
             if (this.ResponseText != null)
             {
                 var bytes = Encoding.UTF8.GetBytes(this.ResponseText);
-                response?.SetContentLength(bytes.LongLength + paddingLength);
+                response?.SetContentLength(bytes.Length + paddingLength);
 
                 responseStream.Write(bytes, 0, bytes.Length);
                 return;
@@ -301,7 +301,7 @@ namespace ServiceStack
             var bytesResponse = this.Response as byte[];
             if (bytesResponse != null)
             {
-                response?.SetContentLength(bytesResponse.LongLength + paddingLength);
+                response?.SetContentLength(bytesResponse.Length + paddingLength);
 
                 responseStream.Write(bytesResponse, 0, bytesResponse.Length);
                 return;

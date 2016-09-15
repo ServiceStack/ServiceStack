@@ -474,7 +474,7 @@ namespace ServiceStack.Auth
                 {
                     var userAuthId = long.Parse(apiKey.UserAuthId);
                     redis.Store(apiKey);
-                    redis.AddItemToSet(IndexUserAuthAndApiKeyIdsSet(userAuthId), apiKey.Id.ToString(CultureInfo.InvariantCulture));
+                    redis.AddItemToSet(IndexUserAuthAndApiKeyIdsSet(userAuthId), apiKey.Id.ToString());
                 }
             }
         }
