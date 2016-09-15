@@ -631,21 +631,21 @@ namespace ServiceStack
             return InternalStop();
         }
 
-        public virtual async Task InternalStop()
+        public virtual Task InternalStop()
         {
             if (log.IsDebugEnabled)
                 log.Debug("Stop()");
 
             cancel?.Cancel();
 
+            Task task = TypeConstants.EmptyTask;
+
             if (ConnectionInfo?.UnRegisterUrl != null)
             {
                 EnsureSynchronizationContext();
-                try
-                {
-                    await ConnectionInfo.UnRegisterUrl.GetStringFromUrlAsync();
-                }
-                catch (Exception ignore) {}
+                task = ConnectionInfo.UnRegisterUrl.GetStringFromUrlAsync()
+                        .Error(ex => { /*ignore*/});
+                task.Wait();
             }
 
             using (response)
@@ -655,6 +655,8 @@ namespace ServiceStack
 
             ConnectionInfo = null;
             httpReq = null;
+
+            return task;
         }
 
         public void Update(string[] subscribe = null, string[] unsubscribe = null)
