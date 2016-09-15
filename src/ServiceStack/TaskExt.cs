@@ -33,7 +33,11 @@ namespace ServiceStack
             {
                 task.Wait();
 
-                var fn = task.GetType().GetFastGetter("Result");
+                var taskType = task.GetType();
+                if (!taskType.IsGenericType() || taskType.FullName.Contains("VoidTaskResult"))
+                    return null;
+
+                var fn = taskType.GetFastGetter("Result");
                 return fn?.Invoke(task);
             }
             catch (TypeAccessException)
