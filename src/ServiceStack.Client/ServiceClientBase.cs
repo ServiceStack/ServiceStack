@@ -1961,6 +1961,15 @@ namespace ServiceStack
 
             client.SetCookie("ss-tok", token, expiresIn: TimeSpan.FromDays(365 * 20));
         }
+
+        public static void SetUserAgent(this HttpWebRequest req, string userAgent)
+        {
+#if !(PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+            req.UserAgent = userAgent;
+#else
+            req.Headers[HttpRequestHeader.UserAgent] = userAgent;
+#endif
+        }
     }
 
     public interface IHasCookieContainer

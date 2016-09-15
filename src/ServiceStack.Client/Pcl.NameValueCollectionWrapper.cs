@@ -32,9 +32,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
-#if PCL || SL5 || NETSTANDARD1_1 || NETSTANDARD1_6
+#if PCL || SL5 || NETSTANDARD1_1
 using ServiceStack.Pcl;
 #else
 using System.Collections.Specialized;
@@ -314,5 +315,26 @@ namespace ServiceStack
             }
             return nameValues;
         }
+
+        public static string ToFormUrlEncoded(this NameValueCollection queryParams)
+        {
+            var sb = StringBuilderCache.Allocate();
+            foreach (string key in queryParams)
+            {
+                var values = queryParams.GetValues(key);
+                if (values == null) continue;
+
+                foreach (var value in values)
+                {
+                    if (sb.Length > 0)
+                        sb.Append('&');
+
+                    sb.Append($"{key.UrlEncode()}={value.UrlEncode()}");
+                }
+            }
+
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
     }
 }

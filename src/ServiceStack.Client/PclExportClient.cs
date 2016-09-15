@@ -37,7 +37,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 
-#if NETFX_CORE || PCL || SL5 || NETSTANDARD1_1 || NETSTANDARD1_6
+#if NETFX_CORE || PCL || SL5 || NETSTANDARD1_1 
 //namespace System.Collections.Specialized
 namespace ServiceStack.Pcl
 {
@@ -1123,7 +1123,6 @@ namespace ServiceStack.Pcl
             AddValue(name, value, typeof(System.Int16));
         }
 
-        [CLSCompliant(false)]
         public void AddValue(string name, UInt16 value)
         {
             AddValue(name, value, typeof(System.UInt16));
@@ -1149,7 +1148,6 @@ namespace ServiceStack.Pcl
             AddValue(name, value, typeof(System.Char));
         }
 
-        [CLSCompliant(false)]
         public void AddValue(string name, SByte value)
         {
             AddValue(name, value, typeof(System.SByte));
@@ -1175,7 +1173,6 @@ namespace ServiceStack.Pcl
             AddValue(name, value, typeof(System.Single));
         }
 
-        [CLSCompliant(false)]
         public void AddValue(string name, UInt32 value)
         {
             AddValue(name, value, typeof(System.UInt32));
@@ -1186,7 +1183,6 @@ namespace ServiceStack.Pcl
             AddValue(name, value, typeof(System.Int64));
         }
 
-        [CLSCompliant(false)]
         public void AddValue(string name, UInt64 value)
         {
             AddValue(name, value, typeof(System.UInt64));
@@ -1254,7 +1250,6 @@ namespace ServiceStack.Pcl
             return converter.ToInt64(value);
         }
 
-        [CLSCompliant(false)]
         public SByte GetSByte(string name)
         {
             object value = GetValue(name, typeof(System.SByte));
@@ -1274,20 +1269,17 @@ namespace ServiceStack.Pcl
             return converter.ToString(value);
         }
 
-        [CLSCompliant(false)]
         public UInt16 GetUInt16(string name)
         {
             object value = GetValue(name, typeof(System.UInt16));
             return converter.ToUInt16(value);
         }
 
-        [CLSCompliant(false)]
         public UInt32 GetUInt32(string name)
         {
             object value = GetValue(name, typeof(System.UInt32));
             return converter.ToUInt32(value);
         }
-        [CLSCompliant(false)]
         public UInt64 GetUInt64(string name)
         {
             object value = GetValue(name, typeof(System.UInt64));
@@ -1515,7 +1507,6 @@ namespace ServiceStack.Pcl
             return System.Convert.ToString(value);
         }
 
-        [CLSCompliant(false)]
         public sbyte ToSByte(object value)
         {
             if (value == null)
@@ -1524,7 +1515,6 @@ namespace ServiceStack.Pcl
             return System.Convert.ToSByte(value);
         }
 
-        [CLSCompliant(false)]
         public ushort ToUInt16(object value)
         {
             if (value == null)
@@ -1533,7 +1523,6 @@ namespace ServiceStack.Pcl
             return System.Convert.ToUInt16(value);
         }
 
-        [CLSCompliant(false)]
         public uint ToUInt32(object value)
         {
             if (value == null)
@@ -1542,7 +1531,6 @@ namespace ServiceStack.Pcl
             return System.Convert.ToUInt32(value);
         }
 
-        [CLSCompliant(false)]
         public ulong ToUInt64(object value)
         {
             if (value == null)
