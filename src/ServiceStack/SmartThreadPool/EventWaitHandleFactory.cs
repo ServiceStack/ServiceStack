@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 using System.Threading;
 
 #if (_WINDOWS_CE)
@@ -80,3 +82,5 @@ namespace Amib.Threading.Internal
 
     }
 }
+
+#endif

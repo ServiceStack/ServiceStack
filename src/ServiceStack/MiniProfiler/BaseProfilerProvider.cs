@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NETSTANDARD1_6
+
+using System;
 
 namespace ServiceStack.MiniProfiler
 {
@@ -74,3 +76,5 @@ namespace ServiceStack.MiniProfiler
         }
     }
 }
+
+#endif

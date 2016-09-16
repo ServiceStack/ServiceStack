@@ -146,24 +146,24 @@ namespace ServiceStack.Auth
 
             var signatureHeaders = new Dictionary<string, string>(headers);
 
-            var nvc = HttpUtility.ParseQueryString(uri.Query);
+            var nvc = PclExportClient.Instance.ParseQueryString(uri.Query);
             foreach (string key in nvc)
             {
                 if (key != null)
                     signatureHeaders.Add(key, OAuthUtils.PercentEncode(nvc[key]));
             }
 
-            string signature = MakeSignature("POST", uri.GetLeftPart(UriPartial.Path), signatureHeaders);
+            string signature = MakeSignature("POST", uri.AbsoluteUri.LeftPart('?'), signatureHeaders);
             string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, null);
             string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
-            var wc = new WebClient();
-            headers.Add("oauth_signature", OAuthUtils.PercentEncode(oauth_signature));
-            wc.Headers[HttpRequestHeader.Authorization] = HeadersToOAuth(headers);
-
             try
             {
-                var result = HttpUtility.ParseQueryString(wc.UploadString(new Uri(provider.RequestTokenUrl), ""));
+                var strResponse = provider.RequestTokenUrl.PostStringToUrl("", requestFilter: req => {
+                    req.Headers["oauth_signature"] = OAuthUtils.PercentEncode(oauth_signature);
+                    req.Headers[HttpRequestHeader.Authorization] = HeadersToOAuth(headers);
+                });
+                var result = PclExportClient.Instance.ParseQueryString(strResponse);
 
                 if (result["oauth_callback_confirmed"] != null)
                 {
@@ -213,7 +213,6 @@ namespace ServiceStack.Auth
             string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, RequestTokenSecret);
             string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
-            var wc = new WebClient();
             headers.Add("oauth_signature", OAuthUtils.PercentEncode(oauth_signature));
             if (xAuthUsername != null)
             {
@@ -221,12 +220,16 @@ namespace ServiceStack.Auth
                 headers.Remove("x_auth_password");
                 headers.Remove("x_auth_mode");
             }
-            wc.Headers[HttpRequestHeader.Authorization] = HeadersToOAuth(headers);
 
             try
             {
-                var result = HttpUtility.ParseQueryString(wc.UploadString(new Uri(provider.AccessTokenUrl), content));
+                var strResponse = provider.AccessTokenUrl.PostStringToUrl(content, 
+                    contentType: MimeTypes.FormUrlEncoded,
+                    requestFilter: req => {
+                        req.Headers[HttpRequestHeader.Authorization] = HeadersToOAuth(headers);
+                    });
 
+                var result = PclExportClient.Instance.ParseQueryString(strResponse);
                 if (result["oauth_token"] != null)
                 {
                     AccessToken = result["oauth_token"];
@@ -265,21 +268,21 @@ namespace ServiceStack.Auth
             // Add the data and URL query string to the copy of the headers for computing the signature
             if (!string.IsNullOrEmpty(data))
             {
-                var parsed = HttpUtility.ParseQueryString(data);
-                foreach (string k in parsed.Keys)
+                var parsed = PclExportClient.Instance.ParseQueryString(data);
+                foreach (string k in parsed)
                 {
                     signatureHeaders.Add(k, OAuthUtils.PercentEncode(parsed[k]));
                 }
             }
 
-            var nvc = HttpUtility.ParseQueryString(uri.Query);
+            var nvc = PclExportClient.Instance.ParseQueryString(uri.Query);
             foreach (string key in nvc)
             {
                 if (key != null)
                     signatureHeaders.Add(key, OAuthUtils.PercentEncode(nvc[key]));
             }
 
-            string signature = MakeSignature(method, uri.GetLeftPart(UriPartial.Path), signatureHeaders);
+            string signature = MakeSignature(method, uri.AbsoluteUri.LeftPart('?'), signatureHeaders);
             string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, oauthTokenSecret);
             string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
@@ -311,8 +314,8 @@ namespace ServiceStack.Auth
             headers.Add("oauth_signature", OAuthUtils.PercentEncode(oauth_signature));
 
             //Util.Log ("Headers: " + HeadersToOAuth (headers));
-            wc.Headers.Add("X-Verify-Credentials-Authorization", HeadersToOAuth(headers));
-            wc.Headers.Add("X-Auth-Service-Provider", signurl);
+            wc.Headers["X-Verify-Credentials-Authorization"] = HeadersToOAuth(headers);
+            wc.Headers["X-Auth-Service-Provider"] = signurl;
         }
     }
 

@@ -382,13 +382,12 @@ namespace ServiceStack.Auth
                     }
 
                     JsonObject jwtPayload;
-                    using (var aes = new AesManaged
-                    {
-                        KeySize = 128,
-                        BlockSize = 128,
-                        Mode = CipherMode.CBC,
-                        Padding = PaddingMode.PKCS7
-                    })
+                    var aes = Aes.Create();
+                    aes.KeySize = 128;
+                    aes.BlockSize = 128;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+                    using (aes)
                     using (var decryptor = aes.CreateDecryptor(cryptKey, iv))
                     using (var ms = MemoryStreamFactory.GetStream(cipherText))
                     using (var cryptStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))

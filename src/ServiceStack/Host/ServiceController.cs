@@ -184,9 +184,9 @@ namespace ServiceStack.Host
         public static bool IsServiceType(Type serviceType)
         {
             return typeof(IService).IsAssignableFrom(serviceType)
-                && !serviceType.IsAbstract 
-                && !serviceType.IsGenericTypeDefinition 
-                && !serviceType.ContainsGenericParameters;
+                && !serviceType.IsAbstract() 
+                && !serviceType.IsGenericTypeDefinition() 
+                && !serviceType.ContainsGenericParameters();
         }
 
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
@@ -463,7 +463,6 @@ namespace ServiceStack.Host
             var taskResponse = response as Task;
             if (taskResponse != null)
             {
-                taskResponse.Wait();
                 response = taskResponse.GetResult();
             }
 
@@ -498,7 +497,15 @@ namespace ServiceStack.Host
                 return req.Response.Dto;
 
             var response = Execute(dto.Body, req);
-            response = ApplyResponseFilters(response, req);
+
+            var taskResponse = response as Task;
+            if (taskResponse != null)
+                response = taskResponse.GetResult();
+
+            response = appHost.ApplyResponseConverters(req, response);
+
+            if (appHost.ApplyMessageResponseFilters(req, req.Response, response))
+                response = req.Response.Dto;
 
             req.Response.EndMqRequest();
 

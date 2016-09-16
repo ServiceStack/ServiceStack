@@ -6,8 +6,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using ServiceStack.Host.AspNet;
-using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 
@@ -19,11 +17,12 @@ namespace ServiceStack.Host.Handlers
 
         public string RequestName { get; set; }
 
+        public virtual bool RunAsAsync() => false;
+
+#if !NETSTANDARD1_6
         protected static bool DefaultHandledRequest(HttpListenerContext context) => false;
 
         protected static bool DefaultHandledRequest(HttpContextBase context) => false;
-
-        public virtual bool RunAsAsync() => false;
 
         public virtual Task ProcessRequestAsync(HttpContextBase context)
         {
@@ -35,28 +34,33 @@ namespace ServiceStack.Host.Handlers
 
             if (DefaultHandledRequest(context)) return TypeConstants.EmptyTask;
 
-            var httpReq = new AspNetRequest(context, operationName);
+            var httpReq = new ServiceStack.Host.AspNet.AspNetRequest(context, operationName);
 
             if (RunAsAsync())
                 return ProcessRequestAsync(httpReq, httpReq.Response, operationName);
 
             return CreateProcessRequestTask(httpReq, httpReq.Response, operationName);
         }
+#endif
 
         protected virtual Task CreateProcessRequestTask(IRequest httpReq, IResponse httpRes, string operationName)
         {
+#if !NETSTANDARD1_6
             var currentCulture = Thread.CurrentThread.CurrentCulture;
             var currentUiCulture = Thread.CurrentThread.CurrentUICulture;
             var ctx = HttpContext.Current;
+#endif
 
             //preserve Current Culture:
             return new Task(() =>
             {
+#if !NETSTANDARD1_6
                 Thread.CurrentThread.CurrentCulture = currentCulture;
                 Thread.CurrentThread.CurrentUICulture = currentUiCulture;
                 //HttpContext is not preserved in ThreadPool threads: http://stackoverflow.com/a/13558065/85785
                 if (HttpContext.Current == null)
                     HttpContext.Current = ctx;
+#endif
 
                 ProcessRequest(httpReq, httpRes, operationName);
             });
@@ -87,6 +91,7 @@ namespace ServiceStack.Host.Handlers
             return task;
         }
 
+#if !NETSTANDARD1_6
         public virtual void ProcessRequest(HttpContextBase context)
         {
             var operationName = this.RequestName ?? context.Request.GetOperationName();
@@ -95,7 +100,7 @@ namespace ServiceStack.Host.Handlers
 
             if (DefaultHandledRequest(context)) return;
 
-            var httpReq = new AspNetRequest(context, operationName);
+            var httpReq = new ServiceStack.Host.AspNet.AspNetRequest(context, operationName);
 
             ProcessRequest(httpReq, httpReq.Response, operationName);
         }
@@ -110,12 +115,10 @@ namespace ServiceStack.Host.Handlers
 
             if (DefaultHandledRequest(context)) return;
 
-            var httpReq = ((HttpListenerBase)ServiceStackHost.Instance).CreateRequest(context, operationName);
+            var httpReq = ((HttpListener.HttpListenerBase)ServiceStackHost.Instance).CreateRequest(context, operationName);
 
             ProcessRequest(httpReq, httpReq.Response, operationName);
         }
-
-        public virtual bool IsReusable => false;
 
         IAsyncResult IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData)
         {
@@ -144,6 +147,8 @@ namespace ServiceStack.Host.Handlers
             // http://bradwilson.typepad.com/blog/2012/04/tpl-and-servers-pt4.html
             //task.Dispose();
         }
+#endif
+        public virtual bool IsReusable => false;
 
         protected Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
@@ -170,6 +175,7 @@ namespace ServiceStack.Host.Handlers
 
         void IHttpHandler.ProcessRequest(HttpContext context)
         {
+#if !NETSTANDARD1_6
             var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
 
             if (task.Status == TaskStatus.Created)
@@ -180,6 +186,9 @@ namespace ServiceStack.Host.Handlers
             {
                 task.Wait();
             }
+#else
+            throw new NotImplementedException();
+#endif
         }
     }
 }

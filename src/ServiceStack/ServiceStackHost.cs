@@ -21,7 +21,6 @@ using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Metadata;
-using ServiceStack.MiniProfiler.UI;
 using ServiceStack.NativeTypes;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
@@ -85,7 +84,9 @@ namespace ServiceStack
             OnEndRequestCallbacks = new List<Action<IRequest>>();
             RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
                  HttpHandlerFactory.ReturnRequestInfo,
-                 MiniProfilerHandler.MatchesRequest,
+#if !NETSTANDARD1_6
+                 ServiceStack.MiniProfiler.UI.MiniProfilerHandler.MatchesRequest,
+#endif
             };
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
             CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHandler> {
@@ -140,7 +141,7 @@ namespace ServiceStack
             Config = HostConfig.ResetInstance();
             OnConfigLoad();
 
-            Config.DebugMode = GetType().Assembly.IsDebugBuild();
+            Config.DebugMode = GetType().GetAssembly().IsDebugBuild();
             if (Config.DebugMode)
             {
                 Plugins.Add(new RequestInfoFeature());
@@ -714,6 +715,25 @@ namespace ServiceStack
         public virtual bool UseHttps(IRequest httpReq)
         {
             return Config.UseHttpsLinks || httpReq.GetHeader(HttpHeaders.XForwardedProtocol) == "https";
+        }
+
+        public virtual string GetBaseUrl(IRequest httpReq)
+        {
+            var useHttps = UseHttps(httpReq);
+            var baseUrl = HttpHandlerFactory.GetBaseUrl();
+            if (baseUrl != null)
+                return baseUrl.NormalizeScheme(useHttps);
+
+            baseUrl = httpReq.AbsoluteUri.InferBaseUrl(fromPathInfo: httpReq.PathInfo);
+            if (baseUrl != null)
+                return baseUrl.NormalizeScheme(useHttps);
+
+            var handlerPath = Config.HandlerFactoryPath;
+
+            return new Uri(httpReq.AbsoluteUri).GetLeftAuthority()
+                .NormalizeScheme(useHttps)
+                .CombineWith(handlerPath)
+                .TrimEnd('/');
         }
 
         public virtual string ResolvePhysicalPath(string virtualPath, IRequest httpReq)

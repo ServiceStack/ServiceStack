@@ -22,11 +22,15 @@ namespace ServiceStack.Metadata
 
         public override void Execute(HttpContextBase context)
         {
+#if !NETSTANDARD1_6
             var writer = new HtmlTextWriter(context.Response.Output);
             context.Response.ContentType = "text/html; charset=utf-8";
 
             var request = context.ToRequest();
             ProcessOperations(writer, request, request.Response);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
@@ -54,7 +58,7 @@ namespace ServiceStack.Metadata
                 return "(Stream)";
             if (type == typeof(HttpWebResponse))
                 return "(HttpWebResponse)";
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+            if (type.IsGenericType() && type.GetGenericTypeDefinition() == typeof(Task<>))
                 type = type.GetGenericArguments()[0]; 
 
             return CreateMessage(type);

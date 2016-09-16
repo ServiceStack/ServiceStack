@@ -95,7 +95,7 @@ namespace ServiceStack.FluentValidation
                 Request = context.Request;
 
             var failures = nestedValidators.SelectMany(x => x.Validate(context)).ToList();
-            return new ValidationResult(failures);
+            return new ValidationResult(failures) { Request = Request };
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace ServiceStack.FluentValidation
         }
 
         bool IValidator.CanValidateInstancesOfType(Type type) {
-            return typeof(T).IsAssignableFrom(type);
+            return typeof(T).IsAssignableFromType(type);
         }
 
         /// <summary>

@@ -202,7 +202,7 @@ namespace ServiceStack.Api.Swagger
             var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
-            var basePath = base.Request.ResolveBaseUrl();
+            var basePath = base.Request.GetBaseUrl();
 
             var meta = HostContext.Metadata;
             foreach (var key in map.Keys)
@@ -603,7 +603,7 @@ namespace ServiceStack.Api.Swagger
                     var apiMembers = paramAttrs[key];
                     foreach (var member in apiMembers)
                     {
-                        if ((member.Verb == null || string.Compare(member.Verb, verb, StringComparison.InvariantCultureIgnoreCase) == 0)
+                        if ((member.Verb == null || string.Compare(member.Verb, verb, StringComparison.OrdinalIgnoreCase) == 0)
                             && (member.Route == null || (route ?? "").StartsWith(member.Route))
                             && !string.Equals(member.ParameterType, "model")
                             && methodOperationParameters.All(x => x.Name != (member.Name ?? key)))

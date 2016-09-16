@@ -55,7 +55,7 @@ namespace ServiceStack
                     bodyPadding += bodySuffix.Length;
 
                 response.ContentType = MimeTypes.Binary;
-                response.SetContentLength(bytes.LongLength + bodyPadding);
+                response.SetContentLength(bytes.Length + bodyPadding);
 
                 if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
                 response.OutputStream.Write(bytes, 0, bytes.Length);
@@ -221,7 +221,7 @@ namespace ServiceStack
                     {
                         response.ContentType = defaultContentType;
                     }
-                    if (bodyPrefix != null && response.ContentType.IndexOf(MimeTypes.Json, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    if (bodyPrefix != null && response.ContentType.IndexOf(MimeTypes.Json, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         response.ContentType = MimeTypes.JavaScript;
                     }
@@ -411,6 +411,7 @@ namespace ServiceStack
             // (for example, so people can fix errors in their pages).
             if (HostContext.DebugMode)
             {
+#if !NETSTANDARD1_6
                 var compileEx = ex as HttpCompileException;
                 if (compileEx != null && compileEx.Results.Errors.HasErrors)
                 {
@@ -420,6 +421,7 @@ namespace ServiceStack
                         errors.Add(new ResponseError { Message = err.ToString() });
                     }
                 }
+#endif
             }
 
             var dto = new ErrorResponse
@@ -445,6 +447,7 @@ namespace ServiceStack
             return false;
         }
 
+#if !NETSTANDARD1_6
         public static void ApplyGlobalResponseHeaders(this HttpListenerResponse httpRes)
         {
             if (HostContext.Config == null) return;
@@ -462,6 +465,7 @@ namespace ServiceStack
                 httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
             }
         }
+#endif
 
         public static void ApplyGlobalResponseHeaders(this IResponse httpRes)
         {

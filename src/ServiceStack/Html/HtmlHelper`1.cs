@@ -1,4 +1,6 @@
 ﻿
+#if !NETSTANDARD1_6
+
 namespace ServiceStack.Html
 {
 	public class HtmlHelper<TModel> : HtmlHelper
@@ -15,3 +17,5 @@ namespace ServiceStack.Html
 		}
 	}
 }
+
+#endif

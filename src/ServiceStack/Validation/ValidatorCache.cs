@@ -21,7 +21,7 @@ namespace ServiceStack.Validation
 
             var genericType = typeof(ValidatorCache<>).MakeGenericType(type);
             var mi = genericType.GetMethod("GetValidator", BindingFlags.Public | BindingFlags.Static);
-            parseFn = (ResolveValidatorDelegate)Delegate.CreateDelegate(typeof(ResolveValidatorDelegate), mi);
+            parseFn = (ResolveValidatorDelegate)mi.CreateDelegate(typeof(ResolveValidatorDelegate));
 
             Dictionary<Type, ResolveValidatorDelegate> snapshot, newCache;
             do

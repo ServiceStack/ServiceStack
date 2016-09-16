@@ -14,13 +14,16 @@ namespace ServiceStack.Support.WebHost
             this.log = LogManager.GetLogger(this.GetType());
         }
 
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var before = DateTime.UtcNow;
             Execute(context);
             var elapsed = DateTime.UtcNow - before;
-            log.DebugFormat($"'{GetType().GetOperationName()}' was completed in {elapsed.TotalMilliseconds}ms");
+            if (Log.IsDebugEnabled)
+                log.DebugFormat($"'{GetType().GetOperationName()}' was completed in {elapsed.TotalMilliseconds}ms");
         }
+#endif
 
         public abstract void Execute(HttpContextBase context);
 

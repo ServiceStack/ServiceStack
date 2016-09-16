@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using ServiceStack.Auth;
-using ServiceStack.Host.AspNet;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -33,6 +32,7 @@ namespace ServiceStack
             IsHttpListener = HttpContext.Current == null;
         }
 
+#if !NETSTANDARD1_6
         public static void CloseOutputStream(this HttpResponseBase response)
         {
             try
@@ -64,6 +64,7 @@ namespace ServiceStack
                 Log.Error("Error in HttpListenerResponseWrapper: " + ex.Message, ex);
             }
         }
+#endif
 
         public static void RedirectToUrl(this IResponse httpRes, string url, HttpStatusCode redirectStatusCode = HttpStatusCode.Redirect)
         {
@@ -74,12 +75,14 @@ namespace ServiceStack
 
         public static void TransmitFile(this IResponse httpRes, string filePath)
         {
-            var aspNetRes = httpRes as AspNetResponse;
+#if !NETSTANDARD1_6
+            var aspNetRes = httpRes as ServiceStack.Host.AspNet.AspNetResponse;
             if (aspNetRes != null)
             {
                 aspNetRes.Response.TransmitFile(filePath);
                 return;
             }
+#endif
 
             using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
@@ -91,12 +94,14 @@ namespace ServiceStack
 
         public static void WriteFile(this IResponse httpRes, string filePath)
         {
-            var aspNetRes = httpRes as AspNetResponse;
+#if !NETSTANDARD1_6
+            var aspNetRes = httpRes as ServiceStack.Host.AspNet.AspNetResponse;
             if (aspNetRes != null)
             {
                 aspNetRes.Response.WriteFile(filePath);
                 return;
             }
+#endif
 
             using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
@@ -208,31 +213,7 @@ namespace ServiceStack
 
         public static Dictionary<string, string> CookiesAsDictionary(this IResponse httpRes)
         {
-            var map = new Dictionary<string, string>();
-            var aspNet = httpRes.OriginalResponse as System.Web.HttpResponse;
-            if (aspNet != null)
-            {
-                foreach (var name in aspNet.Cookies.AllKeys)
-                {
-                    var cookie = aspNet.Cookies[name];
-                    if (cookie == null) continue;
-                    map[name] = cookie.Value;
-                }
-            }
-            else
-            {
-                var httpListener = httpRes.OriginalResponse as HttpListenerResponse;
-                if (httpListener != null)
-                {
-                    for (var i = 0; i < httpListener.Cookies.Count; i++)
-                    {
-                        var cookie = httpListener.Cookies[i];
-                        if (cookie?.Name == null) continue;
-                        map[cookie.Name] = cookie.Value;
-                    }
-                }
-            }
-            return map;
+            return Platform.Instance.GetCookiesAsDictionary(httpRes);
         }
 
         public static void AddHeaderLastModified(this IResponse httpRes, DateTime? lastModified)

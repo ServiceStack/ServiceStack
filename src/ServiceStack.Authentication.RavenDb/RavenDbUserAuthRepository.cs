@@ -20,6 +20,8 @@ namespace ServiceStack.Authentication.RavenDb
         private readonly IDocumentStore documentStore;
         private static bool isInitialized = false;
 
+        public IHashProvider HashProvider { get; set; }
+
         public static void CreateOrUpdateUserAuthIndex(IDocumentStore store)
         {
             // put this index into the ravendb database
@@ -91,7 +93,7 @@ namespace ServiceStack.Authentication.RavenDb
 
             AssertNoExistingUser(newUser);
 
-            var saltedHash = HostContext.Resolve<IHashProvider>();
+            var saltedHash = HashProvider ?? HostContext.Resolve<IHashProvider>();
             string salt;
             string hash;
             saltedHash.GetHashAndSaltString(password, out hash, out salt);

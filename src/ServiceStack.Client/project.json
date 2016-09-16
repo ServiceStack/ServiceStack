@@ -30,6 +30,14 @@
         "System.Xml.XmlSerializer": "4.0.11"
       }
     },
+    "netstandard1.6": {
+      "dependencies": {
+        "System.Net.Requests": "4.0.11",
+        "System.Collections.Specialized": "4.0.1",
+        "System.ServiceModel.Primitives": "4.1.0",
+        "System.Xml.XmlSerializer": "4.0.11"        
+      }
+    },
     ".NETPortable,Version=v4.5,Profile=Profile7": {
       "buildOptions": {
         "define": [

@@ -8,6 +8,7 @@ namespace ServiceStack.Host
     public class RequestPreferences : IRequestPreferences
     {
         private readonly HttpContextBase httpContext;
+        private string acceptEncoding;
 
         public RequestPreferences(IRequest httpRequest)
         {
@@ -20,6 +21,7 @@ namespace ServiceStack.Host
             this.acceptEncoding = this.acceptEncoding.ToLower();
         }
 
+#if !NETSTANDARD1_6
         public RequestPreferences(HttpContextBase httpContext)
         {
             this.httpContext = httpContext;
@@ -43,7 +45,6 @@ namespace ServiceStack.Host
         private HttpWorkerRequest HttpWorkerRequest => 
             this.httpWorkerRequest ?? (this.httpWorkerRequest = GetWorker(this.httpContext));
 
-        private string acceptEncoding;
         public string AcceptEncoding
         {
             get
@@ -57,6 +58,9 @@ namespace ServiceStack.Host
                 return acceptEncoding;
             }
         }
+#else 
+        public string AcceptEncoding => acceptEncoding;
+#endif
 
         public bool AcceptsGzip => AcceptEncoding != null && AcceptEncoding.Contains("gzip");
 

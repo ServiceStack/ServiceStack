@@ -121,7 +121,11 @@ namespace ServiceStack.Html
 		{
 			get
 			{
+#if !NETSTANDARD1_6
 				return !(TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string)));
+#else
+				return ModelType.GetTypeInfo().IsClass;
+#endif
 			}
 		}
 
@@ -412,18 +416,25 @@ namespace ServiceStack.Html
 
 				modelAccessor = () => vdi.Value;
 
-				if (vdi.PropertyDescriptor != null)
-				{
-					propertyName = vdi.PropertyDescriptor.Name;
-					modelType = vdi.PropertyDescriptor.PropertyType;
-				}
-				else if (vdi.Value != null)
+#if !NETSTANDARD1_6
+                if (vdi.PropertyDescriptor != null)
+                {
+                    propertyName = vdi.PropertyDescriptor.Name;
+                    modelType = vdi.PropertyDescriptor.PropertyType;
+                }
+                else if (vdi.Value != null)
+                {  // We only need to delay accessing properties (for LINQ to SQL)
+                    modelType = vdi.Value.GetType();
+                }
+#else
+				if (vdi.Value != null)
 				{  // We only need to delay accessing properties (for LINQ to SQL)
 					modelType = vdi.Value.GetType();
 				}
-			}
-			//  Try getting a property from ModelMetadata if we couldn't find an answer in ViewData
-			else if (viewData.ModelMetadata != null)
+#endif
+            }
+            //  Try getting a property from ModelMetadata if we couldn't find an answer in ViewData
+            else if (viewData.ModelMetadata != null)
 			{
 				ModelMetadata propertyMetadata = viewData.ModelMetadata.Properties.Where(p => p.PropertyName == expression).FirstOrDefault();
 				if (propertyMetadata != null)

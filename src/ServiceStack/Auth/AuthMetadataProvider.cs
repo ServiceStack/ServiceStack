@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Auth
@@ -63,7 +64,13 @@ namespace ServiceStack.Auth
             try
             {
                 var ignore = url.GetBytesFromUrl(
-                    requestFilter: req => { req.AllowAutoRedirect = false; req.UserAgent = "ServiceStack"; },
+                    requestFilter: req =>
+                    {
+                        req.SetUserAgent("ServiceStack");
+#if !NETSTANDARD1_6
+                        req.AllowAutoRedirect = false; //Missing in .NET Core
+#endif
+                    },
                     responseFilter: res => finalUrl = res.Headers[HttpHeaders.Location] ?? finalUrl);
             }
             catch { }

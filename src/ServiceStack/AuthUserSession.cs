@@ -136,7 +136,7 @@ namespace ServiceStack
             {
                 foreach (var tokens in session.ProviderOAuthAccess)
                 {
-                    if (string.Compare(tokens.Provider, provider, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (string.Compare(tokens.Provider, provider, StringComparison.OrdinalIgnoreCase) == 0)
                         return tokens;
                 }
             }

@@ -1,4 +1,5 @@
-﻿
+﻿#if !NETSTANDARD1_6
+
 using System.Threading;
 
 namespace ServiceStack.MiniProfiler.Data
@@ -53,3 +54,5 @@ namespace ServiceStack.MiniProfiler.Data
         public Link<TKey, TValue> Tail { get; private set; }
     }
 }
+
+#endif

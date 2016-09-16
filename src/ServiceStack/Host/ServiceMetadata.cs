@@ -42,9 +42,9 @@ namespace ServiceStack.Host
                           ?? serviceType.FirstAttribute<RestrictAttribute>();
 
             var reqFilterAttrs = new[] { requestType, serviceType }
-                .SelectMany(x => x.AllAttributes<IHasRequestFilter>()).ToList();
+                .SelectMany(x => x.AllAttributes().OfType<IHasRequestFilter>()).ToList();
             var resFilterAttrs = (responseType != null ? new[] { responseType, serviceType } : new[] { serviceType })
-                .SelectMany(x => x.AllAttributes<IHasResponseFilter>()).ToList();
+                .SelectMany(x => x.AllAttributes().OfType<IHasResponseFilter>()).ToList();
 
             var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
             var actions = GetImplementedActions(serviceType, requestType);
@@ -77,7 +77,7 @@ namespace ServiceStack.Host
 
             //Only count non-core ServiceStack Services, i.e. defined outside of ServiceStack.dll or Swagger
             var nonCoreServicesCount = OperationsMap.Values
-                .Count(x => x.ServiceType.Assembly != typeof(Service).Assembly
+                .Count(x => x.ServiceType.GetAssembly() != typeof(Service).GetAssembly()
                 && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerApiService"
                 && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerResourcesService"
                 && x.ServiceType.Name != "__AutoQueryServices");
@@ -99,11 +99,11 @@ namespace ServiceStack.Host
 
         readonly HashSet<Assembly> excludeAssemblies = new HashSet<Assembly>
         {
-            typeof(string).Assembly,            //mscorelib
-            typeof(Uri).Assembly,               //System
-            typeof(ServiceStackHost).Assembly,  //ServiceStack
-            typeof(UrnId).Assembly,             //ServiceStack.Common
-            typeof(ErrorResponse).Assembly,     //ServiceStack.Interfaces
+            typeof(string).GetAssembly(),            //mscorelib
+            typeof(Uri).GetAssembly(),               //System
+            typeof(ServiceStackHost).GetAssembly(),  //ServiceStack
+            typeof(UrnId).GetAssembly(),             //ServiceStack.Common
+            typeof(ErrorResponse).GetAssembly(),     //ServiceStack.Interfaces
         };
 
         public List<Assembly> GetOperationAssemblies()
@@ -571,7 +571,7 @@ namespace ServiceStack.Host
                 if (baseType.GetOperationName() == type.GetOperationName())
                     typesWithSameName.Push(baseType);
             }
-            while ((baseType = baseType.BaseType) != null);
+            while ((baseType = baseType.BaseType()) != null);
 
             return typesWithSameName.Pop();
         }
@@ -616,11 +616,11 @@ namespace ServiceStack.Host
 
         public static List<Assembly> GetAssemblies(this Operation operation)
         {
-            var ret = new List<Assembly> { operation.RequestType.Assembly };
+            var ret = new List<Assembly> { operation.RequestType.GetAssembly() };
             if (operation.ResponseType != null
-                && operation.ResponseType.Assembly != operation.RequestType.Assembly)
+                && operation.ResponseType.GetAssembly() != operation.RequestType.GetAssembly())
             {
-                ret.Add(operation.ResponseType.Assembly);
+                ret.Add(operation.ResponseType.GetAssembly());
             }
             return ret;
         }

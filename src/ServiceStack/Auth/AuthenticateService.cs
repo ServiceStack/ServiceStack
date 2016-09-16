@@ -56,7 +56,7 @@ namespace ServiceStack.Auth
             foreach (var authConfig in AuthProviders)
             {
                 if (string.Compare(authConfig.Provider, provider,
-                    StringComparison.InvariantCultureIgnoreCase) == 0)
+                    StringComparison.OrdinalIgnoreCase) == 0)
                     return authConfig;
             }
 
@@ -278,7 +278,7 @@ namespace ServiceStack.Auth
                 if (generateNewCookies)
                 {
                     this.Request.GenerateNewSessionCookies(session);
-                    oAuthConfig.SaveSession(this, session);
+                    oAuthConfig.SaveSession(this, session, (oAuthConfig as AuthProvider)?.SessionExpiry);
                 }
             }
             return response;

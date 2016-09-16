@@ -117,6 +117,9 @@
     <Compile Include="CustomRequestFilter.cs" />
     <Compile Include="FluentValidation\Internal\CollectionPropertyRule.cs" />
     <Compile Include="Host\Handlers\StaticContentHandler.cs" />
+    <Compile Include="AppHostBase.NetCore.cs" />
+    <Compile Include="Host\NetCore\NetCoreRequest.cs" />
+    <Compile Include="Host\NetCore\NetCoreResponse.cs" />
     <Compile Include="HttpCacheFeature.cs" />
     <Compile Include="InProcessServiceGateway.cs" />
     <Compile Include="MiniProfiler\Data\Link.cs" />
@@ -132,7 +135,9 @@
     <Compile Include="Platforms\PlatformNet.Wcf.cs" />
     <Compile Include="Platforms\PlatformNet.Config.cs" />
     <Compile Include="Platforms\PlatformNet.cs" />
+    <Compile Include="Platforms\PlatformNet.Web.cs" />
     <Compile Include="Platforms\PlatformNetCore.cs" />
+    <Compile Include="Platforms\PlatformNetCore.Web.cs" />
     <Compile Include="RequiresSchemaProviders.cs" />
     <Compile Include="CancellableRequestsFeature.cs" />
     <Compile Include="Configuration\EnvironmentVariableSettings.cs" />
@@ -199,13 +204,11 @@
     <Compile Include="SitemapFeature.cs" />
     <Compile Include="SmartThreadPool\CallerThreadContext.cs" />
     <Compile Include="SmartThreadPool\CanceledWorkItemsGroup.cs" />
-    <Compile Include="SmartThreadPool\EventWaitHandle.cs" />
     <Compile Include="SmartThreadPool\EventWaitHandleFactory.cs" />
     <Compile Include="SmartThreadPool\Exceptions.cs" />
     <Compile Include="SmartThreadPool\Interfaces.cs" />
     <Compile Include="SmartThreadPool\InternalInterfaces.cs" />
     <Compile Include="SmartThreadPool\PriorityQueue.cs" />
-    <Compile Include="SmartThreadPool\SLExt.cs" />
     <Compile Include="SmartThreadPool\SmartThreadPool.cs" />
     <Compile Include="SmartThreadPool\SmartThreadPool.ThreadEntry.cs" />
     <Compile Include="SmartThreadPool\STPEventWaitHandle.cs" />

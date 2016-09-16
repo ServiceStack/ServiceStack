@@ -1,4 +1,5 @@
-﻿// Most of this class is sourced from the MONO project in the existing file:
+﻿#if !NETSTANDARD1_6
+// Most of this class is sourced from the MONO project in the existing file:
 //
 // https://github.com/mono/mono/blob/master/mcs/class/System.Web/System.Web/HttpRequest.cs
 //
@@ -948,3 +949,4 @@ namespace ServiceStack.Host.HttpListener
          
     }
 }
+#endif

@@ -4,6 +4,8 @@ using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.DataAnnotations;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using ServiceStack.Reflection;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
@@ -282,6 +284,22 @@ namespace ServiceStack.Common.Tests
             Console.WriteLine(toObj.Dump());
 
             ModelWithFieldsOfDifferentTypesAsNullables.AssertIsEqual(toObj, fromObj);
+        }
+
+        [Test]
+        public void Can_get_result_of_Task()
+        {
+            var tcs = new TaskCompletionSource<string>();
+            var task = tcs.Task;
+            tcs.SetResult("foo");
+
+            var fn = task.GetType().GetFastGetter("Result");
+            var value = fn(task);
+            Assert.That(value, Is.EqualTo("foo"));
+
+            fn = task.GetType().GetFastGetter("Result");
+            value = fn(task);
+            Assert.That(value, Is.EqualTo("foo"));
         }
     }
 }

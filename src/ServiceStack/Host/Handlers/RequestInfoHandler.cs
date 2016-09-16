@@ -201,15 +201,17 @@ namespace ServiceStack.Host.Handlers
             var response = this.RequestInfo ?? GetRequestInfo(httpReq);
             response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
             response.DebugString = "";
+#if !NETSTANDARD1_6
             if (HttpContext.Current != null)
             {
                 response.DebugString += HttpContext.Current.Request.GetType().FullName
                     + "|" + HttpContext.Current.Response.GetType().FullName;
             }
+
             if (HostContext.IsAspNetHost)
             {
                 var aspReq = (HttpRequestBase)httpReq.OriginalRequest;
-                response.GetLeftPath = aspReq.Url.GetLeftPart(UriPartial.Authority);
+                response.GetLeftPath = aspReq.Url.GetLeftAuthority();
                 response.Path = aspReq.Path;
                 response.UserHostAddress = aspReq.UserHostAddress;
                 response.ApplicationPath = aspReq.ApplicationPath;
@@ -240,7 +242,8 @@ namespace ServiceStack.Host.Handlers
                         }
                     }
                 }
-            }
+        }
+#endif
 
             var json = JsonSerializer.SerializeToString(response);
             httpRes.ContentType = MimeTypes.Json;
@@ -248,12 +251,13 @@ namespace ServiceStack.Host.Handlers
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
 
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var request = context.ToRequest(GetType().GetOperationName());
             ProcessRequestAsync(request, request.Response, request.OperationName);
         }
-
+#endif
         public static Dictionary<string, string> ToDictionary(INameValueCollection nvc)
         {
             var map = new Dictionary<string, string>();
@@ -296,7 +300,7 @@ namespace ServiceStack.Host.Handlers
             {
                 Usage = "append '?debug=requestinfo' to any querystring. Optional params: virtualPathCount",
                 Host = HostContext.ServiceName + "_" + HostContext.Config.DebugHttpListenerHostEnvironment + "_" + Env.ServerUserAgent,
-                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType?.Name ?? hostType.Name),
+                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType()?.Name ?? hostType.Name),
                 Date = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                 ServiceName = HostContext.ServiceName,
                 HandlerFactoryPath = HostContext.Config.HandlerFactoryPath,

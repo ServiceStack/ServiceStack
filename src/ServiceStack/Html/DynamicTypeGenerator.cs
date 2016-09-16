@@ -1,4 +1,6 @@
-﻿/* ****************************************************************************
+﻿#if !NETSTANDARD1_6
+
+/* ****************************************************************************
  *
  * Copyright (c) Microsoft Corporation. All rights reserved.
  *
@@ -29,7 +31,7 @@ namespace ServiceStack.Html
 			var builder = new CustomAttributeBuilder(
 				typeof(SecurityTransparentAttribute).GetConstructor(Type.EmptyTypes), new object[0]);
 			var assemblyAttributes = new[] { builder };
-			var dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(
+			var dynamicAssembly = AssemblyBuilder.DefineDynamicAssembly(
 				new AssemblyName("System.Web.Mvc.{Dynamic}"), AssemblyBuilderAccess.Run, assemblyAttributes);
 			var dynamicModule = dynamicAssembly.DefineDynamicModule("System.Web.Mvc.{Dynamic}.dll");
 			return dynamicModule;
@@ -68,7 +70,7 @@ namespace ServiceStack.Html
 				}
 			}
 
-			Type bakedType = newType.CreateType();
+			var bakedType = newType.CreateType();
 			return bakedType;
 		}
 
@@ -135,3 +137,5 @@ namespace ServiceStack.Html
 		}
 	}
 }
+
+#endif

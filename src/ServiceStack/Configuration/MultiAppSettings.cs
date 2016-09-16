@@ -42,8 +42,7 @@ namespace ServiceStack.Configuration
 
             public void Set<T>(string key, T value)
             {
-                var appSetting = appSettings.First();
-                appSetting.Set(key, value);
+                appSettings.Each(x => x.Set(key, value));
             }
         }
     }

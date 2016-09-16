@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Admin;
@@ -38,8 +39,16 @@ namespace ServiceStack.WebHost.IntegrationTests
             public AppHost()
                 : base("ServiceStack WebHost IntegrationTests", typeof(Reverse).Assembly)
             {
-                typeof(Authenticate)
-                    .AddAttributes(new ExcludeAttribute(Feature.Metadata));
+                //typeof(Authenticate)
+                //    .AddAttributes(new ExcludeAttribute(Feature.Metadata));
+
+                foreach (var pi in typeof(Authenticate).GetPublicProperties())
+                {
+                    if (pi.Name != "provider" && pi.Name != "UserName" && pi.Name != "Password")
+                    {
+                        pi.AddAttributes(new IgnoreDataMemberAttribute());
+                    }
+                }
             }
 
             public override void Configure(Container container)

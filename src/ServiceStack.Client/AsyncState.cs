@@ -103,14 +103,14 @@ namespace ServiceStack
 
         public void StartTimer(TimeSpan timeOut)
         {
-#if !NETSTANDARD1_1
+#if !(NETSTANDARD1_1 || NETSTANDARD1_6)
             this.Timer = PclExportClient.Instance.CreateTimer(this.TimedOut, timeOut, this);
 #endif
         }
 
         public void StopTimer()
         {
-#if !NETSTANDARD1_1
+#if !(NETSTANDARD1_1 || NETSTANDARD1_6)
             if (this.Timer != null)
             {
                 this.Timer.Cancel();

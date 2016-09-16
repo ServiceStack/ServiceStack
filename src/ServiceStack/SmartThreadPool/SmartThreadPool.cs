@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 #region Release History
 
 // Smart Thread Pool
@@ -108,13 +110,13 @@ using Amib.Threading.Internal;
 
 namespace Amib.Threading
 {
-	#region SmartThreadPool class
+#region SmartThreadPool class
 	/// <summary>
 	/// Smart thread pool class.
 	/// </summary>
 	public partial class SmartThreadPool : WorkItemsGroupBase, IDisposable
 	{
-		#region Public Default Constants
+#region Public Default Constants
 
 		/// <summary>
 		/// Default minimum number of threads the thread pool contains. (0)
@@ -210,9 +212,9 @@ namespace Amib.Threading
         public const ApartmentState DefaultApartmentState = ApartmentState.Unknown;
 #endif
 
-		#endregion
+#endregion
 
-        #region Member Variables
+#region Member Variables
 
 		/// <summary>
 		/// Dictionary of all the threads in the thread pool.
@@ -305,7 +307,7 @@ namespace Amib.Threading
         private ISTPInstancePerformanceCounters _localPCs = NullSTPInstancePerformanceCounters.Instance;
 
 
-#if (WINDOWS_PHONE) 
+#if (WINDOWS_PHONE)
         private static readonly Dictionary<int, ThreadEntry> _threadEntries = new Dictionary<int, ThreadEntry>();
 #elif (_WINDOWS_CE)
         private static LocalDataStoreSlot _threadEntrySlot = Thread.AllocateDataSlot();
@@ -327,9 +329,9 @@ namespace Amib.Threading
         /// </summary>
         private event ThreadTerminationHandler _onThreadTermination;
 
-        #endregion
+#endregion
 
-        #region Per thread properties
+#region Per thread properties
 
         /// <summary>
         /// A reference to the current work item a thread from the thread pool 
@@ -378,9 +380,9 @@ namespace Amib.Threading
             }
 #endif
         }
-        #endregion
+#endregion
 
-        #region Construction and Finalization
+#region Construction and Finalization
 
         /// <summary>
 		/// Constructor
@@ -534,9 +536,9 @@ namespace Amib.Threading
 			}
 		}
 
-		#endregion
+#endregion
 
-		#region Thread Processing
+#region Thread Processing
 
 		/// <summary>
 		/// Waits on the queue for a work item, shutdown, or timeout.
@@ -888,9 +890,9 @@ namespace Amib.Threading
 		}
 
 
-		#endregion
+#endregion
 
-		#region Public Methods
+#region Public Methods
 
 		private void ValidateWaitForIdle()
 		{
@@ -1019,7 +1021,7 @@ namespace Amib.Threading
 					if ((thread != null)
 #if !(_WINDOWS_CE)
                         && thread.IsAlive
-#endif                        
+#endif
                         )
 					{
 						try 
@@ -1251,7 +1253,7 @@ namespace Amib.Threading
 			return workItemsGroup;
 		}
 
-        #region Fire Thread's Events
+#region Fire Thread's Events
 
         private void FireOnThreadInitialization()
         {
@@ -1293,7 +1295,7 @@ namespace Amib.Threading
             }
         }
 
-        #endregion
+#endregion
 
         /// <summary>
         /// This event is fired when a thread is created.
@@ -1332,9 +1334,9 @@ namespace Amib.Threading
 
         
 
-		#endregion
+#endregion
 
-		#region Properties
+#region Properties
 
 		/// <summary>
 		/// Get/Set the lower limit of threads in the pool.
@@ -1458,9 +1460,9 @@ namespace Amib.Threading
             get { return (ISTPPerformanceCountersReader)_localPCs; }
         }
 
-        #endregion
+#endregion
 
-        #region IDisposable Members
+#region IDisposable Members
 
         public void Dispose()
         {
@@ -1495,9 +1497,9 @@ namespace Amib.Threading
                 throw new ObjectDisposedException(GetType().ToString(), "The SmartThreadPool has been shutdown");
             }
         }
-        #endregion
+#endregion
 
-        #region WorkItemsGroupBase Overrides
+#region WorkItemsGroupBase Overrides
 
         /// <summary>
         /// Get/Set the maximum number of work items that execute cocurrency on the thread pool
@@ -1623,9 +1625,9 @@ namespace Amib.Threading
             ValidateNotDisposed();   
         }
 
-        #endregion
+#endregion
 
-        #region Join, Choice, Pipe, etc.
+#region Join, Choice, Pipe, etc.
 
         /// <summary>
         /// Executes all actions in parallel.
@@ -1726,7 +1728,9 @@ namespace Amib.Threading
         {
             Pipe(pipeState, (IEnumerable<Action<T>>)actions);
         }
-        #endregion
+#endregion
 	}
-	#endregion
+#endregion
 }
+
+#endif

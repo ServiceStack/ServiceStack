@@ -123,7 +123,7 @@ namespace ServiceStack
             {
                 foreach (var skipPath in appHost.Config.ScanSkipPaths)
                 {
-                    if (node.VirtualPath.StartsWith(skipPath.TrimStart('/'), StringComparison.InvariantCultureIgnoreCase))
+                    if (node.VirtualPath.StartsWith(skipPath.TrimStart('/'), StringComparison.OrdinalIgnoreCase))
                         return true;
                 }
             }

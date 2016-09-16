@@ -112,7 +112,7 @@ namespace ServiceStack.Auth
         /// <returns></returns>
         private string EnsureLatestCode(string code)
         {
-            int idx = code.LastIndexOf(",", StringComparison.InvariantCulture);
+            int idx = code.LastIndexOf(",", StringComparison.Ordinal);
             if (idx > 0)
             {
                 code = code.Substring(idx);
@@ -122,7 +122,7 @@ namespace ServiceStack.Auth
 
         protected virtual void RequestFilter(HttpWebRequest request)
         {
-            request.UserAgent = ServiceClientBase.DefaultUserAgent;
+            request.SetUserAgent(ServiceClientBase.DefaultUserAgent);
         }
 
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)

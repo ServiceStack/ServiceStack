@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 using System;
 #if !(_WINDOWS_CE)
 using System.Runtime.Serialization;
@@ -109,3 +111,5 @@ namespace Amib.Threading
 
     #endregion
 }
+
+#endif

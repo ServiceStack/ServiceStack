@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NETSTANDARD1_6
+
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Text.RegularExpressions;
@@ -246,3 +248,5 @@ namespace ServiceStack.MiniProfiler
         }
     }
 }
+
+#endif

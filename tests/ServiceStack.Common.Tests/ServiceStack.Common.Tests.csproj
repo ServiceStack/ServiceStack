@@ -234,6 +234,7 @@
     <Compile Include="Perf\ToStringPerf.cs" />
     <Compile Include="PerfTestBase.cs" />
     <Compile Include="Perf\StringParsePerf.cs" />
+    <Compile Include="RsaUtilTests.cs" />
     <Compile Include="ServiceClient.Web\HtmlServiceClient.cs" />
     <Compile Include="ServiceClient.Web\ServiceClientBaseTester.cs" />
     <Compile Include="ServiceClient.Web\ServiceClientBaseTests.cs" />

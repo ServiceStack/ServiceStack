@@ -31,7 +31,7 @@ namespace ServiceStack.Auth
             SalthLength = theSaltLength;
         }
 
-        public SaltedHash() : this(new SHA256Managed(), 4) {}
+        public SaltedHash() : this(SHA256.Create(), 4) {}
 
         private byte[] ComputeHash(byte[] Data, byte[] Salt)
         {
@@ -46,8 +46,12 @@ namespace ServiceStack.Auth
         {
             Salt = new byte[SalthLength];
 
-            var random = new RNGCryptoServiceProvider();
+            var random = RandomNumberGenerator.Create();
+#if !NETSTANDARD1_6
             random.GetNonZeroBytes(Salt);
+#else
+            random.GetBytes(Salt);
+#endif
 
             Hash = ComputeHash(Data, Salt);
         }
@@ -93,7 +97,7 @@ namespace ServiceStack.Auth
         public static string ToSha256Hash(this string value)
         {
             var sb = StringBuilderCache.Allocate();
-            using (var hash = SHA256Managed.Create())
+            using (var hash = SHA256.Create())
             {
                 var result = hash.ComputeHash(value.ToUtf8Bytes());
                 foreach (var b in result)
@@ -106,7 +110,7 @@ namespace ServiceStack.Auth
 
         public static byte[] ToSha256HashBytes(this byte[] bytes)
         {
-            using (var hash = SHA256Managed.Create())
+            using (var hash = SHA256.Create())
             {
                 return hash.ComputeHash(bytes);
             }
@@ -114,7 +118,7 @@ namespace ServiceStack.Auth
 
         public static byte[] ToSha512HashBytes(this byte[] bytes)
         {
-            using (var hash = SHA512Managed.Create())
+            using (var hash = SHA512.Create())
             {
                 return hash.ComputeHash(bytes);
             }

@@ -109,7 +109,7 @@ namespace ServiceStack.Auth
                 // Get access response object
                 var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
 
-                var authInfo = HttpUtility.ParseQueryString(contents);
+                var authInfo = PclExportClient.Instance.ParseQueryString(contents);
                 var authObj = JsonObject.Parse(contents);
                 var accessToken = authObj.Object("access_token");
                 var userInfo = authObj.Object("user");

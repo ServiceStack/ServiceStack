@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 //Copyright (c) Service Stack LLC. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
@@ -83,7 +85,7 @@ namespace ServiceStack.Host.HttpListener
 
             var bytes = BufferedStream.ToArray();
             try {
-                SetContentLength(bytes.LongLength); //safe to set Length in Buffered Response
+                SetContentLength(bytes.Length); //safe to set Length in Buffered Response
             } catch {}
 
             response.OutputStream.Write(bytes, 0, bytes.Length);
@@ -180,3 +182,5 @@ namespace ServiceStack.Host.HttpListener
     }
 
 }
+
+#endif

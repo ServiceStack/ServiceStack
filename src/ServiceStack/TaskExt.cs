@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using ServiceStack.Text.FastMember;
+using ServiceStack.Reflection;
 
 namespace ServiceStack
 {
@@ -33,7 +33,12 @@ namespace ServiceStack
             {
                 task.Wait();
 
-                return TypeAccessor.Create(task.GetType())[task, "Result"];
+                var taskType = task.GetType();
+                if (!taskType.IsGenericType() || taskType.FullName.Contains("VoidTaskResult"))
+                    return null;
+
+                var fn = taskType.GetFastGetter("Result");
+                return fn?.Invoke(task);
             }
             catch (TypeAccessException)
             {

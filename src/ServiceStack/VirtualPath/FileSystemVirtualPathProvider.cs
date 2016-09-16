@@ -40,7 +40,7 @@ namespace ServiceStack.VirtualPath
                 RootDirInfo = new DirectoryInfo(AppHost.Config.WebHostPhysicalPath);
 
             if (RootDirInfo == null || !RootDirInfo.Exists)
-                throw new ApplicationException($"RootDir '{RootDirInfo.FullName}' for virtual path does not exist");
+                throw new Exception($"RootDir '{RootDirInfo.FullName}' for virtual path does not exist");
 
             RootDir = new FileSystemVirtualDirectory(this, null, RootDirInfo);
         }

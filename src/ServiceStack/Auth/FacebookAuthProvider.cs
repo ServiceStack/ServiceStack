@@ -63,7 +63,7 @@ namespace ServiceStack.Auth
             try
             {
                 var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
-                var authInfo = HttpUtility.ParseQueryString(contents);
+                var authInfo = PclExportClient.Instance.ParseQueryString(contents);
                 tokens.AccessTokenSecret = authInfo["access_token"];
 
                 session.IsAuthenticated = true;

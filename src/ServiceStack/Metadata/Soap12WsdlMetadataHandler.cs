@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 namespace ServiceStack.Metadata
 {
     public class Soap12WsdlMetadataHandler : WsdlMetadataHandlerBase
@@ -5,3 +7,5 @@ namespace ServiceStack.Metadata
         protected override WsdlTemplateBase GetWsdlTemplate() => new Soap12WsdlTemplate();
     }
 }
+
+#endif

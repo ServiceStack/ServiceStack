@@ -1,4 +1,5 @@
-﻿
+﻿#if !NETSTANDARD1_6
+
 namespace Amib.Threading.Internal
 {
     /// <summary>
@@ -25,3 +26,5 @@ namespace Amib.Threading.Internal
         WorkItemPriority WorkItemPriority { get; }
     }
 }
+
+#endif

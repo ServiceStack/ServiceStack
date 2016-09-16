@@ -1,4 +1,6 @@
-﻿namespace ServiceStack.MiniProfiler
+﻿#if !NETSTANDARD1_6
+
+namespace ServiceStack.MiniProfiler
 {
 
     /// <summary>
@@ -28,3 +30,5 @@
         Profiler GetCurrentProfiler();
     }
 }
+
+#endif

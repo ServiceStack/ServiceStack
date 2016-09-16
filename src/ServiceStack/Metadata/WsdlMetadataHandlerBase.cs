@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 using System;
 using System.Web;
 using ServiceStack.Host;
@@ -51,7 +53,7 @@ namespace ServiceStack.Metadata
 
             try
             {
-                var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, httpReq.ResolveBaseUrl(), HostContext.Config.SoapServiceName);
+                var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, httpReq.GetBaseUrl(), HostContext.Config.SoapServiceName);
                 var wsdl = HostContext.AppHost.GenerateWsdl(wsdlTemplate);
                 httpRes.Write(wsdl);
             }
@@ -100,3 +102,5 @@ namespace ServiceStack.Metadata
         }
     }
 }
+
+#endif

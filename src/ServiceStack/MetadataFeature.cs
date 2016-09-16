@@ -45,7 +45,7 @@ namespace ServiceStack
 
         private IHttpHandler GetHandlerForPathParts(string[] pathParts)
         {
-            var pathController = string.Intern(pathParts[0].ToLower());
+            var pathController = pathParts[0].ToLower();
             if (pathParts.Length == 1)
             {
                 if (pathController == "metadata")
@@ -54,7 +54,8 @@ namespace ServiceStack
                 return null;
             }
 
-            var pathAction = string.Intern(pathParts[1].ToLower());
+            var pathAction = pathParts[1].ToLower();
+#if !NETSTANDARD1_6
             if (pathAction == "wsdl")
             {
                 if (pathController == "soap11")
@@ -62,6 +63,7 @@ namespace ServiceStack
                 if (pathController == "soap12")
                     return new Soap12WsdlMetadataHandler();
             }
+#endif
 
             if (pathAction != "metadata") return null;
 
@@ -75,12 +77,13 @@ namespace ServiceStack
 
                 case "jsv":
                     return new JsvMetadataHandler();
-
+#if !NETSTANDARD1_6
                 case "soap11":
                     return new Soap11MetadataHandler();
 
                 case "soap12":
                     return new Soap12MetadataHandler();
+#endif
 
                 case "operations":
                     return new CustomResponseHandler((httpReq, httpRes) =>

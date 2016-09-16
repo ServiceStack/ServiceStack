@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿#if !NETSTANDARD1_6
+
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -72,3 +74,5 @@ namespace ServiceStack.MiniProfiler.Helpers
 		}
 	}
 }
+
+#endif

@@ -195,7 +195,7 @@ namespace ServiceStack
                 throw new NotSupportedException("AutoQueryViewerConfig is missing");
 
             if (config.ServiceBaseUrl == null)
-                config.ServiceBaseUrl = base.Request.ResolveBaseUrl();
+                config.ServiceBaseUrl = base.Request.GetBaseUrl();
 
             if (config.ServiceName == null)
                 config.ServiceName = HostContext.ServiceName;

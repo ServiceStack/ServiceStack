@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using ServiceStack.Host;
-using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -134,6 +133,7 @@ namespace ServiceStack
             }
         }
 
+#if !NETSTANDARD1_6
         // Entry point for ASP.NET
         public IHttpHandler GetHandler(HttpContext ctx, string requestType, string url, string pathTranslated)
         {
@@ -142,7 +142,7 @@ namespace ServiceStack
 
             DebugLastHandlerArgs = requestType + "|" + url + "|" + pathTranslated;
             //var httpReq = new AspNetRequest(context, url);
-            var httpReq = new AspNetRequest(context, url.SanitizedVirtualPath());
+            var httpReq = new ServiceStack.Host.AspNet.AspNetRequest(context, url.SanitizedVirtualPath());
             foreach (var rawHttpHandler in appHost.RawHttpHandlers)
             {
                 var reqInfo = rawHttpHandler(httpReq);
@@ -198,7 +198,7 @@ namespace ServiceStack
                 httpReq.HttpMethod, pathInfo, context.Request.FilePath, pathTranslated)
                    ?? NotFoundHttpHandler;
         }
-
+#endif
         private static void SetApplicationBaseUrl(string absoluteUrl)
         {
             if (absoluteUrl == null) return;

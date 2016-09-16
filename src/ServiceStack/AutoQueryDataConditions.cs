@@ -91,7 +91,7 @@ namespace ServiceStack
         {
             var aString = CompareTypeUtils.CoerceString(a);
             var bString = CompareTypeUtils.CoerceString(b);
-            return string.Compare(aString, bString, StringComparison.InvariantCultureIgnoreCase) == 0;
+            return string.Compare(aString, bString, StringComparison.OrdinalIgnoreCase) == 0;
         }
     }
     public class InCollectionCondition : QueryCondition, IQueryMultiple
@@ -143,7 +143,7 @@ namespace ServiceStack
             var bString = CompareTypeUtils.CoerceString(b);
             if (aString == null || bString == null)
                 return false;
-            return aString.StartsWith(bString, StringComparison.InvariantCultureIgnoreCase);
+            return aString.StartsWith(bString, StringComparison.OrdinalIgnoreCase);
         }
     }
     public class ContainsCondition : QueryCondition
@@ -156,7 +156,7 @@ namespace ServiceStack
             var bString = CompareTypeUtils.CoerceString(b);
             if (aString == null || bString == null)
                 return false;
-            return aString.IndexOf(bString, StringComparison.InvariantCultureIgnoreCase) >= 0;
+            return aString.IndexOf(bString, StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
     public class EndsWithCondition : QueryCondition
@@ -169,7 +169,7 @@ namespace ServiceStack
             var bString = CompareTypeUtils.CoerceString(b);
             if (aString == null || bString == null)
                 return false;
-            return aString.EndsWith(bString, StringComparison.InvariantCultureIgnoreCase);
+            return aString.EndsWith(bString, StringComparison.OrdinalIgnoreCase);
         }
     }
     public class AlwaysFalseCondition : QueryCondition
@@ -244,14 +244,14 @@ namespace ServiceStack
         public static long? CoerceLong(object o)
         {
             return (long?)(o.GetType().IsIntegerType()
-                ? Convert.ChangeType(o, TypeCode.Int64)
+                ? Convert.ChangeType(o, typeof(long))
                 : null);
         }
 
         public static double? CoerceDouble(object o)
         {
             return (long?)(o.GetType().IsRealNumberType()
-                ? Convert.ChangeType(o, TypeCode.Double)
+                ? Convert.ChangeType(o, typeof(double))
                 : null);
         }
 

@@ -163,6 +163,7 @@ namespace MarkdownSharp
         {
             if (!loadOptionsFromConfigFile) return;
 
+#if !NETSTANDARD1_6
             var settings = ConfigurationManager.AppSettings;
             foreach (string key in settings.Keys)
             {
@@ -188,6 +189,7 @@ namespace MarkdownSharp
                         break;
                 }
             }
+#endif
         }
 
         /// <summary>

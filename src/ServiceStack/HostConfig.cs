@@ -129,6 +129,7 @@ namespace ServiceStack
                 FallbackRestPath = null,
             };
 
+            Platform.Instance.InitHostConifg(config);
 
             return config;
         }

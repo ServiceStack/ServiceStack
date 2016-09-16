@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 //Copyright (c) Service Stack LLC. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
@@ -207,7 +209,7 @@ namespace ServiceStack.Host.AspNet
                 try
                 {
                     return HostContext.Config.StripApplicationVirtualPath
-                        ? request.Url.GetLeftPart(UriPartial.Authority)
+                        ? request.Url.GetLeftAuthority()
                             .CombineWith(HostContext.Config.HandlerFactoryPath)
                             .CombineWith(PathInfo)
                             .TrimEnd('/')
@@ -312,3 +314,5 @@ namespace ServiceStack.Host.AspNet
     }
 
 }
+
+#endif

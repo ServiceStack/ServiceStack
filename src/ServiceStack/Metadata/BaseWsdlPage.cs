@@ -1,3 +1,4 @@
+#if !NETSTANDARD1_6
 using System.Web.UI.WebControls;
 
 namespace ServiceStack.Metadata
@@ -13,3 +14,4 @@ namespace ServiceStack.Metadata
         }
     }
 }
+#endif

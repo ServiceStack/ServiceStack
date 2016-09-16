@@ -58,7 +58,7 @@ namespace ServiceStack
 
             foreach (var pi in response.GetType().GetPublicProperties())
             {
-                if (typeof(IEnumerable<T>).IsAssignableFrom(pi.PropertyType))
+                if (typeof(IEnumerable<T>).IsAssignableFromType(pi.PropertyType))
                 {
                     return (IEnumerable<T>)pi.GetGetMethod().Invoke(response, TypeConstants.EmptyObjectArray);
                 }

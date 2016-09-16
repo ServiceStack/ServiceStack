@@ -1,4 +1,6 @@
-﻿/* ****************************************************************************
+﻿#if !NETSTANDARD1_6
+
+/* ****************************************************************************
  *
  * Copyright (c) Microsoft Corporation. All rights reserved.
  *
@@ -70,3 +72,5 @@ namespace ServiceStack.Html
 		}
 	}
 }
+
+#endif

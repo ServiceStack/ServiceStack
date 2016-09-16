@@ -120,13 +120,12 @@ namespace ServiceStack.Auth
             Buffer.BlockCopy(cryptAuthKeys256, 0, authKey, 0, authKey.Length);
             Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
 
-            using (var aes = new AesManaged
-            {
-                KeySize = 128,
-                BlockSize = 128,
-                Mode = CipherMode.CBC,
-                Padding = PaddingMode.PKCS7
-            })
+            var aes = Aes.Create();
+            aes.KeySize = 128;
+            aes.BlockSize = 128;
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            using (aes)
             {
                 aes.GenerateIV();
                 var iv = aes.IV;
