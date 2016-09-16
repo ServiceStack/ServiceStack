@@ -1022,26 +1022,6 @@ namespace ServiceStack
 
     public static class PclExportExt
     {
-        public static string ToFormUrlEncoded(this NameValueCollection queryParams)
-        {
-            var sb = new System.Text.StringBuilder();
-            foreach (string key in queryParams)
-            {
-                var values = queryParams.GetValues(key);
-                if (values == null) continue;
-
-                foreach (var value in values)
-                {
-                    if (sb.Length > 0)
-                        sb.Append('&');
-
-                    sb.AppendFormat("{0}={1}", key.UrlEncode(), value.UrlEncode());
-                }
-            }
-
-            return sb.ToString();
-        }
-
         //HttpUtils
         public static WebResponse PostFileToUrl(this string url,
             FileInfo uploadFileInfo, string uploadFileMimeType,
