@@ -41,6 +41,7 @@ namespace ServiceStack.Common.Tests.OAuth
         public override IUserAuthRepository CreateAuthRepo()
         {
             var db = new PocoDynamo(DynamoConfig.CreateDynamoDBClient());
+            db.DeleteAllTables();
             var dynamoDbRepo = new DynamoDbAuthRepository(db);
             InitTest(dynamoDbRepo);
             dynamoDbRepo.InitSchema();

@@ -134,7 +134,7 @@ namespace ServiceStack
         /// <returns></returns>
         public static object CreateErrorResponse(object request, Exception ex)
         {
-            ex = HostContext.AppHost.ResolveResponseException(ex);
+            ex = HostContext.AppHost?.ResolveResponseException(ex) ?? ex;
             var responseStatus = ex.ToResponseStatus();
 
             if (HostContext.DebugMode)
@@ -143,11 +143,11 @@ namespace ServiceStack
                 responseStatus.StackTrace = GetRequestErrorBody(request) + "\n" + ex;
             }
 
-            HostContext.AppHost.OnLogError(typeof(DtoUtils), "ServiceBase<TRequest>::Service Exception", ex);
+            HostContext.AppHost?.OnLogError(typeof(DtoUtils), "ServiceBase<TRequest>::Service Exception", ex);
 
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
 
-            HostContext.OnExceptionTypeFilter(ex, responseStatus);
+            HostContext.AppHost?.OnExceptionTypeFilter(ex, responseStatus);
 
             return errorResponse;
         }

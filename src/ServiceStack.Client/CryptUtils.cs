@@ -533,7 +533,7 @@ namespace ServiceStack
         public static bool VerifyData(this RSA rsa, byte[] bytes, byte[] signature, string hashAlgorithm)
         {
 #if !NETSTANDARD1_6
-            return ((RSACryptoServiceProvider)rsa).VerifyData(bytes, signature, hashAlgorithm);
+            return ((RSACryptoServiceProvider)rsa).VerifyData(bytes, hashAlgorithm, signature);
 #else
             return rsa.VerifyData(bytes, signature, ToHashAlgorithmName(hashAlgorithm), RSASignaturePadding.Pkcs1);
 #endif
