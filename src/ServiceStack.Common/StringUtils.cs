@@ -189,20 +189,13 @@ namespace ServiceStack
                     return match.Value; // ambiguous ampersand
                 }
             }
-#if !NETSTANDARD1_3
-            return ((char)decimalValue).ToString(CultureInfo.InvariantCulture);
-#else
-            return ((char)decimalValue).ToString();
-#endif
+
+            return Convert.ToString((char)decimalValue, CultureInfo.InvariantCulture);
         }
 
         public static string ToChar(this int codePoint)
         {
-#if !NETSTANDARD1_3
-            return Convert.ToChar(codePoint).ToString(CultureInfo.InvariantCulture);
-#else
-            return Convert.ToChar(codePoint).ToString();
-#endif
+            return Convert.ToString(Convert.ToChar(codePoint), CultureInfo.InvariantCulture);
         }
 
         // http://www.w3.org/TR/html5/entities.json

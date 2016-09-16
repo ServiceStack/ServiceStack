@@ -30,11 +30,11 @@ namespace ServiceStack.Reflection
             var genericMi = mi.MakeGenericMethod(pi.PropertyType);
             var typedGetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
 
-#if IOS || SL5 || NETFX_CORE || NETSTANDARD1_3
+#if IOS || SL5 || NETFX_CORE
             return x => typedGetPropertyFn.InvokeMethod(x);
 #else
 
-            var typedMi = typedGetPropertyFn.Method;
+            var typedMi = typedGetPropertyFn.Method();
             var paramFunc = Expression.Parameter(typeof(object), "oFunc");
             var expr = Expression.Lambda<Func<TEntity, object>>(
                     Expression.Convert(
@@ -80,11 +80,11 @@ namespace ServiceStack.Reflection
             var genericMi = mi.MakeGenericMethod(pi.PropertyType);
             var typedSetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
 
-#if IOS || SL5 || NETFX_CORE || NETSTANDARD1_3
+#if IOS || SL5 || NETFX_CORE
             return (x, y) => typedSetPropertyFn.InvokeMethod(x, new[] { y });
 #else
 
-            var typedMi = typedSetPropertyFn.Method;
+            var typedMi = typedSetPropertyFn.Method();
             var paramFunc = Expression.Parameter(typeof(object), "oFunc");
             var paramValue = Expression.Parameter(typeof(object), "oValue");
             var expr = Expression.Lambda<Action<TEntity, object>>(

@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace NUnitLite.Tests
 {
-    public class Program
+    public class NetCoreTestsRunner
     {
         /// <summary>
         /// The main program executes the tests. Output may be routed to
@@ -30,7 +30,7 @@ namespace NUnitLite.Tests
             JsConfig.InitStatics();
             //JsonServiceClient client = new JsonServiceClient();
             var writer = new ExtendedTextWrapper(Console.Out);
-            return new AutoRun(((IReflectableType)typeof(Program)).GetTypeInfo().Assembly).Execute(args, writer, Console.In);
+            return new AutoRun(((IReflectableType)typeof(NetCoreTestsRunner)).GetTypeInfo().Assembly).Execute(args, writer, Console.In);
         }
     }
 }

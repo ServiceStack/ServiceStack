@@ -1,4 +1,4 @@
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
 using System;
 using System.IO;
 using System.Runtime.Serialization;
@@ -18,22 +18,22 @@ namespace ServiceStack.Serialization
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
-                    using (XmlWriter xw = new XmlTextWriter(ms, Encoding.UTF8))
+                    using (XmlWriter xw = XmlWriter.Create(ms))
                     {
                         var ser = new XmlSerializerWrapper(from.GetType());
                         ser.WriteObject(xw, from);
-                        xw.Flush();
-                        ms.Seek(0, SeekOrigin.Begin);
-                        using (var reader = new StreamReader(ms))
-                        {
-                            return reader.ReadToEnd();
-                        }
+                    }
+                     
+                    ms.Position = 0;
+                    using (var reader = new StreamReader(ms))
+                    {
+                        return reader.ReadToEnd();
                     }
                 }
             }
             catch (Exception ex)
             {
-                throw new SerializationException($"Error serializing object of type {@from.GetType().FullName}", ex);
+                throw new SerializationException(string.Format("Error serializing object of type {0}", from.GetType().FullName), ex);
             }
         }
     }

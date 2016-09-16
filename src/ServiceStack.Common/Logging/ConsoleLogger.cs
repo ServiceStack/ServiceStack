@@ -1,4 +1,4 @@
-#if !(NETFX_CORE || (NETSTANDARD1_3 && !NETSTANDARD1_3))
+#if !NETFX_CORE
 using System;
 
 namespace ServiceStack.Logging
