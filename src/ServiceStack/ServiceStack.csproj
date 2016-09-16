@@ -125,6 +125,7 @@
     </Compile>
     <Compile Include="MiniProfiler\Data\ProfiledDbProviderFactory.cs" />
     <Compile Include="NativeTypes\Kotlin\KotlinGenerator.cs" />
+    <Compile Include="NetCore\NetCoreLogFactory.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="Platforms\PlatformNet.Wcf.cs" />
     <Compile Include="Platforms\PlatformNet.Config.cs" />
