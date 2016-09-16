@@ -1768,12 +1768,20 @@ namespace ServiceStack
 
         public virtual void CloseReadStream(Stream stream)
         {
+#if PCL
+            stream.Dispose();
+#else
             stream.Close();
+#endif
         }
 
         public virtual void CloseWriteStream(Stream stream)
         {
+#if PCL
+            stream.Dispose();
+#else
             stream.Close();
+#endif
         }
 
         public virtual bool IsWebException(WebException webEx)
