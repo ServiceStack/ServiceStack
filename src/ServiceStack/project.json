@@ -28,6 +28,7 @@
       "dependencies": {
         "Microsoft.AspNetCore.Http.Abstractions": "1.0.0",
         "Microsoft.Extensions.Logging.Abstractions": "1.0.0",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0",
         "System.Dynamic.Runtime": "4.0.11",
         "System.Data.Common": "4.1.0",
         "System.ComponentModel.Primitives": "4.1.0",
