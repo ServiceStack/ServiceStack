@@ -94,7 +94,7 @@ namespace ServiceStack.Host
 
             if (cookie.Expires != Session)
             {
-                sb.Append($";expires={cookie.Expires.ToString("R")}");
+                sb.Append($";expires={cookie.Expires:R}");
             }
 
             if (!string.IsNullOrEmpty(cookie.Domain))

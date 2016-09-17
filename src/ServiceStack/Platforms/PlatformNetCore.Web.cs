@@ -188,7 +188,10 @@ namespace System.Web.UI
     {
         protected virtual void Render(HtmlTextWriter output) { }
 
-        public virtual void RenderControl(HtmlTextWriter writer) { }
+        public virtual void RenderControl(HtmlTextWriter writer) 
+        {
+            Render(writer);
+        }
     }
 
     public class HtmlTextWriter

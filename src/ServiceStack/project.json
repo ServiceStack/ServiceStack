@@ -1,4 +1,13 @@
 {
+  "buildOptions": {
+    "embed": {
+      "include": [
+          "Templates/*.*",
+          "js/*.*",
+          "MiniProfiler/UI/*.*"
+      ]
+    }
+  },
   "configurations": {
     "Debug": {
       "buildOptions": {
@@ -26,7 +35,10 @@
   "frameworks": {
     "netstandard1.6": {
       "dependencies": {
+        "Microsoft.AspNetCore.Http": "1.0.0",
         "Microsoft.AspNetCore.Http.Abstractions": "1.0.0",
+        "Microsoft.AspNetCore.Http.Extensions": "1.0.0",
+        "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0",
         "Microsoft.Extensions.Logging.Abstractions": "1.0.0",
         "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0",
         "System.Dynamic.Runtime": "4.0.11",

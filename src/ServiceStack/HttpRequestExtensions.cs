@@ -345,12 +345,6 @@ namespace ServiceStack
             WebHostDirectoryName = Path.GetFileName("~".MapHostAbsolutePath());
         }
 
-        public static string GetOperationName(this HttpRequestBase request)
-        {
-            var pathInfo = request.GetLastPathInfo();
-            return GetOperationNameFromLastPathInfo(pathInfo);
-        }
-
         public static string GetOperationNameFromLastPathInfo(string lastPathInfo)
         {
             if (IsNullOrEmpty(lastPathInfo)) return null;
@@ -378,12 +372,33 @@ namespace ServiceStack
             {
                 pathInfo = GetLastPathInfoFromRawUrl(request.RawUrl);
             }
-
-            //Log.DebugFormat("Request.PathInfo: {0}, Request.RawUrl: {1}, pathInfo:{2}",
-            //    request.PathInfo, request.RawUrl, pathInfo);
-
             return pathInfo;
         }
+
+        public static string GetOperationName(this HttpRequestBase request)
+        {
+            var pathInfo = request.GetLastPathInfo();
+            return GetOperationNameFromLastPathInfo(pathInfo);
+        }
+
+#if NETSTANDARD1_6
+        public static string GetLastPathInfo(this Microsoft.AspNetCore.Http.HttpRequest request)
+        {
+            var pathInfo = request.Path;
+            if (IsNullOrEmpty(pathInfo))
+            {
+                var rawUrl = Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(request);
+                pathInfo = GetLastPathInfoFromRawUrl(rawUrl);
+            }
+            return pathInfo;
+        }
+
+        public static string GetOperationName(this Microsoft.AspNetCore.Http.HttpRequest request)
+        {
+            var pathInfo = request.GetLastPathInfo();
+            return GetOperationNameFromLastPathInfo(pathInfo);
+        }
+#endif
 
         public static string GetUrlHostName(this HttpRequestBase request)
         {
