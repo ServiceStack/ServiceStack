@@ -31,12 +31,15 @@ namespace ServiceStack
         {
             try
             {
+
+#if !NETSTANDARD1_6
                 //MONO doesn't implement this property
                 var pi = typeof(HttpRuntime).GetProperty("UsingIntegratedPipeline");
                 if (pi != null)
                 {
                     IsIntegratedPipeline = (bool)pi.GetGetMethod().Invoke(null, TypeConstants.EmptyObjectArray);
                 }
+#endif
 
                 var appHost = HostContext.AppHost;
                 var config = appHost.Config;

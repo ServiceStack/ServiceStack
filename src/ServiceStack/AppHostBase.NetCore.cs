@@ -45,7 +45,7 @@ namespace ServiceStack
             Config.WebHostPhysicalPath = env.WebRootPath ?? env.ContentRootPath;
         }
 
-        public virtual Task ProcessRequest(Microsoft.AspNetCore.Http.HttpContext context, Func<Task> next)
+        public virtual Task ProcessRequest(HttpContext context, Func<Task> next)
         {
             var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
 
@@ -84,7 +84,7 @@ namespace ServiceStack
             appHost.Init();
         }
 
-        public static IHttpRequest ToRequest(this Microsoft.AspNetCore.Http.HttpContext httpContext, string operationName = null)
+        public static IHttpRequest ToRequest(this HttpContext httpContext, string operationName = null)
         {
             var req = new NetCoreRequest(httpContext, operationName, RequestAttributes.None);
             req.RequestAttributes = req.GetAttributes();

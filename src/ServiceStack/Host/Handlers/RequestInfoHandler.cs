@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Web;
-using System.Web.Hosting;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -215,7 +214,7 @@ namespace ServiceStack.Host.Handlers
                 response.Path = aspReq.Path;
                 response.UserHostAddress = aspReq.UserHostAddress;
                 response.ApplicationPath = aspReq.ApplicationPath;
-                response.ApplicationVirtualPath = HostingEnvironment.ApplicationVirtualPath;
+                response.ApplicationVirtualPath = System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath;
                 response.VirtualAbsolutePathRoot = VirtualPathUtility.ToAbsolute("/");
                 response.VirtualAppRelativePathRoot = VirtualPathUtility.ToAppRelative("/");
 

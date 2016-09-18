@@ -468,6 +468,7 @@ namespace ServiceStack
         ProxyRevalidate = 1 << 6,
     }
 
+#if !NETSTANDARD1_6
     public static class HttpResultExtensions
     {
         public static System.Net.Cookie ToCookie(this HttpCookie httpCookie)
@@ -485,5 +486,7 @@ namespace ServiceStack
             return to;
         }
     }
+#endif
+
 }
 #endif

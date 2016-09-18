@@ -20,18 +20,16 @@ namespace ServiceStack.Metadata
         public string ContentType { get; set; }
         public string ContentFormat { get; set; }
 
+#if !NETSTANDARD1_6
         public override void Execute(HttpContextBase context)
         {
-#if !NETSTANDARD1_6
             var writer = new HtmlTextWriter(context.Response.Output);
             context.Response.ContentType = "text/html; charset=utf-8";
 
             var request = context.ToRequest();
             ProcessOperations(writer, request, request.Response);
-#else
-            throw new NotImplementedException();
-#endif
         }
+#endif
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {

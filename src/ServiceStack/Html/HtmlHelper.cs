@@ -288,9 +288,13 @@ namespace ServiceStack.Html
 		// selects the v3.5 (legacy) or v4 HTML encoder
 		private static HtmlEncoder GetHtmlEncoder()
 		{
-			return TypeHelpers.CreateDelegate<HtmlEncoder>(TypeHelpers.SystemWebAssembly, "System.Web.HttpUtility", "HtmlEncode", null)
-				?? EncodeLegacy;
-		}
+#if !NETSTANDARD1_6
+            return TypeHelpers.CreateDelegate<HtmlEncoder>(TypeHelpers.SystemWebAssembly, "System.Web.HttpUtility", "HtmlEncode", null)
+                ?? EncodeLegacy;
+#else
+            return EncodeLegacy;
+#endif
+        }
 
         internal string EvalString(string key)
         {
