@@ -21,6 +21,11 @@ namespace ServiceStack.Platforms
             return ConfigurationManager.GetSection(sectionName) != null;
         }
 
+        public override string GetNullableAppSetting(string key)
+        {
+            return ConfigurationManager.AppSettings[key];
+        }
+
         public override string GetAppSetting(string key)
         {
             string value = ConfigurationManager.AppSettings[key];
