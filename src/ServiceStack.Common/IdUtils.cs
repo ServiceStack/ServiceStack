@@ -92,12 +92,16 @@ namespace ServiceStack
         static HasId()
         {
 
-#if IOS || SL5 || NETSTANDARD1_3
+#if IOS || SL5
             GetIdFn = HasPropertyId<TEntity>.GetId;
+#else
+#if NETSTANDARD1_3
+            var hasIdInterfaces = typeof(TEntity).GetTypeInfo().ImplementedInterfaces.Where(t => t.GetTypeInfo().IsGenericType 
+                && t.GetTypeInfo().GetGenericTypeDefinition() == typeof(IHasId<>)).ToArray();
 #else
             var hasIdInterfaces = typeof(TEntity).FindInterfaces(
                 (t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IHasId<>), null);
-
+#endif
             var genericArg = hasIdInterfaces[0].GetGenericArguments()[0];
             var genericType = typeof(HasIdGetter<,>).MakeGenericType(typeof(TEntity), genericArg);
 

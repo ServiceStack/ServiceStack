@@ -101,13 +101,14 @@ namespace ServiceStack.Common.Tests
     [TestFixture]
     public class UrlExtensionTests
     {
+#if !NETCORE
         [Test]
         public void GetLeftAuthority_equals_GetUriPartialAuthority()
         {
             var uri = new Uri("http://www.domain.org:8080/path/info?query=string");
             Assert.That(uri.GetLeftAuthority(), Is.EqualTo(uri.GetLeftPart(UriPartial.Authority)));
         }
-
+#endif
         [Test]
         public void Can_create_url_with_JustId()
         {
