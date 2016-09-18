@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ServiceStack.Core.Console")]
+[assembly: AssemblyProduct("ServiceStack.Core.SelfHost")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -16,4 +16,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("fd4ed186-88c0-4be0-9c2b-d88c8a265e8c")]
+[assembly: Guid("c59feb65-d1fb-477f-b9f9-7cc2c7397d1a")]

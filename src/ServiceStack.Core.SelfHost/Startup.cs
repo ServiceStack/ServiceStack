@@ -14,13 +14,14 @@ using Microsoft.Extensions.Logging;
 using ServiceStack;
 using ServiceStack.Logging;
 using Funq;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.Extensions.Primitives;
 using ServiceStack.Host;
 using ServiceStack.Text;
 
-namespace ServiceStack.Core.Tests
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.Primitives;
+
+namespace ServiceStack.Core.SelfHost
 {
     public class Startup
     {
@@ -40,13 +41,6 @@ namespace ServiceStack.Core.Tests
                 app.UseDeveloperExceptionPage();
             }
 
-            //var dll = GetType().GetAssembly();
-            //var dllPath = GetType().GetAssemblyPath();
-            //Path.GetFullPath()
-            //(env.WebRootPath + ":" + env.ContentRootPath).Print();
-
-            var cwd = Directory.GetCurrentDirectory();
-
             app.UseServiceStack(new AppHost());
 
             app.Run(async context =>
@@ -56,7 +50,7 @@ namespace ServiceStack.Core.Tests
             });
         }
     }
-    
+
 
     [Route("/hello/{Name}")]
     public class Hello

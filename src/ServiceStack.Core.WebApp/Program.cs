@@ -1,17 +1,20 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 
-namespace ServiceStack.Core.Console
+namespace ServiceStack.Core.WebApp
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            var cwd = Directory.GetCurrentDirectory();
             var host = new WebHostBuilder()
                 .UseKestrel()
-                .UseContentRoot(cwd)
-                .UseUrls("http://localhost:55000")
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 

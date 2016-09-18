@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 
-namespace ServiceStack.Core.Tests
+namespace ServiceStack.Core.SelfHost
 {
     public class Program
     {
@@ -14,8 +14,8 @@ namespace ServiceStack.Core.Tests
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<Startup>()
+                .UseStartup<Startup>()                
+                .UseUrls("http://localhost:55000/")
                 .Build();
 
             host.Run();
