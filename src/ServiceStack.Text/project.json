@@ -24,8 +24,15 @@
     "netstandard1.1": {
       "dependencies": {},
       "bin": {
-        "assembly": "../../lib/netcore/ServiceStack.Text.dll",
-        "pdb": "../../lib/netcore/ServiceStack.Text.pdb"
+        "assembly": "../../lib/netstandard1.1/ServiceStack.Text.dll",
+        "pdb": "../../lib/netstandard1.1/ServiceStack.Text.pdb"
+      }
+    },
+    "netstandard1.3": {
+      "dependencies": {},
+      "bin": {
+        "assembly": "../../lib/netstandard1.3/ServiceStack.Text.dll",
+        "pdb": "../../lib/netstandard1.3/ServiceStack.Text.pdb"
       }
     }
   },

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace ServiceStack
 {
@@ -19,7 +20,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="enum"></param>
         /// <returns></returns>
-#if !(NETFX_CORE || NETSTANDARD1_3)
+#if !(NETFX_CORE)
         public static string ToDescription(this Enum @enum)
         {
             var type = @enum.GetType();

@@ -345,12 +345,8 @@ namespace ServiceStack.ExpressionUtil
         public override int GetHashCode()
         {
             HashCodeCombiner combiner = new HashCodeCombiner();
-#if !NETSTANDARD1_3
             Elements.ForEach(combiner.AddFingerprint);
-#else
-	    foreach(var e in Elements)
-		combiner.AddFingerprint(e);
-#endif
+
             return combiner.CombinedHash;
         }
     }
@@ -465,9 +461,9 @@ namespace ServiceStack.ExpressionUtil
 
         protected
 #if !NETSTANDARD1_3
-	override
+    	override
 #endif
-	Expression VisitDynamic(DynamicExpression node)
+    	Expression VisitDynamic(DynamicExpression node)
         {
             return GiveUp(node);
         }
