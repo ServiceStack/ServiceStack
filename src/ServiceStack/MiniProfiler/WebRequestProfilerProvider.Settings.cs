@@ -1,4 +1,6 @@
-﻿namespace ServiceStack.MiniProfiler
+﻿#if !NETSTANDARD1_6
+
+namespace ServiceStack.MiniProfiler
 {
     partial class WebRequestProfilerProvider
     {
@@ -19,3 +21,5 @@
         }
     }
 }
+
+#endif

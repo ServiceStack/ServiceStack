@@ -749,13 +749,13 @@ namespace ServiceStack
         public static List<ServerEventUser> GetChannelSubscribers(this ServerEventsClient client)
         {
             var response = client.ServiceClient.Get(new GetEventSubscribers { Channels = client.Channels });
-            return response.ConvertAll(x => x.ToServerEventUser());
+            return response.Select(x => x.ToServerEventUser()).ToList();
         }
 
         public static Task<List<ServerEventUser>> GetChannelSubscribersAsync(this ServerEventsClient client)
         {
             var responseTask = client.ServiceClient.GetAsync(new GetEventSubscribers { Channels = client.Channels });
-            return responseTask.ContinueWith(task => task.Result.ConvertAll(x => x.ToServerEventUser()));
+            return responseTask.ContinueWith(task => task.Result.Select(x => x.ToServerEventUser()).ToList());
         }
 
         internal static ServerEventUser ToServerEventUser(this Dictionary<string, string> map)

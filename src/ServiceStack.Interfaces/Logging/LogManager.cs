@@ -18,11 +18,7 @@ namespace ServiceStack.Logging
         {
             get
             {
-                if (logFactory == null)
-                {
-                    return new NullLogFactory();
-                }
-                return logFactory;
+                return logFactory ?? new NullLogFactory();
             }
             set { logFactory = value; }
         }

@@ -15,70 +15,13 @@ namespace System.Web
 {
     public interface IHttpHandler
     {
-        void ProcessRequest(HttpContext context);
+        //void ProcessRequest(HttpContext context);
     }
 
     public interface IHttpAsyncHandler : IHttpHandler
     {
         //IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData);
         //void EndProcessRequest(IAsyncResult result);
-    }
-
-    public class HttpContextBase
-    {
-        public HttpRequest Request { get; }
-        public HttpResponse Response { get; }
-        public IPrincipal User { get; }
-        public Dictionary<string, object> Items { get; }
-    }
-
-    public class HttpRequestBase
-    {
-        public string HttpMethod { get; }
-        public string ContentType { get; }
-        public string PathInfo { get; }
-        public string Path { get; }
-        public string UserHostAddress { get; }
-        public string FilePath { get; }
-        public string ApplicationPath { get; }
-        public string LogonUserIdentity { get; }
-        public string AppRelativeCurrentExecutionFilePath { get; }
-
-        public Uri Url { get; }
-
-        public string RawUrl { get; }
-        public string UserHostName { get; }
-
-        public HttpRequestContext RequestContext { get; }
-
-        public NameValueCollection Headers { get; }
-        public NameValueCollection ServerVariables { get; }
-    }
-
-    public class HttpRequest : HttpRequestBase { }
-
-    public class HttpResponseBase
-    {
-        public string ContentType { get; set; }
-        public Stream OutputStream { get; }
-
-        public TextWriter Output { get; }
-
-        public void AppendHeader(string name, string value) {}
-        public void Close() { }
-    }
-
-    public class HttpResponse : HttpResponseBase {
-    }
-
-    public class HttpContext : HttpContextBase
-    {
-        public static HttpContext Current;
-    }
-
-    public class HttpRequestContext
-    {
-        public HttpContextBase HttpContext { get; }
     }
 
     public class HtmlString : IHtmlString
@@ -98,31 +41,6 @@ namespace System.Web
     public interface IHtmlString
     {
         string ToHtmlString();
-    }
-
-    //public class HttpUtility
-    //{
-    //    public static string HtmlEncode(string requestMessage)
-    //    {
-    //        return requestMessage.ConvertHtmlCodes();
-    //    }
-    //}
-
-    public class HttpCookie
-    {
-        public HttpCookie(string name, string value)
-        {
-            Name = name;
-            Value = value;
-        }
-
-        public string Name { get; set; }
-        public string Value { get; set; }
-        public string Path { get; set; }
-        public string Domain { get; set; }
-        public DateTime Expires { get; set; }
-        public bool Secure { get; set; }
-        public bool HttpOnly { get; set; }
     }
 
     public class HttpException : Exception
@@ -148,37 +66,9 @@ namespace System.Web
         //void ReleaseHandler(IHttpHandler handler);
     }
 
-    public class HttpRuntime {}
-
     public class DefaultHttpHandler : IHttpHandler
     {
-        public void ProcessRequest(HttpContext context)
-        {
-            
-        }
-    }
-    public class VirtualPathUtility
-    {
-        public static string ToAbsolute(string path) => path;
-        public static string ToAppRelative(string path) => path;
-    }
-}
-
-namespace System.Web.Security
-{
-    public class FormsAuthentication
-    {
-        public static string FormsCookieName => ".ASPXAUTH";
-    }
-
-    public class FormsIdentity {}
-}
-
-namespace System.Web.Hosting
-{
-    public class HostingEnvironment
-    {
-        public static string ApplicationVirtualPath { get; }
+        //public void ProcessRequest(HttpContext context) {}
     }
 }
 
@@ -188,7 +78,10 @@ namespace System.Web.UI
     {
         protected virtual void Render(HtmlTextWriter output) { }
 
-        public virtual void RenderControl(HtmlTextWriter writer) { }
+        public virtual void RenderControl(HtmlTextWriter writer) 
+        {
+            Render(writer);
+        }
     }
 
     public class HtmlTextWriter

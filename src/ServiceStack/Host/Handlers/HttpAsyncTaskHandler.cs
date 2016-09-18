@@ -173,9 +173,9 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
+#if !NETSTANDARD1_6
         void IHttpHandler.ProcessRequest(HttpContext context)
         {
-#if !NETSTANDARD1_6
             var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
 
             if (task.Status == TaskStatus.Created)
@@ -186,9 +186,8 @@ namespace ServiceStack.Host.Handlers
             {
                 task.Wait();
             }
-#else
-            throw new NotImplementedException();
-#endif
         }
+#endif
+
     }
 }

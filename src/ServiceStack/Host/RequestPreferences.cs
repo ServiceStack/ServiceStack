@@ -7,21 +7,11 @@ namespace ServiceStack.Host
 {
     public class RequestPreferences : IRequestPreferences
     {
-        private readonly HttpContextBase httpContext;
         private string acceptEncoding;
 
-        public RequestPreferences(IRequest httpRequest)
-        {
-            this.acceptEncoding = httpRequest.Headers[HttpHeaders.AcceptEncoding];
-            if (this.acceptEncoding.IsNullOrEmpty())
-            {
-                this.acceptEncoding = "none";
-                return;
-            }
-            this.acceptEncoding = this.acceptEncoding.ToLower();
-        }
-
 #if !NETSTANDARD1_6
+        private readonly HttpContextBase httpContext;
+
         public RequestPreferences(HttpContextBase httpContext)
         {
             this.httpContext = httpContext;
@@ -61,6 +51,17 @@ namespace ServiceStack.Host
 #else 
         public string AcceptEncoding => acceptEncoding;
 #endif
+
+        public RequestPreferences(IRequest httpRequest)
+        {
+            this.acceptEncoding = httpRequest.Headers[HttpHeaders.AcceptEncoding];
+            if (this.acceptEncoding.IsNullOrEmpty())
+            {
+                this.acceptEncoding = "none";
+                return;
+            }
+            this.acceptEncoding = this.acceptEncoding.ToLower();
+        }
 
         public bool AcceptsGzip => AcceptEncoding != null && AcceptEncoding.Contains("gzip");
 

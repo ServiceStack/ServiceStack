@@ -74,6 +74,7 @@
     <Compile Include="ICachedServiceClient.cs" />
     <Compile Include="CsvServiceClient.cs" />
     <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
+    <Compile Include="PclExportClient.NetStandard.cs" />
     <Compile Include="PclExportClient.Xbox.cs" />
     <Compile Include="PclExportClient.Wp.cs" />
     <Compile Include="PclExportClient.SL5.cs" />

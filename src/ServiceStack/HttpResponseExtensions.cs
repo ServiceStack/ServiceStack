@@ -20,6 +20,7 @@ namespace ServiceStack
         //public static bool IsWebDevServer;
         //public static bool IsIis;
         public static bool IsHttpListener;
+        public static bool IsNetCore;
 
         static HttpResponseExtensions()
         {
@@ -29,7 +30,11 @@ namespace ServiceStack
 
             //IsWebDevServer = !Env.IsMono;
             //IsIis = !Env.IsMono;
+#if !NETSTANDARD1_6
             IsHttpListener = HttpContext.Current == null;
+#else
+            IsNetCore = true;
+#endif
         }
 
 #if !NETSTANDARD1_6

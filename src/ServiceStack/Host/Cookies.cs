@@ -62,6 +62,7 @@ namespace ServiceStack.Host
     {
         private static readonly DateTime Session = DateTime.MinValue;
 
+#if !NETSTANDARD1_6
         public static HttpCookie ToHttpCookie(this Cookie cookie)
         {
             var httpCookie = new HttpCookie(cookie.Name, cookie.Value)
@@ -81,6 +82,7 @@ namespace ServiceStack.Host
             }
             return httpCookie;
         }
+#endif
 
         public static string AsHeaderValue(this Cookie cookie)
         {
@@ -94,7 +96,7 @@ namespace ServiceStack.Host
 
             if (cookie.Expires != Session)
             {
-                sb.Append($";expires={cookie.Expires.ToString("R")}");
+                sb.Append($";expires={cookie.Expires:R}");
             }
 
             if (!string.IsNullOrEmpty(cookie.Domain))

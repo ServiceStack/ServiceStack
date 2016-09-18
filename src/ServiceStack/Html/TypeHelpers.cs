@@ -32,12 +32,14 @@ namespace ServiceStack.Html
 		private static readonly MethodInfo _strongTryGetValueImplInfo = typeof(TypeHelpers).GetMethod("StrongTryGetValueImpl", BindingFlags.NonPublic | BindingFlags.Static);
 
 		public static readonly Assembly MsCorLibAssembly = typeof(string).GetAssembly();
-		//public static readonly Assembly MvcAssembly = typeof(Controller).Assembly;
-		public static readonly Assembly SystemWebAssembly = typeof(HttpContext).GetAssembly();
+        //public static readonly Assembly MvcAssembly = typeof(Controller).Assembly;
+#if !NETSTANDARD1_6
+        public static readonly Assembly SystemWebAssembly = typeof(HttpContext).GetAssembly();
+#endif
 
-		// method is used primarily for lighting up new .NET Framework features even if MVC targets the previous version
-		// thisParameter is the 'this' parameter if target method is instance method, should be null for static method
-		public static TDelegate CreateDelegate<TDelegate>(Assembly assembly, string typeName, string methodName, object thisParameter) where TDelegate : class
+        // method is used primarily for lighting up new .NET Framework features even if MVC targets the previous version
+        // thisParameter is the 'this' parameter if target method is instance method, should be null for static method
+        public static TDelegate CreateDelegate<TDelegate>(Assembly assembly, string typeName, string methodName, object thisParameter) where TDelegate : class
 		{
 			// ensure target type exists
 			Type targetType = assembly.GetType(typeName, false /* throwOnError */);

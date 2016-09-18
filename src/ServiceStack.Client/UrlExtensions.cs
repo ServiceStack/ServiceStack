@@ -129,7 +129,7 @@ namespace ServiceStack
             var nameOnly = type.Name.LeftPart('`');
 
             var sb = StringBuilderCache.Allocate();
-            foreach (var arg in type.GetGenericArguments())
+            foreach (var arg in type.GetTypeGenericArguments())
             {
                 if (sb.Length > 0)
                     sb.Append(",");

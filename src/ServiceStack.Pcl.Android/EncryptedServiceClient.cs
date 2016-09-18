@@ -209,7 +209,7 @@ namespace ServiceStack
         public static IEncryptedClient GetEncryptedClient(this IJsonServiceClient client, string serverPublicKeyXml)
         {
             if (string.IsNullOrEmpty(serverPublicKeyXml))
-                throw new ArgumentNullException("serverPublicKeyXml");
+                throw new ArgumentNullException(nameof(serverPublicKeyXml));
 
             return new EncryptedServiceClient(client, serverPublicKeyXml);
         }

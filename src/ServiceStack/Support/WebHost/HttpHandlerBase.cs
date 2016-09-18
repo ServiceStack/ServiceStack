@@ -23,9 +23,9 @@ namespace ServiceStack.Support.WebHost
             if (Log.IsDebugEnabled)
                 log.DebugFormat($"'{GetType().GetOperationName()}' was completed in {elapsed.TotalMilliseconds}ms");
         }
-#endif
 
         public abstract void Execute(HttpContextBase context);
+#endif
 
         public override bool IsReusable => false;
     }
