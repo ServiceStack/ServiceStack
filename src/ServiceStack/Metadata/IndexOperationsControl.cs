@@ -127,12 +127,16 @@ namespace ServiceStack.Metadata
                 ForEachItem = RenderRow
             }.ToString();
 
+#if !NETSTANDARD1_6
             var xsdsPart = new ListTemplate
             {
                 Title = "XSDS:",
                 ListItemsIntMap = this.Xsds,
                 ListItemTemplate = @"<li><a href=""?xsd={0}"">{1}</a></li>"
             }.ToString();
+#else
+            var xsdsPart = "";
+#endif
 
             var wsdlTemplate = StringBuilderCache.Allocate();
             var soap11Config = MetadataConfig.GetMetadataConfig("soap11") as SoapMetadataConfig;

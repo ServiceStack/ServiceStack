@@ -168,9 +168,12 @@ namespace ServiceStack.Host.NetCore
                     return formData;
 
                 var nvc = new NameValueCollection();
-                foreach (var form in request.Form)
+                if (request.HasFormContentType)                    
                 {
-                    nvc.Add(form.Key, form.Value);
+                    foreach (var form in request.Form)
+                    {
+                        nvc.Add(form.Key, form.Value);
+                    }
                 }
                 return formData = new NameValueCollectionWrapper(nvc);
             }
@@ -205,6 +208,9 @@ namespace ServiceStack.Host.NetCore
             {
                 if (files != null)
                     return files;
+
+                if (!request.HasFormContentType)                    
+                    return new IHttpFile[0];
 
                 files = new IHttpFile[request.Form.Files.Count];
                 for (var i=0; i< request.Form.Files.Count; i++)

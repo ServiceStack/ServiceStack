@@ -25,8 +25,10 @@ namespace ServiceStack.Metadata
                 {"xml", metadataConfig.Xml},
                 {"json", metadataConfig.Json},
                 {"jsv", metadataConfig.Jsv},
+#if !NETSTANDARD1_6
                 {"soap11", metadataConfig.Soap11},
                 {"soap12", metadataConfig.Soap12},
+#endif
             };
 
             AvailableFormatConfigs = new List<MetadataConfig>();
