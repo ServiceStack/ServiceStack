@@ -8,6 +8,7 @@ using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
+using ServiceStack.Messaging;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -226,6 +227,16 @@ namespace ServiceStack
         /// The Request is provided when exists.
         /// </summary>
         string ResolveLocalizedString(string text, IRequest request);
+
+        /// <summary>
+        /// Execute MQ Message in ServiceStack
+        /// </summary>
+        object ExecuteMessage(IMessage mqMessage);
+
+        /// <summary>
+        /// Access Service Controller for ServiceStack
+        /// </summary>
+        ServiceController ServiceController { get; }
     }
 
     public interface IHasAppHost
