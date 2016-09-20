@@ -153,7 +153,7 @@ namespace ServiceStack.Host.NetCore
                 var nvc = new NameValueCollection();
                 foreach (var query in request.Query)
                 {
-                    nvc.Add(query.Key, PclExportClient.Instance.UrlDecode(query.Value));
+                    nvc.Add(query.Key, query.Value);
                 }
                 return queryString = new NameValueCollectionWrapper(nvc);
             }
@@ -195,7 +195,7 @@ namespace ServiceStack.Host.NetCore
 
         public string[] AcceptTypes => request.Headers[HttpHeaders.Accept].ToArray();
 
-        public string PathInfo => request.Path;
+        public string PathInfo => WebUtility.UrlDecode(request.Path);
 
         public Stream InputStream => request.Body;
 
