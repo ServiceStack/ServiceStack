@@ -59,6 +59,9 @@ namespace ServiceStack
                 if (serviceStackHandler is NotFoundHttpHandler)
                     return next();
 
+                if (!string.IsNullOrEmpty(serviceStackHandler.RequestName))
+                    operationName = serviceStackHandler.RequestName;
+
                 var restHandler = serviceStackHandler as RestHandler;
                 if (restHandler != null)
                 {
