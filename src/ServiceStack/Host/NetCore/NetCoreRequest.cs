@@ -153,7 +153,7 @@ namespace ServiceStack.Host.NetCore
                 var nvc = new NameValueCollection();
                 foreach (var query in request.Query)
                 {
-                    nvc.Add(query.Key, query.Value);
+                    nvc.Add(query.Key, PclExportClient.Instance.UrlDecode(query.Value));
                 }
                 return queryString = new NameValueCollectionWrapper(nvc);
             }
