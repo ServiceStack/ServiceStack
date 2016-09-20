@@ -347,13 +347,8 @@ namespace ServiceStack
 #if NETSTANDARD1_6
         public static string GetLastPathInfo(this Microsoft.AspNetCore.Http.HttpRequest request)
         {
-            var pathInfo = request.Path;
-            if (IsNullOrEmpty(pathInfo))
-            {
-                var rawUrl = Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(request);
-                pathInfo = GetLastPathInfoFromRawUrl(rawUrl);
-            }
-            return pathInfo;
+            var rawUrl = Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(request);
+            return GetLastPathInfoFromRawUrl(rawUrl);
         }
 
         public static string GetOperationName(this Microsoft.AspNetCore.Http.HttpRequest request)
@@ -422,12 +417,7 @@ namespace ServiceStack
 
         public static string GetLastPathInfo(this HttpRequestBase request)
         {
-            var pathInfo = request.PathInfo;
-            if (IsNullOrEmpty(pathInfo))
-            {
-                pathInfo = GetLastPathInfoFromRawUrl(request.RawUrl);
-            }
-            return pathInfo;
+            return GetLastPathInfoFromRawUrl(request.RawUrl);
         }
 
         public static string GetOperationName(this HttpRequestBase request)
