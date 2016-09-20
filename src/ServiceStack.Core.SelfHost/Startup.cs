@@ -52,24 +52,28 @@ namespace ServiceStack.Core.SelfHost
     }
 
 
+    [Route("/hello")]
     [Route("/hello/{Name}")]
-    public class Hello
+    public class Hello : IReturn<HelloResponse>
     {
         public string Name { get; set; }
     }
 
-    public class HelloService : Service
+    public class HelloResponse
     {
-        public object Any(Hello request)
-        {
-            return request;
-        }
+        public string Result { get; set; }
+    }
+
+    public class MyServices : Service
+    {
+        public object Any(Hello request) => 
+            new HelloResponse { Result = $"Hello, {request.Name ?? "World"}!" };
     }
 
     public class AppHost : AppHostBase
     {
         public AppHost()
-            : base(".NET Core Test", typeof(HelloService).GetAssembly()) { }
+            : base(".NET Core Test", typeof(MyServices).GetTypeInfo().Assembly) { }
 
         public override void Configure(Container container)
         {
