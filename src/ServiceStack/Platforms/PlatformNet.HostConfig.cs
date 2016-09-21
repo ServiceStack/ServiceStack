@@ -49,7 +49,7 @@ namespace ServiceStack.Platforms
             return razorNamespaces;
         }
 
-        public static string GetAppConfigPath()
+        public override string GetAppConfigPath()
         {
             if (ServiceStackHost.Instance == null) return null;
 

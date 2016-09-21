@@ -22,16 +22,24 @@ namespace ServiceStack
 {
     public abstract class AppHostBase : ServiceStackHost
     {
+        internal static AppHostBase NetCoreInstance;
+        
         protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices) {}
+            : base(serviceName, assembliesWithServices) 
+            {
+                NetCoreInstance = this;
+            }
 
         IApplicationBuilder app;
 
         public virtual void Bind(IApplicationBuilder app)
         {
             this.app = app;
-            LogManager.LogFactory = new NetCoreLogFactory(
-                app.ApplicationServices.GetService<ILoggerFactory>());
+            var logFactory = app.ApplicationServices.GetService<ILoggerFactory>();
+            if (logFactory != null)
+            {
+                LogManager.LogFactory = new NetCoreLogFactory(logFactory);
+            }
 
             Container.Adapter = new NetCoreContainerAdapter(app.ApplicationServices);
 

@@ -16,7 +16,11 @@ namespace ServiceStack.Configuration
 #if !NETSTANDARD1_6
                 return ConfigurationManager.AppSettings[key];
 #else
-                return null;
+                var appSettings = ConfigUtils.GetAppSettingsMap();
+                string value;
+                return appSettings.TryGetValue(key, out value)
+                    ? value
+                    : null;
 #endif
             }
 
@@ -25,7 +29,8 @@ namespace ServiceStack.Configuration
 #if !NETSTANDARD1_6
                 return new List<string>(ConfigurationManager.AppSettings.AllKeys);
 #else
-                return TypeConstants.EmptyStringList;
+                var appSettings = ConfigUtils.GetAppSettingsMap();
+                return appSettings.Keys.ToList();
 #endif
             }
         }

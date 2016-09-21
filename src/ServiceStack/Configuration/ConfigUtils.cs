@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Xml;
 
 namespace ServiceStack.Configuration
 {
@@ -82,6 +84,55 @@ namespace ServiceStack.Configuration
                 dictionary.Add(keyValuePair[KeyIndex], keyValuePair[ValueIndex]);
             }
             return dictionary;
+        }
+
+        private static Dictionary<string, string> appSettings;
+
+        public static Dictionary<string, string> GetAppSettingsMap()
+        {
+            if (appSettings == null)
+            {
+                var map = new Dictionary<string, string>();
+                var appConfigPath = Platform.Instance.GetAppConfigPath();
+                if (appConfigPath != null)
+                {
+                    var xml = File.ReadAllText(appConfigPath);
+                    using (var reader = XmlReader.Create(new StringReader(xml)))
+                    {
+                        var inAppSettings = false;
+                        while (reader.Read())
+                        {
+                            if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "appSettings")
+                                break;
+
+                            if (reader.NodeType != XmlNodeType.Element)
+                                continue;
+
+                            var elName = reader.Name;
+                            if (elName == "appSettings")
+                            {
+                                inAppSettings = true;
+                                continue;
+                            }
+
+                            if (!inAppSettings)
+                                continue;
+
+                            if (elName == "add")
+                            {
+                                var key = reader.GetAttribute("key");
+                                if (key != null)
+                                {
+                                    var value = reader.GetAttribute("value");
+                                    map[key] = value;
+                                }
+                            }
+                        }
+                    }
+                }
+                appSettings = map;
+            }
+            return appSettings;
         }
 
     }

@@ -131,6 +131,8 @@
     </Compile>
     <Compile Include="MiniProfiler\Data\ProfiledDbProviderFactory.cs" />
     <Compile Include="NativeTypes\Kotlin\KotlinGenerator.cs" />
+    <Compile Include="NetCore\NetCoreContainerAdapter.cs" />
+    <Compile Include="NetCore\NetCoreLogFactory.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="Platforms\PlatformNet.Wcf.cs" />
     <Compile Include="Platforms\PlatformNet.Config.cs" />
@@ -138,6 +140,7 @@
     <Compile Include="Platforms\PlatformNet.Web.cs" />
     <Compile Include="Platforms\PlatformNetCore.cs" />
     <Compile Include="Platforms\PlatformNetCore.Web.cs" />
+    <Compile Include="Platforms\PlatformNetCore.HostConfig.cs" />
     <Compile Include="RequiresSchemaProviders.cs" />
     <Compile Include="CancellableRequestsFeature.cs" />
     <Compile Include="Configuration\EnvironmentVariableSettings.cs" />

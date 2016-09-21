@@ -165,6 +165,7 @@
     <Compile Include="AttributeTests.cs" />
     <Compile Include="CheckWebTests.cs" />
     <Compile Include="Configuration\AppSettingsTests.cs" />
+    <Compile Include="Configuration\ConfigUtilsTests.cs" />
     <Compile Include="CryptUtilTest.cs" />
     <Compile Include="DynamoConfig.cs" />
     <Compile Include="EndpointHandlerBaseTests.cs" />

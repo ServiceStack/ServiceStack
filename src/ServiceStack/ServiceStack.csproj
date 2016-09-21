@@ -134,6 +134,7 @@
     <Compile Include="Platforms\PlatformNet.Web.cs" />
     <Compile Include="Platforms\PlatformNetCore.cs" />
     <Compile Include="Platforms\PlatformNetCore.Web.cs" />
+    <Compile Include="Platforms\PlatformNetCore.HostConfig.cs" />
     <Compile Include="RequiresSchemaProviders.cs" />
     <Compile Include="CancellableRequestsFeature.cs" />
     <Compile Include="Configuration\EnvironmentVariableSettings.cs" />

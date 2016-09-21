@@ -1,10 +1,10 @@
-﻿using System;
+﻿#if NETSTANDARD1_6
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Web;
-
-#if NETSTANDARD1_6
 
 namespace System.Configuration
 {
