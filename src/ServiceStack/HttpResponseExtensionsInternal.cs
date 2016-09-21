@@ -350,6 +350,13 @@ namespace ServiceStack
                 (int)HttpStatusCode.InternalServerError);
         }
 
+        public static void WriteError(this IResponse httpRes, object dto, string errorMessage)
+        {
+            var httpReq = httpRes.Request;
+            httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, dto.GetType().Name, errorMessage, null,
+                (int)HttpStatusCode.InternalServerError);
+        }
+
         public static Task WriteErrorToResponse(this IResponse httpRes, IRequest httpReq,
             string contentType, string operationName, string errorMessage, Exception ex, int statusCode)
         {

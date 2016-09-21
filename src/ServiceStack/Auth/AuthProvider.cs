@@ -314,8 +314,7 @@ namespace ServiceStack.Auth
             }
 
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
-            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\""
-                .Fmt(authProvider.Provider, authProvider.AuthRealm));
+            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"{authProvider.Provider} realm=\"{authProvider.AuthRealm}\"");
 
             httpRes.EndRequest();
         }
