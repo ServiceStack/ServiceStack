@@ -42,77 +42,77 @@ namespace ServiceStack.NetCore
 
         public void Debug(object message)
         {
-            log.LogDebug(null, message.ToString());
+            log.LogDebug(message.ToString());
         }
 
         public void Debug(object message, Exception exception)
         {
-            log.LogDebug(null, message.ToString(), exception);
+            log.LogDebug(message.ToString(), exception);
         }
 
         public void DebugFormat(string format, params object[] args)
         {
-            log.LogDebug(null, format, args);
+            log.LogDebug(format, args);
         }
 
         public void Error(object message)
         {
-            log.LogError(null, message.ToString());
+            log.LogError(message.ToString());
         }
 
         public void Error(object message, Exception exception)
         {
-            log.LogError(null, message.ToString(), exception);
+            log.LogError(message.ToString(), exception);
         }
 
         public void ErrorFormat(string format, params object[] args)
         {
-            log.LogError(null, format, args);
+            log.LogError(format, args);
         }
 
         public void Fatal(object message)
         {
-            log.LogCritical(null, message.ToString());
+            log.LogCritical(message.ToString());
         }
 
         public void Fatal(object message, Exception exception)
         {
-            log.LogCritical(null, message.ToString(), exception);
+            log.LogCritical(message.ToString(), exception);
         }
 
         public void FatalFormat(string format, params object[] args)
         {
-            log.LogCritical(null, format, args);
+            log.LogCritical(format, args);
         }
 
         public void Info(object message)
         {
-            log.LogInformation(null, message.ToString());
+            log.LogInformation(message.ToString());
         }
 
         public void Info(object message, Exception exception)
         {
-            log.LogInformation(null, message.ToString(), exception);
+            log.LogInformation(message.ToString(), exception);
         }
 
         public void InfoFormat(string format, params object[] args)
         {
-            log.LogInformation(null, format, args);
+            log.LogInformation(format, args);
         }
 
         public void Warn(object message)
         {
-            log.LogWarning(null, message.ToString());
+            log.LogWarning(message.ToString());
         }
 
         public void Warn(object message, Exception exception)
         {
-            log.LogWarning(null, message.ToString(), exception);
+            log.LogWarning(message.ToString(), exception);
         }
 
         public void WarnFormat(string format, params object[] args)
         {
-            log.LogWarning(null, format, args);
+            log.LogWarning(format, args);
         }
     }
 }
