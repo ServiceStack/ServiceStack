@@ -94,13 +94,6 @@ namespace ServiceStack
             appHost.Bind(app);
             appHost.Init();
         }
-
-        public static IHttpRequest ToRequest(this HttpContext httpContext, string operationName = null)
-        {
-            var req = new NetCoreRequest(httpContext, operationName, RequestAttributes.None);
-            req.RequestAttributes = req.GetAttributes();
-            return req;
-        }
     }
 }
 
