@@ -48,9 +48,12 @@ namespace ServiceStack
 
         public override void OnConfigLoad()
         {
-            //Initialize VFS
-            var env = app.ApplicationServices.GetService<IHostingEnvironment>();
-            Config.WebHostPhysicalPath = env.WebRootPath ?? env.ContentRootPath;
+            if (app != null)
+            {
+                //Initialize VFS
+                var env = app.ApplicationServices.GetService<IHostingEnvironment>();
+                Config.WebHostPhysicalPath = env.WebRootPath ?? env.ContentRootPath;
+            }
         }
 
         public virtual Task ProcessRequest(HttpContext context, Func<Task> next)
