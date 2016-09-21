@@ -26,9 +26,9 @@ namespace ServiceStack
         
         protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) 
-            {
-                NetCoreInstance = this;
-            }
+        {
+            NetCoreInstance = this;
+        }
 
         IApplicationBuilder app;
 

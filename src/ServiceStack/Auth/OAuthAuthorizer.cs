@@ -157,10 +157,11 @@ namespace ServiceStack.Auth
             string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, null);
             string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
+            headers.Add("oauth_signature", OAuthUtils.PercentEncode(oauth_signature));
+
             try
             {
                 var strResponse = provider.RequestTokenUrl.PostStringToUrl("", requestFilter: req => {
-                    req.Headers["oauth_signature"] = OAuthUtils.PercentEncode(oauth_signature);
                     req.Headers[HttpRequestHeader.Authorization] = HeadersToOAuth(headers);
                 });
                 var result = PclExportClient.Instance.ParseQueryString(strResponse);
