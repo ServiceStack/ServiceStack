@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ServiceStack Chat</title>
+    <link href="/img/favicon.png" rel="icon">
+    <link href="/default.css" rel="stylesheet" />
+    <script src="/jquery-2.1.1.min.js"></script>
+    <script src="/js/ss-utils.js"></script>
+    <style>
+        body {
+            background-image: url(/img/bg.jpg);
+        }
+    </style>
+</head>
+<body>
+    <div id="top">
+        <a href="https://github.com/ServiceStackApps/LiveDemos">
+            <img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-32-inverted.png" style="height:28px; padding: 10px 0 0 0" />
+        </a>
+        <div id="social">
+            <div id="welcome"></div>
+            <span class="noauth">
+                <a href="/auth/twitter" class="twitter"></a>
+                <a href="/auth/facebook" class="facebook"></a>
+                <a href="/auth/github" class="github"></a>
+            </span>
+        </div>
+        <ul id="channels" style="margin: 0 0 0 30px">
+            <li style="background: none; padding: 0 0 0 5px;">
+                <button onclick="var chan = prompt('Join another Channel:', 'ChannelName'); if (chan) location.href = '?channels=' + channelStr + ',' + chan.replace(/\s+/g, '');">+</button>
+            </li>
+            <li style="background: none;padding: 0;">
+                <span style="font-size: 13px; color: #ccc" onclick="$('#logs [data-channel]').html('')">clear</span>
+            </li>
+        </ul>
+    </div>
+    <div id="announce"></div>
+    <div id="tv"></div>
+    <div id="right">
+        <div id="users"></div>
+        <div id="examples" data-click="sendCommand">
+            <span style="position:absolute; top: 2px; right:7px" data-click="toggleExamples">hide</span>
+            <h4><a href="https://github.com/ServiceStackApps/Chat#global-event-handlers">Example Commands</a></h4>
+            <div>/cmd.announce This is your captain speaking ...</div>
+            <div>/cmd.toggle$#channels</div>
+            <h4><a href="https://github.com/ServiceStackApps/Chat#modifying-css-via-jquery">CSS</a></h4>
+            <div>/css.background-image url(http://bit.ly/1oQqhtm)</div>
+            <div>/css.background-image url(http://bit.ly/1yIJOBH)</div>
+            <div>@me /css.background #eceff1</div>
+            <div>/css.background$#top #673ab7</div>
+            <div>/css.background$#bottom #0091ea</div>
+            <div>/css.background$#right #fffde7</div>
+            <div>/css.color$#welcome #ff0</div>
+            <div>/css.visibility$img,a hidden</div>
+            <div>/css.visibility$img,a visible</div>
+            <h4><a href="https://github.com/ServiceStackApps/Chat#receivers">Receivers</a></h4>
+            <div>/tv.watch http://youtu.be/518XP8prwZo</div>
+            <div>/tv.watch https://servicestack.net/img/logo-220.png</div>
+            <div>@me /tv.off</div>
+            <div>/document.title New Window Title</div>
+            <div>/cmd.addReceiver window</div>
+            <div>/window.location http://google.com</div>
+            <div>/cmd.removeReceiver window</div>
+            <h4><a href="https://github.com/ServiceStackApps/Chat#jquery-events">Triggers</a></h4>
+            <div>/trigger.customEvent arg</div>
+            <div>/cmd.stopListening</div>
+            <div data-click="startListening">startListening</div>
+        </div>
+    </div>
+
+    <div id="logs"></div>
+    <div id="bottom">
+        <input type="text" id="txtMsg" onfocus="this.value = this.value;" />
+        <button id="btnSend">Send</button>
+    </div>
+
+    <script>
+        $.getJSON("auth", function (r) {
+            $(".noauth").css({ display: 'none' });
+        }, function(e) {
+            $(".noauth").css({ display: 'block' });
+        });
+
+        var channelStr = $.ss.queryString(location.href)["channels"] || "home";
+        var channels = channelStr.split(",");
+
+        $("#channels").prepend($.map(channels, function (c) { return '<li data-click="changeChannel:' + c + '" data-channel="' + c + '">' + c + '</li>'; }));
+        $("#logs").append($.map(channels, function (c) { return '<div class="channel" data-channel="' + c + '"></div>'; }));
+        var selectedChannel = function () { return $("#channels .selected").html(); };
+
+        var source = new EventSource('/event-stream?channels=' + channelStr + '&t=' + new Date().getTime()); //disable cache
+        source.addEventListener('error', function (e) {
+            console.log(e);
+            addEntry({ msg: "ERROR!", cls: "error" });
+        }, false);
+
+        var $txtMsg = $("#txtMsg").focus(), usersMap = {}, activeSub = null;
+        function refreshUsers() {
+            $.getJSON("/event-subscribers?channels=" + channelStr, function (users) {
+                usersMap = {};
+                $.map(users, function (user) { usersMap[user.userId] = user; });
+                $("#users").html($.map(channels, function (c) {
+                    var usersInChannel = $.grep($.map(usersMap, function (u) { return u; }), function (u) { return u.channels.split(',').indexOf(c) >= 0; });
+                    return '<div class="channel" data-channel="' + c + '">'
+                        + $.map(usersInChannel, function (u) { return createUser(u); }).join('')
+                        + '</div>';
+                }).join(''));
+                $.ss.handlers["changeChannel"](selectedChannel());
+            });
+        }
+
+        $.ss.eventReceivers = { "document": document };
+        $(source).handleServerEvents({
+            handlers: {
+                onConnect: function (u) {
+                    console.log(u);
+                    activeSub = u;
+                    $("#welcome").html('<span>Welcome, ' + u.displayName + '</span>' + '<img src="' + u.profileUrl + '"/>');
+                    $("#logs .channel").html("");
+                    addEntry({ msg: "CONNECTED!", cls: "open" });
+                    $.getJSON("/chathistory?channels=" + channelStr, function (r) {
+                        $.map(r.results, $.ss.handlers["chat"]);
+                    });
+                    refreshUsers();
+                },
+                onHeartbeat: function (msg, e) { if (console) console.log("onHeartbeat", msg, e); },
+                onJoin: refreshUsers,
+                onLeave: refreshUsers,
+                chat: function (m, e) {
+                    addEntry({ id: m.id, userId: m.fromUserId, userName: m.fromName, msg: m.message, cls: m.private ? ' private' : '', channel: m.channel || e.channel });
+                },
+                stopListening: function () { $.ss.eventSource.close(); }
+            },
+            receivers: {
+                tv: {
+                    watch: function (id) {
+                        if (id.indexOf('youtube.com') >= 0) {
+                            var qs = $.ss.queryString(id);
+                            $("#tv").html(templates.youtube.replace("{id}", qs["v"])).show();
+                        }
+                        else if (id.indexOf('youtu.be') >= 0) {
+                            var v = $.ss.splitOnLast(id, '/')[1];
+                            $("#tv").html(templates.youtube.replace("{id}", v)).show();
+                        } else {
+                            $("#tv").html(templates.generic.replace("{id}", id)).show();
+                        }
+                    },
+                    off: function () {
+                        $("#tv").hide().html("");
+                    }
+                }
+            }
+        });
+        var templates = {
+            youtube: '<iframe width="640" height="360" src="//www.youtube.com/embed/{id}?autoplay=1" frameborder="0" allowfullscreen></iframe>',
+            generic: '<iframe width="640" height="360" src="{id}" frameborder="0"></iframe>'
+        };
+
+        $(document).bindHandlers({
+            announce: function (msg) {
+                $("#announce").html(msg).fadeIn('fast');
+                setTimeout(function () { $("#announce").fadeOut('slow'); }, 2000);
+            },
+            toggle: function () {
+                $(this).toggle();
+            },
+            sendCommand: function () {
+                $("#txtMsg").val($(this).html()).focus();
+            },
+            privateMsg: function () {
+                $txtMsg.val("@" + this.innerHTML + " ").focus();
+            },
+            removeReceiver: function (name) {
+                delete $.ss.eventReceivers[name];
+            },
+            addReceiver: function (name) {
+                $.ss.eventReceivers[name] = window[name];
+            },
+            toggleExamples: function () {
+                var willHide = this.innerHTML == "hide";
+                $(this).html(willHide ? "show" : "hide").parent().css({ height: willHide ? '25px' : 'auto' });
+            },
+            changeChannel: function (channel) {
+                $("[data-channel]").removeClass('selected');
+                $("[data-channel=" + channel + "]").addClass('selected');
+                $("#txtMsg").focus();
+            },
+            startListening: function () { $.ss.reconnectServerEvents(); }
+        }).on('customEvent', function (e, msg, msgEvent) {
+            addEntry({ msg: "[event " + e.type + " message: " + msg + "]", cls: "event", channel: msgEvent.channel });
+        });
+        $.ss.handlers["changeChannel"](channels[channels.length - 1]);
+
+        function addEntry(o) {
+            console.log("addEntry", o);
+            var id = "u_" + o.userId + "";
+            var skipUser = $("#log .msg:last-child b").hasClass(id);
+            var inactive = $(createUser($.extend(o, { displayName: o.userName }))).html();
+            var user = o.userId && !skipUser ? "<b class='user " + id + "'>" + ($("#users ." + id).html() || inactive) + "</b>" : "<b class=" + id + ">&nbsp;</b>";
+            var time = "<i>" + $.ss.tfmt12(new Date()) + "</i>";
+            var highlight = o.msg.indexOf(activeSub.displayName.replace(" ", "")) >= 0 ? "highlight " : "";
+            var filter = o.channel ? "=" + o.channel : "";
+            $("#logs [data-channel" + filter + "]").append("<div id='m_" + (o.id || "0") + "' class='msg " + highlight + o.cls + "'>" +
+                user + time + "<div>" + o.msg + "</div>" + "</div>").scrollTop(1E10);
+        }
+        function createUser(user) {
+            return "<div class='user u_" + user.userId + "'><img src='" + (user.profileUrl || "/img/no-profile64.png") + "'/><span data-id='" +
+                user.userId + "' data-click='privateMsg'>" + user.displayName + "</span></div>";
+        }
+
+        var msgHistory = [], historyIndex = -1;
+        function postMsg() {
+            var msg = $txtMsg.val(), parts, to = null;
+            msgHistory.push(msg);
+
+            if (msg[0] == "@") {
+                parts = $.ss.splitOnFirst(msg, " ");
+                var toName = parts[0].substring(1);
+                if (toName == "me") {
+                    to = activeSub.userId;
+                } else {
+                    var matches = $.grep($("#users .user span"),
+                        function (x) { return x.innerHTML.replace(" ", "").toLowerCase() === toName.toLowerCase(); });
+                    to = matches.length > 0 ? matches[0].getAttribute("data-id") : null;
+                }
+                msg = parts[1];
+            }
+            if (!msg || !activeSub) return;
+            var onError = function (e) {
+                if (e.responseJSON && e.responseJSON.responseStatus)
+                    $.ss.handlers["announce"](e.responseJSON.responseStatus.message);
+            };
+            var channel = selectedChannel();
+            if (msg[0] == "/") {
+                parts = $.ss.splitOnFirst(msg, " ");
+                $.post("/channels/" + channel + "/raw", { from: activeSub.id, toUserId: to, message: parts[1], selector: parts[0].substring(1) }, function () { }).fail(onError);
+            } else {
+                $.post("/channels/" + channel + "/chat", { from: activeSub.id, toUserId: to, message: msg, selector: "cmd.chat" }, function () { }).fail(onError);
+            }
+            $txtMsg.val("");
+        }
+        $("#btnSend").click(postMsg);
+
+        $txtMsg.keydown(function (e) {
+            var keycode = (e.keyCode ? e.keyCode : e.which);
+            if ($.ss.getSelection()) {
+                if (keycode == '9' || keycode == '13' || keycode == '32' || keycode == '39') {
+                    this.value += " ";
+                    if (this.setSelectionRange) this.setSelectionRange(this.value.length, this.value.length);
+                    return false;
+                }
+            }
+            if (keycode == '13') { //enter
+                postMsg();
+            } else if (keycode == '38') { //up arrow
+                historyIndex = Math.min(++historyIndex, msgHistory.length);
+                $txtMsg.val(msgHistory[msgHistory.length - 1 - historyIndex]);
+                return false;
+            }
+            else if (keycode == '40') { //down arrow
+                historyIndex = Math.max(--historyIndex, -1);
+                $txtMsg.val(msgHistory[msgHistory.length - 1 - historyIndex]);
+            } else {
+                historyIndex = -1;
+            }
+        }).keyup(function (e) {
+            if (!$.ss.getSelection() && this.value[0] == '@' && this.value.indexOf(' ') < 0) {
+                var partialVal = this.value.substring(1);
+                var matchingNames = $.grep($("#users .user span")
+                    .map(function () { return this.innerHTML.replace(" ", ""); }), function (x) {
+                        return x.substring(0, partialVal.length).toLowerCase() === partialVal.toLowerCase()
+                            && x.toLowerCase() != activeSub.displayName.toLowerCase();
+                    });
+
+                if (matchingNames.length > 0) {
+                    this.value += matchingNames[0].substring(partialVal.length);
+                    if (this.setSelectionRange) this.setSelectionRange(partialVal.length + 1, this.value.length);
+                    return false;
+                }
+            }
+        });
+    
+</script>
+
+</body>
+</html>

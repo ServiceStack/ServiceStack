@@ -15,6 +15,12 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ServiceStack.Interfaces", "
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ServiceStack.Text", "ServiceStack.Text\ServiceStack.Text.xproj", "{1392785A-B8DB-4221-80EB-CCBB07F8A42C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ChatSelfHost", "ChatSelfHost\ChatSelfHost.xproj", "{80869D50-8823-4EEA-9B84-27200D35F663}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ServiceStack.Redis", "ServiceStack.Redis\ServiceStack.Redis.xproj", "{C2B7009A-ABED-44E0-AB82-E69CC8C7A17A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,8 +51,20 @@ Global
 		{1392785A-B8DB-4221-80EB-CCBB07F8A42C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1392785A-B8DB-4221-80EB-CCBB07F8A42C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1392785A-B8DB-4221-80EB-CCBB07F8A42C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80869D50-8823-4EEA-9B84-27200D35F663}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80869D50-8823-4EEA-9B84-27200D35F663}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80869D50-8823-4EEA-9B84-27200D35F663}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80869D50-8823-4EEA-9B84-27200D35F663}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2B7009A-ABED-44E0-AB82-E69CC8C7A17A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2B7009A-ABED-44E0-AB82-E69CC8C7A17A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2B7009A-ABED-44E0-AB82-E69CC8C7A17A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2B7009A-ABED-44E0-AB82-E69CC8C7A17A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C59FEB65-D1FB-477F-B9F9-7CC2C7397D1A} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
+		{80869D50-8823-4EEA-9B84-27200D35F663} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
 	EndGlobalSection
 EndGlobal
