@@ -14,7 +14,10 @@ namespace ServiceStack.Platforms
 
         public override string GetAppConfigPath()
         {
-            var hostInstance = ServiceStackHost.Instance ?? AppHostBase.NetCoreInstance;
+            var hostInstance = ServiceStackHost.Instance
+                ?? AppHostBase.NetCoreInstance
+                ?? AppSelfHostBase.NetCoreInstance;
+
             if (hostInstance == null) return null;
 
             var configPath = "~/../web.config".MapProjectPath();
