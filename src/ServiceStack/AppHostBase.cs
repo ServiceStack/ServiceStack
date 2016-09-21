@@ -43,6 +43,10 @@ namespace ServiceStack
                 return null;
             }
         }
+        public override string MapProjectPath(string relativePath)
+        {
+            return relativePath.MapHostAbsolutePath();
+        }
     }
 }
 #endif

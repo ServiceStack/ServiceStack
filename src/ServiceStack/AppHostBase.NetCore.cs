@@ -88,6 +88,10 @@ namespace ServiceStack
 
             return next();
         }
+        public override string MapProjectPath(string relativePath)
+        {
+            return relativePath.MapHostAbsolutePath();
+        }
     }
 
     public static class NetCoreExtensions

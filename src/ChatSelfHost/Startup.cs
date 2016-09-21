@@ -48,7 +48,7 @@ namespace Chat
     {
         public AppHost() : base("Chat", typeof(ServerEventsServices).GetTypeInfo().Assembly)
         {
-            var liveSettings = "~/appsettings.txt".MapHostAbsolutePath();
+            var liveSettings = MapProjectPath("~/appsettings.txt");
             AppSettings = File.Exists(liveSettings)
                 ? (IAppSettings)new TextFileSettings(liveSettings)
                 : new AppSettings();

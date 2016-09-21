@@ -876,6 +876,11 @@ namespace ServiceStack
             GlobalTypedMessageResponseFilters[typeof(T)] = new TypedFilter<T>(filterFn);
         }
 
+        public virtual string MapProjectPath(string relativePath)
+        {
+            return relativePath.MapProjectPath();
+        }
+
         public virtual void Dispose()
         {
             foreach (var callback in OnDisposeCallbacks)

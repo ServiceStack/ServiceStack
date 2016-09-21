@@ -8,37 +8,35 @@ namespace ServiceStack.Platforms
     public partial class PlatformNetCore : Platform
     {
         const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
-        const string ErrorConnectionStringNotFound = "Unable to find Connection String: {0}";
-        const string ErrorCreatingType = "Error creating type {0} from text '{1}";
         public const string ConfigNullValue = "{null}";
 
         public override string GetAppConfigPath()
         {
-            var hostInstance = ServiceStackHost.Instance
+            var host = ServiceStackHost.Instance
                 ?? (ServiceStackHost) AppHostBase.NetCoreInstance
                 ?? AppSelfHostBase.NetCoreInstance;
 
-            if (hostInstance == null) return null;
+            if (host == null) return null;
 
-            var configPath = "~/../web.config".MapProjectPath();
+            var configPath = host.MapProjectPath("~/web.config");
             if (File.Exists(configPath))
                 return configPath;
 
-            configPath = "~/../app.config".MapProjectPath();
+            configPath = host.MapProjectPath("~/app.config");
             if (File.Exists(configPath))
                 return configPath;
 
             //*nix FS FTW!
-            configPath = "~/../Web.config".MapProjectPath(); 
+            configPath = host.MapProjectPath("~/Web.config"); 
             if (File.Exists(configPath))
                 return configPath;
 
-            configPath = "~/../App.config".MapProjectPath(); 
+            configPath = host.MapProjectPath("~/App.config"); 
             if (File.Exists(configPath))
                 return configPath;
 
             //dll App.config
-            var appHostDll = new FileInfo(hostInstance.GetType().GetAssembly().Location).Name;
+            var appHostDll = new FileInfo(host.GetType().GetAssembly().Location).Name;
             configPath = $"~/{appHostDll}.config".MapAbsolutePath();
             return File.Exists(configPath) 
                 ? configPath 
