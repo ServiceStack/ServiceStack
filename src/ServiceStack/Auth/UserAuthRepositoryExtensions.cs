@@ -137,7 +137,7 @@ namespace ServiceStack.Auth
         {
             var userRepo = repo as IUserAuthRepository;
             if (userRepo == null)
-                throw new NotSupportedException("This opertation requires a IUserAuthRepository");
+                throw new NotSupportedException("This operation requires a IUserAuthRepository");
 
             return userRepo;
         }
