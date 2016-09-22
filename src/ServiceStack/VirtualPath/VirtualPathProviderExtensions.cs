@@ -145,7 +145,7 @@ namespace ServiceStack.VirtualPath
             if (writableFs == null)
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
-            writableFs.WriteFiles(srcFiles);
+            writableFs.WriteFiles(srcFiles, toPath);
         }
 
         public static void CopyFrom(this IVirtualPathProvider pathProvider, IEnumerable<IVirtualFile> srcFiles, Func<IVirtualFile, string> toPath=null)
