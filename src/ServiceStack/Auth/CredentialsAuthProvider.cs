@@ -93,14 +93,20 @@ namespace ServiceStack.Auth
             return Authenticate(authService, session, userName, password, string.Empty);
         }
 
-        protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
+        protected virtual IAuthSession ResetSessionBeforeLogin(IServiceBase authService, IAuthSession session, string userName)
         {
             if (!LoginMatchesSession(session, userName))
             {
                 authService.RemoveSession();
-                session = authService.GetSession();
+                return authService.GetSession();
             }
+            return session;
+        }
 
+        protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
+        {
+            session = ResetSessionBeforeLogin(authService, session, userName);
+            
             if (TryAuthenticate(authService, userName, password))
             {
                 session.IsAuthenticated = true;
