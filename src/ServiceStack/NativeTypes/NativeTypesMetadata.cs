@@ -370,7 +370,7 @@ namespace ServiceStack.NativeTypes
                 {
                     var value = values.GetValue(i);
                     var name = value.ToString();
-                    var enumValue = Convert.ChangeType(value, type).ToString();
+                    var enumValue = Convert.ToInt64(value).ToString();
 
                     if (enumValue != i.ToString())
                         isDefaultLayout = false;
