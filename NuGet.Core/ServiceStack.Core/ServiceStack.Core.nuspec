@@ -43,7 +43,7 @@
         <dependency id="System.Runtime.Serialization.Primitives" version="[4.1.1, )" />
         <dependency id="System.Collections.Specialized" version="[4.0.1, )" />
         <dependency id="System.Linq.Queryable" version="[4.0.1, )" />
-        <dependency id="System.Threading.ThreadPool" version="[4.0.1, )" />
+        <dependency id="System.Threading.ThreadPool" version="[4.0.10, )" />
         <dependency id="ServiceStack.Interfaces.Core" version="[1.0.0, )" />
         <dependency id="ServiceStack.Text.Core" version="[1.0.0, )" />
         <dependency id="ServiceStack.Client.Core" version="[1.0.0, )" />
