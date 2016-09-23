@@ -1,6 +1,7 @@
 #!/bin/bash
 
 declare -A projects=( \
+ ["ServiceStack.Kestrel"]="1.6" \
  ["ServiceStack"]="1.6" \
  ["ServiceStack.Client"]="1.1 1.6" \
  ["ServiceStack.Common"]="1.3" \

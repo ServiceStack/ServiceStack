@@ -23,7 +23,14 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ServiceStack.Redis", "Servi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{FA46AB18-F252-43F5-BEBC-12700EBC90A4}"
 	ProjectSection(SolutionItems) = preProject
+		..\build\build-core.sh = ..\build\build-core.sh
 		..\lib\netstandard1.3\copy.bat = ..\lib\netstandard1.3\copy.bat
+		..\build\publish-core.sh = ..\build\publish-core.sh
+		..\NuGet.Core\ServiceStack.Client.Core\ServiceStack.Client.Core.nuspec = ..\NuGet.Core\ServiceStack.Client.Core\ServiceStack.Client.Core.nuspec
+		..\NuGet.Core\ServiceStack.Common.Core\ServiceStack.Common.Core.nuspec = ..\NuGet.Core\ServiceStack.Common.Core\ServiceStack.Common.Core.nuspec
+		..\NuGet.Core\ServiceStack.Core\ServiceStack.Core.nuspec = ..\NuGet.Core\ServiceStack.Core\ServiceStack.Core.nuspec
+		..\NuGet.Core\ServiceStack.Interfaces.Core\ServiceStack.Interfaces.Core.nuspec = ..\NuGet.Core\ServiceStack.Interfaces.Core\ServiceStack.Interfaces.Core.nuspec
+		..\NuGet.Core\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec = ..\NuGet.Core\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec
 	EndProjectSection
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ServiceStack.Common.Tests", "..\tests\ServiceStack.Common.Tests\ServiceStack.Common.Tests.xproj", "{C3CF7287-E1A1-4C01-A43B-D27B6A0C3218}"
