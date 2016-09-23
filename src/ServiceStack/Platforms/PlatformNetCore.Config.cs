@@ -7,14 +7,15 @@ namespace ServiceStack.Platforms
 {
     public partial class PlatformNetCore : Platform
     {
+        public static ServiceStackHost HostInstance { get; set; }
+
         const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
         public const string ConfigNullValue = "{null}";
 
         public override string GetAppConfigPath()
         {
             var host = ServiceStackHost.Instance
-                ?? (ServiceStackHost) AppHostBase.NetCoreInstance
-                ?? AppSelfHostBase.NetCoreInstance;
+                ?? (ServiceStackHost) HostInstance;
 
             if (host == null) return null;
 

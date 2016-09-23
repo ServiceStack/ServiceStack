@@ -1,15 +1,11 @@
-﻿#if NETSTANDARD1_6
-
-using System;
+﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
-
-using ServiceStack.Text;
-using ServiceStack.Web;
+using System.Collections.Generic;
 using ServiceStack.Logging;
 using ServiceStack.NetCore;
+using ServiceStack.Text;
 using ServiceStack.Host;
-using ServiceStack.Host.NetCore;
 using ServiceStack.Host.Handlers;
 
 using Microsoft.AspNetCore.Builder;
@@ -22,12 +18,10 @@ namespace ServiceStack
 {
     public abstract class AppSelfHostBase : ServiceStackHost
     {
-        internal static AppSelfHostBase NetCoreInstance;
-        
         protected AppSelfHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) 
         {
-            NetCoreInstance = this;
+            Platforms.PlatformNetCore.HostInstance = this;
         }
 
         IApplicationBuilder app;
@@ -58,6 +52,7 @@ namespace ServiceStack
 
         public virtual Task ProcessRequest(HttpContext context, Func<Task> next)
         {
+            //Keep in sync with AppHostBase.NetCore.cs
             var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
 
             var httpReq = context.ToRequest(operationName);
@@ -88,6 +83,60 @@ namespace ServiceStack
 
             return next();
         }
+
+        public override ServiceStackHost Init()
+        {
+            return this; //Run Init() after Bind()
+        }
+
+        internal void RealInit()
+        {
+            base.Init();
+        }
+
+        public override ServiceStackHost Start(string urlBase)
+        {
+            return Start(new[] { urlBase });
+        }
+
+        public virtual ServiceStackHost Start(string[] urlBases)
+        {
+            var host = new WebHostBuilder()
+                .UseKestrel()
+                .UseContentRoot(System.IO.Directory.GetCurrentDirectory())
+                .UseStartup<Startup>()
+                .UseUrls(urlBases)
+                .Build();
+
+            host.Start();
+
+            return this;
+        }
+
+        /// <summary>
+        /// Override to Configure .NET Core dependencies
+        /// </summary>
+        public virtual void ConfigureServices(IServiceCollection services) {}
+
+        /// <summary>
+        /// Override to Confgiure .NET Core App
+        /// </summary>
+        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env) {}
+
+        public static AppSelfHostBase HostInstance => (AppSelfHostBase)Platforms.PlatformNetCore.HostInstance;
+
+        class Startup
+        {
+            public void ConfigureServices(IServiceCollection services) =>
+                HostInstance.ConfigureServices(services);
+
+            public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
+            {
+                HostInstance.Configure(app, env);
+                HostInstance.Bind(app);
+                HostInstance.RealInit();
+            }
+        }
     }
 
     public static class NetCoreSelfHostExtensions
@@ -99,5 +148,3 @@ namespace ServiceStack
         }
     }
 }
-
-#endif

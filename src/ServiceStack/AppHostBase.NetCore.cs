@@ -22,12 +22,10 @@ namespace ServiceStack
 {
     public abstract class AppHostBase : ServiceStackHost
     {
-        internal static AppHostBase NetCoreInstance;
-        
         protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) 
         {
-            NetCoreInstance = this;
+            Platforms.PlatformNetCore.HostInstance = this;
         }
 
         IApplicationBuilder app;
@@ -58,6 +56,7 @@ namespace ServiceStack
 
         public virtual Task ProcessRequest(HttpContext context, Func<Task> next)
         {
+            //Keep in sync with Kestrel/AppSelfHostBase.cs
             var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
 
             var httpReq = context.ToRequest(operationName);
