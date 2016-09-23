@@ -30,6 +30,7 @@ sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceS
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack/project.json
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Kestrel/project.json
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.HttpClient/project.json
+sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Server/project.json
 
 echo replace package
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/<version>[^<]\+/<version>${PackageVersion}/g" {} +
@@ -37,8 +38,10 @@ find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Text.C
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Interfaces.Core\" version=\"[^\"]\+\"/\"ServiceStack.Interfaces.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Client.Core\" version=\"[^\"]\+\"/\"ServiceStack.Client.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Common.Core\" version=\"[^\"]\+\"/\"ServiceStack.Common.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
+find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Core\" version=\"[^\"]\+\"/\"ServiceStack.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Kestrel\" version=\"[^\"]\+\"/\"ServiceStack.Kestrel\" version=\"\[${PackageVersion}, \)\"/g" {} +
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.HttpClient.Core\" version=\"[^\"]\+\"/\"ServiceStack.HttpClient.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
+find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Server.Core\" version=\"[^\"]\+\"/\"ServiceStack.Server.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
 
 #restore packages
 #(cd ./src && dotnet restore)
