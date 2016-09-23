@@ -1516,8 +1516,8 @@ namespace ServiceStack
                 var queryString = QueryStringSerializer.SerializeToString(request);
 
                 var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
-                var boundary = "----------------------------" + Guid.NewGuid().ToString("N");
-                webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
+                var boundary = Guid.NewGuid().ToString("N");
+                webRequest.ContentType = "multipart/form-data; boundary=\"" + boundary + "\"";
                 boundary = "--" + boundary;
                 var newLine = "\r\n";
                 using (var outputStream = PclExport.Instance.GetRequestStream(webRequest))
@@ -1554,7 +1554,7 @@ namespace ServiceStack
                         }
                         outputStream.Write(newLine);
                         outputStream.Write(boundary);
-                        outputStream.Write(fileCount < files.Length ? newLine : "--");
+                        outputStream.Write(fileCount != files.Length - 1 ? newLine : "--");
                     }
                 }
 
