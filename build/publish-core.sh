@@ -4,6 +4,7 @@ declare -A projects=( \
  ["ServiceStack.Kestrel"]="1.6" \
  ["ServiceStack.Core"]="1.6" \
  ["ServiceStack.Client.Core"]="1.1 1.6" \
+ ["ServiceStack.HttpClient.Core"]="1.1 1.6" \
  ["ServiceStack.Common.Core"]="1.3" \
  ["ServiceStack.Interfaces.Core"]="1.1" \
 )
