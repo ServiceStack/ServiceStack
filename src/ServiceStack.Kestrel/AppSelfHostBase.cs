@@ -89,7 +89,7 @@ namespace ServiceStack
             return this; //Run Init() after Bind()
         }
 
-        internal void RealInit()
+        protected void RealInit()
         {
             base.Init();
         }
@@ -101,16 +101,20 @@ namespace ServiceStack
 
         public virtual ServiceStackHost Start(string[] urlBases)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(System.IO.Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .UseUrls(urlBases)
-                .Build();
+            var host = ConfigureHost(new WebHostBuilder(), urlBases).Build();
 
             host.Start();
 
             return this;
+        }
+
+        public virtual IWebHostBuilder ConfigureHost(IWebHostBuilder host, string[] urlBases)
+        {
+            return host.UseKestrel()
+                .UseContentRoot(System.IO.Directory.GetCurrentDirectory())
+                .UseWebRoot(System.IO.Directory.GetCurrentDirectory())
+                .UseStartup<Startup>()
+                .UseUrls(urlBases);
         }
 
         /// <summary>
@@ -125,7 +129,7 @@ namespace ServiceStack
 
         public static AppSelfHostBase HostInstance => (AppSelfHostBase)Platforms.PlatformNetCore.HostInstance;
 
-        class Startup
+        protected class Startup
         {
             public void ConfigureServices(IServiceCollection services) =>
                 HostInstance.ConfigureServices(services);
