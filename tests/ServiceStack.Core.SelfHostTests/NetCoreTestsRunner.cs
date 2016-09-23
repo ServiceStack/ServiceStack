@@ -33,7 +33,7 @@ namespace NUnitLite.Tests
             var result = new AutoRun(((IReflectableType)typeof(NetCoreTestsRunner)).GetTypeInfo().Assembly).Execute(args, writer, Console.In);
 
 #if DEBUG
-            "Press Enter to Quit.".Print();
+            "Press Any Key to Quit.".Print();
             Console.Read();
 #endif
             return result;
