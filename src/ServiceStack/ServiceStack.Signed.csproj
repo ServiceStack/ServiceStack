@@ -99,7 +99,6 @@
     <Compile Include="AddHeaderAttribute.cs" />
     <Compile Include="AppHostHttpListenerSmartPoolBase.cs" />
     <Compile Include="AppSelfHostBase.cs" />
-    <Compile Include="AppSelfHostBase.NetCore.cs" />
     <Compile Include="AspNet\ServiceStackPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
