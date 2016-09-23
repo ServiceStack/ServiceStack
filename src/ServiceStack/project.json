@@ -55,7 +55,10 @@
         "System.Runtime.Serialization.Primitives": "4.1.1",
         "System.Collections.Specialized": "4.0.1",
         "System.Linq.Queryable": "4.0.1",
-        "System.Threading.ThreadPool": "4.0.10"
+        "System.Threading": "4.0.11",
+        "System.Threading.Thread": "4.0.0",
+        "System.Threading.ThreadPool": "4.0.10",
+        "System.Threading.Tasks": "4.0.11"
       }
     }
   },
