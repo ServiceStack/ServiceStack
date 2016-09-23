@@ -26,7 +26,8 @@
     "ServiceStack.Text" : "1.0.*",
     "ServiceStack.Common" : "1.0.*",
     "ServiceStack.Client" : "1.0.*",
-    "ServiceStack": "1.0.*"
+    "ServiceStack": "1.0.*",
+    "ServiceStack.Kestrel": "1.0.0-*"
   },
   "frameworks": {
    "netcoreapp1.0": { 
