@@ -15,10 +15,10 @@ declare -A projects=( \
 for proj in "${!projects[@]}"; do
   projname=$(basename ${proj} .Core)
   echo "$proj - ${projects[$proj]}";
-  rm -r NuGet.Core/$projname/lib/*
+  rm -r NuGet.Core/$proj/lib/*
 
   for ver in ${projects[$proj]}; do
-    mkdir -p NuGet.Core/$projname/lib/netstandard$ver
+    mkdir -p NuGet.Core/$proj/lib/netstandard$ver
     cp src/$projname/bin/Release/netstandard$ver/$projname.dll NuGet.Core/$proj/lib/netstandard$ver
     cp src/$projname/bin/Release/netstandard$ver/$projname.pdb NuGet.Core/$proj/lib/netstandard$ver
     cp src/$projname/bin/Release/netstandard$ver/$projname.deps.json NuGet.Core/$proj/lib/netstandard$ver
