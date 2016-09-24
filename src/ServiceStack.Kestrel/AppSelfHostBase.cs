@@ -99,11 +99,12 @@ namespace ServiceStack
             return Start(new[] { urlBase });
         }
 
+        public IWebHost WebHost { get; private set; }
+
         public virtual ServiceStackHost Start(string[] urlBases)
         {
-            var host = ConfigureHost(new WebHostBuilder(), urlBases).Build();
-
-            host.Start();
+            this.WebHost = ConfigureHost(new WebHostBuilder(), urlBases).Build();
+            this.WebHost.Start();
 
             return this;
         }
@@ -141,14 +142,13 @@ namespace ServiceStack
                 HostInstance.RealInit();
             }
         }
-    }
 
-    public static class NetCoreSelfHostExtensions
-    {
-        public static void UseServiceStack(this IApplicationBuilder app, AppSelfHostBase appHost)
+        public override void Dispose()
         {
-            appHost.Bind(app);
-            appHost.Init();
+            this.WebHost.Dispose();
+            this.WebHost = null;
+
+            base.Dispose();
         }
-    }
+    }    
 }
