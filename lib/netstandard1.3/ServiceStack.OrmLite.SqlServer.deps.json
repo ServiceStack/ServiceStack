@@ -7,13 +7,13 @@
   "targets": {
     ".NETStandard,Version=v1.3": {},
     ".NETStandard,Version=v1.3/": {
-      "ServiceStack.OrmLite.SqlServer/1.0.4.0": {
+      "ServiceStack.OrmLite.SqlServer/1.0.0": {
         "dependencies": {
           "System.Data.SqlClient": "4.1.0",
           "ServiceStack.Interfaces": "1.0.0",
           "ServiceStack.Text": "1.0.0",
           "ServiceStack.Common": "1.0.0",
-          "ServiceStack.OrmLite": "1.0.4.0"
+          "ServiceStack.OrmLite": "1.0.0"
         },
         "runtime": {
           "ServiceStack.OrmLite.SqlServer.dll": {}
@@ -887,7 +887,7 @@
           "ServiceStack.Interfaces.dll": {}
         }
       },
-      "ServiceStack.OrmLite/1.0.4.0": {
+      "ServiceStack.OrmLite/1.0.0": {
         "dependencies": {
           "System.Dynamic.Runtime": "4.0.11",
           "System.Reflection": "4.1.0",
@@ -919,7 +919,7 @@
     }
   },
   "libraries": {
-    "ServiceStack.OrmLite.SqlServer/1.0.4.0": {
+    "ServiceStack.OrmLite.SqlServer/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1319,7 +1319,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.OrmLite/1.0.4.0": {
+    "ServiceStack.OrmLite/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
