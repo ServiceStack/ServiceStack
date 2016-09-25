@@ -9,12 +9,11 @@
     ".NETStandard,Version=v1.3/": {
       "ServiceStack.OrmLite.Sqlite/1.0.4.0": {
         "dependencies": {
-          "NETStandard.Library": "1.6.0",
+          "Microsoft.Data.SQLite": "1.0.0",
           "ServiceStack.Interfaces": "1.0.0",
           "ServiceStack.Text": "1.0.0",
           "ServiceStack.Common": "1.0.0",
-          "ServiceStack.OrmLite": "1.0.4.0",
-          "Microsoft.Data.SQLite": "1.0.0"
+          "ServiceStack.OrmLite": "1.0.4.0"
         },
         "runtime": {
           "ServiceStack.OrmLite.Sqlite.dll": {}
@@ -920,10 +919,9 @@
           "System.Collections.NonGeneric": "4.0.1",
           "System.Xml.XmlDocument": "4.0.1",
           "System.ComponentModel.Primitives": "4.1.0",
-          "System.Data.SqlClient": "4.1.0",
           "System.Reflection.TypeExtensions": "4.1.0",
           "System.ComponentModel.Annotations": "4.1.0",
-          "NETStandard.Library": "1.6.0",
+          "System.Data.SqlClient": "4.1.0",
           "ServiceStack.Interfaces": "1.0.0",
           "ServiceStack.Text": "1.0.0",
           "ServiceStack.Common": "1.0.0"

@@ -7,16 +7,24 @@
   "targets": {
     ".NETStandard,Version=v1.3": {},
     ".NETStandard,Version=v1.3/": {
-      "ServiceStack.OrmLite.SqlServer/1.0.4.0": {
+      "ServiceStack.OrmLite/1.0.4.0": {
         "dependencies": {
+          "System.Dynamic.Runtime": "4.0.11",
+          "System.Reflection.Emit": "4.0.1",
+          "System.Reflection.Emit.ILGeneration": "4.0.1",
+          "System.Reflection.Emit.LightWeight": "4.0.1",
+          "System.Collections.NonGeneric": "4.0.1",
+          "System.Xml.XmlDocument": "4.0.1",
+          "System.ComponentModel.Primitives": "4.1.0",
+          "System.Reflection.TypeExtensions": "4.1.0",
+          "System.ComponentModel.Annotations": "4.1.0",
           "System.Data.SqlClient": "4.1.0",
           "ServiceStack.Interfaces": "1.0.0",
           "ServiceStack.Text": "1.0.0",
-          "ServiceStack.Common": "1.0.0",
-          "ServiceStack.OrmLite": "1.0.4.0"
+          "ServiceStack.Common": "1.0.0"
         },
         "runtime": {
-          "ServiceStack.OrmLite.SqlServer.dll": {}
+          "ServiceStack.OrmLite.dll": {}
         }
       },
       "Microsoft.NETCore.Platforms/1.0.1": {},
@@ -887,26 +895,6 @@
           "ServiceStack.Interfaces.dll": {}
         }
       },
-      "ServiceStack.OrmLite/1.0.4.0": {
-        "dependencies": {
-          "System.Dynamic.Runtime": "4.0.11",
-          "System.Reflection.Emit": "4.0.1",
-          "System.Reflection.Emit.ILGeneration": "4.0.1",
-          "System.Reflection.Emit.LightWeight": "4.0.1",
-          "System.Collections.NonGeneric": "4.0.1",
-          "System.Xml.XmlDocument": "4.0.1",
-          "System.ComponentModel.Primitives": "4.1.0",
-          "System.Reflection.TypeExtensions": "4.1.0",
-          "System.ComponentModel.Annotations": "4.1.0",
-          "System.Data.SqlClient": "4.1.0",
-          "ServiceStack.Interfaces": "1.0.0",
-          "ServiceStack.Text": "1.0.0",
-          "ServiceStack.Common": "1.0.0"
-        },
-        "runtime": {
-          "ServiceStack.OrmLite.dll": {}
-        }
-      },
       "ServiceStack.Text/1.0.0": {
         "dependencies": {
           "NETStandard.Library": "1.6.0"
@@ -918,7 +906,7 @@
     }
   },
   "libraries": {
-    "ServiceStack.OrmLite.SqlServer/1.0.4.0": {
+    "ServiceStack.OrmLite/1.0.4.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1314,11 +1302,6 @@
       "sha512": ""
     },
     "ServiceStack.Interfaces/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "ServiceStack.OrmLite/1.0.4.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
