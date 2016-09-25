@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v1.3/",
-    "signature": "f017d08b864d4732cb04c3d86e9eda7f4de816fd"
+    "signature": "e4ad0cb022ce7d6583fe9d7a4ae211452591f9ea"
   },
   "compilationOptions": {},
   "targets": {
@@ -562,7 +562,7 @@
           "lib/netstandard1.3/System.Reflection.Emit.ILGeneration.dll": {}
         }
       },
-      "System.Reflection.Emit.LightWeight/4.0.1": {
+      "System.Reflection.Emit.Lightweight/4.0.1": {
         "dependencies": {
           "System.Reflection": "4.1.0",
           "System.Reflection.Emit.ILGeneration": "4.0.1",
@@ -913,15 +913,16 @@
       "ServiceStack.OrmLite/1.0.4.0": {
         "dependencies": {
           "System.Dynamic.Runtime": "4.0.11",
+          "System.Reflection": "4.1.0",
           "System.Reflection.Emit": "4.0.1",
-          "System.Reflection.Emit.ILGeneration": "4.0.1",
-          "System.Reflection.Emit.LightWeight": "4.0.1",
+          "System.Reflection.Emit.Lightweight": "4.0.1",
+          "System.Reflection.Extensions": "4.0.1",
+          "System.Reflection.TypeExtensions": "4.1.0",
           "System.Collections.NonGeneric": "4.0.1",
           "System.Xml.XmlDocument": "4.0.1",
           "System.ComponentModel.Primitives": "4.1.0",
-          "System.Reflection.TypeExtensions": "4.1.0",
-          "System.ComponentModel.Annotations": "4.1.0",
           "System.Data.SqlClient": "4.1.0",
+          "System.ComponentModel.Annotations": "4.1.0",
           "ServiceStack.Interfaces": "1.0.0",
           "ServiceStack.Text": "1.0.0",
           "ServiceStack.Common": "1.0.0"
@@ -1186,7 +1187,7 @@
       "serviceable": true,
       "sha512": "sha512-+9WzFJYZFrm93xXaqAfpwNjfPdpGi7GerHmpXR/uBiKyWDMi4DOXet7DE2rrm5gH3vcZUPuafz58g8WyiZ/rrQ=="
     },
-    "System.Reflection.Emit.LightWeight/4.0.1": {
+    "System.Reflection.Emit.Lightweight/4.0.1": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-qXDYzOf1W6mNEFnwLUuvQbKD5maJjSwmo542npu5M8jgcy0pt08IELBhHh74UwNW7IL/5+/PYJkm43uEmVACqQ=="
