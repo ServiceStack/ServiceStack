@@ -145,7 +145,7 @@ namespace ServiceStack
 
         public override void Dispose()
         {
-            this.WebHost.Dispose();
+            this.WebHost?.Dispose();
             this.WebHost = null;
 
             base.Dispose();
