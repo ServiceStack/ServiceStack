@@ -39,6 +39,8 @@ namespace ServiceStack
 
         public static void BindHost(ServiceStackHost appHost, IApplicationBuilder app)
         {
+            JsConfig.EmitCamelCaseNames = true;
+
             var logFactory = app.ApplicationServices.GetService<ILoggerFactory>();
             if (logFactory != null)
             {
