@@ -31,6 +31,7 @@ sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceS
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Kestrel/project.json
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.HttpClient/project.json
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Server/project.json
+sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Api.Swagger/project.json
 
 echo replace package
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/<version>[^<]\+/<version>${PackageVersion}/g" {} +
@@ -44,6 +45,7 @@ find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.HttpCl
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Server.Core\" version=\"[^\"]\+\"/\"ServiceStack.Server.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Redis.Core\" version=\"[^\"]\+\"/\"ServiceStack.Redis.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.OrmLite.Core\" version=\"[^\"]\+\"/\"ServiceStack.OrmLite.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
+find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Api.Swagger.Core\" version=\"[^\"]\+\"/\"ServiceStack.Api.Swagger.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
 
 #restore packages
 #(cd ./src && dotnet restore)
