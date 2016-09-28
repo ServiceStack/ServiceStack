@@ -29,14 +29,7 @@ namespace ServiceStack
         public virtual void Bind(IApplicationBuilder app)
         {
             this.app = app;
-            var logFactory = app.ApplicationServices.GetService<ILoggerFactory>();
-            if (logFactory != null)
-            {
-                LogManager.LogFactory = new NetCoreLogFactory(logFactory);
-            }
-
-            Container.Adapter = new NetCoreContainerAdapter(app.ApplicationServices);
-
+            AppHostBase.BindHost(this, app);
             app.Use(ProcessRequest);
         }
 
