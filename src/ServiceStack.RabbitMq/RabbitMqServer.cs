@@ -520,7 +520,7 @@ namespace ServiceStack.RabbitMq
         void DisposeWorkerThreads()
         {
             Log.Debug("Disposing all Rabbit MQ Server worker threads...");
-            if (workers != null) Array.ForEach(workers, x => x.Dispose());
+            if (workers != null) workers.Each(x => x.Dispose());
         }
 
         void WorkerErrorHandler(RabbitMqWorker source, Exception ex)

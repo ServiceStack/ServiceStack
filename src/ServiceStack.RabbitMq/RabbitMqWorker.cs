@@ -138,12 +138,14 @@ namespace ServiceStack.RabbitMq
             }
             catch (Exception ex)
             {
+#if !NETSTANDARD1_6
                 //Ignore handling rare, but expected exceptions from KillBgThreadIfExists()
                 if (ex is ThreadInterruptedException || ex is ThreadAbortException)
                 {
                     Log.Warn("Received {0} in Worker: {1}".Fmt(ex.GetType().Name, QueueName));
                     return;
                 }
+#endif
 
                 Stop();
 

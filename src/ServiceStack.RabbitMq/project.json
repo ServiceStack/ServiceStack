@@ -1,0 +1,36 @@
+{
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": [
+          "DEBUG",
+          "TRACE"
+        ]
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": [
+          "TRACE"
+        ],
+        "optimize": true
+      }
+    }
+  },
+  "dependencies": {
+    "NETStandard.Library": "1.6.0",
+    "RabbitMQ.Client": "4.1.0",
+    "ServiceStack.Text": "1.0.*",
+    "ServiceStack.Interfaces": "1.0.*",
+    "ServiceStack.Client": "1.0.*",
+    "ServiceStack.Common": "1.0.*",
+    "ServiceStack": "1.0.*" 
+  },
+  "frameworks": {
+    "netstandard1.6": {
+      "dependencies": {
+      }
+    }
+  },
+  "version": "1.0.0"
+}
