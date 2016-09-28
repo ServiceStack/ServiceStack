@@ -32,7 +32,8 @@
     "ServiceStack.OrmLite": "1.0.*",
     "ServiceStack.OrmLite.Sqlite": "1.0.*",
     "ServiceStack.Redis": "1.0.*",
-    "ServiceStack.Text": "1.0.*"
+    "ServiceStack.Text": "1.0.*",
+    "ServiceStack.Api.Swagger": "1.0.0"
   },
   "frameworks": {
     "netcoreapp1.0": {

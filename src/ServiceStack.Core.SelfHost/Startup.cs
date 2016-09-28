@@ -20,6 +20,7 @@ using ServiceStack.Text;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
+using ServiceStack.Api.Swagger;
 
 namespace ServiceStack.Core.SelfHost
 {
@@ -77,6 +78,7 @@ namespace ServiceStack.Core.SelfHost
 
         public override void Configure(Container container)
         {
+            Plugins.Add(new SwaggerFeature());
         }
     }
 
