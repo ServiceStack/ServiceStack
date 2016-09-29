@@ -6,7 +6,7 @@ namespace ServiceStack.Wire
 
     public class WireServiceClient : ServiceClientBase
     {
-        public override string Format => MimeTypes.Wire;
+        public override string Format => "x-wire";
 
         public WireServiceClient(string baseUri)
         {
