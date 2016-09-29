@@ -18,17 +18,10 @@ namespace ServiceStack.Mvc
     public abstract class ServiceStackController<T> : ServiceStackController
         where T : IAuthSession
     {
-        protected T UserSession
-        {
-            get { return SessionAs<T>(); }
-        }
+        protected T UserSession => SessionAs<T>();
 
-        public IAuthSession AuthSession
-        {
-            get { return UserSession; }
-        }
+        public IAuthSession AuthSession => UserSession;
     }
-
 
     [ExecuteServiceStackFilters]
     public abstract class ServiceStackController : Controller, IHasServiceStackProvider
@@ -39,10 +32,7 @@ namespace ServiceStack.Mvc
         /// <summary>
         /// Default redirct URL if [Authenticate] attribute doesn't permit access.
         /// </summary>
-        public virtual string UnauthorizedRedirectUrl
-        {
-            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect(); }
-        }
+        public virtual string UnauthorizedRedirectUrl => HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
 
         /// <summary>
         /// To change the error result when authentication (<see cref="AuthenticateAttribute"/>) fails.
@@ -64,10 +54,7 @@ namespace ServiceStack.Mvc
         /// <summary>
         /// Default redirct URL if Required Role or Permission attributes doesn't permit access.
         /// </summary>
-        public virtual string ForbiddenRedirectUrl
-        {
-            get { return HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect(); }
-        }
+        public virtual string ForbiddenRedirectUrl => HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
 
         /// <summary>
         /// To change the error result when user doesn't have required role or permissions (<see cref="RequiredRoleAttribute"/>).
@@ -90,17 +77,12 @@ namespace ServiceStack.Mvc
         /// To change the error result when authorization fails
         /// to something else, override this property and return the appropriate result.
         /// </summary>
-        public virtual ActionResult AuthorizationErrorResult
-        {
-            get
+        public virtual ActionResult AuthorizationErrorResult => 
+            new RedirectToRouteResult(new RouteValueDictionary(new
             {
-                return new RedirectToRouteResult(new RouteValueDictionary(new
-                {
-                    controller = "Error",
-                    action = "Unauthorized"
-                }));
-            }
-        }
+                controller = "Error",
+                action = "Unauthorized"
+            }));
 
         protected override JsonResult Json(object data, string contentType, Encoding contentEncoding, JsonRequestBehavior behavior)
         {
@@ -157,106 +139,55 @@ namespace ServiceStack.Mvc
         }
 
         private IServiceStackProvider serviceStackProvider;
-        public virtual IServiceStackProvider ServiceStackProvider
-        {
-            get
-            {
-                return serviceStackProvider ?? (serviceStackProvider =
-                    new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name)));
-            }
-        }
-        public virtual IAppSettings AppSettings
-        {
-            get { return ServiceStackProvider.AppSettings; }
-        }
-        public virtual IHttpRequest ServiceStackRequest
-        {
-            get { return ServiceStackProvider.Request; }
-        }
-        public virtual IHttpResponse ServiceStackResponse
-        {
-            get { return ServiceStackProvider.Response; }
-        }
-        public virtual ICacheClient Cache
-        {
-            get { return ServiceStackProvider.Cache; }
-        }
-        public virtual IDbConnection Db
-        {
-            get { return ServiceStackProvider.Db; }
-        }
-        public virtual IRedisClient Redis
-        {
-            get { return ServiceStackProvider.Redis; }
-        }
-        public virtual IMessageProducer MessageProducer
-        {
-            get { return ServiceStackProvider.MessageProducer; }
-        }
-        public virtual IAuthRepository AuthRepository
-        {
-            get { return ServiceStackProvider.AuthRepository; }
-        }
-        public virtual ISessionFactory SessionFactory
-        {
-            get { return ServiceStackProvider.SessionFactory; }
-        }
-        public virtual ISession SessionBag
-        {
-            get { return ServiceStackProvider.SessionBag; }
-        }
-        public virtual bool IsAuthenticated
-        {
-            get { return ServiceStackProvider.IsAuthenticated; }
-        }
-        protected virtual IAuthSession GetSession(bool reload = true)
-        {
-            return ServiceStackProvider.GetSession(reload);
-        }
-        protected virtual TUserSession SessionAs<TUserSession>()
-        {
-            return ServiceStackProvider.SessionAs<TUserSession>();
-        }
-        protected virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null)
-        {
-            ServiceStackProvider.Request.SaveSession(session, expiresIn);
-        }
-        protected virtual void ClearSession()
-        {
-            ServiceStackProvider.ClearSession();
-        }
-        protected virtual T TryResolve<T>()
-        {
-            return ServiceStackProvider.TryResolve<T>();
-        }
-        protected virtual T ResolveService<T>()
-        {
-            return ServiceStackProvider.ResolveService<T>();
-        }
-        protected virtual object ForwardRequestToServiceStack(IRequest request = null)
-        {
-            return ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
-        }
+        public virtual IServiceStackProvider ServiceStackProvider => 
+            serviceStackProvider ?? (serviceStackProvider = new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name)));
 
-        public virtual IServiceGateway Gateway
-        {
-            get { return ServiceStackProvider.Gateway; }
-        }
+        public virtual IAppSettings AppSettings => ServiceStackProvider.AppSettings;
+
+        public virtual IHttpRequest ServiceStackRequest => ServiceStackProvider.Request;
+
+        public virtual IHttpResponse ServiceStackResponse => ServiceStackProvider.Response;
+
+        public virtual ICacheClient Cache => ServiceStackProvider.Cache;
+
+        public virtual IDbConnection Db => ServiceStackProvider.Db;
+
+        public virtual IRedisClient Redis => ServiceStackProvider.Redis;
+
+        public virtual IMessageProducer MessageProducer => ServiceStackProvider.MessageProducer;
+
+        public virtual IAuthRepository AuthRepository => ServiceStackProvider.AuthRepository;
+
+        public virtual ISessionFactory SessionFactory => ServiceStackProvider.SessionFactory;
+
+        public virtual ISession SessionBag => ServiceStackProvider.SessionBag;
+
+        public virtual bool IsAuthenticated => ServiceStackProvider.IsAuthenticated;
+
+        protected virtual IAuthSession GetSession(bool reload = true) => ServiceStackProvider.GetSession(reload);
+
+        protected virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
+
+        protected virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null) => ServiceStackProvider.Request.SaveSession(session, expiresIn);
+
+        protected virtual void ClearSession() => ServiceStackProvider.ClearSession();
+
+        protected virtual T TryResolve<T>() => ServiceStackProvider.TryResolve<T>();
+
+        protected virtual T ResolveService<T>() => ServiceStackProvider.ResolveService<T>();
+
+        protected virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
+
+        public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
+
         [Obsolete("Use Gateway")]
-        protected virtual object Execute(object requestDto)
-        {
-            return ServiceStackProvider.Execute(requestDto);
-        }
+        protected virtual object Execute(object requestDto) => ServiceStackProvider.Execute(requestDto);
+
         [Obsolete("Use Gateway")]
-        protected virtual TResponse Execute<TResponse>(IReturn<TResponse> requestDto)
-        {
-            return ServiceStackProvider.Execute(requestDto);
-        }
+        protected virtual TResponse Execute<TResponse>(IReturn<TResponse> requestDto) => ServiceStackProvider.Execute(requestDto);
+
         [Obsolete("Use Gateway")]
-        protected virtual void PublishMessage<T>(T message)
-        {
-            ServiceStackProvider.PublishMessage(message);
-        }
+        protected virtual void PublishMessage<T>(T message) => ServiceStackProvider.PublishMessage(message);
 
         private bool hasDisposed = false;
         protected override void Dispose(bool disposing)
@@ -276,10 +207,7 @@ namespace ServiceStack.Mvc
             EndServiceStackRequest();
         }
 
-        public virtual void EndServiceStackRequest()
-        {
-            HostContext.AppHost.OnEndRequest(ServiceStackRequest);
-        }
+        public virtual void EndServiceStackRequest() => HostContext.AppHost.OnEndRequest(ServiceStackRequest);
     }
 
     public class ServiceStackJsonResult : JsonResult

@@ -43,7 +43,7 @@ namespace ServiceStack.Api.Swagger
 
         public void Configure(IAppHost appHost)
         {
-            appHost.Config.EmbeddedResourceSources.Add(typeof(SwaggerFeature).Assembly);
+            appHost.Config.EmbeddedResourceSources.Add(typeof(SwaggerFeature).GetAssembly());
         }
 
         public void Register(IAppHost appHost)

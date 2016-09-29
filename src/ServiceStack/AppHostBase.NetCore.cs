@@ -33,15 +33,21 @@ namespace ServiceStack
         public virtual void Bind(IApplicationBuilder app)
         {
             this.app = app;
+            BindHost(this, app);
+            app.Use(ProcessRequest);
+        }
+
+        public static void BindHost(ServiceStackHost appHost, IApplicationBuilder app)
+        {
+            JsConfig.EmitCamelCaseNames = true;
+
             var logFactory = app.ApplicationServices.GetService<ILoggerFactory>();
             if (logFactory != null)
             {
                 LogManager.LogFactory = new NetCoreLogFactory(logFactory);
             }
 
-            Container.Adapter = new NetCoreContainerAdapter(app.ApplicationServices);
-
-            app.Use(ProcessRequest);
+            appHost.Container.Adapter = new NetCoreContainerAdapter(app.ApplicationServices);
         }
 
         public override void OnConfigLoad()
@@ -93,7 +99,7 @@ namespace ServiceStack
         }
     }
 
-    public static class NetCoreExtensions
+    public static class NetCoreAppHostExtensions
     {
         public static void UseServiceStack(this IApplicationBuilder app, AppHostBase appHost)
         {

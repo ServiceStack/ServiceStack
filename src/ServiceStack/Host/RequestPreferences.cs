@@ -55,7 +55,7 @@ namespace ServiceStack.Host
         public RequestPreferences(IRequest httpRequest)
         {
             this.acceptEncoding = httpRequest.Headers[HttpHeaders.AcceptEncoding];
-            if (this.acceptEncoding.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(this.acceptEncoding))
             {
                 this.acceptEncoding = "none";
                 return;
