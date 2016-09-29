@@ -5,5 +5,8 @@
   "runtimes": {
     "win": {},
     "win-x86": {}
+  },
+  "dependencies": {
+    "Wire": "0.8.1"
   }
 }

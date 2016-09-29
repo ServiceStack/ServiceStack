@@ -51,17 +51,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj">
-      <Project>{C43F583F-ABDE-4DD4-BBE3-66322817A6AD}</Project>
+      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
       <Name>ServiceStack.Client</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
-      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
+      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

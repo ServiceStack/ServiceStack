@@ -279,7 +279,7 @@
       <Name>ServiceStack.Server</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Wire\ServiceStack.Wire.csproj">
-      <Project>{0428D353-CD67-481F-877A-676E3BBCF903}</Project>
+      <Project>{0428d353-cd67-481f-877a-676e3bbcf903}</Project>
       <Name>ServiceStack.Wire</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
