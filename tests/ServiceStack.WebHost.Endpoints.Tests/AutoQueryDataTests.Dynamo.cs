@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Amazon.DynamoDBv2;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Aws.DynamoDb;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
+#if !NETCORE_SUPPORT
+using Amazon.DynamoDBv2;
+using ServiceStack.Aws.DynamoDb;
+#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -332,7 +334,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string[] Ratings { get; set; }
     }
 
-    public class MovieTitleIndex : IGlobalIndex<Movie>
+    public class MovieTitleIndex 
+#if !NETCORE_SUPPORT
+: IGlobalIndex<Movie>
+#endif
     {
         [HashKey]
         public string Title { get; set; }
@@ -369,7 +374,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int[] IdBetween { get; set; }
     }
 
-    public class RockstarAlbumGenreGlobalIndex : IGlobalIndex<RockstarAlbum>
+    public class RockstarAlbumGenreGlobalIndex
+#if !NETCORE_SUPPORT 
+    : IGlobalIndex<RockstarAlbum>
+#endif
     {
         [HashKey]
         public string Genre { get; set; }

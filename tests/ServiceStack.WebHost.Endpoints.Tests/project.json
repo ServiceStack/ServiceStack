@@ -16,6 +16,7 @@
     "debugType": "portable",
     "emitEntryPoint": true
   },
+  "exclude": ["RawRequestTests.cs"],
   "dependencies": {
     "Microsoft.NETCore.App": {
       "type": "platform",
@@ -32,7 +33,10 @@
     "ServiceStack.Kestrel": "1.0.*",
     "ServiceStack.OrmLite": "1.0.*",
     "ServiceStack.OrmLite.Sqlite": "1.0.*",
-    "ServiceStack.Common.Tests": "1.0.*"
+    "ServiceStack.RabbitMq": "1.0.*",
+    "ServiceStack.Common.Tests": "1.0.*",
+    "ServiceStack.Api.Swagger": "1.0.*",
+    "protobuf-net": "2.1.*"
   },
   "frameworks": {
    "netcoreapp1.0": { 

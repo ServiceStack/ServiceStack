@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Linq;
 using System.Net.NetworkInformation;
+#if !NETCORE_SUPPORT
 using Moq;
+#endif
 using NUnit.Framework;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Testing;

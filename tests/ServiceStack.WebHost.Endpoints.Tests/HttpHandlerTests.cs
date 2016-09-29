@@ -71,11 +71,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
             }
 
+#if !NETCORE_SUPPORT
             protected override void OnBeginRequest(HttpListenerContext context)
             {
                 Interlocked.Increment(ref BeginRequestCount);
                 base.OnBeginRequest(context);
             }
+#endif
 
             public override void OnEndRequest(IRequest request = null)
             {

@@ -10,9 +10,11 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite;
-using ServiceStack.ProtoBuf;
 using ServiceStack.WebHost.Endpoints.Tests.IntegrationTests;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
+#if !NETCORE_SUPPORT
+using ServiceStack.ProtoBuf;
+#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 {

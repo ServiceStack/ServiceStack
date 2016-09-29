@@ -1,6 +1,8 @@
 using NUnit.Framework;
-using ServiceStack.ProtoBuf;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
+#if !NETCORE_SUPPORT
+using ServiceStack.ProtoBuf;
+#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

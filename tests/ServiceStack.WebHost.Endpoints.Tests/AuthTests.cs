@@ -364,7 +364,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }, password);
         }
 
-        protected override void Dispose(bool disposing)
+        protected
+#if !NETCORE_SUPPORT         
+        override
+#endif
+        void Dispose(bool disposing)
         {
             // Needed so that when the derived class tests run the same users can be added again.
             userRep.Clear();
@@ -1238,10 +1242,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
 
-        [TestCase(ExpectedException = typeof(AuthenticationException))]
+        [Test]
         public void Meaningful_Exception_for_Unknown_Auth_Header()
         {
-            var authInfo = new AuthenticationInfo("Negotiate,NTLM");
+            Assert.Throws<AuthenticationException>(() => new AuthenticationInfo("Negotiate,NTLM"));
         }
 
         [Test]

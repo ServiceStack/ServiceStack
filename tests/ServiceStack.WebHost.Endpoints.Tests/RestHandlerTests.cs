@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+#if !NETCORE
 using Moq;
+#endif
 using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Web;

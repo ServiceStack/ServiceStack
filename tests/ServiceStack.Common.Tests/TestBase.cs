@@ -1,4 +1,3 @@
-#if !NETCORE_SUPPORT
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,7 +28,7 @@ namespace ServiceStack.Common.Tests
         protected TestBase(string serviceClientBaseUri, params Assembly[] serviceAssemblies)
         {
             if (serviceAssemblies.Length == 0)
-                serviceAssemblies = new[] { GetType().Assembly };
+                serviceAssemblies = new[] { GetType().GetAssembly() };
 
             ServiceClientBaseUri = serviceClientBaseUri;
             ServiceAssemblies = serviceAssemblies;
@@ -733,4 +732,3 @@ namespace ServiceStack.Common.Tests
     }
 
 }
-#endif

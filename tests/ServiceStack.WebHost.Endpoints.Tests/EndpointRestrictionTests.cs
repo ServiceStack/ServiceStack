@@ -208,7 +208,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 
-		[Ignore]
+		[Ignore("TODO: Ignore reason")]
 		[Test]
 		public void Print_enum_results()
 		{

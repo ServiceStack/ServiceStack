@@ -5,7 +5,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using NUnit.Framework;
+#if !NETCORE_SUPPORT
 using ServiceStack.Host.HttpListener;
+#endif
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
@@ -167,13 +169,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response, Is.StringEnding(")"));
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Dubug test")]
         public void DebugHost()
         {
             Thread.Sleep(180 * 1000);
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Performance test")]
         public void PerformanceTest()
         {
             const int clientCount = 500;

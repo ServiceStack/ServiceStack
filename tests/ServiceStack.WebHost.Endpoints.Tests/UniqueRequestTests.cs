@@ -3,8 +3,10 @@ using System.IO;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Common;
-using ServiceStack.MiniProfiler.UI;
 using ServiceStack.Text;
+#if !NETCORE_SUPPORT
+using ServiceStack.MiniProfiler.UI;
+#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

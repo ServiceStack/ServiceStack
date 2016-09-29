@@ -159,13 +159,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response, Is.StringEnding(")"));
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Helper test")]
         public void DebugHost()
         {
             Thread.Sleep(180 * 1000);
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Performance test")]
         public void PerformanceTest()
         {
             const int clientCount = 500;
