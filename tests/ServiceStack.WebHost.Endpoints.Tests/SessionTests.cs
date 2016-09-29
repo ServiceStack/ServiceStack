@@ -94,7 +94,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public class SessionAppHost : AppHostHttpListenerBase
         {
-            public SessionAppHost() : base(typeof(SessionTests).Name, typeof(SessionTests).Assembly) { }
+            public SessionAppHost() : base(typeof(SessionTests).Name, typeof(SessionTests).GetAssembly()) { }
 
             public override void Configure(Container container)
             {
@@ -297,7 +297,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_mock_IntegrationTest_Session_with_Request()
         {
-            using (new BasicAppHost(typeof(SessionService).Assembly).Init())
+            using (new BasicAppHost(typeof(SessionService).GetAssembly()).Init())
             {
                 var req = new MockHttpRequest();
                 req.Items[Keywords.Session] = 

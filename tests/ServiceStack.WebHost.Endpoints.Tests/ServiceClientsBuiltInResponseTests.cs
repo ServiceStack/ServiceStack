@@ -102,7 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
     public class BuiltInTypesAppHost : AppHostHttpListenerBase
     {
-        public BuiltInTypesAppHost() : base(typeof(BuiltInTypesAppHost).Name, typeof(BuiltInTypesService).Assembly) { }
+        public BuiltInTypesAppHost() : base(typeof(BuiltInTypesAppHost).Name, typeof(BuiltInTypesService).GetAssembly()) { }
 
         public string LastRequestBody { get; set; }
         public bool UseBufferredStream { get; set; }

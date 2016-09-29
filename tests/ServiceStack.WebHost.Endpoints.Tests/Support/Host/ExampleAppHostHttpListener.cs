@@ -446,7 +446,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		//private static ILog log;
 
 		public ExampleAppHostHttpListener()
-			: base("ServiceStack Examples", typeof(GetFactorialService).Assembly)
+			: base("ServiceStack Examples", typeof(GetFactorialService).GetAssembly())
 		{
 			LogManager.LogFactory = new DebugLogFactory();
 			//log = LogManager.GetLogger(typeof(ExampleAppHostHttpListener));
@@ -513,7 +513,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         //private static ILog log;
 
         public ExampleAppHostHttpListenerPool()
-            : base("ServiceStack Examples", 500, typeof(GetFactorialService).Assembly)
+            : base("ServiceStack Examples", 500, typeof(GetFactorialService).GetAssembly())
         {
             LogManager.LogFactory = new DebugLogFactory();
             //log = LogManager.GetLogger(typeof(ExampleAppHostHttpListener));

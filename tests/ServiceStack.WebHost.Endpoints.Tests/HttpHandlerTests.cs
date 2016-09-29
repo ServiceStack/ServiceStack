@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public class HttpHandlerAppHost : AppSelfHostBase
         {
-            public HttpHandlerAppHost() : base("HttpHandlerAppHost", typeof(PerfServices).Assembly) { }
+            public HttpHandlerAppHost() : base("HttpHandlerAppHost", typeof(PerfServices).GetAssembly()) { }
 
             public override void Configure(Container container)
             {

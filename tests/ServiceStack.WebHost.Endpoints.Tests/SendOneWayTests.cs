@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
 
             public OneWayServiceAppHostHttpListener()
-                : base("", typeof(OneWayService).Assembly) { }
+                : base("", typeof(OneWayService).GetAssembly()) { }
 
             public override void Configure(Funq.Container container)
             {

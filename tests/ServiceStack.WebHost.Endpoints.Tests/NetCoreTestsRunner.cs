@@ -30,7 +30,7 @@ namespace NUnitLite.Tests
             JsConfig.InitStatics();
             //JsonServiceClient client = new JsonServiceClient();
             var writer = new ExtendedTextWrapper(Console.Out);
-            return new AutoRun(((IReflectableType)typeof(NetCoreTestsRunner)).GetTypeInfo().Assembly).Execute(args, writer, Console.In);
+            return new AutoRun(((IReflectableType)typeof(NetCoreTestsRunner)).GetTypeInfo().GetAssembly()).Execute(args, writer, Console.In);
         }
     }
 }

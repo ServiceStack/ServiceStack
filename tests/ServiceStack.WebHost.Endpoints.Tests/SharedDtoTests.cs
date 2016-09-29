@@ -40,7 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     //    {
 
     //        public AppHost()
-    //            : base("Shared dto tests", typeof(Service1).Assembly) { }
+    //            : base("Shared dto tests", typeof(Service1).GetAssembly()) { }
 
     //        public override void Configure(Container container)
     //        {

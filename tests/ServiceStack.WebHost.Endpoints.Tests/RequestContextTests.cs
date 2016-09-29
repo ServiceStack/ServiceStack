@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			: AppHostHttpListenerBase
 		{
 			public HeadersAppHostHttpListener()
-				: base("Request Filters Tests", typeof(HeadersService).Assembly) { }
+				: base("Request Filters Tests", typeof(HeadersService).GetAssembly()) { }
 
 			public override void Configure(Container container)
 			{

@@ -111,13 +111,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             : AppHostHttpListenerBase
         {
             public ValidationAppHostHttpListener()
-                : base("Validation Tests", typeof(CustomerService).Assembly) { }
+                : base("Validation Tests", typeof(CustomerService).GetAssembly()) { }
 
             public override void Configure(Container container)
             {
                 Plugins.Add(new ValidationFeature());
                 container.Register<IAddressValidator>(new AddressValidator());
-                container.RegisterValidators(typeof(CustomersValidator).Assembly);
+                container.RegisterValidators(typeof(CustomersValidator).GetAssembly());
             }
         }
 

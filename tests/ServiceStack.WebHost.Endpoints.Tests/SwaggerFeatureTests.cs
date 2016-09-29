@@ -293,7 +293,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             : AppHostHttpListenerBase
         {
             public SwaggerFeatureAppHostHttpListener()
-                : base("Swagger Feature Tests", typeof(SwaggerFeatureServiceTests).Assembly) { }
+                : base("Swagger Feature Tests", typeof(SwaggerFeatureServiceTests).GetAssembly()) { }
 
             public override void Configure(Funq.Container container)
             {
