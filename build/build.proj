@@ -139,6 +139,8 @@
 
       <MsgPackFiles Include="$(SrcDir)/ServiceStack.MsgPack/bin/$(Configuration)/ServiceStack.MsgPack.*"></MsgPackFiles>
 
+      <WireFiles Include="$(SrcDir)/ServiceStack.Wire/bin/$(Configuration)/ServiceStack.Wire.*"></WireFiles>
+
       <SwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/ServiceStack.Api.Swagger.*"></SwaggerFiles>
     </ItemGroup>
 
@@ -369,6 +371,18 @@
     <Copy SourceFiles="%(ProtoBufFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.ProtoBuf/servicestack.protobuf.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Wire -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Wire/ServiceStack.Wire.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Wire/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Wire/lib/net45')" />
+    <Copy SourceFiles="%(WireFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Wire/lib/net45" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Wire/servicestack.wire.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Razor -->
