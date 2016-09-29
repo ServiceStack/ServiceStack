@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-    <id>ServiceStack.ProtoBuf</id> 
+    <id>ServiceStack.Wire</id> 
     <title>Wire support for ServiceStack. Includes typed Wire Service Client</title>
     <version>4.5.0</version> 
     <authors>Service Stack</authors> 
