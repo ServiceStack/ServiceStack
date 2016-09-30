@@ -172,6 +172,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private static void Assert401(IServiceClient client, WebServiceException ex)
         {
+#if !NETCORE            
             if (client is Soap11ServiceClient || client is Soap12ServiceClient)
             {
                 if (ex.StatusCode != 401)
@@ -180,7 +181,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 }
                 return;
             }
-
+#endif
             Console.WriteLine(ex);
             Assert.That(ex.StatusCode, Is.EqualTo(401));
         }
@@ -317,7 +318,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
 
             req.CookieContainer = new CookieContainer();
-            req.CookieContainer.Add(new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));
+            req.CookieContainer.Add(new Uri("localhost"), new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));
 
             try
             {
@@ -490,7 +491,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-#if !IOS
+#if !(IOS || NETCORE)
 
         [TestFixture]
         public class Soap11IntegrationTests : RequestFiltersTests

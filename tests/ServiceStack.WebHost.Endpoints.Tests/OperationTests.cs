@@ -107,15 +107,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public CultureSwitch(string culture)
         {
+#if NETCORE
+            _currentCulture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = new CultureInfo(culture);
+#else
             var currentThread = Thread.CurrentThread;
             _currentCulture = currentThread.CurrentCulture;
             var switchCulture = CultureInfo.GetCultureInfo(culture);
             currentThread.CurrentCulture = switchCulture;
+#endif
         }
 
         public void Dispose()
         {
+#if NETCORE
+            CultureInfo.CurrentCulture = _currentCulture;
+#else
             Thread.CurrentThread.CurrentCulture = _currentCulture;
+#endif
         }
     }
 }

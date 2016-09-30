@@ -238,12 +238,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var sessionId = cookies["ss-id"];
 
             var cookieContainer = new CookieContainer();
-            cookieContainer.Add(new Cookie
-            {
-                Name = "ss-id",
-                Value = "some-other-id",
-                Domain = new Uri(Config.AbsoluteBaseUri).Host,
-            });
+            cookieContainer.Add(new Uri(new Uri(Config.AbsoluteBaseUri).Host),
+                new Cookie
+                {
+                    Name = "ss-id",
+                    Value = "some-other-id",
+                    Domain = new Uri(Config.AbsoluteBaseUri).Host,
+                });
 
             var response = Config.AbsoluteBaseUri
                 .CombineWith(new SessionTypedIncr().ToGetUrl())

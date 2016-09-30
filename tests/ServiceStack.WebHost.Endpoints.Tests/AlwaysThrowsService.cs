@@ -334,6 +334,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+#if !NETCORE
     public class Soap11IntegrationTests : WebServicesTests
     {
         protected override IServiceClient CreateNewServiceClient()
@@ -349,4 +350,5 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new Soap12ServiceClient(ListeningOn);
         }
     }
+#endif
 }

@@ -180,8 +180,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             const int clientCount = 500;
             var threads = new List<Thread>(clientCount);
+#if !NETCORE
             ThreadPool.SetMinThreads(500, 50);
             ThreadPool.SetMaxThreads(1000, 50);
+#endif           
 
             for (int i = 0; i < clientCount; i++)
             {

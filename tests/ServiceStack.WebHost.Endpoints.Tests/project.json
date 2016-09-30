@@ -33,16 +33,19 @@
     "ServiceStack.Kestrel": "1.0.*",
     "ServiceStack.OrmLite": "1.0.*",
     "ServiceStack.OrmLite.Sqlite": "1.0.*",
+    "ServiceStack.OrmLite.SqlServer": "1.0.*",
     "ServiceStack.RabbitMq": "1.0.*",
     "ServiceStack.Common.Tests": "1.0.*",
     "ServiceStack.Api.Swagger": "1.0.*",
-    "protobuf-net": "2.1.*"
+    "protobuf-net": "2.1.*",
+    "Moq": "4.6.38-alpha"
   },
   "frameworks": {
    "netcoreapp1.0": { 
        "imports": "dnxcore50",
 	     "dependencies" : {
-        "System.Reflection.TypeExtensions": "4.1.0"
+        "System.Reflection.TypeExtensions": "4.1.0",
+        "System.Threading": "4.0.11"
       }	
     }
   }
