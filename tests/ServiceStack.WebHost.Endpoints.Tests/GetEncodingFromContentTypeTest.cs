@@ -1,11 +1,10 @@
-﻿using System;
+﻿#if !NETCORE_SUPPORT
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-#if !NETCORE_SUPPORT
 using ServiceStack.Host.HttpListener;
-#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TestExistingDir
 {
@@ -49,3 +48,4 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TestExistingDir
 
     }
 }
+#endif

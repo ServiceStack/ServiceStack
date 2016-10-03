@@ -210,6 +210,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Trace.TraceInformation("Elapsed time for " + clientCount + " requests : " + sw.Elapsed);
         }
 
+#if !NETCORE_SUPPORT
         [Test]
         public void Can_infer_handler_path_from_listener_uris()
         {
@@ -229,6 +230,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(handlerPath, Is.EqualTo(entry.Value));
             }
         }
+#endif
 
         [Test, Ignore("You have to manually check the test output if there where NullReferenceExceptions!")]
         public void Rapid_Start_Stop_should_not_cause_exceptions()
@@ -238,7 +240,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             for (int i = 0; i < 100; i++)
             {
                 localAppHost.Start(GetBaseAddressWithFreePort());
+#if !NETCORE_SUPPORT                
                 localAppHost.Stop();
+#endif
             }
         }
 
@@ -252,7 +256,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 string address = endPoint.Address.ToString();
                 int port = endPoint.Port;
-                Uri uri = new UriBuilder(Uri.UriSchemeHttp, address, port).Uri;
+                Uri uri = new UriBuilder("http://", address, port).Uri;
 
                 listener.Stop();
 

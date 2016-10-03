@@ -240,7 +240,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_Handle_Exception_from_AlwaysThrowsList_with_GET_route()
         {
             var client = CreateNewServiceClient();
+#if !NETCORE            
             if (client is WcfServiceClient) return;
+#endif
             try
             {
                 var response = client.Get<List<AlwaysThrows>>("/throwslist/404/{0}".Fmt(TestString));

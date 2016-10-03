@@ -98,6 +98,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(OneWayService.LastResult, Is.EqualTo("Post POST"));
         }
 
+#if !NETCORE_SUPPORT
         [Test]
         public void Should_Respect_DataMember_Name()
         {
@@ -110,12 +111,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var webRequest = (HttpWebRequest)WebRequest.Create(url);
             webRequest.Method = "PUT";
             var formDataBytes = Encoding.UTF8.GetBytes(json);
-            webRequest.ContentLength = formDataBytes.Length;
+            webRequest.SetContentLength(formDataBytes.Length);
             webRequest.ContentType = "application/json";
             webRequest.GetRequestStream().Write(formDataBytes, 0, formDataBytes.Length);
             var webResponse = webRequest.GetResponse();
             return new StreamReader(webResponse.GetResponseStream()).ReadToEnd();
         }
-
+#endif
     }
 }

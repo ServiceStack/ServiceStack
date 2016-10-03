@@ -16,6 +16,10 @@ namespace ServiceStack
         protected AppHostHttpListenerPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         { }
+
+        protected AppHostHttpListenerPoolBase(string serviceName, params Assembly[] assembliesWithServices)
+            : base(serviceName, assembliesWithServices)
+        { }
     }
 
     public abstract class AppHostHttpListenerSmartPoolBase : AppHostHttpListenerPoolBase 

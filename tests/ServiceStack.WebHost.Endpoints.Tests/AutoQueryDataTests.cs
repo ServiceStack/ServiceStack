@@ -375,7 +375,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public bool IsDynamoDb
         {
-            get { return appHost is AutoQueryDataDynamoAppHost; }
+            get 
+            {
+#if !NETCORE_SUPPORT                  
+                return appHost is AutoQueryDataDynamoAppHost;
+#else
+                return false;
+#endif 
+            }
         }
 
         [Test]

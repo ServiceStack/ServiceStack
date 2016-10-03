@@ -301,7 +301,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (cookie != null)
             {
                 req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
-                req.CookieContainer.Add(new Cookie("ss-session", cookie.Value));
+                req.CookieContainer.Add(new Uri(ServiceClientBaseUri), new Cookie("ss-session", cookie.Value));
 
                 var dtoString = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
                 Assert.That(dtoString.Contains("Confidential"));

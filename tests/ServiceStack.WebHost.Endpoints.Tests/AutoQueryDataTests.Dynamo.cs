@@ -12,6 +12,7 @@ using ServiceStack.Aws.DynamoDb;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+#if !NETCORE_SUPPORT
     public class AutoQueryDataDynamoTests : AutoQueryDataTests
     {
         public override ServiceStackHost CreateAppHost()
@@ -308,6 +309,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             feature.AddDataSource(ctx => ctx.DynamoDbSource<ScannedTable>(allowScans: false));
         }
     }
+#endif
 
     public class ScannedTable
     {

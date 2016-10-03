@@ -4,9 +4,9 @@ using System.Runtime.Serialization;
 using NUnit.Framework;
 using ProtoBuf;
 using ServiceStack.Text;
+using ServiceStack.ProtoBuf;
 #if !NETCORE_SUPPORT
 using ServiceStack.ServiceModel;
-using ServiceStack.ProtoBuf;
 #endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests

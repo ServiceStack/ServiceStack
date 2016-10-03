@@ -1,4 +1,3 @@
-#if NETCORE
 using System;
 using System.Net;
 
@@ -6,14 +5,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public static class NetCoreExtensions
     {
+#if NETCORE
         public static HttpWebResponse GetResponse(this HttpWebRequest request)
         {
+            HttpWebResponse response = null;
+
             var asyncResult = request.BeginGetResponse((result) => {
-                result.AsyncState = request.EndGetResponse(result);
-            });
+                response = (HttpWebResponse) request.EndGetResponse(result);
+            }, null);
             asyncResult.AsyncWaitHandle.WaitOne();
 
-            return (HttpWebResponse) asyncResult.AsyncState;
+            return response;
         }
 
         public static bool AddRange(this HttpWebRequest request, int from, int to) 
@@ -42,6 +44,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             response.Dispose();
         }
+#endif
+        public static void SetUserAgent(this HttpWebRequest request, string userAgent)
+        {
+#if NETCORE
+            request.Headers[HttpRequestHeader.UserAgent] = userAgent;
+#else
+            request.UserAgent = userAgent;
+#endif           
+        }
+
+        public static void SetContentLength(this HttpWebRequest request, int contentLength)
+        {
+#if NETCORE
+            request.Headers[HttpRequestHeader.ContentLength] = contentLength.ToString();
+#else
+            request.ContentLength = contentLength;
+#endif           
+        }
     }
 }
-#endif
