@@ -1768,7 +1768,7 @@ namespace ServiceStack
 
         public virtual void CloseReadStream(Stream stream)
         {
-#if PCL
+#if PCL || NETSTANDARD1_1 || NETSTANDARD1_6
             stream.Dispose();
 #else
             stream.Close();
@@ -1777,7 +1777,7 @@ namespace ServiceStack
 
         public virtual void CloseWriteStream(Stream stream)
         {
-#if PCL
+#if PCL || NETSTANDARD1_1 || NETSTANDARD1_6
             stream.Dispose();
 #else
             stream.Close();

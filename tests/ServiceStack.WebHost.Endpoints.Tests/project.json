@@ -22,7 +22,7 @@
       "type": "platform",
       "version": "1.0.0"
     },
-    "NUnitLite" : "3.2.1",
+    "NUnitLite" : "3.4.1",
     "ServiceStack.Interfaces" : "1.0.*",
     "ServiceStack.Text" : "1.0.*",
     "ServiceStack.Common" : "1.0.*",
@@ -39,7 +39,8 @@
     "ServiceStack.Api.Swagger": "1.0.*",
     "ServiceStack.ProtoBuf": "1.0.*",
     "protobuf-net": "2.1.*",
-    "Moq": "4.6.38-alpha"
+    "Moq": "4.6.38-alpha",
+    "Microsoft.Data.SQLite": "1.0.0"
   },
   "frameworks": {
    "netcoreapp1.0": { 
