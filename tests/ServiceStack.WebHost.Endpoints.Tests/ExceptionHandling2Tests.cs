@@ -156,7 +156,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 appHost = new AppHost();
                 appHost.Init();
+#if !NETCORE_SUPPORT                
                 appHost.Config.DebugMode = true;
+#endif
                 appHost.Start(Config.ListeningOn);
             }
             catch (Exception ex)

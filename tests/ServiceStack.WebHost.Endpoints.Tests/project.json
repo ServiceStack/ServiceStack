@@ -40,7 +40,8 @@
     "ServiceStack.ProtoBuf": "1.0.*",
     "protobuf-net": "2.1.*",
     "Moq": "4.6.38-alpha",
-    "Microsoft.Data.SQLite": "1.0.0"
+    "Microsoft.Data.SQLite": "1.0.0",
+    "System.Data.SqlClient": "4.1.0"
   },
   "frameworks": {
    "netcoreapp1.0": { 
