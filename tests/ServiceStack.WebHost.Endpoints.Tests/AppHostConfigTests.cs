@@ -31,7 +31,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var json = (ListeningOn + "login/user/pass").GetJsonFromUrl();
 
 			json.Print();
-			Assert.That(json, Is.EqualTo("{\"pwd\":\"pass\",\"uname\":\"user\"}"));
+			Assert.That(json, Is.EqualTo("{\"pwd\":\"pass\",\"uname\":\"user\"}")
+								.Or.EqualTo("{\"uname\":\"user\",\"pwd\":\"pass\"}"));
 		}
 	}
 }

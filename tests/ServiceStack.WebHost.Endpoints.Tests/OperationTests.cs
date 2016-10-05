@@ -59,7 +59,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TearDown]
         public void OnTearDown()
         {
-            appHost.Config.WebHostUrl = null;
+            if (appHost?.Config?.WebHostUrl != null)
+                appHost.Config.WebHostUrl = null;
         }
 
         [Test]

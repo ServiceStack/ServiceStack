@@ -298,8 +298,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/api/modified/foo.csv")
                 .GetStringFromUrl();
 
-            var lf = System.Environment.NewLine;
-            Assert.That(response, Is.EqualTo("Data{0}foo{0}".Fmt(lf)));
+            Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
 
         }
     }
