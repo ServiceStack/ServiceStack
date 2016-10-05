@@ -48,7 +48,6 @@ namespace ServiceStack
                 AllowJsonpRequests = true,
                 AllowRouteContentTypeExtensions = true,
                 AllowNonHttpOnlyCookies = false,
-                UseHttpsLinks = false,
                 DebugMode = false,
                 DefaultDocuments = new List<string> {
                     "default.htm",
@@ -128,6 +127,12 @@ namespace ServiceStack
                     Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
                 },
                 FallbackRestPath = null,
+                UseHttpsLinks = false,
+#if !NETSTANDARD1_6
+                UseCamelCase = false,
+#else
+                UseCamelCase = true,
+#endif
             };
 
             Platform.Instance.InitHostConifg(config);
@@ -197,6 +202,8 @@ namespace ServiceStack
             this.SkipFormDataInCreatingRequest = instance.SkipFormDataInCreatingRequest;
             this.ScanSkipPaths = instance.ScanSkipPaths;
             this.AdminAuthSecret = instance.AdminAuthSecret;
+            this.UseHttpsLinks = instance.UseHttpsLinks;
+            this.UseCamelCase = instance.UseCamelCase;
         }
 
         public string WsdlServiceNamespace { get; set; }
@@ -281,6 +288,8 @@ namespace ServiceStack
         public List<string> ScanSkipPaths { get; private set; }
 
         public bool UseHttpsLinks { get; set; }
+
+        public bool UseCamelCase { get; set; }
 
         public string AdminAuthSecret { get; set; }
 

@@ -500,6 +500,9 @@ namespace ServiceStack
             if (config.HandlerFactoryPath != null)
                 config.HandlerFactoryPath = config.HandlerFactoryPath.TrimStart('/');
 
+            if (config.UseCamelCase)
+                JsConfig.EmitCamelCaseNames = true;
+
             var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 
             var plugins = Plugins.ToArray();
