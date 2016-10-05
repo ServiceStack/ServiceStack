@@ -8,10 +8,7 @@ namespace ServiceStack.ProtoBuf
 {
     public class ProtoBufServiceClient : ServiceClientBase
     {
-        public override string Format
-        {
-            get { return "x-protobuf"; }
-        }
+        public override string Format => "x-protobuf";
 
         public ProtoBufServiceClient(string baseUri)
         {

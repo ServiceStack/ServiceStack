@@ -1,4 +1,4 @@
-﻿#if true
+﻿#if !NETSTANDARD1_6
 
 using System;
 using System.Collections.Generic;

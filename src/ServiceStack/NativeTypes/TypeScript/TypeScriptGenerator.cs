@@ -140,7 +140,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
-            sb.AppendLine("{0}ExportAsTypes: {1}".Fmt(defaultValue("ExportAsTypes"), Config.ExportAsTypes));
+            //sb.AppendLine("{0}ExportAsTypes: {1}".Fmt(defaultValue("ExportAsTypes"), Config.ExportAsTypes));
             sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
@@ -341,34 +341,31 @@ namespace ServiceStack.NativeTypes.TypeScript
                 string responseTypeExpression = null;
 
                 var interfaces = new List<string>();
-                if (options.ImplementsFn != null)
+                var implStr = options.ImplementsFn?.Invoke();
+                if (!string.IsNullOrEmpty(implStr))
                 {
-                    var implStr = options.ImplementsFn();
-                    if (!string.IsNullOrEmpty(implStr))
+                    interfaces.Add(implStr);
+
+                    if (implStr.StartsWith("IReturn<"))
                     {
-                        interfaces.Add(implStr);
+                        var types = implStr.RightPart('<');
+                        var returnType = types.Substring(0, types.Length - 1);
 
-                        if (implStr.StartsWith("IReturn<"))
-                        {
-                            var types = implStr.RightPart('<');
-                            var returnType = types.Substring(0, types.Length - 1);
+                        if (returnType == "any")
+                            returnType = "Object";
 
-                            if (returnType == "any")
-                                returnType = "Object";
+                        // This is to avoid invalid syntax such as "return new string()"
+                        string replaceReturnType;
+                        if (primitiveDefaultValues.TryGetValue(returnType, out replaceReturnType))
+                            returnType = replaceReturnType;
 
-                            // This is to avoid invalid syntax such as "return new string()"
-                            string replaceReturnType;
-                            if (primitiveDefaultValues.TryGetValue(returnType, out replaceReturnType))
-                                returnType = replaceReturnType;
-
-                            responseTypeExpression = replaceReturnType == null ?
-                                "createResponse() {{ return new {0}(); }}".Fmt(returnType) :
-                                "createResponse() {{ return {0}; }}".Fmt(returnType);
-                        }
-                        else if (implStr == "IReturnVoid")
-                        {
-                            responseTypeExpression = "createResponse() {}";
-                        }
+                        responseTypeExpression = replaceReturnType == null ?
+                            "createResponse() {{ return new {0}(); }}".Fmt(returnType) :
+                            "createResponse() {{ return {0}; }}".Fmt(returnType);
+                    }
+                    else if (implStr == "IReturnVoid")
+                    {
+                        responseTypeExpression = "createResponse() {}";
                     }
                 }
 
@@ -396,7 +393,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 var typeDeclaration = !Config.ExportAsTypes
                     ? "interface"
-                    : "export {0}".Fmt(isClass ? "class" : "interface"); 
+                    : $"export {(isClass ? "class" : "interface")}"; 
 
                 sb.AppendLine("{0} {1}{2}".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs), extend));
                 sb.AppendLine("{");
@@ -414,7 +411,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
 
-                if (responseTypeExpression != null)
+                if (Config.ExportAsTypes && responseTypeExpression != null)
                 {
                     sb.AppendLine(responseTypeExpression);
                     sb.AppendLine("getTypeName() {{ return \"{0}\"; }}".Fmt(type.Name));

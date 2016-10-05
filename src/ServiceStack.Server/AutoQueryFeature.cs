@@ -257,7 +257,7 @@ namespace ServiceStack
             return this;
         }
 
-        public HashSet<string> SqlAggregateFunctions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+        public HashSet<string> SqlAggregateFunctions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "AVG", "COUNT", "FIRST", "LAST", "MAX", "MIN", "SUM"
         };
@@ -478,7 +478,7 @@ namespace ServiceStack
 
         public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> sqlExpression, IQueryDb dto)
         {
-            response.Meta = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            response.Meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var commands = dto.Include.ParseCommands();
 
@@ -628,7 +628,7 @@ namespace ServiceStack
             var dtoAttr = dto.GetType().FirstAttribute<QueryDbAttribute>();
             var defaultTerm = dtoAttr != null && dtoAttr.DefaultTerm == QueryTerm.Or ? "OR" : "AND";
 
-            var aliases = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            var aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var props = typeof(From).GetProperties();
             foreach (var pi in props)
             {

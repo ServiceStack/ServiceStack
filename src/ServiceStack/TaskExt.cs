@@ -49,6 +49,11 @@ namespace ServiceStack
                 throw ex.UnwrapIfSingleException();
             }
         }
+
+        public static T GetResult<T>(this Task<T> task)
+        {
+            return (T)((Task)task).GetResult();
+        }
     }
 
 }

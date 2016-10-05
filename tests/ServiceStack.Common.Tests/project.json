@@ -22,11 +22,14 @@
       "version": "1.0.0"
     },
     "NUnitLite" : "3.2.1",
+    "AWSSDK.Core": "3.3.0.2",
+    "AWSSDK.DynamoDBv2": "3.3.0",
     "ServiceStack.Interfaces" : "1.0.*",
     "ServiceStack.Text" : "1.0.*",
     "ServiceStack.Common" : "1.0.*",
     "ServiceStack.Client" : "1.0.*",
-    "ServiceStack": "1.0.*"
+    "ServiceStack": "1.0.*",
+    "ServiceStack.Kestrel": "1.0.*"
   },
   "frameworks": {
    "netcoreapp1.0": { 

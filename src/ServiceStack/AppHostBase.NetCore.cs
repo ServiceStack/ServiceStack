@@ -22,12 +22,10 @@ namespace ServiceStack
 {
     public abstract class AppHostBase : ServiceStackHost
     {
-        internal static AppHostBase NetCoreInstance;
-        
         protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) 
         {
-            NetCoreInstance = this;
+            Platforms.PlatformNetCore.HostInstance = this;
         }
 
         IApplicationBuilder app;
@@ -35,15 +33,21 @@ namespace ServiceStack
         public virtual void Bind(IApplicationBuilder app)
         {
             this.app = app;
+            BindHost(this, app);
+            app.Use(ProcessRequest);
+        }
+
+        public static void BindHost(ServiceStackHost appHost, IApplicationBuilder app)
+        {
+            JsConfig.EmitCamelCaseNames = true;
+
             var logFactory = app.ApplicationServices.GetService<ILoggerFactory>();
             if (logFactory != null)
             {
                 LogManager.LogFactory = new NetCoreLogFactory(logFactory);
             }
 
-            Container.Adapter = new NetCoreContainerAdapter(app.ApplicationServices);
-
-            app.Use(ProcessRequest);
+            appHost.Container.Adapter = new NetCoreContainerAdapter(app.ApplicationServices);
         }
 
         public override void OnConfigLoad()
@@ -58,6 +62,7 @@ namespace ServiceStack
 
         public virtual Task ProcessRequest(HttpContext context, Func<Task> next)
         {
+            //Keep in sync with Kestrel/AppSelfHostBase.cs
             var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
 
             var httpReq = context.ToRequest(operationName);
@@ -94,7 +99,7 @@ namespace ServiceStack
         }
     }
 
-    public static class NetCoreExtensions
+    public static class NetCoreAppHostExtensions
     {
         public static void UseServiceStack(this IApplicationBuilder app, AppHostBase appHost)
         {
