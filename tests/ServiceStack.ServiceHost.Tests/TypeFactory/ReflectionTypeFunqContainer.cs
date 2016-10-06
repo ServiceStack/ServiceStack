@@ -101,7 +101,7 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
             }
         }
 
-        public object CreateInstance(Type type)
+        public object CreateInstance(IResolver resolver, Type type)
         {
             var factoryFn = Resolve(this.container);
             return factoryFn(type);

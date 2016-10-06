@@ -316,21 +316,6 @@ namespace ServiceStack.Host
             return null;
         }
 
-        internal class TypeFactoryWrapper : ITypeFactory
-        {
-            private readonly Func<Type, object> typeCreator;
-
-            public TypeFactoryWrapper(Func<Type, object> typeCreator)
-            {
-                this.typeCreator = typeCreator;
-            }
-
-            public object CreateInstance(Type type)
-            {
-                return typeCreator(type);
-            }
-        }
-
         private readonly Dictionary<Type, List<Type>> serviceExecCache = new Dictionary<Type, List<Type>>();
         public void ResetServiceExecCachesIfNeeded(Type serviceType, Type requestType)
         {
@@ -368,7 +353,7 @@ namespace ServiceStack.Host
 
             ServiceExecFn handlerFn = (req, dto) =>
             {
-                var service = serviceFactoryFn.CreateInstance(serviceType);
+                var service = serviceFactoryFn.CreateInstance(req, serviceType);
 
                 ServiceExecFn serviceExec = (reqCtx, requestDto) =>
                     iserviceExec.Execute(reqCtx, service, requestDto);
