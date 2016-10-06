@@ -444,7 +444,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(ex.StatusCode, Is.EqualTo(400));
                 Assert.That(ex.IsAny400());
+#if !NETCORE
                 Assert.That(ex.StatusDescription, Is.EqualTo(typeof(CustomException).Name));
+#endif
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(CustomException).Name));
                 Assert.That(ex.ErrorMessage, Is.EqualTo("User Defined Error"));
                 Assert.That(ex.ResponseBody, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
@@ -464,7 +466,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Assert.That((int)errorResponse.StatusCode, Is.EqualTo(500));
                 Assert.That(webEx.IsAny500());
+#if !NETCORE                
                 Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+#endif
 
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
                 var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
@@ -491,7 +495,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Assert.That((int)errorResponse.StatusCode, Is.EqualTo(406));
                 Assert.That(webEx.IsAny400());
+#if !NETCORE                
                 Assert.That(errorResponse.StatusDescription, Is.EqualTo("CustomDescription"));
+#endif
             }
         }
 
@@ -508,7 +514,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Assert.That((int)errorResponse.StatusCode, Is.EqualTo(500));
                 Assert.That(webEx.IsAny500());
+#if !NETCORE
                 Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+#endif
 
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
                 var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();

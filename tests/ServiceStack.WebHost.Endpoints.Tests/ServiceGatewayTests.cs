@@ -448,7 +448,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo(400));
+#if !NETCORE                
                 Assert.That(ex.StatusDescription, Is.EqualTo(typeof(ArgumentException).Name));
+#endif
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
                 Assert.That(ex.ResponseStatus.Message, Is.EqualTo("ERROR " + typeof(SGSendSyncGetInternal).Name));
@@ -472,7 +474,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo(400));
+#if !NETCORE
                 Assert.That(ex.StatusDescription, Is.EqualTo(typeof(ArgumentException).Name));
+#endif
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
                 Assert.That(ex.ResponseStatus.Message, Is.EqualTo("ERROR " + typeof(SGSyncGetExternal).Name));

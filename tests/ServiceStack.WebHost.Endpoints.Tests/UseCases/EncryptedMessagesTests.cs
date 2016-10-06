@@ -457,7 +457,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+#if !NETCORE                
                 Assert.That(ex.StatusDescription, Is.EqualTo("KeyNotFoundException"));
+#endif
                 Assert.That(ex.ResponseStatus.Message, Is.StringStarting(EncryptedMessagesFeature.ErrorKeyNotFound.Substring(0,10)));
             }
         }

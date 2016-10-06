@@ -208,7 +208,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
+#if !NETCORE
                 Assert.AreEqual("ArgumentException", ex.StatusDescription, "Wrong ExceptionType");
+#endif
                 Assert.AreEqual("Invalid Age", ex.ErrorMessage, "Wrong message");
             }
         }
@@ -238,7 +240,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
+#if !NETCORE            
                 Assert.AreEqual("ArgumentException", ex.StatusDescription, "Wrong ExceptionType");
+#endif
                 Assert.AreEqual("Invalid Age", ex.ErrorMessage, "Wrong message");
             }
         }
@@ -269,7 +273,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
+#if !NETCORE            
                 Assert.AreEqual("ArgumentException", ex.StatusDescription, "Wrong ExceptionType");
+#endif
                 Assert.AreEqual("Invalid Age", ex.ErrorMessage, "Wrong message");
             }
         }
@@ -299,7 +305,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
+#if !NETCORE            
                 Assert.AreEqual("ArgumentException", ex.StatusDescription, "Wrong ExceptionType");
+#endif
                 Assert.AreEqual("Invalid Age", ex.ErrorMessage, "Wrong message");
             }
         }
