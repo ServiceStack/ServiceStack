@@ -13,12 +13,20 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.Http.Internal;
+using ServiceStack.Configuration;
 
 namespace ServiceStack.Host.NetCore
 {
-    public class NetCoreRequest : IHttpRequest
+    public class NetCoreRequest : IHttpRequest, IHasResolver
     {
         public static ILog log = LogManager.GetLogger(typeof(NetCoreRequest));
+
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get { return resolver ?? Service.GlobalResolver; }
+            set { resolver = value; }
+        }
 
         private HttpContext context;
         private HttpRequest request;
@@ -36,7 +44,7 @@ namespace ServiceStack.Host.NetCore
 
         public T TryResolve<T>()
         {
-            return HostContext.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public string GetRawBody()

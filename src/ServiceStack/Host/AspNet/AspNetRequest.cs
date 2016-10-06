@@ -9,17 +9,27 @@ using System.IO;
 using System.Net;
 using System.Web;
 using Funq;
+using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.AspNet
 {
     public class AspNetRequest
-        : IHttpRequest
+        : IHttpRequest, IHasResolver
     {
         public static ILog log = LogManager.GetLogger(typeof(AspNetRequest));
 
-        public Container Container { get; set; }
+        [Obsolete("Use Resolver")]
+        public Container Container { get { throw new NotSupportedException("Use Resolver"); } }
+
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get { return resolver ?? Service.GlobalResolver; }
+            set { resolver = value; }
+        }
+
         private readonly HttpRequestBase request;
         private readonly IHttpResponse response;
         
@@ -70,15 +80,7 @@ namespace ServiceStack.Host.AspNet
 
         public T TryResolve<T>()
         {
-            if (typeof(T) == typeof(IHttpRequest))
-                throw new Exception("You don't need to use IHttpRequest.TryResolve<IHttpRequest> to resolve itself");
-
-            if (typeof(T) == typeof(IHttpResponse))
-                throw new Exception("Resolve IHttpResponse with 'Response' property instead of IHttpRequest.TryResolve<IHttpResponse>");
-
-            return Container != null
-                ? Container.TryResolve<T>()
-                : HostContext.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public string OperationName { get; set; }

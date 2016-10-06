@@ -10,13 +10,23 @@ using System.Net;
 using System.Text;
 using System.Web;
 using Funq;
+using ServiceStack.Configuration;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
 {
-    public partial class ListenerRequest : IHttpRequest
+    public partial class ListenerRequest : IHttpRequest, IHasResolver
     {
-        public Container Container { get; set; }
+        [Obsolete("Use Resolver")]
+        public Container Container { get { throw new NotSupportedException("Use Resolver"); } }
+
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get { return resolver ?? Service.GlobalResolver; }
+            set { resolver = value; }
+        }
+
         private readonly HttpListenerRequest request;
         private readonly IHttpResponse response;
 
@@ -44,15 +54,7 @@ namespace ServiceStack.Host.HttpListener
 
         public T TryResolve<T>()
         {
-            if (typeof(T) == typeof(IHttpRequest))
-                throw new Exception("You don't need to use IHttpRequest.TryResolve<IHttpRequest> to resolve itself");
-
-            if (typeof(T) == typeof(IHttpResponse))
-                throw new Exception("Resolve IHttpResponse with 'Response' property instead of IHttpRequest.TryResolve<IHttpResponse>");
-
-            return Container == null
-                ? HostContext.TryResolve<T>()
-                : Container.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public string OperationName { get; set; }

@@ -92,8 +92,8 @@ namespace ServiceStack.Common.Tests
                 var foo = typeFactory.CreateInstance(services, typeof(IFoo), tryResolve: true);
                 Assert.That(foo, Is.Not.Null);
 
-                //var bar = typeFactory.CreateInstance(services, typeof(IBar), tryResolve: true);
-                //Assert.That(bar, Is.Null);
+                var bar = typeFactory.CreateInstance(services, typeof(IBar), tryResolve: true);
+                Assert.That(bar, Is.Null);
 
                 Assert.Throws<ResolutionException>(() =>
                     typeFactory.CreateInstance(services, typeof(IBar), tryResolve: false));
