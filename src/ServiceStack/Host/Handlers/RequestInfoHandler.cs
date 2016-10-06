@@ -29,6 +29,9 @@ namespace ServiceStack.Host.Handlers
         public string HostType { get; set; }
 
         [DataMember]
+        public string StartedAt { get; set; }
+
+        [DataMember]
         public string Date { get; set; }
 
         [DataMember]
@@ -300,6 +303,7 @@ namespace ServiceStack.Host.Handlers
                 Usage = "append '?debug=requestinfo' to any querystring. Optional params: virtualPathCount",
                 Host = HostContext.ServiceName + "_" + HostContext.Config.DebugHttpListenerHostEnvironment + "_" + Env.ServerUserAgent,
                 HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType()?.Name ?? hostType.Name),
+                StartedAt = HostContext.AppHost.StartedAt.ToString("yyyy-MM-dd HH:mm:ss"),
                 Date = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                 ServiceName = HostContext.ServiceName,
                 HandlerFactoryPath = HostContext.Config.HandlerFactoryPath,
