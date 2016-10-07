@@ -318,8 +318,7 @@ namespace ServiceStack
             var permId = req.Response.CreatePermanentSessionId(req);
 
             var isPerm = req.IsPermanentSession();
-            if (isPerm)
-                req.AddSessionOptions(SessionOptions.Permanent);
+            req.AddSessionOptions(isPerm ? SessionOptions.Permanent : SessionOptions.Temporary);
 
             session.Id = isPerm
                 ? permId
