@@ -56,6 +56,18 @@ namespace ServiceStack.Core.SelfHostTests
         public Dep Dep { get; set; }
     }
 
+    public class NetCoreScopedRequest
+    {
+        internal static int count;
+        public int Count => count;
+        public NetCoreScopedRequest(Dep dep)
+        {
+            count++;
+            Dep = dep;
+        }
+        public Dep Dep { get; set; }
+    }
+
     public interface INetCoreTransient : IDep { }
     public class NetCoreTransient : INetCoreTransient
     {
@@ -122,6 +134,7 @@ namespace ServiceStack.Core.SelfHostTests
                 services.AddSingleton<INetCoreSingleton, NetCoreSingleton>()
                         .AddSingleton(new NetCoreInstance())
                         .AddScoped<INetCoreScoped, NetCoreScoped>()
+                        .AddScoped<NetCoreScopedRequest>()
                         .AddTransient<INetCoreTransient, NetCoreTransient>()
                         .AddTransient<Dep>();
             }
@@ -200,6 +213,10 @@ namespace ServiceStack.Core.SelfHostTests
                 if (FunqTransient.Dep == null)
                     throw new ArgumentException(nameof(FunqTransient), "!Dep");
 
+                var netCoreRequestScope = Request.TryResolve<NetCoreScopedRequest>();
+                if (netCoreRequestScope.Dep == null)
+                    throw new ArgumentException(nameof(netCoreRequestScope), "!Dep");
+
                 return new IocResponse
                 {
                     Results = new Dictionary<string, int>
@@ -212,6 +229,7 @@ namespace ServiceStack.Core.SelfHostTests
                         { "FunqInstance", FunqInstance.Count },
                         { "FunqScoped", FunqScoped.Count },
                         { "FunqTransient", FunqTransient.Count },
+                        { "NetCoreScopedRequest", netCoreRequestScope.Count },
                     }
                 };
             }
@@ -283,7 +301,7 @@ namespace ServiceStack.Core.SelfHostTests
                 var client = new JsonServiceClient(Config.AbsoluteBaseUri);
 
                 var response = client.Get(new Ioc());
-                Assert.That(response.Results.Count, Is.EqualTo(8));
+                Assert.That(response.Results.Count, Is.EqualTo(9));
                 Assert.That(response.Results.Values.ToList().All(x => x == 1));
 
                 4.Times(i => response = client.Get(new Ioc()));
@@ -291,7 +309,9 @@ namespace ServiceStack.Core.SelfHostTests
                 Assert.That(response.Results.Where(x => x.Key.EndsWith("Singleton")).All(e => e.Value == 1));
                 Assert.That(response.Results.Where(x => x.Key.EndsWith("Instance")).All(e => e.Value == 1));
 
-                //Assert.That(response.Results.Where(x => x.Key.EndsWith("Scoped")).All(e => e.Value == 5));
+                Assert.That(response.Results["NetCoreScoped"], Is.EqualTo(1));
+                Assert.That(response.Results["NetCoreScopedRequest"], Is.EqualTo(5));
+                Assert.That(response.Results["FunqScoped"], Is.EqualTo(5));
                 Assert.That(response.Results.Where(x => x.Key.EndsWith("Transient")).All(e => e.Value == 5));
             }
         }
