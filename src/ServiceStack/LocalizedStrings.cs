@@ -25,6 +25,7 @@
         public static string SessionOptionsKey = "ss-opt";
         public static string TokenCookie = "ss-tok";
         public static string HasPreAuthenticated = "__haspreauth";
+        public static string IRequest = "__request";
     }
 
     public static class LocalizedStrings

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 
 namespace ServiceStack.Host.NetCore
@@ -44,6 +45,10 @@ namespace ServiceStack.Host.NetCore
 
         public T TryResolve<T>()
         {
+            var instance = context.RequestServices.GetService<T>();
+            if (instance != null)
+                return instance;
+
             return this.TryResolveInternal<T>();
         }
 

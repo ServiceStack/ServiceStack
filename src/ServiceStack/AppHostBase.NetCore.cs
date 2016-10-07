@@ -91,9 +91,34 @@ namespace ServiceStack
 
             return next();
         }
+
         public override string MapProjectPath(string relativePath)
         {
             return relativePath.MapHostAbsolutePath();
+        }
+
+        public override IRequest TryGetCurrentRequest()
+        {
+            return GetOrCreateRequest(app.ApplicationServices.GetService<IHttpContextAccessor>());
+        }
+
+        /// <summary>
+        /// Creates an IRequest from IHttpContextAccessor if it's been registered as a singleton
+        /// </summary>
+        public static IRequest GetOrCreateRequest(IHttpContextAccessor httpContextAccessor)
+        {
+            if (httpContextAccessor != null)
+            {
+                object oRequest;
+                if (httpContextAccessor.HttpContext.Items.TryGetValue(Keywords.IRequest, out oRequest))
+                    return (IRequest) oRequest;
+
+                var req = httpContextAccessor.HttpContext.ToRequest();
+                httpContextAccessor.HttpContext.Items[Keywords.IRequest] = req;
+
+                return req;
+            }
+            return null;
         }
     }
 
