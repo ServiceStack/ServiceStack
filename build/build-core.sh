@@ -30,6 +30,7 @@ sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceS
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack/project.json
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Kestrel/project.json
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.HttpClient/project.json
+sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Mvc/project.json
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Server/project.json
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.RabbitMq/project.json
 sed -i "s/\"version\": \"[^\"]\+\"/\"version\": \"${Version}\"/g" ./src/ServiceStack.Api.Swagger/project.json
@@ -43,6 +44,7 @@ find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Common
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Core\" version=\"[^\"]\+\"/\"ServiceStack.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Kestrel\" version=\"[^\"]\+\"/\"ServiceStack.Kestrel\" version=\"\[${PackageVersion}, \)\"/g" {} +
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.HttpClient.Core\" version=\"[^\"]\+\"/\"ServiceStack.HttpClient.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
+find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Mvc.Core\" version=\"[^\"]\+\"/\"ServiceStack.Mvc.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Server.Core\" version=\"[^\"]\+\"/\"ServiceStack.Server.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.Redis.Core\" version=\"[^\"]\+\"/\"ServiceStack.Redis.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +
 find ./NuGet.Core -type f -name "*.nuspec" -exec sed -i "s/\"ServiceStack.OrmLite.Core\" version=\"[^\"]\+\"/\"ServiceStack.OrmLite.Core\" version=\"\[${PackageVersion}, \)\"/g" {} +

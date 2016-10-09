@@ -64,6 +64,11 @@ dotnet pack %NOBUILD% --configuration %BUILD%
 POPD
 COPY ..\..\..\ServiceStack\src\ServiceStack.Kestrel\bin\%BUILD%\ServiceStack.Kestrel.1.0.0.* .\packages\
 
+PUSHD ..\..\..\ServiceStack\src\ServiceStack.Mvc\
+dotnet pack %NOBUILD% --configuration %BUILD%
+POPD
+COPY ..\..\..\ServiceStack\src\ServiceStack.Mvc\bin\%BUILD%\ServiceStack.Mvc.1.0.0.* .\packages\
+
 PUSHD ..\..\..\ServiceStack\src\ServiceStack.Server\
 dotnet pack %NOBUILD% --configuration %BUILD%
 POPD
