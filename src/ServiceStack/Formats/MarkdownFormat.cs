@@ -167,16 +167,16 @@ namespace ServiceStack.Formats
             return markdownPage;
         }
 
-        public bool ProcessRequest(IRequest httpReq, IResponse httpRes, object dto)
+        public bool ProcessRequest(IRequest req, IResponse res, object dto)
         {
             MarkdownPage markdownPage;
-            if ((markdownPage = GetViewPageByResponse(dto, httpReq)) == null)
+            if ((markdownPage = GetViewPageByResponse(dto, req)) == null)
                 return false;
 
             if (CheckLastModifiedForChanges)
                 ReloadModifiedPageAndTemplates(markdownPage);
 
-            return ProcessMarkdownPage(httpReq, markdownPage, dto, httpRes);
+            return ProcessMarkdownPage(req, markdownPage, dto, res);
         }
 
         public bool HasView(string viewName, IRequest httpReq = null)

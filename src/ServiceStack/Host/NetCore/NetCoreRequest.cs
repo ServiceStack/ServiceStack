@@ -29,8 +29,8 @@ namespace ServiceStack.Host.NetCore
             set { resolver = value; }
         }
 
-        private HttpContext context;
-        private HttpRequest request;
+        private readonly HttpContext context;
+        private readonly HttpRequest request;
 
         public NetCoreRequest(HttpContext context, string operationName, RequestAttributes attrs = RequestAttributes.None)
         {

@@ -13,7 +13,7 @@ namespace ServiceStack.Html
         public static MvcHtmlString AsRaw<T>(this T model)
         {
             return MvcHtmlString.Create(
-                (model != null ? model : default(T)).ToString());
+                (model != null ? model : default(T))?.ToString());
         }
     }
 }
