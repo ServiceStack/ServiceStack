@@ -1,6 +1,7 @@
 ﻿#if NETSTANDARD1_6
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -17,6 +18,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceStack.IO;
+using ServiceStack.VirtualPath;
+using System.Linq;
 
 namespace ServiceStack
 {
@@ -48,13 +52,28 @@ namespace ServiceStack
             appHost.Container.Adapter = new NetCoreContainerAdapter(app.ApplicationServices);
         }
 
+        /// <summary>
+        /// The FilePath used in Virtual File Sources
+        /// </summary>
+        public override string GetWebRootPath()
+        {
+            if (app == null)
+                return base.GetWebRootPath();
+
+            var env = app.ApplicationServices.GetService<IHostingEnvironment>();
+            return env.WebRootPath ?? env.ContentRootPath;
+        }
+
         public override void OnConfigLoad()
         {
             if (app != null)
             {
                 //Initialize VFS
                 var env = app.ApplicationServices.GetService<IHostingEnvironment>();
-                Config.WebHostPhysicalPath = env.WebRootPath ?? env.ContentRootPath;
+                Config.WebHostPhysicalPath = env.ContentRootPath;
+
+                //Set VirtualFiles to point to ContentRootPath (Project Folder)
+                VirtualFiles = new FileSystemVirtualPathProvider(this, env.ContentRootPath);
             }
         }
 
@@ -107,14 +126,19 @@ namespace ServiceStack
         /// </summary>
         public static IRequest GetOrCreateRequest(IHttpContextAccessor httpContextAccessor)
         {
-            if (httpContextAccessor != null)
+            return GetOrCreateRequest(httpContextAccessor?.HttpContext);
+        }
+
+        public static IRequest GetOrCreateRequest(HttpContext httpContext)
+        {
+            if (httpContext != null)
             {
                 object oRequest;
-                if (httpContextAccessor.HttpContext.Items.TryGetValue(Keywords.IRequest, out oRequest))
+                if (httpContext.Items.TryGetValue(Keywords.IRequest, out oRequest))
                     return (IRequest) oRequest;
 
-                var req = httpContextAccessor.HttpContext.ToRequest();
-                httpContextAccessor.HttpContext.Items[Keywords.IRequest] = req;
+                var req = httpContext.ToRequest();
+                httpContext.Items[Keywords.IRequest] = req;
 
                 return req;
             }
