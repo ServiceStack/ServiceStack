@@ -1,3 +1,4 @@
+#if !NETSTANDARD1_6
 namespace FluentValidation.Mvc {
 	using System.Web;
 	using System.Web.Mvc;
@@ -22,3 +23,4 @@ namespace FluentValidation.Mvc {
 		}
 	}
 }
+#endif

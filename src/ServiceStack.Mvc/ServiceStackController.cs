@@ -1,17 +1,26 @@
 ﻿using System;
 using System.Data;
 using System.Text;
-using System.Web;
-using System.Web.Mvc;
-using System.Web.Routing;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
-using ServiceStack.Host.AspNet;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using System.Web;
+
+#if !NETSTANDARD1_6
+    using ServiceStack.Host.AspNet;
+    using System.Web.Mvc;
+    using System.Web.Routing;
+#else
+    using ServiceStack.Host.NetCore;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Routing;
+#endif
 
 namespace ServiceStack.Mvc
 {
@@ -27,7 +36,12 @@ namespace ServiceStack.Mvc
     public abstract class ServiceStackController : Controller, IHasServiceStackProvider
     {
         public static string DefaultAction = "Index";
+
+#if !NETSTANDARD1_6
         public static Func<System.Web.Routing.RequestContext, ServiceStackController> CatchAllController;
+#else
+        public static Func<HttpContext, ServiceStackController> CatchAllController;
+#endif
 
         /// <summary>
         /// Default redirct URL if [Authenticate] attribute doesn't permit access.
@@ -84,6 +98,7 @@ namespace ServiceStack.Mvc
                 action = "Unauthorized"
             }));
 
+#if !NETSTANDARD1_6
         protected override JsonResult Json(object data, string contentType, Encoding contentEncoding, JsonRequestBehavior behavior)
         {
             return new ServiceStackJsonResult
@@ -93,8 +108,18 @@ namespace ServiceStack.Mvc
                 ContentEncoding = contentEncoding
             };
         }
+#else
+        public override JsonResult Json(object data)
+        {
+            return new ServiceStackJsonResult(data);
+        }
+#endif
 
+#if !NETSTANDARD1_6
         protected virtual ActionResult InvokeDefaultAction(HttpContextBase httpContext)
+#else
+        protected virtual ActionResult InvokeDefaultAction(HttpContext httpContext)
+#endif
         {
             try
             {
@@ -107,7 +132,11 @@ namespace ServiceStack.Mvc
 
                 if (CatchAllController != null)
                 {
+#if !NETSTANDARD1_6
                     var catchAllController = CatchAllController(this.Request.RequestContext);
+#else
+                    var catchAllController = CatchAllController(httpContext);
+#endif
                     InvokeControllerDefaultAction(catchAllController, httpContext);
                 }
             }
@@ -115,6 +144,7 @@ namespace ServiceStack.Mvc
             return new EmptyResult();
         }
 
+#if !NETSTANDARD1_6
         protected override void HandleUnknownAction(string actionName)
         {
             if (CatchAllController == null)
@@ -129,18 +159,31 @@ namespace ServiceStack.Mvc
         }
 
         private void InvokeControllerDefaultAction(ServiceStackController controller, HttpContextBase httpContext)
+#else
+        private void InvokeControllerDefaultAction(ServiceStackController controller, HttpContext httpContext)
+#endif
         {
             var routeData = new RouteData();
             var controllerName = controller.GetType().Name.Replace("Controller", "");
             routeData.Values.Add("controller", controllerName);
             routeData.Values.Add("action", DefaultAction);
+#if !NETSTANDARD1_6
             routeData.Values.Add("url", httpContext.Request.Url.OriginalString);
             controller.Execute(new System.Web.Routing.RequestContext(httpContext, routeData));
+#else
+            routeData.Values.Add("url", Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(httpContext.Request));
+            //controller.Execute(routeData);
+            throw new NotImplementedException("TODO: execute action from RouteData");
+#endif
         }
 
         private IServiceStackProvider serviceStackProvider;
-        public virtual IServiceStackProvider ServiceStackProvider => 
-            serviceStackProvider ?? (serviceStackProvider = new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name)));
+        public virtual IServiceStackProvider ServiceStackProvider => serviceStackProvider ?? (serviceStackProvider = 
+#if !NETSTANDARD1_6
+            new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name)));
+#else
+            new ServiceStackProvider(new NetCoreRequest(base.HttpContext, GetType().Name)));
+#endif
 
         public virtual IAppSettings AppSettings => ServiceStackProvider.AppSettings;
 
@@ -160,7 +203,7 @@ namespace ServiceStack.Mvc
 
         public virtual ISessionFactory SessionFactory => ServiceStackProvider.SessionFactory;
 
-        public virtual ISession SessionBag => ServiceStackProvider.SessionBag;
+        public virtual Caching.ISession SessionBag => ServiceStackProvider.SessionBag;
 
         public virtual bool IsAuthenticated => ServiceStackProvider.IsAuthenticated;
 
@@ -180,14 +223,13 @@ namespace ServiceStack.Mvc
 
         public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
 
-        [Obsolete("Use Gateway")]
-        protected virtual object Execute(object requestDto) => ServiceStackProvider.Execute(requestDto);
-
+#if !NETSTANDARD1_6
         [Obsolete("Use Gateway")]
         protected virtual TResponse Execute<TResponse>(IReturn<TResponse> requestDto) => ServiceStackProvider.Execute(requestDto);
 
         [Obsolete("Use Gateway")]
         protected virtual void PublishMessage<T>(T message) => ServiceStackProvider.PublishMessage(message);
+#endif
 
         private bool hasDisposed = false;
         protected override void Dispose(bool disposing)
@@ -212,20 +254,27 @@ namespace ServiceStack.Mvc
 
     public class ServiceStackJsonResult : JsonResult
     {
-        public override void ExecuteResult(ControllerContext context)
+        public ServiceStackJsonResult(object value) : base(value) {}
+
+        public override Task ExecuteResultAsync(ActionContext context)
         {
             var response = context.HttpContext.Response;
             response.ContentType = !string.IsNullOrEmpty(ContentType) ? ContentType : "application/json";
 
+#if !NETSTANDARD1_6
             if (ContentEncoding != null)
             {
                 response.ContentEncoding = ContentEncoding;
             }
 
             if (Data != null)
-            {
-                response.Write(JsonSerializer.SerializeToString(Data));
-            }
+                return response.WriteAsync(JsonSerializer.SerializeToString(Data));
+#else
+            if (Value != null)
+                return response.WriteAsync(JsonSerializer.SerializeToString(Value));
+#endif
+            
+            return TypeConstants.EmptyTask;
         }
     }
 }
