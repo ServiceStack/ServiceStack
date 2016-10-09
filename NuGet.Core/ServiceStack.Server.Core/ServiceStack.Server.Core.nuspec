@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Server.Core</id>
     <title>ServiceStack.Server.Core</title>
-    <version>4.5.0</version>
+    <version>1.0.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <summary>ServiceStack Server integration with Redis and OrmLite</summary>

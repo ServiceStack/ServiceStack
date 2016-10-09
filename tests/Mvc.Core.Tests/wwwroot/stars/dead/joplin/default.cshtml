@@ -1,0 +1,48 @@
+﻿@{
+    Layout = "DeadLayout";
+    ViewBag.Title = "Janis Joplin";
+}
+<div id="content-page">
+    
+    <img src="splash.jpg" id="splash" alt="Janis Joplin" />
+    <p>
+        Janis Lyn Joplin was an American singer and songwriter from Port Arthur, Texas. As a youth 
+        Joplin was ridiculed by her fellow students due to her unconventional appearance and 
+        personal beliefs. 
+    </p>
+
+    <dl>
+        <dt> 
+            Born
+        </dt>
+        <dd>
+            January 19, 1943, Port Arthur
+        </dd>
+        <dt>
+            Died
+        </dt>
+        <dd>
+            October 4, 1970, Los Angeles
+        </dd>
+        <dt>
+            Nicknames
+        </dt>
+        <dd>
+            Beat Weeds, Pearl
+        </dd>
+    </dl>
+
+    @Html.PartialMarkdown("Content")
+
+</div>
+
+@section preview {
+
+    <h3><b>View</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/dead/Joplin/default.cshtml">/stars/dead/Joplin/default.cshtml</a></h3>
+    <script src="https://gist.github.com/3616660.js"></script>
+
+    <h3><b>Markdown</b> <a href="Content?format=text.bare">/stars/dead/Joplin/Content.md</a></h3>
+
+    <h3><b>Layout</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/dead/_Layout.cshtml">/stars/dead/_Layout.cshtml</a></h3>
+    <script src="https://gist.github.com/3616545.js"></script>
+}

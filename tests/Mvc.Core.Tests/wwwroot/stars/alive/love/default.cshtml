@@ -1,0 +1,50 @@
+﻿@{
+    Layout = "AliveLayout";
+    ViewBag.Title = "Courtney Love";
+}
+<div id="content-page">
+    
+    <img src="splash.jpg" id="splash" alt="Courtney Love" />
+    <p>
+        Courtney Michelle Love is an American singer-songwriter, musician, actress and artist. 
+        Love initially gained notoriety in the Los Angeles indie rock scene with her band Hole, 
+        which she formed in 1989 with Eric Erlandson. 
+    </p>
+
+    <dl>
+        <dt> 
+            Born
+        </dt>
+        <dd>
+            July 9, 1964 (age 48), San Francisco
+        </dd>
+        <dt>
+            Height
+        </dt>
+        <dd>
+            5' 10" (1.77 m)
+        </dd>
+        <dt>
+            Albums
+        </dt>
+        <dd>
+            Nobody's Daughter, America's Sweetheart
+        </dd>
+    </dl>
+
+    @Html.PartialMarkdown("Content")
+
+</div>
+
+@section preview {
+
+    <h3><b>View</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/alive/Love/default.cshtml">/stars/alive/Love/default.cshtml</a></h3>
+    <script src="https://gist.github.com/3616713.js"></script>
+
+    <h3><b>Markdown</b> <a href="Content?format=text.bare">/stars/alive/Love/Content.md</a></h3>
+
+    <h3><b>Layout</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/alive/_Layout.cshtml">/stars/alive/_Layout.cshtml</a></h3>
+    <script src="https://gist.github.com/3616674.js"></script>
+}
+
+  

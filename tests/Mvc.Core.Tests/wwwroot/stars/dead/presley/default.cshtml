@@ -1,0 +1,48 @@
+﻿@{
+    Layout = "DeadLayout";
+    ViewBag.Title = "Elvis Presley";
+}
+<div id="content-page">
+    
+    <img src="splash.jpg" id="splash" alt="Elvis Presley" />
+    <p>
+        Elvis Aaron Presley was one of the most popular American singers of the 20th century. 
+        A cultural icon, he is commonly known by the single name Elvis. He is often referred to 
+        as the "King of Rock and Roll" or simply "the King". 
+    </p>
+
+    <dl>
+        <dt> 
+            Born
+        </dt>
+        <dd>
+            January 8, 1935, Tupelo
+        </dd>
+        <dt>
+            Died
+        </dt>
+        <dd>
+            August 16, 1977, Memphis
+        </dd>
+        <dt>
+            Spouse
+        </dt>
+        <dd>
+            Priscilla Presley (m. 1967-1973)
+        </dd>
+    </dl>
+
+    @Html.PartialMarkdown("Content")
+
+</div>
+
+@section preview {
+
+    <h3><b>View</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/dead/Presley/default.cshtml">/stars/dead/Presley/default.cshtml</a></h3>
+    <script src="https://gist.github.com/3616667.js"></script>
+
+    <h3><b>Markdown</b> <a href="Content?format=text.bare">/stars/dead/Presley/Content.md</a></h3>
+
+    <h3><b>Layout</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/dead/_Layout.cshtml">/stars/dead/_Layout.cshtml</a></h3>
+    <script src="https://gist.github.com/3616545.js"></script>
+}

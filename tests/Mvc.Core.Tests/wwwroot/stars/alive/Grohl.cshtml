@@ -1,0 +1,50 @@
+﻿@{
+    Layout = "AliveLayout";
+    ViewBag.Title = "Dave Grohl";
+}
+<div id="content-page">
+    
+    <img src="grohl.jpg" id="splash" alt="Dave Grohl" />
+    <p>
+        David Eric "Dave" Grohl is an American rock musician, multi-instrumentalist, and 
+        singer-songwriter, who is the lead vocalist, guitarist, primary songwriter and founder of 
+        the Foo Fighters, prior to ... Wikipedia
+    </p>
+
+    <dl>
+        <dt>
+            Born
+        </dt>
+        <dd>
+            January 14, 1969 (age 43), Warren
+        </dd>
+        <dt>
+            Spouse
+        </dt>
+        <dd>
+            Jordyn Blum (m. 2003), Jennifer Youngblood (m. 1993-1997)
+        </dd>
+        <dt>
+            Music groups
+        </dt>
+        <dd>
+            Foo Fighters, Nirvana, Scream, Killing Joke, Melvana
+        </dd>
+    </dl>
+
+    @Html.PartialMarkdown("GrohlContent")
+
+</div>
+
+@section preview {
+
+    <h3><b>View</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/alive/Grohl.cshtml">/stars/alive/Grohl.cshtml</a></h3>
+    <script src="https://gist.github.com/3616726.js"></script>
+
+    <h3><b>Markdown</b> <a href="GrohlContent?format=text.bare">/stars/alive/GrohlContent.md</a></h3>
+
+    <h3><b>Layout</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/alive/_Layout.cshtml">/stars/alive/_Layout.cshtml</a></h3>
+    <script src="https://gist.github.com/3616674.js"></script>
+}
+
+  

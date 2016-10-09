@@ -309,7 +309,10 @@ namespace ServiceStack.Core.SelfHostTests
                 Assert.That(response.Results.Where(x => x.Key.EndsWith("Singleton")).All(e => e.Value == 1));
                 Assert.That(response.Results.Where(x => x.Key.EndsWith("Instance")).All(e => e.Value == 1));
 
+                //Should really be 5 but because deps are resolved for app.ApplicationServices instead of
+                //request.RequestServices request scoped deps behave like a singleton
                 Assert.That(response.Results["NetCoreScoped"], Is.EqualTo(1));
+
                 Assert.That(response.Results["NetCoreScopedRequest"], Is.EqualTo(5));
                 Assert.That(response.Results["FunqScoped"], Is.EqualTo(5));
                 Assert.That(response.Results.Where(x => x.Key.EndsWith("Transient")).All(e => e.Value == 5));
