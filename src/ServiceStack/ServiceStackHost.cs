@@ -203,10 +203,12 @@ namespace ServiceStack
             return GetVirtualFileSources();
         }
 
+        public virtual string GetWebRootPath() => Config.WebHostPhysicalPath;
+
         public virtual List<IVirtualPathProvider> GetVirtualFileSources()
         {
             var pathProviders = new List<IVirtualPathProvider> {
-                new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath)
+                new FileSystemVirtualPathProvider(this, GetWebRootPath())
             };
 
             pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct()
