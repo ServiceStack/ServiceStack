@@ -252,33 +252,40 @@ namespace ServiceStack.Mvc
         public virtual void EndServiceStackRequest() => HostContext.AppHost.OnEndRequest(ServiceStackRequest);
     }
 
+#if !NETSTANDARD1_6
     public class ServiceStackJsonResult : JsonResult
     {
-        public ServiceStackJsonResult(object value) : base(value) {}
-
-#if !NETSTANDARD1_6
         public override void ExecuteResult(ControllerContext context)
-#else
-        public override Task ExecuteResultAsync(ActionContext context)
-#endif
         {
             var response = context.HttpContext.Response;
             response.ContentType = !string.IsNullOrEmpty(ContentType) ? ContentType : "application/json";
 
-#if !NETSTANDARD1_6
             if (ContentEncoding != null)
             {
                 response.ContentEncoding = ContentEncoding;
             }
 
             if (Data != null)
+            {
                 response.Write(JsonSerializer.SerializeToString(Data));
+            }
+        }
+    }
 #else
+    public class ServiceStackJsonResult : JsonResult
+    {
+        public ServiceStackJsonResult(object value) : base(value) {}
+
+        public override Task ExecuteResultAsync(ActionContext context)
+        {
+            var response = context.HttpContext.Response;
+            response.ContentType = !string.IsNullOrEmpty(ContentType) ? ContentType : "application/json";
+
             if (Value != null)
                 return response.WriteAsync(JsonSerializer.SerializeToString(Value));
 
             return TypeConstants.EmptyTask;
-#endif
         }
     }
+#endif
 }
