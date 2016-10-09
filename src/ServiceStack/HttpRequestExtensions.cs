@@ -953,6 +953,15 @@ namespace ServiceStack
                 ? request.Url.PathAndQuery
                 : null;
         }
+#else
+        public static string GetPathAndQuery(this Microsoft.AspNetCore.Http.HttpRequest request)
+        {
+            if (request == null)
+                return null;
+
+            var url = new Uri(Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(request));
+            return url.PathAndQuery;
+        }
 #endif
 
         public static void SetOperationName(this IRequest httpReq, string operationName)
