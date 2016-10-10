@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Funq;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using RazorRockstars;
 using ServiceStack;
 using ServiceStack.Data;
+using ServiceStack.Host.Handlers;
 using ServiceStack.OrmLite;
 using ServiceStack.Mvc;
 
@@ -68,6 +70,11 @@ namespace Mvc.Core.Tests
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
+            //app.Use(new RazorHandler("/notfound").Middleware);
+            //app.Use(new RazorHandler("/login").Middleware);
+            //app.Use(new StaticFileHandler("wwwroot/img/react-logo.png").Middleware);
+            //app.Use(new StaticFileHandler("wwwroot/_ViewImports.cshtml").Middleware);
+
             //Populate Rockstars
             using (var db = app.ApplicationServices.GetService<IDbConnectionFactory>().Open())
             {
@@ -102,6 +109,10 @@ namespace Mvc.Core.Tests
         public override void Configure(Container container)
         {
             Plugins.Add(new RazorFormat());
+
+            //Works but recommend handling 404 at end of .NET Core pipeline
+            //this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/notfound");
+            this.CustomErrorHttpHandlers[HttpStatusCode.Unauthorized] = new RazorHandler("/login");
         }
     }
 }
