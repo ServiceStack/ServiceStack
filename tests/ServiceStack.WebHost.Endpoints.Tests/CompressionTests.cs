@@ -75,8 +75,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var simpleDtoXml = DataContractSerializer.Instance.SerializeToString(simpleDto);
 
                 const string expectedXml = "<TestCompress xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.ddnglobal.com/types/\"><Id>1</Id><Name>name</Name></TestCompress>";
+                const string expectedXmlNetCore = "<TestCompress xmlns=\"http://schemas.ddnglobal.com/types/\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>1</Id><Name>name</Name></TestCompress>";
 
-                Assert.That(simpleDtoXml, Is.EqualTo(expectedXml));
+                Assert.That(simpleDtoXml, Is.EqualTo(expectedXml).Or.EqualTo(expectedXmlNetCore));
 
                 var simpleDtoZip = simpleDtoXml.Deflate();
 
