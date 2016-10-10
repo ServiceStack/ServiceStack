@@ -18,15 +18,14 @@
     }
   },
   "dependencies": {
-    "NETStandard.Library": "1.6.0",
-    "System.Data.SqlClient": "4.1.0"
+    "NETStandard.Library": "1.6.0"
   },
   "frameworks": {
     "netstandard1.3": {
       "dependencies": {},
       "bin": {
-        "assembly": "../../lib/netstandard1.3/ServiceStack.OrmLite.SqlServer.dll",
-        "pdb": "../../lib/netstandard1.3/ServiceStack.OrmLite.SqlServer.pdb"
+        "assembly": "../../lib/netstandard1.6/ServiceStack.Aws.dll",
+        "pdb": "../../lib/netstandard1.6/ServiceStack.Aws.pdb"
       }
     }
   },

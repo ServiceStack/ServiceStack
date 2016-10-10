@@ -377,11 +377,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             get 
             {
-#if !NETCORE_SUPPORT                  
                 return appHost is AutoQueryDataDynamoAppHost;
-#else
-                return false;
-#endif 
             }
         }
 

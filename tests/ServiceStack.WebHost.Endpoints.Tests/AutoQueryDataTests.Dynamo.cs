@@ -5,14 +5,11 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
-#if !NETCORE_SUPPORT
 using Amazon.DynamoDBv2;
 using ServiceStack.Aws.DynamoDb;
-#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-#if !NETCORE_SUPPORT
     public class AutoQueryDataDynamoTests : AutoQueryDataTests
     {
         public override ServiceStackHost CreateAppHost()
@@ -309,7 +306,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             feature.AddDataSource(ctx => ctx.DynamoDbSource<ScannedTable>(allowScans: false));
         }
     }
-#endif
 
     public class ScannedTable
     {
@@ -336,10 +332,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string[] Ratings { get; set; }
     }
 
-    public class MovieTitleIndex 
-#if !NETCORE_SUPPORT
-: IGlobalIndex<Movie>
-#endif
+    public class MovieTitleIndex : IGlobalIndex<Movie>
     {
         [HashKey]
         public string Title { get; set; }
@@ -376,10 +369,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int[] IdBetween { get; set; }
     }
 
-    public class RockstarAlbumGenreGlobalIndex
-#if !NETCORE_SUPPORT 
-    : IGlobalIndex<RockstarAlbum>
-#endif
+    public class RockstarAlbumGenreGlobalIndex : IGlobalIndex<RockstarAlbum>
     {
         [HashKey]
         public string Genre { get; set; }
