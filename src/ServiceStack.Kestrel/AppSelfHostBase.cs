@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -134,6 +135,11 @@ namespace ServiceStack
                 HostInstance.Bind(app);
                 HostInstance.RealInit();
             }
+        }
+
+        public override IRequest TryGetCurrentRequest()
+        {
+            return AppHostBase.GetOrCreateRequest(app.ApplicationServices.GetService<IHttpContextAccessor>());
         }
 
         public override void Dispose()

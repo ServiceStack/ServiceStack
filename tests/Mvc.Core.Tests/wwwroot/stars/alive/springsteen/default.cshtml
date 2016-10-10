@@ -1,0 +1,47 @@
+﻿@{
+    Layout = "AliveLayout";
+    ViewBag.Title = "Bruce Springsteen";
+}
+<div id="content-page">
+    
+    <img src="splash.jpg" id="splash" alt="Bruce Springsteen" />
+    <p>
+        Bruce Frederick Joseph Springsteen, nicknamed "The Boss", is an American singer-songwriter 
+        and multi-instrumentalist who records and tours with the E Street Band. 
+    </p>
+
+    <dl>
+        <dt> 
+            Born
+        </dt>
+        <dd>
+            September 23, 1949 (age 62), Long Branch
+        </dd>
+        <dt>
+            Spouse
+        </dt>
+        <dd>
+            Patti Scialfa (m. 1991), Julianne Phillips (m. 1985-1989)
+        </dd>
+        <dt>
+            Music groups
+        </dt>
+        <dd>
+            E Street Band, U.S.A. for Africa, Steel Mill
+        </dd>
+    </dl>
+
+    @Html.PartialMarkdown("Content")
+
+</div>
+
+@section preview {
+
+    <h3><b>View</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/alive/Springsteen/default.cshtml">/stars/alive/Springsteen/default.cshtml</a></h3>
+    <script src="https://gist.github.com/3616698.js"></script>
+
+    <h3><b>Markdown</b> <a href="Content?format=text.bare">/stars/alive/Springsteen/Content.md</a></h3>
+
+    <h3><b>Layout</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/alive/_Layout.cshtml">/stars/alive/_Layout.cshtml</a></h3>
+    <script src="https://gist.github.com/3616674.js"></script>
+}

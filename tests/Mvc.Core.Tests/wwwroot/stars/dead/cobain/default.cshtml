@@ -1,0 +1,53 @@
+﻿@{
+    Layout = "DeadLayout";
+    ViewBag.Title = "Kurt Cobain";
+}
+<div id="content-page">
+    
+    <img src="splash.jpg" id="splash" alt="Kurt Cobain" />
+    <p>
+        Kurt Donald Cobain was an American singer-songwriter, musician and artist, best known as the 
+        lead singer and guitarist of the grunge band Nirvana. 
+    </p>
+
+    <dl>
+        <dt> 
+            Born
+        </dt>
+        <dd>
+            February 20, 1967, Aberdeen
+        </dd>
+        <dt> 
+            Died
+        </dt>
+        <dd>
+            April 5, 1994, Seattle
+        </dd>
+        <dt>
+            Spouse
+        </dt>
+        <dd>
+            Courtney Love (m. 1992-1994)
+        </dd>
+        <dt>
+            Music groups
+        </dt>
+        <dd>
+            Nirvana
+        </dd>
+    </dl>
+
+    @Html.PartialMarkdown("Content")
+
+</div>
+
+@section preview {
+
+    <h3><b>View</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/dead/Cobain/default.cshtml">/stars/dead/Cobain/default.cshtml</a></h3>
+    <script src="https://gist.github.com/3616525.js"></script>
+
+    <h3><b>Markdown</b> <a href="Content?format=text.bare">/stars/dead/Cobain/Content.md</a></h3>
+
+    <h3><b>Layout</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/dead/_Layout.cshtml">/stars/dead/_Layout.cshtml</a></h3>
+    <script src="https://gist.github.com/3616545.js"></script>
+}

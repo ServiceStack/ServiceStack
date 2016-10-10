@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using ServiceStack.Caching;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
@@ -165,6 +166,19 @@ namespace ServiceStack
             if (httpReq == null) return;
 
             httpReq.RequestAttributes = httpReq.RequestAttributes & ~RequestAttributes.InProcess;
+        }
+
+        internal static T TryResolveInternal<T>(this IRequest request)
+        {
+            if (typeof(T) == typeof(IRequest))
+                return (T)request;
+            if (typeof(T) == typeof(IResponse))
+                return (T)request.Response;
+
+            var hasResolver = request as IHasResolver;
+            return hasResolver != null 
+                ? hasResolver.Resolver.TryResolve<T>() 
+                : Service.GlobalResolver.TryResolve<T>();
         }
     }
 }

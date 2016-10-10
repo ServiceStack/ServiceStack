@@ -50,6 +50,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Razor.BuildTask\servicestack.razor.buildtask.nuspec = ..\NuGet\ServiceStack.Razor.BuildTask\servicestack.razor.buildtask.nuspec
 		..\NuGet\ServiceStack.Razor\servicestack.razor.nuspec = ..\NuGet\ServiceStack.Razor\servicestack.razor.nuspec
 		..\NuGet\ServiceStack.Server\servicestack.server.nuspec = ..\NuGet\ServiceStack.Server\servicestack.server.nuspec
+		..\NuGet\ServiceStack.Wire\servicestack.wire.nuspec = ..\NuGet\ServiceStack.Wire\servicestack.wire.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Formats", "Formats", "{CBDE0575-D09B-4B4D-8C62-5E03E54F6BE8}"
@@ -156,6 +157,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorRockstars.Web.Tests", "..\tests\RazorRockstars.Web.Tests\RazorRockstars.Web.Tests.csproj", "{1AD83DAD-3C69-4343-983E-074F0374EE80}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckMvc", "..\tests\CheckMvc\CheckMvc.csproj", "{50971470-179A-45D1-92C9-748DEFCBD9E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Wire", "ServiceStack.Wire\ServiceStack.Wire.csproj", "{0428D353-CD67-481F-877A-676E3BBCF903}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -767,6 +770,24 @@ Global
 		{50971470-179A-45D1-92C9-748DEFCBD9E5}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
 		{50971470-179A-45D1-92C9-748DEFCBD9E5}.Signed|x86.ActiveCfg = Release|Any CPU
 		{50971470-179A-45D1-92C9-748DEFCBD9E5}.Signed|x86.Build.0 = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Debug|x86.Build.0 = Debug|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Release|x86.ActiveCfg = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Release|x86.Build.0 = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Signed|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Signed|x86.ActiveCfg = Release|Any CPU
+		{0428D353-CD67-481F-877A-676E3BBCF903}.Signed|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -801,6 +822,7 @@ Global
 		{213EF4BA-786A-432F-B147-5702B18DE3CC} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{1AD83DAD-3C69-4343-983E-074F0374EE80} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{50971470-179A-45D1-92C9-748DEFCBD9E5} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{0428D353-CD67-481F-877A-676E3BBCF903} = {CBDE0575-D09B-4B4D-8C62-5E03E54F6BE8}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ..\tests\RazorRockstars.Console\RazorRockstars.Console.csproj

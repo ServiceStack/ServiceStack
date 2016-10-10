@@ -1,5 +1,5 @@
 ﻿//TODO: fix test failures when running on Linux build agent
-#if !NETCORE
+#if NETCORE
 
 using System;
 using System.IO;

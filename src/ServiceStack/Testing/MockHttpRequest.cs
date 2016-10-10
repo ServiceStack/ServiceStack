@@ -4,14 +4,23 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using Funq;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
 namespace ServiceStack.Testing
 {
-    public class MockHttpRequest : IHttpRequest
+    public class MockHttpRequest : IHttpRequest, IHasResolver
     {
-        public Container Container { get; set; }
+        [Obsolete("Use Resolver")]
+        public Container Container { get { throw new NotSupportedException("Use Resolver"); } }
+
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get { return resolver ?? Service.GlobalResolver; }
+            set { resolver = value; }
+        }
 
         public MockHttpRequest()
         {
@@ -20,7 +29,6 @@ namespace ServiceStack.Testing
             this.QueryString = PclExportClient.Instance.NewNameValueCollection();
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
-            this.Container = ServiceStackHost.Instance != null ? ServiceStackHost.Instance.Container : new Container();
             this.Response = new MockHttpResponse(this);
         }
 
@@ -45,9 +53,7 @@ namespace ServiceStack.Testing
 
         public T TryResolve<T>()
         {
-            return Container != null 
-                ? Container.TryResolve<T>()
-                : HostContext.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public AuthUserSession RemoveSession()

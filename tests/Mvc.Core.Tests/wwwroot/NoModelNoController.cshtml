@@ -1,0 +1,28 @@
+﻿@inherits ViewPage
+@{
+    Layout = "SimpleLayout";
+    ViewBag.Title = "Page with no model and no C# controller - just this page :)";
+    int age = 0;
+    var hasAge = Request.QueryString["Age"] != null && int.TryParse(ViewBag.Age, out age);
+    var rockstars = base.Gateway.Send(new SearchRockstars { Age = hasAge ? age : (int?)null }).Results;
+    var title = hasAge ? $"{age} year old rockstars" : "All Rockstars";
+}
+<div id="content-page">
+    
+    @Html.Partial("OtherPages")
+    
+    <h2>Age: @ViewData["Age"] / @ViewBag.Age</h2>
+
+    <div>@title</div>
+    <ul>
+        @foreach (var rockstar in rockstars) {
+            <li><a href="@rockstar.Url">@rockstar.LastName, @rockstar.FirstName</a> (<a href="?Age=@rockstar.Age">@rockstar.Age</a>)</li>
+        }
+    </ul>
+
+    <p><a href="?">Show all Rockstars</a></p>
+
+    <h2>Razor View</h2>
+    <script src="https://gist.github.com/3162494.js"></script>
+        
+</div>

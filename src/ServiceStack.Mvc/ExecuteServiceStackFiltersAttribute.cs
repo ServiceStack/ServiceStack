@@ -1,7 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Mvc;
+
+#if !NETSTANDARD1_6
+	using System.Web.Mvc;
+#else
+	using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Filters;
+    using Microsoft.AspNetCore.Mvc.Controllers;
+#endif
 
 namespace ServiceStack.Mvc
 {
@@ -44,16 +51,20 @@ namespace ServiceStack.Mvc
         {
             var attrs = new List<T>();
 
+#if !NETSTANDARD1_6
             var attr = filterContext.ActionDescriptor
                 .GetCustomAttributes(typeof(T), true)
                 .FirstOrDefault() as T;
+#else
+            var controllerActionDescriptor = filterContext.ActionDescriptor as ControllerActionDescriptor;
+            var attr = controllerActionDescriptor?.MethodInfo.FirstAttribute<T>();
+#endif
+
 
             if (attr != null)
                 attrs.Add(attr);
 
-            attr = filterContext.Controller.GetType()
-                .GetCustomAttributes(typeof(T), true)
-                .FirstOrDefault() as T;
+            attr = filterContext.Controller.GetType().FirstAttribute<T>();
 
             if (attr != null)
                 attrs.Add(attr);

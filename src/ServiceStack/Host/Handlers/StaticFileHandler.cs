@@ -53,6 +53,17 @@ namespace ServiceStack.Host.Handlers
             RequestName = GetType().Name; //Always allow StaticFileHandlers
         }
 
+        /// <summary>
+        /// Return File at specified virtualPath from AppHost.VirtualFiles ContentRootPath
+        /// </summary>
+        public StaticFileHandler(string virtualPath) : this()
+        {
+            VirtualNode = HostContext.AppHost.VirtualFiles.GetFile(virtualPath);
+
+            if (VirtualNode == null)
+                throw new ArgumentException("Could not find file at VirtualPath: " + virtualPath);
+        }
+
         public StaticFileHandler(IVirtualFile virtualFile) : this()
         {
             VirtualNode = virtualFile;

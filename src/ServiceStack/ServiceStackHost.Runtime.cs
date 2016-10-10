@@ -517,7 +517,8 @@ namespace ServiceStack
             if (!Config.AllowSessionCookies)
                 return cookieName != SessionFeature.SessionId
                     && cookieName != SessionFeature.PermanentSessionId
-                    && cookieName != SessionFeature.SessionOptionsKey;
+                    && cookieName != SessionFeature.SessionOptionsKey
+                    && cookieName != SessionFeature.XUserAuthId;
 
             return true;
         }

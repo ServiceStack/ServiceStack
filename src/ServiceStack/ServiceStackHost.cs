@@ -203,10 +203,12 @@ namespace ServiceStack
             return GetVirtualFileSources();
         }
 
+        public virtual string GetWebRootPath() => Config.WebHostPhysicalPath;
+
         public virtual List<IVirtualPathProvider> GetVirtualFileSources()
         {
             var pathProviders = new List<IVirtualPathProvider> {
-                new FileSystemVirtualPathProvider(this, Config.WebHostPhysicalPath)
+                new FileSystemVirtualPathProvider(this, GetWebRootPath())
             };
 
             pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct()
@@ -499,6 +501,9 @@ namespace ServiceStack
 
             if (config.HandlerFactoryPath != null)
                 config.HandlerFactoryPath = config.HandlerFactoryPath.TrimStart('/');
+
+            if (config.UseCamelCase)
+                JsConfig.EmitCamelCaseNames = true;
 
             var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 

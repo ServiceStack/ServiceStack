@@ -9,7 +9,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-    public class BasicRequest : IRequest
+    public class BasicRequest : IRequest, IHasResolver
     {
         public object Dto { get; set; }
         public IMessage Message { get; set; }
@@ -62,7 +62,7 @@ namespace ServiceStack.Host
 
         public T TryResolve<T>()
         {
-            return Resolver.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public string UserHostAddress { get; set; }

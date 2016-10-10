@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>ServiceStack.Wire</id> 
+    <title>Wire support for ServiceStack. Includes typed Wire Service Client</title>
+    <version>4.5.0</version> 
+    <authors>Service Stack</authors> 
+    <owners>Service Stack</owners>
+    <summary>Wire Format Serializer ContentType ServiceClients for ServiceStack</summary>
+    <description>
+      Add the Wire binary format and endpoint to a ServiceStack web service host. 
+    </description> 
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
+    <tags>Wire Fast Binary Serializer Format ContentType REST Web Services ServiceStack</tags>
+    <language>en-US</language>
+    <copyright>Copyright 2016 Service Stack</copyright>
+    <dependencies>
+      <dependency id="Wire" version="0.8.1" />
+      <dependency id="ServiceStack" version="4.5" />
+    </dependencies> 
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Wire\**\*.cs" target="src" />
+  </files>
+</package>

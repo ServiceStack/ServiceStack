@@ -26,11 +26,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{FA46AB18
 		..\build\build-core.sh = ..\build\build-core.sh
 		..\lib\netstandard1.3\copy.bat = ..\lib\netstandard1.3\copy.bat
 		..\build\publish-core.sh = ..\build\publish-core.sh
+		..\NuGet.Core\ServiceStack.Api.Swagger.Core\ServiceStack.Api.Swagger.Core.nuspec = ..\NuGet.Core\ServiceStack.Api.Swagger.Core\ServiceStack.Api.Swagger.Core.nuspec
 		..\NuGet.Core\ServiceStack.Client.Core\ServiceStack.Client.Core.nuspec = ..\NuGet.Core\ServiceStack.Client.Core\ServiceStack.Client.Core.nuspec
 		..\NuGet.Core\ServiceStack.Common.Core\ServiceStack.Common.Core.nuspec = ..\NuGet.Core\ServiceStack.Common.Core\ServiceStack.Common.Core.nuspec
 		..\NuGet.Core\ServiceStack.Core\ServiceStack.Core.nuspec = ..\NuGet.Core\ServiceStack.Core\ServiceStack.Core.nuspec
+		..\NuGet.Core\ServiceStack.HttpClient.Core\ServiceStack.HttpClient.Core.nuspec = ..\NuGet.Core\ServiceStack.HttpClient.Core\ServiceStack.HttpClient.Core.nuspec
 		..\NuGet.Core\ServiceStack.Interfaces.Core\ServiceStack.Interfaces.Core.nuspec = ..\NuGet.Core\ServiceStack.Interfaces.Core\ServiceStack.Interfaces.Core.nuspec
 		..\NuGet.Core\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec = ..\NuGet.Core\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec
+		..\NuGet.Core\ServiceStack.Mvc.Core\ServiceStack.Mvc.Core.nuspec = ..\NuGet.Core\ServiceStack.Mvc.Core\ServiceStack.Mvc.Core.nuspec
+		..\NuGet.Core\ServiceStack.RabbitMq.Core\ServiceStack.RabbitMq.Core.nuspec = ..\NuGet.Core\ServiceStack.RabbitMq.Core\ServiceStack.RabbitMq.Core.nuspec
+		..\NuGet.Core\ServiceStack.Server.Core\ServiceStack.Server.Core.nuspec = ..\NuGet.Core\ServiceStack.Server.Core\ServiceStack.Server.Core.nuspec
 	EndProjectSection
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ServiceStack.Common.Tests", "..\tests\ServiceStack.Common.Tests\ServiceStack.Common.Tests.xproj", "{C3CF7287-E1A1-4C01-A43B-D27B6A0C3218}"
@@ -52,6 +57,10 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ServiceStack.Server", "ServiceStack.Server\ServiceStack.Server.xproj", "{666A80C7-B8A6-4FA1-98D9-E3ABF9000477}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ServiceStack.Api.Swagger", "ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.xproj", "{616144BD-3FBE-4090-85DB-660DD7866E4F}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Mvc.Core.Tests", "..\tests\Mvc.Core.Tests\Mvc.Core.Tests.xproj", "{F62296EA-27ED-46F7-8782-E84555AB4438}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ServiceStack.Mvc", "ServiceStack.Mvc\ServiceStack.Mvc.xproj", "{1763A1CD-95A4-47B6-95B4-A6D39AA9EF2D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,6 +136,14 @@ Global
 		{616144BD-3FBE-4090-85DB-660DD7866E4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{616144BD-3FBE-4090-85DB-660DD7866E4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{616144BD-3FBE-4090-85DB-660DD7866E4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F62296EA-27ED-46F7-8782-E84555AB4438}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F62296EA-27ED-46F7-8782-E84555AB4438}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F62296EA-27ED-46F7-8782-E84555AB4438}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F62296EA-27ED-46F7-8782-E84555AB4438}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1763A1CD-95A4-47B6-95B4-A6D39AA9EF2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1763A1CD-95A4-47B6-95B4-A6D39AA9EF2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1763A1CD-95A4-47B6-95B4-A6D39AA9EF2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1763A1CD-95A4-47B6-95B4-A6D39AA9EF2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -136,5 +153,6 @@ Global
 		{80869D50-8823-4EEA-9B84-27200D35F663} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
 		{C3CF7287-E1A1-4C01-A43B-D27B6A0C3218} = {312EC6C7-3026-472C-85A1-8189207DA807}
 		{97002C10-48C4-4711-961B-F3E3D4FC3E4E} = {312EC6C7-3026-472C-85A1-8189207DA807}
+		{F62296EA-27ED-46F7-8782-E84555AB4438} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
 	EndGlobalSection
 EndGlobal

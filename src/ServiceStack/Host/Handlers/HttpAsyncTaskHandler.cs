@@ -147,7 +147,23 @@ namespace ServiceStack.Host.Handlers
             // http://bradwilson.typepad.com/blog/2012/04/tpl-and-servers-pt4.html
             //task.Dispose();
         }
+#else
+        public virtual Task Middleware(Microsoft.AspNetCore.Http.HttpContext context, Func<Task> next)
+        {
+            var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
+
+            var httpReq = context.ToRequest(operationName);
+            var httpRes = httpReq.Response;
+
+            if (!string.IsNullOrEmpty(RequestName))
+                operationName = RequestName;
+
+            var task = ProcessRequestAsync(httpReq, httpRes, operationName);
+            task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+            return task;
+        }
 #endif
+
         public virtual bool IsReusable => false;
 
         protected Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)

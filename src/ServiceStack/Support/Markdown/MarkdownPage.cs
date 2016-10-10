@@ -259,7 +259,12 @@ namespace ServiceStack.Support.Markdown
 				throw initException;
 			}
 
-			MarkdownViewBase instance = null;
+#if NETSTANDARD1_6
+            textWriter.Write(pageContext.MarkdownPage.Contents);
+            return;
+#endif
+
+            MarkdownViewBase instance = null;
 			if (this.evaluator != null)
 			{
 				instance = (MarkdownViewBase)this.evaluator.CreateInstance();

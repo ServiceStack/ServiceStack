@@ -1,4 +1,6 @@
-﻿using System.Web;
+﻿#if !NETSTANDARD1_6
+
+using System.Web;
 using System.Web.Routing;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.UI;
@@ -67,3 +69,5 @@ namespace ServiceStack.Mvc.MiniProfiler
 
 	}
 }
+
+#endif

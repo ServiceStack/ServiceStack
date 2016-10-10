@@ -1,4 +1,5 @@
-﻿using ServiceStack.FluentValidation.Internal;
+﻿#if !NETSTANDARD1_6
+using ServiceStack.FluentValidation.Internal;
 using ServiceStack.FluentValidation.Validators;
 
 namespace FluentValidation.Mvc {
@@ -24,3 +25,4 @@ namespace FluentValidation.Mvc {
 		}
 	}
 }
+#endif

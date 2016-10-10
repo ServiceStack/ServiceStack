@@ -1,0 +1,48 @@
+﻿@{
+    Layout = "DeadLayout";
+    ViewBag.Title = "Michael Jackson";
+}
+<div id="content-page">
+    
+    <img src="splash.jpg" id="splash" alt="Michael Jackson" />
+    <p>
+        Michael Joseph Jackson was an American recording artist, entertainer, and businessman. 
+        Often referred to as the King of Pop, or by his initials MJ, Jackson is recognized as the 
+        most successful entertainer of all time by Guinness World Records. 
+    </p>
+
+    <dl>
+        <dt> 
+            Born
+        </dt>
+        <dd>
+            August 29, 1958, Gary
+        </dd>
+        <dt>
+            Died
+        </dt>
+        <dd>
+            June 25, 2009, UCLA Medical Center
+        </dd>
+        <dt>
+            Albums
+        </dt>
+        <dd>
+            Thriller, Immortal, Bad, Number Ones, Dangerous
+        </dd>
+    </dl>
+
+    @Html.PartialMarkdown("Content")
+
+</div>
+
+@section preview {
+
+    <h3><b>View</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/dead/Jackson/default.cshtml">/stars/dead/Jackson/default.cshtml</a></h3>
+    <script src="https://gist.github.com/3616651.js"></script>
+
+    <h3><b>Markdown</b> <a href="Content?format=text.bare">/stars/dead/Jackson/Content.md</a></h3>
+
+    <h3><b>Layout</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/dead/_Layout.cshtml">/stars/dead/_Layout.cshtml</a></h3>
+    <script src="https://gist.github.com/3616545.js"></script>
+}

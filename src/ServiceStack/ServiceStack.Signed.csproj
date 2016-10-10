@@ -113,6 +113,7 @@
     <Compile Include="CacheResponseAttribute.cs" />
     <Compile Include="ConnectionInfo.cs" />
     <Compile Include="ConnectionInfoAttribute.cs" />
+    <Compile Include="ContainerNetCoreExtensions.cs" />
     <Compile Include="CsvRequestLogger.cs" />
     <Compile Include="CustomRequestFilter.cs" />
     <Compile Include="FluentValidation\Internal\CollectionPropertyRule.cs" />

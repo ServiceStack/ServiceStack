@@ -61,8 +61,11 @@ namespace ServiceStack.Host
             {
                 try
                 {
-                    var stopWatch = (Stopwatch)requestContext.GetItem("_requestDurationStopwatch");
-                    requestLogger.Log(requestContext, request, response, stopWatch.Elapsed);
+                    var stopWatch = requestContext.GetItem("_requestDurationStopwatch") as Stopwatch;
+                    if (stopWatch != null)
+                    {
+                        requestLogger.Log(requestContext, request, response, stopWatch.Elapsed);
+                    }
                 }
                 catch (Exception ex)
                 {
