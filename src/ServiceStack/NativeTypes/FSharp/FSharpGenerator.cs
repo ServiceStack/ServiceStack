@@ -23,6 +23,13 @@ namespace ServiceStack.NativeTypes.FSharp
         {
         };
 
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types)
+        {
+            return types.OrderTypesByDeps();
+        }
+
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
@@ -82,7 +89,7 @@ namespace ServiceStack.NativeTypes.FSharp
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(requestTypes);
 
-            var orderedTypes = allTypes.OrderTypesByDeps();
+            var orderedTypes = FilterTypes(allTypes);
 
             sb.AppendLine("namespace {0}".Fmt(globalNamespace.SafeToken()));
             sb.AppendLine();
@@ -522,106 +529,10 @@ namespace ServiceStack.NativeTypes.FSharp
 
     public static class FSharpGeneratorExtensions
     {
-        public static void Push(this Dictionary<string, List<string>> map, string key, string value)
-        {
-            List<string> results;
-            if (!map.TryGetValue(key, out results))
-                map[key] = results = new List<string>();
-
-            if (!results.Contains(value))
-                results.Add(value);
-        }
-
         public static bool Contains(this Dictionary<string, List<string>> map, string key, string value)
         {
             List<string> results;
             return map.TryGetValue(key, out results) && results.Contains(value);
-        }
-
-        public static List<string> GetValues(this Dictionary<string, List<string>> map, string key)
-        {
-            List<string> results;
-            map.TryGetValue(key, out results);            
-            return results ?? new List<string>();
-        }
-
-        public static List<MetadataType> OrderTypesByDeps(this List<MetadataType> types)
-        {
-            var deps = new Dictionary<string, List<string>>();
-
-            foreach (var type in types)
-            {
-                var typeName = type.Name;
-
-                if (type.ReturnMarkerTypeName != null)
-                {
-                    if (!type.ReturnMarkerTypeName.GenericArgs.IsEmpty())
-                        type.ReturnMarkerTypeName.GenericArgs.Each(x => deps.Push(typeName, x));
-                    else
-                        deps.Push(typeName, type.ReturnMarkerTypeName.Name);
-                }
-                if (type.Inherits != null)
-                {
-                    if (!type.Inherits.GenericArgs.IsEmpty())
-                        type.Inherits.GenericArgs.Each(x => deps.Push(typeName, x));
-                    else
-                        deps.Push(typeName, type.Inherits.Name);
-                }
-                foreach (var p in type.Properties.Safe())
-                {
-                    if (!p.GenericArgs.IsEmpty())
-                        p.GenericArgs.Each(x => deps.Push(typeName, x));
-                    else
-                        deps.Push(typeName, p.Type);
-                }
-            }
-
-            var typesMap = types.ToSafeDictionary(x => x.Name);
-            var considered = new HashSet<string>();
-            var to = new List<MetadataType>();
-
-            foreach (var type in types)
-            {
-                foreach (var depType in GetDepTypes(deps, typesMap, considered, type))
-                {
-                    if (!to.Contains(depType))
-                        to.Add(depType);
-                }
-
-                if (!to.Contains(type))
-                    to.Add(type);
-
-                considered.Add(type.Name);
-            }
-
-            return to;
-        }
-
-        public static IEnumerable<MetadataType> GetDepTypes(
-            Dictionary<string, List<string>> deps,
-            Dictionary<string, MetadataType> typesMap, 
-            HashSet<string> considered, 
-            MetadataType type)
-        {
-            if (type == null) yield break;
-
-            var typeDeps = deps.GetValues(type.Name);
-            foreach (var typeDep in typeDeps)
-            {
-                MetadataType depType;
-                if (!typesMap.TryGetValue(typeDep, out depType)
-                    || considered.Contains(typeDep))
-                    continue;
-
-                considered.Add(typeDep);
-
-                foreach (var childDepType in GetDepTypes(deps, typesMap, considered, depType))
-                {
-                    yield return childDepType;
-                }
-
-                yield return depType;
-            }
         }
     }
 
