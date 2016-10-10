@@ -115,8 +115,10 @@ namespace ServiceStack
                     "node_modules/",
                     "jspm_packages/",
                     "bower_components/",
-                    "wwwroot/",
                     "wwwroot_build/",
+#if !NETSTANDARD1_6 
+                    "wwwroot/", //Need to allow VirtualFiles access from ContentRoot Folder
+#endif
                 },
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret,
