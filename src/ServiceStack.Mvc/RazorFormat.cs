@@ -65,6 +65,15 @@ namespace ServiceStack.Mvc
 
         public System.Web.IHttpHandler CatchAllHandler(string httpmethod, string pathInfo, string filepath)
         {
+            var viewEngineResult = GetPageFromPathInfo(pathInfo);
+
+            return viewEngineResult != null
+                ? new RazorHandler(viewEngineResult)
+                : null;
+        }
+
+        public ViewEngineResult GetPageFromPathInfo(string pathInfo)
+        {
             if (pathInfo.EndsWith("/"))
                 pathInfo += "default.cshtml";
 
@@ -73,83 +82,10 @@ namespace ServiceStack.Mvc
                 viewPath += ".cshtml";
 
             var viewEngineResult = viewEngine.GetView("", viewPath, isMainPage: false);
+
             return viewEngineResult.Success 
-                ? new RazorContentPageHandler(this, viewEngineResult)
+                ? viewEngineResult 
                 : null;
-        }
-
-        class RazorContentPageHandler : ServiceStackHandlerBase
-        {
-            private readonly RazorFormat format;
-            private readonly ViewEngineResult viewEngineResult;
-
-            public object Model { get; set; }
-
-            public RazorContentPageHandler(RazorFormat format,  ViewEngineResult viewEngineResult)
-            {
-                this.format = format;
-                this.viewEngineResult = viewEngineResult;
-            }
-
-            public override void ProcessRequest(IRequest req, IResponse res, string operationName)
-            {
-                try
-                {
-                    res.ContentType = MimeTypes.Html;
-                    var model = Model;
-                    if (model == null)
-                        req.Items.TryGetValue("Model", out model);
-
-                    ViewDataDictionary viewData = null;
-                    if (model == null)
-                    {
-                        var razorView = viewEngineResult.View as RazorView;
-                        var genericDef = razorView.RazorPage.GetType().FirstGenericType();
-                        var modelType = genericDef?.GetGenericArguments()[0];
-                        if (modelType != null && modelType != typeof(object))
-                        {
-                            model = DeserializeHttpRequest(modelType, req, req.ContentType);
-                            viewData = CreateViewData(model);
-                        }
-                    }
-
-                    if (viewData == null)
-                    {
-                        viewData = new ViewDataDictionary<object>(
-                            metadataProvider: new EmptyModelMetadataProvider(),
-                            modelState: new ModelStateDictionary());
-
-                        foreach (string header in req.Headers)
-                        {
-                            viewData[header] = req.Headers[header];
-                        }
-                        foreach (string key in req.QueryString)
-                        {
-                            viewData[key] = req.QueryString[key];
-                        }
-                        foreach (string key in req.FormData)
-                        {
-                            viewData[key] = req.QueryString[key];
-                        }
-                    }
-
-                    format.RenderView(req, viewData, viewEngineResult.View);
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-
-            public override object CreateRequest(IRequest request, string operationName)
-            {
-                return null;
-            }
-
-            public override object GetResponse(IRequest httpReq, object request)
-            {
-                return null;
-            }
         }
 
         public bool HasView(string viewName, IRequest httpReq = null) => false;
@@ -254,6 +190,98 @@ namespace ServiceStack.Mvc
                 if (layout != null && razorView != null)
                     razorView.RazorPage.Layout = hold; //Restore view
             }
+        }
+    }
+
+    public class RazorHandler : ServiceStackHandlerBase
+    {
+        private ViewEngineResult viewEngineResult;
+        protected object Model { get; set; }
+        protected string PathInfo { get; set; }
+
+        public RazorHandler(string pathInfo, object model = null)
+        {
+            this.PathInfo = pathInfo;
+            this.Model = model;
+        }
+
+        public RazorHandler(ViewEngineResult viewEngineResult, object model = null)
+        {
+            this.viewEngineResult = viewEngineResult;
+            this.Model = model;
+        }
+
+        public override void ProcessRequest(IRequest req, IResponse res, string operationName)
+        {
+            var format = HostContext.GetPlugin<RazorFormat>();
+            try
+            {
+                if (viewEngineResult == null)
+                {
+                    if (PathInfo == null)
+                        throw new ArgumentNullException(nameof(PathInfo));
+
+                    viewEngineResult = format.GetPageFromPathInfo(PathInfo);
+
+                    if (viewEngineResult == null)
+                        throw new ArgumentException("Could not find Razor Page at " + PathInfo);
+                }
+
+                res.ContentType = MimeTypes.Html;
+                var model = Model;
+                if (model == null)
+                    req.Items.TryGetValue("Model", out model);
+
+                ViewDataDictionary viewData = null;
+                if (model == null)
+                {
+                    var razorView = viewEngineResult.View as RazorView;
+                    var genericDef = razorView.RazorPage.GetType().FirstGenericType();
+                    var modelType = genericDef?.GetGenericArguments()[0];
+                    if (modelType != null && modelType != typeof(object))
+                    {
+                        model = DeserializeHttpRequest(modelType, req, req.ContentType);
+                        viewData = RazorFormat.CreateViewData(model);
+                    }
+                }
+
+                if (viewData == null)
+                {
+                    viewData = new ViewDataDictionary<object>(
+                        metadataProvider: new EmptyModelMetadataProvider(),
+                        modelState: new ModelStateDictionary());
+
+                    foreach (string header in req.Headers)
+                    {
+                        viewData[header] = req.Headers[header];
+                    }
+                    foreach (string key in req.QueryString)
+                    {
+                        viewData[key] = req.QueryString[key];
+                    }
+                    foreach (string key in req.FormData)
+                    {
+                        viewData[key] = req.QueryString[key];
+                    }
+                }
+
+                format.RenderView(req, viewData, viewEngineResult.View);
+            }
+            catch (Exception ex)
+            {
+                //Can't set HTTP Headers which are already written at this point
+                req.Response.WriteErrorBody(ex);
+            }
+        }
+
+        public override object CreateRequest(IRequest request, string operationName)
+        {
+            return null;
+        }
+
+        public override object GetResponse(IRequest httpReq, object request)
+        {
+            return null;
         }
     }
 
