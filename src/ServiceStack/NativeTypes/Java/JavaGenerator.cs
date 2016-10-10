@@ -12,7 +12,7 @@ namespace ServiceStack.NativeTypes.Java
     public class JavaGenerator
     {
         readonly MetadataTypesConfig Config;
-        readonly List<MetadataType> AllTypes;
+        List<MetadataType> AllTypes;
         List<string> conflictTypeNames = new List<string>();
 
         public JavaGenerator(MetadataTypesConfig config)
@@ -77,6 +77,10 @@ namespace ServiceStack.NativeTypes.Java
             {"List", "ArrayList"},
             {"Dictionary", "HashMap"},
         }.ToConcurrentDictionary();
+
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
@@ -152,6 +156,8 @@ namespace ServiceStack.NativeTypes.Java
             AllTypes.AddRange(requestTypes);
             AllTypes.AddRange(responseTypes);
             AllTypes.AddRange(types);
+
+            AllTypes = FilterTypes(AllTypes);
 
             //TypeScript doesn't support reusing same type name with different generic airity
             var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()

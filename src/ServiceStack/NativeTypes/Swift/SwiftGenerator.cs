@@ -13,7 +13,7 @@ namespace ServiceStack.NativeTypes.Swift
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
-        readonly List<MetadataType> AllTypes;
+        List<MetadataType> AllTypes;
         List<string> conflictTypeNames = new List<string>();
 
         public SwiftGenerator(MetadataTypesConfig config)
@@ -51,6 +51,10 @@ namespace ServiceStack.NativeTypes.Swift
         public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
             "NSObject"
         };
+
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
@@ -112,6 +116,8 @@ namespace ServiceStack.NativeTypes.Swift
             AllTypes.AddRange(requestTypes);
             AllTypes.AddRange(responseTypes);
             AllTypes.AddRange(types);
+
+            AllTypes = FilterTypes(AllTypes);
 
             //Swift doesn't support reusing same type name with different generic airity
             var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
