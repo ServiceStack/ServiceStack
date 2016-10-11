@@ -13,7 +13,7 @@ namespace Funq
     }
 
     /// <include file='Container.xdoc' path='docs/doc[@for="Container"]/*'/>
-    public sealed partial class Container : IDisposable
+    public partial class Container : IDisposable
     {
         Dictionary<ServiceKey, ServiceEntry> services = new Dictionary<ServiceKey, ServiceEntry>();
         Dictionary<ServiceKey, ServiceEntry> servicesReadOnlyCopy;
@@ -52,9 +52,14 @@ namespace Funq
         /// <include file='Container.xdoc' path='docs/doc[@for="Container.CreateChildContainer"]/*'/>
         public Container CreateChildContainer()
         {
-            var child = new Container { parent = this };
+            var child = InstantiateChildContainer();
             lock (childContainers) childContainers.Push(child);
             return child;
+        }
+
+        protected virtual Container InstantiateChildContainer()
+        {
+            return new Container { parent = this };
         }
 
         /// <include file='Container.xdoc' path='docs/doc[@for="Container.Dispose"]/*'/>
@@ -165,7 +170,7 @@ namespace Funq
             return new Exception(errMsg, ex);
         }
 
-        private TService ResolveImpl<TService>(string name, bool throwIfMissing)
+        protected virtual TService ResolveImpl<TService>(string name, bool throwIfMissing)
         {
             // Would throw if missing as appropriate.
             var entry = GetEntry<TService, Func<Container, TService>>(name, throwIfMissing);
@@ -369,7 +374,7 @@ namespace Funq
 
         public bool CheckAdapterFirst { get; set; }
 
-        private ServiceEntry<TService, TFunc> GetEntry<TService, TFunc>(string serviceName, bool throwIfMissing)
+        protected virtual ServiceEntry<TService, TFunc> GetEntry<TService, TFunc>(string serviceName, bool throwIfMissing)
         {
             try
             {

@@ -254,7 +254,7 @@ namespace Funq
             };
         }
 
-        private static NewExpression ConstructorExpression(
+        public static NewExpression ConstructorExpression(
             MethodInfo resolveMethodInfo, Type type, Expression lambdaParam)
         {
             var ctorWithMostParameters = GetConstructorWithMostParams(type);

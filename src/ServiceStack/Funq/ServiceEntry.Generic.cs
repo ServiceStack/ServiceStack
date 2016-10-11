@@ -5,7 +5,7 @@ using ServiceStack.Common;
 
 namespace Funq
 {
-    internal sealed class ServiceEntry<TService, TFunc> : ServiceEntry, IRegistration<TService>
+    public class ServiceEntry<TService, TFunc> : ServiceEntry, IRegistration<TService>
     {
         public ServiceEntry(TFunc factory)
         {
