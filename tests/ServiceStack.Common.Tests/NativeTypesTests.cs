@@ -1,5 +1,6 @@
 ﻿#if !NETCORE_SUPPORT
 using NUnit.Framework;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
@@ -221,6 +222,21 @@ namespace ServiceStack.Common.Tests
             StringAssert.Contains("class EmbeddedRequest", stringResult);
             StringAssert.Contains("class EmbeddedResponse", stringResult);
         }
+
+        [Test]
+        public void GetIncludeList_Returns_IncludeList_when_Returning_generic_List()
+        {
+            var includeTypes = new List<string> { "GetRequest1", "ReturnedDto" };
+            var config = new MetadataTypesConfig
+            {
+                IncludeTypes = includeTypes
+            };
+
+            var result = MetadataExtensions.GetIncludeList(new MetadataTypes(), config);
+            result.PrintDump();
+
+            Assert.AreEqual(includeTypes, result);
+        }
     }
 
     public class NativeTypesTestService : Service
@@ -243,5 +259,23 @@ namespace ServiceStack.Common.Tests
 
     public class EmbeddedResponse { }
     public class EmbeddedRequest { }
+
+
+    public partial class ReturnedDto
+    {
+        public virtual int Id { get; set; }
+    }
+
+    [Route("/Request1", "GET")]
+    public partial class GetRequest1 : IReturn<List<ReturnedDto>>, IGet { }
+
+    [Route("/Request2", "GET")]
+    public partial class GetRequest2 : IReturn<List<ReturnedDto>>, IGet { }
+
+    public class ReturnGenericListServices : Service
+    {
+        public object Any(GetRequest1 request) => request;
+        public object Any(GetRequest2 request) => request;
+    }
 }
 #endif
