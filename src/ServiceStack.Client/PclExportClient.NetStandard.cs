@@ -34,5 +34,33 @@ namespace ServiceStack
         }
 
     }
+
+#if !NETSTANDARD1_1
+    public class AsyncTimer : ITimer
+    {
+        public System.Threading.Timer Timer;
+
+        public AsyncTimer(System.Threading.Timer timer)
+        {
+            Timer = timer;
+        }
+
+        public void Cancel()
+        {
+            if (Timer == null) return;
+            
+            this.Timer.Change(Timeout.Infinite, Timeout.Infinite);
+            this.Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (Timer == null) return;
+
+            this.Timer.Dispose();
+            this.Timer = null;
+        }
+    }
+#endif    
 }
 #endif

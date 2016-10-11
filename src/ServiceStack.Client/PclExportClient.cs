@@ -1714,7 +1714,7 @@ namespace ServiceStack
         {
         }
 
-#if !(NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !NETSTANDARD1_1
         public virtual ITimer CreateTimer(TimerCallback cb, TimeSpan timeOut, object state)
         {
 #if PCL

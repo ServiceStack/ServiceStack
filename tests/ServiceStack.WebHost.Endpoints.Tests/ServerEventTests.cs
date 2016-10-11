@@ -268,7 +268,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async void Can_connect_to_ServerEventsStream()
+        public async Task Can_connect_to_ServerEventsStream()
         {
             using (var client = CreateServerEventsClient())
             {
@@ -283,7 +283,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async void Does_fire_onJoin_events()
+        public async Task Does_fire_onJoin_events()
         {
             using (var client = CreateServerEventsClient())
             {
@@ -299,7 +299,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async void Does_fire_onJoin_events_for_multiple_Channels()
+        public async Task Does_fire_onJoin_events_for_multiple_Channels()
         {
             var channels = new[] { "A", "B", "C" };
             using (var client = CreateServerEventsClient(channels))
@@ -336,7 +336,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_not_fire_UnobservedTaskException()
+        public async Task Does_not_fire_UnobservedTaskException()
         {
             var unobservedTaskException = false;
             TaskScheduler.UnobservedTaskException += (s, e) =>
@@ -353,7 +353,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 }
 
                 // Ensure that "stream.ReadAsync" is called
-                System.Threading.Thread.Sleep(200);
+                await Task.Delay(200);
             }
 
             GC.Collect();
@@ -367,7 +367,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async void Does_fire_all_callbacks()
+        public async Task Does_fire_all_callbacks()
         {
             using (var client1 = CreateServerEventsClient())
             {
