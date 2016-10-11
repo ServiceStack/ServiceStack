@@ -63,7 +63,7 @@ namespace Funq
         }
 
         /// <include file='Container.xdoc' path='docs/doc[@for="Container.Dispose"]/*'/>
-        public void Dispose()
+        public virtual void Dispose()
         {
             lock (disposables)
             {
@@ -170,7 +170,7 @@ namespace Funq
             return new Exception(errMsg, ex);
         }
 
-        protected virtual TService ResolveImpl<TService>(string name, bool throwIfMissing)
+        private TService ResolveImpl<TService>(string name, bool throwIfMissing)
         {
             // Would throw if missing as appropriate.
             var entry = GetEntry<TService, Func<Container, TService>>(name, throwIfMissing);
