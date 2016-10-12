@@ -9,6 +9,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using ServiceStack;
 
 namespace System.Web
@@ -22,6 +23,7 @@ namespace System.Web
     {
         //IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData);
         //void EndProcessRequest(IAsyncResult result);
+        Task Middleware(Microsoft.AspNetCore.Http.HttpContext context, Func<Task> next); //.NET Core
     }
 
     public class HtmlString : IHtmlString

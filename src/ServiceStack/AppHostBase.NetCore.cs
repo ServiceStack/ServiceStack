@@ -148,10 +148,16 @@ namespace ServiceStack
 
     public static class NetCoreAppHostExtensions
     {
-        public static void UseServiceStack(this IApplicationBuilder app, AppHostBase appHost)
+        public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost)
         {
             appHost.Bind(app);
             appHost.Init();
+            return app;
+        }
+
+        public static IApplicationBuilder Use(this IApplicationBuilder app, System.Web.IHttpAsyncHandler httpHandler)
+        {
+            return app.Use(httpHandler.Middleware);
         }
 
         public static IHttpRequest ToRequest(this HttpContext httpContext, string operationName = null)
