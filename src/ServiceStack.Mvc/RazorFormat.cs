@@ -21,6 +21,7 @@ using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Platforms;
 using ServiceStack.Redis;
@@ -32,6 +33,8 @@ namespace ServiceStack.Mvc
 {
     public class RazorFormat : IPlugin, Html.IViewEngine
     {
+        public static ILog log = LogManager.GetLogger(typeof(RazorFormat));
+
         public IVirtualPathProvider VirtualFileSources { get; set; }
 
         public List<string> ViewLocations { get; set; }
@@ -190,7 +193,15 @@ namespace ServiceStack.Mvc
 
                     view.RenderAsync(viewContext).GetAwaiter().GetResult();
 
-                    using (razorView?.RazorPage as IDisposable) {}
+                    try
+                    {
+                        using (razorView?.RazorPage as IDisposable) { }
+                    }
+                    catch (Exception ex)
+                    {
+                        //Throws "Cannot access a disposed object." on `MemoryPoolViewBufferScope` in Linux
+                        log.Warn("Error trying to dispose Razor View: " + ex.Message, ex);
+                    }
                 }
             }
             catch (Exception ex)
@@ -485,6 +496,9 @@ namespace ServiceStack.Mvc
 
         public void Dispose()
         {
+            if (provider == null)
+                return;
+
             provider?.Dispose();
             provider = null;
             EndServiceStackRequest();
