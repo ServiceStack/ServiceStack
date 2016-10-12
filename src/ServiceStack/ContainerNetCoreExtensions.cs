@@ -3,7 +3,7 @@ using Funq;
 
 namespace Funq
 {
-    public sealed partial class Container : IServiceProvider
+    public partial class Container : IServiceProvider
     {
         public object GetService(Type serviceType)
         {
