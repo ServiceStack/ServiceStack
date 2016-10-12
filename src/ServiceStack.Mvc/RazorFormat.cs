@@ -165,13 +165,8 @@ namespace ServiceStack.Mvc
         internal void RenderView(IRequest req, ViewDataDictionary viewData, IView view, string layout=null)
         {
             var razorView = view as RazorView;
-            var hold = razorView?.RazorPage.Layout;
             try
             {
-                //Changing Layout at runtime has no affect atm
-                if (layout != null && razorView != null)
-                    razorView.RazorPage.Layout = layout; //Change layout at runtime
-
                 var actionContext = new ActionContext(
                     ((HttpRequest) req.OriginalRequest).HttpContext,
                     new RouteData(),
@@ -181,6 +176,8 @@ namespace ServiceStack.Mvc
                 {
                     if (viewData == null)
                         viewData = CreateViewData((object)null);
+
+                    viewData["Layout"] = layout;
 
                     viewData[Keywords.IRequest] = req;
                     var viewContext = new ViewContext(
@@ -208,11 +205,6 @@ namespace ServiceStack.Mvc
             {
                 //Can't set HTTP Headers which are already written at this point
                 req.Response.WriteErrorBody(ex);
-            }
-            finally
-            {
-                if (layout != null && razorView != null)
-                    razorView.RazorPage.Layout = hold; //Restore view
             }
         }
     }
@@ -393,14 +385,30 @@ namespace ServiceStack.Mvc
                 ? new HtmlString(feature.Transform(markdown))
                 : new HtmlString(new MarkdownSharp.Markdown().Transform(markdown));
         }
+
+        public static string GetLayout(this IHtmlHelper htmlHelper, string defaultLayout)
+        {
+            var layout = htmlHelper.ViewData["Layout"] as string;
+            if (layout != null)
+                return layout;
+
+            var template = htmlHelper.GetRequest()?.GetTemplate();
+            return template ?? defaultLayout;
+        }
     }
 
     public abstract class ViewPage : ViewPage<object>
     {
     }
 
+    //Workaround base-class to fix R# intelli-sense issue
+    public abstract class ResharperViewPage<T> : ViewPage<object>
+    {
+        public T Dto => (T) Model;
+    }
+
     //Razor Pages still only work when base class is RazorPage<object>
-    public abstract class ViewPage<T> : RazorPage<object>, IDisposable
+    public abstract class ViewPage<T> : RazorPage<T>, IDisposable
     {
         public IHttpRequest Request
         {
@@ -414,7 +422,7 @@ namespace ServiceStack.Mvc
             }
         }
 
-        public T Dto => (T)Model;
+        public string GetLayout(string defaultLayout) => ViewData["Layout"] as string ?? defaultLayout;
 
         public bool IsError => ModelError != null || GetErrorStatus() != null;
 

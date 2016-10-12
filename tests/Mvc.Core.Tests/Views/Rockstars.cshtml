@@ -1,6 +1,6 @@
-﻿@model RazorRockstars.RockstarsResponse
+﻿@model RockstarsResponse
 @{
-    Layout = "HtmlReport";
+    Layout = Html.GetLayout("HtmlReport");
     ViewData["Title"] = Model.Aged.HasValue
         ? $"{Model.Aged} year old rockstars" 
         : "All Rockstars"; ;
