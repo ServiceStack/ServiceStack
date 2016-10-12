@@ -36,6 +36,8 @@ namespace ServiceStack.Mvc
 
         public List<string> ViewLocations { get; set; }
 
+        public string PagesPath { get; set; } = "~/Views/Pages";
+
         IRazorViewEngine viewEngine;
         ITempDataProvider tempDataProvider;
 
@@ -81,7 +83,18 @@ namespace ServiceStack.Mvc
             if (!viewPath.EndsWith(".cshtml"))
                 viewPath += ".cshtml";
 
-            var viewEngineResult = viewEngine.GetView("", viewPath, isMainPage: false);
+            var viewEngineResult = viewEngine.GetView("", viewPath, 
+                isMainPage: viewPath == "~/wwwroot/default.cshtml");
+
+            if (!viewEngineResult.Success)
+            {
+                viewPath = PagesPath.CombineWith(pathInfo);
+                if (!viewPath.EndsWith(".cshtml"))
+                    viewPath += ".cshtml";
+
+                viewEngineResult = viewEngine.GetView("", viewPath,
+                    isMainPage: viewPath == $"{PagesPath}/default.cshtml");
+            }
 
             return viewEngineResult.Success 
                 ? viewEngineResult 
@@ -251,6 +264,10 @@ namespace ServiceStack.Mvc
                         metadataProvider: new EmptyModelMetadataProvider(),
                         modelState: new ModelStateDictionary());
 
+                    foreach (var cookie in req.Cookies)
+                    {
+                        viewData[cookie.Key] = cookie.Value.Value;
+                    }
                     foreach (string header in req.Headers)
                     {
                         viewData[header] = req.Headers[header];
@@ -262,6 +279,10 @@ namespace ServiceStack.Mvc
                     foreach (string key in req.FormData)
                     {
                         viewData[key] = req.QueryString[key];
+                    }
+                    foreach (var entry in req.Items)
+                    {
+                        viewData[entry.Key] = entry.Value;
                     }
                 }
 
