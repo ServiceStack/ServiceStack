@@ -7,11 +7,11 @@ namespace ServiceStack.Authentication.OAuth2
 {
     public class MailRuAuthProvider : OAuth2Provider
     {
-        public const string Name = "MailRuAuth";
+        public const string Name = "mailru";
         public const string Realm = "https://connect.mail.ru/oauth/authorize";
 
-        public MailRuAuthProvider(IAppSettings appSettings, string realm, string provider)
-            : base(appSettings, realm, provider)
+        public MailRuAuthProvider(IAppSettings appSettings)
+            : base(appSettings, Realm, Name)
         {
             this.AuthorizeUrl = this.AuthorizeUrl ?? Realm;
             this.AccessTokenUrl = this.AccessTokenUrl ?? "https://connect.mail.ru/oauth/token";
