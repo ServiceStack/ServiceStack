@@ -47,8 +47,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
                 Assert.That(ex.StatusCode, Is.EqualTo(500));
 #if !NETCORE                
                 Assert.That(ex.StatusDescription, Is.EqualTo("NullReferenceException"));
-#endif
                 Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
+#endif
             }
         }
 
@@ -66,8 +66,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
                 Assert.That(ex.StatusCode, Is.EqualTo(500));
 #if !NETCORE                
                 Assert.That(ex.StatusDescription, Is.EqualTo("NullReferenceException"));
-#endif
                 Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
+#endif
             }
         }
 
@@ -88,7 +88,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             }
             catch (WebServiceException ex)
             {
+#if !NETCORE_SUPPORT
                 Assert.That(ex.ErrorCode, Is.EqualTo("NotModified"));
+#else
+                Assert.That(ex.ErrorCode, Is.EqualTo("Not Modified"));
+#endif
             }
         }
 
@@ -109,7 +113,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             }
             catch (WebServiceException ex)
             {
+#if !NETCORE_SUPPORT
                 Assert.That(ex.ErrorCode, Is.EqualTo("NotModified"));
+#else
+                Assert.That(ex.ErrorCode, Is.EqualTo("Not Modified"));
+#endif
             }
         }
 

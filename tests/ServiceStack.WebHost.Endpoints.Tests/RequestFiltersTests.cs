@@ -318,7 +318,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
 
             req.CookieContainer = new CookieContainer();
-            req.CookieContainer.Add(new Uri("localhost"), new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));
+            req.CookieContainer.Add(new Uri("http://localhost"), new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));
 
             try
             {

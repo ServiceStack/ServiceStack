@@ -1293,7 +1293,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async void Channels_updated_after_Restart()
+        public async Task Channels_updated_after_Restart()
         {
             using (var client = new ServerEventsClient(Conf.AbsoluteBaseUri, "home"))
             {

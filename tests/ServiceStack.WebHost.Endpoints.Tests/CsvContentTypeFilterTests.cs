@@ -125,8 +125,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=Hello.csv"));
 
             var csv = res.ReadToEnd();
-            var lf = Environment.NewLine;
-            Assert.That(csv, Is.EqualTo("Result{0}\"Hello, World!\"{0}".Fmt(lf)));
+            Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
 
             Console.WriteLine(csv);
         }
@@ -142,8 +141,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=Hello.csv"));
 
             var csv = res.ReadToEnd();
-            var lf = Environment.NewLine;
-            Assert.That(csv, Is.EqualTo("Result{0}\"Hello, World!\"{0}".Fmt(lf)));
+            Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
 
             Console.WriteLine(csv);
         }

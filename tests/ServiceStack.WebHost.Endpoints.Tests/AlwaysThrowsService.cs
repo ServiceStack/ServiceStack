@@ -229,10 +229,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(400));
-#if !NETCORE                
+#if !NETCORE
                 Assert.That(webEx.StatusDescription, Is.EqualTo(typeof(ArgumentNullException).Name));
-#endif
                 Assert.That(webEx.Message, Is.EqualTo(typeof(ArgumentNullException).Name));
+#endif
                 Assert.That(webEx.ErrorCode, Is.EqualTo(typeof(ArgumentNullException).Name));
                 Assert.That(webEx.ErrorMessage.Replace("\r\n", "\n"), Is.EqualTo("Value cannot be null.\nParameter name: Id"));
             }

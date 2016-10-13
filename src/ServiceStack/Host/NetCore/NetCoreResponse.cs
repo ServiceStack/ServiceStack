@@ -27,7 +27,7 @@ namespace ServiceStack.Host.NetCore
 
         public void AddHeader(string name, string value)
         {
-            response.Headers.Add(name, new StringValues(value));
+            response.Headers[name] = new StringValues(value);
         }
 
         public string GetHeader(string name)
