@@ -15,6 +15,7 @@ namespace ServiceStack.Host.NetCore
     {
         private readonly NetCoreRequest request;
         private readonly HttpResponse response;
+        private bool hasResponseBody;
 
         public NetCoreResponse(NetCoreRequest request, HttpResponse response)
         {
@@ -44,6 +45,8 @@ namespace ServiceStack.Host.NetCore
         public void Write(string text)
         {
             var bytes = text.ToUtf8Bytes();
+            if (bytes.Length > 0)
+                hasResponseBody = true;
             response.Body.Write(bytes, 0, bytes.Length);
         }
 
@@ -52,6 +55,9 @@ namespace ServiceStack.Host.NetCore
         public void Close()
         {
             if (closed) return;
+            if (!hasResponseBody && !response.HasStarted)
+                response.ContentLength = 0;
+
             Flush();
             response.Body.Close();
             closed = true;
@@ -60,6 +66,9 @@ namespace ServiceStack.Host.NetCore
         public void End()
         {
             if (closed) return;
+            if (!hasResponseBody && !response.HasStarted)
+                response.ContentLength = 0;
+                
             Flush();
             response.Body.Dispose();
             closed = true;

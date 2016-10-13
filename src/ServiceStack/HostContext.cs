@@ -30,7 +30,7 @@ namespace ServiceStack
                     "ServiceStack: AppHost does not exist or has not been initialized. " +
                     "Make sure you have created an AppHost and started it with 'new AppHost().Init();' " +
                     " in your Global.asax Application_Start() or alternative Application StartUp");
-
+                    
             return ServiceStackHost.Instance;
         }
 #if !NETSTANDARD1_6
@@ -62,7 +62,7 @@ namespace ServiceStack
 
         public static string ServiceName => AssertAppHost().ServiceName;
 
-        public static bool DebugMode => AppHost?.Config.DebugMode == true;
+        public static bool DebugMode => AppHost?.Config?.DebugMode == true;
 
         public static bool TestMode
         {

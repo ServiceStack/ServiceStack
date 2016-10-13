@@ -104,8 +104,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Csv));
                 });
 
-            var lf = System.Environment.NewLine;
-            Assert.That(response, Is.EqualTo("Data{0}foo{0}".Fmt(lf)));
+            Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
         }
 
         [Test]

@@ -428,7 +428,7 @@ namespace ServiceStack
 
         public virtual Exception ResolveResponseException(Exception ex)
         {
-            return Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
+            return Config?.ReturnsInnerException == true && ex.InnerException != null && !(ex is IHttpError)
                 ? ex.InnerException
                 : ex;
         }

@@ -599,7 +599,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
+#if !NETCORE
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+#endif
             }
 
             using (var db = appHost.Resolve<IDbConnectionFactory>().Open())
@@ -634,7 +636,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
+#if !NETCORE
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+#endif
             }
 
             using (var db = appHost.Resolve<IDbConnectionFactory>().Open())
