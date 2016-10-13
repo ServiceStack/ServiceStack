@@ -386,7 +386,7 @@ namespace ServiceStack.Mvc
                 : new HtmlString(new MarkdownSharp.Markdown().Transform(markdown));
         }
 
-        public static string GetLayout(this IHtmlHelper htmlHelper, string defaultLayout)
+        public static string ResolveLayout(this IHtmlHelper htmlHelper, string defaultLayout)
         {
             var layout = htmlHelper.ViewData["Layout"] as string;
             if (layout != null)
