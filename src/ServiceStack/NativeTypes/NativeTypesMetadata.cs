@@ -879,6 +879,12 @@ namespace ServiceStack.NativeTypes
             var includeList = GetIncludeList(metadata, config);
 
             metadata.Types.RemoveAll(x => x.IgnoreType(config, includeList));
+
+            var matchingResponseTypes = includeList != null 
+                ? metadata.Operations.Where(x => x.Response != null && includeList.Contains(x.Response.Name))
+                    .Map(x => x.Response).ToArray()
+                : TypeConstants<MetadataType>.EmptyArray;
+
             metadata.Operations.RemoveAll(x => x.Request.IgnoreType(config, includeList));
             metadata.Operations.Each(x => {
                 if (x.Response != null && x.Response.IgnoreType(config, includeList))
@@ -886,6 +892,17 @@ namespace ServiceStack.NativeTypes
                     x.Response = null;
                 }
             });
+
+            //When the included Type is a Response Type because defined in another Service that's not included
+            //ref: https://forums.servicestack.net/t/class-is-missing-from-generated-code/3030
+            foreach (var responseType in matchingResponseTypes)
+            {
+                if (!metadata.Operations.Any(x => x.Response != null && x.Response.Name == responseType.Name)
+                    && metadata.Types.All(x => x.Name != responseType.Name))
+                {
+                    metadata.Types.Add(responseType);
+                }
+            }
         }
 
         public static List<string> GetIncludeList(MetadataTypes metadata, MetadataTypesConfig config)
