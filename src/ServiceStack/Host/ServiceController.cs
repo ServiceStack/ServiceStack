@@ -505,7 +505,7 @@ namespace ServiceStack.Host
             return Execute(requestDto, new BasicRequest());
         }
 
-        public object Execute(object requestDto, IRequest req)
+        public virtual object Execute(object requestDto, IRequest req)
         {
             req.Dto = requestDto;
             var requestType = requestDto.GetType();
@@ -608,7 +608,7 @@ namespace ServiceStack.Host
                 : response.AsTaskResult();
         }
 
-        public ServiceExecFn GetService(Type requestType)
+        public virtual ServiceExecFn GetService(Type requestType)
         {
             ServiceExecFn handlerFn;
             if (!requestExecMap.TryGetValue(requestType, out handlerFn))
