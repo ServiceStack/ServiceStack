@@ -46,7 +46,8 @@ namespace ServiceStack.Mvc
         /// <summary>
         /// Default redirct URL if [Authenticate] attribute doesn't permit access.
         /// </summary>
-        public virtual string UnauthorizedRedirectUrl => HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
+        public virtual string UnauthorizedRedirectUrl => 
+            HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
 
         /// <summary>
         /// To change the error result when authentication (<see cref="AuthenticateAttribute"/>) fails.
@@ -68,7 +69,8 @@ namespace ServiceStack.Mvc
         /// <summary>
         /// Default redirct URL if Required Role or Permission attributes doesn't permit access.
         /// </summary>
-        public virtual string ForbiddenRedirectUrl => HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
+        public virtual string ForbiddenRedirectUrl => 
+            HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
 
         /// <summary>
         /// To change the error result when user doesn't have required role or permissions (<see cref="RequiredRoleAttribute"/>).
@@ -178,13 +180,13 @@ namespace ServiceStack.Mvc
         }
 
         private IServiceStackProvider serviceStackProvider;
-        public virtual IServiceStackProvider ServiceStackProvider => serviceStackProvider ?? (serviceStackProvider = 
+        public virtual IServiceStackProvider ServiceStackProvider => 
+            serviceStackProvider ?? (serviceStackProvider = 
 #if !NETSTANDARD1_6
             new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name)));
 #else
             new ServiceStackProvider(new NetCoreRequest(base.HttpContext, GetType().Name)));
 #endif
-
         public virtual IAppSettings AppSettings => ServiceStackProvider.AppSettings;
 
         public virtual IHttpRequest ServiceStackRequest => ServiceStackProvider.Request;
@@ -249,7 +251,8 @@ namespace ServiceStack.Mvc
             EndServiceStackRequest();
         }
 
-        public virtual void EndServiceStackRequest() => HostContext.AppHost.OnEndRequest(ServiceStackRequest);
+        public virtual void EndServiceStackRequest() => 
+            HostContext.AppHost.OnEndRequest(ServiceStackRequest);
     }
 
 #if !NETSTANDARD1_6

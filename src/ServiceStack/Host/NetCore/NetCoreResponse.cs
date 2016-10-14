@@ -22,7 +22,9 @@ namespace ServiceStack.Host.NetCore
             this.response = response;
             this.Items = new Dictionary<string, object>();
             this.Cookies = new NetCoreCookies(response);
-            response.StatusCode = 200;
+
+            //Don't set StatusCode here as it disables Redirects from working in MVC 
+            //response.StatusCode = 200;
         }
 
         public void AddHeader(string name, string value)
