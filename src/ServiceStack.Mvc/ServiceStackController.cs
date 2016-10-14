@@ -37,12 +37,6 @@ namespace ServiceStack.Mvc
     {
         public static string DefaultAction = "Index";
 
-#if !NETSTANDARD1_6
-        public static Func<System.Web.Routing.RequestContext, ServiceStackController> CatchAllController;
-#else
-        public static Func<HttpContext, ServiceStackController> CatchAllController;
-#endif
-
         /// <summary>
         /// Default redirct URL if [Authenticate] attribute doesn't permit access.
         /// </summary>
@@ -101,6 +95,52 @@ namespace ServiceStack.Mvc
             }));
 
 #if !NETSTANDARD1_6
+        public static Func<System.Web.Routing.RequestContext, ServiceStackController> CatchAllController;
+
+        protected virtual ActionResult InvokeDefaultAction(HttpContextBase httpContext)
+        {
+            try
+            {
+                this.View(DefaultAction).ExecuteResult(this.ControllerContext);
+            }
+            catch
+            {
+                // We failed to execute our own default action, so we'll fall back to
+                // the CatchAllController, if one is specified.
+
+                if (CatchAllController != null)
+                {
+                    var catchAllController = CatchAllController(this.Request.RequestContext);
+                    InvokeControllerDefaultAction(catchAllController, httpContext);
+                }
+            }
+
+            return new EmptyResult();
+        }
+
+        protected override void HandleUnknownAction(string actionName)
+        {
+            if (CatchAllController == null)
+            {
+                base.HandleUnknownAction(actionName); // delegate to default MVC behaviour, which will throw 404.
+            }
+            else
+            {
+                var catchAllController = CatchAllController(this.Request.RequestContext);
+                InvokeControllerDefaultAction(catchAllController, HttpContext);
+            }
+        }
+
+        private void InvokeControllerDefaultAction(ServiceStackController controller, HttpContextBase httpContext)
+        {
+            var routeData = new RouteData();
+            var controllerName = controller.GetType().Name.Replace("Controller", "");
+            routeData.Values.Add("controller", controllerName);
+            routeData.Values.Add("action", DefaultAction);
+            routeData.Values.Add("url", httpContext.Request.Url.OriginalString);
+            controller.Execute(new System.Web.Routing.RequestContext(httpContext, routeData));
+        }
+
         protected override JsonResult Json(object data, string contentType, Encoding contentEncoding, JsonRequestBehavior behavior)
         {
             return new ServiceStackJsonResult
@@ -116,68 +156,6 @@ namespace ServiceStack.Mvc
             return new ServiceStackJsonResult(data);
         }
 #endif
-
-#if !NETSTANDARD1_6
-        protected virtual ActionResult InvokeDefaultAction(HttpContextBase httpContext)
-#else
-        protected virtual ActionResult InvokeDefaultAction(HttpContext httpContext)
-#endif
-        {
-            try
-            {
-                this.View(DefaultAction).ExecuteResult(this.ControllerContext);
-            }
-            catch
-            {
-                // We failed to execute our own default action, so we'll fall back to
-                // the CatchAllController, if one is specified.
-
-                if (CatchAllController != null)
-                {
-#if !NETSTANDARD1_6
-                    var catchAllController = CatchAllController(this.Request.RequestContext);
-#else
-                    var catchAllController = CatchAllController(httpContext);
-#endif
-                    InvokeControllerDefaultAction(catchAllController, httpContext);
-                }
-            }
-
-            return new EmptyResult();
-        }
-
-#if !NETSTANDARD1_6
-        protected override void HandleUnknownAction(string actionName)
-        {
-            if (CatchAllController == null)
-            {
-                base.HandleUnknownAction(actionName); // delegate to default MVC behaviour, which will throw 404.
-            }
-            else
-            {
-                var catchAllController = CatchAllController(this.Request.RequestContext);
-                InvokeControllerDefaultAction(catchAllController, HttpContext);
-            }
-        }
-
-        private void InvokeControllerDefaultAction(ServiceStackController controller, HttpContextBase httpContext)
-#else
-        private void InvokeControllerDefaultAction(ServiceStackController controller, HttpContext httpContext)
-#endif
-        {
-            var routeData = new RouteData();
-            var controllerName = controller.GetType().Name.Replace("Controller", "");
-            routeData.Values.Add("controller", controllerName);
-            routeData.Values.Add("action", DefaultAction);
-#if !NETSTANDARD1_6
-            routeData.Values.Add("url", httpContext.Request.Url.OriginalString);
-            controller.Execute(new System.Web.Routing.RequestContext(httpContext, routeData));
-#else
-            routeData.Values.Add("url", Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(httpContext.Request));
-            //controller.Execute(routeData);
-            throw new NotImplementedException("TODO: execute action from RouteData");
-#endif
-        }
 
         private IServiceStackProvider serviceStackProvider;
         public virtual IServiceStackProvider ServiceStackProvider => 
