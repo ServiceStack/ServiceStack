@@ -66,6 +66,9 @@ namespace ServiceStack.Mvc
 
             viewEngine = appHost.TryResolve<IRazorViewEngine>();
             tempDataProvider = appHost.TryResolve<ITempDataProvider>();
+
+            if (viewEngine == null || tempDataProvider == null)
+                throw new Exception("MVC Services have not been configured, Please add `services.AddMvc()` to StartUp.ConfigureServices()");
         }
 
         public System.Web.IHttpHandler CatchAllHandler(string httpmethod, string pathInfo, string filepath)
