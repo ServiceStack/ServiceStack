@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Net;
+using System.Threading.Tasks;
 #if !NETSTANDARD1_6
 	using System.Web.Mvc;
 #else
@@ -19,16 +20,19 @@ namespace ServiceStack.Mvc
             var ssController = filterContext.Controller as ServiceStackController;
             if (ssController == null) return;
 
+            ssController.ViewData[Keywords.IRequest] = ssController.ServiceStackRequest;
+
             var authAttr = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext)
                 .FirstOrDefault();
 
             if (!ssController.IsAuthorized(authAttr))
             {
-                var authError = authAttr != null && authAttr.HtmlRedirect != null
+                var authError = authAttr?.HtmlRedirect != null
                     ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam("redirect", ssController.Request.GetPathAndQuery()))
                     : ssController.AuthenticationErrorResult;
 
                 filterContext.Result = authError;
+                return;
             }
 
             var roleAttrs = GetActionAndControllerAttributes<RequiredRoleAttribute>(filterContext);
@@ -38,7 +42,7 @@ namespace ServiceStack.Mvc
 
             if (!ssController.HasAccess(roleAttrs, anyRoleAttrs, permAttrs, anyPermAttrs))
             {
-                var authError = authAttr != null && authAttr.HtmlRedirect != null
+                var authError = authAttr?.HtmlRedirect != null
                     ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam("redirect", ssController.Request.GetPathAndQuery()))
                     : ssController.ForbiddenErrorResult;
 
@@ -71,5 +75,6 @@ namespace ServiceStack.Mvc
 
             return attrs;
         }
+
     }
 }
