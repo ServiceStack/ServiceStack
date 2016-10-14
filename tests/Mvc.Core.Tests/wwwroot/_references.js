@@ -1,7 +1,7 @@
 ﻿/// <autosync enabled="true" />
-/// <reference path="js/jquip.events.css.ajax.min.js.js" />
-/// <reference path="js/jquip.events.css.ajax.min.js.min.js" />
-/// <reference path="js/site - copy.js" />
+/// <reference path="js/angular.min.js" />
+/// <reference path="js/autogrid.min.js" />
+/// <reference path="js/jquip.events.css.ajax.min.js" />
 /// <reference path="js/site.js" />
 /// <reference path="lib/bootstrap/dist/js/bootstrap.js" />
 /// <reference path="lib/jquery/dist/jquery.js" />

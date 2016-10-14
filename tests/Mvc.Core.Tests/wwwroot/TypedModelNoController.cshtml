@@ -3,8 +3,8 @@
 @{
     Layout = "SimpleLayout";
     ViewBag.Title = "Page with typed 'Rockstars' model and no C# controller";
-    var rockstars = base.Gateway.Send(new SearchRockstars { Age = Dto.Age }).Results;
-    var title = Dto.Age.HasValue ? $"{Dto.Age} year old rockstars" : "All Rockstars";
+    var rockstars = base.Gateway.Send(new SearchRockstars { Age = Model.Age }).Results;
+    var title = Model.Age.HasValue ? $"{Model.Age} year old rockstars" : "All Rockstars";
 }
 
 <div id="content-page">

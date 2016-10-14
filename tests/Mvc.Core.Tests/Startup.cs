@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RazorRockstars;
 using ServiceStack;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Host.Handlers;
 using ServiceStack.OrmLite;
@@ -59,7 +60,7 @@ namespace Mvc.Core.Tests
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseStaticFiles();
+            //app.UseStaticFiles();
 
             app.UseServiceStack(new AppHost());
 
@@ -74,7 +75,7 @@ namespace Mvc.Core.Tests
             //app.Use(new RazorHandler("/login").Middleware);
             //app.Use(new StaticFileHandler("wwwroot/img/react-logo.png").Middleware);
             //app.Use(new StaticFileHandler("wwwroot/_ViewImports.cshtml").Middleware);
-            app.Use(new RequestInfoHandler());
+            //app.Use(new RequestInfoHandler());
 
             //Populate Rockstars
             using (var db = app.ApplicationServices.GetService<IDbConnectionFactory>().Open())
@@ -114,6 +115,31 @@ namespace Mvc.Core.Tests
             //Works but recommend handling 404 at end of .NET Core pipeline
             //this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/notfound");
             this.CustomErrorHttpHandlers[HttpStatusCode.Unauthorized] = new RazorHandler("/login");
+
+            Plugins.Add(new AuthFeature(() => new CustomUserSession(),
+                new IAuthProvider[]
+                {
+                    new CredentialsAuthProvider(),        //HTML Form post of UserName/Password credentials
+                    new BasicAuthProvider(),                    //Sign-in with HTTP Basic Auth
+                    new DigestAuthProvider(AppSettings),        //Sign-in with HTTP Digest Auth
+                    new TwitterAuthProvider(AppSettings),       //Sign-in with Twitter
+                    new FacebookAuthProvider(AppSettings),      //Sign-in with Facebook
+                    new GithubAuthProvider(AppSettings),        //Sign-in with GitHub OAuth Provider
+                    new YandexAuthProvider(AppSettings),        //Sign-in with Yandex OAuth Provider        
+                    new VkAuthProvider(AppSettings),            //Sign-in with VK.com OAuth Provider 
+                })
+            {
+                HtmlRedirect = "/",
+                IncludeRegistrationService = true,
+            });
+
+            container.Register<IAuthRepository>(c =>
+                new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()) {
+                    UseDistinctRoleTables = AppSettings.Get("UseDistinctRoleTables", true),
+                });
+
+            var authRepo = (OrmLiteAuthRepository)container.Resolve<IAuthRepository>();
+            SessionService.ResetUsers(authRepo);
         }
     }
 }
