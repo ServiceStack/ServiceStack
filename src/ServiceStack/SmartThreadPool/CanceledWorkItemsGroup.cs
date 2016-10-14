@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 namespace Amib.Threading.Internal
 {
     internal class CanceledWorkItemsGroup
@@ -12,3 +14,5 @@ namespace Amib.Threading.Internal
         public bool IsCanceled { get; set; }
     }
 }
+
+#endif

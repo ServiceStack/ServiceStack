@@ -1,0 +1,47 @@
+﻿@{
+    Layout = "AliveLayout";
+    ViewBag.Title = "Eddie Vedder";
+}
+<div id="content-page">
+    
+    <img src="splash.jpg" id="splash" alt="Eddie Vedder" />
+    <p>
+        Eddie Vedder is an American musician and singer-songwriter who is best known for being the 
+        lead singer and one of three guitarists of the alternative rock band Pearl Jam. 
+    </p>
+
+    <dl>
+        <dt> 
+            Born
+        </dt>
+        <dd>
+            December 23, 1964 (age 47), Evanston
+        </dd>
+        <dt>
+            Spouse
+        </dt>
+        <dd>
+            Jill McCormick (m. 2010), Beth Liebling (m. 1994-2000)
+        </dd>
+        <dt>
+            Music groups
+        </dt>
+        <dd>
+            Pearl Jam, Temple of the Dog, Bad Radio, Hovercraft
+        </dd>
+    </dl>
+
+    @Html.PartialMarkdown("Content")
+
+</div>
+
+@section preview {
+
+    <h3><b>View</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/alive/Vedder/default.cshtml">/stars/alive/Vedder/default.cshtml</a></h3>
+    <script src="https://gist.github.com/3616688.js"></script>
+
+    <h3><b>Markdown</b> <a href="Content?format=text.bare">/stars/alive/Vedder/Content.md</a></h3>
+
+    <h3><b>Layout</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/alive/_Layout.cshtml">/stars/alive/_Layout.cshtml</a></h3>
+    <script src="https://gist.github.com/3616674.js"></script>
+}

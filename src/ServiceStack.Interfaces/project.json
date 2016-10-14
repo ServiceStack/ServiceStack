@@ -1,0 +1,70 @@
+{
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": [
+          "DEBUG",
+          "TRACE"
+        ],
+        "compile": {
+          "include": [
+            "../../ServiceStack.Interfaces/**/*.cs"
+          ]
+        }
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": [
+          "TRACE"
+        ],
+        "optimize": true,
+        "compile": {
+          "include": [
+            "../../ServiceStack.Interfaces/**/*.cs"
+          ]
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "NETStandard.Library": "1.6.0"
+  },
+  "frameworks": {
+    "netstandard1.1": {
+      "dependencies": {
+        "System.Runtime": "4.1.0",
+        "System.Runtime.Serialization.Primitives": "4.1.1"
+      }
+    },
+    ".NETPortable,Version=v4.5,Profile=Profile7": {
+      "buildOptions": {
+        "define": [
+          "NETSTANDARD1_1"
+        ]
+      },
+      "frameworkAssemblies": {
+        "System.Runtime.Serialization.Primitives": "4.1.1-*",
+        "System.Runtime.Serialization.Xml": "4.1.1",
+        "System.Net.Requests": "4.0.11",
+        "System.Dynamic.Runtime": "4.0.11",
+        "Microsoft.CSharp": "4.0.1-*"
+      }
+    },
+    ".NETPortable,Version=v4.0,Profile=Profile344": {
+      "buildOptions": {
+        "define": [
+          "PCL"
+        ]
+      },
+      "frameworkAssemblies": {
+        "mscorlib": "",
+        "System": "",
+        "System.Core": "",
+        "System.Net": "",
+        "System.Runtime.Serialization": ""
+      }
+    }
+  },
+  "version": "1.0.0"
+}

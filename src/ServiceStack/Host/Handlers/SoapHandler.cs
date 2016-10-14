@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 using System;
 using System.IO;
 using System.Linq;
@@ -17,7 +19,7 @@ namespace ServiceStack.Host.Handlers
 {
     public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
     {
-        private ServiceStackHost appHost;
+        private readonly ServiceStackHost appHost;
 
         public SoapHandler(RequestAttributes soapType)
         {
@@ -75,10 +77,10 @@ namespace ServiceStack.Host.Handlers
                 httpRes = httpReq.Response;
 
             if (httpReq == null)
-                throw new ArgumentNullException("httpReq");
+                throw new ArgumentNullException(nameof(httpReq));
 
             if (httpRes == null)
-                throw new ArgumentNullException("httpRes");
+                throw new ArgumentNullException(nameof(httpRes));
 
             httpReq.UseBufferedStream = true;
             var requestMsg = message ?? GetRequestMessageFromStream(httpReq.InputStream);
@@ -329,7 +331,7 @@ namespace ServiceStack.Host.Handlers
             }
 
             return xml.StartsWith("<")
-                ? xml.Substring(1, xml.IndexOf(" ") - 1).RightPart(':')
+                ? xml.Substring(1, xml.IndexOf(" ", StringComparison.Ordinal) - 1).RightPart(':')
                 : null;
         }
 
@@ -351,7 +353,7 @@ namespace ServiceStack.Host.Handlers
 
         private static string GetOperationName(string contentType)
         {
-            var urlActionPos = contentType.IndexOf("action=\"");
+            var urlActionPos = contentType.IndexOf("action=\"", StringComparison.Ordinal);
             if (urlActionPos != -1)
             {
                 var startIndex = urlActionPos + "action=\"".Length;
@@ -386,3 +388,5 @@ namespace ServiceStack.Host.Handlers
         }
     }
 }
+
+#endif

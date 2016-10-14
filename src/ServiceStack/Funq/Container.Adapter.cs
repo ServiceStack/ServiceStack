@@ -26,6 +26,17 @@ namespace Funq
         }
 
         /// <summary>
+        /// Register an autowired dependency
+        /// </summary>
+        /// <param name="name">Name of dependency</param>
+        /// <typeparam name="T"></typeparam>
+        public IRegistration<T> RegisterAutoWired<T>(string name)
+        {
+            var serviceFactory = GenerateAutoWireFn<T>();
+            return this.Register(name, serviceFactory);
+        }
+
+        /// <summary>
         /// Register an autowired dependency as a separate type
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -38,6 +49,18 @@ namespace Funq
         }
 
         /// <summary>
+        /// Register an autowired dependency as a separate type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public IRegistration<TAs> RegisterAutoWiredAs<T, TAs>(string name)
+            where T : TAs
+        {
+            var serviceFactory = GenerateAutoWireFn<T>();
+            Func<Container, TAs> fn = c => serviceFactory(c);
+            return this.Register(name, fn);
+        }
+
+        /// <summary>
         /// Alias for RegisterAutoWiredAs
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -45,6 +68,16 @@ namespace Funq
             where T : TAs
         {
             return this.RegisterAutoWiredAs<T, TAs>();
+        }
+
+        /// <summary>
+        /// Alias for RegisterAutoWiredAs
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public IRegistration<TAs> RegisterAs<T, TAs>(string name)
+            where T : TAs
+        {
+            return this.RegisterAutoWiredAs<T, TAs>(name);
         }
 
         /// <summary>
@@ -121,7 +154,7 @@ namespace Funq
         private static bool IsPublicWritableUserPropertyType(PropertyInfo pi)
         {
             return pi.CanWrite
-                && !pi.PropertyType.IsValueType
+                && !pi.PropertyType.IsValueType()
                 && pi.PropertyType != typeof(string)
                 && !IgnorePropertyTypeFullNames.Contains(pi.PropertyType.FullName);
         }
@@ -182,10 +215,11 @@ namespace Funq
                 do
                 {
                     snapshot = autoWireCache;
-                    newCache = new Dictionary<Type, Action<object>[]>(autoWireCache);
-                    newCache[instanceType] = setters;
+                    newCache = new Dictionary<Type, Action<object>[]>(autoWireCache) {
+                        [instanceType] = setters
+                    };
                 } while (!ReferenceEquals(
-                Interlocked.CompareExchange(ref autoWireCache, newCache, snapshot), snapshot));
+                    Interlocked.CompareExchange(ref autoWireCache, newCache, snapshot), snapshot));
             }
 
             foreach (var setter in setters)
@@ -221,7 +255,7 @@ namespace Funq
             };
         }
 
-        private static NewExpression ConstructorExpression(
+        public static NewExpression ConstructorExpression(
             MethodInfo resolveMethodInfo, Type type, Expression lambdaParam)
         {
             var ctorWithMostParameters = GetConstructorWithMostParams(type);
@@ -242,16 +276,36 @@ namespace Funq
             return Expression.Call(containerParam, method);
         }
 
+        private static Dictionary<Type, Func<object>> tryResolveCache = new Dictionary<Type, Func<object>>();
+
         public object TryResolve(Type type)
         {
+            Func<object> fn;
+            if (tryResolveCache.TryGetValue(type, out fn))
+                return fn();
+
             var mi = typeof(Container).GetMethods(BindingFlags.Public | BindingFlags.Instance)
                 .First(x => x.Name == "TryResolve" &&
                        x.GetGenericArguments().Length == 1 &&
                        x.GetParameters().Length == 0);
 
             var genericMi = mi.MakeGenericMethod(type);
-            var instance = genericMi.Invoke(this, TypeConstants.EmptyObjectArray);
-            return instance;
+
+            fn = Expression.Lambda<Func<object>>(
+                    Expression.Call(Expression.Constant(this), genericMi)
+                ).Compile();
+
+            Dictionary<Type, Func<object>> snapshot, newCache;
+            do
+            {
+                snapshot = tryResolveCache;
+                newCache = new Dictionary<Type, Func<object>>(tryResolveCache) {
+                    [type] = fn
+                };
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref tryResolveCache, newCache, snapshot), snapshot));
+
+            return fn();
         }
     }
 }

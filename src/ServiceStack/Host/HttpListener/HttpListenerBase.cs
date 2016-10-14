@@ -1,4 +1,6 @@
-﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿#if !NETSTANDARD1_6 
+
+//Copyright (c) Service Stack LLC. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -152,10 +154,7 @@ namespace ServiceStack.Host.HttpListener
             return new System.Net.HttpListener();
         }
 
-        private bool IsListening
-        {
-            get { return this.IsStarted && this.Listener != null && this.Listener.IsListening; }
-        }
+        private bool IsListening => this.IsStarted && this.Listener != null && this.Listener.IsListening;
 
         // Loop here to begin processing of new requests.
         protected virtual void Listen(object state)
@@ -318,11 +317,8 @@ namespace ServiceStack.Host.HttpListener
 
         protected virtual void OnBeginRequest(HttpListenerContext context)
         {
-            if (this.ReceiveWebRequest != null)
-                this.ReceiveWebRequest(context);
-
-            if (BeforeRequest != null)
-                BeforeRequest(context);
+            ReceiveWebRequest?.Invoke(context);
+            BeforeRequest?.Invoke(context);
         }
 
 
@@ -348,7 +344,7 @@ namespace ServiceStack.Host.HttpListener
             {
                 if (ex.ErrorCode != RequestThreadAbortedException) throw;
 
-                Log.Error("Swallowing HttpListenerException({0}) Thread exit or aborted request".Fmt(RequestThreadAbortedException), ex);
+                Log.Error($"Swallowing HttpListenerException({RequestThreadAbortedException}) Thread exit or aborted request", ex);
             }
             this.IsStarted = false;
             this.Listener = null;
@@ -379,12 +375,12 @@ namespace ServiceStack.Host.HttpListener
                 {
                     var sid = System.Security.Principal.WindowsIdentity.GetCurrent().User;
                     cmd = "httpcfg";
-                    args = string.Format(@"set urlacl /u {0} /a D:(A;;GX;;;""{1}"")", urlBase, sid);
+                    args = $@"set urlacl /u {urlBase} /a D:(A;;GX;;;""{sid}"")";
                 }
                 else
                 {
                     cmd = "netsh";
-                    args = string.Format(@"http add urlacl url={0} user=""{1}\{2}"" listen=yes", urlBase, Environment.UserDomainName, Environment.UserName);
+                    args = $@"http add urlacl url={urlBase} user=""{Environment.UserDomainName}\{Environment.UserName}"" listen=yes";
                 }
 
                 var psi = new ProcessStartInfo(cmd, args)
@@ -395,7 +391,7 @@ namespace ServiceStack.Host.HttpListener
                     UseShellExecute = true
                 };
 
-                Process.Start(psi).WaitForExit();
+                Process.Start(psi)?.WaitForExit();
 
                 return urlBase;
             }
@@ -418,12 +414,12 @@ namespace ServiceStack.Host.HttpListener
                 if (Environment.OSVersion.Version.Major < 6)
                 {
                     cmd = "httpcfg";
-                    args = string.Format(@"delete urlacl /u {0}", urlBase);
+                    args = $@"delete urlacl /u {urlBase}";
                 }
                 else
                 {
                     cmd = "netsh";
-                    args = string.Format(@"http delete urlacl url={0}", urlBase);
+                    args = $@"http delete urlacl url={urlBase}";
                 }
 
                 var psi = new ProcessStartInfo(cmd, args)
@@ -434,7 +430,7 @@ namespace ServiceStack.Host.HttpListener
                     UseShellExecute = true
                 };
 
-                Process.Start(psi).WaitForExit();
+                Process.Start(psi)?.WaitForExit();
             }
             catch
             {
@@ -469,3 +465,5 @@ namespace ServiceStack.Host.HttpListener
         }
     }
 }
+
+#endif

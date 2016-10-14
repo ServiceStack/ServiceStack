@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Funq;
-using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -12,7 +11,7 @@ namespace ServiceStack
 {
     public static class AppHostExtensions
     {
-        private static ILog log = LogManager.GetLogger(typeof(AppHostExtensions));
+        private static readonly ILog log = LogManager.GetLogger(typeof(AppHostExtensions));
 
         public static void RegisterService<TService>(this IAppHost appHost, params string[] atRestPaths)
         {
@@ -76,10 +75,8 @@ namespace ServiceStack
         /// <returns></returns>
         public static Container GetContainer(this IAppHost appHost)
         {
-            if (appHost == null) return null;
-
             var hasContainer = appHost as IHasContainer;
-            return hasContainer != null ? hasContainer.Container : null;
+            return hasContainer?.Container;
         }
 
         public static bool NotifyStartupException(this IAppHost appHost, Exception ex)
@@ -106,8 +103,10 @@ namespace ServiceStack
 
         public static IAppHost Start(this IAppHost appHost, IEnumerable<string> urlBases)
         {
-            var listener = (HttpListenerBase)appHost;
+#if !NETSTANDARD1_6
+            var listener = (ServiceStack.Host.HttpListener.HttpListenerBase)appHost;
             listener.Start(urlBases);
+#endif
             return appHost;
         }
     }

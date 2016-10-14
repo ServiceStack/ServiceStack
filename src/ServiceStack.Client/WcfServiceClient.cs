@@ -1,4 +1,4 @@
-#if !(NETFX_CORE || SL5 || __IOS__ || ANDROID || PCL)
+#if !(NETFX_CORE || SL5 || __IOS__ || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,10 +23,7 @@ namespace ServiceStack
     /// </remarks>
     public class CookieManagerEndpointBehavior : IEndpointBehavior
     {
-        public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
-        {
-            return;
-        }
+        public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters) {}
 
         /// <summary>
         /// Adds the singleton of the <see cref="ClientIdentityMessageInspector"/> class to the client endpoint's message inspectors.
@@ -40,15 +37,9 @@ namespace ServiceStack
             clientRuntime.MessageInspectors.Add(cm);
         }
 
-        public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher)
-        {
-            return;
-        }
+        public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher) {}
 
-        public void Validate(ServiceEndpoint endpoint)
-        {
-            return;
-        }
+        public void Validate(ServiceEndpoint endpoint) {}
     }
 
     /// <summary>
@@ -63,7 +54,7 @@ namespace ServiceStack
     public class CookieManagerMessageInspector : IClientMessageInspector
     {
         private static CookieManagerMessageInspector instance;
-        private CookieContainer cookieContainer;
+        private readonly CookieContainer cookieContainer;
         public string Uri { get; set; }
 
         /// <summary>
@@ -84,18 +75,8 @@ namespace ServiceStack
         /// <summary>
         /// Gets the singleton <see cref="ClientIdentityMessageInspector" /> instance.
         /// </summary>
-        public static CookieManagerMessageInspector Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new CookieManagerMessageInspector();
-                }
-
-                return instance;
-            }
-        }
+        public static CookieManagerMessageInspector Instance => 
+            instance ?? (instance = new CookieManagerMessageInspector());
 
         /// <summary>
         /// Inspects a message after a reply message is received but prior to passing it back to the client application.
@@ -106,14 +87,10 @@ namespace ServiceStack
         {
             var httpResponse = reply.Properties[HttpResponseMessageProperty.Name] as HttpResponseMessageProperty;
 
-            if (httpResponse != null)
+            var cookie = httpResponse?.Headers[HttpResponseHeader.SetCookie];
+            if (!string.IsNullOrEmpty(cookie))
             {
-                string cookie = httpResponse.Headers[HttpResponseHeader.SetCookie];
-
-                if (!string.IsNullOrEmpty(cookie))
-                {
-                    cookieContainer.SetCookies(new System.Uri(Uri), cookie);
-                }
+                cookieContainer.SetCookies(new System.Uri(Uri), cookie);
             }
         }
 
@@ -127,8 +104,6 @@ namespace ServiceStack
         /// </returns>
         public object BeforeSendRequest(ref Message request, IClientChannel channel)
         {
-            HttpRequestMessageProperty httpRequest;
-
             // The HTTP request object is made available in the outgoing message only when
             // the Visual Studio Debugger is attacched to the running process
             if (!request.Properties.ContainsKey(HttpRequestMessageProperty.Name))
@@ -136,8 +111,8 @@ namespace ServiceStack
                 request.Properties.Add(HttpRequestMessageProperty.Name, new HttpRequestMessageProperty());
             }
 
-            httpRequest = (HttpRequestMessageProperty)request.Properties[HttpRequestMessageProperty.Name];
-            httpRequest.Headers.Add(HttpRequestHeader.Cookie, cookieContainer.GetCookieHeader(new System.Uri(Uri)));
+            var httpRequest = (HttpRequestMessageProperty)request.Properties[HttpRequestMessageProperty.Name];
+            httpRequest.Headers.Add(HttpRequestHeader.Cookie, cookieContainer.GetCookieHeader(new Uri(Uri)));
 
             return null;
         }
@@ -166,7 +141,7 @@ namespace ServiceStack
         public int Version { get; set; }
         public string SessionId { get; set; }
 
-        public WcfServiceClient()
+        protected WcfServiceClient()
         {
             // CCB Custom
             this.StoreCookies = true;
@@ -192,7 +167,7 @@ namespace ServiceStack
                 {
                     errMsg = nodeReason.FirstChild.InnerXml;
                 }
-                return new Exception(string.Format("SOAP FAULT '{0}': {1}", errMsg, node.InnerXml), e);
+                return new Exception($"SOAP FAULT '{errMsg}': {node.InnerXml}", e);
             }
             return e;
         }
@@ -271,7 +246,7 @@ namespace ServiceStack
                     : Serialization.DataContractSerializer.Instance.DeserializeFromString(responseXml, responseType);
 
                 var responseStatus = response.GetResponseStatus();
-                if (responseStatus != null && !string.IsNullOrEmpty(responseStatus.ErrorCode))
+                if (!string.IsNullOrEmpty(responseStatus?.ErrorCode))
                 {
                     throw new WebServiceException(responseStatus.ErrorCode, null)
                     {

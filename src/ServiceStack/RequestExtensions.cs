@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Web;
 using ServiceStack.Caching;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
@@ -143,10 +142,12 @@ namespace ServiceStack
             return value;
         }
 
+#if !NETSTANDARD1_6
         public static RequestBaseWrapper ToHttpRequestBase(this IRequest httpReq)
         {
             return new RequestBaseWrapper((IHttpRequest)httpReq);
         }
+#endif
 
         public static void SetInProcessRequest(this IRequest httpReq)
         {
@@ -157,9 +158,7 @@ namespace ServiceStack
 
         public static bool IsInProcessRequest(this IRequest httpReq)
         {
-            if (httpReq == null) return false;
-
-            return (RequestAttributes.InProcess & httpReq.RequestAttributes) == RequestAttributes.InProcess;
+            return (RequestAttributes.InProcess & httpReq?.RequestAttributes) == RequestAttributes.InProcess;
         }
 
         public static void ReleaseIfInProcessRequest(this IRequest httpReq)
@@ -167,6 +166,19 @@ namespace ServiceStack
             if (httpReq == null) return;
 
             httpReq.RequestAttributes = httpReq.RequestAttributes & ~RequestAttributes.InProcess;
+        }
+
+        internal static T TryResolveInternal<T>(this IRequest request)
+        {
+            if (typeof(T) == typeof(IRequest))
+                return (T)request;
+            if (typeof(T) == typeof(IResponse))
+                return (T)request.Response;
+
+            var hasResolver = request as IHasResolver;
+            return hasResolver != null 
+                ? hasResolver.Resolver.TryResolve<T>() 
+                : Service.GlobalResolver.TryResolve<T>();
         }
     }
 }

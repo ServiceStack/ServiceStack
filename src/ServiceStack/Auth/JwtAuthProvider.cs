@@ -4,7 +4,9 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
+using ServiceStack.Host;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
@@ -13,12 +15,20 @@ namespace ServiceStack.Auth
     /// </summary>
     public class JwtAuthProvider : JwtAuthProviderReader, IAuthResponseFilter
     {
+        /// <summary>
+        /// Whether to populate the Bearer Token in the AuthenticateResponse
+        /// </summary>
+        public bool SetBearerTokenOnAuthenticateResponse { get; set; }
+
         public JwtAuthProvider() {}
 
         public JwtAuthProvider(IAppSettings appSettings) : base(appSettings) { }
 
         public override void Init(IAppSettings appSettings = null)
         {
+            this.SetBearerTokenOnAuthenticateResponse = appSettings == null 
+                || appSettings.Get("jwt.SetBearerTokenOnAuthenticateResponse", true);
+
             ServiceRoutes = new Dictionary<Type, string[]>
             {
                 { typeof(ConvertSessionToTokenService), new[] { "/session-to-token" } },
@@ -29,28 +39,29 @@ namespace ServiceStack.Auth
 
         public AuthenticateResponse Execute(IServiceBase authService, IAuthProvider authProvider, IAuthSession session, AuthenticateResponse response)
         {
-            if (response.BearerToken == null && session.IsAuthenticated)
+            if (SetBearerTokenOnAuthenticateResponse && response.BearerToken == null && session.IsAuthenticated)
             {
                 if (!RequireSecureConnection || authService.Request.IsSecureConnection)
-                    response.BearerToken = CreateJwtBearerToken(session);
+                {
+                    IEnumerable<string> roles = null, perms = null;
+                    var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request) as IManageRoles;
+                    if (authRepo != null)
+                    {
+                        roles = authRepo.GetRoles(session.UserAuthId);
+                        perms = authRepo.GetPermissions(session.UserAuthId);
+                    }
+
+                    response.BearerToken = CreateJwtBearerToken(session, roles, perms);
+                }
             }
 
             return response;
         }
 
-        public string CreateJwtBearerToken(IAuthSession session)
+        public string CreateJwtBearerToken(IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null)
         {
-            IEnumerable<string> roles = null, perms = null;
-            var authRepo = HostContext.TryResolve<IAuthRepository>() as IManageRoles;
-            if (authRepo != null)
-            {
-                roles = authRepo.GetRoles(session.UserAuthId);
-                perms = authRepo.GetPermissions(session.UserAuthId);
-            }
-
             var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audience, roles, perms);
-            if (CreatePayloadFilter != null)
-                CreatePayloadFilter(jwtPayload, session);
+            CreatePayloadFilter?.Invoke(jwtPayload, session);
 
             if (EncryptPayload)
             {
@@ -61,14 +72,18 @@ namespace ServiceStack.Auth
             }
 
             var jwtHeader = CreateJwtHeader(HashAlgorithm, GetKeyId());
-            if (CreateHeaderFilter != null)
-                CreateHeaderFilter(jwtHeader, session);
+            CreateHeaderFilter?.Invoke(jwtHeader, session);
 
             Func<byte[], byte[]> hashAlgoritm = null;
 
             Func<byte[], byte[], byte[]> hmac;
             if (HmacAlgorithms.TryGetValue(HashAlgorithm, out hmac))
+            {
+                if (AuthKey == null)
+                    throw new NotSupportedException("AuthKey required to use: " + HashAlgorithm);
+
                 hashAlgoritm = data => hmac(AuthKey, data);
+            }
 
             Func<RSAParameters, byte[], byte[]> rsa;
             if (RsaSignAlgorithms.TryGetValue(HashAlgorithm, out rsa))
@@ -105,13 +120,12 @@ namespace ServiceStack.Auth
             Buffer.BlockCopy(cryptAuthKeys256, 0, authKey, 0, authKey.Length);
             Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
 
-            using (var aes = new AesManaged
-            {
-                KeySize = 128,
-                BlockSize = 128,
-                Mode = CipherMode.CBC,
-                Padding = PaddingMode.PKCS7
-            })
+            var aes = Aes.Create();
+            aes.KeySize = 128;
+            aes.BlockSize = 128;
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            using (aes)
             {
                 aes.GenerateIV();
                 var iv = aes.IV;
@@ -276,7 +290,7 @@ namespace ServiceStack.Auth
             return new HttpResult(new ConvertSessionToTokenResponse())
             {
                 Cookies = {
-                    new Cookie(Keywords.JwtSessionToken, token) {
+                    new Cookie(Keywords.TokenCookie, token, Cookies.RootPath) {
                         HttpOnly = true,
                         Secure = Request.IsSecureConnection,
                         Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),

@@ -1,5 +1,3 @@
-using ServiceStack.Text;
-
 namespace ServiceStack.Host.Handlers
 {
     public class XmlOneWayHandler : GenericHandler

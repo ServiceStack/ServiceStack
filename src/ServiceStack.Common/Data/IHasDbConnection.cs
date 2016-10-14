@@ -6,10 +6,10 @@ using System.Data;
 
 namespace ServiceStack.Data
 {
-	public interface IHasDbConnection
-	{
-		IDbConnection DbConnection { get; }
-	}
+    public interface IHasDbConnection
+    {
+        IDbConnection DbConnection { get; }
+    }
 
     public interface IHasDbCommand
     {

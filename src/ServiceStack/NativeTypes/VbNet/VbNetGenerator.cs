@@ -69,6 +69,10 @@ namespace ServiceStack.NativeTypes.VbNet
             "Class"
         };
 
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
+
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
@@ -110,8 +114,8 @@ namespace ServiceStack.NativeTypes.VbNet
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(", ")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(", ")));
+            sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
-            //sb.AppendLine("{0}DefaultNamespaces: {1}".Fmt(defaultValue("DefaultNamespaces"), Config.DefaultNamespaces.ToArray().Join(", ")));
             sb.AppendLine();
 
             namespaces.Where(x => !string.IsNullOrEmpty(x))
@@ -153,7 +157,10 @@ namespace ServiceStack.NativeTypes.VbNet
 
             var orderedTypes = allTypes
                 .OrderBy(x => x.Namespace)
-                .ThenBy(x => x.Name);
+                .ThenBy(x => x.Name)
+                .ToList();
+
+            orderedTypes = FilterTypes(orderedTypes);
 
             foreach (var type in orderedTypes)
             {

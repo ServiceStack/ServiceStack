@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETSTANDARD1_6
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Web;
@@ -45,7 +46,8 @@ namespace ServiceStack.Mvc
                 if (controllerType == null)
                     return base.GetControllerInstance(requestContext, null);
 
-                var controller = funqBuilder.CreateInstance(controllerType) as IController;
+                var req = requestContext.HttpContext.ToRequest();
+                var controller = funqBuilder.CreateInstance(req, controllerType) as IController;
 
                 return controller ?? base.GetControllerInstance(requestContext, controllerType);
             }
@@ -67,3 +69,4 @@ namespace ServiceStack.Mvc
         }
     }
 }
+#endif

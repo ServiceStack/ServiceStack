@@ -1,9 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Web.UI;
 using ServiceStack.Host;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -40,11 +37,11 @@ namespace ServiceStack.Metadata
                 if (MetadataConfig.IsVisible(Request, config.Format.ToFormat(), operationName))
                 {
                     show = true;
-                    opTemplate.AppendFormat(@"<td><a href=""{0}?op={{0}}"">{1}</a></td>", uri, config.Name);
+                    opTemplate.Append($@"<td><a href=""{uri}?op={{0}}"">{config.Name.UrlEncode()}</a></td>");
                 }
                 else
                 {
-                    opTemplate.AppendFormat("<td>{0}</td>", config.Name);
+                    opTemplate.Append($"<td>{config.Name}</td>");
                 }
             }
 
@@ -130,12 +127,16 @@ namespace ServiceStack.Metadata
                 ForEachItem = RenderRow
             }.ToString();
 
+#if !NETSTANDARD1_6
             var xsdsPart = new ListTemplate
             {
                 Title = "XSDS:",
                 ListItemsIntMap = this.Xsds,
                 ListItemTemplate = @"<li><a href=""?xsd={0}"">{1}</a></li>"
             }.ToString();
+#else
+            var xsdsPart = "";
+#endif
 
             var wsdlTemplate = StringBuilderCache.Allocate();
             var soap11Config = MetadataConfig.GetMetadataConfig("soap11") as SoapMetadataConfig;

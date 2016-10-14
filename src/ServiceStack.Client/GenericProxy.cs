@@ -35,13 +35,7 @@ namespace ServiceStack
         /// <summary>
         /// Returns the transparent proxy for the service call
         /// </summary>
-        public T Proxy
-        {
-            get
-            {
-                return base.Channel;
-            }
-        }
+        public T Proxy => base.Channel;
     }
 }
 #endif

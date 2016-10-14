@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 using System;
 using ServiceStack.Serialization;
 using ServiceStack.Web;
@@ -6,20 +8,21 @@ namespace ServiceStack.Metadata
 {
     public class Soap11MetadataHandler : BaseSoapMetadataHandler
     {
-        public override Format Format { get { return Format.Soap11; } }
+        public override Format Format => Format.Soap11;
 
         protected override string CreateMessage(Type dtoType)
         {
             var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
             var xml = DataContractSerializer.Instance.Parse(requestObj, true);
-            var soapEnvelope = string.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            var soapEnvelope =
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
 <soap:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:soap=""http://schemas.xmlsoap.org/soap/envelope/"">
     <soap:Body>
 
-{0}
+{xml}
 
     </soap:Body>
-</soap:Envelope>", xml);
+</soap:Envelope>";
             return soapEnvelope;
         }
 
@@ -50,3 +53,5 @@ namespace ServiceStack.Metadata
         }
     }
 }
+
+#endif

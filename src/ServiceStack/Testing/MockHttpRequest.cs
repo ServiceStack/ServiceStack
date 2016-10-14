@@ -4,15 +4,23 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using Funq;
-using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
 namespace ServiceStack.Testing
 {
-    public class MockHttpRequest : IHttpRequest
+    public class MockHttpRequest : IHttpRequest, IHasResolver
     {
-        public Container Container { get; set; }
+        [Obsolete("Use Resolver")]
+        public Container Container { get { throw new NotSupportedException("Use Resolver"); } }
+
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get { return resolver ?? Service.GlobalResolver; }
+            set { resolver = value; }
+        }
 
         public MockHttpRequest()
         {
@@ -21,7 +29,6 @@ namespace ServiceStack.Testing
             this.QueryString = PclExportClient.Instance.NewNameValueCollection();
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
-            this.Container = ServiceStackHost.Instance != null ? ServiceStackHost.Instance.Container : new Container();
             this.Response = new MockHttpResponse(this);
         }
 
@@ -40,18 +47,13 @@ namespace ServiceStack.Testing
             this.FormData = new NameValueCollectionWrapper(formData ?? new NameValueCollection());
         }
 
-        public object OriginalRequest
-        {
-            get { return null; }
-        }
+        public object OriginalRequest => null;
 
-        public IResponse Response { get; private set; }
+        public IResponse Response { get; }
 
         public T TryResolve<T>()
         {
-            return Container != null 
-                ? Container.TryResolve<T>()
-                : HostContext.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public AuthUserSession RemoveSession()
@@ -69,17 +71,7 @@ namespace ServiceStack.Testing
         public RequestAttributes RequestAttributes { get; set; }
 
         private IRequestPreferences requestPreferences;
-        public IRequestPreferences RequestPreferences
-        {
-            get
-            {
-                if (requestPreferences == null)
-                {
-                    requestPreferences = new RequestPreferences(this);
-                }
-                return requestPreferences;
-            }
-        }
+        public IRequestPreferences RequestPreferences => requestPreferences ?? (requestPreferences = new RequestPreferences(this));
 
         public object Dto { get; set; }
         public string ContentType { get; set; }
@@ -88,10 +80,7 @@ namespace ServiceStack.Testing
         public bool IsLocal { get; set; }
         
         public string HttpMethod { get; set; }
-        public string Verb
-        {
-            get { return HttpMethod; }
-        }
+        public string Verb => HttpMethod;
 
         public IDictionary<string, Cookie> Cookies { get; set; }
 
@@ -128,10 +117,7 @@ namespace ServiceStack.Testing
 
         public string RawUrl { get; set; }
 
-        public string AbsoluteUri
-        {
-            get { return "http://localhost" + this.PathInfo; }
-        }
+        public string AbsoluteUri => "http://localhost" + this.PathInfo;
 
         public string UserHostAddress { get; set; }
 
@@ -153,7 +139,7 @@ namespace ServiceStack.Testing
             get
             {
                 var body = GetRawBody();
-                return body != null ? body.Length : 0;
+                return body?.Length ?? 0;
             }
         }
 
@@ -169,6 +155,6 @@ namespace ServiceStack.Testing
             this.Cookies[SessionFeature.SessionId] = new Cookie(SessionFeature.SessionId, sessionId);
         }
 
-        public Uri UrlReferrer { get { return null; } }
+        public Uri UrlReferrer => null;
     }
 }

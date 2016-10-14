@@ -7,18 +7,10 @@ namespace ServiceStack.Host
 {
     public class RequestPreferences : IRequestPreferences
     {
-        private readonly HttpContextBase httpContext;
+        private string acceptEncoding;
 
-        public RequestPreferences(IRequest httpRequest)
-        {
-            this.acceptEncoding = httpRequest.Headers[HttpHeaders.AcceptEncoding];
-            if (this.acceptEncoding.IsNullOrEmpty())
-            {
-                this.acceptEncoding = "none";
-                return;
-            }
-            this.acceptEncoding = this.acceptEncoding.ToLower();
-        }
+#if !NETSTANDARD1_6
+        private readonly HttpContextBase httpContext;
 
         public RequestPreferences(HttpContextBase httpContext)
         {
@@ -40,50 +32,39 @@ namespace ServiceStack.Host
         }
 
         private HttpWorkerRequest httpWorkerRequest;
-        private HttpWorkerRequest HttpWorkerRequest
-        {
-            get
-            {
-                if (this.httpWorkerRequest == null)
-                {
-                    this.httpWorkerRequest = GetWorker(this.httpContext);
-                }
-                return this.httpWorkerRequest;
-            }
-        }
+        private HttpWorkerRequest HttpWorkerRequest => 
+            this.httpWorkerRequest ?? (this.httpWorkerRequest = GetWorker(this.httpContext));
 
-        private string acceptEncoding;
         public string AcceptEncoding
         {
             get
             {
-                if (acceptEncoding == null)
-                {
-                    if (!Env.IsMono)
-                    {
-                        acceptEncoding = HttpWorkerRequest.GetKnownRequestHeader(HttpWorkerRequest.HeaderAcceptEncoding);
-                        if (acceptEncoding != null) acceptEncoding = acceptEncoding.ToLower();
-                    }
-                }
+                if (acceptEncoding != null)
+                    return acceptEncoding;
+                if (Env.IsMono)
+                    return acceptEncoding;
+
+                acceptEncoding = HttpWorkerRequest.GetKnownRequestHeader(HttpWorkerRequest.HeaderAcceptEncoding)?.ToLower();
                 return acceptEncoding;
             }
         }
+#else 
+        public string AcceptEncoding => acceptEncoding;
+#endif
 
-        public bool AcceptsGzip
+        public RequestPreferences(IRequest httpRequest)
         {
-            get
+            this.acceptEncoding = httpRequest.Headers[HttpHeaders.AcceptEncoding];
+            if (string.IsNullOrEmpty(this.acceptEncoding))
             {
-                return AcceptEncoding != null && AcceptEncoding.Contains("gzip");
+                this.acceptEncoding = "none";
+                return;
             }
+            this.acceptEncoding = this.acceptEncoding.ToLower();
         }
 
-        public bool AcceptsDeflate
-        {
-            get
-            {
-                return AcceptEncoding != null && AcceptEncoding.Contains("deflate");
-            }
-        }
+        public bool AcceptsGzip => AcceptEncoding != null && AcceptEncoding.Contains("gzip");
 
+        public bool AcceptsDeflate => AcceptEncoding != null && AcceptEncoding.Contains("deflate");
     }
 }

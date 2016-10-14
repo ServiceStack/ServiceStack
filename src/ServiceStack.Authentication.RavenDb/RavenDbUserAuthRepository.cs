@@ -20,6 +20,8 @@ namespace ServiceStack.Authentication.RavenDb
         private readonly IDocumentStore documentStore;
         private static bool isInitialized = false;
 
+        public IHashProvider HashProvider { get; set; }
+
         public static void CreateOrUpdateUserAuthIndex(IDocumentStore store)
         {
             // put this index into the ravendb database
@@ -91,7 +93,7 @@ namespace ServiceStack.Authentication.RavenDb
 
             AssertNoExistingUser(newUser);
 
-            var saltedHash = HostContext.Resolve<IHashProvider>();
+            var saltedHash = HashProvider ?? HostContext.Resolve<IHashProvider>();
             string salt;
             string hash;
             saltedHash.GetHashAndSaltString(password, out hash, out salt);
@@ -140,14 +142,14 @@ namespace ServiceStack.Authentication.RavenDb
                 var existingUser = GetUserAuthByUserName(newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException("User {0} already exists".Fmt(newUser.UserName));
+                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName));
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException("Email {0} already exists".Fmt(newUser.Email));
+                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email));
             }
         }
 
@@ -241,7 +243,8 @@ namespace ServiceStack.Authentication.RavenDb
 
         public void LoadUserAuth(IAuthSession session, IAuthTokens tokens)
         {
-            session.ThrowIfNull("session");
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
 
             var userAuth = GetUserAuth(session, tokens);
             LoadUserAuth(session, (TUserAuth)userAuth);

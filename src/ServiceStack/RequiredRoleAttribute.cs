@@ -38,10 +38,14 @@ namespace ServiceStack
 
             var session = req.GetSession();
 
-            if (session != null && session.HasRole(RoleNames.Admin))
-                return;
+            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            using (authRepo as IDisposable)
+            {
+                if (session != null && session.HasRole(RoleNames.Admin, authRepo))
+                    return;
 
-            if (HasAllRoles(req, session)) return;
+                if (HasAllRoles(req, session, authRepo)) return;
+            }
 
             if (DoHtmlRedirectIfConfigured(req, res)) return;
 
@@ -50,13 +54,13 @@ namespace ServiceStack
             res.EndRequest();
         }
 
-        public bool HasAllRoles(IRequest req, IAuthSession session, IAuthRepository userAuthRepo = null)
+        public bool HasAllRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
-            if (HasAllRoles(session)) return true;
+            if (HasAllRoles(session, authRepo)) return true;
 
-            session.UpdateFromUserAuthRepo(req, userAuthRepo);
+            session.UpdateFromUserAuthRepo(req, authRepo);
 
-            if (HasAllRoles(session))
+            if (HasAllRoles(session, authRepo))
             {
                 req.SaveSession(session);
                 return true;
@@ -64,12 +68,12 @@ namespace ServiceStack
             return false;
         }
 
-        public bool HasAllRoles(IAuthSession session)
+        public bool HasAllRoles(IAuthSession session, IAuthRepository authRepo)
         {
             if (session == null)
                 return false;
 
-            return this.RequiredRoles.All(session.HasRole);
+            return this.RequiredRoles.All(x => session.HasRole(x, authRepo));
         }
 
         /// <summary>
@@ -86,17 +90,21 @@ namespace ServiceStack
 
             var session = req.GetSession();
 
-            if (session != null)
+            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            using (authRepo as IDisposable)
             {
-                if (session.HasRole(RoleNames.Admin))
-                    return;
-                if (requiredRoles.All(session.HasRole))
-                    return;
+                if (session != null)
+                {
+                    if (session.HasRole(RoleNames.Admin, authRepo))
+                        return;
+                    if (requiredRoles.All(x => session.HasRole(x, authRepo)))
+                        return;
+
+                    session.UpdateFromUserAuthRepo(req, authRepo);
+                }
             }
 
-            session.UpdateFromUserAuthRepo(req);
-
-            if (session != null && requiredRoles.All(session.HasRole))
+            if (session != null && requiredRoles.All(x => session.HasRole(x, authRepo)))
                 return;
 
             var statusCode = session != null && session.IsAuthenticated
@@ -116,18 +124,22 @@ namespace ServiceStack
 
             var session = req.GetSession();
 
-            if (session != null)
+            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            using (authRepo as IDisposable)
             {
-                if (session.HasRole(RoleNames.Admin))
-                    return true;
-                if (requiredRoles.All(session.HasRole))
+                if (session != null)
+                {
+                    if (session.HasRole(RoleNames.Admin, authRepo))
+                        return true;
+                    if (requiredRoles.All(x => session.HasRole(x, authRepo)))
+                        return true;
+
+                    session.UpdateFromUserAuthRepo(req);
+                }
+
+                if (session != null && requiredRoles.All(x => session.HasRole(x, authRepo)))
                     return true;
             }
-
-            session.UpdateFromUserAuthRepo(req);
-
-            if (session != null && requiredRoles.All(session.HasRole))
-                return true;
 
             return false;
         }
@@ -150,7 +162,7 @@ namespace ServiceStack
         {
             unchecked
             {
-                return (base.GetHashCode() * 397) ^ (RequiredRoles != null ? RequiredRoles.GetHashCode() : 0);
+                return (base.GetHashCode() * 397) ^ (RequiredRoles?.GetHashCode() ?? 0);
             }
         }
     }

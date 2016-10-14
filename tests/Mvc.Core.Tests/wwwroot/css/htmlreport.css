@@ -1,0 +1,243 @@
+﻿BODY, H1, H2, H3, H4, H5, H6, DL, DT, DD {
+  margin: 0;
+  padding: 0;
+  color: #444;
+  font: 13px/15px Arial, Verdana, Helvetica;
+}
+H1 {
+  text-align: center;
+  font: 24px Helvetica, Verdana, Arial;
+  padding: 20px 0 10px 0;
+  background: #FBFBFB;
+  border-bottom: solid 1px #fff;
+}
+#body {
+  padding: 20px;
+}
+H1 B {
+  font-weight: normal;
+  color: #069;
+}
+H1 A {
+  color: #0E8F13;
+  text-decoration: underline;
+}
+H1 I {
+  font-style: normal;
+  color: #0E8F13;
+}
+A {
+  color: #00C;
+  text-decoration: none;
+}
+A:hover {
+  text-decoration: underline;
+}
+.ib {
+    position: relative;
+    display: -moz-inline-box;
+    display: inline-block;
+}
+* html .ib {
+    display: inline;
+}
+*:first-child + html .ib {
+    display: inline;
+}
+TABLE {
+  border-collapse:collapse;
+  border: solid 1px #ccc;
+  clear: left;
+}
+TH {
+  text-align: left;
+  padding: 4px 8px;
+  text-shadow: #fff 1px 1px -1px;
+  background: #f1f1f1;
+  white-space:nowrap;
+  cursor:pointer;
+  font-weight: bold;
+}
+TH, TD, TD DT, TD DD {
+  font-size: 13px;
+  font-family: Arial;
+}
+TD {
+  padding: 8px 8px 0 8px;
+  vertical-align: top;
+}
+DL {
+  clear: left;
+}
+DT {
+  margin: 10px 0 5px 0;
+  font: bold 18px Helvetica, Verdana, Arial;
+  width: 200px;
+  overflow: hidden;
+  clear: left;
+  float: left;
+  display:block;
+  white-space:nowrap;
+}
+DD {
+  margin: 5px 10px;
+  font: 18px Arial;
+  padding: 2px;
+  display: block;
+  float: left;
+}
+DL DL DT { 
+  font: bold 16px Arial;
+}
+DL DL DD {
+  font: 16px Arial;
+}
+HR {
+    display:none;
+}
+TD DL HR
+{
+    display:block;
+    padding: 0;
+    clear: left;
+    border: none;
+}
+TD DL
+{
+    padding: 4px;
+    margin: 0;
+    height:100%;
+    max-width: 700px;
+}
+DL TD DL DT {
+  padding: 2px;
+  margin: 0 10px 0 0;
+  font-weight: bold;
+  font-size: 13px;
+  width: 120px;
+  overflow: hidden;
+  clear: left;
+  float: left;
+  display:block;
+}
+DL TD DL DD {  
+  margin: 0;
+  padding: 2px;
+  font-size: 13px;
+  display: block;
+  float: left;
+}
+TBODY>TR:last-child>TD {
+  padding: 8px;
+}
+THEAD
+{
+  -webkit-user-select:none;
+  -moz-user-select:none;
+}
+.desc, .asc {
+  background-color: #FAFAD2;
+}
+.desc {
+  background-color: #D4EDC9;
+}
+TH B {
+  display:block;
+  float:right;
+  margin: 0 0 0 5px;
+  width: 0;
+  height: 0;
+
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #ccc;
+  border-bottom: none;
+}
+.asc B {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #333;
+  border-bottom: none;
+}
+.desc B {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #333;
+  border-top: none;
+}
+H3 {
+  font-size: 18px;
+  margin: 0 0 10px 0;
+}
+#content {
+  clear: both;
+  margin: auto;
+  width: 840px;
+  padding: 10px;
+}
+form div b {
+    width: 100px;
+    display: inline-block;
+}
+tfoot td {
+    text-align: center
+}
+.rzr, .home  
+{
+    padding: 0 0 0 22px;
+    display: block;
+    line-height: 20px;
+    font-size: 14px;
+    height: 20px;
+    background: url(/img/page-icon.png) no-repeat;
+}
+.home {
+    background: url(/stars/home-icon.jpg) no-repeat;
+}
+#preview {
+    background: #fff;
+    box-shadow: 0 3px 8px rgba(100, 100, 100, 0.3);
+    padding: 10px 40px 20px 40px;
+	margin: auto;
+    max-width: 840px;
+}       
+#preview {
+    margin: 40px auto;   
+}
+#preview h1 {
+    text-align: left;
+    background: #fff;
+    margin-bottom: 15px;
+}
+#preview h3 {
+    font-weight: bold;
+    font-size: 16px;
+}
+#preview h3 a {
+    color: green;
+    font-size: 14px;
+}
+#preview h3 b 
+{
+    display: inline-block;
+    width: 100px;
+}
+.clear {
+    display: block;
+    clear: both;
+    font-size: 1px;
+}
+
+#swap-templates { margin: 5px 0 0 15px; }
+#swap-templates a { display:block; line-height:20px; }
+
+/*AngularJS*/
+.alive-true { background: #CFC; }
+.alive-false { background: #FCC; }
+#app { width: 400px; margin: auto; }
+#app img { margin: 20px 0; }
+#app table { margin: auto; }
+#app h3 { margin: 30px 0 15px 0; text-align: center; }
+#app form { padding: 20px; }
+
+.line-data { width: 100%; }

@@ -46,19 +46,20 @@ namespace ServiceStack
         /// <summary>
         /// End a ServiceStack Request
         /// </summary>
+        public static void EndRequest(this IResponse httpRes, bool skipHeaders = false)
+        {
+            httpRes.EndHttpHandlerRequest(skipHeaders: skipHeaders);
+        }
+
+#if !NETSTANDARD1_6
+        /// <summary>
+        /// End a ServiceStack Request
+        /// </summary>
         public static void EndRequest(this HttpResponseBase httpRes, bool skipHeaders = false)
         {
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
             httpRes.Close();
             HostContext.CompleteRequest(null);
-        }
-
-        /// <summary>
-        /// End a ServiceStack Request
-        /// </summary>
-        public static void EndRequest(this IResponse httpRes, bool skipHeaders = false)
-        {
-            httpRes.EndHttpHandlerRequest(skipHeaders: skipHeaders);
         }
 
         /// <summary>
@@ -68,7 +69,7 @@ namespace ServiceStack
         {
             var httpRes = context.Response;
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
-            if (afterHeaders != null) afterHeaders(httpRes);
+            afterHeaders?.Invoke(httpRes);
             if (closeOutputStream) httpRes.CloseOutputStream();
             else if (!skipClose) httpRes.Close();
             HostContext.CompleteRequest(context.ToRequest());
@@ -77,6 +78,7 @@ namespace ServiceStack
             //response.OutputStream.Flush();
             //response.Close();
         }
+#endif
 
         /// <summary>
         /// End a HttpHandler Request
@@ -84,7 +86,7 @@ namespace ServiceStack
         public static void EndHttpHandlerRequest(this IResponse httpRes, bool skipHeaders = false, bool skipClose = false, Action<IResponse> afterHeaders = null)
         {
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
-            if (afterHeaders != null) afterHeaders(httpRes);
+            afterHeaders?.Invoke(httpRes);
             if (!skipClose && !httpRes.IsClosed) httpRes.Close();
             HostContext.CompleteRequest(httpRes.Request);
         }

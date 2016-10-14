@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <MajorVersion Condition="$(MajorVersion) == ''">4</MajorVersion>
-    <MinorVersion Condition="$(MinorVersion) == ''">0</MinorVersion>
+    <MinorVersion Condition="$(MinorVersion) == ''">5</MinorVersion>
     <PatchVersion Condition="$(PatchVersion) == ''">$(BUILD_NUMBER)</PatchVersion>
   </PropertyGroup>
 
@@ -64,7 +64,7 @@
 
       <!--Update Min Dependency Version -->
       <RegexTransform Include="$(NuGetPackageDir)/**/*.nuspec">
-        <Find>version="4\.0[^"]*"</Find>
+        <Find>version="4\.5[^"]*"</Find>
         <ReplaceWith>version="$(PackageVersion)"</ReplaceWith>
       </RegexTransform>
     </ItemGroup>
@@ -104,11 +104,11 @@
     <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
 
     <!--Already a PCL dll, packaged in main build.proj-->
-    <!--<MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid')" />
-    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid" />-->
+    <!--<MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid')" />
+    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Pcl/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid" />-->
 
-    <!--<MakeDir Directories="$(BuildSolutionDir)/NuGet/ServiceStack.Interfaces/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid" Condition="!Exists('$(BuildSolutionDir)/NuGet/ServiceStack.Interfaces/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid')" />
-    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Interfaces/lib/portable-wp80+sl5+net40+win8+monotouch+monoandroid" />-->
+    <!--<MakeDir Directories="$(BuildSolutionDir)/NuGet/ServiceStack.Interfaces/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid" Condition="!Exists('$(BuildSolutionDir)/NuGet/ServiceStack.Interfaces/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid')" />
+    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Interfaces/lib/portable-wp80+sl5+net45+win8+monotouch+monoandroid" />-->
 
     <!--<Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces/servicestack.interfaces.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />-->

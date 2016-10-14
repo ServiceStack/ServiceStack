@@ -15,15 +15,15 @@ namespace ServiceStack
 
     public class ServerEventReceiver : IReceiver
     {
-        public static ILog log = LogManager.GetLogger(typeof(ServerEventReceiver));
+        public static ILog Log = LogManager.GetLogger(typeof(ServerEventReceiver));
 
         public ServerEventsClient Client { get; set; }
         public ServerEventMessage Request { get; set; }
 
         public virtual void NoSuchMethod(string selector, object message)
         {
-            if (log.IsDebugEnabled)
-                log.DebugFormat("NoSuchMethod defined for {0}", selector);
+            if (Log.IsDebugEnabled)
+                Log.Debug($"NoSuchMethod defined for {selector}");
         }
     }
 
@@ -37,7 +37,7 @@ namespace ServiceStack
 
     public class SingletonInstanceResolver : IResolver
     {
-        ConcurrentDictionary<Type, object> Cache = new ConcurrentDictionary<Type, object>();
+        readonly ConcurrentDictionary<Type, object> Cache = new ConcurrentDictionary<Type, object>();
 
         public T TryResolve<T>()
         {
@@ -75,7 +75,7 @@ namespace ServiceStack
         {
             var receiver = Resolver.TryResolve<T>() as IReceiver;
             if (receiver == null)
-                throw new ArgumentNullException("Resolver returned null receiver");
+                throw new ArgumentNullException("receiver", "Resolver returned null receiver");
 
             var injectRecevier = receiver as ServerEventReceiver;
             if (injectRecevier != null)
@@ -107,7 +107,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                throw new SerializationException("Could not deserialize into '{0}' from '{1}'".Fmt(typeof(T).Name, msg.Json), ex);
+                throw new SerializationException($"Could not deserialize into '{typeof(T).Name}' from '{msg.Json}'", ex);
             }
 
 

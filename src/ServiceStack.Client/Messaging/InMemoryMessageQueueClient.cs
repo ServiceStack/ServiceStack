@@ -76,7 +76,7 @@ namespace ServiceStack.Messaging
                     return msg;
             }
 
-            throw new TimeoutException("Exceeded elapsed time of {0}ms".Fmt(timeOutMs));
+            throw new TimeoutException($"Exceeded elapsed time of {timeOutMs}ms");
         }
 
         public IMessage<T> GetAsync<T>(string queueName)

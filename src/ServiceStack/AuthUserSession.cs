@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
 using ServiceStack.Auth;
 using ServiceStack.Web;
@@ -64,11 +63,14 @@ namespace ServiceStack
             return AuthenticateService.GetAuthProvider(provider).IsAuthorizedSafe(this, tokens);
         }
 
-        public virtual bool HasPermission(string permission)
+        public virtual bool HasPermission(string permission, IAuthRepository authRepo)
         {
+            if (UserAuthId == null)
+                return false;
+
             if (!FromToken) //If populated from a token it should have the complete list of permissions
             {
-                var managesRoles = HostContext.TryResolve<IAuthRepository>() as IManageRoles;
+                var managesRoles = authRepo as IManageRoles;
                 if (managesRoles != null)
                 {
                     return managesRoles.HasPermission(this.UserAuthId, permission);
@@ -78,11 +80,14 @@ namespace ServiceStack
             return this.Permissions != null && this.Permissions.Contains(permission);
         }
 
-        public virtual bool HasRole(string role)
+        public virtual bool HasRole(string role, IAuthRepository authRepo)
         {
+            if (UserAuthId == null)
+                return false;
+
             if (!FromToken) //If populated from a token it should have the complete list of roles
             {
-                var managesRoles = HostContext.TryResolve<IAuthRepository>() as IManageRoles;
+                var managesRoles = authRepo as IManageRoles;
                 if (managesRoles != null)
                 {
                     return managesRoles.HasRole(this.UserAuthId, role);
@@ -92,16 +97,7 @@ namespace ServiceStack
             return this.Roles != null && this.Roles.Contains(role);
         }
 
-        [Obsolete("Use OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service)")]
-        public virtual void OnRegistered(IServiceBase service) { }
-
-        public virtual void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service)
-        {
-#pragma warning disable 612, 618
-            OnRegistered(service);
-#pragma warning restore 612, 618
-        }
-
+        public virtual void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service) {}
         public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo) { }
         public virtual void OnLogout(IServiceBase authService) {}
         public virtual void OnCreated(IRequest httpReq) {}
@@ -140,7 +136,7 @@ namespace ServiceStack
             {
                 foreach (var tokens in session.ProviderOAuthAccess)
                 {
-                    if (string.Compare(tokens.Provider, provider, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (string.Compare(tokens.Provider, provider, StringComparison.OrdinalIgnoreCase) == 0)
                         return tokens;
                 }
             }
@@ -166,9 +162,14 @@ namespace ServiceStack
         {
             if (authSession != null)
             {
-                return authSession.UserName != null && authSession.UserName.IndexOf('@') < 0
-                    ? authSession.UserName
-                    : authSession.DisplayName.SafeVarName();
+                long id;
+                var displayName = authSession.UserName != null 
+                    && authSession.UserName.IndexOf('@') == -1      // don't use email
+                    && !long.TryParse(authSession.UserName, out id) // don't use id number
+                        ? authSession.UserName
+                        : authSession.DisplayName.SafeVarName();
+
+                return displayName;
             }
             return null;
         }

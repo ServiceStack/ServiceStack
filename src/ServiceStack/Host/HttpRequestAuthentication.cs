@@ -19,7 +19,7 @@ namespace ServiceStack.Host
 
         public static string GetBasicAuth(this IRequest httpReq)
         {
-            var auth = httpReq.Headers[HttpHeaders.Authorization];
+            var auth = httpReq.Authorization;
             if (auth == null) return null;
 
             var pos = auth.IndexOf(' ');
@@ -97,7 +97,7 @@ namespace ServiceStack.Host
         {
             Cookie cookie;
             httpReq.Cookies.TryGetValue(cookieName, out cookie);
-            return cookie != null ? cookie.Value : null;
+            return cookie?.Value;
         }
 
         public static string GetItemStringValue(this IRequest httpReq, string itemName)

@@ -40,16 +40,9 @@ namespace ServiceStack
         public virtual IDbConnectionFactory DbFactory { get; set; }
 
         IDbConnection db;
-        public virtual IDbConnection Db
-        {
-            get { return db ?? (db = DbFactory.OpenDbConnection()); }
-        }
+        public virtual IDbConnection Db => db ?? (db = DbFactory.OpenDbConnection());
 
-        public virtual void Dispose()
-        {
-            if (db != null)
-                db.Dispose();
-        }
+        public virtual void Dispose() => db?.Dispose();
     }
 
     public abstract class LogicBase : RepositoryBase, ILogic
@@ -57,10 +50,7 @@ namespace ServiceStack
         public virtual IRedisClientsManager RedisManager { get; set; }
 
         private IRedisClient redis;
-        public virtual IRedisClient Redis
-        {
-            get { return redis ?? (redis = RedisManager.GetClient()); }
-        }
+        public virtual IRedisClient Redis => redis ?? (redis = RedisManager.GetClient());
 
         private ICacheClient cache;
         public virtual ICacheClient Cache
@@ -93,14 +83,9 @@ namespace ServiceStack
         {
             base.Dispose();
 
-            if (redis != null)
-                redis.Dispose();
-
-            if (cache != null)
-                cache.Dispose();
-
-            if (messageProducer != null)
-                messageProducer.Dispose();
+            redis?.Dispose();
+            cache?.Dispose();
+            messageProducer?.Dispose();
         }
     }
 }

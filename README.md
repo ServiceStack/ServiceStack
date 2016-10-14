@@ -251,12 +251,26 @@ Same code also works with [PCL Clients in Xamarin iOS/Android, Windows Store App
 [VB.NET](https://github.com/ServiceStack/ServiceStack/wiki/VB.Net-Add-ServiceStack-Reference) can re-use same 
 [.NET Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) and DTO's
 
+### [Calling from TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference#ideal-typed-message-based-api)
+
+```ts
+const client = new JsonServiceClient(baseUrl);
+
+client.get(new GetCustomers())
+    .then(r => {
+        const results = r.results;
+    });
+```
+
 ### [Calling from Swift](https://github.com/ServiceStack/ServiceStack/wiki/Swift-Add-ServiceStack-Reference#jsonserviceclientswift)
 
-```java
-var client = JsonServiceClient(baseUrl: BaseUri)
+```swift
+let client = JsonServiceClient(baseUrl: BaseUri)
 
-let response = client.get(GetCustomers())
+client.getAsync(GetCustomers())
+    .then {
+        let results = $0.results;
+    }
 ```
 
 ### [Calling from Java](https://github.com/ServiceStack/ServiceStack/wiki/Java-Add-ServiceStack-Reference#jsonserviceclient-usage)
@@ -264,7 +278,8 @@ let response = client.get(GetCustomers())
 ```java
 JsonServiceClient client = new JsonServiceClient(BaseUri);
 
-GetCustomersResponse all = client.get(new GetCustomers());
+GetCustomersResponse response = client.get(new GetCustomers());
+List<Customer> results = response.results; 
 ```
 
 ### [Calling from Kotlin](https://github.com/ServiceStack/ServiceStack/wiki/Kotlin-Add-ServiceStack-Reference#jsonserviceclient-usage)
@@ -273,9 +288,10 @@ GetCustomersResponse all = client.get(new GetCustomers());
 val client = JsonServiceClient(BaseUri)
 
 val response = client.get(GetCustomers())
+val results = response.results
 ```
 
-### [Calling from jQuery using TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference)
+### [Calling from jQuery using TypeScript Defintions](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference#typescript-interface-definitions)
 
 ```js
 $.getJSON($.ss.createUrl("/customers", request), request, 
@@ -349,14 +365,7 @@ Each library is released under its respective licence:
   - [HtmlCompressor](https://code.google.com/archive/p/htmlcompressor) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
   - [JSMin](https://github.com/douglascrockford/JSMin/blob/master/jsmin.c) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
   - [RecyclableMemoryStream](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream) [(License)](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream/blob/master/LICENSE)
-
-## Similar open source projects
-
-Similar Open source .NET projects for developing or accessing web services include:
-
- * [Nancy Fx](http://nancyfx.org) - A Sinatra-inspired lightweight Web Framework for .NET:
- * [Fubu MVC](http://mvc.fubu-project.org) - A "Front Controller" pattern-style MVC framework designed for use in web applications built on ASP.NET:
- * [Rest Sharp](http://restsharp.org) - An open source REST client for .NET
+  - [ASP.NET MVC](https://github.com/aspnet/Mvc) [(License)](https://github.com/aspnet/Mvc/blob/dev/LICENSE.txt)
 
 ## Find out More
 
@@ -369,6 +378,7 @@ Follow [@ServiceStack](https://twitter.com/ServiceStack) and
 
  - [mythz](https://github.com/mythz) (Demis Bellot)
  - [layoric](https://github.com/layoric) (Darren Reid) / [@layoric](https://twitter.com/layoric)
+ - [xplicit](https://github.com/xplicit) (Sergey Zhukov) / [@quantumcalc](https://twitter.com/quantumcalc)
  - [arxisos](https://github.com/arxisos) (Steffen Müller) / [@arxisos](https://twitter.com/arxisos)
  - [desunit](https://github.com/desunit) (Sergey Bogdanov) / [@desunit](https://twitter.com/desunit)
 
@@ -678,4 +688,10 @@ A big thanks to GitHub and all of ServiceStack's contributors:
 
 ***
 
-Runs on both Mono and .NET _(Live preview hosted on Mono / Ubuntu)_
+## Similar open source projects
+
+Similar Open source .NET projects for developing or accessing web services include:
+
+ * [Nancy Fx](http://nancyfx.org) - A Sinatra-inspired lightweight Web Framework for .NET:
+ * [Fubu MVC](http://mvc.fubu-project.org) - A "Front Controller" pattern-style MVC framework designed for use in web applications built on ASP.NET:
+ * [Rest Sharp](http://restsharp.org) - An open source REST client for .NET

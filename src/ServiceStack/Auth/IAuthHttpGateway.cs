@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
@@ -15,7 +14,7 @@ namespace ServiceStack.Auth
     {
         public static string TwitterUserUrl = "https://api.twitter.com/1.1/users/lookup.json?user_id={0}";
 
-        public static string FacebookUserUrl = "https://graph.facebook.com/v2.0/me?access_token={0}";
+        public static string FacebookUserUrl = "https://graph.facebook.com/v2.8/me?access_token={0}";
 
         public static string YammerUserUrl = "https://www.yammer.com/api/v1/users/{0}.json";
 
@@ -39,7 +38,7 @@ namespace ServiceStack.Auth
                     oauthToken.OAuthProvider, oauthToken.AccessToken, oauthToken.AccessTokenSecret, HttpMethods.Get, uri, null);
             }
 
-            using (var webRes = webReq.GetResponse())
+            using (var webRes = PclExport.Instance.GetResponse(webReq))
                 return webRes.ReadToEnd();
         }
 

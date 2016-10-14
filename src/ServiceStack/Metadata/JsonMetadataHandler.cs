@@ -1,12 +1,11 @@
 using System;
 using ServiceStack.Serialization;
-using ServiceStack.Text;
 
 namespace ServiceStack.Metadata
 {
     public class JsonMetadataHandler : BaseMetadataHandler
     {
-        public override Format Format { get { return Format.Json; } }
+        public override Format Format => Format.Json;
 
         protected override string CreateMessage(Type dtoType)
         {

@@ -72,7 +72,7 @@ namespace ServiceStack.Api.Swagger
 
         public object Get(SwaggerResources request)
         {
-            var basePath = base.Request.ResolveBaseUrl();
+            var basePath = base.Request.GetBaseUrl();
 
             var result = new SwaggerResourcesResponse
             {

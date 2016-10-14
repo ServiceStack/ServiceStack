@@ -5,6 +5,7 @@ using Funq;
 using ServiceStack;
 using ServiceStack.Mvc;
 using ServiceStack.Redis;
+using ServiceStack.Text;
 
 namespace CheckMvc
 {
@@ -22,6 +23,8 @@ namespace CheckMvc
                 new RedisManagerPool());
 
             container.Register(c => c.Resolve<IRedisClientsManager>().GetCacheClient());
+
+            SetConfig(new HostConfig { DebugMode = true });
         }
     }
 
@@ -31,6 +34,9 @@ namespace CheckMvc
     {
         protected void Application_Start()
         {
+            JsConfig.DateHandler = DateHandler.ISO8601;
+            JsConfig.EmitCamelCaseNames = true;
+
             AreaRegistration.RegisterAllAreas();
 
             //WebApiConfig.Register(GlobalConfiguration.Configuration);

@@ -13,12 +13,12 @@ namespace ServiceStack
 
         public const string DefaultContentType = MimeTypes.Xml;
 
-        public byte[] Contents { get; private set; }
+        public byte[] Contents { get; }
 
         public string ContentType { get; set; }
 
-        public Dictionary<string, string> Headers { get; private set; }
-        public List<Cookie> Cookies { get; private set; }
+        public Dictionary<string, string> Headers { get; }
+        public List<Cookie> Cookies { get; }
 
         public int Status { get; set; }
 
@@ -44,10 +44,7 @@ namespace ServiceStack
 
         public Func<IDisposable> ResultScope { get; set; }
 
-        public IDictionary<string, string> Options
-        {
-            get { return this.Headers; }
-        }
+        public IDictionary<string, string> Options => this.Headers;
 
         public DateTime? LastModified
         {
@@ -59,7 +56,7 @@ namespace ServiceStack
                 this.Headers[HttpHeaders.LastModified] = value.Value.ToUniversalTime().ToString("r");
 
                 var feature = HostContext.GetPlugin<HttpCacheFeature>();
-                if (feature != null && feature.CacheControlForOptimizedResults != null)
+                if (feature?.CacheControlForOptimizedResults != null)
                     this.Headers[HttpHeaders.CacheControl] = feature.CacheControlForOptimizedResults;
             }
         }
@@ -75,9 +72,7 @@ namespace ServiceStack
         public CompressedResult(byte[] contents, string compressionType, string contentMimeType)
         {
             if (!CompressionTypes.IsValid(compressionType))
-            {
                 throw new ArgumentException("Must be either 'deflate' or 'gzip'", compressionType);
-            }
 
             this.StatusCode = HttpStatusCode.OK;
             this.ContentType = contentMimeType;
@@ -91,9 +86,8 @@ namespace ServiceStack
 
         public void WriteTo(Stream responseStream)
         {
-            var response = RequestContext != null ? RequestContext.Response : null;
-            if (response != null)
-                response.SetContentLength(this.Contents.LongLength + PaddingLength);
+            var response = RequestContext?.Response;
+            response?.SetContentLength(this.Contents.Length + PaddingLength);
 
             responseStream.Write(this.Contents, 0, this.Contents.Length);
             //stream.Write(this.Contents, Adler32ChecksumLength, this.Contents.Length - Adler32ChecksumLength);

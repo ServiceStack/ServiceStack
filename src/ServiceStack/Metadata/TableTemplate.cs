@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using ServiceStack.Text;
 
 namespace ServiceStack.Metadata
@@ -19,7 +18,7 @@ namespace ServiceStack.Metadata
             var sb = StringBuilderCache.Allocate();
             if (!string.IsNullOrEmpty(Title))
             {
-                sb.AppendFormat("<h3>{0}</h3>", Title);
+                sb.Append($"<h3>{Title}</h3>");
             }
 
             sb.Append("<table>");

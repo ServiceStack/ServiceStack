@@ -100,8 +100,7 @@ namespace ServiceStack
             session.OnCreated(httpReq);
 
             var authEvents = HostContext.TryResolve<IAuthEvents>();
-            if (authEvents != null)
-                authEvents.OnCreated(httpReq, session);
+            authEvents?.OnCreated(httpReq, session);
 
             return session;
         }

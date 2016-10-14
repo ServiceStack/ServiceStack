@@ -7,7 +7,6 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using ServiceStack.Logging;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -16,7 +15,6 @@ namespace ServiceStack.Host.Handlers
 {
     public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
     {
-        internal static readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHandlerBase));
         internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
         internal static readonly byte[][] NetworkInterfaceIpv6Addresses = TypeConstants.EmptyByteArrayArray;
 
@@ -36,10 +34,7 @@ namespace ServiceStack.Host.Handlers
 
         public RequestAttributes HandlerAttributes { get; set; }
 
-        public override bool IsReusable
-        {
-            get { return false; }
-        }
+        public override bool IsReusable => false;
 
         public abstract object CreateRequest(IRequest request, string operationName);
         public abstract object GetResponse(IRequest request, object requestDto);
@@ -144,9 +139,8 @@ namespace ServiceStack.Host.Handlers
             }
             catch (Exception ex)
             {
-                var msg = "Could not deserialize '{0}' request using {1}'\nError: {2}"
-                    .Fmt(contentType, requestType, ex);
-                throw new SerializationException(msg);
+                var msg = $"Could not deserialize '{contentType}' request using {requestType}'\nError: {ex}";
+                throw new SerializationException(msg, ex);
             }
             return requestType.CreateInstance(); //Return an empty DTO, even for empty request bodies
         }
@@ -157,7 +151,7 @@ namespace ServiceStack.Host.Handlers
             HostContext.ServiceController.RequestTypeFactoryMap.TryGetValue(
                 requestType, out requestFactoryFn);
 
-            return requestFactoryFn != null ? requestFactoryFn(httpReq) : null;
+            return requestFactoryFn?.Invoke(httpReq);
         }
 
         public static Type GetOperationType(string operationName)
@@ -170,51 +164,16 @@ namespace ServiceStack.Host.Handlers
             return HostContext.ExecuteService(request, httpReq);
         }
 
-        public RequestAttributes GetRequestAttributes(System.ServiceModel.OperationContext operationContext)
-        {
-            if (!HostContext.Config.EnableAccessRestrictions) return default(RequestAttributes);
-
-            var portRestrictions = default(RequestAttributes);
-            var ipAddress = GetIpAddress(operationContext);
-
-            portRestrictions |= HttpRequestExtensions.GetAttributes(ipAddress);
-
-            //TODO: work out if the request was over a secure channel			
-            //portRestrictions |= request.IsSecureConnection ? PortRestriction.Secure : PortRestriction.InSecure;
-
-            return portRestrictions;
-        }
-
-        public static IPAddress GetIpAddress(System.ServiceModel.OperationContext context)
-        {
-#if !MONO
-            var prop = context.IncomingMessageProperties;
-            if (context.IncomingMessageProperties.ContainsKey(System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name))
-            {
-                var endpoint = prop[System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name]
-                    as System.ServiceModel.Channels.RemoteEndpointMessageProperty;
-                if (endpoint != null)
-                {
-                    return IPAddress.Parse(endpoint.Address);
-                }
-            }
-#endif
-            return null;
-        }
-
         protected static void AssertOperationExists(string operationName, Type type)
         {
             if (type == null)
-            {
-                throw new NotImplementedException(
-                    string.Format("The operation '{0}' does not exist for this service", operationName));
-            }
+                throw new NotImplementedException($"The operation '{operationName}' does not exist for this service");
         }
 
         protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, Feature feature, string operationName)
         {
             if (operationName == null)
-                throw new ArgumentNullException("operationName");
+                throw new ArgumentNullException(nameof(operationName));
 
             if (HostContext.Config.EnableFeatures != Feature.All)
             {

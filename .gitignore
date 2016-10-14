@@ -39,6 +39,10 @@ build/*.dll
 *.userprefs
 packages/
 .vs/
+.vscode/
+*.lock.json
+*.nuget.props
+*.nuget.targets
 
 release/latest/
 *.nupkg

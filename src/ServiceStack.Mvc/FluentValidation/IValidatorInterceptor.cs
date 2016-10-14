@@ -1,3 +1,4 @@
+#if !NETSTANDARD1_6
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 
@@ -28,3 +29,4 @@ namespace FluentValidation.Mvc {
 		ValidationResult AfterMvcValidation(ControllerContext controllerContext, ValidationContext validationContext, ValidationResult result);
 	}
 }
+#endif

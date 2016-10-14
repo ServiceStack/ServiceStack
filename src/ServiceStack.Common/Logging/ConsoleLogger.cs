@@ -37,7 +37,7 @@ namespace ServiceStack.Logging
         /// </summary>
         private static void Log(object message, Exception exception)
         {
-            string msg = message == null ? string.Empty : message.ToString();
+            var msg = message?.ToString() ?? string.Empty;
             if (exception != null)
             {
                 msg += ", Exception: " + exception.Message;
@@ -50,7 +50,7 @@ namespace ServiceStack.Logging
         /// </summary>
         private static void LogFormat(object message, params object[] args)
         {
-            string msg = message == null ? string.Empty : message.ToString();
+            string msg = message?.ToString() ?? string.Empty;
             Console.WriteLine(msg, args);
         }
 
@@ -59,7 +59,7 @@ namespace ServiceStack.Logging
         /// </summary>
         private static void Log(object message)
         {
-            string msg = message == null ? string.Empty : message.ToString();
+            string msg = message?.ToString() ?? string.Empty;
             Console.WriteLine(msg);
         }
 

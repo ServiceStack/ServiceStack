@@ -7,8 +7,8 @@ namespace ServiceStack.Metadata
 {
     public class MetadataPagesConfig
     {
-        private ServiceMetadata metadata;
-        private HashSet<string> ignoredFormats;
+        private readonly ServiceMetadata metadata;
+        private readonly HashSet<string> ignoredFormats;
         private readonly Dictionary<string, MetadataConfig> metadataConfigMap;
         public List<MetadataConfig> AvailableFormatConfigs { get; private set; }
 
@@ -25,8 +25,10 @@ namespace ServiceStack.Metadata
                 {"xml", metadataConfig.Xml},
                 {"json", metadataConfig.Json},
                 {"jsv", metadataConfig.Jsv},
+#if !NETSTANDARD1_6
                 {"soap11", metadataConfig.Soap11},
                 {"soap12", metadataConfig.Soap12},
+#endif
             };
 
             AvailableFormatConfigs = new List<MetadataConfig>();
@@ -83,9 +85,7 @@ namespace ServiceStack.Metadata
         {
             Operation operation;
             metadata.OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
-            if (operation == null || operation.RestrictTo == null) return false;
-
-            return operation.RestrictTo.VisibilityTo == RequestAttributes.None;
+            return operation?.RestrictTo?.VisibilityTo == RequestAttributes.None;
         }
     }
 }

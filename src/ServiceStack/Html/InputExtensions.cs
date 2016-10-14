@@ -1,10 +1,9 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿#if !NETSTANDARD1_6
+
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-#if NET_4_0
-using System.Data.Linq;
-#endif
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Text;
@@ -14,7 +13,7 @@ namespace ServiceStack.Html
 	public static class InputExtensions
 	{
         // CheckBox
-        #region CheckBox
+#region CheckBox
         public static MvcHtmlString CheckBox(this HtmlHelper htmlHelper, string name)
         {
             return CheckBox(htmlHelper, name, htmlAttributes: (object)null);
@@ -94,9 +93,9 @@ namespace ServiceStack.Html
                                format: null,
                                htmlAttributes: attributes);
         }
-        #endregion
+#endregion
         // Hidden
-        #region Hidden
+#region Hidden
         public static MvcHtmlString Hidden(this HtmlHelper htmlHelper, string name)
         {
             return Hidden(htmlHelper, name, value: null, htmlAttributes: null);
@@ -168,9 +167,9 @@ namespace ServiceStack.Html
                                format: null,
                                htmlAttributes: htmlAttributes);
         }
-        #endregion
+#endregion
 		// Password
-        #region Password
+#region Password
         public static MvcHtmlString Password(this HtmlHelper htmlHelper, string name)
         {
             return Password(htmlHelper, name, value: null);
@@ -228,9 +227,9 @@ namespace ServiceStack.Html
                                format: null,
                                htmlAttributes: htmlAttributes);
         }
-        #endregion
+#endregion
 		// RadioButton
-        #region RadioButton
+#region RadioButton
         public static MvcHtmlString RadioButton(this HtmlHelper htmlHelper, string name, object value)
         {
             return RadioButton(htmlHelper, name, value, htmlAttributes: (object)null);
@@ -348,9 +347,9 @@ namespace ServiceStack.Html
                                format: null,
                                htmlAttributes: attributes);
         }
-        #endregion
+#endregion
 		// TextBox
-        #region TextBox
+#region TextBox
 		public static MvcHtmlString TextBox(this HtmlHelper htmlHelper, string name)
 		{
             return TextBox(htmlHelper, name, value: null);
@@ -446,9 +445,9 @@ namespace ServiceStack.Html
                                format: format,
                                htmlAttributes: htmlAttributes);
         }
-        #endregion
+#endregion
         // ReturnUrl
-        #region ReturnUrl
+#region ReturnUrl
         public static MvcHtmlString ReturnUrl(this HtmlHelper htmlHelper, string name = "ReturnUrl")
         {
             string returnUrl = null;
@@ -459,9 +458,9 @@ namespace ServiceStack.Html
 
             return Hidden(htmlHelper, name, returnUrl);
         }
-        #endregion
+#endregion
 		// Helper methods
-        #region Common Helpers
+#region Common Helpers
         private static MvcHtmlString InputHelper(HtmlHelper htmlHelper, InputType inputType, ModelMetadata metadata, string name, object value, bool useViewData, bool isChecked, bool setId, bool isExplicitValue, string format, IDictionary<string, object> htmlAttributes)
         {
             //string fullName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(name);
@@ -532,6 +531,10 @@ namespace ServiceStack.Html
 		{
 			return dictionary == null ? new RouteValueDictionary() : new RouteValueDictionary(dictionary);
 		}
-        #endregion
+#endregion
 	}
 }
+
+#endif
+
+

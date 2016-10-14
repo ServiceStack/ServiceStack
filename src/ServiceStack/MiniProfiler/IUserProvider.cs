@@ -1,4 +1,6 @@
-﻿using System.Web;
+﻿#if !NETSTANDARD1_6
+
+using System.Web;
 
 namespace ServiceStack.MiniProfiler
 {
@@ -14,3 +16,5 @@ namespace ServiceStack.MiniProfiler
         string GetUser(HttpRequest request);
     }
 }
+
+#endif

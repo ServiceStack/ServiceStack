@@ -27,30 +27,12 @@ namespace ServiceStack.Messaging
         }
 
         private IRedisNativeClient readWriteClient;
-        public IRedisNativeClient ReadWriteClient
-        {
-            get
-            {
-                if (this.readWriteClient == null)
-                {
-                    this.readWriteClient = (IRedisNativeClient)clientsManager.GetClient();
-                }
-                return readWriteClient;
-            }
-        }
+        public IRedisNativeClient ReadWriteClient => 
+            readWriteClient ?? (readWriteClient = (IRedisNativeClient) clientsManager.GetClient());
 
         private IRedisNativeClient readOnlyClient;
-        public IRedisNativeClient ReadOnlyClient
-        {
-            get
-            {
-                if (this.readOnlyClient == null)
-                {
-                    this.readOnlyClient = (IRedisNativeClient)clientsManager.GetReadOnlyClient();
-                }
-                return readOnlyClient;
-            }
-        }
+        public IRedisNativeClient ReadOnlyClient => 
+            readOnlyClient ?? (readOnlyClient = (IRedisNativeClient) clientsManager.GetReadOnlyClient());
 
         public void Publish<T>(T messageBody)
         {
@@ -91,50 +73,35 @@ namespace ServiceStack.Messaging
 
         public void Publish(string queueName, IMessage message)
         {
-            using (__requestAccess())
-            {
-                var messageBytes = message.ToBytes();
-                this.ReadWriteClient.LPush(queueName, messageBytes);
-                this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
+            var messageBytes = message.ToBytes();
+            this.ReadWriteClient.LPush(queueName, messageBytes);
+            this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
 
-                if (onPublishedCallback != null)
-                {
-                    onPublishedCallback();
-                }
-            }
+            onPublishedCallback?.Invoke();
         }
 
         public void Notify(string queueName, IMessage message)
         {
-            using (__requestAccess())
-            {
-                var messageBytes = message.ToBytes();
-                this.ReadWriteClient.LPush(queueName, messageBytes);
-                this.ReadWriteClient.LTrim(queueName, 0, this.MaxSuccessQueueSize);
-                this.ReadWriteClient.Publish(QueueNames.TopicOut, queueName.ToUtf8Bytes());
-            }
+            var messageBytes = message.ToBytes();
+            this.ReadWriteClient.LPush(queueName, messageBytes);
+            this.ReadWriteClient.LTrim(queueName, 0, this.MaxSuccessQueueSize);
+            this.ReadWriteClient.Publish(QueueNames.TopicOut, queueName.ToUtf8Bytes());
         }
 
         public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
-            using (__requestAccess())
-            {
-                var unblockingKeyAndValue = this.ReadWriteClient.BRPop(queueName, (int)timeOut.GetValueOrDefault().TotalSeconds);
-                var messageBytes = unblockingKeyAndValue.Length != 2
-                    ? null
-                    : unblockingKeyAndValue[1];
+            var unblockingKeyAndValue = this.ReadWriteClient.BRPop(queueName, (int)timeOut.GetValueOrDefault().TotalSeconds);
+            var messageBytes = unblockingKeyAndValue.Length != 2
+                ? null
+                : unblockingKeyAndValue[1];
 
-                return messageBytes.ToMessage<T>();
-            }
+            return messageBytes.ToMessage<T>();
         }
 
         public IMessage<T> GetAsync<T>(string queueName)
         {
-            using (__requestAccess())
-            {
-                var messageBytes = this.ReadWriteClient.RPop(queueName);
-                return messageBytes.ToMessage<T>();
-            }
+            var messageBytes = this.ReadWriteClient.RPop(queueName);
+            return messageBytes.ToMessage<T>();
         }
 
         public void Ack(IMessage message)
@@ -161,32 +128,10 @@ namespace ServiceStack.Messaging
             return QueueNames.GetTempQueueName();
         }
 
-        private class AccessToken
-        {
-            private string token;
-            internal static readonly AccessToken __accessToken =
-                new AccessToken("lUjBZNG56eE9yd3FQdVFSTy9qeGl5dlI5RmZwamc4U05udl000");
-            private AccessToken(string token)
-            {
-                this.token = token;
-            }
-        }
-
-        protected IDisposable __requestAccess()
-        {
-            return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
-        }
-
         public void Dispose()
         {
-            if (this.readOnlyClient != null)
-            {
-                this.readOnlyClient.Dispose();
-            }
-            if (this.readWriteClient != null)
-            {
-                this.readWriteClient.Dispose();
-            }
+            this.readOnlyClient?.Dispose();
+            this.readWriteClient?.Dispose();
         }
     }
 }

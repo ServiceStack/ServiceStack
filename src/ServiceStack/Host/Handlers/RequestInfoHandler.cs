@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Web;
-using System.Web.Hosting;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -28,6 +27,9 @@ namespace ServiceStack.Host.Handlers
 
         [DataMember]
         public string HostType { get; set; }
+
+        [DataMember]
+        public string StartedAt { get; set; }
 
         [DataMember]
         public string Date { get; set; }
@@ -201,19 +203,21 @@ namespace ServiceStack.Host.Handlers
             var response = this.RequestInfo ?? GetRequestInfo(httpReq);
             response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
             response.DebugString = "";
+#if !NETSTANDARD1_6
             if (HttpContext.Current != null)
             {
                 response.DebugString += HttpContext.Current.Request.GetType().FullName
                     + "|" + HttpContext.Current.Response.GetType().FullName;
             }
+
             if (HostContext.IsAspNetHost)
             {
                 var aspReq = (HttpRequestBase)httpReq.OriginalRequest;
-                response.GetLeftPath = aspReq.Url.GetLeftPart(UriPartial.Authority);
+                response.GetLeftPath = aspReq.Url.GetLeftAuthority();
                 response.Path = aspReq.Path;
                 response.UserHostAddress = aspReq.UserHostAddress;
                 response.ApplicationPath = aspReq.ApplicationPath;
-                response.ApplicationVirtualPath = HostingEnvironment.ApplicationVirtualPath;
+                response.ApplicationVirtualPath = System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath;
                 response.VirtualAbsolutePathRoot = VirtualPathUtility.ToAbsolute("/");
                 response.VirtualAppRelativePathRoot = VirtualPathUtility.ToAppRelative("/");
 
@@ -235,14 +239,13 @@ namespace ServiceStack.Host.Handlers
                         if (winUser != null)
                         {
                             response.LogonUserInfo["User"] = winUser.Value;
-                            response.LogonUserInfo["User.AccountDomainSid"] = winUser.AccountDomainSid != null
-                                ? winUser.AccountDomainSid.ToString()
-                                : "null";
+                            response.LogonUserInfo["User.AccountDomainSid"] = winUser.AccountDomainSid?.ToString() ?? "null";
                             response.LogonUserInfo["User.IsAccountSid"] = winUser.IsAccountSid().ToString();
                         }
                     }
                 }
-            }
+        }
+#endif
 
             var json = JsonSerializer.SerializeToString(response);
             httpRes.ContentType = MimeTypes.Json;
@@ -250,12 +253,13 @@ namespace ServiceStack.Host.Handlers
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
 
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var request = context.ToRequest(GetType().GetOperationName());
             ProcessRequestAsync(request, request.Response, request.OperationName);
         }
-
+#endif
         public static Dictionary<string, string> ToDictionary(INameValueCollection nvc)
         {
             var map = new Dictionary<string, string>();
@@ -297,9 +301,10 @@ namespace ServiceStack.Host.Handlers
             var response = new RequestInfoResponse
             {
                 Usage = "append '?debug=requestinfo' to any querystring. Optional params: virtualPathCount",
-                Host = HostContext.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + HostContext.ServiceName,
-                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType != null ? hostType.BaseType.Name : hostType.Name),
-                Date = DateTime.UtcNow.ToString("yy-MM-dd HH:mm:ss"),
+                Host = HostContext.ServiceName + "_" + HostContext.Config.DebugHttpListenerHostEnvironment + "_" + Env.ServerUserAgent,
+                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType()?.Name ?? hostType.Name),
+                StartedAt = HostContext.AppHost.StartedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                Date = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                 ServiceName = HostContext.ServiceName,
                 HandlerFactoryPath = HostContext.Config.HandlerFactoryPath,
                 UserHostAddress = httpReq.UserHostAddress,

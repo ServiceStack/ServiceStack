@@ -13,11 +13,13 @@ namespace ServiceStack
             this.servicestackHandler = servicestackHandler;
         }
 
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var httpReq = context.ToRequest(GetType().GetOperationName());
             ProcessRequest(httpReq, httpReq.Response, httpReq.OperationName);
         }
+#endif
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {

@@ -1,4 +1,6 @@
-﻿using System.Data.Common;
+﻿#if !NETSTANDARD1_6
+
+using System.Data.Common;
 
 namespace ServiceStack.MiniProfiler.Data
 {
@@ -36,3 +38,5 @@ namespace ServiceStack.MiniProfiler.Data
         }
     }
 }
+
+#endif

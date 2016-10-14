@@ -23,19 +23,19 @@ namespace ServiceStack.Common.Tests.Perf
             var now = DateTime.Now;
             var nowWithoutTime = new DateTime(now.Date.Ticks);
 
-            Log(now.ToShortDateString());
-            Log(now.ToShortTimeString());
-            Log(now.ToLongTimeString());
-            Log(now.ToLongTimeString());
+            Log(now.ToString("d"));
+            Log(now.ToString("t"));
+            Log(now.ToString("D"));
+            Log(now.ToString("T"));
             Log(now.ToString());
             Log(DateTimeSerializer.ToDateTimeString(now));
             Log(DateTimeSerializer.ToShortestXsdDateTimeString(now));
 
             Log("\n");
-            Log(nowWithoutTime.ToShortDateString());
-            Log(nowWithoutTime.ToShortTimeString());
-            Log(nowWithoutTime.ToLongTimeString());
-            Log(nowWithoutTime.ToLongTimeString());
+            Log(nowWithoutTime.ToString("d"));
+            Log(nowWithoutTime.ToString("t"));
+            Log(nowWithoutTime.ToString("D"));
+            Log(nowWithoutTime.ToString("T"));
             Log(nowWithoutTime.ToString());
             Log(DateTimeSerializer.ToDateTimeString(nowWithoutTime));
             Log(DateTimeSerializer.ToShortestXsdDateTimeString(nowWithoutTime));
@@ -79,11 +79,12 @@ namespace ServiceStack.Common.Tests.Perf
                 "DateTime.Parse(now.ToString())", () => DateTime.Parse(nowStr),
                 "XmlConvert.ToString", () => XmlConvert.ToDateTime(nowXmlStr, XmlDateTimeSerializationMode.Utc)
                 );
-
+#if !NETCORE
             CompareMultipleRuns(
                 "DateTime.ParseExact(utcNow, DateTimeFormat, null)", () => DateTime.ParseExact(nowXmlExact, DateTimeSerializer.XsdDateTimeFormat, null),
                 "XmlConvert.ToString", () => XmlConvert.ToDateTime(nowXmlExact, DateTimeSerializer.XsdDateTimeFormat)
                 );
+#endif
         }
 
         [Test]

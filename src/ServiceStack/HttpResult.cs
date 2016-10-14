@@ -16,19 +16,13 @@ namespace ServiceStack
         : IHttpResult, IStreamWriter, IPartialWriter
     {
         public HttpResult()
-            : this((object)null, null)
-        {
-        }
+            : this((object)null, null) { }
 
         public HttpResult(object response)
-            : this(response, null)
-        {
-        }
+            : this(response, null) { }
 
         public HttpResult(object response, string contentType)
-            : this(response, contentType, HttpStatusCode.OK)
-        {
-        }
+            : this(response, contentType, HttpStatusCode.OK) { }
 
         public HttpResult(HttpStatusCode statusCode, string statusDescription)
             : this()
@@ -38,8 +32,7 @@ namespace ServiceStack
         }
 
         public HttpResult(object response, HttpStatusCode statusCode)
-            : this(response, null, statusCode)
-        { }
+            : this(response, null, statusCode) { }
 
         public HttpResult(object response, string contentType, HttpStatusCode statusCode)
         {
@@ -62,7 +55,7 @@ namespace ServiceStack
             this.FileInfo = fileResponse;
             this.AllowsPartialResponse = true;
             if (FileInfo != null && !FileInfo.Exists)
-                throw HttpError.NotFound("{0} was not found".Fmt(FileInfo.Name));
+                throw HttpError.NotFound($"{FileInfo.Name} was not found");
 
             if (!asAttachment) return;
 
@@ -76,7 +69,7 @@ namespace ServiceStack
 
             this.Headers = new Dictionary<string, string>
             {
-                {HttpHeaders.ContentDisposition, headerValue},
+                { HttpHeaders.ContentDisposition, headerValue },
             };
         }
 
@@ -100,7 +93,7 @@ namespace ServiceStack
 
             this.Headers = new Dictionary<string, string>
             {
-                { HttpHeaders.ContentDisposition, headerValue},
+                { HttpHeaders.ContentDisposition, headerValue },
             };
         }
 
@@ -125,17 +118,17 @@ namespace ServiceStack
             this.ResponseStream = MemoryStreamFactory.GetStream(responseBytes);
         }
 
-        public string ResponseText { get; private set; }
+        public string ResponseText { get; }
 
-        public Stream ResponseStream { get; private set; }
+        public Stream ResponseStream { get; }
 
-        public FileInfo FileInfo { get; private set; }
+        public FileInfo FileInfo { get; }
 
         public string ContentType { get; set; }
 
-        public Dictionary<string, string> Headers { get; private set; }
+        public Dictionary<string, string> Headers { get; }
 
-        public List<Cookie> Cookies { get; private set; }
+        public List<Cookie> Cookies { get; }
 
         public string ETag { get; set; }
 
@@ -194,7 +187,7 @@ namespace ServiceStack
         public void SetSessionCookie(string name, string value, string path)
         {
             path = path ?? "/";
-            this.Headers[HttpHeaders.SetCookie] = string.Format("{0}={1};path=" + path, name, value);
+            this.Headers[HttpHeaders.SetCookie] = $"{name}={value};path={path}";
         }
 
         public void SetCookie(string name, string value, TimeSpan expiresIn, string path)
@@ -206,7 +199,7 @@ namespace ServiceStack
         public void SetCookie(string name, string value, DateTime expiresAt, string path, bool secure = false, bool httpOnly = false)
         {
             path = path ?? "/";
-            var cookie = string.Format("{0}={1};expires={2};path={3}", name, value, expiresAt.ToString("R"), path);
+            var cookie = $"{name}={value};expires={expiresAt.ToString("R")};path={path}";
             if (secure)
                 cookie += ";Secure";
             if (httpOnly)
@@ -217,14 +210,11 @@ namespace ServiceStack
 
         public void DeleteCookie(string name)
         {
-            var cookie = string.Format("{0}=;expires={1};path=/", name, DateTime.UtcNow.AddDays(-1).ToString("R"));
+            var cookie = $"{name}=;expires={DateTime.UtcNow.AddDays(-1).ToString("R")};path=/";
             this.Headers[HttpHeaders.SetCookie] = cookie;
         }
 
-        public IDictionary<string, string> Options
-        {
-            get { return this.Headers; }
-        }
+        public IDictionary<string, string> Options => this.Headers;
 
         public int Status { get; set; }
 
@@ -263,11 +253,10 @@ namespace ServiceStack
 
         private void WriteTo(Stream responseStream, int paddingLength)
         {
-            var response = RequestContext != null ? RequestContext.Response : null;
+            var response = RequestContext?.Response;
             if (this.FileInfo != null)
             {
-                if (response != null)
-                    response.SetContentLength(FileInfo.Length + paddingLength);
+                response?.SetContentLength(FileInfo.Length + paddingLength);
 
                 using (var fs = this.FileInfo.OpenRead())
                 {
@@ -284,7 +273,7 @@ namespace ServiceStack
                     if (ms != null)
                     {
                         var bytes = ms.ToArray();
-                        response.SetContentLength(bytes.LongLength + paddingLength);
+                        response.SetContentLength(bytes.Length + paddingLength);
 
                         responseStream.Write(bytes, 0, bytes.Length);
                         return;
@@ -298,8 +287,7 @@ namespace ServiceStack
             if (this.ResponseText != null)
             {
                 var bytes = Encoding.UTF8.GetBytes(this.ResponseText);
-                if (response != null)
-                    response.SetContentLength(bytes.LongLength + paddingLength);
+                response?.SetContentLength(bytes.Length + paddingLength);
 
                 responseStream.Write(bytes, 0, bytes.Length);
                 return;
@@ -313,8 +301,7 @@ namespace ServiceStack
             var bytesResponse = this.Response as byte[];
             if (bytesResponse != null)
             {
-                if (response != null)
-                    response.SetContentLength(bytesResponse.LongLength + paddingLength);
+                response?.SetContentLength(bytesResponse.Length + paddingLength);
 
                 responseStream.Write(bytesResponse, 0, bytesResponse.Length);
                 return;
@@ -330,10 +317,8 @@ namespace ServiceStack
             ResponseFilter.SerializeToStream(this.RequestContext, this.Response, responseStream);
         }
 
-        public bool IsPartialRequest
-        {
-            get { return AllowsPartialResponse && RequestContext.GetHeader(HttpHeaders.Range) != null && GetContentLength() != null; }
-        }
+        public bool IsPartialRequest => 
+            AllowsPartialResponse && RequestContext.GetHeader(HttpHeaders.Range) != null && GetContentLength() != null;
 
         public void WritePartialTo(IResponse response)
         {
@@ -384,9 +369,7 @@ namespace ServiceStack
                 return FileInfo.Length;
             if (ResponseStream != null)
                 return ResponseStream.Length;
-            if (ResponseText != null)
-                return ResponseText.Length;
-            return null;
+            return ResponseText?.Length;
         }
 
         public static HttpResult Status201Created(object response, string newLocationUri)
@@ -443,13 +426,13 @@ namespace ServiceStack
             };
         }
 
-        public static HttpResult NotModified(string description=null, 
-            CacheControl? cacheControl = null, 
-            TimeSpan? maxAge = null, 
-            string eTag = null, 
-            DateTime? lastModified=null)
+        public static HttpResult NotModified(string description = null,
+            CacheControl? cacheControl = null,
+            TimeSpan? maxAge = null,
+            string eTag = null,
+            DateTime? lastModified = null)
         {
-            return new HttpResult(HttpStatusCode.NotModified, 
+            return new HttpResult(HttpStatusCode.NotModified,
                 description ?? HostContext.ResolveLocalizedString(LocalizedStrings.NotModified))
             {
                 ETag = eTag,
@@ -471,7 +454,7 @@ namespace ServiceStack
             catch { /*ignore*/ }
         }
     }
-    
+
     [Flags]
     public enum CacheControl : long
     {
@@ -485,6 +468,7 @@ namespace ServiceStack
         ProxyRevalidate = 1 << 6,
     }
 
+#if !NETSTANDARD1_6
     public static class HttpResultExtensions
     {
         public static System.Net.Cookie ToCookie(this HttpCookie httpCookie)
@@ -502,5 +486,7 @@ namespace ServiceStack
             return to;
         }
     }
+#endif
+
 }
 #endif

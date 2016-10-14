@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETCORE_SUPPORT
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -391,3 +392,4 @@ namespace ServiceStack.Common.Tests.Messaging
     public class Wait { }
 
 }
+#endif

@@ -1,4 +1,6 @@
-﻿using System.Web;
+﻿#if !NETSTANDARD1_6
+
+using System.Web;
 
 namespace ServiceStack.Html
 {
@@ -10,3 +12,5 @@ namespace ServiceStack.Html
 		}
 	}
 }
+
+#endif

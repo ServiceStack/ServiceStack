@@ -117,11 +117,8 @@ namespace ServiceStack
             else
             {
                 var responseStatusProperty = responseDtoType.GetProperty(ResponseStatusPropertyName);
-                if (responseStatusProperty != null)
-                {
-                    // Set the ResponseStatus
-                    responseStatusProperty.SetProperty(responseDto, responseStatus);
-                }
+                // Set the ResponseStatus
+                responseStatusProperty?.SetProperty(responseDto, responseStatus);
             }
 
             // Return an Error DTO with the exception populated
@@ -137,7 +134,7 @@ namespace ServiceStack
         /// <returns></returns>
         public static object CreateErrorResponse(object request, Exception ex)
         {
-            ex = HostContext.AppHost.ResolveResponseException(ex);
+            ex = HostContext.AppHost?.ResolveResponseException(ex) ?? ex;
             var responseStatus = ex.ToResponseStatus();
 
             if (HostContext.DebugMode)
@@ -146,11 +143,11 @@ namespace ServiceStack
                 responseStatus.StackTrace = GetRequestErrorBody(request) + "\n" + ex;
             }
 
-            HostContext.AppHost.OnLogError(typeof(DtoUtils), "ServiceBase<TRequest>::Service Exception", ex);
+            HostContext.AppHost?.OnLogError(typeof(DtoUtils), "ServiceBase<TRequest>::Service Exception", ex);
 
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
 
-            HostContext.OnExceptionTypeFilter(ex, responseStatus);
+            HostContext.AppHost?.OnExceptionTypeFilter(ex, responseStatus);
 
             return errorResponse;
         }
@@ -171,7 +168,7 @@ namespace ServiceStack
                 //Serializing request successfully is not critical and only provides added error info
             }
 
-            return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", (request ?? new object()).GetType().GetOperationName(), DateTime.UtcNow, requestString);
+            return $"[{(request ?? new object()).GetType().GetOperationName()}: {DateTime.UtcNow}]:\n[REQUEST: {requestString}]";
         }
     }
 }

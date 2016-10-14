@@ -10,9 +10,9 @@ namespace ServiceStack.VirtualPath
         protected DirectoryInfo RootDirInfo;
         protected FileSystemVirtualDirectory RootDir;
 
-        public override IVirtualDirectory RootDirectory { get { return RootDir; } }
-        public override string VirtualPathSeparator { get { return "/"; } }
-        public override string RealPathSeparator { get { return Convert.ToString(Path.DirectorySeparatorChar); } }
+        public override IVirtualDirectory RootDirectory => RootDir;
+        public override string VirtualPathSeparator => "/";
+        public override string RealPathSeparator => Convert.ToString(Path.DirectorySeparatorChar);
 
         public FileSystemVirtualPathProvider(IAppHost appHost, string rootDirectoryPath)
             : this(appHost, new DirectoryInfo(rootDirectoryPath))
@@ -22,7 +22,7 @@ namespace ServiceStack.VirtualPath
             : base(appHost)
         {
             if (rootDirInfo == null)
-                throw new ArgumentNullException("rootDirInfo");
+                throw new ArgumentNullException(nameof(rootDirInfo));
 
             this.RootDirInfo = rootDirInfo;
             Initialize();
@@ -34,14 +34,13 @@ namespace ServiceStack.VirtualPath
             Initialize();
         }
 
-        protected override sealed void Initialize()
+        protected sealed override void Initialize()
         {
             if (RootDirInfo == null)
                 RootDirInfo = new DirectoryInfo(AppHost.Config.WebHostPhysicalPath);
 
             if (RootDirInfo == null || !RootDirInfo.Exists)
-                throw new ApplicationException(
-                    "RootDir '{0}' for virtual path does not exist".Fmt(RootDirInfo.FullName));
+                throw new Exception($"RootDir '{RootDirInfo.FullName}' for virtual path does not exist");
 
             RootDir = new FileSystemVirtualDirectory(this, null, RootDirInfo);
         }

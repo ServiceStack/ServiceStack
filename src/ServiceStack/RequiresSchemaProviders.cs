@@ -8,19 +8,13 @@ namespace ServiceStack
         public static void InitSchema(this ICacheClient cache)
         {
             var requiresSchema = cache as IRequiresSchema;
-            if (requiresSchema != null)
-            {
-                requiresSchema.InitSchema();
-            }
+            requiresSchema?.InitSchema();
         }
 
         public static void InitSchema(this IAuthRepository authRepo)
         {
             var requiresSchema = authRepo as IRequiresSchema;
-            if (requiresSchema != null)
-            {
-                requiresSchema.InitSchema();
-            }
+            requiresSchema?.InitSchema();
         }
     }
 }

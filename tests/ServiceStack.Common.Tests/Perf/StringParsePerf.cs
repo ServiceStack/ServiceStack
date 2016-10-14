@@ -218,7 +218,7 @@ namespace ServiceStack.Common.Tests.Perf
             var byteArrayString = Convert.ToBase64String(byteArrayValue);
 
             CompareMultipleRuns(
-                "Encoding.Default.GetBytes", () => System.Text.Encoding.Default.GetBytes(byteArrayString),
+                "Encoding.Default.GetBytes", () => System.Text.Encoding.GetEncoding(0).GetBytes(byteArrayString),
                 "SCU.Parse<byte[]>", () => TypeSerializer.DeserializeFromString<byte[]>(byteArrayString)
             );
         }

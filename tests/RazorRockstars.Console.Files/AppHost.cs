@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using Funq;
@@ -11,6 +12,7 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
+using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 
@@ -26,6 +28,9 @@ namespace RazorRockstars.Console.Files
         public RSAParameters? JwtRsaPrivateKey;
         public RSAParameters? JwtRsaPublicKey;
         public bool JwtEncryptPayload = false;
+        public List<byte[]> FallbackAuthKeys = new List<byte[]>();
+        public List<RSAParameters> FallbackPublicKeys = new List<RSAParameters>();
+        public Func<IRequest, IAuthRepository> GetAuthRepositoryFn;
 
         public Action<Container> Use;
 
@@ -83,6 +88,8 @@ namespace RazorRockstars.Console.Files
                             PublicKey = JwtRsaPublicKey,
                             PrivateKey = JwtRsaPrivateKey,
                             EncryptPayload = JwtEncryptPayload,
+                            FallbackAuthKeys = FallbackAuthKeys,
+                            FallbackPublicKeys = FallbackPublicKeys,
                         },
                     })
                 {
@@ -99,6 +106,13 @@ namespace RazorRockstars.Console.Files
             return apiKey != null && apiKey.Environment == "test"
                 ? TryResolve<IDbConnectionFactory>().OpenDbConnection("testdb")
                 : base.GetDbConnection(req);
+        }
+
+        public override IAuthRepository GetAuthRepository(IRequest req = null)
+        {
+            return GetAuthRepositoryFn != null
+                ? GetAuthRepositoryFn(req)
+                : base.GetAuthRepository(req);
         }
 
         private static void Main(string[] args)
@@ -356,6 +370,50 @@ namespace RazorRockstars.Console.Files
             {
                 View = "/" + request.PathInfo
             };
+        }
+    }
+
+    [Route("/test/session")]
+    public class TestSession : IReturn<TestSessionResponse> { }
+
+    [Route("/test/session/view")]
+    public class TestSessionView : IReturn<TestSessionResponse> { }
+
+    public class TestSessionResponse
+    {
+        public string UserAuthId { get; set; }
+        public bool IsAuthenticated { get; set; }
+    }
+
+    public class TestSessionAttribute : RequestFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object requestDto)
+        {
+            var session = req.GetSession();
+            if (!session.IsAuthenticated)
+            {
+                res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                res.EndRequestWithNoContent();
+            }
+        }
+    }
+
+    public class TestSessionService : Service
+    {
+        [TestSession]
+        public object Any(TestSession request)
+        {
+            var session = base.Request.GetSession();
+            return new TestSessionResponse
+            {
+                UserAuthId = session.UserAuthId,
+                IsAuthenticated = session.IsAuthenticated,
+            };
+        }
+
+        public object Any(TestSessionView request)
+        {
+            return new TestSessionResponse();
         }
     }
 }

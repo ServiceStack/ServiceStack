@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.IO;
-using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -15,7 +14,7 @@ namespace ServiceStack
         public static Stack<string> TokenizeVirtualPath(this string str, IVirtualPathProvider pathProvider)
         {
             if (pathProvider == null)
-                throw new ArgumentNullException("pathProvider");
+                throw new ArgumentNullException(nameof(pathProvider));
 
             return TokenizeVirtualPath(str, pathProvider.VirtualPathSeparator);
         }

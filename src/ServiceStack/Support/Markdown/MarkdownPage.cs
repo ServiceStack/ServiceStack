@@ -139,7 +139,7 @@ namespace ServiceStack.Support.Markdown
 
             try
             {
-                if (!typeof(MarkdownViewBase).IsAssignableFrom(this.Markdown.MarkdownBaseType))
+                if (!typeof(MarkdownViewBase).IsAssignableFromType(this.Markdown.MarkdownBaseType))
                 {
                     throw new ConfigurationErrorsException(
                         "Config.MarkdownBaseType must inherit from MarkdownViewBase");
@@ -259,7 +259,12 @@ namespace ServiceStack.Support.Markdown
 				throw initException;
 			}
 
-			MarkdownViewBase instance = null;
+#if NETSTANDARD1_6
+            textWriter.Write(pageContext.MarkdownPage.Contents);
+            return;
+#endif
+
+            MarkdownViewBase instance = null;
 			if (this.evaluator != null)
 			{
 				instance = (MarkdownViewBase)this.evaluator.CreateInstance();

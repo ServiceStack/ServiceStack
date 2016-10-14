@@ -34,6 +34,7 @@ namespace ServiceStack
         public string UserId { get; set; }
         public string DisplayName { get; set; }
         public string ProfileUrl { get; set; }
+        public bool IsAuthenticated { get; set; }
         public string[] Channels { get; set; }
     }
 
@@ -251,8 +252,10 @@ namespace ServiceStack
             if (heartbeatTimer != null)
                 heartbeatTimer.Cancel();
 
+#if !(NETSTANDARD1_1 || NETSTANDARD1_6)
             heartbeatTimer = PclExportClient.Instance.CreateTimer(Heartbeat,
                 TimeSpan.FromMilliseconds(ConnectionInfo.HeartbeatIntervalMs), this);
+#endif
         }
 
         protected void Heartbeat(object state)
@@ -269,7 +272,7 @@ namespace ServiceStack
             var elapsedMs = (DateTime.UtcNow - LastPulseAt).TotalMilliseconds;
             if (elapsedMs > ConnectionInfo.IdleTimeoutMs)
             {
-                OnExceptionReceived(new TimeoutException("Last Heartbeat Pulse was {0}ms ago".Fmt(elapsedMs)));
+                OnExceptionReceived(new TimeoutException($"Last Heartbeat Pulse was {elapsedMs}ms ago"));
                 return;
             }
 
@@ -281,16 +284,15 @@ namespace ServiceStack
                     if (hold != null)
                         req.CookieContainer = hold.CookieContainer;
 
-                    if (HeartbeatRequestFilter != null)
-                        HeartbeatRequestFilter(req);
-                })
+                HeartbeatRequestFilter?.Invoke(req);
+            })
                 .Success(t =>
                 {
                     if (cancel.IsCancellationRequested)
                         return;
 
                     if (log.IsDebugEnabled)
-                        log.DebugFormat("[SSE-CLIENT] Heartbeat sent to: " + ConnectionInfo.HeartbeatUrl);
+                        log.Debug("[SSE-CLIENT] Heartbeat sent to: " + ConnectionInfo.HeartbeatUrl);
 
                     StartNewHeartbeat();
                 })
@@ -300,7 +302,7 @@ namespace ServiceStack
                         return;
 
                     if (log.IsDebugEnabled)
-                        log.DebugFormat("[SSE-CLIENT] Error from Heartbeat: {0}", ex.UnwrapIfSingleException().Message);
+                        log.Debug("[SSE-CLIENT] Error from Heartbeat: " + ex.UnwrapIfSingleException().Message);
                     OnExceptionReceived(ex);
                 });
         }
@@ -319,13 +321,12 @@ namespace ServiceStack
         protected void OnCommandReceived(ServerEventCommand e)
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("[SSE-CLIENT] OnCommandReceived: ({0}) #{1} on #{2} ({3})", e.GetType().Name, e.EventId, ConnectionDisplayName, string.Join(", ", Channels));
+                log.Debug($"[SSE-CLIENT] OnCommandReceived: ({e.GetType().Name}) #{e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
 
             var hold = commandTcs;
             commandTcs = new TaskCompletionSource<ServerEventCommand>();
 
-            if (OnCommand != null)
-                OnCommand(e);
+            OnCommand?.Invoke(e);
 
             hold.SetResult(e);
         }
@@ -333,13 +334,12 @@ namespace ServiceStack
         protected void OnHeartbeatReceived(ServerEventHeartbeat e)
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("[SSE-CLIENT] OnHeartbeatReceived: ({0}) #{1} on #{2} ({3})", e.GetType().Name, e.EventId, ConnectionDisplayName, string.Join(", ", Channels));
+                log.Debug($"[SSE-CLIENT] OnHeartbeatReceived: ({e.GetType().Name}) #{e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
 
             var hold = heartbeatTcs;
             heartbeatTcs = new TaskCompletionSource<ServerEventHeartbeat>();
 
-            if (OnHeartbeat != null)
-                OnHeartbeat();
+            OnHeartbeat?.Invoke();
 
             hold.SetResult(e);
         }
@@ -347,13 +347,12 @@ namespace ServiceStack
         protected void OnMessageReceived(ServerEventMessage e)
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("[SSE-CLIENT] OnMessageReceived: {0} on #{1} ({2})", e.EventId, ConnectionDisplayName, string.Join(", ", Channels));
+                log.Debug($"[SSE-CLIENT] OnMessageReceived: {e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
 
             var hold = messageTcs;
             messageTcs = new TaskCompletionSource<ServerEventMessage>();
 
-            if (OnMessage != null)
-                OnMessage(e);
+            OnMessage?.Invoke(e);
 
             hold.SetResult(e);
         }
@@ -364,10 +363,9 @@ namespace ServiceStack
             errorsCount++;
 
             ex = ex.UnwrapIfSingleException();
-            log.Error("[SSE-CLIENT] OnExceptionReceived: {0} on #{1}".Fmt(ex.Message, ConnectionDisplayName), ex);
+            log.Error($"[SSE-CLIENT] OnExceptionReceived: {ex.Message} on #{ConnectionDisplayName}", ex);
 
-            if (OnException != null)
-                OnException(ex);
+            OnException?.Invoke(ex);
 
             Restart();
         }
@@ -398,7 +396,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                log.Error("[SSE-CLIENT] Error whilst restarting: {0}".Fmt(ex.Message), ex);
+                log.Error($"[SSE-CLIENT] Error whilst restarting: {ex.Message}", ex);
             }
         }
 
@@ -416,7 +414,7 @@ namespace ServiceStack
                 MaxSleepMs);
 
             if (log.IsDebugEnabled)
-                log.Debug("Sleeping for {0}ms after {1} continuous errors".Fmt(nextTry, continuousErrorsCount));
+                log.Debug($"Sleeping for {nextTry}ms after {continuousErrorsCount} continuous errors");
 
             return PclExportClient.Instance.WaitAsync(nextTry);
         }
@@ -479,7 +477,7 @@ namespace ServiceStack
                 else
                 {
                     if (log.IsDebugEnabled)
-                        log.DebugFormat("Connection ended on {0}", ConnectionDisplayName);
+                        log.Debug($"Connection ended on {ConnectionDisplayName}");
 
                     Restart();
                 }
@@ -528,7 +526,7 @@ namespace ServiceStack
             {
                 parts = e.Selector.SplitOnFirst('.');
                 if (parts.Length < 2)
-                    throw new ArgumentException("Invalid Selector '{0}'".Fmt(e.Selector));
+                    throw new ArgumentException($"Invalid Selector '{e.Selector}'");
 
                 e.Op = parts[0];
                 var target = parts[1].Replace("%20", " ");
@@ -569,10 +567,7 @@ namespace ServiceStack
 
                 ServerEventCallback receiver;
                 NamedReceivers.TryGetValue(e.Op, out receiver);
-                if (receiver != null)
-                {
-                    receiver(this, e);
-                }
+                receiver?.Invoke(this, e);
             }
 
             OnMessageReceived(e);
@@ -594,6 +589,7 @@ namespace ServiceStack
             ConnectionInfo.UnRegisterUrl = msg.Get("unRegisterUrl");
             ConnectionInfo.UserId = msg.Get("userId");
             ConnectionInfo.DisplayName = msg.Get("displayName");
+            ConnectionInfo.IsAuthenticated = msg.Get("isAuthenticated") == "true";
             ConnectionInfo.ProfileUrl = msg.Get("profileUrl");
 
             OnConnectReceived();
@@ -638,18 +634,16 @@ namespace ServiceStack
         public virtual Task InternalStop()
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("Stop()");
+                log.Debug("Stop()");
 
-            if (cancel != null)
-                cancel.Cancel();
+            cancel?.Cancel();
 
-            Task task = TypeConstants.EmptyTask;
-
-            if (ConnectionInfo != null && ConnectionInfo.UnRegisterUrl != null)
+            if (ConnectionInfo?.UnRegisterUrl != null)
             {
                 EnsureSynchronizationContext();
-                task = ConnectionInfo.UnRegisterUrl.GetStringFromUrlAsync();
-                task.Error(ex => { /*ignore*/});
+                try {
+                    ConnectionInfo.UnRegisterUrl.GetStringFromUrl();
+                } catch (Exception ignore) {}
             }
 
             using (response)
@@ -660,7 +654,7 @@ namespace ServiceStack
             ConnectionInfo = null;
             httpReq = null;
 
-            return task;
+            return TypeConstants.EmptyTask;
         }
 
         public void Update(string[] subscribe = null, string[] unsubscribe = null)
@@ -683,7 +677,7 @@ namespace ServiceStack
         public void Dispose()
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("Dispose()");
+                log.Debug("Dispose()");
 
             Stop();
         }
@@ -755,13 +749,13 @@ namespace ServiceStack
         public static List<ServerEventUser> GetChannelSubscribers(this ServerEventsClient client)
         {
             var response = client.ServiceClient.Get(new GetEventSubscribers { Channels = client.Channels });
-            return response.ConvertAll(x => x.ToServerEventUser());
+            return response.Select(x => x.ToServerEventUser()).ToList();
         }
 
         public static Task<List<ServerEventUser>> GetChannelSubscribersAsync(this ServerEventsClient client)
         {
             var responseTask = client.ServiceClient.GetAsync(new GetEventSubscribers { Channels = client.Channels });
-            return responseTask.ContinueWith(task => task.Result.ConvertAll(x => x.ToServerEventUser()));
+            return responseTask.ContinueWith(task => task.Result.Select(x => x.ToServerEventUser()).ToList());
         }
 
         internal static ServerEventUser ToServerEventUser(this Dictionary<string, string> map)
@@ -804,7 +798,7 @@ namespace ServiceStack
             return dst;
         }
 
-        private static T Populate<T>(this T dst, Dictionary<string, string> msg) where T : ServerEventMessage
+        private static void Populate<T>(this T dst, Dictionary<string, string> msg) where T : ServerEventMessage
         {
             if (dst.Meta == null)
                 dst.Meta = new Dictionary<string, string>();
@@ -819,14 +813,13 @@ namespace ServiceStack
             {
                 cmd.UserId = msg.Get("userId");
                 cmd.DisplayName = msg.Get("displayName");
+                cmd.IsAuthenticated = msg.Get("isAuthenticated") == "true";
                 cmd.ProfileUrl = msg.Get("profileUrl");
 
                 var channels = msg.Get("channels");
                 if (!string.IsNullOrEmpty(channels))
                     cmd.Channels = channels.Split(',');
             }
-
-            return dst;
         }
 
         public static ServerEventsClient RegisterHandlers(this ServerEventsClient client, Dictionary<string, ServerEventCallback> handlers)

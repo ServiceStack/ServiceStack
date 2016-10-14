@@ -18,16 +18,16 @@ namespace ServiceStack.Serialization
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
-                    using (XmlWriter xw = new XmlTextWriter(ms, Encoding.UTF8))
+                    using (XmlWriter xw = XmlWriter.Create(ms))
                     {
                         var ser = new XmlSerializerWrapper(from.GetType());
                         ser.WriteObject(xw, from);
-                        xw.Flush();
-                        ms.Seek(0, SeekOrigin.Begin);
-                        using (var reader = new StreamReader(ms))
-                        {
-                            return reader.ReadToEnd();
-                        }
+                    }
+                     
+                    ms.Position = 0;
+                    using (var reader = new StreamReader(ms))
+                    {
+                        return reader.ReadToEnd();
                     }
                 }
             }

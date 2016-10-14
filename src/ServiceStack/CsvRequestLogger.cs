@@ -67,7 +67,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                log.Error("Could not read last entry from '{0}'".Fmt(log), ex);
+                log.Error($"Could not read last entry from '{log}'", ex);
             }
             return null;
         }
@@ -139,7 +139,7 @@ namespace ServiceStack
 
         public override void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
         {
-            var requestType = requestDto != null ? requestDto.GetType() : null;
+            var requestType = requestDto?.GetType();
 
             if (ExcludeRequestType(requestType))
                 return;

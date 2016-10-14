@@ -1,4 +1,6 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿#if !NETSTANDARD1_6
+
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System.Web;
 
@@ -12,3 +14,5 @@ namespace ServiceStack.Html.AntiXsrf
         void SaveCookieToken(HttpContextBase httpContext, AntiForgeryToken token);
     }
 }
+
+#endif

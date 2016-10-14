@@ -17,7 +17,11 @@ namespace ServiceStack.Common.Tests
         {
             foreach (var value in Enumerable.Range(ushort.MinValue, ushort.MaxValue).Select(i => (ushort)i))
             {
+#if NETCORE
+                var expected = ((char)value).ToString();
+#else
                 var expected = ((char)value).ToString(CultureInfo.InvariantCulture);
+#endif
 
                 var decimalNotation = String.Format("&#{0};", value);
                 var decimalActual = decimalNotation.StripHtml().ConvertHtmlCodes();

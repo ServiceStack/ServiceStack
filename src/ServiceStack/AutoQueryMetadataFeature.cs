@@ -195,7 +195,7 @@ namespace ServiceStack
                 throw new NotSupportedException("AutoQueryViewerConfig is missing");
 
             if (config.ServiceBaseUrl == null)
-                config.ServiceBaseUrl = base.Request.ResolveBaseUrl();
+                config.ServiceBaseUrl = base.Request.GetBaseUrl();
 
             if (config.ServiceName == null)
                 config.ServiceName = HostContext.ServiceName;
@@ -263,8 +263,7 @@ namespace ServiceStack
 
             response.UserInfo.QueryCount = response.Operations.Count;
 
-            if (feature.MetadataFilter != null)
-                feature.MetadataFilter(response);
+            feature.MetadataFilter?.Invoke(response);
 
             return response;
         }

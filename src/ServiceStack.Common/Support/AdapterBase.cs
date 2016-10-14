@@ -20,21 +20,21 @@ namespace ServiceStack.Support
         {
             DateTime before = DateTime.UtcNow;
 #if !NETFX_CORE && !WP
-            this.Log.DebugFormat("Executing action '{0}'", action.Method.Name);
+            this.Log.Debug($"Executing action '{action.Method().Name}'");
 #endif
             try
             {
                 T result = action();
                 TimeSpan timeTaken = DateTime.UtcNow - before;
 #if !NETFX_CORE && !WP
-                this.Log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
+                this.Log.Debug($"Action '{action.Method().Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
 #endif
                 return result;
             }
             catch (Exception ex)
             {
 #if !NETFX_CORE && !WP
-                this.Log.ErrorFormat("There was an error executing Action '{0}'. Message: {1}", action.Method.Name, ex.Message);
+                this.Log.Error($"There was an error executing Action '{action.Method().Name}'. Message: {ex.Message}");
 #endif
                 throw;
             }
@@ -48,20 +48,20 @@ namespace ServiceStack.Support
         {
             DateTime before = DateTime.UtcNow;
 #if !NETFX_CORE && !WP
-            this.Log.DebugFormat("Executing action '{0}'", action.Method.Name);
+            this.Log.Debug($"Executing action '{action.Method().Name}'");
 #endif
             try
             {
                 action();
                 TimeSpan timeTaken = DateTime.UtcNow - before;
 #if !NETFX_CORE && !WP
-                this.Log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
+                this.Log.Debug($"Action '{action.Method().Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
 #endif
             }
             catch (Exception ex)
             {
 #if !NETFX_CORE && !WP
-                this.Log.ErrorFormat("There was an error executing Action '{0}'. Message: {1}", action.Method.Name, ex.Message);
+                this.Log.Error($"There was an error executing Action '{action.Method().Name}'. Message: {ex.Message}");
 #endif
                 throw;
             }

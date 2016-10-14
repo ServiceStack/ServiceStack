@@ -1,0 +1,48 @@
+{
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": [ "NETCORE_SUPPORT", "NETCORE", "DEBUG", "TRACE" ]
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": [ "NETCORE_SUPPORT", "NETCORE", "TRACE" ],
+        "optimize": true
+      }
+    }
+  },
+  "buildOptions": {
+    "debugType": "portable",
+    "emitEntryPoint": true
+  },
+  "dependencies": {
+    "Microsoft.NETCore.App": {
+      "type": "platform",
+      "version": "1.0.0"
+    },
+    "NUnitLite": "3.2.1",
+    "Microsoft.Data.SQLite": "1.0.*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0",
+    "ServiceStack": "1.0.*",
+    "ServiceStack.Client": "1.0.*",
+    "ServiceStack.Common": "1.0.*",
+    "ServiceStack.HttpClient": "1.0.*",
+    "ServiceStack.Interfaces": "1.0.*",
+    "ServiceStack.Kestrel": "1.0.*",
+    "ServiceStack.OrmLite": "1.0.*",
+    "ServiceStack.OrmLite.Sqlite": "1.0.*",
+    "ServiceStack.Redis": "1.0.*",
+    "ServiceStack.Text": "1.0.*",
+    "ServiceStack.Api.Swagger": "1.0.0"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "System.Reflection.TypeExtensions": "4.1.0"
+      }
+    }
+  },
+  "userSecretsId": "aspnet-ServiceStack.Core.SelfHostTests-20161005100548"
+}

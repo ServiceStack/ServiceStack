@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NETSTANDARD1_6
+
+using System;
 using System.Collections.Generic;
 using System.Web;
 
@@ -139,3 +141,5 @@ namespace ServiceStack.MiniProfiler.Storage
         private static readonly object AddPerUserUnviewedIdsLock = new object();
     }
 }
+
+#endif

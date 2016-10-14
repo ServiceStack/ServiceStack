@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 using System;
 using System.Net;
 using System.Reflection;
@@ -65,7 +67,7 @@ namespace ServiceStack
                 return task;
             }
 
-            return new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo)
+            return new NotImplementedException($"Cannot execute handler: {handler} at PathInfo: {httpReq.PathInfo}")
                 .AsTaskException();
         }
 
@@ -83,3 +85,5 @@ namespace ServiceStack
         }
     }
 }
+
+#endif

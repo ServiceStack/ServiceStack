@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -8,7 +7,7 @@ namespace ServiceStack.Host
     public class BasicResponse : IResponse
     {
         private readonly BasicRequest requestContext;
-        private Dictionary<string, string> Headers { get; set; }
+        private Dictionary<string, string> Headers { get; }
 
         public BasicResponse(BasicRequest requestContext)
         {
@@ -19,10 +18,7 @@ namespace ServiceStack.Host
 
         public object OriginalResponse { get; set; }
 
-        public IRequest Request
-        {
-            get { return requestContext; }
-        }
+        public IRequest Request => requestContext;
 
         public int StatusCode { get; set; }
 
@@ -52,10 +48,7 @@ namespace ServiceStack.Host
 
         private MemoryStream ms;
 
-        public Stream OutputStream
-        {
-            get { return ms ?? (ms = new MemoryStream()); }
-        }
+        public Stream OutputStream => ms ?? (ms = new MemoryStream());
 
         public object Dto { get; set; }
 
@@ -91,6 +84,6 @@ namespace ServiceStack.Host
 
         public bool KeepAlive { get; set; }
 
-        public Dictionary<string, object> Items { get; private set; }
+        public Dictionary<string, object> Items { get; }
     }
 }

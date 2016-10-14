@@ -1,0 +1,125 @@
+﻿body {
+    font-family: "Open Sans", Helvetica, Arial, sans-serif;
+    color: #444;
+    padding: 48px;
+}
+#page, #preview {
+    background: #fff;
+    box-shadow: 0 3px 8px rgba(100, 100, 100, 0.3);
+    font-size: 74%;
+    padding: 10px 40px 20px 40px;
+	margin: auto;
+    max-width: 960px;
+}       
+#preview {
+    margin: 40px auto;   
+}
+#preview h3 a {
+    color: green;
+}
+#preview h3 b 
+{
+    display: inline-block;
+    width: 100px;
+}
+#content {
+    padding: 0 0 10px 0;
+}     
+.clear {
+    display: block;
+    clear: both;
+    font-size: 1px;
+}
+#info {
+    float: right;
+    margin: -30px -38px 0 0;
+    padding: 0;
+    text-align: right;
+}
+#info h6 {
+    font-size: 13px;
+    margin: 0 0 10px 0;
+    padding: 0;
+}
+#info a {
+    margin: 0 5px 0 0;
+    color: #888;
+    float: right;
+    display: block;
+    line-height: 20px;
+}
+#home {
+    background: url(home-icon.jpg) no-repeat top right;
+    height: 20px;
+    width: 20px;
+    padding-left: 5px;
+    display: block;
+}
+blockquote {
+    border-left: 10px solid #E6E6E6;
+    margin: 0;
+    padding: 0 0 0 18px;
+    color: #888;
+}
+#content #splash {
+    float: right;
+    padding: 0 0 10px 20px;
+}
+dt {
+    width: 90px;
+    float: left;
+    clear: left;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+    line-height: 22px;
+}
+dd {
+    line-height: 22px;
+}
+a {
+    color: blue;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+.menu {
+}
+.menu ul {
+    border-bottom: 1px solid #EDEDED;
+    border-top: 1px solid #EDEDED;
+    display: inline-block;
+    font-size: 12px;
+    text-align: left;
+    width: 100%;    
+    text-indent: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.menu li {
+    display: inline-block;
+    text-decoration: none;
+    margin: 0 40px 0 0;
+    position: relative;
+}
+.menu li.label {
+    display: inline-block;
+    width: 140px;
+    text-transform: uppercase;
+    color: #888;
+}
+.menu .active a {
+    color: #636363;
+    font-weight: bold;
+}
+.menu li a {
+    text-transform: uppercase;    
+    line-height: 44px;
+    color: #6A6A6A;
+}
+.menu li a:hover {
+    color: #000;
+    text-decoration: none;
+}

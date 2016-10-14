@@ -28,35 +28,29 @@ namespace ServiceStack
         {
             var urnParts = urnId.Split(FieldSeperator);
             if (urnParts.Length == HasNoIdFieldName)
-            {
                 return new UrnId { TypeName = urnParts[1], IdFieldValue = urnParts[2] };
-            }
+
             if (urnParts.Length == HasIdFieldName)
-            {
                 return new UrnId { TypeName = urnParts[1], IdFieldName = urnParts[2], IdFieldValue = urnParts[3] };
-            }
+
             throw new ArgumentException("Cannot parse invalid urn: '{0}'", urnId);
         }
 
         public static string Create(string objectTypeName, string idFieldValue)
         {
             if (objectTypeName.Contains(FieldSeperator.ToString()))
-            {
                 throw new ArgumentException("objectTypeName cannot have the illegal characters: ':'", "objectTypeName");
-            }
+
             if (idFieldValue.Contains(FieldSeperator.ToString()))
-            {
                 throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", "idFieldValue");
-            }
-            return string.Format("urn:{0}:{1}", objectTypeName, idFieldValue);
+
+            return $"urn:{objectTypeName}:{idFieldValue}";
         }
 
         public static string CreateWithParts(string objectTypeName, params string[] keyParts)
         {
             if (objectTypeName.Contains(FieldSeperator.ToString()))
-            {
                 throw new ArgumentException("objectTypeName cannot have the illegal characters: ':'", "objectTypeName");
-            }
 
             var sb = StringBuilderCache.Allocate();
             foreach (var keyPart in keyParts)
@@ -66,7 +60,7 @@ namespace ServiceStack
                 sb.Append(keyPart);
             }
 
-            return string.Format("urn:{0}:{1}", objectTypeName, StringBuilderCache.ReturnAndFree(sb));
+            return $"urn:{objectTypeName}:{StringBuilderCache.ReturnAndFree(sb)}";
         }
 
         public static string CreateWithParts<T>(params string[] keyParts)
@@ -87,10 +81,9 @@ namespace ServiceStack
         public static string Create(Type objectType, string idFieldValue)
         {
             if (idFieldValue.Contains(FieldSeperator.ToString()))
-            {
                 throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", "idFieldValue");
-            }
-            return string.Format("urn:{0}:{1}", objectType.Name, idFieldValue);
+
+            return $"urn:{objectType.Name}:{idFieldValue}";
         }
 
         public static string Create<T>(string idFieldName, string idFieldValue)
@@ -101,14 +94,12 @@ namespace ServiceStack
         public static string Create(Type objectType, string idFieldName, string idFieldValue)
         {
             if (idFieldValue.Contains(FieldSeperator.ToString()))
-            {
                 throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", "idFieldValue");
-            }
+
             if (idFieldName.Contains(FieldSeperator.ToString()))
-            {
                 throw new ArgumentException("idFieldName cannot have the illegal characters: ':'", "idFieldName");
-            }
-            return string.Format("urn:{0}:{1}:{2}", objectType.Name, idFieldName, idFieldValue);
+
+            return $"urn:{objectType.Name}:{idFieldName}:{idFieldValue}";
         }
 
         public static string GetStringId(string urn)

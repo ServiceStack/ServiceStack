@@ -13,7 +13,7 @@ namespace ServiceStack.Host.Handlers
         private StaticContentHandler(string contentType)
         {
             if (string.IsNullOrEmpty(contentType))
-                throw new ArgumentNullException("contentType");
+                throw new ArgumentNullException(nameof(contentType));
 
             this.contentType = contentType;
             this.RequestName = GetType().Name;
@@ -49,10 +49,12 @@ namespace ServiceStack.Host.Handlers
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
         }
 
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var httpReq = context.ToRequest("StaticContent");
             ProcessRequest(httpReq, httpReq.Response, "StaticContent");
         }
+#endif
     }
 }

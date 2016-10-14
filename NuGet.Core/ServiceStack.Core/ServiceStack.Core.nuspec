@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>ServiceStack.Core</id>
+    <version>1.0.0</version>
+    <title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</title>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
+    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <description>
+        Binaries for the ServiceStack web framework.
+
+        A simple and fast alternative to WCF, MVC and Web API in one cohesive framework for all your services and web apps that's intuitive and Easy to use!
+
+        To get started see: https://servicestack.net/getting-started
+    </description>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
+    <tags>Fast JSON XML CSV HTML JSV REST Web Service Framework MONO ServiceStack</tags>
+    <language>en-US</language>
+    <copyright>Copyright 2016 Service Stack</copyright>
+    <dependencies>
+      <group targetFramework=".NETStandard1.6">
+        <dependency id="Microsoft.AspNetCore.Http" version="[1.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[1.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[1.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[1.0.0, )" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[1.0.0, )" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[1.0.0, )" />
+        <dependency id="System.Dynamic.Runtime" version="[4.0.11, )" />
+        <dependency id="System.Data.Common" version="[4.1.0, )" />
+        <dependency id="System.ComponentModel.Primitives" version="[4.1.0, )" />
+        <dependency id="System.Net.Primitives" version="[4.0.11, )" />
+        <dependency id="System.Net.NetworkInformation" version="[4.1.0, )" />
+        <dependency id="System.Net.Security" version="[4.0.0, )" />
+        <dependency id="System.Reflection.Emit" version="[4.0.1, )" />
+        <dependency id="System.Reflection.Emit.ILGeneration" version="[4.0.1, )" />
+        <dependency id="System.Reflection.Emit.Lightweight" version="[4.0.1, )" />
+        <dependency id="System.Reflection.TypeExtensions" version="[4.1.0, )" />
+        <dependency id="System.Xml.XmlSerializer" version="[4.0.11, )" />
+        <dependency id="System.Runtime.Serialization.Primitives" version="[4.1.1, )" />
+        <dependency id="System.Collections.Specialized" version="[4.0.1, )" />
+        <dependency id="System.Linq.Queryable" version="[4.0.1, )" />
+        <dependency id="System.Threading" version="[4.0.11, )" />
+        <dependency id="System.Threading.Thread" version="[4.0.0, )" />
+        <dependency id="System.Threading.ThreadPool" version="[4.0.10, )" />
+        <dependency id="System.Threading.Tasks" version="[4.0.11, )" />
+        <dependency id="ServiceStack.Interfaces.Core" version="[1.0.0, )" />
+        <dependency id="ServiceStack.Text.Core" version="[1.0.0, )" />
+        <dependency id="ServiceStack.Client.Core" version="[1.0.0, )" />
+        <dependency id="ServiceStack.Common.Core" version="[1.0.0, )" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib/**/*.*" target="lib" />
+    <file src="../../src/ServiceStack/**/*.cs" target="src" />
+    <file src="../../src/ServiceStack/**/*.js" target="src" />
+    <file src="../../src/ServiceStack/**/*.ts" target="src" />
+    <file src="../../src/ServiceStack/**/*.css" target="src" />
+    <file src="../../src/ServiceStack/**/*.html" target="src" />
+    <file src="../../src/ServiceStack/**/*.tmpl" target="src" />
+  </files>
+</package>

@@ -12,9 +12,7 @@ namespace ServiceStack.MiniProfiler.Data
         /// </summary>
         public static ProfiledProviderFactory Instance = new ProfiledProviderFactory();
 
-        protected ProfiledProviderFactory()
-	    {
-	    }
+        protected ProfiledProviderFactory() {}
 
         protected IDbProfiler Profiler { get; private set; }
         protected DbProviderFactory WrappedFactory { get; private set; }
@@ -41,71 +39,61 @@ namespace ServiceStack.MiniProfiler.Data
             WrappedFactory = wrappedFactory;
         }
 
+#if !NETSTANDARD1_3
         /// <summary>
         /// proxy
         /// </summary>
-        public override bool CanCreateDataSourceEnumerator
-        {
-            get
-            {
-                return WrappedFactory.CanCreateDataSourceEnumerator;
-            }
-        }
+        public override bool CanCreateDataSourceEnumerator => WrappedFactory.CanCreateDataSourceEnumerator;
+
         /// <summary>
         /// proxy
         /// </summary>
-        public override DbDataSourceEnumerator CreateDataSourceEnumerator()
-        {
-            return WrappedFactory.CreateDataSourceEnumerator();
-        }
+        public override DbDataSourceEnumerator CreateDataSourceEnumerator() => 
+            WrappedFactory.CreateDataSourceEnumerator();
+#endif
+
         /// <summary>
         /// proxy
         /// </summary>
-        public override DbCommand CreateCommand()
-        {
-            return new ProfiledCommand(WrappedFactory.CreateCommand(), null, Profiler);
-        }
+        public override DbCommand CreateCommand() => 
+            new ProfiledCommand(WrappedFactory.CreateCommand(), null, Profiler);
+
         /// <summary>
         /// proxy
         /// </summary>
-        public override DbConnection CreateConnection()
-        {
-            return new ProfiledConnection(WrappedFactory.CreateConnection(), Profiler);
-        }
+        public override DbConnection CreateConnection() => 
+            new ProfiledConnection(WrappedFactory.CreateConnection(), Profiler);
+
         /// <summary>
         /// proxy
         /// </summary>
-        public override DbParameter CreateParameter()
-        {
-            return WrappedFactory.CreateParameter();
-        }
+        public override DbParameter CreateParameter() => 
+            WrappedFactory.CreateParameter();
+
         /// <summary>
         /// proxy
         /// </summary>
-        public override DbConnectionStringBuilder CreateConnectionStringBuilder()
-        {
-            return WrappedFactory.CreateConnectionStringBuilder();
-        }
+        public override DbConnectionStringBuilder CreateConnectionStringBuilder() => 
+            WrappedFactory.CreateConnectionStringBuilder();
+
+#if !NETSTANDARD1_3
         /// <summary>
         /// proxy
         /// </summary>
-        public override DbCommandBuilder CreateCommandBuilder()
-        {
-            return WrappedFactory.CreateCommandBuilder();
-        }
+        public override DbCommandBuilder CreateCommandBuilder() => 
+            WrappedFactory.CreateCommandBuilder();
+
         /// <summary>
         /// proxy
         /// </summary>
-        public override DbDataAdapter CreateDataAdapter()
-        {
-            return WrappedFactory.CreateDataAdapter();
-        }
+        public override DbDataAdapter CreateDataAdapter() => 
+            WrappedFactory.CreateDataAdapter();
+
         /// <summary>
         /// proxy
         /// </summary>
-        public override System.Security.CodeAccessPermission CreatePermission(System.Security.Permissions.PermissionState state)
-        {
-            return WrappedFactory.CreatePermission(state);
-        }
+        public override System.Security.CodeAccessPermission CreatePermission(System.Security.Permissions.PermissionState state) => 
+            WrappedFactory.CreatePermission(state);
+#endif
     }
 }

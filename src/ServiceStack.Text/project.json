@@ -1,0 +1,40 @@
+{
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": [
+          "DEBUG",
+          "TRACE"
+        ]
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": [
+          "TRACE"
+        ],
+        "optimize": true
+      }
+    }
+  },
+  "dependencies": {
+    "NETStandard.Library": "1.6.0"
+  },
+  "frameworks": {
+    "netstandard1.1": {
+      "dependencies": {},
+      "bin": {
+        "assembly": "../../lib/netstandard1.1/ServiceStack.Text.dll",
+        "pdb": "../../lib/netstandard1.1/ServiceStack.Text.pdb"
+      }
+    },
+    "netstandard1.3": {
+      "dependencies": {},
+      "bin": {
+        "assembly": "../../lib/netstandard1.3/ServiceStack.Text.dll",
+        "pdb": "../../lib/netstandard1.3/ServiceStack.Text.pdb"
+      }
+    }
+  },
+  "version": "1.0.0"
+}

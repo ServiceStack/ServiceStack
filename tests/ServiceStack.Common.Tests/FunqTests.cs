@@ -1,4 +1,5 @@
-﻿using Funq;
+﻿#if !NETCORE_SUPPORT
+using Funq;
 using NUnit.Framework;
 
 namespace ServiceStack.Common.Tests
@@ -32,3 +33,4 @@ namespace ServiceStack.Common.Tests
         }         
     }
 }
+#endif

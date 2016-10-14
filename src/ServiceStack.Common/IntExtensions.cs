@@ -4,6 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+#if NETSTANDARD1_3
+using System.Threading.Tasks;
+#endif
 
 namespace ServiceStack
 {
@@ -58,7 +61,11 @@ namespace ServiceStack
             var asyncResults = new List<IAsyncResult>(times);
             for (var i = 0; i < times; i++)
             {
+#if NETSTANDARD1_3
+                asyncResults.Add(Task.Run(() => actionFn(i)));
+#else                
                 asyncResults.Add(actionFn.BeginInvoke(i, null, null));
+#endif
             }
             return asyncResults;
         }
@@ -68,7 +75,11 @@ namespace ServiceStack
             var asyncResults = new List<IAsyncResult>(times);
             for (var i = 0; i < times; i++)
             {
+#if NETSTANDARD1_3
+                asyncResults.Add(Task.Run(actionFn));
+#else                
                 asyncResults.Add(actionFn.BeginInvoke(null, null));
+#endif
             }
             return asyncResults;
         }

@@ -1,3 +1,4 @@
+#if !NETSTANDARD1_6
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
 // 
@@ -142,3 +143,4 @@ namespace FluentValidation.Mvc {
 		}
 	}
 }
+#endif

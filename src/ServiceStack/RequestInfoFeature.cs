@@ -10,7 +10,7 @@ namespace ServiceStack
             appHost.CatchAllHandlers.Add(ProcessRequest);
 
             appHost.GetPlugin<MetadataFeature>()
-                .AddDebugLink("?{0}={1}".Fmt(Keywords.Debug, Keywords.RequestInfo), "Request Info");
+                .AddDebugLink($"?{Keywords.Debug}={Keywords.RequestInfo}", "Request Info");
         }
 
         public IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)

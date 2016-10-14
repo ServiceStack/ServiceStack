@@ -17,9 +17,7 @@ namespace ServiceStack.Auth
         public static string Realm = "https://github.com/login/";
         public static string PreAuthUrl = "https://github.com/login/oauth/authorize";
 
-        static GithubAuthProvider()
-        {
-        }
+        static GithubAuthProvider() {}
 
         public GithubAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name, "ClientId", "ClientSecret")
@@ -48,7 +46,7 @@ namespace ServiceStack.Auth
             var hasError = !error.IsNullOrEmpty();
             if (hasError)
             {
-                Log.Error("GitHub error callback. {0}".Fmt(httpRequest.QueryString));
+                Log.Error($"GitHub error callback. {httpRequest.QueryString}");
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
             }
 
@@ -56,20 +54,18 @@ namespace ServiceStack.Auth
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                string preAuthUrl = PreAuthUrl + "?client_id={0}&redirect_uri={1}&scope={2}&state={3}"
-                  .Fmt(ClientId, CallbackUrl.UrlEncode(), Scopes.Join(","), Guid.NewGuid().ToString("N"));
+                string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={Scopes.Join(",")}&state={Guid.NewGuid().ToString("N")}";
 
-                SaveSession(authService, session, SessionExpiry);
+                this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
-            string accessTokenUrl = AccessTokenUrl + "?client_id={0}&redirect_uri={1}&client_secret={2}&code={3}"
-              .Fmt(ClientId, CallbackUrl.UrlEncode(), ClientSecret, code);
+            string accessTokenUrl = $"{AccessTokenUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&client_secret={ClientSecret}&code={code}";
 
             try
             {
                 var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
-                var authInfo = HttpUtility.ParseQueryString(contents);
+                var authInfo = PclExportClient.Instance.ParseQueryString(contents);
 
                 //GitHub does not throw exception, but just return error with descriptions
                 //https://developer.github.com/v3/oauth/#common-errors-for-the-access-token-request
@@ -79,7 +75,7 @@ namespace ServiceStack.Auth
 
                 if (!accessTokenError.IsNullOrEmpty())
                 {
-                    Log.Error("GitHub access_token error callback. {0}".Fmt(authInfo.ToString()));
+                    Log.Error($"GitHub access_token error callback. {authInfo}");
                     return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
                 tokens.AccessTokenSecret = authInfo["access_token"];
@@ -99,7 +95,6 @@ namespace ServiceStack.Auth
                 }
             }
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
-
         }
 
         /// <summary>
@@ -108,15 +103,15 @@ namespace ServiceStack.Auth
         /// </summary>
         protected virtual void UserRequestFilter(HttpWebRequest request)
         {
-            request.UserAgent = ServiceClientBase.DefaultUserAgent;
+            request.SetUserAgent(ServiceClientBase.DefaultUserAgent);
         }
 
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             try
             {
-                var json = "https://api.github.com/user?access_token={0}".Fmt(tokens.AccessTokenSecret)
-                  .GetStringFromUrl("*/*", UserRequestFilter);
+                var json = $"https://api.github.com/user?access_token={tokens.AccessTokenSecret}"
+                    .GetStringFromUrl("*/*", UserRequestFilter);
                 var obj = JsonObject.Parse(json);
                 tokens.UserId = obj.Get("id");
                 tokens.UserName = obj.Get("login");
@@ -136,7 +131,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error("Could not retrieve github user info for '{0}'".Fmt(tokens.DisplayName), ex);
+                Log.Error($"Could not retrieve github user info for '{tokens.DisplayName}'", ex);
             }
 
             LoadUserOAuthProvider(userSession, tokens);

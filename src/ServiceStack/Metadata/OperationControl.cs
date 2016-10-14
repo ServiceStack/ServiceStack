@@ -37,13 +37,13 @@ namespace ServiceStack.Metadata
                 var endpointConfig = MetadataConfig.GetEndpointConfig(ContentType);
                 var endpontPath = ResponseMessage != null
                     ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
-                return string.Format("{0}/{1}", endpontPath, OperationName);
+                return $"{endpontPath}/{OperationName}";
             }
         }
 
         public virtual void Render(HtmlTextWriter output)
         {
-            string baseUrl = HttpRequest.ResolveAbsoluteUrl("~/");
+            var baseUrl = HttpRequest.ResolveAbsoluteUrl("~/");
             var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.GetOperationControlTemplate(),
                 Title,
                 baseUrl.CombineWith(MetadataConfig.DefaultMetadataUri),
@@ -56,32 +56,27 @@ namespace ServiceStack.Metadata
             output.Write(renderedTemplate);
         }
 
-        public virtual string HttpRequestTemplate
-        {
-            get
-            {
-                return string.Format(
-@"POST {0} HTTP/1.1 
-Host: {1} 
-Content-Type: {2}
+        public virtual string HttpRequestTemplate => 
+$@"POST {RequestUri} HTTP/1.1 
+Host: {HostName} 
+Content-Type: {ContentType}
 Content-Length: <span class=""value"">length</span>
 
-{3}", RequestUri, HostName, ContentType, HttpUtility.HtmlEncode(RequestMessage));
-            }
-        }
+{PclExportClient.Instance.HtmlEncode(RequestMessage)}";
 
         public virtual string ResponseTemplate
         {
             get
             {
                 var httpResponse = this.HttpResponseTemplate;
-                return string.IsNullOrEmpty(httpResponse) ? null : string.Format(@"
+                return string.IsNullOrEmpty(httpResponse) ? null :
+$@"
 <div class=""response"">
 <pre>
-{0}
+{httpResponse}
 </pre>
 </div>
-", httpResponse);
+";
             }
         }
 
@@ -90,12 +85,12 @@ Content-Length: <span class=""value"">length</span>
             get
             {
                 if (string.IsNullOrEmpty(ResponseMessage)) return null;
-                return string.Format(
-@"HTTP/1.1 200 OK
-Content-Type: {0}
+                return
+$@"HTTP/1.1 200 OK
+Content-Type: {ContentType}
 Content-Length: length
 
-{1}", ContentType, HttpUtility.HtmlEncode(ResponseMessage));
+{PclExportClient.Instance.HtmlEncode(ResponseMessage)}";
             }
         }
     }

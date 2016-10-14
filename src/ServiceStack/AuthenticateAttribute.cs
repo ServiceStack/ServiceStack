@@ -64,14 +64,15 @@ namespace ServiceStack
 
             if (matchingOAuthConfigs.Count == 0)
             {
-                res.WriteError(req, requestDto, "No OAuth Configs found matching {0} provider"
-                    .Fmt(this.Provider ?? "any"));
+                res.WriteError(req, requestDto, $"No OAuth Configs found matching {this.Provider ?? "any"} provider");
                 res.EndRequest();
                 return;
             }
 
             req.PopulateFromRequestIfHasSessionId(requestDto);
 
+            //Call before GetSession so Exceptions can bubble
+            req.Items[Keywords.HasPreAuthenticated] = true;
             matchingOAuthConfigs.OfType<IAuthWithRequest>()
                 .Each(x => x.PreAuthenticate(req, res));
 
@@ -115,7 +116,7 @@ namespace ServiceStack
         private static string ToQueryString(NameValueCollection queryStringCollection)
         {
             if (queryStringCollection == null || queryStringCollection.Count == 0)
-                return String.Empty;
+                return string.Empty;
 
             return "?" + queryStringCollection.ToFormUrlEncoded();
         }
@@ -138,8 +139,8 @@ namespace ServiceStack
             unchecked
             {
                 var hashCode = base.GetHashCode();
-                hashCode = (hashCode * 397) ^ (Provider != null ? Provider.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (HtmlRedirect != null ? HtmlRedirect.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Provider?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (HtmlRedirect?.GetHashCode() ?? 0);
                 return hashCode;
             }
         }

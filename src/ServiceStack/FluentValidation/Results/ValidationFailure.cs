@@ -22,7 +22,7 @@ namespace ServiceStack.FluentValidation.Results
 {
     using System;
 
-#if !SL5
+#if !(SL5 || NETSTANDARD1_6)
     [Serializable]
 #endif
     public class ValidationFailure {

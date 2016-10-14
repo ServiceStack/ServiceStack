@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 //Copyright (c) Service Stack LLC. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
@@ -27,15 +29,9 @@ namespace ServiceStack.Host.AspNet
             this.Items = new Dictionary<string, object>();
         }
 
-        public HttpResponseBase Response
-        {
-            get { return response; }
-        }
+        public HttpResponseBase Response => response;
 
-        public object OriginalResponse
-        {
-            get { return response; }
-        }
+        public object OriginalResponse => response;
 
         public IRequest Request { get; private set; }
 
@@ -73,10 +69,7 @@ namespace ServiceStack.Host.AspNet
         }
 
         public MemoryStream BufferedStream { get; set; }
-        public Stream OutputStream
-        {
-            get { return BufferedStream ?? response.OutputStream; }
-        }
+        public Stream OutputStream => BufferedStream ?? response.OutputStream;
 
         public bool UseBufferedStream
         {
@@ -99,7 +92,7 @@ namespace ServiceStack.Host.AspNet
 
             var bytes = BufferedStream.ToArray();
             try {
-                SetContentLength(bytes.LongLength); //safe to set Length in Buffered Response
+                SetContentLength(bytes.Length); //safe to set Length in Buffered Response
             } catch {}
 
             response.OutputStream.Write(bytes, 0, bytes.Length);
@@ -160,7 +153,7 @@ namespace ServiceStack.Host.AspNet
         //Benign, see how to enable in ASP.NET: http://technet.microsoft.com/en-us/library/cc772183(v=ws.10).aspx
         public bool KeepAlive { get; set; }
 
-        public Dictionary<string, object> Items { get; private set; }
+        public Dictionary<string, object> Items { get; }
 
         public ICookies Cookies { get; set; }
 
@@ -179,3 +172,5 @@ namespace ServiceStack.Host.AspNet
         }
     }
 }
+
+#endif

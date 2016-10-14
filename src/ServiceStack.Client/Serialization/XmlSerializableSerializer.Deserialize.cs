@@ -20,7 +20,13 @@ namespace ServiceStack.Serialization
             try
             {
                 var bytes = Encoding.UTF8.GetBytes(xml);
-                using (var reader = XmlDictionaryReader.CreateTextReader(bytes, new XmlDictionaryReaderQuotas()))
+                using (var reader = XmlDictionaryReader.CreateTextReader(bytes,
+#if !NETSTANDARD1_1
+			new XmlDictionaryReaderQuotas()
+#else
+			XmlDictionaryReaderQuotas.Max
+#endif
+		))
                 {
                     var serializer = new System.Xml.Serialization.XmlSerializer(type);
                     return serializer.Deserialize(reader);
@@ -28,7 +34,7 @@ namespace ServiceStack.Serialization
             }
             catch (Exception ex)
             {
-                throw new SerializationException(string.Format("Error serializing object of type {0}", type.FullName), ex);
+                throw new SerializationException($"Error serializing object of type {type.FullName}", ex);
             }
         }
 
@@ -45,7 +51,7 @@ namespace ServiceStack.Serialization
             }
             catch (Exception ex)
             {
-                throw new SerializationException(string.Format("Error serializing object of type {0}", type.FullName), ex);
+                throw new SerializationException($"Error serializing object of type {type.FullName}", ex);
             }
         }
 
@@ -54,7 +60,13 @@ namespace ServiceStack.Serialization
             var type = typeof(To);
             try
             {
-                using (var reader = XmlDictionaryReader.CreateTextReader(from, new XmlDictionaryReaderQuotas()))
+                using (var reader = XmlDictionaryReader.CreateTextReader(from,
+#if !NETSTANDARD1_1
+			new XmlDictionaryReaderQuotas()
+#else
+			XmlDictionaryReaderQuotas.Max
+#endif
+))
                 {
                     var serializer = new System.Xml.Serialization.XmlSerializer(type);
                     return (To)serializer.Deserialize(reader);
@@ -62,7 +74,7 @@ namespace ServiceStack.Serialization
             }
             catch (Exception ex)
             {
-                throw new SerializationException(string.Format("Error serializing object of type {0}", type.FullName), ex);
+                throw new SerializationException($"Error serializing object of type {type.FullName}", ex);
             }
         }
     }

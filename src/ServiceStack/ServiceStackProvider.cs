@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
-using ServiceStack.Data;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
 using ServiceStack.Web;
@@ -30,6 +28,7 @@ namespace ServiceStack
         IDbConnection Db { get; }
         IRedisClient Redis { get; }
         IMessageProducer MessageProducer { get; }
+        IAuthRepository AuthRepository { get; }
         ISessionFactory SessionFactory { get; }
         ISession SessionBag { get; }
         bool IsAuthenticated { get; }
@@ -80,24 +79,27 @@ namespace ServiceStack
                 return false;
 
             var httpReq = hasProvider.ServiceStackProvider.Request;
-            var userAuthRepo = httpReq.TryResolve<IAuthRepository>();
-            var hasRoles = roleAttrs.All(x => x.HasAllRoles(httpReq, authSession, userAuthRepo));
-            if (!hasRoles)
-                return false;
+            var userAuthRepo = HostContext.AppHost.GetAuthRepository(hasProvider.ServiceStackProvider.Request);
+            using (userAuthRepo as IDisposable)
+            {
+                var hasRoles = roleAttrs.All(x => x.HasAllRoles(httpReq, authSession, userAuthRepo));
+                if (!hasRoles)
+                    return false;
 
-            var hasAnyRole = anyRoleAttrs.All(x => x.HasAnyRoles(httpReq, authSession, userAuthRepo));
-            if (!hasAnyRole)
-                return false;
+                var hasAnyRole = anyRoleAttrs.All(x => x.HasAnyRoles(httpReq, authSession, userAuthRepo));
+                if (!hasAnyRole)
+                    return false;
 
-            var hasPermssions = permAttrs.All(x => x.HasAllPermissions(httpReq, authSession, userAuthRepo));
-            if (!hasPermssions)
-                return false;
+                var hasPermssions = permAttrs.All(x => x.HasAllPermissions(httpReq, authSession, userAuthRepo));
+                if (!hasPermssions)
+                    return false;
 
-            var hasAnyPermission = anyPermAttrs.All(x => x.HasAnyPermissions(httpReq, authSession, userAuthRepo));
-            if (!hasAnyPermission)
-                return false;
+                var hasAnyPermission = anyPermAttrs.All(x => x.HasAnyPermissions(httpReq, authSession, userAuthRepo));
+                if (!hasAnyPermission)
+                    return false;
 
-            return true;
+                return true;
+            }
         }
     }
 
@@ -120,21 +122,12 @@ namespace ServiceStack
             return resolver;
         }
 
-        public IAppSettings AppSettings
-        {
-            get { return HostContext.AppSettings; }
-        }
+        public IAppSettings AppSettings => HostContext.AppSettings;
 
         private readonly IHttpRequest request;
-        public virtual IHttpRequest Request
-        {
-            get { return request; }
-        }
+        public virtual IHttpRequest Request => request;
 
-        public virtual IHttpResponse Response
-        {
-            get { return (IHttpResponse)Request.Response; }
-        }
+        public virtual IHttpResponse Response => (IHttpResponse)Request.Response;
 
         public virtual T TryResolve<T>()
         {
@@ -150,10 +143,7 @@ namespace ServiceStack
         }
 
         private IServiceGateway gateway;
-        public virtual IServiceGateway Gateway
-        {
-            get { return gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request)); }
-        }
+        public virtual IServiceGateway Gateway => gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request));
 
         public object Execute(object requestDto)
         {
@@ -186,34 +176,22 @@ namespace ServiceStack
         }
 
         private ICacheClient cache;
-        public virtual ICacheClient Cache
-        {
-            get { return cache ?? (cache = HostContext.AppHost.GetCacheClient(Request)); }
-        }
+        public virtual ICacheClient Cache => cache ?? (cache = HostContext.AppHost.GetCacheClient(Request));
 
         private IDbConnection db;
-        public virtual IDbConnection Db
-        {
-            get { return db ?? (db = HostContext.AppHost.GetDbConnection(Request)); }
-        }
+        public virtual IDbConnection Db => db ?? (db = HostContext.AppHost.GetDbConnection(Request));
 
         private IRedisClient redis;
-        public virtual IRedisClient Redis
-        {
-            get { return redis ?? (redis = HostContext.AppHost.GetRedisClient(Request)); }
-        }
+        public virtual IRedisClient Redis => redis ?? (redis = HostContext.AppHost.GetRedisClient(Request));
 
         private IMessageProducer messageProducer;
-        public virtual IMessageProducer MessageProducer
-        {
-            get { return messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request)); }
-        }
+        public virtual IMessageProducer MessageProducer => messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request));
+
+        private IAuthRepository authRepository;
+        public IAuthRepository AuthRepository => authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request));
 
         private ISessionFactory sessionFactory;
-        public virtual ISessionFactory SessionFactory
-        {
-            get { return sessionFactory ?? (sessionFactory = TryResolve<ISessionFactory>()) ?? new SessionFactory(Cache); }
-        }
+        public virtual ISessionFactory SessionFactory => sessionFactory ?? (sessionFactory = TryResolve<ISessionFactory>()) ?? new SessionFactory(Cache);
 
 
         /// <summary>
@@ -233,14 +211,8 @@ namespace ServiceStack
         /// Dynamic Session Bag
         /// </summary>
         private ISession session;
-        public virtual ISession SessionBag
-        {
-            get
-            {
-                return session ?? (session = TryResolve<ISession>() //Easier to mock
-                    ?? SessionFactory.GetOrCreateSession(Request, Response));
-            }
-        }
+        public virtual ISession SessionBag => session ?? (session = TryResolve<ISession>() //Easier to mock
+            ?? SessionFactory.GetOrCreateSession(Request, Response));
 
         public virtual IAuthSession GetSession(bool reload = false)
         {
@@ -250,10 +222,7 @@ namespace ServiceStack
             return req.GetSession(reload);
         }
 
-        public virtual bool IsAuthenticated
-        {
-            get { return this.GetSession().IsAuthenticated; }
-        }
+        public virtual bool IsAuthenticated => this.GetSession().IsAuthenticated;
 
         public virtual void PublishMessage<T>(T message)
         {
@@ -265,12 +234,10 @@ namespace ServiceStack
 
         public virtual void Dispose()
         {
-            if (db != null)
-                db.Dispose();
-            if (redis != null)
-                redis.Dispose();
-            if (messageProducer != null)
-                messageProducer.Dispose();
+            db?.Dispose();
+            redis?.Dispose();
+            messageProducer?.Dispose();
+            using (authRepository as IDisposable) {}
         }
     }
 }

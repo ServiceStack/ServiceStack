@@ -47,7 +47,7 @@ namespace ServiceStack.Auth
             bool hasError = !error.IsNullOrEmpty();
             if (hasError)
             {
-                Log.Error("Yandex error callback. {0}".Fmt(httpRequest.QueryString));
+                Log.Error($"Yandex error callback. {httpRequest.QueryString}");
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
             }
 
@@ -55,15 +55,14 @@ namespace ServiceStack.Auth
             bool isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                string preAuthUrl = PreAuthUrl + "?response_type=code&client_id={0}&redirect_uri={1}&display=popup&state={2}".Fmt(ApplicationId, CallbackUrl.UrlEncode(), Guid.NewGuid().ToString("N"));
-
-                SaveSession(authService, session, SessionExpiry);
+                string preAuthUrl = $"{PreAuthUrl}?response_type=code&client_id={ApplicationId}&redirect_uri={CallbackUrl.UrlEncode()}&display=popup&state={Guid.NewGuid().ToString("N")}";
+                this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
             try
             {
-                string payload = "grant_type=authorization_code&code={0}&client_id={1}&client_secret={2}".Fmt(code, ApplicationId, ApplicationPassword);
+                string payload = $"grant_type=authorization_code&code={code}&client_id={ApplicationId}&client_secret={ApplicationPassword}";
                 string contents = AccessTokenUrl.PostStringToUrl(payload);
 
                 var authInfo = JsonObject.Parse(contents);
@@ -74,7 +73,7 @@ namespace ServiceStack.Auth
 
                 if (!accessTokenError.IsNullOrEmpty())
                 {
-                    Log.Error("Yandex access_token error callback. {0}".Fmt(authInfo.ToString()));
+                    Log.Error($"Yandex access_token error callback. {authInfo}");
                     return authService.Redirect(session.ReferrerUrl.SetParam("f", "AccessTokenFailed"));
                 }
                 tokens.AccessTokenSecret = authInfo.Get("access_token");
@@ -87,7 +86,7 @@ namespace ServiceStack.Auth
             catch (WebException webException)
             {
                 //just in case Yandex will start throwing exceptions 
-                HttpStatusCode statusCode = ((HttpWebResponse)webException.Response).StatusCode;
+                var statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
                     return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
@@ -100,7 +99,7 @@ namespace ServiceStack.Auth
         {
             try
             {
-                string json = "https://login.yandex.ru/info?format=json&oauth_token={0}".Fmt(tokens.AccessTokenSecret).GetJsonFromUrl();
+                string json = $"https://login.yandex.ru/info?format=json&oauth_token={tokens.AccessTokenSecret}".GetJsonFromUrl();
                 JsonObject obj = JsonObject.Parse(json);
 
                 tokens.UserId = obj.Get("id");
@@ -115,7 +114,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error("Could not retrieve Yandex user info for '{0}'".Fmt(tokens.DisplayName), ex);
+                Log.Error($"Could not retrieve Yandex user info for '{tokens.DisplayName}'", ex);
             }
         }
 

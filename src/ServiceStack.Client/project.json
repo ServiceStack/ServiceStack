@@ -1,0 +1,57 @@
+{
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": [
+          "DEBUG",
+          "TRACE"
+        ]
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": [
+          "TRACE"
+        ],
+        "optimize": true
+      }
+    }
+  },
+  "dependencies": {
+    "NETStandard.Library": "1.6.0",
+    "ServiceStack.Interfaces": "1.0.*",
+    "ServiceStack.Text": "1.0.*"
+  },
+  "frameworks": {
+    "netstandard1.1": {
+      "dependencies": {
+        "System.Net.Requests": "4.0.11",
+        "System.ServiceModel.Primitives": "4.1.0",
+        "System.Xml.XmlSerializer": "4.0.11"
+      }
+    },
+    "netstandard1.6": {
+      "dependencies": {
+        "System.Net.Requests": "4.0.11",
+        "System.Collections.Specialized": "4.0.1",
+        "System.ServiceModel.Primitives": "4.1.0",
+        "System.Xml.XmlSerializer": "4.0.11"        
+      }
+    },
+    ".NETPortable,Version=v4.5,Profile=Profile7": {
+      "buildOptions": {
+        "define": [
+          "PCL"
+        ]
+      },
+      "frameworkAssemblies": {
+        "System.Runtime.Serialization.Primitives": "4.1.1-*",
+        "System.Runtime.Serialization.Xml": "4.1.1",
+        "System.Net.Requests": "4.0.11",
+        "System.Dynamic.Runtime": "4.0.11",
+        "Microsoft.CSharp": "4.0.1-*"
+      }
+    }
+  },
+  "version": "1.0.0"
+}

@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Razor.BuildTask</id>
     <title>ServiceStack.Razor.BuildTask - MSBuild Task to compile Razor Views as a build-step</title>
-    <version>4.0.0</version>
+    <version>4.5.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <summary>MSBuild Task to generate and compile Service Stack Razor Views as a build-step, ready for instant use at run-time</summary>
@@ -18,9 +18,10 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>Razor ViewEngine View Templates Controllers Mono ASP.NET Self-Host ServiceStack</tags>
     <language>en-US</language>
-    <copyright>Copyright 2013 Service Stack</copyright>
+    <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
-      <dependency id="ServiceStack.Razor" version="4.0" />
+      <dependency id="ServiceStack.Razor" version="4.5" />
+      <dependency id="Microsoft.AspNet.Razor" version="3.2.3" />
     </dependencies>
   </metadata>
   <files>

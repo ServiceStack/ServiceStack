@@ -1,4 +1,4 @@
-#if !(SL5 || XBOX || ANDROID || __IOS__ || __MAC__ || PCL)
+#if !(SL5 || XBOX || ANDROID || __IOS__ || __MAC__ || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
 using System;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
@@ -40,15 +40,9 @@ namespace ServiceStack
             }
         }
 
-        protected override Binding Binding
-        {
-            get { return this.WsHttpBinding; }
-        }
+        protected override Binding Binding => this.WsHttpBinding;
 
-        protected override MessageVersion MessageVersion
-        {
-            get { return MessageVersion.Default; }
-        }
+        protected override MessageVersion MessageVersion => MessageVersion.Default;
 
         public override void SetProxy(Uri proxyAddress)
         {

@@ -25,10 +25,7 @@ namespace ServiceStack
     {
         public static EqualsCondition Instance = new EqualsCondition();
 
-        public override string Alias
-        {
-            get { return ConditionAlias.Equals; }
-        }
+        public override string Alias => ConditionAlias.Equals;
 
         public override bool Match(object a, object b)
         {
@@ -37,10 +34,7 @@ namespace ServiceStack
     }
     public class NotEqualCondition : QueryCondition
     {
-        public override string Alias
-        {
-            get { return ConditionAlias.NotEqual; }
-        }
+        public override string Alias => ConditionAlias.NotEqual;
 
         public override bool Match(object a, object b)
         {
@@ -49,10 +43,7 @@ namespace ServiceStack
     }
     public class GreaterCondition : QueryCondition
     {
-        public override string Alias
-        {
-            get { return ConditionAlias.Greater; }
-        }
+        public override string Alias => ConditionAlias.Greater;
 
         public override bool Match(object a, object b)
         {
@@ -65,10 +56,7 @@ namespace ServiceStack
     {
         public static GreaterEqualCondition Instance = new GreaterEqualCondition();
 
-        public override string Alias
-        {
-            get { return ConditionAlias.GreaterEqual; }
-        }
+        public override string Alias => ConditionAlias.GreaterEqual;
 
         public override bool Match(object a, object b)
         {
@@ -77,10 +65,7 @@ namespace ServiceStack
     }
     public class LessCondition : QueryCondition
     {
-        public override string Alias
-        {
-            get { return ConditionAlias.Less; }
-        }
+        public override string Alias => ConditionAlias.Less;
 
         public override bool Match(object a, object b)
         {
@@ -91,10 +76,7 @@ namespace ServiceStack
     {
         public static LessEqualCondition Instance = new LessEqualCondition();
 
-        public override string Alias
-        {
-            get { return ConditionAlias.LessEqual; }
-        }
+        public override string Alias => ConditionAlias.LessEqual;
 
         public override bool Match(object a, object b)
         {
@@ -103,26 +85,20 @@ namespace ServiceStack
     }
     public class CaseInsensitiveEqualCondition : QueryCondition
     {
-        public override string Alias
-        {
-            get { return ConditionAlias.Like; }
-        }
+        public override string Alias => ConditionAlias.Like;
 
         public override bool Match(object a, object b)
         {
             var aString = CompareTypeUtils.CoerceString(a);
             var bString = CompareTypeUtils.CoerceString(b);
-            return string.Compare(aString, bString, StringComparison.InvariantCultureIgnoreCase) == 0;
+            return string.Compare(aString, bString, StringComparison.OrdinalIgnoreCase) == 0;
         }
     }
     public class InCollectionCondition : QueryCondition, IQueryMultiple
     {
         public static InCollectionCondition Instance = new InCollectionCondition();
 
-        public override string Alias
-        {
-            get { return ConditionAlias.In; }
-        }
+        public override string Alias => ConditionAlias.In;
 
         public override bool Match(object a, object b)
         {
@@ -141,10 +117,7 @@ namespace ServiceStack
     }
     public class InBetweenCondition : QueryCondition, IQueryMultiple
     {
-        public override string Alias
-        {
-            get { return ConditionAlias.Between; }
-        }
+        public override string Alias => ConditionAlias.Between;
 
         public override bool Match(object a, object b)
         {
@@ -154,7 +127,7 @@ namespace ServiceStack
 
             var bList = bValues.Map(x => x);
             if (bList.Count != 2)
-                throw new ArgumentException("InBetweenCondition expected 2 values, got {0} instead.".Fmt(bList.Count));
+                throw new ArgumentException($"InBetweenCondition expected 2 values, got {bList.Count} instead.");
 
             return GreaterEqualCondition.Instance.Match(a, bList[0]) &&
                    LessEqualCondition.Instance.Match(a, bList[1]);
@@ -162,10 +135,7 @@ namespace ServiceStack
     }
     public class StartsWithCondition : QueryCondition
     {
-        public override string Alias
-        {
-            get { return ConditionAlias.StartsWith; }
-        }
+        public override string Alias => ConditionAlias.StartsWith;
 
         public override bool Match(object a, object b)
         {
@@ -173,15 +143,12 @@ namespace ServiceStack
             var bString = CompareTypeUtils.CoerceString(b);
             if (aString == null || bString == null)
                 return false;
-            return aString.StartsWith(bString, StringComparison.InvariantCultureIgnoreCase);
+            return aString.StartsWith(bString, StringComparison.OrdinalIgnoreCase);
         }
     }
     public class ContainsCondition : QueryCondition
     {
-        public override string Alias
-        {
-            get { return ConditionAlias.Contains; }
-        }
+        public override string Alias => ConditionAlias.Contains;
 
         public override bool Match(object a, object b)
         {
@@ -189,15 +156,12 @@ namespace ServiceStack
             var bString = CompareTypeUtils.CoerceString(b);
             if (aString == null || bString == null)
                 return false;
-            return aString.IndexOf(bString, StringComparison.InvariantCultureIgnoreCase) >= 0;
+            return aString.IndexOf(bString, StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
     public class EndsWithCondition : QueryCondition
     {
-        public override string Alias
-        {
-            get { return ConditionAlias.EndsWith; }
-        }
+        public override string Alias => ConditionAlias.EndsWith;
 
         public override bool Match(object a, object b)
         {
@@ -205,17 +169,14 @@ namespace ServiceStack
             var bString = CompareTypeUtils.CoerceString(b);
             if (aString == null || bString == null)
                 return false;
-            return aString.EndsWith(bString, StringComparison.InvariantCultureIgnoreCase);
+            return aString.EndsWith(bString, StringComparison.OrdinalIgnoreCase);
         }
     }
     public class AlwaysFalseCondition : QueryCondition
     {
         public static AlwaysFalseCondition Instance = new AlwaysFalseCondition();
 
-        public override string Alias
-        {
-            get { return ConditionAlias.False; }
-        }
+        public override string Alias => ConditionAlias.False;
 
         public override bool Match(object a, object b)
         {
@@ -283,14 +244,14 @@ namespace ServiceStack
         public static long? CoerceLong(object o)
         {
             return (long?)(o.GetType().IsIntegerType()
-                ? Convert.ChangeType(o, TypeCode.Int64)
+                ? Convert.ChangeType(o, typeof(long))
                 : null);
         }
 
         public static double? CoerceDouble(object o)
         {
             return (long?)(o.GetType().IsRealNumberType()
-                ? Convert.ChangeType(o, TypeCode.Double)
+                ? Convert.ChangeType(o, typeof(double))
                 : null);
         }
 

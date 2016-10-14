@@ -1,4 +1,5 @@
-﻿using System.ServiceModel.Channels;
+﻿#if !NETSTANDARD1_6
+using System.ServiceModel.Channels;
 
 namespace ServiceStack
 {
@@ -7,3 +8,4 @@ namespace ServiceStack
         Message Message { get; set; }
     }
 }
+#endif

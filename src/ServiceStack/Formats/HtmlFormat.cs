@@ -33,26 +33,26 @@ namespace ServiceStack.Formats
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.JsonReport.ToContentFormat());
         }
 
-        public void SerializeToStream(IRequest request, object response, IResponse httpRes)
+        public void SerializeToStream(IRequest req, object response, IResponse res)
         {
-            var httpResult = request.GetItem("HttpResult") as IHttpResult;
+            var httpResult = req.GetItem("HttpResult") as IHttpResult;
             if (httpResult != null && httpResult.Headers.ContainsKey(HttpHeaders.Location) 
                 && httpResult.StatusCode != System.Net.HttpStatusCode.Created)  
                 return;
 
             try
             {
-                if (httpRes.StatusCode >= 400)
+                if (res.StatusCode >= 400)
                 {
                     var responseStatus = response.GetResponseStatus();
-                    request.Items[ErrorStatusKey] = responseStatus;
+                    req.Items[ErrorStatusKey] = responseStatus;
                 }
 
                 if (response is CompressedResult)
                 {
-                    if (httpRes.Dto != null)
+                    if (res.Dto != null)
                     {
-                        response = httpRes.Dto;
+                        response = res.Dto;
                     }
                     else
                     {
@@ -60,20 +60,27 @@ namespace ServiceStack.Formats
                     }
                 }
 
-                if (AppHost.ViewEngines.Any(x => x.ProcessRequest(request, httpRes, response))) return;
+                if (AppHost.ViewEngines.Any(x => x.ProcessRequest(req, res, response))) return;
             }
             catch (Exception ex)
             {
-                if (httpRes.StatusCode < 400)
+                if (res.StatusCode < 400)
                     throw;
 
                 //If there was an exception trying to render a Error with a View, 
                 //It can't handle errors so just write it out here.
-                response = DtoUtils.CreateErrorResponse(request.Dto, ex);
+                response = DtoUtils.CreateErrorResponse(req.Dto, ex);
             }
 
-            if (request.ResponseContentType != MimeTypes.Html
-                && request.ResponseContentType != MimeTypes.JsonReport) return;
+            //Handle Exceptions returning string
+            if (req.ResponseContentType == MimeTypes.PlainText)
+            {
+                req.ResponseContentType = MimeTypes.Html;
+                res.ContentType = MimeTypes.Html;
+            }
+
+            if (req.ResponseContentType != MimeTypes.Html
+                && req.ResponseContentType != MimeTypes.JsonReport) return;
 
             var dto = response.GetDto();
             var html = dto as string;
@@ -83,7 +90,7 @@ namespace ServiceStack.Formats
                 var json = JsonDataContractSerializer.Instance.SerializeToString(dto) ?? "null";
                 json = json.Replace("<", "&lt;").Replace(">", "&gt;");
 
-                var url = request.AbsoluteUri
+                var url = req.AbsoluteUri
                     .Replace("format=html", "")
                     .Replace("format=shtm", "")
                     .TrimEnd('?', '&');
@@ -91,7 +98,7 @@ namespace ServiceStack.Formats
                 url += url.Contains("?") ? "&" : "?";
 
                 var now = DateTime.UtcNow;
-                var requestName = request.OperationName ?? dto.GetType().GetOperationName();
+                var requestName = req.OperationName ?? dto.GetType().GetOperationName();
 
                 html = HtmlTemplates.GetHtmlFormatTemplate()
                     .Replace("${Dto}", json)
@@ -103,7 +110,7 @@ namespace ServiceStack.Formats
             }
 
             var utf8Bytes = html.ToUtf8Bytes();
-            httpRes.OutputStream.Write(utf8Bytes, 0, utf8Bytes.Length);
+            res.OutputStream.Write(utf8Bytes, 0, utf8Bytes.Length);
         }
     }
 

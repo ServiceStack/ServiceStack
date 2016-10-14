@@ -50,7 +50,11 @@ namespace ServiceStack.Common.Tests.Perf
 
         public static Func<object, object> CreateFunc<T1, T2>(MethodInfo mi)
         {
+#if !NETCORE
             var del = (Func<T1, T2>)Delegate.CreateDelegate(typeof(Func<T1, T2>), mi);
+#else
+            var del = (Func<T1, T2>)mi.CreateDelegate(typeof(Func<T1, T2>));
+#endif
             return x => del((T1)x);
         }
 

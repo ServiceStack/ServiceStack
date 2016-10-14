@@ -4,15 +4,12 @@ using System.Reflection;
 using Funq;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
-using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.Validation
 {
     public class ValidationFeature : IPlugin
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ValidationFeature));
-
         public Func<ValidationResult, object, object> ErrorResponseFilter { get; set; }
 
         /// <summary>
@@ -45,7 +42,7 @@ namespace ServiceStack.Validation
                 //Serializing request successfully is not critical and only provides added error info
             }
 
-            return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", GetType().GetOperationName(), DateTime.UtcNow, requestString);
+            return $"[{GetType().GetOperationName()}: {DateTime.UtcNow}]:\n[REQUEST: {requestString}]";
         }
     }
 
@@ -76,11 +73,11 @@ namespace ServiceStack.Validation
 
         public static void RegisterValidator(this Container container, Type validator, ReuseScope scope=ReuseScope.None)
         {
-            var baseType = validator.BaseType;
-            if (validator.IsInterface || baseType == null) return;
-            while (!baseType.IsGenericType)
+            var baseType = validator.BaseType();
+            if (validator.IsInterface() || baseType == null) return;
+            while (!baseType.IsGenericType())
             {
-                baseType = baseType.BaseType;
+                baseType = baseType.BaseType();
             }
 
             var dtoType = baseType.GetGenericArguments()[0];

@@ -23,9 +23,7 @@ namespace ServiceStack
         public static Func<TModel, TValue> Compile<TModel, TValue>(this Expression<Func<TModel, TValue>> lambdaExpression)
         {
             if (lambdaExpression == null)
-            {
-                throw new ArgumentNullException("lambdaExpression");
-            }
+                throw new ArgumentNullException(nameof(lambdaExpression));
 
             return ExpressionUtil.CachedExpressionCompiler.Process(lambdaExpression);
         }
@@ -34,9 +32,7 @@ namespace ServiceStack
         public static object Evaluate(Expression arg)
         {
             if (arg == null)
-            {
-                throw new ArgumentNullException("arg");
-            }
+                throw new ArgumentNullException(nameof(arg));
 
             Func<object, object> func = Wrap(arg);
             return func(null);
@@ -350,6 +346,7 @@ namespace ServiceStack.ExpressionUtil
         {
             HashCodeCombiner combiner = new HashCodeCombiner();
             Elements.ForEach(combiner.AddFingerprint);
+
             return combiner.CombinedHash;
         }
     }
@@ -462,7 +459,11 @@ namespace ServiceStack.ExpressionUtil
             return base.VisitDefault(node);
         }
 
-        protected override Expression VisitDynamic(DynamicExpression node)
+        protected
+#if !NETSTANDARD1_3
+    	override
+#endif
+    	Expression VisitDynamic(DynamicExpression node)
         {
             return GiveUp(node);
         }

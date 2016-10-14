@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NETSTANDARD1_6
+
+using System;
 
 namespace ServiceStack.MiniProfiler.SqlFormatters
 {
@@ -17,3 +19,5 @@ namespace ServiceStack.MiniProfiler.SqlFormatters
         }
     }
 }
+
+#endif

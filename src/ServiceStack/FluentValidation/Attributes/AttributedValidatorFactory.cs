@@ -36,13 +36,10 @@ namespace ServiceStack.FluentValidation.Attributes {
         /// <summary>
         /// Gets a validator for the appropriate type.
         /// </summary>
-        public virtual IValidator GetValidator(Type type) {
-            if (type == null)
-                return null;
-
-            var attribute = (ValidatorAttribute)Attribute.GetCustomAttribute(type, typeof(ValidatorAttribute));
-
-            if (attribute == null || attribute.ValidatorType == null)
+        public virtual IValidator GetValidator(Type type)
+        {
+            var attribute = type?.FirstAttribute<ValidatorAttribute>();
+            if (attribute?.ValidatorType == null)
                 return null;
 
             return cache.GetOrCreateInstance(attribute.ValidatorType) as IValidator;

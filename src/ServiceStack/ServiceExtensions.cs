@@ -7,7 +7,6 @@ using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 using ServiceStack.Testing;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -39,7 +38,7 @@ namespace ServiceStack
                 StatusCode = HttpStatusCode.Unauthorized,
                 ContentType = service.Request.ResponseContentType,
                 Headers = {
-                    { HttpHeaders.WwwAuthenticate, AuthenticateService.DefaultOAuthProvider + " realm=\"{0}\"".Fmt(AuthenticateService.DefaultOAuthRealm) }
+                    { HttpHeaders.WwwAuthenticate, $"{AuthenticateService.DefaultOAuthProvider} realm=\"{AuthenticateService.DefaultOAuthRealm}\"" }
                 },
             };
         }
@@ -47,11 +46,11 @@ namespace ServiceStack
         public static string GetSessionId(this IServiceBase service)
         {
             var req = service.Request;
-            var id = req.GetSessionId();
-            if (id == null)
-                throw new ArgumentNullException("Session not set. Is Session being set in RequestFilters?");
+            var sessionId = req.GetSessionId();
+            if (sessionId == null)
+                throw new ArgumentNullException("sessionId", "Session not set. Is Session being set in RequestFilters?");
 
-            return id;
+            return sessionId;
         }
 
         /// <summary>
@@ -81,16 +80,12 @@ namespace ServiceStack
 
         public static void RemoveSession(this IServiceBase service)
         {
-            if (service == null) return;
-
-            service.Request.RemoveSession();
+            service?.Request.RemoveSession();
         }
 
         public static void RemoveSession(this Service service)
         {
-            if (service == null) return;
-
-            service.Request.RemoveSession();
+            service?.Request.RemoveSession();
         }
 
         public static void CacheSet<T>(this ICacheClient cache, string key, T value, TimeSpan? expiresIn)
@@ -115,7 +110,7 @@ namespace ServiceStack
         {
             if (httpReq == null) return;
             if (sessionId == null)
-                throw new ArgumentNullException("sessionId");
+                throw new ArgumentNullException(nameof(sessionId));
 
             var sessionKey = SessionFeature.GetSessionKey(sessionId);
             httpReq.GetCacheClient().Remove(sessionKey);
@@ -160,6 +155,20 @@ namespace ServiceStack
             object oSession = null;
             if (!reload)
                 httpReq.Items.TryGetValue(Keywords.Session, out oSession);
+
+            if (oSession == null && !httpReq.Items.ContainsKey(Keywords.HasPreAuthenticated))
+            {
+                try
+                {
+                    HostContext.AppHost.ApplyPreAuthenticateFilters(httpReq, httpReq.Response);
+                    httpReq.Items.TryGetValue(Keywords.Session, out oSession);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error in GetSession() when ApplyPreAuthenticateFilters", ex);
+                    /*treat errors as non-existing session*/
+                }
+            }
 
             var sessionId = httpReq.GetSessionId();
             var session = oSession as IAuthSession;

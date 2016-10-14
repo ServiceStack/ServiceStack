@@ -116,13 +116,13 @@
         <input type="text" name="Password" value="test"/>
         <input type="submit"/>
     </form>
-    
+
     <h3>Private Auth</h3>
     <form action="/privateauth">
         <input type="text" name="Username" value="demis.bellot@gmail.com"/>
         <input type="submit"/>
     </form>
-    
+
     <h3>Register New User</h3>
     <form action="/register" method="POST">
         <input type="text" name="Username"  placeholder="UserName"  value="NewUser"/>
@@ -138,6 +138,9 @@
 
     <h3>Lock all Users</h3>
     <a href="/lockallusers">/lockallusers</a>
+
+    <h3>Convert Session to token</h3>
+    <a href="/session-to-token">/session-to-token</a>
 
     <h3>Logout</h3>
     <a href="/auth/logout">/auth/logout</a>

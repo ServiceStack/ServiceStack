@@ -53,6 +53,17 @@ namespace ServiceStack.Host.Handlers
             RequestName = GetType().Name; //Always allow StaticFileHandlers
         }
 
+        /// <summary>
+        /// Return File at specified virtualPath from AppHost.VirtualFiles ContentRootPath
+        /// </summary>
+        public StaticFileHandler(string virtualPath) : this()
+        {
+            VirtualNode = HostContext.AppHost.VirtualFiles.GetFile(virtualPath);
+
+            if (VirtualNode == null)
+                throw new ArgumentException("Could not find file at VirtualPath: " + virtualPath);
+        }
+
         public StaticFileHandler(IVirtualFile virtualFile) : this()
         {
             VirtualNode = virtualFile;
@@ -63,12 +74,13 @@ namespace ServiceStack.Host.Handlers
             VirtualNode = virtualDir;
         }
 
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var httpReq = context.ToRequest(GetType().GetOperationName());
             ProcessRequest(httpReq, httpReq.Response, httpReq.OperationName);
         }
-
+#endif
         public int BufferSize { get; set; }
         private static DateTime DefaultFileModified { get; set; }
         private static string DefaultFilePath { get; set; }
@@ -137,7 +149,7 @@ namespace ServiceStack.Host.Handlers
                         if (file == null)
                         {
                             var msg = ErrorMessages.FileNotExistsFmt.Fmt(request.PathInfo);
-                            log.WarnFormat("{0} in path: {1}", msg, originalFileName);
+                            log.Warn($"{msg} in path: {originalFileName}");
                             response.StatusCode = 404;
                             response.StatusDescription = msg;
                             return;
@@ -218,6 +230,7 @@ namespace ServiceStack.Host.Handlers
                         }
                     }
                 }
+#if !NETSTANDARD1_6
                 catch (System.Net.HttpListenerException ex)
                 {
                     if (ex.ErrorCode == 1229)
@@ -228,9 +241,10 @@ namespace ServiceStack.Host.Handlers
                     //with attribute in header "Range: bytes=newSeekPosition-"
                     throw;
                 }
+#endif
                 catch (Exception ex)
                 {
-                    log.ErrorFormat("Static file {0} forbidden: {1}", request.PathInfo, ex.Message);
+                    log.ErrorFormat($"Static file {request.PathInfo} forbidden: {ex.Message}");
                     throw new HttpException(403, "Forbidden.");
                 }
             });
@@ -262,10 +276,7 @@ namespace ServiceStack.Host.Handlers
             return indexDirs;
         }
 
-        public override bool IsReusable
-        {
-            get { return true; }
-        }
+        public override bool IsReusable => true;
 
         public static bool DirectoryExists(string dirPath, string appFilePath)
         {

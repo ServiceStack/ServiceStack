@@ -4,40 +4,39 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.Redis;
-using ServiceStack.Text;
 
 namespace ServiceStack.Messaging
 {
-	public class RedisMessageProducer
-		: IMessageProducer, IOneWayClient 
-	{
-		private readonly IRedisClientsManager clientsManager;
-		private readonly Action onPublishedCallback;
+    public class RedisMessageProducer
+        : IMessageProducer, IOneWayClient
+    {
+        private readonly IRedisClientsManager clientsManager;
+        private readonly Action onPublishedCallback;
 
-		public RedisMessageProducer(IRedisClientsManager clientsManager)
-			: this(clientsManager, null) {}
+        public RedisMessageProducer(IRedisClientsManager clientsManager)
+            : this(clientsManager, null) { }
 
-		public RedisMessageProducer(IRedisClientsManager clientsManager, Action onPublishedCallback)
-		{
-			this.clientsManager = clientsManager;
-			this.onPublishedCallback = onPublishedCallback;
-		}
+        public RedisMessageProducer(IRedisClientsManager clientsManager, Action onPublishedCallback)
+        {
+            this.clientsManager = clientsManager;
+            this.onPublishedCallback = onPublishedCallback;
+        }
 
-		private IRedisNativeClient readWriteClient;
-		public IRedisNativeClient ReadWriteClient
-		{
-			get
-			{
-				if (this.readWriteClient == null)
-				{
-					this.readWriteClient = (IRedisNativeClient)clientsManager.GetClient();
-				}
-				return readWriteClient;
-			}
-		}
+        private IRedisNativeClient readWriteClient;
+        public IRedisNativeClient ReadWriteClient
+        {
+            get
+            {
+                if (this.readWriteClient == null)
+                {
+                    this.readWriteClient = (IRedisNativeClient)clientsManager.GetClient();
+                }
+                return readWriteClient;
+            }
+        }
 
-		public void Publish<T>(T messageBody)
-		{
+        public void Publish<T>(T messageBody)
+        {
             var message = messageBody as IMessage;
             if (message != null)
             {
@@ -64,8 +63,8 @@ namespace ServiceStack.Messaging
             Publish(queueName, MessageFactory.Create(requestDto));
         }
 
-	    public void SendAllOneWay(IEnumerable<object> requests)
-	    {
+        public void SendAllOneWay(IEnumerable<object> requests)
+        {
             if (requests == null) return;
             foreach (var request in requests)
             {
@@ -73,43 +72,18 @@ namespace ServiceStack.Messaging
             }
         }
 
-	    public void Publish(string queueName, IMessage message)
+        public void Publish(string queueName, IMessage message)
         {
-            using (__requestAccess())
-            {
-                var messageBytes = message.ToBytes();
-                this.ReadWriteClient.LPush(queueName, messageBytes);
-                this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
+            var messageBytes = message.ToBytes();
+            this.ReadWriteClient.LPush(queueName, messageBytes);
+            this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
 
-                if (onPublishedCallback != null)
-                {
-                    onPublishedCallback();
-                }
-            }
+            onPublishedCallback?.Invoke();
         }
 
-        private class AccessToken
+        public void Dispose()
         {
-            private string token;
-            internal static readonly AccessToken __accessToken =
-                new AccessToken("lUjBZNG56eE9yd3FQdVFSTy9qeGl5dlI5RmZwamc4U05udl000");
-            private AccessToken(string token)
-            {
-                this.token = token;
-            }
+            readWriteClient?.Dispose();
         }
-
-        protected IDisposable __requestAccess()
-        {
-            return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
-        }
-
-		public void Dispose()
-		{
-			if (readWriteClient != null)
-			{
-				readWriteClient.Dispose();
-			}
-		}
-	}
+    }
 }

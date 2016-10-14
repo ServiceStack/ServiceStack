@@ -13,9 +13,9 @@ namespace ServiceStack.Auth
     public class FacebookAuthProvider : OAuthProvider
     {
         public const string Name = "facebook";
-        public static string Realm = "https://graph.facebook.com/v2.0/";
+        public static string Realm = "https://graph.facebook.com/v2.8/";
         public static string PreAuthUrl = "https://www.facebook.com/dialog/oauth";
-        public static string[] DefaultFields = new [] { "id", "name", "first_name", "last_name", "email" };
+        public static string[] DefaultFields = { "id", "name", "first_name", "last_name", "email" };
 
         public string AppId { get; set; }
         public string AppSecret { get; set; }
@@ -44,7 +44,7 @@ namespace ServiceStack.Auth
             var hasError = !error.IsNullOrEmpty();
             if (hasError)
             {
-                Log.Error("Facebook error callback. {0}".Fmt(httpRequest.QueryString));
+                Log.Error($"Facebook error callback. {httpRequest.QueryString}");
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
             }             
         
@@ -52,20 +52,18 @@ namespace ServiceStack.Auth
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                var preAuthUrl = PreAuthUrl + "?client_id={0}&redirect_uri={1}&scope={2}"
-                    .Fmt(AppId, this.CallbackUrl.UrlEncode(), string.Join(",", Permissions));
+                var preAuthUrl = $"{PreAuthUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&scope={string.Join(",", Permissions)}";
 
-                SaveSession(authService, session, SessionExpiry);
+                this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
-            var accessTokenUrl = this.AccessTokenUrl + "?client_id={0}&redirect_uri={1}&client_secret={2}&code={3}"
-                .Fmt(AppId, this.CallbackUrl.UrlEncode(), AppSecret, code);
+            var accessTokenUrl = $"{AccessTokenUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&client_secret={AppSecret}&code={code}";
 
             try
             {
-                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
-                var authInfo = HttpUtility.ParseQueryString(contents);
+                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetJsonFromUrl();
+                var authInfo = JsonObject.Parse(contents);
                 tokens.AccessTokenSecret = authInfo["access_token"];
 
                 session.IsAuthenticated = true;
@@ -107,7 +105,7 @@ namespace ServiceStack.Auth
                 json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, "picture");
                 obj = JsonObject.Parse(json);
                 var picture = obj.Object("picture");
-                var data = picture != null ? picture.Object("data") : null;
+                var data = picture?.Object("data");
                 if (data != null)
                 {
                     string profileUrl;
@@ -117,7 +115,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error("Could not retrieve facebook user info for '{0}'".Fmt(tokens.DisplayName), ex);
+                Log.Error($"Could not retrieve facebook user info for '{tokens.DisplayName}'", ex);
             }
 
             LoadUserOAuthProvider(userSession, tokens);

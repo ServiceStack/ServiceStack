@@ -1,22 +1,32 @@
+#if !NETSTANDARD1_6 
+
 //Copyright (c) Service Stack LLC. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
 using Funq;
-using ServiceStack.Text;
+using ServiceStack.Configuration;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
 {
-    public partial class ListenerRequest : IHttpRequest
+    public partial class ListenerRequest : IHttpRequest, IHasResolver
     {
-        public Container Container { get; set; }
+        [Obsolete("Use Resolver")]
+        public Container Container { get { throw new NotSupportedException("Use Resolver"); } }
+
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get { return resolver ?? Service.GlobalResolver; }
+            set { resolver = value; }
+        }
+
         private readonly HttpListenerRequest request;
         private readonly IHttpResponse response;
 
@@ -30,25 +40,13 @@ namespace ServiceStack.Host.HttpListener
             this.RequestPreferences = new RequestPreferences(this);
         }
 
-        public HttpListenerRequest HttpRequest
-        {
-            get { return request; }
-        }
+        public HttpListenerRequest HttpRequest => request;
 
-        public object OriginalRequest
-        {
-            get { return request; }
-        }
+        public object OriginalRequest => request;
 
-        public IResponse Response
-        {
-            get { return response; }
-        }
+        public IResponse Response => response;
 
-        public IHttpResponse HttpResponse
-        {
-            get { return response; }
-        }
+        public IHttpResponse HttpResponse => response;
 
         public RequestAttributes RequestAttributes { get; set; }
 
@@ -56,15 +54,7 @@ namespace ServiceStack.Host.HttpListener
 
         public T TryResolve<T>()
         {
-            if (typeof(T) == typeof(IHttpRequest))
-                throw new Exception("You don't need to use IHttpRequest.TryResolve<IHttpRequest> to resolve itself");
-
-            if (typeof(T) == typeof(IHttpResponse))
-                throw new Exception("Resolve IHttpResponse with 'Response' property instead of IHttpRequest.TryResolve<IHttpResponse>");
-
-            return Container == null
-                ? HostContext.TryResolve<T>()
-                : Container.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public string OperationName { get; set; }
@@ -82,107 +72,43 @@ namespace ServiceStack.Host.HttpListener
             return reader.ReadToEnd();
         }
 
-        public string RawUrl
-        {
-            get { return request.RawUrl; }
-        }
+        public string RawUrl => request.RawUrl;
 
-        public string AbsoluteUri
-        {
-            get { return request.Url.AbsoluteUri.TrimEnd('/'); }
-        }
+        public string AbsoluteUri => request.Url.AbsoluteUri.TrimEnd('/');
 
-        public string UserHostAddress
-        {
-            get
-            {
-                return request.RemoteEndPoint != null 
-                    ? request.RemoteEndPoint.Address.ToString() 
-                    : request.UserHostAddress;
-            }
-        }
+        public string UserHostAddress => request.RemoteEndPoint?.Address.ToString() ?? request.UserHostAddress;
 
-        public string XForwardedFor
-        {
-            get
-            {
-                return String.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedFor]) ? null : request.Headers[HttpHeaders.XForwardedFor];
-            }
-        }
+        public string XForwardedFor => string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedFor]) ? null : request.Headers[HttpHeaders.XForwardedFor];
 
-        public int? XForwardedPort
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedPort]) ? (int?)null : int.Parse(request.Headers[HttpHeaders.XForwardedPort]);
-            }
-        }
+        public int? XForwardedPort => string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedPort]) ? (int?)null : int.Parse(request.Headers[HttpHeaders.XForwardedPort]);
 
-        public string XForwardedProtocol
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedProtocol]) ? null : request.Headers[HttpHeaders.XForwardedProtocol];
-            }
-        }
+        public string XForwardedProtocol => string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedProtocol]) ? null : request.Headers[HttpHeaders.XForwardedProtocol];
 
-        public string XRealIp
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XRealIp]) ? null : request.Headers[HttpHeaders.XRealIp];
-            }
-        }
+        public string XRealIp => string.IsNullOrEmpty(request.Headers[HttpHeaders.XRealIp]) ? null : request.Headers[HttpHeaders.XRealIp];
 
-        public string Accept
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.Accept]) ? null : request.Headers[HttpHeaders.Accept];
-            }
-        }
+        public string Accept => string.IsNullOrEmpty(request.Headers[HttpHeaders.Accept]) ? null : request.Headers[HttpHeaders.Accept];
 
         private string remoteIp;
-        public string RemoteIp
-        {
-            get
-            {
-                return remoteIp ??
-                    (remoteIp = XForwardedFor ??
-                                (XRealIp ??
-                                ((request.RemoteEndPoint != null) ? request.RemoteEndPoint.Address.ToString() : null)));
-            }
-        }
+        public string RemoteIp => remoteIp ??
+                                  (remoteIp = XForwardedFor ??
+                                              (XRealIp ?? request.RemoteEndPoint?.Address.ToString()));
 
-        public string Authorization
-        {
-            get
-            {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.Authorization]) ? null : request.Headers[HttpHeaders.Authorization];
-            }
-        }
+        public string Authorization => string.IsNullOrEmpty(request.Headers[HttpHeaders.Authorization]) ? null : request.Headers[HttpHeaders.Authorization];
 
-        public bool IsSecureConnection
-        {
-            get { return request.IsSecureConnection || XForwardedProtocol == "https"; }
-        }
+        public bool IsSecureConnection => request.IsSecureConnection || XForwardedProtocol == "https";
 
-        public string[] AcceptTypes
-        {
-            get { return request.AcceptTypes; }
-        }
+        public string[] AcceptTypes => request.AcceptTypes;
 
         private Dictionary<string, object> items;
-        public Dictionary<string, object> Items
-        {
-            get { return items ?? (items = new Dictionary<string, object>()); }
-        }
+        public Dictionary<string, object> Items => items ?? (items = new Dictionary<string, object>());
 
         private string responseContentType;
         public string ResponseContentType
         {
-            get { return responseContentType 
-                ?? (responseContentType = this.GetResponseContentType()); }
+            get
+            {
+                return responseContentType ?? (responseContentType = this.GetResponseContentType());
+            }
             set
             {
                 this.responseContentType = value;
@@ -201,7 +127,7 @@ namespace ServiceStack.Host.HttpListener
                 {
                     var mode = HostContext.Config.HandlerFactoryPath;
 
-                    var pos = request.RawUrl.IndexOf("?");
+                    var pos = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
                     if (pos != -1)
                     {
                         var path = request.RawUrl.Substring(0, pos);
@@ -241,49 +167,25 @@ namespace ServiceStack.Host.HttpListener
             }
         }
 
-        public string UserAgent
-        {
-            get { return request.UserAgent; }
-        }
+        public string UserAgent => request.UserAgent;
 
         private NameValueCollectionWrapper headers;
-        public INameValueCollection Headers
-        {
-            get { return headers ?? (headers = new NameValueCollectionWrapper(request.Headers)); }
-        }
+        public INameValueCollection Headers => headers ?? (headers = new NameValueCollectionWrapper(request.Headers));
 
         private NameValueCollectionWrapper queryString;
-        public INameValueCollection QueryString
-        {
-            get { return queryString ?? (queryString = new NameValueCollectionWrapper(HttpUtility.ParseQueryString(request.Url.Query))); }
-        }
+        public INameValueCollection QueryString => queryString ?? (queryString = new NameValueCollectionWrapper(HttpUtility.ParseQueryString(request.Url.Query)));
 
         private NameValueCollectionWrapper formData;
-        public INameValueCollection FormData
-        {
-            get { return formData ?? (formData = new NameValueCollectionWrapper(this.Form)); }
-        }
+        public INameValueCollection FormData => formData ?? (formData = new NameValueCollectionWrapper(this.Form));
 
-        public bool IsLocal
-        {
-            get { return request.IsLocal; }
-        }
+        public bool IsLocal => request.IsLocal;
 
         private string httpMethod;
-        public string HttpMethod
-        {
-            get
-            {
-                return httpMethod
-                    ?? (httpMethod = this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
-                    ?? request.HttpMethod);
-            }
-        }
+        public string HttpMethod => httpMethod
+            ?? (httpMethod = this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
+            ?? request.HttpMethod);
 
-        public string Verb
-        {
-            get { return HttpMethod; }
-        }
+        public string Verb => HttpMethod;
 
         public string Param(string name)
         {
@@ -292,10 +194,7 @@ namespace ServiceStack.Host.HttpListener
                 ?? FormData[name];
         }
 
-        public string ContentType
-        {
-            get { return request.ContentType; }
-        }
+        public string ContentType => request.ContentType;
 
         public Encoding contentEncoding;
         public Encoding ContentEncoding
@@ -304,10 +203,7 @@ namespace ServiceStack.Host.HttpListener
             set { contentEncoding = value; }
         }
 
-        public Uri UrlReferrer
-        {
-            get { return request.UrlReferrer; }
-        }
+        public Uri UrlReferrer => request.UrlReferrer;
 
         public static Encoding GetEncoding(string contentTypeHeader)
         {
@@ -335,15 +231,9 @@ namespace ServiceStack.Host.HttpListener
         }
 
         public MemoryStream BufferedStream { get; set; }
-        public Stream InputStream
-        {
-            get { return BufferedStream ?? request.InputStream; }
-        }
+        public Stream InputStream => BufferedStream ?? request.InputStream;
 
-        public long ContentLength
-        {
-            get { return request.ContentLength64; }
-        }
+        public long ContentLength => request.ContentLength64;
 
         private IHttpFile[] httpFiles;
         public IHttpFile[] Files
@@ -375,9 +265,9 @@ namespace ServiceStack.Host.HttpListener
 
         static Stream GetSubStream(Stream stream)
         {
-            if (stream is MemoryStream)
+            var other = stream as MemoryStream;
+            if (other != null)
             {
-                var other = (MemoryStream)stream;
                 try
                 {
                     return new MemoryStream(other.GetBuffer(), 0, (int)other.Length, false, true);
@@ -398,19 +288,19 @@ namespace ServiceStack.Host.HttpListener
         public static string GetHandlerPathIfAny(string listenerUrl)
         {
             if (listenerUrl == null) return null;
-            var pos = listenerUrl.IndexOf("://", StringComparison.InvariantCultureIgnoreCase);
+            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
             if (pos == -1) return null;
             var startHostUrl = listenerUrl.Substring(pos + "://".Length);
             var endPos = startHostUrl.IndexOf('/');
             if (endPos == -1) return null;
             var endHostUrl = startHostUrl.Substring(endPos + 1);
-            return String.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
+            return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
         }
 
         public static string NormalizePathInfo(string pathInfo, string handlerPath)
         {
             if (handlerPath != null && pathInfo.TrimStart('/').StartsWith(
-                handlerPath, StringComparison.InvariantCultureIgnoreCase))
+                handlerPath, StringComparison.OrdinalIgnoreCase))
             {
                 return pathInfo.TrimStart('/').Substring(handlerPath.Length);
             }
@@ -420,3 +310,5 @@ namespace ServiceStack.Host.HttpListener
     }
 
 }
+
+#endif

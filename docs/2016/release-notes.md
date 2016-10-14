@@ -1,14 +1,434 @@
-# [v4.0.58 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md)
+# [v4.5.0 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.5.0.md)
 
-v4.0.58 is another jam-packed release starting with exciting new API Key and JWT Auth Providers enabling fast, stateless and centralized Auth Services, a modernized API surface for OrmLite, new GEO capabilities in Redis, Logging for Slack, performance and memory improvements across all ServiceStack and libraries including useful utilities you can reuse to improve performance in your own Apps! 
+We've upgraded all ServiceStack packages to **.NET 4.5**, if you were already using ServiceStack in 
+.NET 4.5 projects this will be a seamless upgrade like any other release but if your ServiceStack projects 
+are instead still on .NET 4.0 this will be a breaking change which will require converting **all** your 
+projects to **.NET 4.5 Framework** before upgrading, e.g:
 
-I'll try highlight the main points but I welcome you to checkout the [full v4.0.58 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#v4058-release-notes) when you can.
+![](http://i.imgur.com/GV8TmAS.png)
+
+You will also need to have .NET 4.5 Framework installed on any deployment Servers that doesn't have it already. 
+
+### Upgraded 3rd Party NuGet packages
+
+Upgrading to .NET 4.5 mean we're able to reference the **latest .NET 4.5 .dlls** in packages with 3rd Party
+dependencies including, `Npgsql`, `RabbitMQ.Client` and `ServiceStack.Razor` now references the official 
+`Microsoft.AspNet.Razor` NuGet package.
+
+## [.NET Core support for ServiceStack.Redis!](https://github.com/ServiceStack/ServiceStack.Redis/blob/netcore/docs/pages/netcore.md)
+
+In following the
+[.NET Core support of our Text and Client libraries](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.62.md#net-core-support-for-servicestackclient) 
+in our last release we've extended our support for .NET Core in this release to now also include 
+[ServiceStack.Redis](https://github.com/ServiceStack/ServiceStack.Redis)
+where we now have .NET Core builds for our [Top 3 popular NuGet packages](https://www.nuget.org/profiles/servicestack).
+
+To make it easy to start using Redis in a .NET Core App we've created a step-by-step guide for 
+[getting started with ServiceStack.Redis on .NET Core](https://github.com/ServiceStack/ServiceStack.Redis/blob/netcore/docs/pages/netcore.md) 
+in both Windows and Linux.
+
+## [New Xamarin.Forms TechStacks App](https://github.com/ServiceStackApps/TechStacksXamarin)
+
+We've added a new TechStacks Mobile App to our expanding showcase of different ways where ServiceStack
+provides a seamless end-to-end Typed API development experience for developing Native Mobile Apps which now includes:
+
+ - [C# iOS/Android Xamarin.Forms TechStacks App](https://github.com/ServiceStackApps/TechStacksXamarin) - **new!**
+ - [Swift iOS TechStacks App](https://github.com/ServiceStackApps/TechStacksApp)
+ - [Java Android Techstacks App](https://github.com/ServiceStackApps/TechStacksAndroidApp)
+ - [Kotlin Android TechStacks App](https://github.com/ServiceStackApps/TechStacksKotlinApp)
+ - [C# Xamarin.Android TechStacks Auth Example](https://github.com/ServiceStackApps/TechStacksAuth)
+
+Whilst not as flexibile or performant as native code, [Xamarin.Forms](https://www.xamarin.com/forms) enables 
+the most code reuse of all the available options when needing to develop both iOS and Android Apps whilst 
+still allowing for customization through styling or custom platform specific renderers. It also benefits from being 
+able to use C# and much of the rich cross-platform libraries in .NET.
+
+Despite sharing the majority of UI code between Android and iOS, Xamarin.Forms Apps also adopts the navigation
+idioms of each platform to provide a native "look and feel" which we can see by running the 
+TechStacks Xamarin.Forms App on iOS and Android:
+
+[![](https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/TechStacksXamForms/video_preview.png)](https://www.youtube.com/watch?v=4ghchU3xKs4)
+
+See the [TechStacksXamarin Github project](https://github.com/ServiceStackApps/TechStacksXamarin) 
+for more info and access to the source code.
+
+## [AutoQuery Viewer](https://github.com/ServiceStack/Admin) Saved Queries
+
+We've further refined [AutoQuery Viewer](https://github.com/ServiceStack/Admin) and added support for 
+Saved Queries where you can save queries under each AutoQuery Service by clicking the **save icon**. 
+
+The saved query will be listed with the name provided and displayed to the right of the save icon, e.g:
+
+[![](http://i.imgur.com/hySw1T9.png)](https://github.com/ServiceStack/Admin)
+
+This makes it easy for everyone to maintain and easily switch between multiple personalized views 
+of any [AutoQuery Service](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query).
+
+## Create Live Executable Docs with Gistlyn
+
+In our mission to make [Gistlyn](http://gistlyn.com) an immensely useful and collaborative learning tool for 
+exploring any .NET library, we've greatly improved the UX for editing Collections making it easier than ever to 
+create "Live documentation" which we believe is the best way to learn about a library, mixing documentation and 
+providing a live development experience letting developers try out and explore what they've just learned without 
+losing context by switching to their development environment and setting up new projects to match each code sample.
+
+Gistlyn also makes it easy to share C# snippets with colleagues or reporting an issue to library mainteners with 
+just a URL or a saved Gist ID which anyone can view in a browser at [gistlyn.com](http://gistlyn.com) or on their 
+[Desktop version of Gistlyn](http://gistlyn.com/downloads). 
+
+Here's an example of the new Collection authoring features in action:
+
+[![](http://i.imgur.com/156wYPJ.png)](https://youtu.be/FkdzYsx2lYw)
+
+## The Truly Empty ASP.NET Template
+
+![](http://i.imgur.com/ZCHoJFA.png)
+
+Over the years it's becoming harder and harder to create an Empty ASP.NET VS.NET Template as it 
+continues to accumulate more cruft, unused dlls, hidden behavior, hooks into external services and 
+other unnecessary bloat. Most of the bloat added since ASP.NET 2.0 for the most part has been unnecessary 
+yet most .NET developers end up living with it because it's in the default template and they're 
+unsure what each unknown dlls and default configuration does or what unintended behavior it will 
+cause down the line if they remove it.
+
+For ServiceStack and other lightweight Web Frameworks this added weight is completely unnecessary
+and can be safely removed. 
+E.g. [most ServiceStack Apps just needs a few ServiceStack .dlls](https://github.com/ServiceStackApps/Chat#super-lean-front-and-back) 
+and a [single Web.config mapping](https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice#register-servicestack-handler)
+to tell ASP.NET to route all calls to ServiceStack. Any other ASP.NET config you would add in 
+ServiceStack projects is just to get ASP.NET to disable any conflicting default behavior.
+
+### The Minimal ASP.NET Template we wanted
+
+Out of frustration we've decided to reverse this trend and instead of focusing on what can be added, 
+we're focusing on what can be removed whilst still remaining useful for most modern ASP.NET Web Apps. 
+
+With this goal we've reduced the ASP.NET Empty Template down to a single project with
+the only external dependency being Roslyn:
+
+![](http://i.imgur.com/jKFga3J.png)
+
+Most dlls have been removed and the 
+[Web.config](https://github.com/ServiceStack/ServiceStackVS/blob/master/src/ServiceStackVS/ProjectTemplates/AspNetEmpty/Host/Web.config) 
+just contains registration for Roslyn and config for disabling ASP.NET's unwanted default behavior.
+
+The only `.cs` file is an Empty `Global.asax.cs` with an empty placeholder for running custom code on Startup:
+
+```csharp
+using System;
+
+namespace WebApplication
+{
+    public class Global : System.Web.HttpApplication
+    {
+        protected void Application_Start(object sender, EventArgs e)
+        {
+            
+        }
+    }
+}
+```
+
+And that's it! `ASP.NET Empty` is a single project empty ASP.NET Web Application with no additional references. 
+
+### Minimal but still Useful
+
+You can then easily [Convert this empty template into a functional ServiceStack Web App](https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice) by: 
+
+1) Installing [ServiceStack and any other dependency](https://github.com/ServiceStackApps/Todos/blob/master/src/Todos/packages.config) you want to use, e.g:
+
+	PM> Install-Package ServiceStack
+	PM> Install-Package ServiceStack.Redis
+   
+2) Adding the [ASP.NET HTTP Handler mapping](https://github.com/ServiceStackApps/Todos/blob/fdcffd37d4ad49daa82b01b5876a9f308442db8c/src/Todos/Web.config#L34-L39) to route all requests to ServiceStack:
+
+```xml
+<system.webServer>
+    <validation validateIntegratedModeConfiguration="false"/>
+    <handlers>
+	    <add path="*" name="ServiceStack.Factory" type="ServiceStack.HttpHandlerFactory, ServiceStack" verb="*" preCondition="integratedMode" resourceType="Unspecified" allowPathInfo="true"/>
+    </handlers>
+</system.webServer>
+```
+
+3) Adding your [ServiceStack AppHost and Services in Global.asax.cs](https://github.com/ServiceStackApps/Todos/blob/master/src/Todos/Global.asax.cs).
+
+That's all that's needed to create a functional Web App, which in this case creates a
+[Backbone TODO compatible REST API with a Redis back-end](https://github.com/ServiceStackApps/Todos/) 
+which can power all [todomvc.com](http://todomvc.com) Single Page Apps.
+
+## Generating API Keys for Existing Users
+
+Whilst not a feature in ServiceStack, this script is useful if you want to enable ServiceStack's 
+[API Key AuthProvider](https://github.com/ServiceStack/ServiceStack/wiki/API-Key-AuthProvider) 
+but you have existing users you also want to generate API Keys for.
+
+You can add the script below (which only needs to be run once) to your `AppHost.Configure()` which will 
+use the configuration in your registered `ApiKeyAuthProvider` to generate new keys for all existing users 
+that don't have keys. 
+
+This example assumes the typical scenario of using an `OrmLiteAuthRepository` to store your Users in an RDBMS: 
+
+```csharp
+AfterInitCallbacks.Add(host =>
+{
+    var authProvider = (ApiKeyAuthProvider)
+        AuthenticateService.GetAuthProvider(ApiKeyAuthProvider.Name);
+    using (var db = host.TryResolve<IDbConnectionFactory>().Open())
+    {
+        var userWithKeysIds = db.Column<string>(db.From<ApiKey>()
+            .SelectDistinct(x => x.UserAuthId)).Map(int.Parse);
+
+        var userIdsMissingKeys = db.Column<string>(db.From<UserAuth>()
+            .Where(x => userWithKeysIds.Count == 0 || !userWithKeysIds.Contains(x.Id))
+            .Select(x => x.Id));
+
+        var authRepo = (IManageApiKeys)host.TryResolve<IAuthRepository>();
+        foreach (var userId in userIdsMissingKeys)
+        {
+            var apiKeys = authProvider.GenerateNewApiKeys(userId.ToString());
+            authRepo.StoreAll(apiKeys);
+        }
+    }
+});
+```
+
+If using another Auth Repository backend you will need to modify this script to fetch the userIds for
+all users missing API Keys for the data persistence back-end you're using.
+
+## Other Features
+
+### Auto rewriting of HTTPS Links
+
+ServiceStack now automatically rewrites outgoing links to use `https://` for Requests that were forwarded
+by an SSL-terminating Proxy and containing the `X-Forwarded-Proto = https` HTTP Header. 
+You can override `AppHost.UseHttps()` to change this behavior.
+
+# [v4.0.62 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md)
+
+We've got another big release with features added across the board, we'll list the main highlights here but 
+please see the [v4.0.62 release notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.62.md) 
+for the full details.
+
+## [Gistlyn](http://gistlyn.com)
+
+We're excited to announce [gistlyn.com](http://gistlyn.com) to the world - Gistlyn is a C# Gist IDE for creating, running and sharing stand-alone, executable C# snippets! 
+
+Born out of our initiative to improve ServiceStack's documentation, we set out to create the best way for developers to learn and explore different features in ServiceStack, Gistlyn is the result of this  effort which lets you try out and explore C# and .NET libraries using just a modern browser, making it the ideal companion tool for trying out libraries during development or on the go from the comfort of  your iPad or recent Android tablets by going to: http://gistlyn.com
+
+Gistlyn lets you run any valid C# fragments will execute your code on Gistlyn's server, running in an  isolated context where each of the variables defined in the top-level scope can be inspected further. The preview inspector also includes an Expression evaluator that can be used to evaluate C# expressions against the live server session.
+
+### [Gistlyn Collections](http://gistlyn.com/collections)
+
+Gistlyn is also an Open platform where anyone can create [Collections](http://gistlyn.com/collections) - A simple markdown document with info about a feature and links to source code where users can try it out "live" in the browser, with instant feedback so you can quickly preview the results at a glance.
+
+### [OrmLite Interactive Tour](http://gistlyn.com/ormlite)
+
+The [OrmLite Collection](http://gistlyn.com/ormlite) is a great example of this which is now the best way to learn about and try OrmLite with walk through guides that takes you through different OrmLite features. We intend to add more guides like this in future so Gistlyn becomes the best place to learn about and test different features. In the meantime we've added simple TODO examples pre-configured with the necessary Nuget packages to explore OrmLite, Redis and PocoDynamo at: 
+
+  - http://gistlyn.com/ormlite-todo
+  - http://gistlyn.com/redis-todo
+  - http://gistlyn.com/pocodynamo-todo
+
+### [Add ServiceStack Reference in Gistlyn](http://gistlyn.com/add-servicestack-reference)
+
+One feature that will add a lot of complementary value to your ServiceStack Services is Gistlyn's integrated support for Add ServiceStack Reference feature which will generate a Typed API for your remote ServiceStack Services and let you call them using ServiceStack's typed C# Service Clients and view their results - within seconds!
+
+The easiest way to use this feature is to add the **BaseUrl** for your remote ServiceStack instance to the `?AddServiceStackReference` query string, e.g:
+
+ - http://gistlyn.com?AddServiceStackReference=techstacks.io
+
+Which will create a new Gist with your Typed DTOs attached and an example request using a pre-configured JsonServiceClient and the first GET Request DTO it can find. So without having written any code you can Press play to execute a Typed API Request against your ServiceStack Services.
+
+The URL can be further customized to tell Gistlyn which Request DTO and C# expression it should use and whether to auto run it. This feature should make it easier to collaborate with others about your ServiceStack Services as you can send a url so they can test it out without having the proper developer environment setup. For more advanced scenarios you can easily save a modified script as a gist and send a link to that instead.
+
+### [Gistlyn Snapshots](http://gistlyn.com/snapshots)
+
+Snapshots lets you save the *entire client state* of your current workspace (excluding your login info) 
+into a generated url which you can use to revert back in time from when the snapshot was taken or send to someone else who can instantly see and run what you're working on, who'll be able to continue working from the same place you're at.
+
+### Gistlyn's Stateless Architecture
+
+One surprising thing about Gistlyn is that it's entirely stateless where it runs without any kind of backend db persistence. All state is either persisted to Github gists or in your browser's `localStorage`. Not even your Authenticated Github session is retained on the server as it's immediately converted into an encrypted JWT Cookie that is sent with every Ajax request, so redeployments (or even clean server rebuilds) won't lose any of your work or force you to Sign In again until the JWT Token expires.
+
+Gistlyn's Github Repo provides a good example of a modern medium-sized ServiceStack, React + TypeScript App that takes advantage of a number of different ServiceStack Features:
+
+ - [React Desktop Apps](https://github.com/ServiceStackApps/ReactDesktopApps) - 
+ tooling for packaging Gistlyn's ASP.NET Web App into a Winforms Desktop and Console App
+ - [Server Events](https://github.com/ServiceStack/ServiceStack/wiki/Server-Events) - providing real-time 
+ Script Status updates and Console logging
+ - [TypeScript](https://github.com/ServiceStack/ServiceStack/wiki/TypeScript-Add-ServiceStack-Reference) - enabling end-to-end Typed API requests
+ - [Github OAuth](https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization#auth-providers) -
+ authentication with Github
+ - [JWT Auth Provider](https://github.com/ServiceStack/ServiceStack/wiki/JWT-AuthProvider) - enabling both JWT and JWE ecrypted stateless Sessions
+ - [HTTP Utils](https://github.com/ServiceStack/ServiceStack/wiki/Http-Utils) - consuming Github's REST API 
+ and creating an authenticated HTTP Proxy in [GitHubServices.cs](https://github.com/ServiceStack/Gistlyn/blob/master/src/Gistlyn.ServiceInterface/GitHubServices.cs)
+
+### [Run Gistlyn on your Desktop](http://gistlyn.com/downloads)
+
+Thanks to ServiceStack's [React Desktop Apps](https://github.com/ServiceStackApps/ReactDesktopApps) VS.NET Template Gistlyn is available in a variety of different flavours:
+
+Deployed as an ASP.NET Web Application on both Windows / .NET and Linux / Mono servers at: 
+
+ - [gistlyn.com](http://gistlyn.com) - Ubuntu / Vagrant / Windows 2012 Server VM / IIS / .NET 4.6
+ - [mono.gistlyn.com](http://mono.gistlyn.com) - Ubuntu / Docker / mono / nginx / HyperFastCGI
+
+In addition to a running as an ASP.NET Web App, Gistlyn is also available as a self-hosting 
+Winforms Desktop or cross-platform OSX/Linux/Windows Console App at: http://gistlyn.com/downloads 
+
+Running Gistlyn on your Desktop lets you take advantage of the full resources of your CPU for faster 
+build and response times and as they're run locally they'll be able to access your RDBMS or 
+other Networked Servers and Services available from your local Intranet.
+
+## 1st class TypeScript support
+
+TypeScript has become a core part of our overall recommended solution that's integrated into all  ServiceStackVS's React and Aurelia Single Page App VS.NET Templatesoffering a seamless development experience with access to advanced ES6 features like modules, classes and arrow functions whilst still being able to target most web browsers with its down-level ES5 support. 
+
+We've added even deeper integration with TypeScript in this release with several enhancements to the generated TypeScript DTOs which graduates TypeScript to a 1st class supported language that together with the new TypeScript `JsonServiceClient` available in the servicestack-client npm package enables the same productive, typed API development experience available in our other 1st-class supported client platforms, e.g: 
+
+```ts
+client.post(request)
+    .then(r => { 
+        console.log(`New C# Gist was created with id: ${r.gist}`);
+    })
+    .catch(e => {
+        console.log("Failed to create Gist: ", e.responseStatus);
+    });
+```
+
+Where the `r` param in the returned `then()` Promise callback is typed to Response DTO Type.
+
+### Isomorphic Fetch
+
+The `servicestack-client` is a clean "jQuery-free" implementation based on JavaScript's new Fetch API standard utilizing nodes isomorphic-fetch implementation so it can be used in both JavaScript client web apps as well as node.js server projects.
+
+### ServerEventsClient
+
+In addition to `JsonServiceClient` we've ported most of the JavaScript utils in ss-utils.js including the new `ServerEventsClient` which Gistlyn uses to process real-time Server Events with:
+
+```ts
+const channels = ["gist"];
+const sse = new ServerEventsClient("/", channels, {
+    handlers: {
+        onConnect(activeSub:ISseConnect) {
+            store.dispatch({ type: 'SSE_CONNECT', activeSub });
+            fetch("/session-to-token", {
+                method:"POST", credentials:"include"
+            });
+        },
+        ConsoleMessage(m, e) {
+            batchLogs.queue({ msg: m.message });
+        },
+        ScriptExecutionResult(m:ScriptExecutionResult, e) {
+            //...
+        }
+    }
+});
+```
+
+### .NET Core support for ServiceStack.Client
+
+We're happy to be able to release our initial library support for .NET Core with .NET Core builds for ServiceStack.Client and its dependencies, available in the following NuGet packages:
+
+ - ServiceStack.Client.Core
+ - ServiceStack.Text.Core
+ - ServiceStack.Interfaces.Core
+
+Until we've completed our transition, we'll be maintaining .NET Core builds in separate NuGet packages containing a `.Core` suffix as seen above. This leaves our existing .NET packages unaffected, whilst letting us increase our release cadence of .NET Core packages until support for .NET Core libraries has stabilized.
+
+We've published a step-by-step guide showing how to Install ServiceStack.Client in a .NET Core App at: https://github.com/ServiceStack/ServiceStack/blob/netcore/docs/pages/netcore.md
+
+### ServiceStack.Text is now Free!
+
+To celebrate our initial release supporting .NET Core, we're now making ServiceStack.Text completely free for commercial or non-commercial use. We've removed all free-quota restrictions and are no longer selling licenses for ServiceStack.Text. By extension this also extends to our client libraries that just depend on ServiceStack.Text, including ServiceStack.Client and ServiceStack.Stripe which are also both free of any technical restrictions.
+
+### Encrypted Service Clients for iOS, Android and OSX
+
+The `EncryptedServiceClient` is now available in Xamarin iOS, Android and OSX packages so your Xamarin Mobile and OSX Desktop Apps are now able to benefit from transparent encrypted service client requests without needing to configure back-end HTTP servers with SSL.
+
+## Last release supporting .NET 4.0
+
+As announced earlier this year in preparation for .NET Core, this will be our last release supporting 
+.NET 4.0. Starting from next release all projects will be upgraded to .NET 4.5. Should you need it, 
+the .NET 4.0 compatible ServiceStack source code will remain accessible in the `net40` branches of all major ServiceStack Github repositories.
+
+## Aurelia updated to 1.0
+
+To coincide with the v1.0 release of Aurelia the Aurelia VS.NET template has been updated to v1.0 using **bootstrap.native** and is now pre-configured with both the new `servicestack-client` and local `src/dtos.ts` TypeScript Reference that includes an end-to-end Typed DTO integrated example.
+
+## Improved Razor intellisense
+
+We've updated all our ASP.NET Razor VS.NET Templates to use the ideal `Web.config` configuration for editing Razor pages without designer errors in VS.NET 2015. 
+
+## JWT Auth Provider
+
+The `JwtAuthProvider` has added support for specifying multiple fallback AES Auth Keys and RSA Public Keys allowing for smooth key rotations to newer Auth Keys whilst simultaneously being able to verify JWT Tokens signed with a previous key. 
+
+## Multitenancy RDBMS AuthProvider
+
+ServiceStack's `IAuthProvider` has been refactored to use the central and overridable `GetAuthRepository(IRequest)` AppHost factory method where just like ServiceStack's other "Multitenancy-aware" dependencies now lets you dynamically change which AuthProvider should be used based on the incoming request.
+
+This can be used with the new `OrmLiteAuthRepositoryMultitenancy` provider to maintain isolated User Accounts per tenant in all major supported RDBMS.
+
+## OrmLite
+
+OrmLite continues to see improvements with many of the new features in this release contributed by the Community, with special thanks to @shift-evgeny, @OlegNadymov and @bryancrosby for their contributions. There's too many examples to list here, so please check the release notes for OrmLite's new capabilities.
+
+### Dump Utils
+
+To improve their utility in Gistlyn C# gists for quickly dumping and inspecting the contents of an object the `T.PrintDump()` and `T.Dump()` extension methods can now be used on objects with cyclical references where it will display the first-level `ToString()` value of properties that have circular references.
+
+The `Dump()` utils are invaluable when explanatory coding or creating tests as you can quickly see what's in an object without having to set breakpoints and navigate nested properties in VS.NET's Watch window.
+
+### PATCH APIs added to HttpUtils
+
+The same HTTP Utils extension methods for Post and Put now also have `Patch()` equivalents.
+
+## ServiceStack.Redis
+
+Transaction support for Complex Type APIs was added to Redis and we've improved resiliency for dealing with failing Sentinels. The Default Auto Retry Timeout was also increased from 3 to 10 seconds.
+
+## PocoDynamo
+
+PocoDynamo now has Typed API support for DynamoDB Conditional Expressions and C# int and string enums.
+
+## Stripe
+
+The `StripeGateway` now supports sending and Receiving Customer `Metadata`, `BusinessVatId` and returning the Customer's `Currency`.
+
+## Find free Tcp Port
+
+The new `HostContext.FindFreeTcpPort()` lets you find the first free TCP port within a specified port-range which you can use to start your `AppHost` on the first available port:
+
+```csharp
+var port = HostContext.FindFreeTcpPort(startingFrom:5000, endingAt:6000);
+new AppHost()
+    .Init()
+    .Start($"http://localhost:{port}/");
+```
+
+## Other ServiceStack Features:
+
+ - Named dependency support for Funq's AutoWired APIs was contributed by @donaldgray
+ - Compression of `[CacheResponse]` responses can now be disabled with the `NoCompression` property
+ - `MakeInternal` option was added to C# / F# and VB.NET Native Types to generate internal Types
+ - OnError callback added to ServerEvents and new `isAuthenticated` property now being returned to Clients
+ - Can disable the second Total query in AutoQuery with `IncludeTotal = false`
+ - New Request/Response filters for Service Gateways requests that are also validated against any Validators
+
+This covers most of the features, please see the [full release notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.62.md) for more details on any of the ones you're interested in.
+
+# [v4.0.60 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md)
+
+v4.0.60 is another jam-packed release starting with exciting new API Key and JWT Auth Providers enabling fast, stateless and centralized Auth Services, a modernized API surface for OrmLite, new GEO capabilities in Redis, Logging for Slack, performance and memory improvements across all ServiceStack and libraries including useful utilities you can reuse to improve performance in your own Apps! 
+
+I'll try highlight the main points but I welcome you to checkout the [full v4.0.60 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#v4060-release-notes) when you can.
 
 ## Authentication
 
 Auth Providers that authenticate with each request (i.e. implement `IAuthWithRequest`) no longer persist Users Sessions to the cache, they're just attached to the `IRequest` and only last for the duration of the Request. This should be a transparent change but can be reverted by setting `PersistSession=true`.
 
-### [API Key Auth Provider](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#api-key-auth-provider)
+### [API Key Auth Provider](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#api-key-auth-provider)
 
 The new `ApiKeyAuthProvider` provides an alternative method for allowing external 3rd Parties access to 
 your protected Services without needing to specify a password. API Keys is the preferred approach for 
@@ -93,7 +513,7 @@ public override IDbConnection GetDbConnection(IRequest req = null)
 }
 ```
 
-## [JWT Auth Provider](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#jwt-auth-provider)
+## [JWT Auth Provider](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#jwt-auth-provider)
 
 Even more exciting than the new API Key Provider is the new integrated Auth solution for the popular
 [JSON Web Tokens](https://jwt.io/) (JWT) industry standard which is easily enabled by registering
@@ -221,8 +641,31 @@ $.post("/session-to-token");
 
 Likewise this API lets you convert Sessions created by any of the OAuth providers into a stateless JWT Token.
 
+### Switching existing Sites to JWT
 
-## [Modernized OrmLite API Surface](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#cleaner-modernized-api-surface)
+Thanks to the flexibility and benefits of using stateless JWT Tokens, we've upgraded both our Single Page App
+http://techstacks.io which uses Twitter and GitHub OAuth to [use JWT with a single Ajax call](https://github.com/ServiceStackApps/TechStacks/blob/78ecd5e390e585c14f616bb27b24e0072b756040/src/TechStacks/TechStacks/js/user/services.js#L30):
+
+```javascript
+$.post("/session-to-token");
+```
+
+We've also upgraded https://servicestack.net which as it uses normal Username/Password Credentials Authentication 
+(i.e. instead of redirects in OAuth), it doesn't need any additional network calls as we can add the `UseTokenCookie`
+option as a hidden variable in our FORM request:
+
+```html
+<form id="form-login" action="/auth/login">
+    <input type="hidden" name="UseTokenCookie" value="true" />
+    ...
+</form>
+```
+
+Which just like `ConvertSessionToToken` adds returns a populated session in the **ss-tok** Cookie so now 
+both [techstacks.io](http://techstacks.io) and [servicestack.net](https://servicestack.net) can maintain 
+uninterrupted Sessions across multiple redeployments without a persistent Sessions cache.
+
+## [Modernized OrmLite API Surface](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#cleaner-modernized-api-surface)
 
 As [mentioned in the last release](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/release-notes.md#deprecating-legacy-ormlite-apis) we've moved OrmLite's deprecated APIs into the `ServiceStack.OrmLite.Legacy` namespace leaving a clean, modern API surface in OrmLite's default namespace.
 
@@ -380,7 +823,7 @@ block.Area.Print(); //= 50
 block.DateFormat.Print(); //= 2016-06-08
 ```
 
-## [New Redis GEO Operations](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#new-redis-geo-operations)
+## [New Redis GEO Operations](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#new-redis-geo-operations)
 
 The latest [release of Redis 3.2.0](http://antirez.com/news/104) brings it exciting new [GEO capabilities](http://redis.io/commands/geoadd) which will let you store Lat/Long coordinates in Redis and query locations within a specified radius. 
 
@@ -390,7 +833,7 @@ To demonstrate this functionality we've created a new [Redis GEO Live Demo](http
 
 > Live Demo: http://redisgeo.servicestack.net
 
-## [Slack Logger](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#slack-logger)
+## [Slack Logger](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#slack-logger)
 
 The new Slack Logger can be used to send Logging to a custom Slack Channel which is a nice interactive way 
 for your development team on Slack to see and discuss logging messages as they come in.
@@ -502,7 +945,7 @@ Plugins can use the new `RegisterServicesInAssembly()` API to register multiple 
 appHost.RegisterServicesInAssembly(GetType().Assembly);
 ```
 
-This summary touches on the the main highlights, more features and further details are available in the [full v4.0.58 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.58.md#v4058-release-notes).
+This summary touches on the the main highlights, more features and further details are available in the [full v4.0.60 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.60.md#v4060-release-notes).
 
 # [v4.0.56 Release Notes](https://github.com/ServiceStack/ServiceStack/blob/master/docs/2016/v4.0.56.md)
 

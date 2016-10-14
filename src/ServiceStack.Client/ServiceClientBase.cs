@@ -505,10 +505,7 @@ namespace ServiceStack
 
         internal void AsyncSerializeToStream(IRequest requestContext, object request, Stream stream)
         {
-            using (__requestAccess())
-            {
-                SerializeRequestToStream(requestContext, request, stream);
-            }
+            SerializeRequestToStream(requestContext, request, stream);
         }
 
         public abstract void SerializeToStream(IRequest requestContext, object request, Stream stream);
@@ -519,15 +516,11 @@ namespace ServiceStack
 
         internal object AsyncDeserializeFromStream(Type type, Stream fromStream)
         {
-            using (__requestAccess())
-            {
-                return StreamDeserializer(type, fromStream);
-            }
+            return StreamDeserializer(type, fromStream);
         }
 
         protected T Deserialize<T>(string text)
         {
-            using (__requestAccess())
             using (var ms = MemoryStreamFactory.GetStream(text.ToUtf8Bytes()))
             {
                 return DeserializeFromStream<T>(ms);
@@ -739,7 +732,7 @@ namespace ServiceStack
         {
             var webEx = ex as WebException;
             if (webEx != null && webEx.Response != null
-#if !(SL5 || PCL)
+#if !(SL5 || PCL || NETSTANDARD1_1)
                  && webEx.Status == WebExceptionStatus.ProtocolError
 #endif
             )
@@ -764,15 +757,12 @@ namespace ServiceStack
                     if (string.IsNullOrEmpty(errorResponse.ContentType) || errorResponse.ContentType.MatchesContentType(ContentType))
                     {
                         var bytes = errorResponse.GetResponseStream().ReadFully();
-                        using (__requestAccess())
-                        {
-                            var stream = MemoryStreamFactory.GetStream(bytes);
-                            serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                            serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
+                        var stream = MemoryStreamFactory.GetStream(bytes);
+                        serviceEx.ResponseBody = bytes.FromUtf8Bytes();
+                        serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
 
-                            if (stream.CanRead)
-                                stream.Dispose(); //alt ms throws when you dispose twice
-                        }
+                        if (stream.CanRead)
+                            stream.Dispose(); //alt ms throws when you dispose twice
                     }
                     else
                     {
@@ -805,7 +795,6 @@ namespace ServiceStack
         {
             return PrepareWebRequest(httpMethod, requestUri, request, client =>
             {
-                using (__requestAccess())
                 using (var requestStream = PclExport.Instance.GetRequestStream(client))
                 {
                     SerializeRequestToStream(null, request, requestStream);
@@ -916,11 +905,6 @@ namespace ServiceStack
 
             if (GlobalRequestFilter != null)
                 GlobalRequestFilter(client);
-        }
-
-        protected static IDisposable __requestAccess()
-        {
-            return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
         }
 
         private byte[] DownloadBytes(string httpMethod, string requestUri, object request)
@@ -1532,8 +1516,8 @@ namespace ServiceStack
                 var queryString = QueryStringSerializer.SerializeToString(request);
 
                 var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
-                var boundary = "----------------------------" + Guid.NewGuid().ToString("N");
-                webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
+                var boundary = Guid.NewGuid().ToString("N");
+                webRequest.ContentType = "multipart/form-data; boundary=\"" + boundary + "\"";
                 boundary = "--" + boundary;
                 var newLine = "\r\n";
                 using (var outputStream = PclExport.Instance.GetRequestStream(webRequest))
@@ -1541,8 +1525,8 @@ namespace ServiceStack
                     foreach (var key in nameValueCollection.AllKeys)
                     {
                         outputStream.Write(boundary + newLine);
-                        outputStream.Write("Content-Disposition: form-data;name=\"{0}\"{1}".FormatWith(key, newLine));
-                        outputStream.Write("Content-Type: text/plain;charset=utf-8{0}{1}".FormatWith(newLine, newLine));
+                        outputStream.Write($"Content-Disposition: form-data;name=\"{key}\"{newLine}");
+                        outputStream.Write($"Content-Type: text/plain;charset=utf-8{newLine}{newLine}");
                         outputStream.Write(nameValueCollection[key] + newLine);
                     }
 
@@ -1552,11 +1536,9 @@ namespace ServiceStack
                         var file = files[fileCount];
                         currentStreamPosition = file.Stream.Position;
                         outputStream.Write(boundary + newLine);
-                        var fileName = file.FileName ?? "upload{0}".Fmt(fileCount);
-                        var fieldName = file.FieldName ?? "upload{0}".Fmt(fileCount);
-                        outputStream.Write(string.Format(
-                            "Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}Content-Type: application/octet-stream{3}{4}",
-                                fieldName, fileName, newLine, newLine, newLine));
+                        var fileName = file.FileName ?? $"upload{fileCount}";
+                        var fieldName = file.FieldName ?? $"upload{fileCount}";
+                        outputStream.Write($"Content-Disposition: form-data;name=\"{fieldName}\";filename=\"{fileName}\"{newLine}Content-Type: application/octet-stream{newLine}{newLine}");
 
                         int byteCount;
                         int bytesWritten = 0;
@@ -1572,7 +1554,7 @@ namespace ServiceStack
                         }
                         outputStream.Write(newLine);
                         outputStream.Write(boundary);
-                        outputStream.Write(fileCount < files.Length ? newLine : "--");
+                        outputStream.Write(fileCount != files.Length - 1 ? newLine : "--");
                     }
                 }
 
@@ -1767,11 +1749,8 @@ namespace ServiceStack
                     return (TResponse)(object)responseStream.ReadFully();
                 }
 
-                using (__requestAccess())
-                {
-                    var response = DeserializeFromStream<TResponse>(responseStream);
-                    return response;
-                }
+                var response = DeserializeFromStream<TResponse>(responseStream);
+                return response;
             }
         }
 
@@ -1780,7 +1759,7 @@ namespace ServiceStack
 
     public static partial class ServiceClientExtensions
     {
-#if !(NETFX_CORE || SL5 || PCL)
+#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
         public static TResponse PostFile<TResponse>(this IRestClient client,
             string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
@@ -1836,6 +1815,7 @@ namespace ServiceStack
             return to;
         }
 
+        [Obsolete("Use: using (client.Get<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Get(this IRestClient client, object request)
         {
             var c = client as ServiceClientBase;
@@ -1844,6 +1824,7 @@ namespace ServiceStack
             return c.Get(request);
         }
 
+        [Obsolete("Use: using (client.Delete<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Delete(this IRestClient client, object request)
         {
             var c = client as ServiceClientBase;
@@ -1852,6 +1833,7 @@ namespace ServiceStack
             return c.Delete(request);
         }
 
+        [Obsolete("Use: using (client.Post<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Post(this IRestClient client, object request)
         {
             var c = client as ServiceClientBase;
@@ -1860,6 +1842,7 @@ namespace ServiceStack
             return c.Post(request);
         }
 
+        [Obsolete("Use: using (client.Put<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Put(this IRestClient client, object request)
         {
             var c = client as ServiceClientBase;
@@ -1868,6 +1851,7 @@ namespace ServiceStack
             return c.Put(request);
         }
 
+        [Obsolete("Use: using (client.Patch<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Patch(this IRestClient client, object request)
         {
             var c = client as ServiceClientBase;
@@ -1876,6 +1860,7 @@ namespace ServiceStack
             return c.Patch(request);
         }
 
+        [Obsolete("Use: using (client.CustomMethod<HttpWebResponse>(httpVerb, request) { }")]
         public static HttpWebResponse CustomMethod(this IRestClient client, string httpVerb, object requestDto)
         {
             var c = client as ServiceClientBase;
@@ -1884,6 +1869,7 @@ namespace ServiceStack
             return c.CustomMethod(httpVerb, requestDto);
         }
 
+        [Obsolete("Use: using (client.Head<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Head(this IRestClient client, IReturn requestDto)
         {
             var c = client as ServiceClientBase;
@@ -1892,6 +1878,7 @@ namespace ServiceStack
             return c.Head(requestDto);
         }
 
+        [Obsolete("Use: using (client.Head<HttpWebResponse>(request) { }")]
         public static HttpWebResponse Head(this IRestClient client, object requestDto)
         {
             var c = client as ServiceClientBase;
@@ -1900,6 +1887,7 @@ namespace ServiceStack
             return c.Head(requestDto);
         }
 
+        [Obsolete("Use: using (client.Head<HttpWebResponse>(relativeOrAbsoluteUrl) { }")]
         public static HttpWebResponse Head(this IRestClient client, string relativeOrAbsoluteUrl)
         {
             var c = client as ServiceClientBase;
@@ -1961,9 +1949,9 @@ namespace ServiceStack
 
         public static string GetTokenCookie(this IServiceClient client)
         {
-            string sessionId;
-            client.GetCookieValues().TryGetValue("ss-jwt", out sessionId);
-            return sessionId;
+            string token;
+            client.GetCookieValues().TryGetValue("ss-tok", out token);
+            return token;
         }
 
         public static void SetTokenCookie(this IServiceClient client, string token)
@@ -1971,7 +1959,16 @@ namespace ServiceStack
             if (token == null)
                 return;
 
-            client.SetCookie("ss-jwt", token, expiresIn: TimeSpan.FromDays(365 * 20));
+            client.SetCookie("ss-tok", token, expiresIn: TimeSpan.FromDays(365 * 20));
+        }
+
+        public static void SetUserAgent(this HttpWebRequest req, string userAgent)
+        {
+#if !(PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+            req.UserAgent = userAgent;
+#else
+            req.Headers[HttpRequestHeader.UserAgent] = userAgent;
+#endif
         }
     }
 

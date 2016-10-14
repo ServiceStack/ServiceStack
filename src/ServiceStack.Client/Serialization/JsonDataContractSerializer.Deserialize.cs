@@ -13,7 +13,7 @@ namespace ServiceStack.Serialization
             if (TextSerializer != null)
                 return TextSerializer.DeserializeFromString(json, returnType);
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
             if (!UseBcl)
                 return JsonSerializer.DeserializeFromString(json, returnType);
 
@@ -50,16 +50,13 @@ namespace ServiceStack.Serialization
 
         public T DeserializeFromStream<T>(Stream stream)
         {
-            if (TextSerializer != null)
+            var streamSerializer = TextSerializer as IStringStreamSerializer;
+            if (streamSerializer != null)
             {
-                var streamSerializer = TextSerializer as IStringStreamSerializer;
-                if (streamSerializer != null)
-                {
-                    return streamSerializer.DeserializeFromStream<T>(stream);
-                }
+                return streamSerializer.DeserializeFromStream<T>(stream);
             }
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
             if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(T));
@@ -71,16 +68,13 @@ namespace ServiceStack.Serialization
 
         public object DeserializeFromStream(Type type, Stream stream)
         {
-            if (TextSerializer != null)
+            var streamSerializer = TextSerializer as IStringStreamSerializer;
+            if (streamSerializer != null)
             {
-                var streamSerializer = TextSerializer as IStringStreamSerializer;
-                if (streamSerializer != null)
-                {
-                    return streamSerializer.DeserializeFromStream(type, stream);
-                }
+                return streamSerializer.DeserializeFromStream(type, stream);
             }
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
             if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);

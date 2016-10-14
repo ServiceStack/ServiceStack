@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿#if !NETCORE_SUPPORT
+using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -103,3 +104,4 @@ namespace ServiceStack.Common.Tests.OAuth
         }
     }
 }
+#endif

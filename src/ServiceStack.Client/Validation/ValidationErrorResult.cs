@@ -8,13 +8,7 @@ namespace ServiceStack.Validation
     /// </summary>
     public class ValidationErrorResult
     {
-        public static ValidationErrorResult Success
-        {
-            get
-            {
-                return new ValidationErrorResult();
-            }
-        }
+        public static ValidationErrorResult Success => new ValidationErrorResult();
 
         /// <summary>
         /// Gets or sets the success code.
@@ -48,13 +42,7 @@ namespace ServiceStack.Validation
         /// <value>The error message.</value>
         public string ErrorMessage { get; set; }
 
-        public virtual string Message
-        {
-            get
-            {
-                return Errors.Count > 0 ? ErrorMessage : SuccessMessage;
-            }
-        }
+        public virtual string Message => Errors.Count > 0 ? ErrorMessage : SuccessMessage;
 
 
         /// <summary>
@@ -69,21 +57,13 @@ namespace ServiceStack.Validation
         /// <summary>
         /// Returns True if the validation was successful (errors list is empty).
         /// </summary>
-        public virtual bool IsValid
-        {
-            get
-            {
-                return this.Errors.Count == 0;
-            }
-        }
+        public virtual bool IsValid => this.Errors.Count == 0;
 
         /// <summary>
         /// Constructs a new ValidationResult
         /// </summary>
         public ValidationErrorResult()
-            : this(new List<ValidationErrorField>())
-        {
-        }
+            : this(new List<ValidationErrorField>()) { }
 
         /// <summary>
         /// Constructs a new ValidationResult
@@ -117,24 +97,25 @@ namespace ServiceStack.Validation
                     this.ErrorMessage = this.Errors[0].ErrorMessage;
                 }
             }
-            
+
             if (this.ErrorMessage == null && this.ErrorCode != null)
             {
                 this.ErrorMessage = this.ErrorCode.ToEnglish();
             }
         }
 
-		/// <summary>
-		/// Merge errors from another <see cref="ValidationErrorResult"/>
-		/// </summary>
-		/// <param name="result"></param>
-		public void Merge(ValidationErrorResult result)
-		{
-			if (result != null) {
-				foreach (var e in result.Errors) {
-					Errors.Add(e);
-				}
-			}
-		}
+        /// <summary>
+        /// Merge errors from another <see cref="ValidationErrorResult"/>
+        /// </summary>
+        /// <param name="result"></param>
+        public void Merge(ValidationErrorResult result)
+        {
+            if (result == null) return;
+
+            foreach (var e in result.Errors)
+            {
+                Errors.Add(e);
+            }
+        }
     }
 }

@@ -1,23 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Web;
-using System.Web.Hosting;
 using ServiceStack.Data;
 using ServiceStack.Host;
-using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Host.HttpListener;
 using ServiceStack.IO;
 using ServiceStack.Logging;
-using ServiceStack.Model;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using static System.String;
+
+#if !NETSTANDARD1_6
+using ServiceStack.Host.AspNet;
+using ServiceStack.Host.HttpListener;
+#endif
 
 namespace ServiceStack
 {
@@ -57,7 +57,7 @@ namespace ServiceStack
 
             //IIS will assign null to params without a name: .../?some_value can be retrieved as req.Params[null]
             //TryGetValue is not happy with null dictionary keys, so we should bail out here
-            if (string.IsNullOrEmpty(name)) return null;
+            if (IsNullOrEmpty(name)) return null;
 
             Cookie cookie;
             if (httpReq.Cookies.TryGetValue(name, out cookie)) return cookie.Value;
@@ -79,8 +79,7 @@ namespace ServiceStack
 
             var pos = httpReq.RawUrl.IndexOf(resolvedPathInfo, StringComparison.OrdinalIgnoreCase);
             if (pos == -1)
-                throw new ArgumentException(
-                    String.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
+                throw new ArgumentException($"PathInfo '{resolvedPathInfo}' is not in Url '{httpReq.RawUrl}'");
 
             return httpReq.RawUrl.Substring(0, pos + resolvedPathInfo.Length);
         }
@@ -96,7 +95,7 @@ namespace ServiceStack
 
             int pos;
 
-            if (resolvedPathInfo == string.Empty)
+            if (resolvedPathInfo == Empty)
             {
                 pos = httpReq.AbsoluteUri.IndexOf('?');
                 if (pos == -1)
@@ -108,22 +107,23 @@ namespace ServiceStack
             }
 
             if (pos == -1)
-                throw new ArgumentException(
-                    String.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
+                throw new ArgumentException($"PathInfo '{resolvedPathInfo}' is not in Url '{httpReq.RawUrl}'");
 
             return httpReq.AbsoluteUri.Substring(0, pos + resolvedPathInfo.Length);
         }
 
         public static string GetUrlHostName(this IRequest httpReq)
         {
-            var aspNetReq = httpReq as AspNetRequest;
+#if !NETSTANDARD1_6
+            var aspNetReq = httpReq as ServiceStack.Host.AspNet.AspNetRequest;
             if (aspNetReq != null)
             {
                 return aspNetReq.UrlHostName;
             }
+#endif
             var uri = httpReq.AbsoluteUri;
 
-            var pos = uri.IndexOf("://") + "://".Length;
+            var pos = uri.IndexOf("://", StringComparison.Ordinal) + "://".Length;
             var partialUrl = uri.Substring(pos);
             var endPos = partialUrl.IndexOf('/');
             if (endPos == -1) endPos = partialUrl.Length;
@@ -131,25 +131,13 @@ namespace ServiceStack
             return hostName;
         }
 
-        public static string GetPhysicalPath(this IRequest httpReq)
-        {
-            return HostContext.ResolvePhysicalPath(httpReq.PathInfo, httpReq);
-        }
+        public static string GetPhysicalPath(this IRequest httpReq) => HostContext.ResolvePhysicalPath(httpReq.PathInfo, httpReq);
 
-        public static IVirtualFile GetVirtualFile(this IRequest httpReq)
-        {
-            return HostContext.ResolveVirtualFile(httpReq.PathInfo, httpReq);
-        }
+        public static IVirtualFile GetVirtualFile(this IRequest httpReq) => HostContext.ResolveVirtualFile(httpReq.PathInfo, httpReq);
 
-        public static IVirtualDirectory GetVirtualDirectory(this IRequest httpReq)
-        {
-            return HostContext.ResolveVirtualDirectory(httpReq.PathInfo, httpReq);
-        }
+        public static IVirtualDirectory GetVirtualDirectory(this IRequest httpReq) => HostContext.ResolveVirtualDirectory(httpReq.PathInfo, httpReq);
 
-        public static IVirtualNode GetVirtualNode(this IRequest httpReq)
-        {
-            return HostContext.ResolveVirtualNode(httpReq.PathInfo, httpReq);
-        }
+        public static IVirtualNode GetVirtualNode(this IRequest httpReq) => HostContext.ResolveVirtualNode(httpReq.PathInfo, httpReq);
 
         public static string GetDirectoryPath(this IRequest request)
         {
@@ -157,35 +145,20 @@ namespace ServiceStack
                 return null;
 
             var path = request.PathInfo;
-            return string.IsNullOrEmpty(path) || path[path.Length - 1] == '/'
+            return IsNullOrEmpty(path) || path[path.Length - 1] == '/'
                 ? path
                 : path.Substring(0, path.LastIndexOf('/') + 1);
         }
 
-        //http://stackoverflow.com/a/757251/85785
-        static readonly string[] VirtualPathPrefixes = HostingEnvironment.ApplicationVirtualPath == null || HostingEnvironment.ApplicationVirtualPath == "/"
-            ? TypeConstants.EmptyStringArray
-            : new[] { HostingEnvironment.ApplicationVirtualPath, "~" + HostingEnvironment.ApplicationVirtualPath };
-
-        public static string SanitizedVirtualPath(this string virtualPath)
+        public static string GetLeftAuthority(this Uri uri)
         {
-            return HostContext.Config.StripApplicationVirtualPath
-                ? virtualPath.TrimPrefixes(VirtualPathPrefixes)
-                : virtualPath;
-        }
-
-        public static string GetApplicationUrl(this HttpRequestBase httpReq)
-        {
-            var appPath = httpReq.ApplicationPath.SanitizedVirtualPath();
-            var baseUrl = httpReq.Url.GetLeftPart(UriPartial.Authority);
-            baseUrl = baseUrl.CombineWith(appPath, HostContext.Config.HandlerFactoryPath);
-            return baseUrl;
+            return $"{uri.Scheme}://{uri.Authority}";
         }
 
         public static string GetApplicationUrl(this IRequest httpReq)
         {
             var url = new Uri(httpReq.AbsoluteUri);
-            var baseUrl = url.GetLeftPart(UriPartial.Authority);
+            var baseUrl = url.GetLeftAuthority();
             var appUrl = baseUrl.CombineWith(HostContext.Config.HandlerFactoryPath);
             return appUrl;
         }
@@ -259,37 +232,13 @@ namespace ServiceStack
 
         public static string GetJsonpCallback(this IRequest httpReq)
         {
-            return httpReq == null ? null : httpReq.QueryString[Keywords.Callback];
+            return httpReq?.QueryString[Keywords.Callback];
         }
 
 
         public static Dictionary<string, string> CookiesAsDictionary(this IRequest httpReq)
         {
-            var map = new Dictionary<string, string>();
-            var aspNet = httpReq.OriginalRequest as HttpRequest;
-            if (aspNet != null)
-            {
-                foreach (var name in aspNet.Cookies.AllKeys)
-                {
-                    var cookie = aspNet.Cookies[name];
-                    if (cookie == null) continue;
-                    map[name] = cookie.Value;
-                }
-            }
-            else
-            {
-                var httpListener = httpReq.OriginalRequest as HttpListenerRequest;
-                if (httpListener != null)
-                {
-                    for (var i = 0; i < httpListener.Cookies.Count; i++)
-                    {
-                        var cookie = httpListener.Cookies[i];
-                        if (cookie == null || cookie.Name == null) continue;
-                        map[cookie.Name] = cookie.Value;
-                    }
-                }
-            }
-            return map;
+            return Platform.Instance.GetCookiesAsDictionary(httpReq);
         }
 
         public static int ToStatusCode(this Exception ex)
@@ -320,7 +269,7 @@ namespace ServiceStack
         public static string ToErrorCode(this Exception ex)
         {
             var hasErrorCode = ex as IHasErrorCode;
-            return (hasErrorCode != null ? hasErrorCode.ErrorCode : null)
+            return hasErrorCode?.ErrorCode
                 ?? ex.GetType().Name;
         }
 
@@ -368,22 +317,16 @@ namespace ServiceStack
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(HttpRequestExtensions));
 
-        private static string WebHostDirectoryName = "";
+        private static readonly string WebHostDirectoryName = "";
 
         static HttpRequestExtensions()
         {
             WebHostDirectoryName = Path.GetFileName("~".MapHostAbsolutePath());
         }
 
-        public static string GetOperationName(this HttpRequestBase request)
-        {
-            var pathInfo = request.GetLastPathInfo();
-            return GetOperationNameFromLastPathInfo(pathInfo);
-        }
-
         public static string GetOperationNameFromLastPathInfo(string lastPathInfo)
         {
-            if (String.IsNullOrEmpty(lastPathInfo)) return null;
+            if (IsNullOrEmpty(lastPathInfo)) return null;
 
             var operationName = lastPathInfo.Substring("/".Length);
 
@@ -392,27 +335,69 @@ namespace ServiceStack
 
         private static string GetLastPathInfoFromRawUrl(string rawUrl)
         {
-            var pathInfo = rawUrl.IndexOf("?") != -1
-                ? rawUrl.Substring(0, rawUrl.IndexOf("?"))
+            var pathInfo = rawUrl.IndexOf("?", StringComparison.Ordinal) != -1
+                ? rawUrl.Substring(0, rawUrl.IndexOf("?", StringComparison.Ordinal))
                 : rawUrl;
 
-            pathInfo = pathInfo.Substring(pathInfo.LastIndexOf("/"));
+            pathInfo = pathInfo.Substring(pathInfo.LastIndexOf("/", StringComparison.Ordinal));
 
             return pathInfo;
         }
 
-        public static string GetLastPathInfo(this HttpRequestBase request)
+#if NETSTANDARD1_6
+        public static string GetLastPathInfo(this Microsoft.AspNetCore.Http.HttpRequest request)
         {
-            var pathInfo = request.PathInfo;
-            if (String.IsNullOrEmpty(pathInfo))
-            {
-                pathInfo = GetLastPathInfoFromRawUrl(request.RawUrl);
-            }
+            var rawUrl = Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(request);
+            return GetLastPathInfoFromRawUrl(rawUrl);
+        }
 
-            //Log.DebugFormat("Request.PathInfo: {0}, Request.RawUrl: {1}, pathInfo:{2}",
-            //    request.PathInfo, request.RawUrl, pathInfo);
+        public static string GetOperationName(this Microsoft.AspNetCore.Http.HttpRequest request)
+        {
+            var pathInfo = request.GetLastPathInfo();
+            return GetOperationNameFromLastPathInfo(pathInfo);
+        }
+#endif
 
-            return pathInfo;
+        public static string GetParentBaseUrl(this IRequest request)
+        {
+            var rawUrl = request.RawUrl;
+            var endpointsPath = rawUrl.Substring(0, rawUrl.LastIndexOf('/') + 1);
+            return new Uri(request.AbsoluteUri).GetLeftAuthority() + endpointsPath;
+        }
+
+#if !NETSTANDARD1_6
+        //http://stackoverflow.com/a/757251/85785
+        static readonly string[] VirtualPathPrefixes = System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath == null || System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath == "/"
+            ? TypeConstants.EmptyStringArray
+            : new[] { System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath, "~" + System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath };
+
+        public static string SanitizedVirtualPath(this string virtualPath)
+        {
+            return HostContext.Config.StripApplicationVirtualPath
+                ? virtualPath.TrimPrefixes(VirtualPathPrefixes)
+                : virtualPath;
+        }
+
+        // http://localhost/ServiceStack.Examples.Host.Web/Public/Public/Soap12/Wsdl => 
+        // http://localhost/ServiceStack.Examples.Host.Web/Public/Soap12/
+        public static string GetParentBaseUrl(this HttpRequestBase request)
+        {
+            var rawUrl = request.RawUrl; // /Cambia3/Temp/Test.aspx/path/info
+            var endpointsPath = rawUrl.Substring(0, rawUrl.LastIndexOf('/') + 1);  // /Cambia3/Temp/Test.aspx/path
+            return request.Url.GetLeftAuthority() + endpointsPath;
+        }
+
+        public static string GetApplicationUrl(this HttpRequestBase httpReq)
+        {
+            var appPath = httpReq.ApplicationPath.SanitizedVirtualPath();
+            var baseUrl = httpReq.Url.GetLeftAuthority();
+            baseUrl = baseUrl.CombineWith(appPath, HostContext.Config.HandlerFactoryPath);
+            return baseUrl;
+        }
+
+        public static string GetBaseUrl(this HttpRequestBase request)
+        {
+            return request.Url.GetLeftAuthority() + request.RawUrl;
         }
 
         public static string GetUrlHostName(this HttpRequestBase request)
@@ -430,39 +415,15 @@ namespace ServiceStack
             }
         }
 
-        // http://localhost/ServiceStack.Examples.Host.Web/Public/Public/Soap12/Wsdl => 
-        // http://localhost/ServiceStack.Examples.Host.Web/Public/Soap12/
-        public static string GetParentBaseUrl(this HttpRequestBase request)
+        public static string GetLastPathInfo(this HttpRequestBase request)
         {
-            var rawUrl = request.RawUrl; // /Cambia3/Temp/Test.aspx/path/info
-            var endpointsPath = rawUrl.Substring(0, rawUrl.LastIndexOf('/') + 1);  // /Cambia3/Temp/Test.aspx/path
-            return GetAuthority(request) + endpointsPath;
+            return GetLastPathInfoFromRawUrl(request.RawUrl);
         }
 
-        public static string GetParentBaseUrl(this IRequest request)
+        public static string GetOperationName(this HttpRequestBase request)
         {
-            var rawUrl = request.RawUrl;
-            var endpointsPath = rawUrl.Substring(0, rawUrl.LastIndexOf('/') + 1);
-            return new Uri(request.AbsoluteUri).GetLeftPart(UriPartial.Authority) + endpointsPath;
-        }
-
-        public static string GetBaseUrl(this HttpRequestBase request)
-        {
-            return GetAuthority(request) + request.RawUrl;
-        }
-
-        //=> http://localhost:96 ?? ex=> http://localhost
-        private static string GetAuthority(HttpRequestBase request)
-        {
-            try
-            {
-                return request.Url.GetLeftPart(UriPartial.Authority);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error trying to get: request.Url.GetLeftPart(UriPartial.Authority): " + ex.Message, ex);
-                return "http://" + request.UserHostName;
-            }
+            var pathInfo = request.GetLastPathInfo();
+            return GetOperationNameFromLastPathInfo(pathInfo);
         }
 
         public static string GetOperationName(this HttpListenerRequest request)
@@ -477,10 +438,10 @@ namespace ServiceStack
 
         public static string GetPathInfo(this HttpRequestBase request)
         {
-            if (!String.IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
+            if (!IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
 
             var mode = HostContext.Config.HandlerFactoryPath;
-            var appPath = String.IsNullOrEmpty(request.ApplicationPath)
+            var appPath = IsNullOrEmpty(request.ApplicationPath)
                           ? WebHostDirectoryName
                           : request.ApplicationPath.TrimStart('/');
 
@@ -488,15 +449,16 @@ namespace ServiceStack
             var path = Env.IsMono ? request.Path.Replace("//", "/") : request.Path;
             return GetPathInfo(path, mode, appPath);
         }
+#endif
 
         public static string GetPathInfo(string fullPath, string mode, string appPath)
         {
             var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
-            if (!String.IsNullOrEmpty(pathInfo)) return pathInfo;
+            if (!IsNullOrEmpty(pathInfo)) return pathInfo;
 
             //Wildcard mode relies on this to work out the handlerPath
             pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
-            if (!String.IsNullOrEmpty(pathInfo)) return pathInfo;
+            if (!IsNullOrEmpty(pathInfo)) return pathInfo;
 
             return fullPath;
         }
@@ -522,7 +484,7 @@ namespace ServiceStack
                     pathRootFound = true;
                     for (var mappedPathRootIndex = 0; mappedPathRootIndex < mappedPathRootParts.Length; mappedPathRootIndex++)
                     {
-                        if (!String.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.OrdinalIgnoreCase))
+                        if (!string.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.OrdinalIgnoreCase))
                         {
                             pathRootFound = false;
                             break;
@@ -630,7 +592,7 @@ namespace ServiceStack
         public static string GetQueryStringContentType(this IRequest httpReq)
         {
             var callback = httpReq.QueryString[Keywords.Callback];
-            if (!string.IsNullOrEmpty(callback)) return MimeTypes.Json;
+            if (!IsNullOrEmpty(callback)) return MimeTypes.Json;
 
             var format = httpReq.QueryString[Keywords.Format];
             if (format == null)
@@ -674,7 +636,7 @@ namespace ServiceStack
         public static string GetResponseContentType(this IRequest httpReq)
         {
             var specifiedContentType = GetQueryStringContentType(httpReq);
-            if (!String.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
+            if (!IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
 
             var acceptContentTypes = httpReq.AcceptTypes;
             var defaultContentType = httpReq.ContentType;
@@ -687,7 +649,7 @@ namespace ServiceStack
             var preferredContentTypes = HostContext.Config.PreferredContentTypesArray;
 
             var acceptsAnything = false;
-            var hasDefaultContentType = !String.IsNullOrEmpty(defaultContentType);
+            var hasDefaultContentType = !IsNullOrEmpty(defaultContentType);
             if (acceptContentTypes != null)
             {
                 var hasPreferredContentTypes = new bool[preferredContentTypes.Length];
@@ -770,14 +732,9 @@ namespace ServiceStack
             return HostContext.ResolveAbsoluteUrl(url, httpReq);
         }
 
-        public static string ResolveBaseUrl(this IRequest httpReq)
-        {
-            return HostContext.ResolveAbsoluteUrl("~/", httpReq);
-        }
-
         public static string GetAbsoluteUrl(this IRequest httpReq, string url)
         {
-            if (url.SafeSubstring(0, 2) == "~/")
+            if (url?.SafeSubstring(0, 2) == "~/")
             {
                 url = httpReq.GetBaseUrl().CombineWith(url.Substring(2));
             }
@@ -786,7 +743,7 @@ namespace ServiceStack
 
         public static string InferBaseUrl(this string absoluteUri, string fromPathInfo = null)
         {
-            if (string.IsNullOrEmpty(fromPathInfo))
+            if (IsNullOrEmpty(fromPathInfo))
             {
                 fromPathInfo = "/" + (HostContext.Config.HandlerFactoryPath ?? "");
             }
@@ -797,7 +754,7 @@ namespace ServiceStack
                     return null;
             }
 
-            if (string.IsNullOrEmpty(absoluteUri))
+            if (IsNullOrEmpty(absoluteUri))
                 return null;
 
             var pos = absoluteUri.IndexOf(fromPathInfo, "https://".Length + 1, StringComparison.Ordinal);
@@ -806,27 +763,18 @@ namespace ServiceStack
 
         public static string GetBaseUrl(this IRequest httpReq)
         {
-            var baseUrl = HttpHandlerFactory.GetBaseUrl();
-            if (baseUrl != null)
-                return baseUrl.NormalizeScheme();
-
-            baseUrl = httpReq.AbsoluteUri.InferBaseUrl(fromPathInfo: httpReq.PathInfo);
-            if (baseUrl != null)
-                return baseUrl.NormalizeScheme();
-
-            var handlerPath = HostContext.Config.HandlerFactoryPath;
-
-            return new Uri(httpReq.AbsoluteUri).GetLeftPart(UriPartial.Authority)
-                .NormalizeScheme()
-                .CombineWith(handlerPath)
-                .TrimEnd('/');
+            return HostContext.AppHost.GetBaseUrl(httpReq);
         }
 
-        public static string NormalizeScheme(this string url)
+        public static bool UseHttps(this IRequest httpReq)
         {
-            if (url == null)
-                return null;
-            if (!HostContext.Config.UseHttpsLinks)
+            return HostContext.Config.UseHttpsLinks ||
+                httpReq.GetHeader(HttpHeaders.XForwardedProtocol) == "https";
+        }
+
+        public static string NormalizeScheme(this string url, bool useHttps)
+        {
+            if (url == null || !useHttps)
                 return url;
 
             url = url.TrimStart();
@@ -867,7 +815,7 @@ namespace ServiceStack
             if (request.UserHostAddress != null)
             {
                 var isIpv4Address = request.UserHostAddress.IndexOf('.') != -1
-                    && request.UserHostAddress.IndexOf("::", StringComparison.InvariantCulture) == -1;
+                    && request.UserHostAddress.IndexOf("::", StringComparison.Ordinal) == -1;
 
                 string ipAddressNumber = null;
                 if (isIpv4Address)
@@ -882,7 +830,7 @@ namespace ServiceStack
                     }
                     else
                     {
-                        ipAddressNumber = request.UserHostAddress.LastIndexOf("%", StringComparison.InvariantCulture) > 0 ?
+                        ipAddressNumber = request.UserHostAddress.LastIndexOf("%", StringComparison.Ordinal) > 0 ?
                             request.UserHostAddress.LastLeftPart(":") :
                             request.UserHostAddress;
                     }
@@ -898,8 +846,8 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    throw new ArgumentException("Could not parse Ipv{0} Address: {1} / {2}"
-                        .Fmt((isIpv4Address ? 4 : 6), request.UserHostAddress, ipAddressNumber), ex);
+                    throw new ArgumentException(
+                        $"Could not parse Ipv{(isIpv4Address ? 4 : 6)} Address: {request.UserHostAddress} / {ipAddressNumber}", ex);
                 }
             }
 
@@ -945,6 +893,7 @@ namespace ServiceStack
             return false;
         }
 
+#if !NETSTANDARD1_6
         public static HttpContextBase ToHttpContextBase(this HttpRequestBase aspnetHttpReq)
         {
             return aspnetHttpReq.RequestContext.HttpContext;
@@ -993,10 +942,33 @@ namespace ServiceStack
             return httpCtx.ToRequest().HttpResponse;
         }
 
+        public static System.ServiceModel.Channels.Message GetSoapMessage(this IRequest httpReq)
+        {
+            return httpReq.Items[Keywords.SoapMessage] as System.ServiceModel.Channels.Message;
+        }
+
+        public static string GetPathAndQuery(this HttpRequestBase request)
+        {
+            return request != null && request.Url != null
+                ? request.Url.PathAndQuery
+                : null;
+        }
+#else
+        public static string GetPathAndQuery(this Microsoft.AspNetCore.Http.HttpRequest request)
+        {
+            if (request == null)
+                return null;
+
+            var url = new Uri(Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(request));
+            return url.PathAndQuery;
+        }
+#endif
+
         public static void SetOperationName(this IRequest httpReq, string operationName)
         {
             if (httpReq.OperationName == null)
             {
+#if !NETSTANDARD1_6
                 var aspReq = httpReq as AspNetRequest;
                 if (aspReq != null)
                 {
@@ -1009,6 +981,7 @@ namespace ServiceStack
                 {
                     listenerReq.OperationName = operationName;
                 }
+#endif
             }
         }
 
@@ -1040,11 +1013,6 @@ namespace ServiceStack
             req.Response.AddHeader(HttpHeaders.XAutoBatchCompleted, completed.ToString());
         }
 
-        public static System.ServiceModel.Channels.Message GetSoapMessage(this IRequest httpReq)
-        {
-            return httpReq.Items[Keywords.SoapMessage] as System.ServiceModel.Channels.Message;
-        }
-
         public static void SetRoute(this IRequest req, RestPath route)
         {
             req.Items[Keywords.Route] = route;
@@ -1055,13 +1023,6 @@ namespace ServiceStack
             object route;
             req.Items.TryGetValue(Keywords.Route, out route);
             return route as RestPath;
-        }
-
-        public static string GetPathAndQuery(this HttpRequestBase request)
-        {
-            return request != null && request.Url != null
-                ? request.Url.PathAndQuery
-                : null;
         }
     }
 }

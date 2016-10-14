@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Text;
@@ -113,7 +112,7 @@ namespace ServiceStack
                 if (feature.EnableSessionExport != true)
                     throw new ArgumentException("PostmanFeature.EnableSessionExport is not enabled");
 
-                var url = Request.ResolveBaseUrl()
+                var url = Request.GetBaseUrl()
                     .CombineWith(Request.PathInfo)
                     .AddQueryParam("ssopt", Request.GetItemOrCookie(SessionFeature.SessionOptionsKey))
                     .AddQueryParam("sspid", Request.GetPermanentSessionId())
@@ -321,7 +320,7 @@ namespace ServiceStack
             {
                 var args = type.GetGenericArguments().Map(x =>
                     x.AsFriendlyName(feature));
-                suffix = "<{0}>".Fmt(string.Join(",", args.ToArray()));
+                suffix = $"<{string.Join(",", args.ToArray())}>";
             }
 
             string frindlyName;

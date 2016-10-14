@@ -1,4 +1,6 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿#if !NETSTANDARD1_6
+
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Collections;
@@ -187,7 +189,7 @@ namespace ServiceStack.Html
         {
             TagBuilder builder = new TagBuilder("option")
             {
-                InnerHtml = HttpUtility.HtmlEncode(item.Text)
+                InnerHtml = PclExportClient.Instance.HtmlEncode(item.Text)
             };
             if (item.Value != null)
             {
@@ -308,3 +310,5 @@ namespace ServiceStack.Html
         }
     }
 }
+
+#endif

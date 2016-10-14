@@ -1,4 +1,6 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿#if !NETSTANDARD1_6
+
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -35,7 +37,6 @@ namespace ServiceStack.Html
 
             return fieldMetadata;
         }
-
         private static string GetInvalidPropertyValueResource(HttpContextBase httpContext)
         {
             string resourceValue = null;
@@ -66,7 +67,6 @@ namespace ServiceStack.Html
         }
 
         // Validate
-
         public static void Validate(this HtmlHelper htmlHelper, string modelName)
         {
             if (modelName == null)
@@ -256,3 +256,5 @@ namespace ServiceStack.Html
         }
     }
 }
+
+#endif

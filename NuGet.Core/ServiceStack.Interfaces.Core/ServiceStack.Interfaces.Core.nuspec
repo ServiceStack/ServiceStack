@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>ServiceStack.Interfaces.Core</id>
+    <version>1.0.0</version>
+    <title>ServiceStack.Interfaces.Core</title>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
+    <description>Lightweight and implementation-free interfaces for DTO's, providers and adapters.</description>
+    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <copyright>Copyright 2016 Service Stack</copyright>
+    <language>en-US</language>
+    <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
+    <dependencies>
+      <group targetFramework=".NETStandard1.1">
+        <dependency id="System.Runtime" version="[4.1.0, )" />
+        <dependency id="System.Runtime.Serialization.Primitives" version="[4.1.1, )" />
+        <dependency id="NETStandard.Library" version="[1.6.0, )" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib/**/*.*" target="lib" />
+    <file src="../../src/ServiceStack.Interfaces/**/*.cs" target="src" />
+  </files>
+</package>

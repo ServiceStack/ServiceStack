@@ -1,6 +1,7 @@
 using System;
 using System.Configuration;
 using System.Linq;
+using System.Net;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -35,6 +36,7 @@ namespace ServiceStack.Auth
         public static string DefaultOAuthProvider { get; private set; }
         public static string DefaultOAuthRealm { get; private set; }
         public static string HtmlRedirect { get; internal set; }
+        public static Func<IServiceBase, Authenticate, AuthenticateResponse, object> AuthResponseDecorator { get; internal set; }
         internal static IAuthProvider[] AuthProviders = TypeConstants<IAuthProvider>.EmptyArray;
         internal static IAuthWithRequest[] AuthWithRequestProviders = TypeConstants<IAuthWithRequest>.EmptyArray;
         internal static IAuthResponseFilter[] AuthResponseFilters = TypeConstants<IAuthResponseFilter>.EmptyArray;
@@ -54,7 +56,7 @@ namespace ServiceStack.Auth
             foreach (var authConfig in AuthProviders)
             {
                 if (string.Compare(authConfig.Provider, provider,
-                    StringComparison.InvariantCultureIgnoreCase) == 0)
+                    StringComparison.OrdinalIgnoreCase) == 0)
                     return authConfig;
             }
 
@@ -69,7 +71,7 @@ namespace ServiceStack.Auth
         public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
         {
             if (authProviders.Length == 0)
-                throw new ArgumentNullException("authProviders");
+                throw new ArgumentNullException(nameof(authProviders));
 
             DefaultOAuthProvider = authProviders[0].Provider;
             DefaultOAuthRealm = authProviders[0].AuthRealm;
@@ -151,7 +153,7 @@ namespace ServiceStack.Auth
 
                 var referrerUrl = request.Continue
                     ?? session.ReferrerUrl
-                    ?? this.Request.GetHeader("Referer")
+                    ?? this.Request.GetHeader(HttpHeaders.Referer)
                     ?? authProvider.CallbackUrl;
 
                 var alreadyAuthenticated = response == null;
@@ -160,7 +162,7 @@ namespace ServiceStack.Auth
                     UserName = session.UserAuthName,
                     DisplayName = session.DisplayName 
                         ?? session.UserName 
-                        ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim(),
+                        ?? $"{session.FirstName} {session.LastName}".Trim(),
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl,
                 };
@@ -171,6 +173,11 @@ namespace ServiceStack.Auth
                     foreach (var responseFilter in AuthResponseFilters)
                     {
                         authResponse = responseFilter.Execute(this, authProvider, session, authResponse) ?? authResponse;
+                    }
+
+                    if (AuthResponseDecorator != null)
+                    {
+                        return AuthResponseDecorator(this, request, authResponse);
                     }
                 }
 
@@ -191,7 +198,7 @@ namespace ServiceStack.Auth
             }
             catch (HttpError ex)
             {
-                var errorReferrerUrl = this.Request.GetHeader("Referer");
+                var errorReferrerUrl = this.Request.GetHeader(HttpHeaders.Referer);
                 if (isHtml && errorReferrerUrl != null)
                 {
                     errorReferrerUrl = errorReferrerUrl.SetParam("f", ex.Message.Localize(Request));
@@ -271,7 +278,7 @@ namespace ServiceStack.Auth
                 if (generateNewCookies)
                 {
                     this.Request.GenerateNewSessionCookies(session);
-                    this.Request.SaveSession(session);
+                    oAuthConfig.SaveSession(this, session, (oAuthConfig as AuthProvider)?.SessionExpiry);
                 }
             }
             return response;
@@ -279,11 +286,9 @@ namespace ServiceStack.Auth
 
         public object Delete(Authenticate request)
         {
-            if (ValidateFn != null)
-            {
-                var response = ValidateFn(this, HttpMethods.Delete, request);
-                if (response != null) return response;
-            }
+            var response = ValidateFn?.Invoke(this, HttpMethods.Delete, request);
+            if (response != null)
+                return response;
 
             this.RemoveSession();
 

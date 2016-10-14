@@ -24,26 +24,17 @@ namespace ServiceStack.VirtualPath
             get { return this.Where(n => n.IsDirectory).Cast<IVirtualDirectory>(); }
         }
 
-        public override string Name
-        {
-            get { return BackingDirInfo.Name; }
-        }
+        public override string Name => BackingDirInfo.Name;
 
-        public override DateTime LastModified
-        {
-            get { return BackingDirInfo.LastWriteTime; }
-        }
+        public override DateTime LastModified => BackingDirInfo.LastWriteTime;
 
-        public override string RealPath
-        {
-            get { return BackingDirInfo.FullName; }
-        }
+        public override string RealPath => BackingDirInfo.FullName;
 
         public FileSystemVirtualDirectory(IVirtualPathProvider owningProvider, IVirtualDirectory parentDirectory, DirectoryInfo dInfo)
             : base(owningProvider, parentDirectory)
         {
             if (dInfo == null)
-                throw new ArgumentNullException("dInfo");
+                throw new ArgumentNullException(nameof(dInfo));
 
             this.BackingDirInfo = dInfo;
         }
@@ -58,7 +49,7 @@ namespace ServiceStack.VirtualPath
                 .Select(fInfo => new FileSystemVirtualFile(VirtualPathProvider, this, fInfo));
 
             return directoryNodes.Cast<IVirtualNode>()
-                .Union<IVirtualNode>(fileNodes.Cast<IVirtualNode>())
+                .Union(fileNodes.Cast<IVirtualNode>())
                 .GetEnumerator();
         }
 
@@ -71,7 +62,7 @@ namespace ServiceStack.VirtualPath
             catch (Exception ex)
             {
                 //Possible exception from scanning symbolic links
-                Log.Warn("Unable to GetFiles for {0}".Fmt(RealPath), ex);
+                Log.Warn($"Unable to GetFiles for {RealPath}", ex);
                 return TypeConstants<FileInfo>.EmptyArray;
             }
         }
@@ -85,7 +76,7 @@ namespace ServiceStack.VirtualPath
             catch (Exception ex)
             {
                 //Possible exception from scanning symbolic links
-                Log.Warn("Unable to GetDirectories for {0}".Fmt(RealPath), ex);
+                Log.Warn($"Unable to GetDirectories for {RealPath}", ex);
                 return TypeConstants<DirectoryInfo>.EmptyArray;
             }
         }
@@ -111,7 +102,7 @@ namespace ServiceStack.VirtualPath
             catch (Exception ex)
             {
                 //Possible exception from scanning symbolic links
-                Log.Warn("Unable to scan for {0} in {1}".Fmt(globPattern, RealPath), ex);
+                Log.Warn($"Unable to scan for {globPattern} in {RealPath}", ex);
                 return TypeConstants<IVirtualFile>.EmptyArray;
             }
         }

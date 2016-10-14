@@ -38,10 +38,14 @@ namespace ServiceStack
 
             var session = req.GetSession();
 
-            if (session != null && session.HasRole(RoleNames.Admin))
-                return;
+            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            using (authRepo as IDisposable)
+            {
+                if (session != null && session.HasRole(RoleNames.Admin, authRepo))
+                    return;
 
-            if (HasAllPermissions(req, session)) return;
+                if (HasAllPermissions(req, session, authRepo)) return;
+            }
 
             if (DoHtmlRedirectIfConfigured(req, res)) return;
 
@@ -50,13 +54,13 @@ namespace ServiceStack
             res.EndRequest();
         }
 
-        public bool HasAllPermissions(IRequest req, IAuthSession session, IAuthRepository userAuthRepo = null)
+        public bool HasAllPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
-            if (HasAllPermissions(session)) return true;
+            if (HasAllPermissions(session, authRepo)) return true;
 
-            session.UpdateFromUserAuthRepo(req, userAuthRepo);
+            session.UpdateFromUserAuthRepo(req, authRepo);
 
-            if (HasAllPermissions(session))
+            if (HasAllPermissions(session, authRepo))
             {
                 req.SaveSession(session);
                 return true;
@@ -64,12 +68,12 @@ namespace ServiceStack
             return false;
         }
 
-        public bool HasAllPermissions(IAuthSession session)
+        public bool HasAllPermissions(IAuthSession session, IAuthRepository authRepo)
         {
             if (session == null)
                 return false;
 
-            return this.RequiredPermissions.All(session.HasPermission);
+            return this.RequiredPermissions.All(x => session.HasPermission(x, authRepo));
         }
 
         protected bool Equals(RequiredPermissionAttribute other)
@@ -90,7 +94,7 @@ namespace ServiceStack
         {
             unchecked
             {
-                return (base.GetHashCode() * 397) ^ (RequiredPermissions != null ? RequiredPermissions.GetHashCode() : 0);
+                return (base.GetHashCode() * 397) ^ (RequiredPermissions?.GetHashCode() ?? 0);
             }
         }
     }

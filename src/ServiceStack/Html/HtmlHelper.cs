@@ -1,4 +1,6 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿#if !NETSTANDARD1_6
+
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +12,6 @@ using System.Reflection;
 using System.Web;
 using ServiceStack.Formats;
 using ServiceStack.Host;
-using ServiceStack.Html.AntiXsrf;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -150,6 +151,8 @@ namespace ServiceStack.Html
             var resBytes = ((MemoryStream)req.Response.OutputStream).ToArray();
             var html = resBytes.FromUtf8Bytes();
 
+            req.SetTemplate(null); //Restore previous default Layout
+
             return MvcHtmlString.Create(html);
         }
 
@@ -197,24 +200,24 @@ namespace ServiceStack.Html
 
         public IViewDataContainer ViewDataContainer { get; internal set; }
 
-		public static RouteValueDictionary AnonymousObjectToHtmlAttributes(object htmlAttributes)
-		{
-			var result = new RouteValueDictionary();
+        public static RouteValueDictionary AnonymousObjectToHtmlAttributes(object htmlAttributes)
+        {
+            var result = new RouteValueDictionary();
 
-			if (htmlAttributes != null)
-			{
-				foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(htmlAttributes))
-				{
-					result.Add(property.Name.Replace('_', '-'), property.GetValue(htmlAttributes));
-				}
-			}
+            if (htmlAttributes != null)
+            {
+                foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(htmlAttributes))
+                {
+                    result.Add(property.Name.Replace('_', '-'), property.GetValue(htmlAttributes));
+                }
+            }
 
-			return result;
-		}
+            return result;
+        }
 
         public MvcHtmlString AntiForgeryToken()
         {
-            return MvcHtmlString.Create(AntiForgery.GetHtml().ToString());
+            return MvcHtmlString.Create(ServiceStack.Html.AntiXsrf.AntiForgery.GetHtml().ToString());
         }
 
         public MvcHtmlString AntiForgeryToken(string salt)
@@ -235,15 +238,15 @@ namespace ServiceStack.Html
             return AntiForgeryToken();
         }
 
-		public string AttributeEncode(string value)
-		{
-			return !string.IsNullOrEmpty(value) ? HttpUtility.HtmlAttributeEncode(value) : String.Empty;
-		}
+        public string AttributeEncode(string value)
+        {
+	        return !string.IsNullOrEmpty(value) ? HttpUtility.HtmlAttributeEncode(value) : String.Empty;
+        }
 
-		public string AttributeEncode(object value)
-		{
-			return AttributeEncode(Convert.ToString(value, CultureInfo.InvariantCulture));
-		}
+        public string AttributeEncode(object value)
+        {
+	        return AttributeEncode(Convert.ToString(value, CultureInfo.InvariantCulture));
+        }
 
         public void EnableClientValidation()
         {
@@ -267,7 +270,7 @@ namespace ServiceStack.Html
 
         public string Encode(string value)
         {
-            return (!String.IsNullOrEmpty(value)) ? HttpUtility.HtmlEncode(value) : String.Empty;
+            return (!String.IsNullOrEmpty(value)) ? PclExportClient.Instance.HtmlEncode(value) : String.Empty;
         }
 
 		public string Encode(object value)
@@ -279,15 +282,19 @@ namespace ServiceStack.Html
 		private static string EncodeLegacy(object value)
 		{
 			var stringVal = Convert.ToString(value, CultureInfo.CurrentCulture);
-			return !string.IsNullOrEmpty(stringVal) ? HttpUtility.HtmlEncode(stringVal) : String.Empty;
+			return !string.IsNullOrEmpty(stringVal) ? PclExportClient.Instance.HtmlEncode(stringVal) : String.Empty;
 		}
 
 		// selects the v3.5 (legacy) or v4 HTML encoder
 		private static HtmlEncoder GetHtmlEncoder()
 		{
-			return TypeHelpers.CreateDelegate<HtmlEncoder>(TypeHelpers.SystemWebAssembly, "System.Web.HttpUtility", "HtmlEncode", null)
-				?? EncodeLegacy;
-		}
+#if !NETSTANDARD1_6
+            return TypeHelpers.CreateDelegate<HtmlEncoder>(TypeHelpers.SystemWebAssembly, "System.Web.HttpUtility", "HtmlEncode", null)
+                ?? EncodeLegacy;
+#else
+            return EncodeLegacy;
+#endif
+        }
 
         internal string EvalString(string key)
         {
@@ -512,3 +519,5 @@ namespace ServiceStack.Html
 	}
 
 }
+
+#endif

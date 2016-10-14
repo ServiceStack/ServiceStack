@@ -94,36 +94,33 @@ namespace ServiceStack.RabbitMq
 
         public virtual void Publish(string queueName, IMessage message, string exchange)
         {
-            using (__requestAccess())
+            var props = Channel.CreateBasicProperties();
+            props.Persistent = true;
+            props.PopulateFromMessage(message);
+
+            if (message.Meta != null)
             {
-                var props = Channel.CreateBasicProperties();
-                props.Persistent = true;
-                props.PopulateFromMessage(message);
-
-                if (message.Meta != null)
+                props.Headers = new Dictionary<string, object>();
+                foreach (var entry in message.Meta)
                 {
-                    props.Headers = new Dictionary<string, object>();
-                    foreach (var entry in message.Meta)
-                    {
-                        props.Headers[entry.Key] = entry.Value;
-                    }
+                    props.Headers[entry.Key] = entry.Value;
                 }
+            }
 
-                if (PublishMessageFilter != null)
-                {
-                    PublishMessageFilter(queueName, props, message);
-                }
+            if (PublishMessageFilter != null)
+            {
+                PublishMessageFilter(queueName, props, message);
+            }
 
-                var messageBytes = message.Body.ToJson().ToUtf8Bytes();
+            var messageBytes = message.Body.ToJson().ToUtf8Bytes();
 
-                PublishMessage(exchange ?? QueueNames.Exchange,
-                    routingKey: queueName,
-                    basicProperties: props, body: messageBytes);
+            PublishMessage(exchange ?? QueueNames.Exchange,
+                routingKey: queueName,
+                basicProperties: props, body: messageBytes);
 
-                if (OnPublishedCallback != null)
-                {
-                    OnPublishedCallback();
-                }
+            if (OnPublishedCallback != null)
+            {
+                OnPublishedCallback();
             }
         }
 
@@ -200,22 +197,6 @@ namespace ServiceStack.RabbitMq
                 }
                 throw;
             }
-        }
-
-        private class AccessToken
-        {
-            private string token;
-            internal static readonly AccessToken __accessToken =
-                new AccessToken("lUjBZNG56eE9yd3FQdVFSTy9qeGl5dlI5RmZwamc4U05udl000");
-            private AccessToken(string token)
-            {
-                this.token = token;
-            }
-        }
-
-        protected IDisposable __requestAccess()
-        {
-            return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
         }
 
         public virtual void Dispose()

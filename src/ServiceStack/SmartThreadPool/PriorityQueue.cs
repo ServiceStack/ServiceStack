@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -237,3 +239,5 @@ namespace Amib.Threading.Internal
 
 	#endregion
 }
+
+#endif

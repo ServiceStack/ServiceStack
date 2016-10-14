@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NETSTANDARD1_6
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -279,3 +281,5 @@ window.mvcClientValidationMetadata.push({0});
         }
     }
 }
+
+#endif

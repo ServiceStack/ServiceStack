@@ -15,24 +15,18 @@ namespace ServiceStack
 {
     public class TokenException : AuthenticationException
     {
-        public TokenException(string message) : base(message) { }
+        public TokenException(string message) : base(message) {}
     }
 
     public class AuthenticationException : Exception
     {
-        public AuthenticationException()
-        {
-        }
+        public AuthenticationException() {}
 
         public AuthenticationException(string message)
-            : base(message)
-        {
-        }
+            : base(message) {}
 
         public AuthenticationException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+            : base(message, innerException) {}
     }
 
     // by adamfowleruk
@@ -50,7 +44,7 @@ namespace ServiceStack
         public string cnonce { get; set; }
         public int nc { get; set; }
 
-        public AuthenticationInfo(String authHeader)
+        public AuthenticationInfo(string authHeader)
         {
             cnonce = "0a4f113b";
             nc = 1;
@@ -58,9 +52,9 @@ namespace ServiceStack
             // Example Digest header: WWW-Authenticate: Digest realm="testrealm@host.com", qop="auth,auth-int", nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093", opaque="5ccc069c403ebaf9f0171e9517f40e41"
 
             // get method from first word
-            int pos = authHeader.IndexOf(" ");
+            int pos = authHeader.IndexOf(" ", StringComparison.Ordinal);
             if (pos < 0)
-                throw new AuthenticationException("Authentication header not supported: {0}".Fmt(authHeader));
+                throw new AuthenticationException($"Authentication header not supported: {authHeader}");
 
             method = authHeader.Substring(0, pos).ToLower();
             string remainder = authHeader.Substring(pos + 1);
@@ -89,7 +83,7 @@ namespace ServiceStack
             // now go through each part, splitting on first = character, and removing leading and trailing spaces and " quotes
             for (int i = 0; i < maxnewpars; i++)
             {
-                int pos2 = newpars[i].IndexOf("=");
+                int pos2 = newpars[i].IndexOf("=", StringComparison.Ordinal);
                 string name = newpars[i].Substring(0, pos2).Trim();
                 string value = newpars[i].Substring(pos2 + 1).Trim();
                 if (value.StartsWith("\""))
@@ -122,31 +116,26 @@ namespace ServiceStack
 
         public override string ToString()
         {
-            return string.Format("[AuthenticationInfo: method={0}, realm={1}, qop={2}, nonce={3}, opaque={4}, cnonce={5}, nc={6}]", method, realm, qop, nonce, opaque, cnonce, nc);
+            return $"[AuthenticationInfo: method={method}, realm={realm}, qop={qop}, nonce={nonce}, opaque={opaque}, cnonce={cnonce}, nc={nc}]";
         }
     }
 
     public static class WebRequestUtils
     {
-
-        private static readonly ILog Log = LogManager.GetLogger(typeof(WebRequestUtils));
-
         internal static AuthenticationException CreateCustomException(string uri, AuthenticationException ex)
         {
             if (uri.StartsWith("https"))
             {
                 return new AuthenticationException(
-                    String.Format("Invalid remote SSL certificate, overide with: \nServicePointManager.ServerCertificateValidationCallback += ((sender, certificate, chain, sslPolicyErrors) => isValidPolicy);"),
-                    ex);
+                    "Invalid remote SSL certificate, overide with: \nServicePointManager.ServerCertificateValidationCallback += ((sender, certificate, chain, sslPolicyErrors) => isValidPolicy);", ex);
             }
             return null;
         }
 
         internal static bool ShouldAuthenticate(WebException webEx, bool hasAuthInfo)
         {
-            return webEx != null
-                && webEx.Response != null
-                && ((HttpWebResponse)webEx.Response).StatusCode == HttpStatusCode.Unauthorized
+            return webEx?.Response != null 
+                && ((HttpWebResponse)webEx.Response).StatusCode == HttpStatusCode.Unauthorized 
                 && hasAuthInfo;
        }
 
@@ -187,7 +176,7 @@ namespace ServiceStack
         }
 #endif
 
-#if !(NETFX_CORE || SL5 || PCL)
+#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
         internal static string CalculateMD5Hash(string input)
         {
             // copied/pasted by adamfowleruk
@@ -198,9 +187,9 @@ namespace ServiceStack
 
             // step 2, convert byte array to hex string
             var sb = StringBuilderCache.Allocate();
-            for (int i = 0; i < hash.Length; i++)
+            foreach (byte b in hash)
             {
-                sb.Append(hash[i].ToString("X2"));
+                sb.Append(b.ToString("X2"));
             }
             return StringBuilderCache.ReturnAndFree(sb).ToLower(); // The RFC requires the hex values are lowercase
         }
@@ -236,7 +225,7 @@ namespace ServiceStack
         {
             //Silverlight MD5 impl at: http://archive.msdn.microsoft.com/SilverlightMD5
 
-#if !(SL5 || PCL)
+#if !(SL5 || PCL || NETSTANDARD1_1)
             // by adamfowleruk
             // See Client Request at http://en.wikipedia.org/wiki/Digest_access_authentication
 
@@ -340,10 +329,8 @@ namespace ServiceStack
                 return hasResponseStatus.ResponseStatus;
 
             var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");
-            if (propertyInfo == null)
-                return null;
 
-            return propertyInfo.GetProperty(response) as ResponseStatus;
+            return propertyInfo?.GetProperty(response) as ResponseStatus;
         }
     }
 }

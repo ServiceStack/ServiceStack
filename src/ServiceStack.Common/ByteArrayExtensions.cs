@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace ServiceStack
 {
@@ -18,6 +19,14 @@ namespace ServiceStack
             }
 
             return true;
+        }
+
+        public static byte[] ToSha1Hash(this byte[] bytes)
+        {
+            using (var sha1 = SHA1.Create())
+            {
+                return sha1.ComputeHash(bytes);
+            }
         }
     }
 
@@ -37,7 +46,8 @@ namespace ServiceStack
         public int GetHashCode(byte[] key)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
+
             return key.Sum(b => b);
         }
     }

@@ -8,6 +8,7 @@ using Funq;
 using ServiceStack;
 using ServiceStack.Admin;
 using ServiceStack.Api.Swagger;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Html;
 using ServiceStack.IO;
@@ -39,6 +40,7 @@ namespace CheckWeb
             nativeTypes.MetadataTypesConfig.ExportTypes.Add(typeof(DayOfWeek));
             nativeTypes.MetadataTypesConfig.IgnoreTypes.Add(typeof(IgnoreInMetadataConfig));
             nativeTypes.InitializeCollectionsForType = NativeTypesFeature.DontInitializeAutoQueryCollections;
+            //nativeTypes.MetadataTypesConfig.GlobalNamespace = "Check.ServiceInterface";
 
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
@@ -63,21 +65,6 @@ namespace CheckWeb
                 new JsonServiceClient("http://localhost:55799/") {
                     CaptureSynchronizationContext = true,
                 });
-
-            // Configure JSON serialization properties.
-            this.ConfigureSerialization(container);
-
-            // Configure ServiceStack database connections.
-            this.ConfigureDataConnection(container);
-
-            // Configure ServiceStack Authentication plugin.
-            this.ConfigureAuth(container);
-
-            // Configure ServiceStack Fluent Validation plugin.
-            this.ConfigureValidation(container);
-
-            // Configure ServiceStack Razor views.
-            this.ConfigureView(container);
 
             Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
 
@@ -129,7 +116,20 @@ namespace CheckWeb
 
             this.GlobalHtmlErrorHttpHandler = new RazorHandler("GlobalErrorHandler.cshtml");
 
-            //JavaGenerator.AddGsonImport = true;
+            // Configure JSON serialization properties.
+            this.ConfigureSerialization(container);
+
+            // Configure ServiceStack database connections.
+            this.ConfigureDataConnection(container);
+
+            // Configure ServiceStack Authentication plugin.
+            this.ConfigureAuth(container);
+
+            // Configure ServiceStack Fluent Validation plugin.
+            this.ConfigureValidation(container);
+
+            // Configure ServiceStack Razor views.
+            this.ConfigureView(container);
         }
 
         public static Rockstar[] GetRockstars()
@@ -178,7 +178,21 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         private void ConfigureAuth(Container container)
         {
-            // ...
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+                new IAuthProvider[]
+                {
+                    new BasicAuthProvider(AppSettings), 
+                    new ApiKeyAuthProvider(AppSettings), 
+                })
+            {
+                ServiceRoutes = new Dictionary<Type, string[]> {
+                  { typeof(AuthenticateService), new[] { "/api/auth", "/api/auth/{provider}" } },
+                }
+            });
+
+            var authRepo = new OrmLiteAuthRepository(container.Resolve<IDbConnectionFactory>());
+            container.Register<IAuthRepository>(c => authRepo);
+            authRepo.InitSchema();
         }
 
         /// <summary>

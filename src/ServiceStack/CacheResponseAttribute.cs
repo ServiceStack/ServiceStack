@@ -39,6 +39,11 @@ namespace ServiceStack
         /// </summary>
         public bool LocalCache { get; set; }
 
+        /// <summary>
+        /// Skip compression for this Cache Result
+        /// </summary>
+        public bool NoCompression { get; set; }
+
         public CacheResponseAttribute()
         {
             MaxAge = -1;
@@ -74,10 +79,14 @@ namespace ServiceStack
                 var userSession = req.GetSession();
                 if (userSession != null)
                 {
-                    foreach (var role in VaryByRoles)
+                    var authRepo = HostContext.AppHost.GetAuthRepository(req);
+                    using (authRepo as IDisposable)
                     {
-                        if (userSession.HasRole(role))
-                            modifiers += (modifiers.Length > 0 ? "+" : "") + "role:" + role;
+                        foreach (var role in VaryByRoles)
+                        {
+                            if (userSession.HasRole(role, authRepo))
+                                modifiers += (modifiers.Length > 0 ? "+" : "") + "role:" + role;
+                        }
                     }
                 }
             }
@@ -94,6 +103,7 @@ namespace ServiceStack
                 CacheControl = CacheControl,
                 VaryByUser = VaryByUser,
                 LocalCache = LocalCache,
+                NoCompression = NoCompression,
             };
 
             if (req.HandleValidCache(cacheInfo))
@@ -131,7 +141,9 @@ namespace ServiceStack
                 }
             }
 
-            var encoding = req.GetCompressionType();
+            var encoding = !cacheInfo.NoCompression 
+                ? req.GetCompressionType()
+                : null;
 
             var responseBytes = encoding != null
                 ? cache.Get<byte[]>(cacheInfo.CacheKey + "." + encoding)

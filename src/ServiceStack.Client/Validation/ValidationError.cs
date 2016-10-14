@@ -12,8 +12,7 @@ namespace ServiceStack.Validation
     /// </summary>
     public class ValidationError : ArgumentException, IResponseStatusConvertible
     {
-        private readonly string errorCode;
-        public string ErrorMessage { get; private set; }
+        public string ErrorMessage { get; }
 
         public ValidationError(string errorCode)
             : this(errorCode, errorCode.SplitCamelCase())
@@ -23,7 +22,7 @@ namespace ServiceStack.Validation
         public ValidationError(ValidationErrorResult validationResult)
             : base(validationResult.ErrorMessage)
         {
-            this.errorCode = validationResult.ErrorCode;
+            this.ErrorCode = validationResult.ErrorCode;
             this.ErrorMessage = validationResult.ErrorMessage;
             this.Violations = validationResult.Errors;
         }
@@ -37,7 +36,7 @@ namespace ServiceStack.Validation
         public ValidationError(string errorCode, string errorMessage)
             : base(errorMessage)
         {
-            this.errorCode = errorCode;
+            this.ErrorCode = errorCode;
             this.ErrorMessage = errorMessage;
             this.Violations = new List<ValidationErrorField>();
         }
@@ -46,13 +45,7 @@ namespace ServiceStack.Validation
         /// Returns the first error code
         /// </summary>
         /// <value>The error code.</value>
-        public string ErrorCode
-        {
-            get
-            {
-                return this.errorCode;
-            }
-        }
+        public string ErrorCode { get; }
 
         public override string Message
         {
@@ -71,13 +64,13 @@ namespace ServiceStack.Validation
                 {
                     if (!string.IsNullOrEmpty(error.ErrorMessage))
                     {
-                        var fieldLabel = error.FieldName != null ? string.Format(" [{0}]", error.FieldName) : null;
-                        sb.AppendFormat("\n  - {0}{1}", error.ErrorMessage, fieldLabel);
+                        var fieldLabel = error.FieldName != null ? $" [{error.FieldName}]" : null;
+                        sb.Append($"\n  - {error.ErrorMessage}{fieldLabel}");
                     }
                     else
                     {
                         var fieldLabel = error.FieldName != null ? ": " + error.FieldName : null;
-                        sb.AppendFormat("\n  - {0}{1}", error.ErrorCode, fieldLabel);
+                        sb.Append($"\n  - {error.ErrorCode}{fieldLabel}");
                     }
                 }
                 return StringBuilderCache.ReturnAndFree(sb);
@@ -94,12 +87,12 @@ namespace ServiceStack.Validation
         {
             var sb = StringBuilderCache.Allocate();
             sb.Append("<ValidationException>");
-            foreach (ValidationErrorField error in this.Violations)
+            foreach (var error in this.Violations)
             {
                 sb.Append("<ValidationError>")
-                    .AppendFormat("<Code>{0}</Code>", error.ErrorCode)
-                    .AppendFormat("<Field>{0}</Field>", error.FieldName)
-                    .AppendFormat("<Message>{0}</Message>", error.ErrorMessage)
+                    .Append($"<Code>{error.ErrorCode}</Code>")
+                    .Append($"<Field>{error.FieldName}</Field>")
+                    .Append($"<Message>{error.ErrorMessage}</Message>")
                     .Append("</ValidationError>");
             }
             sb.Append("</ValidationException>");

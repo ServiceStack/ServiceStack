@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -34,7 +33,7 @@ namespace ServiceStack
         private static void AddNewApiRoutes(IServiceRoutes routes, Assembly assembly)
         {
             var services = assembly.GetExportedTypes()
-                .Where(t => !t.IsAbstract
+                .Where(t => !t.IsAbstract()
                             && t.HasInterface(typeof(IService)));
 
             foreach (Type service in services)
@@ -96,19 +95,19 @@ namespace ServiceStack
         {
             while (toCheck != typeof(object))
             {
-                Type cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
+                Type cur = toCheck.IsGenericType() ? toCheck.GetGenericTypeDefinition() : toCheck;
                 if (generic == cur)
                 {
                     return true;
                 }
-                toCheck = toCheck.BaseType;
+                toCheck = toCheck.BaseType();
             }
             return false;
         }
 
         private static string FormatRoute<T>(string restPath, params Expression<Func<T, object>>[] propertyExpressions)
         {
-            var properties = propertyExpressions.Select(x => string.Format("{{{0}}}", PropertyName(x))).ToArray();
+            var properties = propertyExpressions.Select(x => $"{{{PropertyName(x)}}}").ToArray();
             return string.Format(restPath, properties);
         }
 

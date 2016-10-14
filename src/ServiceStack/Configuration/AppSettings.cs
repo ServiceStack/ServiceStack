@@ -13,12 +13,25 @@ namespace ServiceStack.Configuration
         {
             public string Get(string key)
             {
+#if !NETSTANDARD1_6
                 return ConfigurationManager.AppSettings[key];
+#else
+                var appSettings = ConfigUtils.GetAppSettingsMap();
+                string value;
+                return appSettings.TryGetValue(key, out value)
+                    ? value
+                    : null;
+#endif
             }
 
             public List<string> GetAllKeys()
             {
+#if !NETSTANDARD1_6
                 return new List<string>(ConfigurationManager.AppSettings.AllKeys);
+#else
+                var appSettings = ConfigUtils.GetAppSettingsMap();
+                return appSettings.Keys.ToList();
+#endif
             }
         }
 

@@ -31,13 +31,15 @@ namespace ServiceStack.Html
 
 		private static readonly MethodInfo _strongTryGetValueImplInfo = typeof(TypeHelpers).GetMethod("StrongTryGetValueImpl", BindingFlags.NonPublic | BindingFlags.Static);
 
-		public static readonly Assembly MsCorLibAssembly = typeof(string).Assembly;
-		//public static readonly Assembly MvcAssembly = typeof(Controller).Assembly;
-		public static readonly Assembly SystemWebAssembly = typeof(HttpContext).Assembly;
+		public static readonly Assembly MsCorLibAssembly = typeof(string).GetAssembly();
+        //public static readonly Assembly MvcAssembly = typeof(Controller).Assembly;
+#if !NETSTANDARD1_6
+        public static readonly Assembly SystemWebAssembly = typeof(HttpContext).GetAssembly();
+#endif
 
-		// method is used primarily for lighting up new .NET Framework features even if MVC targets the previous version
-		// thisParameter is the 'this' parameter if target method is instance method, should be null for static method
-		public static TDelegate CreateDelegate<TDelegate>(Assembly assembly, string typeName, string methodName, object thisParameter) where TDelegate : class
+        // method is used primarily for lighting up new .NET Framework features even if MVC targets the previous version
+        // thisParameter is the 'this' parameter if target method is instance method, should be null for static method
+        public static TDelegate CreateDelegate<TDelegate>(Assembly assembly, string typeName, string methodName, object thisParameter) where TDelegate : class
 		{
 			// ensure target type exists
 			Type targetType = assembly.GetType(typeName, false /* throwOnError */);
@@ -53,14 +55,14 @@ namespace ServiceStack.Html
 		{
 			// ensure target method exists
 			ParameterInfo[] delegateParameters = typeof(TDelegate).GetMethod("Invoke").GetParameters();
-			Type[] argumentTypes = Array.ConvertAll(delegateParameters, pInfo => pInfo.ParameterType);
+			Type[] argumentTypes = delegateParameters.Map(pInfo => pInfo.ParameterType).ToArray();
 			MethodInfo targetMethod = targetType.GetMethod(methodName, argumentTypes);
 			if (targetMethod == null)
 			{
 				return null;
 			}
 
-			TDelegate d = Delegate.CreateDelegate(typeof(TDelegate), thisParameter, targetMethod, false /* throwOnBindFailure */) as TDelegate;
+			TDelegate d = targetMethod.CreateDelegate(typeof(TDelegate), thisParameter) as TDelegate;
 			return d;
 		}
 
@@ -93,7 +95,7 @@ namespace ServiceStack.Html
 				if (keyType.IsAssignableFrom(typeof(string)))
 				{
 					MethodInfo strongImplInfo = _strongTryGetValueImplInfo.MakeGenericMethod(keyType, returnType);
-					result = (TryGetValueDelegate)Delegate.CreateDelegate(typeof(TryGetValueDelegate), strongImplInfo);
+					result = (TryGetValueDelegate)strongImplInfo.CreateDelegate(typeof(TryGetValueDelegate));
 				}
 			}
 
@@ -118,7 +120,7 @@ namespace ServiceStack.Html
 
 		public static Type ExtractGenericInterface(Type queryType, Type interfaceType)
 		{
-			Func<Type, bool> matchesInterface = t => t.IsGenericType && t.GetGenericTypeDefinition() == interfaceType;
+			Func<Type, bool> matchesInterface = t => t.IsGenericType() && t.GetGenericTypeDefinition() == interfaceType;
 			return (matchesInterface(queryType)) ? queryType : queryType.GetInterfaces().FirstOrDefault(matchesInterface);
 		}
 
@@ -158,7 +160,7 @@ namespace ServiceStack.Html
 
 		public static bool TypeAllowsNullValue(Type type)
 		{
-			return (!type.IsValueType || IsNullableValueType(type));
+			return (!type.IsValueType() || IsNullableValueType(type));
 		}
 	}
 }

@@ -26,10 +26,13 @@ namespace ServiceStack.Host.Handlers
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
 
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var httpReq = context.ToRequest("CustomAction");
             ProcessRequest(httpReq, httpReq.Response, "CustomAction");
         }
+#endif
+
     }
 }

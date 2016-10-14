@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 using System;
 using System.Threading;
 using System.Runtime.CompilerServices;
@@ -359,3 +361,5 @@ namespace Amib.Threading.Internal
 
 	#endregion
 }
+
+#endif

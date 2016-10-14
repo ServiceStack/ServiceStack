@@ -10,25 +10,22 @@ namespace ServiceStack.VirtualPath
     {
         protected IList<IVirtualPathProvider> ChildProviders;
 
-        public override IVirtualDirectory RootDirectory
-        {
-            get { return ChildProviders.FirstOrDefault().RootDirectory; }
-        }
+        public override IVirtualDirectory RootDirectory => ChildProviders.FirstOrDefault().RootDirectory;
 
-        public override String VirtualPathSeparator { get { return "/"; } }
-        public override string RealPathSeparator { get { return Convert.ToString(Path.DirectorySeparatorChar); } }
+        public override string VirtualPathSeparator => "/";
+        public override string RealPathSeparator => Convert.ToString(Path.DirectorySeparatorChar);
 
         public MultiVirtualPathProvider(IAppHost appHost, params IVirtualPathProvider[] childProviders) 
             : base(appHost)
         {
             if (childProviders == null || childProviders.Length == 0)
-                throw new ArgumentException("childProviders");
+                throw new ArgumentNullException(nameof(childProviders));
 
             this.ChildProviders = new List<IVirtualPathProvider>(childProviders);
             Initialize();
         }
 
-        protected override sealed void Initialize() {}
+        protected sealed override void Initialize() {}
 
         public override string CombineVirtualPath(string basePath, string relativePath)
         {

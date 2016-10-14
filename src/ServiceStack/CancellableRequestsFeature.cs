@@ -42,7 +42,7 @@ namespace ServiceStack
             using (var cancallableReq = base.Request.GetCancellableRequest(request.Tag))
             {
                 if (cancallableReq == null)
-                    throw HttpError.NotFound("Request with Tag '{0}' does not exist".Fmt(request.Tag));
+                    throw HttpError.NotFound($"Request with Tag '{request.Tag}' does not exist");
 
                 cancallableReq.TokenSource.Cancel();
 
@@ -84,10 +84,7 @@ namespace ServiceStack
             req.Items[typeof(CancellableRequest).Name] = feature.RequestsMap[tag] = this;
         }
 
-        public TimeSpan Elapsed
-        {
-            get { return stopwatch.Elapsed; }
-        }
+        public TimeSpan Elapsed => stopwatch.Elapsed;
 
         public void Dispose()
         {
@@ -109,10 +106,7 @@ namespace ServiceStack
             this.stopwatch = Stopwatch.StartNew();
         }
 
-        public TimeSpan Elapsed
-        {
-            get { return stopwatch.Elapsed; }
-        }
+        public TimeSpan Elapsed => stopwatch.Elapsed;
 
         public void Dispose()
         {

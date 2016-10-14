@@ -33,6 +33,9 @@ namespace ServiceStack
             if (req.IsInProcessRequest())
                 return;
 
+            if (response is Exception || res.StatusCode >= 300)
+                return;
+
             var cacheInfo = req.GetItem(Keywords.CacheInfo) as CacheInfo;
             if (cacheInfo != null && cacheInfo.CacheKey != null)
             {
@@ -100,7 +103,10 @@ namespace ServiceStack
                 }
             }
 
-            var encoding = req.GetCompressionType();
+            var encoding = !cacheInfo.NoCompression
+                ? req.GetCompressionType()
+                : null;
+
             var cacheKeyEncoded = encoding != null ? cacheInfo.CacheKey + "." + encoding : null;
             if (responseBytes != null || req.ResponseContentType.IsBinary())
             {

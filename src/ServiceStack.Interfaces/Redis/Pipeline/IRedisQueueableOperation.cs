@@ -51,5 +51,13 @@ namespace ServiceStack.Redis.Pipeline
         void QueueCommand(Func<IRedisClient, Dictionary<string,string>> command);
         void QueueCommand(Func<IRedisClient, Dictionary<string,string>> command, Action<Dictionary<string,string>> onSuccessCallback);
         void QueueCommand(Func<IRedisClient, Dictionary<string,string>> command, Action<Dictionary<string,string>> onSuccessCallback, Action<Exception> onErrorCallback);
+
+        void QueueCommand(Func<IRedisClient, RedisData> command);
+        void QueueCommand(Func<IRedisClient, RedisData> command, Action<RedisData> onSuccessCallback);
+        void QueueCommand(Func<IRedisClient, RedisData> command, Action<RedisData> onSuccessCallback, Action<Exception> onErrorCallback);
+
+        void QueueCommand(Func<IRedisClient, RedisText> command);
+        void QueueCommand(Func<IRedisClient, RedisText> command, Action<RedisText> onSuccessCallback);
+        void QueueCommand(Func<IRedisClient, RedisText> command, Action<RedisText> onSuccessCallback, Action<Exception> onErrorCallback);
     }
 }

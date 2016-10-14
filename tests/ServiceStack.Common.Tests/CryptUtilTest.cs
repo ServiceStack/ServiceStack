@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETCORE_SUPPORT
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,18 +29,6 @@ namespace ServiceStack.Common.Tests
 
         }
 
-        [TestCase]
-        [Test, ExpectedException(typeof(ArgumentNullException))]
-        public void CanEncryptWithStringExtensionFailsWithoutKeyPair()
-        {
-            RsaUtils.KeyLength = RsaKeyLengths.Bit1024;
-            RsaUtils.DefaultKeyPair = null;
-            string TestStart = "Mr. Watson--come here--I want to see you.";
-            string Encrypted;
-
-            Encrypted = TestStart.Encrypt();
-        }
-
         [Test]
         public void Can_sign_data_with_RSA()
         {
@@ -57,3 +46,4 @@ namespace ServiceStack.Common.Tests
         }
     }
 }
+#endif

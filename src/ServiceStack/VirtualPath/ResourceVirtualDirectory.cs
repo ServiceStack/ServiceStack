@@ -19,25 +19,17 @@ namespace ServiceStack.VirtualPath
         protected List<ResourceVirtualDirectory> SubDirectories;
         protected List<ResourceVirtualFile> SubFiles;
 
-        public override IEnumerable<IVirtualFile> Files { get { return SubFiles.Cast<IVirtualFile>(); } }
-        public override IEnumerable<IVirtualDirectory> Directories
-        {
-            get
-            {
-                return SubDirectories.Cast<IVirtualDirectory>();
-            }
-        }
-        
-        public override string Name { get { return DirectoryName; } }
+        public override IEnumerable<IVirtualFile> Files => SubFiles;
+
+        public override IEnumerable<IVirtualDirectory> Directories => SubDirectories;
+
+        public override string Name => DirectoryName;
 
         public string DirectoryName { get; set; }
 
-        public override DateTime LastModified
-        {
-            get { return GetLastWriteTimeOfBackingAsm(); }
-        }
+        public override DateTime LastModified => GetLastWriteTimeOfBackingAsm();
 
-        internal Assembly BackingAssembly { get { return backingAssembly; } }
+        internal Assembly BackingAssembly => backingAssembly;
 
         public ResourceVirtualDirectory(IVirtualPathProvider owningProvider, 
             IVirtualDirectory parentDir, 
@@ -59,10 +51,10 @@ namespace ServiceStack.VirtualPath
             : base(owningProvider, parentDir)
         {
             if (backingAsm == null)
-                throw new ArgumentNullException("backingAsm");
+                throw new ArgumentNullException(nameof(backingAsm));
 
             if (string.IsNullOrEmpty(directoryName))
-                throw new ArgumentException("directoryName");
+                throw new ArgumentNullException(nameof(directoryName));
 
             this.backingAssembly = backingAsm;
             this.rootNamespace = rootNamespace;
@@ -112,11 +104,11 @@ namespace ServiceStack.VirtualPath
             return subDir;
         }
 
-        protected virtual ResourceVirtualFile CreateVirtualFile(String resourceName)
+        protected virtual ResourceVirtualFile CreateVirtualFile(string resourceName)
         {
             try
             {
-                var fullResourceName = String.Concat(RealPath, VirtualPathProvider.RealPathSeparator, resourceName);
+                var fullResourceName = string.Concat(RealPath, VirtualPathProvider.RealPathSeparator, resourceName);
 
                 var resourceNames = new[]
                 {
@@ -148,7 +140,7 @@ namespace ServiceStack.VirtualPath
 
         public override IEnumerator<IVirtualNode> GetEnumerator()
         {
-            return Directories.Cast<IVirtualNode>().Union<IVirtualNode>(Files.Cast<IVirtualNode>()).GetEnumerator();
+            return Directories.Cast<IVirtualNode>().Union(Files.Cast<IVirtualNode>()).GetEnumerator();
         }
 
         protected override IVirtualFile GetFileFromBackingDirectoryOrDefault(string fileName)
@@ -171,7 +163,7 @@ namespace ServiceStack.VirtualPath
             return null;
         }
 
-        protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(String globPattern)
+        protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(string globPattern)
         {
             return Files.Where(f => f.Name.Glob(globPattern));
         }

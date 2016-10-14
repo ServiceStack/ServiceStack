@@ -9,13 +9,7 @@ namespace ServiceStack
     // Dummy class to satisfy linked files from SS.Razor project
     public static class HostContext
     {
-        public static HostConfig Config
-        {
-            get
-            {
-                return config;
-            }
-        }
+        public static HostConfig Config { get; } = new HostConfig();
 
         public static string AppConfigPath
         {
@@ -47,7 +41,7 @@ namespace ServiceStack
             }
 
             var appHostDll = new FileInfo(ProjectTargetPath).Name;
-            configPath = ProjectDir + "{0}.config".Fmt(appHostDll);
+            configPath = ProjectDir + $"{appHostDll}.config";
             if (!File.Exists(configPath))
                 return null;
 
@@ -58,7 +52,6 @@ namespace ServiceStack
         public static string ProjectDir { get; set; }
         public static string ProjectTargetPath { get; set; }
 
-        private static readonly HostConfig config = new HostConfig();
         private static string appConfigPath;
     }
 

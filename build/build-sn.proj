@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <MajorVersion Condition="$(MajorVersion) == ''">4</MajorVersion>
-    <MinorVersion Condition="$(MinorVersion) == ''">0</MinorVersion>
+    <MinorVersion Condition="$(MinorVersion) == ''">5</MinorVersion>
     <PatchVersion Condition="$(PatchVersion) == ''">$(BUILD_NUMBER)</PatchVersion>
   </PropertyGroup>
 
@@ -61,7 +61,7 @@
 
       <!--Update Min Dependency Version -->
       <RegexTransform Include="$(NuGetPackageDir)/**/*.nuspec">
-        <Find>version="4\.0[^"]*"</Find>
+        <Find>version="4\.5[^"]*"</Find>
         <ReplaceWith>version="$(PackageVersion)"</ReplaceWith>
       </RegexTransform>
     </ItemGroup>
@@ -81,7 +81,6 @@
       <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/ServiceStack.xml"></ServiceStackFiles>
 
       <ServerFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/ServiceStack.Server.*"></ServerFiles>
-      <ServerFilesV45 Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/ServiceStack.Server.*"></ServerFilesV45>
 
       <RazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/ServiceStack.Razor.*"></RazorFiles>
       <RazorFiles Include="$(BuildSolutionDir)/lib/System.Web.Razor.*"></RazorFiles>
@@ -117,8 +116,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net40')" />
-    <Copy SourceFiles="%(SwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net40" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net45')" />
+    <Copy SourceFiles="%(SwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net45" />
 
     <!-- Disables -Symbols-->
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/servicestack.api.swagger.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
@@ -129,8 +128,8 @@
     <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.Signed.csproj" Properties="Configuration=$(Configuration)"/>
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net40')" />
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net40" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net45')" />
+    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client.Signed/servicestack.client.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -140,8 +139,8 @@
     <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.Signed.csproj" Properties="Configuration=$(Configuration)"/>
     <Copy SourceFiles="%(CommonFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net40')" />
-    <Copy SourceFiles="%(CommonFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net40" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net45')" />
+    <Copy SourceFiles="%(CommonFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Common.Signed/servicestack.common.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -151,8 +150,8 @@
     <MSBuild Projects="../src/ServiceStack/ServiceStack.Signed.csproj" Properties="Configuration=$(Configuration)"/>
     <Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Signed/lib/net40')" />
-    <Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Signed/lib/net40" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Signed/lib/net45')" />
+    <Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Signed/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Signed/servicestack.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -162,15 +161,8 @@
     <MSBuild Projects="../src/ServiceStack.Server/ServiceStack.Server.Signed.csproj" Properties="Configuration=$(Configuration)"/>
     <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net40')" />
-    <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net40" />
-
-    <!-- ServiceStack.Server .NET 4.5 -->
-    <MSBuild Projects="../src/ServiceStack.ServerV45/ServiceStack.ServerV45.Signed.csproj" Properties="Configuration=$(Configuration)"/>
-    <Copy SourceFiles="%(ServerFilesV45.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/net45/signed" />
-
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net45')" />
-    <Copy SourceFiles="%(ServerFilesV45.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net45" />
+    <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Server.Signed/servicestack.server.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -192,8 +184,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net40')" />
-    <Copy SourceFiles="%(ProtoBufFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net40" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net45')" />
+    <Copy SourceFiles="%(ProtoBufFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/servicestack.protobuf.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -204,8 +196,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net40')" />
-    <Copy SourceFiles="%(MvcFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net40" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net45')" />
+    <Copy SourceFiles="%(MvcFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Mvc.Signed/servicestack.mvc.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -216,8 +208,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net40" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net40')" />
-    <Copy SourceFiles="%(OAuth2Files.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net40" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net45')" />
+    <Copy SourceFiles="%(OAuth2Files.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/servicestack.authentication.oauth2.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />

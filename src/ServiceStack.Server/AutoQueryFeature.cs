@@ -41,6 +41,7 @@ namespace ServiceStack
         public int? MaxLimit { get; set; }
         public string UseNamedConnection { get; set; }
         public bool StripUpperInLike { get; set; }
+        public bool IncludeTotal { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableRawSqlFilters { get; set; }
         public bool EnableAutoQueryViewer { get; set; }
@@ -48,6 +49,7 @@ namespace ServiceStack
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
+        public Action<Type, TypeBuilder, MethodBuilder, ILGenerator> GenerateServiceFilter { get; set; }
 
         public const string GreaterThanOrEqualFormat = "{Field} >= {Value}";
         public const string GreaterThanFormat =        "{Field} > {Value}";
@@ -118,6 +120,7 @@ namespace ServiceStack
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
             ResponseFilters = new List<Action<QueryDbFilterContext>> { IncludeAggregates };
+            IncludeTotal = true;
             EnableUntypedQueries = true;
             EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
@@ -156,6 +159,7 @@ namespace ServiceStack
                     IgnoreProperties = IgnoreProperties,
                     IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
                     MaxLimit = MaxLimit,
+                    IncludeTotal = IncludeTotal,
                     EnableUntypedQueries = EnableUntypedQueries,
                     EnableSqlFilters = EnableRawSqlFilters,
                     OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
@@ -199,7 +203,7 @@ namespace ServiceStack
         {
             var assemblyName = new AssemblyName { Name = "tmpAssembly" };
             var typeBuilder =
-                Thread.GetDomain().DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
+                AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
                 .DefineDynamicModule("tmpModule")
                 .DefineType("__AutoQueryServices",
                     TypeAttributes.Public | TypeAttributes.Class,
@@ -220,6 +224,9 @@ namespace ServiceStack
                     parameterTypes: new[] { requestType });
 
                 var il = method.GetILGenerator();
+                
+                if (GenerateServiceFilter != null)
+                    GenerateServiceFilter(requestType, typeBuilder, method, il);
 
                 var genericArgs = genericDef.GetGenericArguments();
                 var mi = AutoQueryServiceBaseType.GetMethods()
@@ -238,7 +245,7 @@ namespace ServiceStack
                 il.Emit(OpCodes.Ret);
             }
 
-            var servicesType = typeBuilder.CreateType();
+            var servicesType = typeBuilder.CreateTypeInfo().AsType();
             return servicesType;
         }
 
@@ -250,7 +257,7 @@ namespace ServiceStack
             return this;
         }
 
-        public HashSet<string> SqlAggregateFunctions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+        public HashSet<string> SqlAggregateFunctions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "AVG", "COUNT", "FIRST", "LAST", "MAX", "MIN", "SUM"
         };
@@ -391,6 +398,7 @@ namespace ServiceStack
     public interface IAutoQueryOptions
     {
         int? MaxLimit { get; set; }
+        bool IncludeTotal { get; set; }
         bool EnableUntypedQueries { get; set; }
         bool EnableSqlFilters { get; set; }
         bool OrderByPrimaryKeyOnLimitQuery { get; set; }
@@ -403,6 +411,7 @@ namespace ServiceStack
     public class AutoQuery : IAutoQueryDb, IAutoQueryOptions, IDisposable
     {
         public int? MaxLimit { get; set; }
+        public bool IncludeTotal { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableSqlFilters { get; set; }
         public bool OrderByPrimaryKeyOnLimitQuery { get; set; }
@@ -469,16 +478,9 @@ namespace ServiceStack
 
         public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> sqlExpression, IQueryDb dto)
         {
-            response.Meta = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            response.Meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var commands = dto.Include.ParseCommands();
-
-            var totalCountRequested = commands.Any(x =>
-                "COUNT".EqualsIgnoreCase(x.Name) && 
-                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*"))); 
-
-            if (!totalCountRequested)
-                commands.Add(new Command { Name = "COUNT", Args = { "*" }});
 
             var ctx = new QueryDbFilterContext
             {
@@ -489,22 +491,39 @@ namespace ServiceStack
                 Response = response,
             };
 
-            foreach (var responseFilter in ResponseFilters)
+            if (IncludeTotal)
             {
-                responseFilter(ctx);
+                var totalCountRequested = commands.Any(x =>
+                    "COUNT".EqualsIgnoreCase(x.Name) &&
+                    (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*")));
+
+                if (!totalCountRequested)
+                    commands.Add(new Command { Name = "COUNT", Args = { "*" } });
+
+                foreach (var responseFilter in ResponseFilters)
+                {
+                    responseFilter(ctx);
+                }
+
+                string total;
+                response.Total = response.Meta.TryGetValue("COUNT(*)", out total)
+                    ? total.ToInt()
+                    : (int)Db.Count(sqlExpression); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
+
+                //reduce payload on wire
+                if (!totalCountRequested)
+                {
+                    response.Meta.Remove("COUNT(*)");
+                    if (response.Meta.Count == 0)
+                        response.Meta = null;
+                }
             }
-
-            string total;
-            response.Total = response.Meta.TryGetValue("COUNT(*)", out total) 
-                ? total.ToInt() 
-                : (int) Db.Count(sqlExpression); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
-
-            //reduce payload on wire
-            if (!totalCountRequested)
+            else
             {
-                response.Meta.Remove("COUNT(*)");
-                if (response.Meta.Count == 0)
-                    response.Meta = null;
+                foreach (var responseFilter in ResponseFilters)
+                {
+                    responseFilter(ctx);
+                }
             }
 
             return response;
@@ -609,7 +628,7 @@ namespace ServiceStack
             var dtoAttr = dto.GetType().FirstAttribute<QueryDbAttribute>();
             var defaultTerm = dtoAttr != null && dtoAttr.DefaultTerm == QueryTerm.Or ? "OR" : "AND";
 
-            var aliases = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            var aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var props = typeof(From).GetProperties();
             foreach (var pi in props)
             {

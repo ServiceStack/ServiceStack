@@ -33,7 +33,7 @@ namespace ServiceStack.Configuration
         public virtual string GetNullableString(string name)
         {
             var value = Tier != null
-                ? Get("{0}.{1}".Fmt(Tier, name)) ?? Get(name)
+                ? Get($"{Tier}.{name}") ?? Get(name)
                 : Get(name);
 
             return ParsingStrategy != null
@@ -43,13 +43,8 @@ namespace ServiceStack.Configuration
 
         public string Get(string name)
         {
-            if (settingsWriter != null)
-            {
-                var value = settingsWriter.Get(name);
-                if (value != null)
-                    return value;
-            }
-            return settings.Get(name);
+            var value = settingsWriter?.Get(name);
+            return value ?? settings.Get(name);
         }
 
         public virtual Dictionary<string, string> GetAll()
@@ -66,8 +61,7 @@ namespace ServiceStack.Configuration
         public virtual List<string> GetAllKeys()
         {
             var keys = settings.GetAllKeys().ToHashSet();
-            if (settingsWriter != null)
-                settingsWriter.GetAllKeys().Each(x => keys.Add(x));
+            settingsWriter?.GetAllKeys().Each(x => keys.Add(x));
 
             return keys.ToList();
         }
@@ -108,10 +102,8 @@ namespace ServiceStack.Configuration
             }
             catch (Exception ex)
             {
-                var message =
-                    string.Format(
-                        "The {0} setting had an invalid dictionary format. The correct format is of type \"Key1:Value1,Key2:Value2\"",
-                        key);
+                var message = $"The {key} setting had an invalid dictionary format. " +
+                              $"The correct format is of type \"Key1:Value1,Key2:Value2\"";
                 throw new ConfigurationErrorsException(message, ex);
             }
         }
@@ -138,10 +130,8 @@ namespace ServiceStack.Configuration
             }
             catch (Exception ex)
             {
-                var message =
-                   string.Format(
-                       "The {0} setting had an invalid format. The value \"{1}\" could not be cast to type {2}",
-                       name, stringValue, typeof(T).FullName);
+                var message = $"The {name} setting had an invalid format. " +
+                              $"The value \"{stringValue}\" could not be cast to type {typeof(T).FullName}";
                 throw new ConfigurationErrorsException(message, ex);
             }
 

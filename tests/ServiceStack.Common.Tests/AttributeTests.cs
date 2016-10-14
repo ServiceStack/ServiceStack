@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-
+#if !NETCORE
 using System;
 using System.ComponentModel;
 using NUnit.Framework;
@@ -105,3 +105,4 @@ namespace ServiceStack.Common.Tests
         }
     }
 }
+#endif

@@ -16,40 +16,22 @@ namespace ServiceStack
 
         public int CleanCachesWhenCountExceeds { get; set; }
 
-        public int CacheCount
-        {
-            get { return cache.Count; }
-        }
+        public int CacheCount => cache.Count;
 
         private long cacheHits;
-        public long CacheHits
-        {
-            get { return cacheHits; }
-        }
+        public long CacheHits => cacheHits;
 
         private long notModifiedHits;
-        public long NotModifiedHits
-        {
-            get { return notModifiedHits; }
-        }
+        public long NotModifiedHits => notModifiedHits;
 
         private long errorFallbackHits;
-        public long ErrorFallbackHits
-        {
-            get { return errorFallbackHits; }
-        }
+        public long ErrorFallbackHits => errorFallbackHits;
 
         private long cachesAdded;
-        public long CachesAdded
-        {
-            get { return cachesAdded; }
-        }
+        public long CachesAdded => cachesAdded;
 
         private long cachesRemoved;
-        public long CachesRemoved
-        {
-            get { return cachesRemoved; }
-        }
+        public long CachesRemoved => cachesRemoved;
 
         private ConcurrentDictionary<string, HttpCacheEntry> cache = new ConcurrentDictionary<string, HttpCacheEntry>();
 
@@ -86,8 +68,7 @@ namespace ServiceStack
 
         private void OnRequestFilter(HttpWebRequest webReq)
         {
-            if (existingRequestFilter != null)
-                existingRequestFilter(webReq);
+            existingRequestFilter?.Invoke(webReq);
 
             HttpCacheEntry entry;
             if (webReq.Method == HttpMethods.Get && cache.TryGetValue(webReq.RequestUri.ToString(), out entry))
@@ -102,9 +83,7 @@ namespace ServiceStack
 
         private object OnResultsFilter(Type responseType, string httpMethod, string requestUri, object request)
         {
-            var ret = existingResultsFilter != null 
-                ? existingResultsFilter(responseType, httpMethod, requestUri, request)
-                : null;
+            var ret = existingResultsFilter?.Invoke(responseType, httpMethod, requestUri, request);
 
             HttpCacheEntry entry;
             if (httpMethod == HttpMethods.Get && cache.TryGetValue(requestUri, out entry))
@@ -121,12 +100,9 @@ namespace ServiceStack
 
         public object OnExceptionFilter(WebException webEx, WebResponse webRes, string requestUri, Type responseType)
         {
-            if (existingExceptionFilter != null)
-            {
-                var response = existingExceptionFilter(webEx, webRes, requestUri, responseType);
-                if (response != null)
-                    return response;
-            }
+            var response = existingExceptionFilter?.Invoke(webEx, webRes, requestUri, responseType);
+            if (response != null)
+                return response;
 
             HttpCacheEntry entry;
             if (cache.TryGetValue(requestUri, out entry))
@@ -147,8 +123,7 @@ namespace ServiceStack
 
         private void OnResultsFilterResponse(WebResponse webRes, object response, string httpMethod, string requestUri, object request)
         {
-            if (existingResultsFilterResponse != null)
-                existingResultsFilterResponse(webRes, response, httpMethod, requestUri, request);
+            existingResultsFilterResponse?.Invoke(webRes, response, httpMethod, requestUri, request);
 
             if (httpMethod != HttpMethods.Get || response == null || webRes == null)
                 return;
@@ -222,7 +197,7 @@ namespace ServiceStack
         public void SetCache(ConcurrentDictionary<string, HttpCacheEntry> cache)
         {
             if (cache == null)
-                throw new ArgumentNullException("cache");
+                throw new ArgumentNullException(nameof(cache));
 
             this.cache = cache;
         }

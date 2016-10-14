@@ -10,7 +10,14 @@ namespace ServiceStack.Testing
     {
         public BasicAppHost(params Assembly[] serviceAssemblies)
             : base(typeof (BasicAppHost).GetOperationName(),
-                   serviceAssemblies.Length > 0 ? serviceAssemblies : new[] {Assembly.GetExecutingAssembly()})
+                   serviceAssemblies.Length > 0 ? serviceAssemblies : new[]
+                   {
+#if !NETSTANDARD1_6
+                       Assembly.GetExecutingAssembly()
+#else
+                       typeof(BasicAppHost).GetTypeInfo().Assembly
+#endif
+                   })
         {
             this.ExcludeAutoRegisteringServiceTypes = new HashSet<Type>();
             this.TestMode = true;
@@ -18,11 +25,8 @@ namespace ServiceStack.Testing
 
         public override void Configure(Container container)
         {
-            if (ConfigureAppHost != null)
-                ConfigureAppHost(this);
-
-            if (ConfigureContainer != null)
-                ConfigureContainer(container);
+            ConfigureAppHost?.Invoke(this);
+            ConfigureContainer?.Invoke(container);
         }
 
         public Action<Container> ConfigureContainer { get; set; }
@@ -36,17 +40,11 @@ namespace ServiceStack.Testing
             set { ServiceController = value(this); }
         }
 
-        public override void OnBeforeInit()
-        {
-            base.OnBeforeInit();
-        }
-
         public override void OnConfigLoad()
         {
             base.OnConfigLoad();
 
-            if (ConfigFilter != null)
-                ConfigFilter(Config);
+            ConfigFilter?.Invoke(Config);
         }
     }
 }

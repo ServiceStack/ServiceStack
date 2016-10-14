@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using ServiceStack.Text;
 
 namespace ServiceStack.Validation
 {
@@ -22,7 +21,7 @@ namespace ServiceStack.Validation
             : this(errorCode.ToString(), fieldName, errorMessage) { }
 
         public ValidationErrorField(string errorCode, string fieldName, string errorMessage)
-			: this (errorCode.ToString(), fieldName, errorMessage, null) { }
+			: this (errorCode, fieldName, errorMessage, null) { }
 
 		public ValidationErrorField(string errorCode, string fieldName, string errorMessage, object attemptedValue)
         {

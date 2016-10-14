@@ -9,7 +9,7 @@ namespace ServiceStack
 {
     public static class ExpressionUtils
     {
-        private static ILog Log = LogManager.GetLogger(typeof(ExpressionUtils));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ExpressionUtils));
 
         public static PropertyInfo ToPropertyInfo(this Expression fieldExpr)
         {
@@ -19,20 +19,14 @@ namespace ServiceStack
 
         public static PropertyInfo ToPropertyInfo(LambdaExpression lambda)
         {
-            if (lambda == null)
-                return null;
-
-            return lambda.Body.NodeType == ExpressionType.MemberAccess 
+            return lambda?.Body.NodeType == ExpressionType.MemberAccess 
                 ? ToPropertyInfo(lambda.Body as MemberExpression) 
                 : null;
         }
 
         public static PropertyInfo ToPropertyInfo(MemberExpression m)
         {
-            if (m == null)
-                return null;
-
-            var pi = m.Member as PropertyInfo;
+            var pi = m?.Member as PropertyInfo;
             return pi;
         }
 
@@ -49,15 +43,12 @@ namespace ServiceStack
         {
             var member = expr.Body as MemberExpression;
             var unary = expr.Body as UnaryExpression;
-            return member ?? (unary != null ? unary.Operand as MemberExpression : null);
+            return member ?? unary?.Operand as MemberExpression;
         }
 
         public static Dictionary<string, object> AssignedValues<T>(this Expression<Func<T>> expr)
         {
-            if (expr == null)
-                return null;
-
-            var initExpr = expr.Body as MemberInitExpression;
+            var initExpr = expr?.Body as MemberInitExpression;
             if (initExpr == null)
                 return null;
 
@@ -74,7 +65,7 @@ namespace ServiceStack
             var member = expr.Body as MemberExpression;
             if (member != null)
             {
-                if (member.Member.DeclaringType == typeof(T))
+                if (member.Member.DeclaringType.AssignableFrom(typeof(T)))
                     return new[] { member.Member.Name };
 
                 var array = CachedExpressionCompiler.Evaluate(member);

@@ -48,7 +48,7 @@ namespace ServiceStack.FluentValidation
         /// Finds all the validators in the assembly containing the specified type.
         /// </summary>
         public static AssemblyScanner FindValidatorsInAssemblyContaining<T>() {
-            return FindValidatorsInAssembly(typeof(T).Assembly);
+            return FindValidatorsInAssembly(typeof(T).GetAssembly());
         }
 
         private IEnumerable<AssemblyScanResult> Execute() {
@@ -56,7 +56,7 @@ namespace ServiceStack.FluentValidation
 
             var query = from type in types
                         let interfaces = type.GetInterfaces()
-                        let genericInterfaces = interfaces.Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == openGenericType)
+                        let genericInterfaces = interfaces.Where(i => i.IsGenericType() && i.GetGenericTypeDefinition() == openGenericType)
                         let matchingInterface = genericInterfaces.FirstOrDefault()
                         where matchingInterface != null
                         select new AssemblyScanResult(matchingInterface, type);

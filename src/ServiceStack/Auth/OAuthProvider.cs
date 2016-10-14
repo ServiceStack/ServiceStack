@@ -16,17 +16,17 @@ namespace ServiceStack.Auth
             this.AuthRealm = appSettings.Get("OAuthRealm", authRealm);
 
             this.Provider = oAuthProvider;
-            this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(oAuthProvider))
+            this.RedirectUrl = appSettings.GetString($"oauth.{oAuthProvider}.RedirectUrl")
                 ?? FallbackConfig(appSettings.GetString("oauth.RedirectUrl"));
-            this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(oAuthProvider))
+            this.CallbackUrl = appSettings.GetString($"oauth.{oAuthProvider}.CallbackUrl")
                 ?? FallbackConfig(appSettings.GetString("oauth.CallbackUrl"));
-            this.ConsumerKey = appSettings.GetString("oauth.{0}.{1}".Fmt(oAuthProvider, consumerKeyName));
-            this.ConsumerSecret = appSettings.GetString("oauth.{0}.{1}".Fmt(oAuthProvider, consumerSecretName));
+            this.ConsumerKey = appSettings.GetString($"oauth.{oAuthProvider}.{consumerKeyName}");
+            this.ConsumerSecret = appSettings.GetString($"oauth.{oAuthProvider}.{consumerSecretName}");
 
-            this.RequestTokenUrl = appSettings.Get("oauth.{0}.RequestTokenUrl".Fmt(oAuthProvider), authRealm + "oauth/request_token");
-            this.AuthorizeUrl = appSettings.Get("oauth.{0}.AuthorizeUrl".Fmt(oAuthProvider), authRealm + "oauth/authorize");
-            this.AccessTokenUrl = appSettings.Get("oauth.{0}.AccessTokenUrl".Fmt(oAuthProvider), authRealm + "oauth/access_token");
-            this.SaveExtendedUserInfo = appSettings.Get("oauth.{0}.SaveExtendedUserInfo".Fmt(oAuthProvider), true);
+            this.RequestTokenUrl = appSettings.Get($"oauth.{oAuthProvider}.RequestTokenUrl", authRealm + "oauth/request_token");
+            this.AuthorizeUrl = appSettings.Get($"oauth.{oAuthProvider}.AuthorizeUrl", authRealm + "oauth/authorize");
+            this.AccessTokenUrl = appSettings.Get($"oauth.{oAuthProvider}.AccessTokenUrl", authRealm + "oauth/access_token");
+            this.SaveExtendedUserInfo = appSettings.Get($"oauth.{oAuthProvider}.SaveExtendedUserInfo", true);
 
             this.OAuthUtils = new OAuthAuthorizer(this);
             this.AuthHttpGateway = new AuthHttpGateway();
@@ -50,7 +50,7 @@ namespace ServiceStack.Auth
                 if (!LoginMatchesSession(session, request.UserName)) return false;
             }
 
-            return session != null && session.IsAuthenticated && tokens != null && !string.IsNullOrEmpty(tokens.AccessTokenSecret);
+            return session != null && session.IsAuthenticated && !string.IsNullOrEmpty(tokens?.AccessTokenSecret);
         }
 
         /// <summary>
@@ -86,14 +86,14 @@ namespace ServiceStack.Auth
                 //No Joy :(
                 tokens.RequestToken = null;
                 tokens.RequestTokenSecret = null;
-                SaveSession(authService, session, SessionExpiry);
+                this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
             }
             if (OAuthUtils.AcquireRequestToken())
             {
                 tokens.RequestToken = OAuthUtils.RequestToken;
                 tokens.RequestTokenSecret = OAuthUtils.RequestTokenSecret;
-                SaveSession(authService, session, SessionExpiry);
+                this.SaveSession(authService, session, SessionExpiry);
 
                 //Redirect to OAuth provider to approve access
                 return authService.Redirect(AccessTokenUrlFilter(this, this.AuthorizeUrl

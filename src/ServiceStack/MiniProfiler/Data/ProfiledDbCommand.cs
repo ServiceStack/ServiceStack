@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NETSTANDARD1_6
+
+using System;
 using System.Data.Common;
 using System.Data;
 using System.Reflection;
@@ -124,3 +126,5 @@ namespace ServiceStack.MiniProfiler.Data
 }
 
 #pragma warning restore 1591 // xml doc comments warnings
+
+#endif

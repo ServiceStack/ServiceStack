@@ -19,18 +19,20 @@ namespace ServiceStack
 
         private static IHttpHandler GetHandlerForPathParts(string[] pathParts)
         {
-            var pathController = string.Intern(pathParts[0].ToLower());
+            var pathController = pathParts[0].ToLower();
             if (pathParts.Length == 1)
             {
+#if !NETSTANDARD1_6
                 if (pathController == "soap11")
                     return new Soap11MessageReplyHttpHandler();
                 if (pathController == "soap12")
                     return new Soap12MessageReplyHttpHandler();
+#endif
 
                 return null;
             }
 
-            var pathAction = string.Intern(pathParts[1].ToLower());
+            var pathAction = pathParts[1].ToLower();
             var requestName = pathParts.Length > 2 ? pathParts[2] : null;
             var isReply = pathAction == "reply";
             var isOneWay = pathAction == "oneway";

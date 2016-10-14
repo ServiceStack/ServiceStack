@@ -8,6 +8,7 @@ using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
+using ServiceStack.Messaging;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -107,6 +108,16 @@ namespace ServiceStack
         /// Add Request Filter for a specific MQ Response DTO Type
         /// </summary>
         void RegisterTypedMessageResponseFilter<T>(Action<IRequest, IResponse, T> filterFn);
+
+        /// <summary>
+        /// Add Request Filter for Service Gateway Requests
+        /// </summary>
+        List<Action<IRequest, object>> GatewayRequestFilters { get; }
+
+        /// <summary>
+        /// Add Response Filter for Service Gateway Responses
+        /// </summary>
+        List<Action<IRequest, object>> GatewayResponseFilters { get; }
 
         /// <summary>
         /// Add alternative HTML View Engines
@@ -216,6 +227,16 @@ namespace ServiceStack
         /// The Request is provided when exists.
         /// </summary>
         string ResolveLocalizedString(string text, IRequest request);
+
+        /// <summary>
+        /// Execute MQ Message in ServiceStack
+        /// </summary>
+        object ExecuteMessage(IMessage mqMessage);
+
+        /// <summary>
+        /// Access Service Controller for ServiceStack
+        /// </summary>
+        ServiceController ServiceController { get; }
     }
 
     public interface IHasAppHost

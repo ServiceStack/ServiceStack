@@ -213,10 +213,7 @@ namespace ServiceStack
                         httpReq.Content = new StreamContent(stream);
                     else
                     {
-                        using (__requestAccess())
-                        {
-                            httpReq.Content = new StringContent(request.ToJson(), Encoding.UTF8, ContentType);
-                        }
+                        httpReq.Content = new StringContent(request.ToJson(), Encoding.UTF8, ContentType);
                     }
                 }
             }
@@ -252,6 +249,20 @@ namespace ServiceStack
                             return Task.FromResult((TResponse)cachedResponse);
                     }
 
+                    if (typeof(TResponse) == typeof(string))
+                    {
+                        return httpRes.Content.ReadAsStringAsync().ContinueWith(task =>
+                        {
+                            ThrowIfError<TResponse>(task, httpRes, request, absoluteUrl, task.Result);
+
+                            var response = (TResponse)(object)task.Result;
+
+                            if (ResultsFilterResponse != null)
+                                ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
+
+                            return response;
+                        }, token);
+                    }
                     if (typeof(TResponse) == typeof(byte[]))
                     {
                         return httpRes.Content.ReadAsByteArrayAsync().ContinueWith(task =>
@@ -286,15 +297,12 @@ namespace ServiceStack
                         ThrowIfError<TResponse>(task, httpRes, request, absoluteUrl, task.Result);
 
                         var body = task.Result;
-                        using (__requestAccess())
-                        {
-                            var response = body.FromJson<TResponse>();
+                        var response = body.FromJson<TResponse>();
 
-                            if (ResultsFilterResponse != null)
-                                ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
+                        if (ResultsFilterResponse != null)
+                            ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
 
-                            return response;
-                        }
+                        return response;
                     }, token);
                 }, token).Unwrap();
         }
@@ -307,22 +315,6 @@ namespace ServiceStack
             
             CancelTokenSource.Dispose();
             CancelTokenSource = null;
-        }
-
-        private class AccessToken
-        {
-            private string token;
-            internal static readonly AccessToken __accessToken =
-                new AccessToken("lUjBZNG56eE9yd3FQdVFSTy9qeGl5dlI5RmZwamc4U05udl000");
-            private AccessToken(string token)
-            {
-                this.token = token;
-            }
-        }
-
-        protected static IDisposable __requestAccess()
-        {
-            return LicenseUtils.RequestAccess(AccessToken.__accessToken, LicenseFeature.Client, LicenseFeature.Text);
         }
 
         public Action<HttpRequestMessage> RequestFilter { get; set; }
@@ -445,15 +437,12 @@ namespace ServiceStack
                 {
                     if (string.IsNullOrEmpty(contentType) || contentType.MatchesContentType(ContentType))
                     {
-                        using (__requestAccess())
-                        {
-                            var stream = MemoryStreamFactory.GetStream(bytes);
-                            serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                            serviceEx.ResponseDto = JsonSerializer.DeserializeFromStream<TResponse>(stream);
+                        var stream = MemoryStreamFactory.GetStream(bytes);
+                        serviceEx.ResponseBody = bytes.FromUtf8Bytes();
+                        serviceEx.ResponseDto = JsonSerializer.DeserializeFromStream<TResponse>(stream);
 
-                            if (stream.CanRead)
-                                stream.Dispose(); //alt ms throws when you dispose twice
-                        }
+                        if (stream.CanRead)
+                            stream.Dispose(); //alt ms throws when you dispose twice
                     }
                     else
                     {
@@ -887,7 +876,7 @@ namespace ServiceStack
             foreach (string key in nameValueCollection)
             {
                 var value = nameValueCollection[key];
-                content.Add(new StringContent(value), "\"{0}\"".Fmt(key));
+                content.Add(new StringContent(value), $"\"{key}\"");
             }
 
             var fileBytes = fileToUpload.ReadFully();
@@ -941,7 +930,7 @@ namespace ServiceStack
             foreach (string key in nameValueCollection)
             {
                 var value = nameValueCollection[key];
-                content.Add(new StringContent(value), "\"{0}\"".Fmt(key));
+                content.Add(new StringContent(value), $"\"{key}\"");
             }
 
             var disposables = new List<IDisposable> { content };
@@ -952,8 +941,8 @@ namespace ServiceStack
                 var fileBytes = file.Stream.ReadFully();
                 var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
                 disposables.Add(fileContent);
-                var fieldName = file.FieldName ?? "upload{0}".Fmt(i);
-                var fileName = file.FileName ?? "upload{0}".Fmt(i);
+                var fieldName = file.FieldName ?? $"upload{i}";
+                var fileName = file.FileName ?? $"upload{i}";
                 fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
                 {
                     Name = fieldName,

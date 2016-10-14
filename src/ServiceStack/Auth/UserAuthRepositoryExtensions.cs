@@ -63,27 +63,17 @@ namespace ServiceStack.Auth
         public static ICollection<string> GetRoles(this IAuthRepository UserAuthRepo, IUserAuth userAuth)
         {
             var managesRoles = UserAuthRepo as IManageRoles;
-            if (managesRoles != null)
-            {
-                return managesRoles.GetRoles(userAuth.Id.ToString());
-            }
-            else
-            {
-                return userAuth.Roles;
-            }
+            return managesRoles != null 
+                ? managesRoles.GetRoles(userAuth.Id.ToString()) 
+                : userAuth.Roles;
         }
 
         public static ICollection<string> GetPermissions(this IAuthRepository UserAuthRepo, IUserAuth userAuth)
         {
             var managesRoles = UserAuthRepo as IManageRoles;
-            if (managesRoles != null)
-            {
-                return managesRoles.GetPermissions(userAuth.Id.ToString());
-            }
-            else
-            {
-                return userAuth.Permissions;
-            }
+            return managesRoles != null 
+                ? managesRoles.GetPermissions(userAuth.Id.ToString()) 
+                : userAuth.Permissions;
         }
 
         public static void PopulateSession(this IAuthSession session, IUserAuth userAuth, List<IAuthTokens> authTokens)
@@ -147,7 +137,7 @@ namespace ServiceStack.Auth
         {
             var userRepo = repo as IUserAuthRepository;
             if (userRepo == null)
-                throw new NotSupportedException("This opertation requires a IUserAuthRepository");
+                throw new NotSupportedException("This operation requires a IUserAuthRepository");
 
             return userRepo;
         }

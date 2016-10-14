@@ -65,17 +65,11 @@ namespace ServiceStack.Support
             this.FatalExceptions = new List<Exception>();
         }
 
-        public bool HasExceptions
-        {
-            get
-            {
-                return this.DebugExceptions.Count > 0
-                       || this.InfoExceptions.Count > 0
-                       || this.WarnExceptions.Count > 0
-                       || this.ErrorExceptions.Count > 0
-                       || this.FatalExceptions.Count > 0;
-            }
-        }
+        public bool HasExceptions => this.DebugExceptions.Count > 0
+            || this.InfoExceptions.Count > 0
+            || this.WarnExceptions.Count > 0
+            || this.ErrorExceptions.Count > 0
+            || this.FatalExceptions.Count > 0;
 
         private void AppendToLog(ICollection<string> logEntries, string format, params object[] args)
         {

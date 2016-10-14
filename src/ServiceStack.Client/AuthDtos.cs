@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
@@ -29,7 +28,9 @@ namespace ServiceStack
         [DataMember(Order = 13)] public string nc { get; set; }
         [DataMember(Order = 14)] public string cnonce { get; set; }
 
-        [DataMember(Order = 15)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 15)] public bool? UseTokenCookie { get; set; }
+
+        [DataMember(Order = 16)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -217,13 +218,13 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class RegenrateApiKeys : IPost, IReturn<GetApiKeysResponse>
+    public class RegenerateApiKeys : IPost, IReturn<GetApiKeysResponse>
     {
         [DataMember(Order = 1)] public string Environment { get; set; }
     }
 
     [DataContract]
-    public class RegenrateApiKeysResponse
+    public class RegenerateApiKeysResponse
     {
         [DataMember(Order = 1)] public List<UserApiKey> Results { get; set; }
 

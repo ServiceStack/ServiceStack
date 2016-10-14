@@ -1,11 +1,12 @@
-﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿#if !NETSTANDARD1_6
+
+//Copyright (c) Service Stack LLC. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
 using System.Net;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 
@@ -107,10 +108,7 @@ namespace ServiceStack
             }
         }
 
-        private bool IsListening
-        {
-            get { return this.IsStarted && this.Listener != null && this.Listener.IsListening; }
-        }
+        private bool IsListening => this.IsStarted && this.Listener != null && this.Listener.IsListening;
 
         // Loop here to begin processing of new requests.
         protected override void Listen(object state)
@@ -186,3 +184,5 @@ namespace ServiceStack
         }
     }
 }
+
+#endif

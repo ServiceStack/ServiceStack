@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 using System;
 using System.Threading;
 using System.Diagnostics;
@@ -990,3 +992,5 @@ namespace Amib.Threading.Internal
         }
     }
 }
+
+#endif

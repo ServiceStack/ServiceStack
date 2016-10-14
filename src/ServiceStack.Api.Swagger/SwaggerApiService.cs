@@ -202,7 +202,7 @@ namespace ServiceStack.Api.Swagger
             var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
-            var basePath = base.Request.ResolveBaseUrl();
+            var basePath = base.Request.GetBaseUrl();
 
             var meta = HostContext.Metadata;
             foreach (var key in map.Keys)
@@ -263,8 +263,8 @@ namespace ServiceStack.Api.Swagger
         private static bool IsSwaggerScalarType(Type type)
         {
             return ClrTypesToSwaggerScalarTypes.ContainsKey(type) 
-                || (Nullable.GetUnderlyingType(type) ?? type).IsEnum
-                || type.IsValueType
+                || (Nullable.GetUnderlyingType(type) ?? type).IsEnum()
+                || type.IsValueType()
                 || type.IsNullableType();
         }
 
@@ -281,7 +281,7 @@ namespace ServiceStack.Api.Swagger
         {
             if (type.IsArray) return type.GetElementType();
 
-            if (!type.IsGenericType) return null;
+            if (!type.IsGenericType()) return null;
             var genericType = type.GetGenericTypeDefinition();
             if (genericType == typeof(List<>) || genericType == typeof(IList<>) || genericType == typeof(IEnumerable<>))
                 return type.GetGenericArguments()[0];
@@ -295,15 +295,15 @@ namespace ServiceStack.Api.Swagger
 
         private static bool IsNullable(Type type)
         {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+            return type.IsGenericType() && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
 		private static string GetModelTypeName(Type modelType, string path = null, string verb = null)
 		{
-		    if (modelType.IsValueType || modelType.IsNullableType())
+		    if (modelType.IsValueType() || modelType.IsNullableType())
 		        return SwaggerType.String;
 
-		    if (!modelType.IsGenericType)
+		    if (!modelType.IsGenericType())
 		        return modelType.Name;
 
             var typeName = modelType.ToPrettyName();
@@ -335,15 +335,15 @@ namespace ServiceStack.Api.Swagger
 
             // Order model properties by DataMember.Order if [DataContract] and [DataMember](s) defined
             // Ordering defined by: http://msdn.microsoft.com/en-us/library/ms729813.aspx
-            var dataContractAttr = modelType.GetCustomAttributes(typeof(DataContractAttribute), true).OfType<DataContractAttribute>().FirstOrDefault();
+            var dataContractAttr = modelType.FirstAttribute<DataContractAttribute>();
             if (dataContractAttr != null && properties.Any(prop => prop.IsDefined(typeof(DataMemberAttribute), true)))
             {
                 var typeOrder = new List<Type> { modelType };
-                var baseType = modelType.BaseType;
+                var baseType = modelType.BaseType();
                 while (baseType != null)
                 {
                     typeOrder.Add(baseType);
-                    baseType = baseType.BaseType;
+                    baseType = baseType.BaseType();
                 }              
                 
                 var propsWithDataMember = properties.Where(prop => prop.IsDefined(typeof(DataMemberAttribute), true));
@@ -386,7 +386,7 @@ namespace ServiceStack.Api.Swagger
                         Description = prop.GetDescription(),
                     };
 
-                    if ((propertyType.IsValueType && !IsNullable(propertyType)) || apiMembers.Any(x => x.IsRequired))
+                    if ((propertyType.IsValueType() && !IsNullable(propertyType)) || apiMembers.Any(x => x.IsRequired))
                     {
                         if (model.Required == null)
                             model.Required = new List<string>();
@@ -405,7 +405,7 @@ namespace ServiceStack.Api.Swagger
                         };
                         ParseModel(models, listItemType, route, verb);
                     }
-                    else if ((Nullable.GetUnderlyingType(propertyType) ?? propertyType).IsEnum)
+                    else if ((Nullable.GetUnderlyingType(propertyType) ?? propertyType).IsEnum())
                     {
                         var enumType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
                         if (enumType.IsNumericType())
@@ -475,7 +475,7 @@ namespace ServiceStack.Api.Swagger
             // Given: class MyDto : IReturn<X>. Determine the type X.
             foreach (var i in restPath.RequestType.GetInterfaces())
             {
-                if (i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IReturn<>))
+                if (i.IsGenericType() && i.GetGenericTypeDefinition() == typeof(IReturn<>))
                 {
                     var returnType = i.GetGenericArguments()[0];
                     // Handle IReturn<List<SomeClass>> or IReturn<SomeClass[]>
@@ -496,7 +496,7 @@ namespace ServiceStack.Api.Swagger
         private static List<ErrorResponseStatus> GetMethodResponseCodes(Type requestType)
         {
             return requestType
-                .AllAttributes<IApiResponseDescription>()
+                .AllAttributes<ApiResponseAttribute>()
                 .Select(x => new ErrorResponseStatus {
                     StatusCode = x.StatusCode,
                     Reason = x.Description
@@ -603,7 +603,7 @@ namespace ServiceStack.Api.Swagger
                     var apiMembers = paramAttrs[key];
                     foreach (var member in apiMembers)
                     {
-                        if ((member.Verb == null || string.Compare(member.Verb, verb, StringComparison.InvariantCultureIgnoreCase) == 0)
+                        if ((member.Verb == null || string.Compare(member.Verb, verb, StringComparison.OrdinalIgnoreCase) == 0)
                             && (member.Route == null || (route ?? "").StartsWith(member.Route))
                             && !string.Equals(member.ParameterType, "model")
                             && methodOperationParameters.All(x => x.Name != (member.Name ?? key)))

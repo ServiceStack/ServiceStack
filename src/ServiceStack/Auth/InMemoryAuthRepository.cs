@@ -9,7 +9,7 @@ namespace ServiceStack.Auth
     /// <summary>
     /// Thread-safe In memory UserAuth data store so it can be used without a dependency on Redis.
     /// </summary>
-    public class InMemoryAuthRepository : RedisAuthRepository, IDisposable 
+    public class InMemoryAuthRepository : RedisAuthRepository
     {
         public static readonly InMemoryAuthRepository Instance = new InMemoryAuthRepository();
 
@@ -166,8 +166,10 @@ namespace ServiceStack.Auth
 
             public string GetValueFromHash(string hashId, string key)
             {
-                hashId.ThrowIfNull("hashId");
-                key.ThrowIfNull("key");
+                if (hashId == null)
+                    throw new ArgumentNullException(nameof(hashId));
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
 
                 lock (root.Hashes)
                 {
@@ -182,8 +184,10 @@ namespace ServiceStack.Auth
 
             public void SetEntryInHash(string hashId, string key, string value)
             {
-                hashId.ThrowIfNull("hashId");
-                key.ThrowIfNull("key");
+                if (hashId == null)
+                    throw new ArgumentNullException(nameof(hashId));
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
 
                 lock (root.Hashes)
                 {
@@ -197,8 +201,10 @@ namespace ServiceStack.Auth
 
             public void RemoveEntryFromHash(string hashId, string key)
             {
-                hashId.ThrowIfNull("hashId");
-                key.ThrowIfNull("key");
+                if (hashId == null)
+                    throw new ArgumentNullException(nameof(hashId));
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
 
                 lock (root.Hashes)
                 {
@@ -230,11 +236,6 @@ namespace ServiceStack.Auth
             public void Dispose()
             {
             }
-        }
-
-        public void Dispose()
-        {
-            Clear();
         }
     }
 }

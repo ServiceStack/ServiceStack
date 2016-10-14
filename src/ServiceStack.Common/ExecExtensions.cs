@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using ServiceStack.Logging;
+#if NETSTANDARD1_3
+using System.Threading.Tasks;
+#endif
 
 namespace ServiceStack
 {
@@ -10,7 +13,7 @@ namespace ServiceStack
         public static void LogError(Type declaringType, string clientMethodName, Exception ex)
         {
             var log = LogManager.GetLogger(declaringType);
-            log.Error(string.Format("'{0}' threw an error on {1}: {2}", declaringType.FullName, clientMethodName, ex.Message), ex);
+            log.Error($"'{declaringType.FullName}' threw an error on {clientMethodName}: {ex.Message}", ex);
         }
 
         public static void ExecAll<T>(this IEnumerable<T> instances, Action<T> action)
@@ -83,7 +86,7 @@ namespace ServiceStack
                 SleepBackOffMultiplier(i);
             }
 
-            throw new TimeoutException(string.Format("Exceeded timeout of {0}", timeOut.Value));
+            throw new TimeoutException($"Exceeded timeout of {timeOut.Value}");
         }
 
         public static void RetryOnException(Action action, TimeSpan? timeOut)
@@ -108,7 +111,7 @@ namespace ServiceStack
                 }
             }
 
-            throw new TimeoutException(string.Format("Exceeded timeout of {0}", timeOut.Value), lastEx);
+            throw new TimeoutException($"Exceeded timeout of {timeOut.Value}", lastEx);
         }
 
         public static void RetryOnException(Action action, int maxRetries)
@@ -136,7 +139,7 @@ namespace ServiceStack
             var nextTry = rand.Next(
                 (int)Math.Pow(i, 2), (int)Math.Pow(i + 1, 2) + 1);
 
-            Thread.Sleep(nextTry);
+            TaskUtils.Sleep(nextTry);
         }
     }
 }

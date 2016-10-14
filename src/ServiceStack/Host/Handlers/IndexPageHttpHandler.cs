@@ -33,6 +33,7 @@ namespace ServiceStack.Host.Handlers
             response.EndHttpHandlerRequest(skipHeaders:true);
         }
 
+#if !NETSTANDARD1_6
         /// <summary>
         /// ASP.NET requests
         /// </summary>
@@ -55,10 +56,8 @@ namespace ServiceStack.Host.Handlers
             }
             context.EndHttpHandlerRequest(skipHeaders: true);
         }
+#endif
 
-        public override bool IsReusable
-        {
-            get { return true; }
-        }
+        public override bool IsReusable => true;
     }
 }

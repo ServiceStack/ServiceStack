@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace ServiceStack
 {
@@ -19,12 +20,13 @@ namespace ServiceStack
         /// </summary>
         /// <param name="enum"></param>
         /// <returns></returns>
-#if !NETFX_CORE
+#if !(NETFX_CORE)
         public static string ToDescription(this Enum @enum)
         {
             var type = @enum.GetType();
 
             var memInfo = type.GetMember(@enum.ToString());
+
             if (memInfo.Length > 0)
             {
                 var description = memInfo[0].GetDescription();
@@ -48,7 +50,7 @@ namespace ServiceStack
 
         public static TypeCode GetTypeCode(this Enum @enum)
         {
-            return Type.GetTypeCode(Enum.GetUnderlyingType(@enum.GetType()));
+            return Enum.GetUnderlyingType(@enum.GetType()).GetTypeCode();
         }
 
         public static bool Has<T>(this Enum @enum, T value)
@@ -65,7 +67,7 @@ namespace ServiceStack
                 case TypeCode.Int64:
                     return (((long)(object)@enum & (long)(object)value) == (long)(object)value);
                 default:
-                    throw new NotSupportedException("Enums of type {0}".Fmt(@enum.GetType().Name));
+                    throw new NotSupportedException($"Enums of type {@enum.GetType().Name}");
             }
         }
 
@@ -83,7 +85,7 @@ namespace ServiceStack
                 case TypeCode.Int64:
                     return (long)(object)@enum == (long)(object)value;
                 default:
-                    throw new NotSupportedException("Enums of type {0}".Fmt(@enum.GetType().Name));
+                    throw new NotSupportedException($"Enums of type {@enum.GetType().Name}");
             }
         }
 
@@ -93,15 +95,15 @@ namespace ServiceStack
             switch (typeCode)
             {
                 case TypeCode.Byte:
-                    return (T)(object)(((byte)(object)@enum | (byte)(object)value));
+                    return (T)(object)((byte)(object)@enum | (byte)(object)value);
                 case TypeCode.Int16:
-                    return (T)(object)(((short)(object)@enum | (short)(object)value));
+                    return (T)(object)((short)(object)@enum | (short)(object)value);
                 case TypeCode.Int32:
-                    return (T)(object)(((int)(object)@enum | (int)(object)value));
+                    return (T)(object)((int)(object)@enum | (int)(object)value);
                 case TypeCode.Int64:
-                    return (T)(object)(((long)(object)@enum | (long)(object)value));
+                    return (T)(object)((long)(object)@enum | (long)(object)value);
                 default:
-                    throw new NotSupportedException("Enums of type {0}".Fmt(@enum.GetType().Name));
+                    throw new NotSupportedException($"Enums of type {@enum.GetType().Name}");
             }
         }
 
@@ -111,15 +113,15 @@ namespace ServiceStack
             switch (typeCode)
             {
                 case TypeCode.Byte:
-                    return (T)(object)(((byte)(object)@enum & ~(byte)(object)value));
+                    return (T)(object)((byte)(object)@enum & ~(byte)(object)value);
                 case TypeCode.Int16:
-                    return (T)(object)(((short)(object)@enum & ~(short)(object)value));
+                    return (T)(object)((short)(object)@enum & ~(short)(object)value);
                 case TypeCode.Int32:
-                    return (T)(object)(((int)(object)@enum & ~(int)(object)value));
+                    return (T)(object)((int)(object)@enum & ~(int)(object)value);
                 case TypeCode.Int64:
-                    return (T)(object)(((long)(object)@enum & ~(long)(object)value));
+                    return (T)(object)((long)(object)@enum & ~(long)(object)value);
                 default:
-                    throw new NotSupportedException("Enums of type {0}".Fmt(@enum.GetType().Name));
+                    throw new NotSupportedException($"Enums of type {@enum.GetType().Name}");
             }
         }
 

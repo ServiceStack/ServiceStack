@@ -119,7 +119,7 @@ namespace ServiceStack.Html
                 if (String.Equals(key, "id", StringComparison.Ordinal /* case-sensitive */) && String.IsNullOrEmpty(attribute.Value)) {
                     continue; // DevDiv Bugs #227595: don't output empty IDs
                 }
-                string value = HttpUtility.HtmlAttributeEncode(attribute.Value);
+                string value = PclExportClient.Instance.HtmlAttributeEncode(attribute.Value);
                 sb.Append(' ')
                     .Append(key)
                     .Append("=\"")
@@ -166,7 +166,7 @@ namespace ServiceStack.Html
 
 		public void SetInnerText(string innerText)
 		{
-			InnerHtml = HttpUtility.HtmlEncode(innerText);
+			InnerHtml = PclExportClient.Instance.HtmlEncode(innerText);
 		}
 
         internal MvcHtmlString ToMvcHtmlString(TagRenderMode renderMode)

@@ -15,23 +15,16 @@ namespace ServiceStack.Metadata
             {
                 var endpointConfig = MetadataConfig.Soap12;
                 var endpontPath = ResponseMessage != null ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
-                return string.Format("{0}", endpontPath);
+                return $"{endpontPath}";
             }
         }
 
-        public override string HttpRequestTemplate
-        {
-            get
-            {
-                return string.Format(
-@"POST {0} HTTP/1.1 
-Host: {1} 
+        public override string HttpRequestTemplate => 
+$@"POST {RequestUri} HTTP/1.1 
+Host: {HostName} 
 Content-Type: text/xml; charset=utf-8
 Content-Length: <span class=""value"">length</span>
 
-{2}", RequestUri, HostName, HttpUtility.HtmlEncode(RequestMessage));
-            }
-        }
-
+{PclExportClient.Instance.HtmlEncode(RequestMessage)}";
     }
 }

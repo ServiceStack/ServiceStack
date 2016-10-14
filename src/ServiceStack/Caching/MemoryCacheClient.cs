@@ -11,8 +11,6 @@ namespace ServiceStack.Caching
         private static readonly ILog Log = LogManager.GetLogger(typeof(MemoryCacheClient));
 
         private ConcurrentDictionary<string, CacheEntry> memory;
-        private ConcurrentDictionary<string, int> counters;
-
         public bool FlushOnDispose { get; set; }
 
         private class CacheEntry
@@ -32,10 +30,7 @@ namespace ServiceStack.Caching
             /// <summary>UTC time at which CacheEntry expires.</summary>
             internal DateTime? ExpiresAt { get; set; }
 
-            internal bool HasExpired
-            {
-                get { return ExpiresAt != null && ExpiresAt < DateTime.UtcNow; }
-            }
+            internal bool HasExpired => ExpiresAt != null && ExpiresAt < DateTime.UtcNow;
 
             internal object Value
             {
@@ -53,7 +48,6 @@ namespace ServiceStack.Caching
         public MemoryCacheClient()
         {
             this.memory = new ConcurrentDictionary<string, CacheEntry>();
-            this.counters = new ConcurrentDictionary<string, int>();
         }
 
         private bool TryGetValue(string key, out CacheEntry entry)
@@ -123,7 +117,6 @@ namespace ServiceStack.Caching
             if (!FlushOnDispose) return;
 
             this.memory = new ConcurrentDictionary<string, CacheEntry>();
-            this.counters = new ConcurrentDictionary<string, int>();
         }
 
         public bool Remove(string key)
@@ -142,7 +135,7 @@ namespace ServiceStack.Caching
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(string.Format("Error trying to remove {0} from the cache", key), ex);
+                    Log.Error($"Error trying to remove {key} from the cache", ex);
                 }
             }
         }
@@ -178,27 +171,40 @@ namespace ServiceStack.Caching
             return default(T);
         }
 
-        private int UpdateCounter(string key, int value)
+        private long UpdateCounter(string key, long value)
         {
-            lock (counters)
+            CacheEntry cacheEntry;
+            if (this.memory.TryGetValue(key, out cacheEntry))
             {
-                if (!this.counters.ContainsKey(key))
+                try
                 {
-                    this.counters[key] = 0;
+                    lock (cacheEntry)
+                    {
+                        var int64 = Convert.ToInt64(cacheEntry.Value);
+                        int64 += value;
+                        cacheEntry.Value = int64;
+                        return int64;
+                    }
                 }
-                this.counters[key] += value;
-                return this.counters[key];
+                catch (Exception)
+                {
+                    cacheEntry.Value = value;
+                    return value;
+                }
             }
+
+            Set(key, value);
+            return value;
         }
 
         public long Increment(string key, uint amount)
         {
-            return UpdateCounter(key, (int)amount);
+            return UpdateCounter(key, amount);
         }
 
         public long Decrement(string key, uint amount)
         {
-            return UpdateCounter(key, (int)amount * -1);
+            return UpdateCounter(key, amount * -1);
         }
 
         /// <summary>
@@ -341,7 +347,7 @@ namespace ServiceStack.Caching
             }
             catch (Exception ex)
             {
-                Log.Error(string.Format("Error trying to remove items from cache with this {0} pattern", pattern), ex);
+                Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
             }
         }
 
@@ -380,7 +386,7 @@ namespace ServiceStack.Caching
             }
             catch (Exception ex)
             {
-                Log.Error(string.Format("Error trying to remove items from cache with this {0} pattern", pattern), ex);
+                Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
             }
             return keys;
         }

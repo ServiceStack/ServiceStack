@@ -16,7 +16,7 @@ namespace ServiceStack.Api.Swagger.Support
 
         private static readonly string KeyTypeName = typeof(TKey).FullName;
         private static readonly string ValueTypeName = typeof(TValue).FullName;
-        private static readonly bool ValueTypeIsReferenceType = !typeof(ValueType).IsAssignableFrom(typeof(TValue));
+        private static readonly bool ValueTypeIsReferenceType = !typeof(ValueType).IsAssignableFromType(typeof(TValue));
 
         private Dictionary<TKey, TValue> dictionary;
         private List<KeyValuePair<TKey, TValue>> list;

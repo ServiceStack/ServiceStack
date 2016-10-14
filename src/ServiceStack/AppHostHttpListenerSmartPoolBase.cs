@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NETSTANDARD1_6
+
+using System;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -15,10 +17,7 @@ namespace ServiceStack
         private readonly AutoResetEvent listenForNextRequest = new AutoResetEvent(false);
         private readonly SmartThreadPool threadPoolManager;
 
-        public SmartThreadPool ThreadPoolManager
-        {
-            get { return threadPoolManager; }
-        }
+        public SmartThreadPool ThreadPoolManager => threadPoolManager;
 
         public int MinThreads
         {
@@ -70,10 +69,7 @@ namespace ServiceStack
             }
         }
 
-        private bool IsListening
-        {
-            get { return this.IsStarted && this.Listener != null && this.Listener.IsListening; }
-        }
+        private bool IsListening => this.IsStarted && this.Listener != null && this.Listener.IsListening;
 
         // Loop here to begin processing of new requests.
         protected override void Listen(object state)
@@ -135,8 +131,8 @@ namespace ServiceStack
                 listenForNextRequest.Set();
             }
 
-            if (Config.DebugMode)
-                log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
+            if (Config.DebugMode && log.IsDebugEnabled)
+                log.Debug($"{context.Request.UserHostAddress} Request : {context.Request.RawUrl}");
 
             OnBeginRequest(context);
 
@@ -144,3 +140,5 @@ namespace ServiceStack
         }
     }
 }
+
+#endif

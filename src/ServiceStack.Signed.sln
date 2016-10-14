@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Signed", "ServiceStack\ServiceStack.Signed.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -45,12 +45,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{369EF365
 	ProjectSection(SolutionItems) = preProject
 		..\build\copy-sn.bat = ..\build\copy-sn.bat
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServerV45.Signed", "ServiceStack.ServerV45\ServiceStack.ServerV45.Signed.csproj", "{F4BBC99C-DFF0-46DB-B75B-766C64B8CEE2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLiteV45.Signed", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLiteV45\ServiceStack.OrmLiteV45.Signed.csproj", "{FDC37335-9ECC-413B-BEC5-16B466B0E689}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlServerV45.Signed", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServerV45\ServiceStack.OrmLite.SqlServerV45.Signed.csproj", "{6F851563-08F6-4692-89F8-F1D6C86F0069}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlServer.Converters.Signed", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.SqlServer.Converters\ServiceStack.OrmLite.SqlServer.Converters.Signed.csproj", "{7E9BB57B-53E3-425E-9882-B6E078C5C9BA}"
 EndProject
@@ -143,33 +137,6 @@ Global
 		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
 		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Signed|Any CPU.Build.0 = Signed|Any CPU
 		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Signed|x86.ActiveCfg = Release|Any CPU
-		{F4BBC99C-DFF0-46DB-B75B-766C64B8CEE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F4BBC99C-DFF0-46DB-B75B-766C64B8CEE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F4BBC99C-DFF0-46DB-B75B-766C64B8CEE2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F4BBC99C-DFF0-46DB-B75B-766C64B8CEE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F4BBC99C-DFF0-46DB-B75B-766C64B8CEE2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F4BBC99C-DFF0-46DB-B75B-766C64B8CEE2}.Release|x86.ActiveCfg = Release|Any CPU
-		{F4BBC99C-DFF0-46DB-B75B-766C64B8CEE2}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
-		{F4BBC99C-DFF0-46DB-B75B-766C64B8CEE2}.Signed|Any CPU.Build.0 = Signed|Any CPU
-		{F4BBC99C-DFF0-46DB-B75B-766C64B8CEE2}.Signed|x86.ActiveCfg = Signed|Any CPU
-		{FDC37335-9ECC-413B-BEC5-16B466B0E689}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FDC37335-9ECC-413B-BEC5-16B466B0E689}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FDC37335-9ECC-413B-BEC5-16B466B0E689}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{FDC37335-9ECC-413B-BEC5-16B466B0E689}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FDC37335-9ECC-413B-BEC5-16B466B0E689}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FDC37335-9ECC-413B-BEC5-16B466B0E689}.Release|x86.ActiveCfg = Release|Any CPU
-		{FDC37335-9ECC-413B-BEC5-16B466B0E689}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
-		{FDC37335-9ECC-413B-BEC5-16B466B0E689}.Signed|Any CPU.Build.0 = Signed|Any CPU
-		{FDC37335-9ECC-413B-BEC5-16B466B0E689}.Signed|x86.ActiveCfg = Signed|Any CPU
-		{6F851563-08F6-4692-89F8-F1D6C86F0069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6F851563-08F6-4692-89F8-F1D6C86F0069}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6F851563-08F6-4692-89F8-F1D6C86F0069}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6F851563-08F6-4692-89F8-F1D6C86F0069}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6F851563-08F6-4692-89F8-F1D6C86F0069}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6F851563-08F6-4692-89F8-F1D6C86F0069}.Release|x86.ActiveCfg = Release|Any CPU
-		{6F851563-08F6-4692-89F8-F1D6C86F0069}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
-		{6F851563-08F6-4692-89F8-F1D6C86F0069}.Signed|Any CPU.Build.0 = Signed|Any CPU
-		{6F851563-08F6-4692-89F8-F1D6C86F0069}.Signed|x86.ActiveCfg = Signed|Any CPU
 		{7E9BB57B-53E3-425E-9882-B6E078C5C9BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7E9BB57B-53E3-425E-9882-B6E078C5C9BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E9BB57B-53E3-425E-9882-B6E078C5C9BA}.Debug|x86.ActiveCfg = Debug|Any CPU

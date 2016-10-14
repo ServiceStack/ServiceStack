@@ -39,7 +39,7 @@ namespace ServiceStack.Properties
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ServiceStack.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ServiceStack.Properties.Resources", typeof(Resources).GetAssembly());
                     resourceMan = temp;
                 }
                 return resourceMan;

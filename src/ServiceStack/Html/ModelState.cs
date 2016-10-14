@@ -2,7 +2,9 @@
 
 namespace ServiceStack.Html
 {
+#if !NETSTANDARD1_6
     [Serializable]
+#endif
     public class ModelState
     {
         private readonly ModelErrorCollection errors = new ModelErrorCollection();

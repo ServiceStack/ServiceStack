@@ -134,6 +134,8 @@ namespace ServiceStack.AuthWeb.Tests
                         //        ? HttpResult.Redirect("https://youtu.be/dQw4w9WgXcQ")
                         //        : null
                     },
+                    new JwtAuthProvider(appSettings), 
+                    new ApiKeyAuthProvider(appSettings), 
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
                     new DigestAuthProvider(appSettings),        //Sign-in with Digest Auth
@@ -370,6 +372,16 @@ namespace ServiceStack.AuthWeb.Tests
     public class CustomUserSession : AuthUserSession
     {
         public string ProfileUrl64 { get; set; }
+
+        public override bool HasPermission(string permission, IAuthRepository authRepo)
+        {
+            return base.HasPermission(permission, authRepo);
+        }
+
+        public override bool HasRole(string role, IAuthRepository authRepo)
+        {
+            return base.HasRole(role, authRepo);
+        }
 
         public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using ServiceStack.Configuration;
@@ -10,7 +9,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-    public class BasicRequest : IRequest
+    public class BasicRequest : IRequest, IHasResolver
     {
         public object Dto { get; set; }
         public IMessage Message { get; set; }
@@ -57,13 +56,13 @@ namespace ServiceStack.Host
         private string operationName;
         public string OperationName
         {
-            get { return operationName ?? (operationName = Message.Body != null ? Message.Body.GetType().GetOperationName() : null); }
+            get { return operationName ?? (operationName = Message.Body?.GetType().GetOperationName()); }
             set { operationName = value; }
         }
 
         public T TryResolve<T>()
         {
-            return Resolver.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public string UserHostAddress { get; set; }
@@ -85,17 +84,8 @@ namespace ServiceStack.Host
         public RequestAttributes RequestAttributes { get; set; }
 
         private IRequestPreferences requestPreferences;
-        public IRequestPreferences RequestPreferences
-        {
-            get
-            {
-                if (requestPreferences == null)
-                {
-                    requestPreferences = new RequestPreferences(this);
-                }
-                return requestPreferences;
-            }
-        }
+        public IRequestPreferences RequestPreferences => 
+            requestPreferences ?? (requestPreferences = new RequestPreferences(this));
 
         public string ContentType { get; set; }
 
@@ -141,10 +131,7 @@ namespace ServiceStack.Host
 
         public Stream InputStream { get; set; }
 
-        public long ContentLength
-        {
-            get { return (GetRawBody() ?? "").Length; }
-        }
+        public long ContentLength => (GetRawBody() ?? "").Length;
 
         public BasicRequest PopulateWith(IRequest request)
         {

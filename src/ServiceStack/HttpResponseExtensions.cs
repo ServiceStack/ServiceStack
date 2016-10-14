@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using ServiceStack.Auth;
-using ServiceStack.Host.AspNet;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -21,6 +20,7 @@ namespace ServiceStack
         //public static bool IsWebDevServer;
         //public static bool IsIis;
         public static bool IsHttpListener;
+        public static bool IsNetCore;
 
         static HttpResponseExtensions()
         {
@@ -30,9 +30,14 @@ namespace ServiceStack
 
             //IsWebDevServer = !Env.IsMono;
             //IsIis = !Env.IsMono;
+#if !NETSTANDARD1_6
             IsHttpListener = HttpContext.Current == null;
+#else
+            IsNetCore = true;
+#endif
         }
 
+#if !NETSTANDARD1_6
         public static void CloseOutputStream(this HttpResponseBase response)
         {
             try
@@ -64,6 +69,7 @@ namespace ServiceStack
                 Log.Error("Error in HttpListenerResponseWrapper: " + ex.Message, ex);
             }
         }
+#endif
 
         public static void RedirectToUrl(this IResponse httpRes, string url, HttpStatusCode redirectStatusCode = HttpStatusCode.Redirect)
         {
@@ -74,12 +80,14 @@ namespace ServiceStack
 
         public static void TransmitFile(this IResponse httpRes, string filePath)
         {
-            var aspNetRes = httpRes as AspNetResponse;
+#if !NETSTANDARD1_6
+            var aspNetRes = httpRes as ServiceStack.Host.AspNet.AspNetResponse;
             if (aspNetRes != null)
             {
                 aspNetRes.Response.TransmitFile(filePath);
                 return;
             }
+#endif
 
             using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
@@ -91,12 +99,14 @@ namespace ServiceStack
 
         public static void WriteFile(this IResponse httpRes, string filePath)
         {
-            var aspNetRes = httpRes as AspNetResponse;
+#if !NETSTANDARD1_6
+            var aspNetRes = httpRes as ServiceStack.Host.AspNet.AspNetResponse;
             if (aspNetRes != null)
             {
                 aspNetRes.Response.WriteFile(filePath);
                 return;
             }
+#endif
 
             using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
@@ -140,15 +150,14 @@ namespace ServiceStack
         public static void ReturnAuthRequired(this IResponse httpRes, AuthenticationHeaderType AuthType, string authRealm)
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
-            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, string.Format("{0} realm=\"{1}\"", AuthType.ToString(), authRealm));
+            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"{AuthType} realm=\"{authRealm}\"");
             httpRes.EndRequest();
         }
 
         public static void ClearCookies(this IResponse response)
         {
             var httpRes = response as IHttpResponse;
-            if (httpRes != null)
-                httpRes.ClearCookies();
+            httpRes?.ClearCookies();
         }
 
         /// <summary>
@@ -157,8 +166,7 @@ namespace ServiceStack
         public static void SetPermanentCookie(this IResponse response, string cookieName, string cookieValue)
         {
             var httpRes = response as IHttpResponse;
-            if (httpRes != null)
-                httpRes.Cookies.AddPermanentCookie(cookieName, cookieValue);
+            httpRes?.Cookies.AddPermanentCookie(cookieName, cookieValue);
         }
 
         /// <summary>
@@ -167,8 +175,7 @@ namespace ServiceStack
         public static void SetSessionCookie(this IResponse response, string cookieName, string cookieValue)
         {
             var httpRes = response as IHttpResponse;
-            if (httpRes != null)
-                httpRes.Cookies.AddSessionCookie(cookieName, cookieValue);
+            httpRes?.Cookies.AddSessionCookie(cookieName, cookieValue);
         }
 
         /// <summary>
@@ -185,10 +192,7 @@ namespace ServiceStack
         public static void SetCookie(this IResponse response, Cookie cookie)
         {
             var httpRes = response as IHttpResponse;
-            if (httpRes != null)
-            {
-                httpRes.SetCookie(cookie);
-            }
+            httpRes?.SetCookie(cookie);
         }
 
         /// <summary>
@@ -209,37 +213,12 @@ namespace ServiceStack
         public static void DeleteCookie(this IResponse response, string cookieName)
         {
             var httpRes = response as IHttpResponse;
-            if (httpRes != null)
-                httpRes.Cookies.DeleteCookie(cookieName);
+            httpRes?.Cookies.DeleteCookie(cookieName);
         }
 
         public static Dictionary<string, string> CookiesAsDictionary(this IResponse httpRes)
         {
-            var map = new Dictionary<string, string>();
-            var aspNet = httpRes.OriginalResponse as System.Web.HttpResponse;
-            if (aspNet != null)
-            {
-                foreach (var name in aspNet.Cookies.AllKeys)
-                {
-                    var cookie = aspNet.Cookies[name];
-                    if (cookie == null) continue;
-                    map[name] = cookie.Value;
-                }
-            }
-            else
-            {
-                var httpListener = httpRes.OriginalResponse as HttpListenerResponse;
-                if (httpListener != null)
-                {
-                    for (var i = 0; i < httpListener.Cookies.Count; i++)
-                    {
-                        var cookie = httpListener.Cookies[i];
-                        if (cookie == null || cookie.Name == null) continue;
-                        map[cookie.Name] = cookie.Value;
-                    }
-                }
-            }
-            return map;
+            return Platform.Instance.GetCookiesAsDictionary(httpRes);
         }
 
         public static void AddHeaderLastModified(this IResponse httpRes, DateTime? lastModified)

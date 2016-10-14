@@ -1,3 +1,4 @@
+#if !NETCORE_SUPPORT
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -40,6 +41,7 @@ namespace ServiceStack.Common.Tests.OAuth
         public override IUserAuthRepository CreateAuthRepo()
         {
             var db = new PocoDynamo(DynamoConfig.CreateDynamoDBClient());
+            db.DeleteAllTables();
             var dynamoDbRepo = new DynamoDbAuthRepository(db);
             InitTest(dynamoDbRepo);
             dynamoDbRepo.InitSchema();
@@ -91,10 +93,17 @@ namespace ServiceStack.Common.Tests.OAuth
 
         public abstract IUserAuthRepository CreateAuthRepo();
 
+        public IUserAuthRepository InitAuthRepo()
+        {
+            var authRepo = CreateAuthRepo();
+            appHost.Container.Register<IAuthRepository>(authRepo);
+            return authRepo;
+        }
+
         [Test]
         public void Does_persist_TwitterOAuth()
         {
-            var userAuthRepository = CreateAuthRepo();
+            var userAuthRepository = InitAuthRepo();
 
             MockAuthHttpGateway.Tokens = twitterGatewayTokens;
 
@@ -132,7 +141,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Does_persist_FacebookOAuth()
         {
-            var userAuthRepository = CreateAuthRepo();
+            var userAuthRepository = InitAuthRepo();
 
             var serviceTokens = MockAuthHttpGateway.Tokens = facebookGatewayTokens;
 
@@ -173,7 +182,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Does_merge_FacebookOAuth_TwitterOAuth()
         {
-            var userAuthRepository = CreateAuthRepo();
+            var userAuthRepository = InitAuthRepo();
 
             var serviceTokensFb = MockAuthHttpGateway.Tokens = facebookGatewayTokens;
 
@@ -213,7 +222,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Can_login_with_user_created_CreateUserAuth()
         {
-            var userAuthRepository = CreateAuthRepo();
+            var userAuthRepository = InitAuthRepo();
 
             var registrationService = GetRegistrationService(userAuthRepository);
 
@@ -259,7 +268,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Can_login_with_user_created_CreateUserAuth_Email()
         {
-            var userAuthRepository = CreateAuthRepo();
+            var userAuthRepository = InitAuthRepo();
 
             //Clear Username so only Email is registered
             RegisterDto.UserName = null;
@@ -296,7 +305,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Logging_in_pulls_all_AuthInfo_from_repo_after_logging_in_all_AuthProviders()
         {
-            var userAuthRepository = CreateAuthRepo();
+            var userAuthRepository = InitAuthRepo();
 
             var oAuthUserSession = requestContext.ReloadSession();
 
@@ -356,7 +365,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Registering_twice_creates_two_registrations()
         {
-            var userAuthRepository = CreateAuthRepo();
+            var userAuthRepository = InitAuthRepo();
 
             var oAuthUserSession = requestContext.ReloadSession();
 
@@ -384,7 +393,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Registering_twice_in_same_session_updates_registration()
         {
-            var userAuthRepository = CreateAuthRepo();
+            var userAuthRepository = InitAuthRepo();
 
             var oAuthUserSession = requestContext.ReloadSession();
 
@@ -406,7 +415,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Connecting_to_facebook_whilst_authenticated_connects_account()
         {
-            var userAuthRepository = CreateAuthRepo();
+            var userAuthRepository = InitAuthRepo();
 
             var oAuthUserSession = requestContext.ReloadSession();
 
@@ -425,7 +434,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Can_AutoLogin_whilst_Registering()
         {
-            var userAuthRepository = CreateAuthRepo();
+            var userAuthRepository = InitAuthRepo();
             var oAuthUserSession = requestContext.ReloadSession();
             RegisterDto.AutoLogin = true;
             Register(userAuthRepository, oAuthUserSession, RegisterDto);
@@ -437,7 +446,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Can_DeleteUserAuth()
         {
-            var userAuthRepository = CreateAuthRepo();
+            var userAuthRepository = InitAuthRepo();
 
             var oAuthUserSession = requestContext.ReloadSession();
             oAuthUserSession = RegisterAndLogin(userAuthRepository, oAuthUserSession);
@@ -452,3 +461,4 @@ namespace ServiceStack.Common.Tests.OAuth
 
     }
 }
+#endif

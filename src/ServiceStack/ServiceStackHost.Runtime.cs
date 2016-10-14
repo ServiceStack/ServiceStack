@@ -60,12 +60,19 @@ namespace ServiceStack
         /// </summary>
         public virtual bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
         {
+            return ApplyPreRequestFilters(httpReq, httpRes);
+        }
+
+        /// <summary>
+        /// Apply PreAuthenticate Filters from IAuthWithRequest AuthProviders
+        /// </summary>
+        public virtual void ApplyPreAuthenticateFilters(IRequest httpReq, IResponse httpRes)
+        {
+            httpReq.Items[Keywords.HasPreAuthenticated] = true;
             foreach (var authProvider in AuthenticateService.AuthWithRequestProviders)
             {
                 authProvider.PreAuthenticate(httpReq, httpRes);
             }
-
-            return ApplyPreRequestFilters(httpReq, httpRes);
         }
 
         /// <summary>
@@ -276,7 +283,7 @@ namespace ServiceStack
                 if (res.IsClosed) return;
             }
 
-            var dtoInterfaces = dtoType.GetInterfaces();
+            var dtoInterfaces = dtoType.GetTypeInterfaces();
             foreach (var dtoInterface in dtoInterfaces)
             {
                 typedFilters.TryGetValue(dtoInterface, out typedFilter);
@@ -288,17 +295,11 @@ namespace ServiceStack
             }
         }
 
-        public MetadataPagesConfig MetadataPagesConfig
-        {
-            get
-            {
-                return new MetadataPagesConfig(
-                    Metadata,
-                    Config.ServiceEndpointsMetadataConfig,
-                    Config.IgnoreFormatsInMetadata,
-                    ContentTypes.ContentTypeFormats.Keys.ToList());
-            }
-        }
+        public MetadataPagesConfig MetadataPagesConfig => new MetadataPagesConfig(
+            Metadata,
+            Config.ServiceEndpointsMetadataConfig,
+            Config.IgnoreFormatsInMetadata,
+            ContentTypes.ContentTypeFormats.Keys.ToList());
 
         public virtual TimeSpan GetDefaultSessionExpiry(IRequest req)
         {
@@ -327,7 +328,7 @@ namespace ServiceStack
             if (!HasFeature(usesFeatures))
             {
                 throw new UnauthorizedAccessException(
-                    String.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
+                    $"'{usesFeatures}' Features have been disabled by your administrator");
             }
         }
 
@@ -456,21 +457,20 @@ namespace ServiceStack
             }
 
             var serializationEx = ex as SerializationException;
-            if (serializationEx != null)
+            var errors = serializationEx?.Data["errors"] as List<RequestBindingError>;
+            if (errors != null)
             {
-                var errors = serializationEx.Data["errors"] as List<RequestBindingError>;
-                if (errors != null)
-                {
-                    if (responseStatus.Errors == null)
-                        responseStatus.Errors = new List<ResponseError>();
+                if (responseStatus.Errors == null)
+                    responseStatus.Errors = new List<ResponseError>();
 
-                    responseStatus.Errors = errors.Select(e => new ResponseError
-                    {
-                        ErrorCode = ex.GetType().Name,
-                        FieldName = e.PropertyName,
-                        Message = e.PropertyValueString != null ? "'{0}' is an Invalid value for '{1}'".Fmt(e.PropertyValueString, e.PropertyName) : "Invalid Value for '{0}'".Fmt(e.PropertyName)
-                    }).ToList();
-                }
+                responseStatus.Errors = errors.Select(e => new ResponseError
+                {
+                    ErrorCode = ex.GetType().Name,
+                    FieldName = e.PropertyName,
+                    Message = e.PropertyValueString != null 
+                        ? $"'{e.PropertyValueString}' is an Invalid value for '{e.PropertyName}'"
+                        : $"Invalid Value for '{e.PropertyName}'"
+                }).ToList();
             }
         }
 
@@ -507,8 +507,7 @@ namespace ServiceStack
 
             if (Log.IsDebugEnabled)
             {
-                Log.Debug("ignoring cached sessionId '{0}' which is different to request '{1}'"
-                    .Fmt(session.Id, withSessionId));
+                Log.Debug($"ignoring cached sessionId '{session.Id}' which is different to request '{withSessionId}'");
             }
             return null;
         }
@@ -518,7 +517,8 @@ namespace ServiceStack
             if (!Config.AllowSessionCookies)
                 return cookieName != SessionFeature.SessionId
                     && cookieName != SessionFeature.PermanentSessionId
-                    && cookieName != SessionFeature.SessionOptionsKey;
+                    && cookieName != SessionFeature.SessionOptionsKey
+                    && cookieName != SessionFeature.XUserAuthId;
 
             return true;
         }
@@ -560,39 +560,6 @@ namespace ServiceStack
             return !type.IsGenericTypeDefinition() &&
                    !type.AllAttributes<ExcludeAttribute>()
                         .Any(attr => attr.Feature.Has(Feature.Soap));
-        }
-
-        public virtual void WriteSoapMessage(IRequest req, System.ServiceModel.Channels.Message message, Stream outputStream)
-        {
-            try
-            {
-                using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
-                {
-                    message.WriteMessage(writer);
-                }
-            }
-            catch (Exception ex)
-            {
-                var response = OnServiceException(req, req.Dto, ex);
-                if (response == null || !outputStream.CanSeek)
-                    return;
-
-                outputStream.Position = 0;
-                try
-                {
-                    message = SoapHandler.CreateResponseMessage(response, message.Version, req.Dto.GetType(),
-                        req.GetSoapMessage().Headers.Action == null);
-                    using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
-                    {
-                        message.WriteMessage(writer);
-                    }
-                }
-                catch { }
-            }
-            finally
-            {
-                HostContext.CompleteRequest(req);
-            }
         }
 
         /// <summary>
@@ -668,7 +635,8 @@ namespace ServiceStack
         /// <returns></returns>
         public virtual IMessageProducer GetMessageProducer(IRequest req = null)
         {
-            return Container.Resolve<IMessageFactory>().CreateMessageProducer();
+            return (Container.TryResolve<IMessageFactory>()
+                ?? Container.TryResolve<IMessageService>().MessageFactory).CreateMessageProducer();
         }
 
         public virtual IServiceGateway GetServiceGateway(IRequest req)
@@ -677,6 +645,11 @@ namespace ServiceStack
             return factory != null ? factory.GetServiceGateway(req) 
                 : Container.TryResolve<IServiceGateway>()
                 ?? new InProcessServiceGateway(req);
+        }
+
+        public virtual IAuthRepository GetAuthRepository(IRequest req = null)
+        {
+            return TryResolve<IAuthRepository>();
         }
     }
 

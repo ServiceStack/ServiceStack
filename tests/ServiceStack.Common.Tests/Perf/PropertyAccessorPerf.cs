@@ -24,7 +24,11 @@ namespace ServiceStack.Common.Tests.Perf
             public static Func<TEntity, TId> TypedGetPropertyFn<TId>(PropertyInfo pi)
             {
                 var mi = pi.GetGetMethod();
+#if NETCORE
+                return (Func<TEntity, TId>)mi.CreateDelegate(typeof(Func<TEntity, TId>));
+#else
                 return (Func<TEntity, TId>)Delegate.CreateDelegate(typeof(Func<TEntity, TId>), mi);
+#endif
             }
 
             /// <summary>
@@ -41,7 +45,11 @@ namespace ServiceStack.Common.Tests.Perf
                 var mi = typeof(StaticAccessors<TEntity>).GetMethod("TypedGetPropertyFn");
                 var genericMi = mi.MakeGenericMethod(pi.PropertyType);
                 var typedGetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
+#if NETCORE
+                return x => typedGetPropertyFn.GetMethodInfo().Invoke(x, new object[] { });
+#else
                 return x => typedGetPropertyFn.Method.Invoke(x, new object[] { });
+#endif
             }
 
             public static Func<TEntity, object> ValueUnTypedGetPropertyTypeFn_Expr(PropertyInfo pi)
@@ -50,7 +58,11 @@ namespace ServiceStack.Common.Tests.Perf
                 var genericMi = mi.MakeGenericMethod(pi.PropertyType);
                 var typedGetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
 
+#if NETCORE
+                var typedMi = typedGetPropertyFn.GetMethodInfo();
+#else
                 var typedMi = typedGetPropertyFn.Method;
+#endif
                 var obj = Expression.Parameter(typeof(object), "oFunc");
                 var expr = Expression.Lambda<Func<TEntity, object>>(
                         Expression.Convert(
@@ -72,7 +84,11 @@ namespace ServiceStack.Common.Tests.Perf
             public static Action<TEntity, TId> TypedSetPropertyFn<TId>(PropertyInfo pi)
             {
                 var mi = pi.GetSetMethod();
+#if NETCORE
+                return (Action<TEntity, TId>)mi.CreateDelegate(typeof(Action<TEntity, TId>));
+#else
                 return (Action<TEntity, TId>)Delegate.CreateDelegate(typeof(Action<TEntity, TId>), mi);
+#endif
             }
 
             /// <summary>
@@ -90,7 +106,11 @@ namespace ServiceStack.Common.Tests.Perf
                 var genericMi = mi.MakeGenericMethod(pi.PropertyType);
                 var typedSetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
 
+#if NETCORE
+                return (x, y) => typedSetPropertyFn.GetMethodInfo().Invoke(x, new[] { y });
+#else
                 return (x, y) => typedSetPropertyFn.Method.Invoke(x, new[] { y });
+#endif
             }
 
             public static Action<TEntity, object> ValueUnTypedSetPropertyTypeFn_Expr(PropertyInfo pi)
@@ -99,7 +119,11 @@ namespace ServiceStack.Common.Tests.Perf
                 var genericMi = mi.MakeGenericMethod(pi.PropertyType);
                 var typedSetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
 
+#if NETCORE
+                var typedMi = typedSetPropertyFn.GetMethodInfo();
+#else
                 var typedMi = typedSetPropertyFn.Method;
+#endif
                 var paramFunc = Expression.Parameter(typeof(object), "oFunc");
                 var paramValue = Expression.Parameter(typeof(object), "oValue");
                 var expr = Expression.Lambda<Action<TEntity, object>>(

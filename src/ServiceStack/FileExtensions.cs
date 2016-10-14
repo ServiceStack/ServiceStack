@@ -9,7 +9,7 @@ namespace ServiceStack
     {
         public static void SaveTo(this IHttpFile httpFile, string filePath)
         {
-            using (var sw = new StreamWriter(filePath, false))
+            using (var sw = new StreamWriter(File.Create(filePath)))
             {
                 httpFile.InputStream.WriteTo(sw.BaseStream);
             }

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 
 namespace ServiceStack.Messaging
 {
@@ -45,10 +44,10 @@ namespace ServiceStack.Messaging
             int retryCount)
         {
             if (messageService == null)
-                throw new ArgumentNullException("messageService");
+                throw new ArgumentNullException(nameof(messageService));
 
             if (processMessageFn == null)
-                throw new ArgumentNullException("processMessageFn");
+                throw new ArgumentNullException(nameof(processMessageFn));
 
             this.messageService = messageService;
             this.processMessageFn = processMessageFn;
@@ -58,10 +57,7 @@ namespace ServiceStack.Messaging
             this.ProcessQueueNames = new[] { QueueNames<T>.Priority, QueueNames<T>.In };
         }
 
-        public Type MessageType
-        {
-            get { return typeof(T); }
-        }
+        public Type MessageType => typeof(T);
 
         public void Process(IMessageQueueClient mqClient)
         {
@@ -223,8 +219,7 @@ namespace ServiceStack.Messaging
                         }
                         catch (Exception ex)
                         {
-                            Log.Error("Could not send response to '{0}' with client '{1}'"
-                                .Fmt(mqReplyTo, replyClient.GetType().GetOperationName()), ex);
+                            Log.Error($"Could not send response to '{mqReplyTo}' with client '{replyClient.GetType().GetOperationName()}'", ex);
 
                             // Leave as-is to work around a Mono 2.6.7 compiler bug
                             if (!responseType.IsUserType()) return;
@@ -267,8 +262,7 @@ namespace ServiceStack.Messaging
         public void Dispose()
         {
             var shouldDispose = messageService as IMessageHandlerDisposer;
-            if (shouldDispose != null)
-                shouldDispose.DisposeMessageHandler(this);
+            shouldDispose?.DisposeMessageHandler(this);
         }
 
     }

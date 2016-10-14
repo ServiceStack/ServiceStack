@@ -1,0 +1,42 @@
+{
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": ["NETCORE_SUPPORT", "NETCORE", "DEBUG", "TRACE"]
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": ["NETCORE_SUPPORT", "NETCORE", "TRACE"],
+        "optimize": true
+      }
+    }
+  },
+  "buildOptions": {
+    "debugType": "portable",
+    "emitEntryPoint": true
+  },
+  "dependencies": {
+    "Microsoft.NETCore.App": {
+      "type": "platform",
+      "version": "1.0.0"
+    },
+    "NUnitLite" : "3.2.1",
+    "AWSSDK.Core": "3.3.0.2",
+    "AWSSDK.DynamoDBv2": "3.3.0",
+    "ServiceStack.Interfaces" : "1.0.*",
+    "ServiceStack.Text" : "1.0.*",
+    "ServiceStack.Common" : "1.0.*",
+    "ServiceStack.Client" : "1.0.*",
+    "ServiceStack": "1.0.*",
+    "ServiceStack.Kestrel": "1.0.*"
+  },
+  "frameworks": {
+   "netcoreapp1.0": { 
+       "imports": "dnxcore50",
+	     "dependencies" : {
+        "System.Reflection.TypeExtensions": "4.1.0"
+      }	
+    }
+  }
+}

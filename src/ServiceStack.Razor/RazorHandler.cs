@@ -40,7 +40,7 @@ namespace ServiceStack.Razor
                 httpReq.Items.TryGetValue("Model", out model);
             if (model == null)
             {
-                var modelType = RazorPage != null ? RazorPage.ModelType : null;
+                var modelType = RazorPage?.ModelType;
                 model = modelType == null || modelType == typeof(DynamicRequestObject)
                     ? null
                     : DeserializeHttpRequest(modelType, httpReq, httpReq.ContentType);

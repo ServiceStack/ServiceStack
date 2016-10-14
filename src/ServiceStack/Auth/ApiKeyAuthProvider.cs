@@ -62,7 +62,7 @@ namespace ServiceStack.Auth
         public static int DefaultKeySizeBytes = 24;
 
         /// <summary>
-        /// Modify the registration of GetApiKeys and RegenrateApiKeys Services
+        /// Modify the registration of GetApiKeys and RegenerateApiKeys Services
         /// </summary>
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
@@ -107,6 +107,7 @@ namespace ServiceStack.Auth
         public Action<ApiKey> CreateApiKeyFilter { get; set; }
 
         public ApiKeyAuthProvider()
+            : base(null, Realm, Name)
         {
             Init();
         }
@@ -151,7 +152,7 @@ namespace ServiceStack.Auth
             ServiceRoutes = new Dictionary<Type, string[]>
             {
                 { typeof(GetApiKeysService), new[] { "/apikeys", "/apikeys/{Environment}" } },
-                { typeof(RegenrateApiKeysService), new [] { "/apikeys/regenerate", "/apikeys/regenerate/{Environment}" } },
+                { typeof(RegenerateApiKeysService), new [] { "/apikeys/regenerate", "/apikeys/regenerate/{Environment}" } },
             };
         }
 
@@ -173,47 +174,50 @@ namespace ServiceStack.Auth
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
-            var authRepo = authService.TryResolve<IAuthRepository>().AsUserAuthRepository(authService.GetResolver());
-            var apiRepo = (IManageApiKeys)authRepo;
-
-            var apiKey = apiRepo.GetApiKey(request.Password);
-            if (apiKey == null)
-                throw HttpError.NotFound("ApiKey does not exist");
-
-            if (apiKey.CancelledDate != null)
-                throw HttpError.Forbidden("ApiKey has been cancelled");
-
-            if (apiKey.ExpiryDate != null && DateTime.UtcNow > apiKey.ExpiryDate.Value)
-                throw HttpError.Forbidden("ApiKey has expired");
-
-            var userAuth = authRepo.GetUserAuth(apiKey.UserAuthId);
-            if (userAuth == null)
-                throw HttpError.Unauthorized("User for ApiKey does not exist");
-
-            if (IsAccountLocked(authRepo, userAuth))
-                throw new AuthenticationException(ErrorMessages.UserAccountLocked);
-
-            PopulateSession(authRepo, userAuth, session);
-
-            if (session.UserAuthName == null)
-                session.UserAuthName = userAuth.UserName ?? userAuth.Email;
-
-            var response = OnAuthenticated(authService, session, null, null);
-            if (response != null)
-                return response;
-
-            authService.Request.Items[Keywords.ApiKey] = apiKey;
-
-            return new AuthenticateResponse
+            var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request);
+            using (authRepo as IDisposable)
             {
-                UserId = session.UserAuthId,
-                UserName = session.UserName,
-                SessionId = session.Id,
-                DisplayName = session.DisplayName
-                    ?? session.UserName
-                    ?? "{0} {1}".Fmt(session.FirstName, session.LastName).Trim(),
-                ReferrerUrl = request.Continue,
-            };
+                var apiRepo = (IManageApiKeys)authRepo;
+
+                var apiKey = apiRepo.GetApiKey(request.Password);
+                if (apiKey == null)
+                    throw HttpError.NotFound("ApiKey does not exist");
+
+                if (apiKey.CancelledDate != null)
+                    throw HttpError.Forbidden("ApiKey has been cancelled");
+
+                if (apiKey.ExpiryDate != null && DateTime.UtcNow > apiKey.ExpiryDate.Value)
+                    throw HttpError.Forbidden("ApiKey has expired");
+
+                var userAuth = authRepo.GetUserAuth(apiKey.UserAuthId);
+                if (userAuth == null)
+                    throw HttpError.Unauthorized("User for ApiKey does not exist");
+
+                if (IsAccountLocked(authRepo, userAuth))
+                    throw new AuthenticationException(ErrorMessages.UserAccountLocked);
+
+                PopulateSession(authRepo as IUserAuthRepository, userAuth, session);
+
+                if (session.UserAuthName == null)
+                    session.UserAuthName = userAuth.UserName ?? userAuth.Email;
+
+                var response = OnAuthenticated(authService, session, null, null);
+                if (response != null)
+                    return response;
+
+                authService.Request.Items[Keywords.ApiKey] = apiKey;
+
+                return new AuthenticateResponse
+                {
+                    UserId = session.UserAuthId,
+                    UserName = session.UserName,
+                    SessionId = session.Id,
+                    DisplayName = session.DisplayName
+                        ?? session.UserName
+                        ?? $"{session.FirstName} {session.LastName}".Trim(),
+                    ReferrerUrl = request.Continue,
+                };
+            }
         }
 
         public void PreAuthenticate(IRequest req, IResponse res)
@@ -232,13 +236,16 @@ namespace ServiceStack.Auth
             var bearerToken = req.GetBearerToken();
             if (bearerToken != null)
             {
-                var authRepo = (IManageApiKeys)req.TryResolve<IAuthRepository>().AsUserAuthRepository(req);
-                if (authRepo.ApiKeyExists(bearerToken))
+                var authRepo = (IManageApiKeys)HostContext.AppHost.GetAuthRepository(req);
+                using (authRepo as IDisposable)
                 {
-                    if (RequireSecureConnection && !req.IsSecureConnection)
-                        throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
+                    if (authRepo.ApiKeyExists(bearerToken))
+                    {
+                        if (RequireSecureConnection && !req.IsSecureConnection)
+                            throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
 
-                    PreAuthenticateWithApiKey(req, res, bearerToken);
+                        PreAuthenticateWithApiKey(req, res, bearerToken);
+                    }
                 }
             }
         }
@@ -261,10 +268,13 @@ namespace ServiceStack.Auth
 
         public void Register(IAppHost appHost, AuthFeature feature)
         {
-            var authRepo = appHost.TryResolve<IAuthRepository>().AsUserAuthRepository(appHost);
+            var authRepo = HostContext.AppHost.GetAuthRepository();
+            if (authRepo == null)
+                throw new NotSupportedException("ApiKeyAuthProvider requires a registered IAuthRepository");
+
             var apiRepo = authRepo as IManageApiKeys;
             if (apiRepo == null)
-                throw new NotSupportedException(apiRepo.GetType().Name + " does not implement IManageApiKeys");
+                throw new NotSupportedException(authRepo.GetType().Name + " does not implement IManageApiKeys");
 
             foreach (var registerService in ServiceRoutes)
             {
@@ -275,7 +285,10 @@ namespace ServiceStack.Auth
 
             if (InitSchema)
             {
-                apiRepo.InitApiKeySchema();
+                using (apiRepo as IDisposable)
+                {
+                    apiRepo.InitApiKeySchema();
+                }
             }
         }
 
@@ -283,7 +296,7 @@ namespace ServiceStack.Auth
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             //Needs to be 'Basic ' in order for HttpWebRequest to accept challenge and send NetworkCredentials
-            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "Basic realm=\"{0}\"".Fmt(this.AuthRealm));
+            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"Basic realm=\"{this.AuthRealm}\"");
             httpRes.EndRequest();
         }
 
@@ -311,8 +324,7 @@ namespace ServiceStack.Auth
                         ExpiryDate = ExpireKeysAfter != null ? now.Add(ExpireKeysAfter.Value) : (DateTime?) null
                     };
 
-                    if (CreateApiKeyFilter != null)
-                        CreateApiKeyFilter(apiKey);
+                    CreateApiKeyFilter?.Invoke(apiKey);
 
                     apiKeys.Add(apiKey);
                 }
@@ -333,8 +345,11 @@ namespace ServiceStack.Auth
         public override void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase registrationService)
         {
             var apiKeys = apiKeyProvider.GenerateNewApiKeys(session.UserAuthId);
-            var authRepo = (IManageApiKeys)httpReq.TryResolve<IAuthRepository>().AsUserAuthRepository(httpReq);
-            authRepo.StoreAll(apiKeys);
+            var authRepo = (IManageApiKeys)HostContext.AppHost.GetAuthRepository(httpReq);
+            using (authRepo as IDisposable)
+            {
+                authRepo.StoreAll(apiKeys);
+            }
         }
     }
 
@@ -350,25 +365,28 @@ namespace ServiceStack.Auth
 
             var env = request.Environment ?? apiKeyAuth.Environments[0];
 
-            var apiRepo = (IManageApiKeys)TryResolve<IAuthRepository>();
-            return new GetApiKeysResponse
+            var apiRepo = (IManageApiKeys)HostContext.AppHost.GetAuthRepository(base.Request);
+            using (apiRepo as IDisposable)
             {
-                Results = apiRepo.GetUserApiKeys(GetSession().UserAuthId)
-                    .Where(x => x.Environment == env)
-                    .Map(k => new UserApiKey {
+                return new GetApiKeysResponse
+                {
+                    Results = apiRepo.GetUserApiKeys(GetSession().UserAuthId)
+                        .Where(x => x.Environment == env)
+                        .Map(k => new UserApiKey {
                             Key = k.Id,
                             KeyType = k.KeyType,
                             ExpiryDate = k.ExpiryDate,
                         })
-            };
+                };
+            }
         }
     }
 
     [Authenticate]
-    [DefaultRequest(typeof(RegenrateApiKeys))]
-    public class RegenrateApiKeysService : Service
+    [DefaultRequest(typeof(RegenerateApiKeys))]
+    public class RegenerateApiKeysService : Service
     {
-        public object Any(RegenrateApiKeys request)
+        public object Any(RegenerateApiKeys request)
         {
             var apiKeyAuth = this.Request.AssertValidApiKeyRequest();
             if (string.IsNullOrEmpty(request.Environment) && apiKeyAuth.Environments.Length != 1)
@@ -376,29 +394,31 @@ namespace ServiceStack.Auth
 
             var env = request.Environment ?? apiKeyAuth.Environments[0];
 
-            var apiRepo = (IManageApiKeys)TryResolve<IAuthRepository>();
-
-            var userId = GetSession().UserAuthId;
-            var updateKeys = apiRepo.GetUserApiKeys(userId)
-                .Where(x => x.Environment == env)
-                .ToList();
-
-            updateKeys.Each(x => x.CancelledDate = DateTime.UtcNow);
-
-            var newKeys = apiKeyAuth.GenerateNewApiKeys(userId, env);
-            updateKeys.AddRange(newKeys);
-
-            apiRepo.StoreAll(updateKeys);
-            
-            return new RegenrateApiKeysResponse
+            var apiRepo = (IManageApiKeys)HostContext.AppHost.GetAuthRepository(base.Request);
+            using (apiRepo as IDisposable)
             {
-                Results = newKeys.Map(k => new UserApiKey
+                var userId = GetSession().UserAuthId;
+                var updateKeys = apiRepo.GetUserApiKeys(userId)
+                    .Where(x => x.Environment == env)
+                    .ToList();
+
+                updateKeys.Each(x => x.CancelledDate = DateTime.UtcNow);
+
+                var newKeys = apiKeyAuth.GenerateNewApiKeys(userId, env);
+                updateKeys.AddRange(newKeys);
+
+                apiRepo.StoreAll(updateKeys);
+
+                return new RegenerateApiKeysResponse
+                {
+                    Results = newKeys.Map(k => new UserApiKey
                     {
                         Key = k.Id,
                         KeyType = k.KeyType,
                         ExpiryDate = k.ExpiryDate,
                     })
-            };
+                };
+            }
         }
     }
 }

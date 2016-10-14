@@ -1,3 +1,4 @@
+#if !NETSTANDARD1_6
 using System;
 using System.Reflection;
 using System.Web;
@@ -42,5 +43,10 @@ namespace ServiceStack
                 return null;
             }
         }
+        public override string MapProjectPath(string relativePath)
+        {
+            return relativePath.MapHostAbsolutePath();
+        }
     }
 }
+#endif

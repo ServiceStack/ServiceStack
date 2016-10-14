@@ -45,13 +45,14 @@ namespace ServiceStack
             return default(T);
         }
 
-#if !SL5 //No Stopwatch
+#if !SL5 //SL5 - No Stopwatch, Net Standard 1.1 - no Thread 
         public static void WaitWhile(Func<bool> condition, int millisecondTimeout, int millsecondPollPeriod = 10)
         {
             var timer = System.Diagnostics.Stopwatch.StartNew();
             while (condition())
             {
-                System.Threading.Thread.Sleep(millsecondPollPeriod);
+                TaskUtils.Sleep(millsecondPollPeriod);
+                
                 if (timer.ElapsedMilliseconds > millisecondTimeout)
                     throw new TimeoutException("Timed out waiting for condition function.");
             }

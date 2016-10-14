@@ -25,7 +25,7 @@ namespace ServiceStack.Validation
                     ?? DtoUtils.CreateErrorResponse(requestDto, validationResult.ToErrorResult());
 
                 var validationFeature = HostContext.GetPlugin<ValidationFeature>();
-                if (validationFeature != null && validationFeature.ErrorResponseFilter != null)
+                if (validationFeature?.ErrorResponseFilter != null)
                 {
                     errorResponse = validationFeature.ErrorResponseFilter(validationResult, errorResponse);
                 }

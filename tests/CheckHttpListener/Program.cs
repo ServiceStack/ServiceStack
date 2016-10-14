@@ -6,6 +6,7 @@ using Check.ServiceModel;
 using Funq;
 using ServiceStack;
 using ServiceStack.Admin;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
@@ -42,42 +43,21 @@ namespace CheckHttpListener
             Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
             Plugins.Add(new AdminFeature());
 
-            var msgs = new List<string>();
-            int count = 0;
-
-            var client = new ServerEventsClient("http://chat.servicestack.net", "home")
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                new [] { new BasicAuthProvider(AppSettings) })
             {
-                OnMessage = m =>
-                {
-                    try
-                    {
-                        lock (msgs)
-                        {
-                            msgs.Add(m.Dump());
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        msgs.Add("OnMessage Exception: " + ex.Message);
-                    }
+                ServiceRoutes = new Dictionary<Type, string[]> {
+                  { typeof(AuthenticateService), new[] { "/api/auth", "/api/auth/{provider}" } },
                 }
-            }.Start();
-
-            timer = new Timer(_ =>
-            {
-                lock (msgs)
-                {
-                    for (; count < msgs.Count; count++)
-                    {
-                        Console.WriteLine(msgs[count]);
-                    }
-                }
-                timer.Change(1000, Timeout.Infinite);
-            }, null, 1000, Timeout.Infinite);
-
+            });
         }
 
-        Timer timer;
+        public override RouteAttribute[] GetRouteAttributes(Type requestType)
+        {
+            var routes = base.GetRouteAttributes(requestType);
+            routes.Each(x => x.Path = "/api" + x.Path);
+            return routes;
+        }
     }
 
     [Route("/query/rockstars")]

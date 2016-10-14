@@ -14,8 +14,6 @@ namespace ServiceStack.Auth
 
     public class RegistrationValidator : AbstractValidator<Register>
     {
-        public IAuthRepository UserAuthRepo { get; set; }
-
         public RegistrationValidator()
         {
             RuleSet(
@@ -26,14 +24,28 @@ namespace ServiceStack.Auth
                     RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
                     RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.UserName.IsNullOrEmpty());
                     RuleFor(x => x.UserName)
-                        .Must(x => UserAuthRepo.GetUserAuthByUserName(x) == null)
+                        .Must(x =>
+                        {
+                            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+                            using (authRepo as IDisposable)
+                            {
+                                return authRepo.GetUserAuthByUserName(x) == null;
+                            }
+                        })
                         .WithErrorCode("AlreadyExists")
-                        .WithMessage("UserName already exists")
+                        .WithMessage(ErrorMessages.UsernameAlreadyExists)
                         .When(x => !x.UserName.IsNullOrEmpty());
                     RuleFor(x => x.Email)
-                        .Must(x => x.IsNullOrEmpty() || UserAuthRepo.GetUserAuthByUserName(x) == null)
+                        .Must(x =>
+                        {
+                            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+                            using (authRepo as IDisposable)
+                            {
+                                return x.IsNullOrEmpty() || authRepo.GetUserAuthByUserName(x) == null;
+                            }
+                        })
                         .WithErrorCode("AlreadyExists")
-                        .WithMessage("Email already exists")
+                        .WithMessage(ErrorMessages.EmailAlreadyExists)
                         .When(x => !x.Email.IsNullOrEmpty());
                 });
             RuleSet(
@@ -53,8 +65,6 @@ namespace ServiceStack.Auth
     public class RegisterService<TUserAuth> : Service
         where TUserAuth : class, IUserAuth
     {
-        public IAuthRepository AuthRepo { get; set; }
-
         public static ValidateFn ValidateFn { get; set; }
 
         public IValidator<Register> RegistrationValidator { get; set; }
@@ -74,33 +84,32 @@ namespace ServiceStack.Auth
         /// </summary>
         public object Post(Register request)
         {
-            if (HostContext.GlobalRequestFilters == null
-                || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
-            {
-                if (RegistrationValidator != null)
-                {
-                    RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
-                }
-            }
-
-            var userAuthRepo = AuthRepo.AsUserAuthRepository(GetResolver());
-
-            if (ValidateFn != null)
-            {
-                var validateResponse = ValidateFn(this, HttpMethods.Post, request);
-                if (validateResponse != null)
-                    return validateResponse;
-            }
+            var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);
+            if (validateResponse != null)
+                return validateResponse;
 
             RegisterResponse response = null;
             var session = this.GetSession();
             var newUserAuth = ToUserAuth(request);
-            var existingUser = userAuthRepo.GetUserAuth(session, null);
+            bool registerNewUser;
+            IUserAuth user;
 
-            var registerNewUser = existingUser == null;
-            var user = registerNewUser
-                ? userAuthRepo.CreateUserAuth(newUserAuth, request.Password)
-                : userAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
+            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+            using (authRepo as IDisposable)
+            {
+                var existingUser = authRepo.GetUserAuth(session, null);
+                registerNewUser = existingUser == null;
+
+                if (HostContext.GlobalRequestFilters == null
+                    || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
+                {
+                    RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
+                }
+
+                user = registerNewUser
+                    ? authRepo.CreateUserAuth(newUserAuth, request.Password)
+                    : authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
+            }
 
             if (request.AutoLogin.GetValueOrDefault())
             {
@@ -137,9 +146,8 @@ namespace ServiceStack.Auth
                 if (!request.AutoLogin.GetValueOrDefault())
                     session.PopulateSession(user, new List<IAuthTokens>());
 
-                session.OnRegistered(this.Request, session, this);
-                if (AuthEvents != null)
-                    AuthEvents.OnRegistered(this.Request, session, this);
+                session.OnRegistered(Request, session, this);
+                AuthEvents?.OnRegistered(this.Request, session, this);
             }
 
             if (response == null)
@@ -184,27 +192,27 @@ namespace ServiceStack.Auth
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
             }
 
-            if (ValidateFn != null)
-            {
-                var response = ValidateFn(this, HttpMethods.Put, request);
-                if (response != null)
-                    return response;
-            }
+            var response = ValidateFn?.Invoke(this, HttpMethods.Put, request);
+            if (response != null)
+                return response;
 
-            var userAuthRepo = AuthRepo.AsUserAuthRepository(GetResolver());
             var session = this.GetSession();
 
-            var existingUser = userAuthRepo.GetUserAuth(session, null);
-            if (existingUser == null)
-                throw HttpError.NotFound(ErrorMessages.UserNotExists);
-
-            var newUserAuth = ToUserAuth(request);
-            userAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
-
-            return new RegisterResponse
+            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+            using (authRepo as IDisposable)
             {
-                UserId = existingUser.Id.ToString(CultureInfo.InvariantCulture),
-            };
+                var existingUser = authRepo.GetUserAuth(session, null);
+                if (existingUser == null)
+                    throw HttpError.NotFound(ErrorMessages.UserNotExists);
+
+                var newUserAuth = ToUserAuth(request);
+                authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
+
+                return new RegisterResponse
+                {
+                    UserId = existingUser.Id.ToString(CultureInfo.InvariantCulture),
+                };
+            }
         }
     }
 }

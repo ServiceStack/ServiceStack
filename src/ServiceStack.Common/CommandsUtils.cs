@@ -7,6 +7,9 @@ using ServiceStack.Support;
 #if NETFX_CORE
 using Windows.System.Threading;
 #endif
+#if NETSTANDARD1_3
+using System.Threading.Tasks;
+#endif
 
 namespace ServiceStack
 {
@@ -27,8 +30,9 @@ namespace ServiceStack
                 var waitHandle = new AutoResetEvent(false);
                 waitHandles.Add(waitHandle);
                 var commandResultsHandler = new CommandResultsHandler<T>(results, command, waitHandle);
-
-#if NETFX_CORE
+#if NETSTANDARD1_3
+                Task.Run(() => ExecuteCommandList(commandResultsHandler));
+#elif NETFX_CORE
                 ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandList(commandResultsHandler)));
 #else
                 ThreadPool.QueueUserWorkItem(ExecuteCommandList, commandResultsHandler);
@@ -38,13 +42,12 @@ namespace ServiceStack
             return results;
         }
 
-
         public static void WaitAll(WaitHandle[] waitHandles, TimeSpan timeout)
         {
             // throws an exception if there are no wait handles
             if (waitHandles != null && waitHandles.Length > 0)
             {
-#if !SL5 && !IOS && !XBOX
+#if !SL5 && !IOS && !XBOX && !NETSTANDARD1_3
                 if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
                 {
                     // WaitAll for multiple handles on an STA thread is not supported.
@@ -86,7 +89,9 @@ namespace ServiceStack
         {
             foreach (ICommandExec command in commands)
             {
-#if NETFX_CORE
+#if NETSTANDARD1_3
+                Task.Run(() => ExecuteCommandExec(command));
+#elif NETFX_CORE
                 ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandExec(command)));
 #else
                 ThreadPool.QueueUserWorkItem(ExecuteCommandExec, command);
@@ -107,7 +112,9 @@ namespace ServiceStack
                 var waitHandle = new AutoResetEvent(false);
                 waitHandles.Add(waitHandle);
                 var commandExecsHandler = new CommandExecsHandler(command, waitHandle);
-#if NETFX_CORE
+#if NETSTANDARD1_3
+                Task.Run(() => ExecuteCommandList(commandExecsHandler));
+#elif NETFX_CORE
                 ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandList(commandExecsHandler)));
 #else
                 ThreadPool.QueueUserWorkItem(ExecuteCommandList, commandExecsHandler);

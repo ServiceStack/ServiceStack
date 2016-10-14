@@ -1,4 +1,6 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿#if !NETSTANDARD1_6
+
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 namespace ServiceStack.Html.AntiXsrf
 {
@@ -9,3 +11,5 @@ namespace ServiceStack.Html.AntiXsrf
         byte[] Unprotect(string protectedData);
     }
 }
+
+#endif

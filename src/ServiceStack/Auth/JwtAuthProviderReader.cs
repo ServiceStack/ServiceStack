@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -18,6 +20,11 @@ namespace ServiceStack.Auth
 
         public const string Name = AuthenticateService.JwtProvider;
         public const string Realm = "/auth/" + AuthenticateService.JwtProvider;
+
+        public static HashSet<string> IgnoreForOperationTypes = new HashSet<string>
+        {
+            typeof(StaticFileHandler).Name,
+        };
 
         /// <summary>
         /// Different HMAC Algorithms supported
@@ -107,6 +114,11 @@ namespace ServiceStack.Auth
         }
 
         /// <summary>
+        /// Allow verification using multiple Auth keys
+        /// </summary>
+        public List<byte[]> FallbackAuthKeys { get; set; }
+
+        /// <summary>
         /// The RSA Private Key used to Sign the JWT Token when RSA is used
         /// </summary>
         public RSAParameters? privateKey;
@@ -126,8 +138,8 @@ namespace ServiceStack.Auth
         /// </summary>
         public string PrivateKeyXml
         {
-            get { return PrivateKey != null ? PrivateKey.Value.FromPrivateRSAParameters() : null; }
-            set { PrivateKey = value != null ? value.ToPrivateRSAParameters() : (RSAParameters?) null; }
+            get { return PrivateKey?.FromPrivateRSAParameters(); }
+            set { PrivateKey = value?.ToPrivateRSAParameters(); }
         }
 
         /// <summary>
@@ -140,14 +152,31 @@ namespace ServiceStack.Auth
         /// </summary>
         public string PublicKeyXml
         {
-            get { return PublicKey != null ? PublicKey.Value.FromPublicRSAParameters() : null; }
-            set { PublicKey = value != null ? value.ToPublicRSAParameters() : (RSAParameters?)null; }
+            get { return PublicKey?.FromPublicRSAParameters(); }
+            set { PublicKey = value?.ToPublicRSAParameters(); }
         }
+
+        /// <summary>
+        /// Allow verification using multiple public keys
+        /// </summary>
+        public List<RSAParameters> FallbackPublicKeys { get; set; }
 
         /// <summary>
         /// How long should JWT Tokens be valid for. (default 14 days)
         /// </summary>
         public TimeSpan ExpireTokensIn { get; set; }
+
+        /// <summary>
+        /// Convenient overload to initialize ExpireTokensIn with an Integer
+        /// </summary>
+        public int ExpireTokensInDays
+        {
+            set
+            {
+                if (value > 0)
+                    ExpireTokensIn = TimeSpan.FromDays(value);
+            }
+        }
 
         /// <summary>
         /// Whether to invalidate all JWT Tokens issued before a specified date.
@@ -160,6 +189,7 @@ namespace ServiceStack.Auth
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
         public JwtAuthProviderReader()
+            : base(null, Realm, Name)
         {
             Init();
         }
@@ -173,29 +203,35 @@ namespace ServiceStack.Auth
         public virtual void Init(IAppSettings appSettings = null)
         {
             RequireSecureConnection = true;
+            EncryptPayload = false;
             HashAlgorithm = "HS256";
             RequireHashAlgorithm = true;
             Issuer = "ssjwt";
             ExpireTokensIn = TimeSpan.FromDays(14);
+            FallbackAuthKeys = new List<byte[]>();
+            FallbackPublicKeys = new List<RSAParameters>();
 
             if (appSettings != null)
             {
                 RequireSecureConnection = appSettings.Get("jwt.RequireSecureConnection", RequireSecureConnection);
+                RequireHashAlgorithm = appSettings.Get("jwt.RequireHashAlgorithm", RequireHashAlgorithm);
+                EncryptPayload = appSettings.Get("jwt.EncryptPayload", EncryptPayload);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
                 Audience = appSettings.GetString("jwt.Audience");
-                ExpireTokensIn = appSettings.Get("jwt.ExpireTokensIn", ExpireTokensIn);
                 KeyId = appSettings.GetString("jwt.KeyId");
 
                 var hashAlg = appSettings.GetString("jwt.HashAlgorithm");
                 if (!string.IsNullOrEmpty(hashAlg))
                     HashAlgorithm = hashAlg;
 
-                RequireHashAlgorithm = appSettings.Get("jwt.RequireHashAlgorithm", RequireSecureConnection);
+                var privateKeyXml = appSettings.GetString("jwt.PrivateKeyXml");
+                if (privateKeyXml != null)
+                    PrivateKeyXml = privateKeyXml;
 
-                PrivateKeyXml = appSettings.GetString("jwt.PrivateKeyXml");
-
-                PublicKeyXml = appSettings.GetString("jwt.PublicKeyXml");
+                var publicKeyXml = appSettings.GetString("jwt.PublicKeyXml");
+                if (publicKeyXml != null)
+                    PublicKeyXml = publicKeyXml;
 
                 var base64 = appSettings.GetString("jwt.AuthKeyBase64");
                 if (base64 != null)
@@ -205,6 +241,34 @@ namespace ServiceStack.Auth
                 if (!string.IsNullOrEmpty(dateStr))
                     InvalidateTokensIssuedBefore = dateStr.FromJsv<DateTime>();
 
+                ExpireTokensIn = appSettings.Get("jwt.ExpireTokensIn", ExpireTokensIn);
+
+                var intStr = appSettings.GetString("jwt.ExpireTokensInDays");
+                if (intStr != null)
+                    ExpireTokensInDays = int.Parse(intStr);
+
+                string base64Key;
+
+                var i = 1;
+                while ((base64Key = appSettings.GetString("jwt.PrivateKeyXml." + i++)) != null)
+                {
+                    var publicKey = base64Key.ToPublicRSAParameters();
+                    FallbackPublicKeys.Add(publicKey);
+                }
+
+                i = 1;
+                while ((base64Key = appSettings.GetString("jwt.PublicKeyXml." + i++)) != null)
+                {
+                    var publicKey = base64Key.ToPublicRSAParameters();
+                    FallbackPublicKeys.Add(publicKey);
+                }
+
+                i = 1;
+                while ((base64Key = appSettings.GetString("jwt.AuthKeyBase64." + i++)) != null)
+                {
+                    var authKey = Convert.FromBase64String(base64Key);
+                    FallbackAuthKeys.Add(authKey);
+                }
             }
         }
 
@@ -233,8 +297,11 @@ namespace ServiceStack.Auth
 
         public void PreAuthenticate(IRequest req, IResponse res)
         {
+            if (req.OperationName != null && IgnoreForOperationTypes.Contains(req.OperationName))
+                return;
+
             var bearerToken = req.GetBearerToken()
-                ?? req.GetCookieValue(Keywords.JwtSessionToken);
+                ?? req.GetCookieValue(Keywords.TokenCookie);
 
             if (bearerToken != null)
             {
@@ -261,7 +328,8 @@ namespace ServiceStack.Auth
                     if (RequireHashAlgorithm && algorithm != HashAlgorithm)
                         throw new NotSupportedException("Invalid algoritm '{0}', expected '{1}'".Fmt(algorithm, HashAlgorithm));
 
-                    VerifyPayload(algorithm, bytesToSign, signatureBytes);
+                    if (!VerifyPayload(algorithm, bytesToSign, signatureBytes))
+                        return;
 
                     var payloadJson = payloadBytes.FromUtf8Bytes();
                     var jwtPayload = JsonObject.Parse(payloadJson);
@@ -308,26 +376,18 @@ namespace ServiceStack.Auth
 
                             var calcTag = hmac.ComputeHash(encryptedStream.ToArray());
 
-                            if (sentTag.Length != calcTag.Length)
-                                throw new ArgumentException("Invalid JWE Authentication Tag");
-
-                            var compare = 0;
-                            for (var i = 0; i < sentTag.Length; i++)
-                                compare |= sentTag[i] ^ calcTag[i];
-
-                            if (compare != 0)
-                                throw new ArgumentException("Invalid JWE Authentication Tag");
+                            if (!calcTag.EquivalentTo(sentTag))
+                                return;
                         }
                     }
 
                     JsonObject jwtPayload;
-                    using (var aes = new AesManaged
-                    {
-                        KeySize = 128,
-                        BlockSize = 128,
-                        Mode = CipherMode.CBC,
-                        Padding = PaddingMode.PKCS7
-                    })
+                    var aes = Aes.Create();
+                    aes.KeySize = 128;
+                    aes.BlockSize = 128;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+                    using (aes)
                     using (var decryptor = aes.CreateDecryptor(cryptKey, iv))
                     using (var ms = MemoryStreamFactory.GetStream(cipherText))
                     using (var cryptStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
@@ -368,14 +428,13 @@ namespace ServiceStack.Auth
 
             session.PopulateFromMap(jwtPayload);
 
-            if (PopulateSessionFilter != null)
-                PopulateSessionFilter(session, jwtPayload, req);
+            PopulateSessionFilter?.Invoke(session, jwtPayload, req);
 
             HostContext.AppHost.OnSessionFilter(session, sessionId);
             return session;
         }
 
-        public void VerifyPayload(string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
+        public bool VerifyPayload(string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
         {
             var isHmac = HmacAlgorithms.ContainsKey(algorithm);
             var isRsa = RsaSignAlgorithms.ContainsKey(algorithm);
@@ -384,20 +443,34 @@ namespace ServiceStack.Auth
 
             if (isHmac)
             {
-                var calcSignatureBytes = HmacAlgorithms[algorithm](AuthKey, bytesToSign);
+                if (AuthKey == null)
+                    throw new NotSupportedException("AuthKey required to use: " + HashAlgorithm);
 
-                if (!calcSignatureBytes.EquivalentTo(sentSignatureBytes))
-                    throw new TokenException(ErrorMessages.InvalidSignature);
+                var authKeys = new List<byte[]> { AuthKey };
+                authKeys.AddRange(FallbackAuthKeys);
+                foreach (var authKey in authKeys)
+                {
+                    var calcSignatureBytes = HmacAlgorithms[algorithm](authKey, bytesToSign);
+                    if (calcSignatureBytes.EquivalentTo(sentSignatureBytes))
+                        return true;
+                }
             }
             else
             {
                 if (PublicKey == null)
-                    throw new NotSupportedException("Invalid algoritm: " + algorithm);
+                    throw new NotSupportedException("PublicKey required to use: " + HashAlgorithm);
 
-                var verified = RsaVerifyAlgorithms[algorithm](PublicKey.Value, bytesToSign, sentSignatureBytes);
-                if (!verified)
-                    throw new TokenException(ErrorMessages.InvalidSignature);
+                var publicKeys = new List<RSAParameters> { PublicKey.Value };
+                publicKeys.AddRange(FallbackPublicKeys);
+                foreach (var publicKey in publicKeys)
+                {
+                    var verified = RsaVerifyAlgorithms[algorithm](publicKey, bytesToSign, sentSignatureBytes);
+                    if (verified)
+                        return true;
+                }
             }
+
+            return false;
         }
 
         static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
@@ -411,7 +484,7 @@ namespace ServiceStack.Auth
                 }
                 catch (Exception)
                 {
-                    throw new TokenException("Claim '{0}' must be a Unix Timestamp".Fmt(key));
+                    throw new TokenException($"Claim '{key}' must be a Unix Timestamp");
                 }
             }
             return null;
@@ -436,6 +509,27 @@ namespace ServiceStack.Auth
             {
                 appHost.RegisterService(registerService.Key, registerService.Value);
             }
+
+            feature.AuthResponseDecorator = AuthenticateResponseDecorator;
+        }
+
+        public object AuthenticateResponseDecorator(IServiceBase authService, Authenticate request, AuthenticateResponse authResponse)
+        {
+            if (authResponse.BearerToken == null || request.UseTokenCookie != true)
+                return authResponse;
+
+            authService.Request.RemoveSession(authService.GetSessionId());
+
+            return new HttpResult(authResponse)
+            {
+                Cookies = {
+                    new Cookie(Keywords.TokenCookie, authResponse.BearerToken, Cookies.RootPath) {
+                        HttpOnly = true,
+                        Secure = authService.Request.IsSecureConnection,
+                        Expires = DateTime.UtcNow.Add(ExpireTokensIn),
+                    }
+                }
+            };
         }
     }
 }

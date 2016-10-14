@@ -1,4 +1,6 @@
-﻿namespace ServiceStack.MiniProfiler.SqlFormatters
+﻿#if !NETSTANDARD1_6
+
+namespace ServiceStack.MiniProfiler.SqlFormatters
 {
     /// <summary>
     /// Takes a SqlTiming and returns a formatted SQL string, for parameter replacement, etc.
@@ -13,3 +15,5 @@
         string FormatSql(SqlTiming timing);
     }
 }
+
+#endif

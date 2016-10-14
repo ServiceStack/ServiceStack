@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Web.Configuration;
 using System.Xml;
-using System.Xml.Linq;
 using MarkdownSharp;
-using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
@@ -23,10 +20,7 @@ namespace ServiceStack
         public static string ServiceStackPath = null;
 
         private static HostConfig instance;
-        public static HostConfig Instance
-        {
-            get { return instance ?? (instance = NewInstance()); }
-        }
+        public static HostConfig Instance => instance ?? (instance = NewInstance());
 
         public static HostConfig ResetInstance()
         {
@@ -54,7 +48,6 @@ namespace ServiceStack
                 AllowJsonpRequests = true,
                 AllowRouteContentTypeExtensions = true,
                 AllowNonHttpOnlyCookies = false,
-                UseHttpsLinks = false,
                 DebugMode = false,
                 DefaultDocuments = new List<string> {
                     "default.htm",
@@ -122,8 +115,10 @@ namespace ServiceStack
                     "node_modules/",
                     "jspm_packages/",
                     "bower_components/",
-                    "wwwroot/",
                     "wwwroot_build/",
+#if !NETSTANDARD1_6 
+                    "wwwroot/", //Need to allow VirtualFiles access from ContentRoot Folder
+#endif
                 },
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret,
@@ -134,12 +129,15 @@ namespace ServiceStack
                     Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
                 },
                 FallbackRestPath = null,
+                UseHttpsLinks = false,
+#if !NETSTANDARD1_6
+                UseCamelCase = false,
+#else
+                UseCamelCase = true,
+#endif
             };
 
-            if (config.HandlerFactoryPath == null)
-            {
-                config.InferHttpHandlerPath();
-            }
+            Platform.Instance.InitHostConifg(config);
 
             return config;
         }
@@ -206,6 +204,8 @@ namespace ServiceStack
             this.SkipFormDataInCreatingRequest = instance.SkipFormDataInCreatingRequest;
             this.ScanSkipPaths = instance.ScanSkipPaths;
             this.AdminAuthSecret = instance.AdminAuthSecret;
+            this.UseHttpsLinks = instance.UseHttpsLinks;
+            this.UseCamelCase = instance.UseCamelCase;
         }
 
         public string WsdlServiceNamespace { get; set; }
@@ -291,170 +291,16 @@ namespace ServiceStack
 
         public bool UseHttpsLinks { get; set; }
 
+        public bool UseCamelCase { get; set; }
+
         public string AdminAuthSecret { get; set; }
 
         public FallbackRestPathDelegate FallbackRestPath { get; set; }
 
-        const string NamespacesAppSettingsKey = "servicestack.razor.namespaces";
         private HashSet<string> razorNamespaces;
-        public HashSet<string> RazorNamespaces
-        {
-            get
-            {
-                if (razorNamespaces != null)
-                    return razorNamespaces;
+        public HashSet<string> RazorNamespaces => razorNamespaces 
+            ?? (razorNamespaces = Platform.Instance.GetRazorNamespaces());
 
-                razorNamespaces = new HashSet<string>();
-                //Infer from <system.web.webPages.razor> - what VS.NET's intell-sense uses
-                var configPath = HostContext.GetAppConfigPath();
-                if (configPath != null)
-                {
-                    var xml = configPath.ReadAllText();
-                    var doc = XElement.Parse(xml);
-                    doc.AnyElement("system.web.webPages.razor")
-                        .AnyElement("pages")
-                            .AnyElement("namespaces")
-                                .AllElements("add").ToList()
-                                    .ForEach(x => razorNamespaces.Add(x.AnyAttribute("namespace").Value));
-                }
-
-                //E.g. <add key="servicestack.razor.namespaces" value="System,ServiceStack.Text" />
-                if (ConfigUtils.GetNullableAppSetting(NamespacesAppSettingsKey) != null)
-                {
-                    ConfigUtils.GetListFromAppSetting(NamespacesAppSettingsKey)
-                        .ForEach(x => razorNamespaces.Add(x));
-                }
-
-                //log.Debug("Loaded Razor Namespaces: in {0}: {1}: {2}"
-                //    .Fmt(configPath, "~/Web.config".MapHostAbsolutePath(), razorNamespaces.Dump()));
-
-                return razorNamespaces;
-            }
-        }
-
-        private System.Configuration.Configuration GetAppConfig()
-        {
-            Assembly entryAssembly;
-
-            //Read the user-defined path in the Web.Config
-            if (HostContext.IsAspNetHost)
-                return WebConfigurationManager.OpenWebConfiguration("~/");
-
-            if ((entryAssembly = Assembly.GetEntryAssembly()) != null)
-                return ConfigurationManager.OpenExeConfiguration(entryAssembly.Location);
-
-            return null;
-        }
-
-        private void InferHttpHandlerPath()
-        {
-            try
-            {
-                var config = GetAppConfig();
-                if (config == null) return;
-
-                SetPathsFromConfiguration(config, null);
-
-                if (MetadataRedirectPath == null)
-                {
-                    foreach (ConfigurationLocation location in config.Locations)
-                    {
-                        SetPathsFromConfiguration(location.OpenConfiguration(), (location.Path ?? "").ToLower());
-
-                        if (MetadataRedirectPath != null) { break; }
-                    }
-                }
-
-                if (HostContext.IsAspNetHost && MetadataRedirectPath == null)
-                {
-                    throw new ConfigurationErrorsException(
-                        "Unable to infer ServiceStack's <httpHandler.Path/> from the Web.Config\n"
-                        + "Check with https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice to ensure you have configured ServiceStack properly.\n"
-                        + "Otherwise you can explicitly set your httpHandler.Path by setting: EndpointHostConfig.ServiceStackPath");
-                }
-            }
-            catch (Exception) { }
-        }
-
-        private void SetPathsFromConfiguration(System.Configuration.Configuration config, string locationPath)
-        {
-            if (config == null)
-                return;
-
-            //standard config
-            var handlersSection = config.GetSection("system.web/httpHandlers") as HttpHandlersSection;
-            if (handlersSection != null)
-            {
-                for (var i = 0; i < handlersSection.Handlers.Count; i++)
-                {
-                    var httpHandler = handlersSection.Handlers[i];
-                    if (!httpHandler.Type.StartsWith("ServiceStack"))
-                        continue;
-
-                    SetPaths(httpHandler.Path, locationPath);
-                    break;
-                }
-            }
-
-            //IIS7+ integrated mode system.webServer/handlers
-            var pathsNotSet = MetadataRedirectPath == null;
-            if (pathsNotSet)
-            {
-                var webServerSection = config.GetSection("system.webServer");
-                if (webServerSection != null)
-                {
-                    var rawXml = webServerSection.SectionInformation.GetRawXml();
-                    if (!String.IsNullOrEmpty(rawXml))
-                    {
-                        SetPaths(ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
-                    }
-                }
-
-                //In some MVC Hosts auto-inferencing doesn't work, in these cases assume the most likely default of "/api" path
-                pathsNotSet = MetadataRedirectPath == null;
-                if (pathsNotSet)
-                {
-                    var isMvcHost = Type.GetType("System.Web.Mvc.Controller") != null;
-                    if (isMvcHost)
-                    {
-                        SetPaths("api", null);
-                    }
-                }
-            }
-        }
-
-        private void SetPaths(string handlerPath, string locationPath)
-        {
-            if (handlerPath == null) return;
-
-            if (locationPath == null)
-            {
-                handlerPath = handlerPath.Replace("*", String.Empty);
-            }
-
-            HandlerFactoryPath = locationPath ??
-                (String.IsNullOrEmpty(handlerPath) ? null : handlerPath);
-
-            MetadataRedirectPath = "metadata";
-        }
-
-        private static string ExtractHandlerPathFromWebServerConfigurationXml(string rawXml)
-        {
-            return XDocument.Parse(rawXml).Root.Element("handlers")
-                .Descendants("add")
-                .Where(handler => EnsureHandlerTypeAttribute(handler).StartsWith("ServiceStack"))
-                .Select(handler => handler.Attribute("path").Value)
-                .FirstOrDefault();
-        }
-
-        private static string EnsureHandlerTypeAttribute(XElement handler)
-        {
-            if (handler.Attribute("type") != null && !String.IsNullOrEmpty(handler.Attribute("type").Value))
-            {
-                return handler.Attribute("type").Value;
-            }
-            return String.Empty;
-        }
     }
 
 }

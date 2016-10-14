@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Auth
@@ -39,12 +40,12 @@ namespace ServiceStack.Auth
                 if (tokens.Provider == FacebookAuthProvider.Name)
                 {
                     items[ProfileUrlKey] = GetRedirectUrlIfAny(
-                        "http://avatars.io/facebook/{0}?size=medium".Fmt(tokens.UserName));
+                        $"http://avatars.io/facebook/{tokens.UserName}?size=medium");
                 }
                 else if (tokens.Provider == TwitterAuthProvider.Name)
                 {
                     items[ProfileUrlKey] = GetRedirectUrlIfAny(
-                        "http://avatars.io/twitter/{0}?size=medium".Fmt(tokens.UserName));
+                        $"http://avatars.io/twitter/{tokens.UserName}?size=medium");
                 }
 
                 if (!items.ContainsKey(ProfileUrlKey) && !tokens.Email.IsNullOrEmpty())
@@ -63,7 +64,13 @@ namespace ServiceStack.Auth
             try
             {
                 var ignore = url.GetBytesFromUrl(
-                    requestFilter: req => { req.AllowAutoRedirect = false; req.UserAgent = "ServiceStack"; },
+                    requestFilter: req =>
+                    {
+                        req.SetUserAgent("ServiceStack");
+#if !NETSTANDARD1_6
+                        req.AllowAutoRedirect = false; //Missing in .NET Core
+#endif
+                    },
                     responseFilter: res => finalUrl = res.Headers[HttpHeaders.Location] ?? finalUrl);
             }
             catch { }
@@ -101,10 +108,7 @@ namespace ServiceStack.Auth
     {
         public static void SafeAddMetadata(this IAuthMetadataProvider provider, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
-            if (provider == null)
-                return;
-
-            provider.AddMetadata(tokens, authInfo);
+            provider?.AddMetadata(tokens, authInfo);
         }
     }
 }

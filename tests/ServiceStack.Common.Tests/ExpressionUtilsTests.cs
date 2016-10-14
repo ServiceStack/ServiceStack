@@ -8,6 +8,16 @@ namespace ServiceStack.Common.Tests
 {
     public class ExpressionUtilsTests
     {
+        abstract class AbstractBase
+        {
+            public string BaseMember { get; set; }
+        }
+
+        class Derived : AbstractBase
+        {
+            public string DerivedMember { get; set; }
+        }
+
         [Test]
         public void Does_GetMemberName()
         {
@@ -87,6 +97,15 @@ namespace ServiceStack.Common.Tests
 
             Assert.That(ExpressionUtils.GetFieldNames((Poco x) => list),
                 Is.EquivalentTo(new[] { "Id", "Name" }));
+        }
+
+        [Test]
+        public void Can_get_fields_from_abstract_base_class()
+        {
+            Assert.That(ExpressionUtils.GetFieldNames<Derived>(p => p.BaseMember),
+                Is.EquivalentTo(new[] {"BaseMember"}));
+            Assert.That(ExpressionUtils.GetFieldNames<Derived>(p => p.DerivedMember),
+                Is.EquivalentTo(new[] { "DerivedMember" }));
         }
     }
 }

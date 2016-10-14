@@ -76,16 +76,16 @@ namespace ServiceStack.Html
         {
             var compileInParallel = CompileInParallelWithNoOfThreads > 0;
 
-            Log.InfoFormat("Starting to compile {0}/{1} pages, {2}",
-                compilePages.Count, priorityCompilePages.Count,
-                compileInParallel ? "In Parallel" : "Sequentially");
+            Log.Info($"Starting to compile {compilePages.Count}/{priorityCompilePages.Count} pages, " +
+                     $"{(compileInParallel ? "In Parallel" : "Sequentially")}");
 
+#if !NETSTANDARD1_6
             if (compileInParallel)
             {
                 var threadsToRun = Math.Min(CompileInParallelWithNoOfThreads.GetValueOrDefault(), compilePages.Count);
                 if (threadsToRun <= runningThreads) return;
 
-                Log.InfoFormat("Starting {0} threads..", threadsToRun);
+                Log.Info($"Starting {threadsToRun} threads..");
 
                 threadsToRun.Times(x => {
                     ThreadPool.QueueUserWorkItem(waitHandle => { try { CompileAllPages(); } catch { } });
@@ -95,6 +95,9 @@ namespace ServiceStack.Html
             {
                 CompileAllPages();
             }
+#else
+            CompileAllPages();
+#endif
         }
 
         private void CompileAllPages()
@@ -114,7 +117,7 @@ namespace ServiceStack.Html
             finally
             {
                 Interlocked.Decrement(ref runningThreads);
-                Log.InfoFormat("Compilation threads remaining {0}...", runningThreads);
+                Log.Info($"Compilation threads remaining {runningThreads}...");
                 waiter.Set();
             }
         }

@@ -4,6 +4,8 @@ using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.DataAnnotations;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using ServiceStack.Reflection;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
@@ -82,9 +84,9 @@ namespace ServiceStack.Common.Tests
         public void Can_PopulateRecursiveDto()
         {
             var obj = (RecursiveDto)AutoMappingUtils.PopulateWith(new RecursiveDto());
-            Assert.IsNotNullOrEmpty(obj.Name);
+            Assert.That(obj.Name, Is.Not.Null);
             Assert.IsNotNull(obj.Child);
-            Assert.IsNotNullOrEmpty(obj.Child.Name);
+            Assert.That(obj.Child.Name, Is.Not.Null);
         }
 
         [Test]
@@ -94,20 +96,20 @@ namespace ServiceStack.Common.Tests
             Assert.IsNotNull(obj.Paths);
             Assert.Greater(obj.Paths.Length, 0);
             Assert.IsNotNull(obj.Paths[0]);
-            Assert.IsNotNullOrEmpty(obj.Paths[0].Name);
+            Assert.That(obj.Paths[0].Name, Is.Not.Null);
             Assert.IsNotNull(obj.Paths[0].Child);
-            Assert.IsNotNullOrEmpty(obj.Paths[0].Child.Name);
+            Assert.That(obj.Paths[0].Child.Name, Is.Not.Null);
         }
 
         [Test]
         public void Can_PopulateRecursiveArrayDto()
         {
             var obj = (RecursiveArrayDto)AutoMappingUtils.PopulateWith(new RecursiveArrayDto());
-            Assert.IsNotNullOrEmpty(obj.Name);
+            Assert.That(obj.Name, Is.Not.Null);
             Assert.IsNotNull(obj.Nodes[0]);
-            Assert.IsNotNullOrEmpty(obj.Nodes[0].Name);
+            Assert.That(obj.Nodes[0].Name, Is.Not.Null);
             Assert.IsNotNull(obj.Nodes[0].Nodes);
-            Assert.IsNotNullOrEmpty(obj.Nodes[0].Nodes[0].Name);
+            Assert.That(obj.Nodes[0].Nodes[0].Name, Is.Not.Null);
         }
 
         [Test]
@@ -282,6 +284,22 @@ namespace ServiceStack.Common.Tests
             Console.WriteLine(toObj.Dump());
 
             ModelWithFieldsOfDifferentTypesAsNullables.AssertIsEqual(toObj, fromObj);
+        }
+
+        [Test]
+        public void Can_get_result_of_Task()
+        {
+            var tcs = new TaskCompletionSource<string>();
+            var task = tcs.Task;
+            tcs.SetResult("foo");
+
+            var fn = task.GetType().GetFastGetter("Result");
+            var value = fn(task);
+            Assert.That(value, Is.EqualTo("foo"));
+
+            fn = task.GetType().GetFastGetter("Result");
+            value = fn(task);
+            Assert.That(value, Is.EqualTo("foo"));
         }
     }
 }

@@ -2,7 +2,7 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Authentication.RavenDB</id> 
-    <version>4.0.0</version>
+    <version>4.5.0</version>
     <authors>ServiceStack contributors</authors> 
     <owners>ServiceStack contributors</owners>
     <summary>A RavenDB IUserAuthRepository to persist User registration and auth info in a NoSQL Raven DB</summary>
@@ -19,8 +19,8 @@
     <language>en-US</language> 
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
-      <dependency id="ServiceStack" version="4.0" />
-      <dependency id="RavenDB.Client" version="2.5.2996" />
+      <dependency id="ServiceStack" version="4.5" />
+      <dependency id="RavenDB.Client" version="3.0.30153" />
     </dependencies> 
   </metadata> 
   <files>

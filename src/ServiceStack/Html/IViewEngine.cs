@@ -7,6 +7,6 @@ namespace ServiceStack.Html
     {
         bool HasView(string viewName, IRequest httpReq = null);
         string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer = null, HtmlHelper htmlHelper = null);
-        bool ProcessRequest(IRequest httpReq, IResponse httpRes, object dto);
+        bool ProcessRequest(IRequest req, IResponse res, object dto);
     }
 }

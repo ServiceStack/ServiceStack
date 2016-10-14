@@ -516,6 +516,12 @@ namespace Check.ServiceModel.Types
             public string Name { get; set; }
         }
 
+        public class InnerTypeItem
+        {
+            public long Id { get; set; }
+            public string Name { get; set; }
+        }
+
         public enum InnerEnum
         {
             Foo,
@@ -531,6 +537,8 @@ namespace Check.ServiceModel.Types
         public TypesGroup.InnerType InnerType { get; set; }
 
         public TypesGroup.InnerEnum InnerEnum { get; set; }
+
+        public List<TypesGroup.InnerTypeItem> InnerList { get; set; }
     }
 
     public class QueryTemplate : IReturn<QueryResponseTemplate<Poco>> {}

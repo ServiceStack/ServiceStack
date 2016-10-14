@@ -20,10 +20,7 @@ namespace ServiceStack.Host
 
         public Dictionary<string, string> Headers { get; set; }
 
-        public object OriginalResponse
-        {
-            get { return null; }
-        }
+        public object OriginalResponse => null;
 
         public IRequest Request { get; private set; }
 

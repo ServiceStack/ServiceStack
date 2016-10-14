@@ -9,6 +9,8 @@ namespace ServiceStack.Razor
     {
         public HtmlHelper Html = new HtmlHelper();
 
+        public dynamic Context { get; set; } //Unused, make Razor VS.NET Intelli-sense happy
+
         public override Type ModelType
         {
             get { return typeof(DynamicRequestObject); }

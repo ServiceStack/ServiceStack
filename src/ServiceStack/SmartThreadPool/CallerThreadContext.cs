@@ -1,3 +1,4 @@
+#if !NETSTANDARD1_6
 
 #if !(_WINDOWS_CE) && !(_SILVERLIGHT) && !(WINDOWS_PHONE)
 
@@ -135,4 +136,6 @@ namespace Amib.Threading.Internal
 
     #endregion
 }
+#endif
+
 #endif

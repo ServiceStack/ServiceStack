@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Web;
 using ServiceStack.Text;
-using ServiceStack.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
     public class NotFoundHttpHandler : HttpAsyncTaskHandler
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(NotFoundHttpHandler));
-
         public NotFoundHttpHandler()
         {
             this.RequestName = GetType().Name;
@@ -26,7 +22,8 @@ namespace ServiceStack.Host.Handlers
 
         public override void ProcessRequest(IRequest request, IResponse response, string operationName)
         {
-            Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
+            HostContext.AppHost.OnLogError(typeof(NotFoundHttpHandler),
+                $"{request.UserHostAddress} Request not found: {request.RawUrl}");
 
             var sb = StringBuilderCache.Allocate();
 
@@ -35,8 +32,8 @@ namespace ServiceStack.Host.Handlers
             {
                 sb.AppendLine(
                     responseStatus.ErrorCode != responseStatus.Message
-                    ? "Error ({0}): {1}\n".Fmt(responseStatus.ErrorCode, responseStatus.Message)
-                    : "Error: {0}\n".Fmt(responseStatus.Message ?? responseStatus.ErrorCode));
+                    ? $"Error ({responseStatus.ErrorCode}): {responseStatus.Message}\n"
+                    : $"Error: {responseStatus.Message ?? responseStatus.ErrorCode}\n");
             }
 
             if (HostContext.DebugMode)
@@ -62,6 +59,7 @@ namespace ServiceStack.Host.Handlers
             response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text));
         }
 
+#if !NETSTANDARD1_6
         public override void ProcessRequest(HttpContextBase context)
         {
             var request = context.Request;
@@ -74,7 +72,8 @@ namespace ServiceStack.Host.Handlers
                 return;
             }
 
-            Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
+            HostContext.AppHost.OnLogError(typeof(NotFoundHttpHandler),
+                $"{request.UserHostAddress} Request not found: {request.RawUrl}");
 
             var sb = StringBuilderCache.Allocate();
             sb.AppendLine("Handler for Request not found: \n\n");
@@ -127,10 +126,8 @@ namespace ServiceStack.Host.Handlers
             var text = StringBuilderCache.ReturnAndFree(sb);
             context.EndHttpHandlerRequest(skipClose: true, afterHeaders: r => r.Write(text));
         }
+#endif
 
-        public override bool IsReusable
-        {
-            get { return true; }
-        }
+        public override bool IsReusable => true;
     }
 }

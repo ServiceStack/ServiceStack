@@ -71,6 +71,7 @@ namespace ServiceStack.NativeTypes
         public string BaseUrl { get; set; }
         public bool? MakePartial { get; set; }
         public bool? MakeVirtual { get; set; }
+        public bool? MakeInternal { get; set; }
         public bool? AddReturnMarker { get; set; }
         public bool? AddDescriptionAsComments { get; set; }
         public bool? AddDataContractAttributes { get; set; }
@@ -87,10 +88,12 @@ namespace ServiceStack.NativeTypes
         public bool? SettersReturnThis { get; set; }
         public bool? MakePropertiesOptional { get; set; }
         public bool? ExportAsTypes { get; set; }
+        public bool? ExcludeNamespace { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public string GlobalNamespace { get; set; }
         public string BaseClass { get; set; }
         public string Package { get; set; }
+        public List<string> AddNamespaces { get; set; }
         public List<string> DefaultNamespaces { get; set; }
         public List<string> DefaultImports { get; set; }
         public List<string> IncludeTypes { get; set; }

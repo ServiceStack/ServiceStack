@@ -9,4 +9,9 @@
         /// <returns></returns>
         T TryResolve<T>();
     }
+
+    public interface IHasResolver
+    {
+        IResolver Resolver { get; }
+    }
 }

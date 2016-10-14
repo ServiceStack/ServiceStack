@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿#if !NETSTANDARD1_6
+
+using System.Text.RegularExpressions;
 
 namespace ServiceStack.MiniProfiler.SqlFormatters
 {
@@ -90,3 +92,5 @@ namespace ServiceStack.MiniProfiler.SqlFormatters
         }
     }
 }
+
+#endif

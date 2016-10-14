@@ -7,10 +7,7 @@ namespace ServiceStack
         /// <summary>
         /// The CacheKey to be use store the response against
         /// </summary>
-        public string CacheKey
-        {
-            get { return KeyBase + KeyModifiers; }
-        }
+        public string CacheKey => KeyBase + KeyModifiers;
 
         /// <summary>
         /// The base Cache Key used to cache the Service response
@@ -61,6 +58,11 @@ namespace ServiceStack
         /// Use HostContext.LocalCache or HostContext.Cache
         /// </summary>
         public bool LocalCache { get; set; }
+
+        /// <summary>
+        /// Skip compression for this Cache Result
+        /// </summary>
+        public bool NoCompression { get; set; }
     }
 
     public static class CacheInfoExtensions

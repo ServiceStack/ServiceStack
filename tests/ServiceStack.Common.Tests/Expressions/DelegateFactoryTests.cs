@@ -2,6 +2,8 @@ using System;
 using System.Diagnostics;
 using NUnit.Framework;
 using ServiceStack.Reflection;
+using System.Linq;
+using System.Reflection;
 
 namespace ServiceStack.Common.Tests.Expressions
 {

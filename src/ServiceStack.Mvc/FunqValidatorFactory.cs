@@ -16,7 +16,7 @@ namespace ServiceStack.Mvc
 
 		public override IValidator CreateInstance(Type validatorType)
 		{
-			return funqBuilder.CreateInstance(validatorType, true) as IValidator;
+			return funqBuilder.CreateInstance(HostContext.Container, validatorType, true) as IValidator;
 		}
 	}
 }

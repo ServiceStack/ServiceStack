@@ -36,8 +36,10 @@ namespace ServiceStack
                 do
                 {
                     snapshot = LateBoundSendSyncFns;
-                    newCache = new Dictionary<Type, Func<IServiceGateway, object, object>>(LateBoundSendSyncFns);
-                    newCache[resposneType] = sendFn;
+                    newCache = new Dictionary<Type, Func<IServiceGateway, object, object>>(LateBoundSendSyncFns)
+                    {
+                        [resposneType] = sendFn
+                    };
 
                 } while (!ReferenceEquals(
                     Interlocked.CompareExchange(ref LateBoundSendSyncFns, newCache, snapshot), snapshot));
@@ -45,7 +47,7 @@ namespace ServiceStack
             return sendFn(client, request);
         }
 
-        public static Task<object> SendAsync(this IServiceGateway client, Type resposneType, object request, CancellationToken token=default(CancellationToken))
+        public static Task<object> SendAsync(this IServiceGateway client, Type resposneType, object request, CancellationToken token = default(CancellationToken))
         {
             Func<IServiceGateway, object, CancellationToken, Task<object>> sendFn;
             if (!LateBoundSendAsyncFns.TryGetValue(resposneType, out sendFn))
@@ -59,8 +61,9 @@ namespace ServiceStack
                 do
                 {
                     snapshot = LateBoundSendAsyncFns;
-                    newCache = new Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>>(LateBoundSendAsyncFns);
-                    newCache[resposneType] = sendFn;
+                    newCache = new Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>>(LateBoundSendAsyncFns) {
+                        [resposneType] = sendFn
+                    };
 
                 } while (!ReferenceEquals(
                     Interlocked.CompareExchange(ref LateBoundSendAsyncFns, newCache, snapshot), snapshot));
@@ -71,13 +74,13 @@ namespace ServiceStack
         public static Type GetResponseType(this IServiceGateway client, object request)
         {
             if (request == null)
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
 
             var returnTypeDef = request.GetType().GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
             if (returnTypeDef == null)
                 throw new ArgumentException("Late-bound Send<object> can only be called for Request DTO's implementing IReturn<T>");
 
-            var resposneType = returnTypeDef.GetGenericArguments()[0];
+            var resposneType = returnTypeDef.GetTypeGenericArguments()[0];
             return resposneType;
         }
 

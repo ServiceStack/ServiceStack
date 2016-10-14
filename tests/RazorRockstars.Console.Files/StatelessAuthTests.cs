@@ -8,9 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Funq;
+using MongoDB.Driver;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Auth;
+using ServiceStack.Authentication.MongoDb;
 using ServiceStack.Aws.DynamoDb;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
@@ -94,7 +96,7 @@ namespace RazorRockstars.Console.Files
         {
             return new JsonHttpClient(ListeningOn)
             {
-                Credentials = new NetworkCredential(apiKey ?? ApiKey.Id, ""),
+                Credentials = new NetworkCredential(apiKey ?? ApiKey, ""),
             };
         }
 
@@ -166,6 +168,22 @@ namespace RazorRockstars.Console.Files
         }
     }
 
+    public class MongoDbAuthRepoStatelessAuthTests : StatelessAuthTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            var mongoClient = new MongoClient();
+            mongoClient.DropDatabase("testmongodbauth");
+            IMongoDatabase mongoDatabase =  mongoClient.GetDatabase("testmongodbauth");
+
+            return new AppHost
+            {
+                EnableAuth = true,
+                Use = container => container.Register<IAuthRepository>(c => new MongoDbAuthRepository(mongoDatabase, true))
+            };
+        }
+    }
+
     public class OrmLiteStatelessAuthTests : StatelessAuthTests
     {
         [Test]
@@ -191,6 +209,127 @@ namespace RazorRockstars.Console.Files
 
             response = client.Get(new GetAllRockstars());
             Assert.That(response.Results.Count, Is.EqualTo(Rockstar.SeedData.Length));
+        }
+    }
+
+    public class OrmLiteMultitenancyStatelessAuthTests : StatelessAuthTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new AppHost
+            {
+                EnableAuth = true,
+                Use = container => container.Register<IAuthRepository>(c =>
+                    new OrmLiteAuthRepositoryMultitenancy(c.TryResolve<IDbConnectionFactory>(),
+                        new[] {
+                            ":memory:",
+                            "~/App_Data/test.sqlite".MapAbsolutePath()
+                        })),
+
+                GetAuthRepositoryFn = req =>
+                    req != null 
+                    ? new OrmLiteAuthRepositoryMultitenancy(HostContext.AppHost.GetDbConnection(req))
+                    : HostContext.Resolve<IAuthRepository>()
+            };
+        }
+
+        [Test]
+        public void Does_use_different_database_depending_on_ApiKey()
+        {
+            var testKey = GetClientWithUserPassword().Get(new GetApiKeys { Environment = "test" }).Results[0].Key;
+            var liveKey = GetClientWithUserPassword().Get(new GetApiKeys { Environment = "live" }).Results[0].Key;
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = testKey
+            };
+
+            var response = client.Get(new GetAllRockstars());
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Test"));
+
+            client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = liveKey,
+            };
+
+            response = client.Get(new GetAllRockstars());
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstar.SeedData.Length));
+        }
+    }
+
+    public class FallbackAuthKeyTests
+    {
+        public const string ListeningOn = "http://localhost:2337/";
+
+        protected readonly ServiceStackHost appHost;
+
+        private readonly byte[] authKey;
+        private readonly byte[] fallbackAuthKey;
+
+        class JwtAuthProviderReaderAppHost : AppHostHttpListenerBase
+        {
+            public JwtAuthProviderReaderAppHost() : base(typeof(FallbackAuthKeyTests).Name, typeof(AppHost).Assembly) { }
+
+            public override void Configure(Container container)
+            {
+                Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                    new IAuthProvider[] {
+                        new JwtAuthProviderReader(AppSettings),
+                    }));
+            }
+        }
+
+        public FallbackAuthKeyTests()
+        {
+            authKey = AesUtils.CreateKey();
+            fallbackAuthKey = AesUtils.CreateKey();
+
+            appHost = new JwtAuthProviderReaderAppHost
+            {
+                AppSettings = new DictionarySettings(new Dictionary<string, string> {
+                    { "jwt.AuthKeyBase64", Convert.ToBase64String(authKey) },
+                    { "jwt.AuthKeyBase64.1", Convert.ToBase64String(fallbackAuthKey) },
+                    { "jwt.RequireSecureConnection", "False" },
+                })
+            }
+            .Init()
+            .Start("http://*:2337/");
+        }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
+        [Test]
+        public void Can_authenticate_with_HM256_token_created_from_fallback_AuthKey()
+        {
+            var jwtProvider = (JwtAuthProviderReader)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+
+            var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+            var payload = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com"
+            }, "external-jwt", TimeSpan.FromDays(14));
+
+            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
+                data => JwtAuthProviderReader.HmacAlgorithms["HS256"](fallbackAuthKey, data));
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = token
+            };
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
         }
     }
 
@@ -264,6 +403,7 @@ namespace RazorRockstars.Console.Files
         protected readonly ServiceStackHost appHost;
 
         private readonly RSAParameters privateKey;
+        private readonly RSAParameters fallbackPrivakeKey;
 
         class JwtAuthProviderReaderAppHost : AppHostHttpListenerBase
         {
@@ -281,12 +421,14 @@ namespace RazorRockstars.Console.Files
         public JwtAuthProviderReaderTests()
         {
             privateKey = RsaUtils.CreatePrivateKeyParams(RsaKeyLengths.Bit2048);
+            fallbackPrivakeKey = RsaUtils.CreatePrivateKeyParams(RsaKeyLengths.Bit2048);
 
             appHost = new JwtAuthProviderReaderAppHost
             {
                 AppSettings = new DictionarySettings(new Dictionary<string, string> {
                     { "jwt.HashAlgorithm", "RS256" },
                     { "jwt.PublicKeyXml", privateKey.ToPublicKeyXml() },
+                    { "jwt.PublicKeyXml.1", fallbackPrivakeKey.ToPublicKeyXml() },
                     { "jwt.RequireSecureConnection", "False" },
                 })
             }
@@ -315,6 +457,35 @@ namespace RazorRockstars.Console.Files
 
             var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
                 data => RsaUtils.Authenticate(data, privateKey, "SHA256", RsaKeyLengths.Bit2048));
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = token
+            };
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
+        public void Can_authenticate_with_RSA_token_created_from_fallback_PrivateKey()
+        {
+            var jwtProvider = (JwtAuthProviderReader)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+
+            var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+            var payload = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com"
+            }, "external-jwt", TimeSpan.FromDays(14));
+
+            var token = JwtAuthProvider.CreateJwtBearerToken(header, payload,
+                data => RsaUtils.Authenticate(data, fallbackPrivakeKey, "SHA256", RsaKeyLengths.Bit2048));
 
             var client = new JsonServiceClient(ListeningOn)
             {
@@ -485,8 +656,9 @@ namespace RazorRockstars.Console.Files
         public const string ListeningOn = "http://localhost:2337/";
 
         protected readonly ServiceStackHost appHost;
-        protected ApiKey ApiKey;
-        protected ApiKey ApiKeyWithRole;
+        protected string ApiKey;
+        protected string ApiKeyTest;
+        protected string ApiKeyWithRole;
         protected IManageApiKeys apiRepo;
         protected ApiKeyAuthProvider apiProvider;
         protected string userId;
@@ -522,7 +694,8 @@ namespace RazorRockstars.Console.Files
 
             userId = response.UserId;
             apiRepo = (IManageApiKeys)appHost.Resolve<IAuthRepository>();
-            ApiKey = apiRepo.GetUserApiKeys(userId).First(x => x.Environment == "test");
+            var user1Client = GetClientWithUserPassword(alwaysSend:true);
+            ApiKey = user1Client.Get(new GetApiKeys { Environment = "live" }).Results[0].Key;
 
             apiProvider = (ApiKeyAuthProvider)AuthenticateService.GetAuthProvider(ApiKeyAuthProvider.Name);
 
@@ -536,22 +709,16 @@ namespace RazorRockstars.Console.Files
                 LastName = "LastName2",
             });
             userIdWithRoles = response.UserId;
-            ApiKeyWithRole = apiRepo.GetUserApiKeys(userIdWithRoles).First(x => x.Environment == "test");
+            var user2Client = GetClientWithUserPassword(alwaysSend: true, userName: "user2");
+            ApiKeyWithRole = user2Client.Get(new GetApiKeys { Environment = "live" }).Results[0].Key;
 
-            var authRepo = (IUserAuthRepository)appHost.Resolve<IAuthRepository>();
-            var user2 = authRepo.GetUserAuth(userIdWithRoles);
-
-            var manageRoles = authRepo as IManageRoles;
-            if (manageRoles == null)
-            {
-                user2.Roles = new List<string> { "TheRole" };
-                user2.Permissions = new List<string> { "ThePermission" };
-                authRepo.SaveUserAuth(user2);
-            }
-            else
-            {
-                manageRoles.AssignRoles(userIdWithRoles, new[] { "TheRole" }, new[] { "ThePermission" });
-            }
+            ListeningOn.CombineWith("/assignroles").AddQueryParam("authsecret", "secret")
+                .PostJsonToUrl(new AssignRoles
+                {
+                    UserName = "user2",
+                    Roles = new List<string> { "TheRole" },
+                    Permissions = new List<string> { "ThePermission" }
+                }.ToJson());
         }
 
         [TestFixtureTearDown]
@@ -585,7 +752,7 @@ namespace RazorRockstars.Console.Files
         {
             return new JsonServiceClient(ListeningOn)
             {
-                Credentials = new NetworkCredential(apiKey ?? ApiKey.Id, ""),
+                Credentials = new NetworkCredential(apiKey ?? ApiKey, ""),
             };
         }
 
@@ -605,6 +772,9 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Does_create_multiple_ApiKeys()
         {
+            if (GetType() == typeof(OrmLiteMultitenancyStatelessAuthTests))
+                return;
+
             var apiKeys = apiRepo.GetUserApiKeys(userId);
             Assert.That(apiKeys.Count, Is.EqualTo(
                 apiProvider.Environments.Length * apiProvider.KeyTypes.Length));
@@ -618,9 +788,18 @@ namespace RazorRockstars.Console.Files
 
             foreach (var apiKey in apiKeys)
             {
-                var byId = apiRepo.GetApiKey(apiKey.Id);
-                Assert.That(byId.Id, Is.EqualTo(apiKey.Id));
+                var byId = apiRepo.GetApiKey(ApiKey);
+                Assert.That(byId.Id, Is.EqualTo(ApiKey));
             }
+        }
+
+        [Test]
+        public void Does_return_multiple_ApiKeys()
+        {
+            var apiKeys = GetClientWithUserPassword(alwaysSend: true).Get(new GetApiKeys { Environment = "test" }).Results;
+            Assert.That(apiKeys.Count, Is.EqualTo(apiProvider.KeyTypes.Length));
+            apiKeys = GetClientWithUserPassword(alwaysSend: true).Get(new GetApiKeys { Environment = "live" }).Results;
+            Assert.That(apiKeys.Count, Is.EqualTo(apiProvider.KeyTypes.Length));
         }
 
         [Test]
@@ -628,11 +807,10 @@ namespace RazorRockstars.Console.Files
         {
             var client = new JsonServiceClient(ListeningOn)
             {
-                Credentials = new NetworkCredential(ApiKey.Id, ""),
+                Credentials = new NetworkCredential(ApiKey, ""),
             };
 
             var apiKeyResponse = client.Get(new GetApiKeys { Environment = "live" });
-            apiKeyResponse.PrintDump();
 
             var oldApiKey = apiKeyResponse.Results[0].Key;
             client = new JsonServiceClient(ListeningOn)
@@ -641,11 +819,11 @@ namespace RazorRockstars.Console.Files
             };
 
             //Key IsValid
-            var request = new Secured { Name = "test" };
+            var request = new Secured { Name = "regenerate" };
             var response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
-            var regenResponse = client.Send(new RegenrateApiKeys { Environment = "live" });
+            var regenResponse = client.Send(new RegenerateApiKeys { Environment = "live" });
 
             try
             {
@@ -669,15 +847,18 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Doesnt_allow_using_expired_keys()
         {
+            if (GetType() == typeof(OrmLiteMultitenancyStatelessAuthTests))
+                return;
+
             var client = new JsonServiceClient(ListeningOn)
             {
-                Credentials = new NetworkCredential(ApiKey.Id, ""),
+                Credentials = new NetworkCredential(ApiKey, ""),
             };
 
             var authResponse = client.Get(new Authenticate());
 
             var apiKeys = apiRepo.GetUserApiKeys(authResponse.UserId)
-                .Where(x => x.Environment == "live")
+                .Where(x => x.Environment == "test")
                 .ToList();
 
             var oldApiKey = apiKeys[0].Id;
@@ -687,7 +868,7 @@ namespace RazorRockstars.Console.Files
             };
 
             //Key IsValid
-            var request = new Secured { Name = "test" };
+            var request = new Secured { Name = "live" };
             var response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
@@ -697,7 +878,7 @@ namespace RazorRockstars.Console.Files
             try
             {
                 //Key is no longer valid
-                client.Get(new GetApiKeys { Environment = "live" });
+                client.Get(new GetApiKeys { Environment = "test" });
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException ex)
@@ -707,13 +888,13 @@ namespace RazorRockstars.Console.Files
 
             client = new JsonServiceClient(ListeningOn)
             {
-                Credentials = new NetworkCredential(ApiKey.Id, ""),
+                Credentials = new NetworkCredential(ApiKey, ""),
             };
-            var regenResponse = client.Send(new RegenrateApiKeys { Environment = "live" });
+            var regenResponse = client.Send(new RegenerateApiKeys { Environment = "test" });
 
             //Change to new Valid Key
             client.BearerToken = regenResponse.Results[0].Key;
-            var apiKeyResponse = client.Get(new GetApiKeys { Environment = "live" });
+            var apiKeyResponse = client.Get(new GetApiKeys { Environment = "test" });
 
             Assert.That(regenResponse.Results.Map(x => x.Key), Is.EquivalentTo(
                 apiKeyResponse.Results.Map(x => x.Key)));
@@ -781,15 +962,15 @@ namespace RazorRockstars.Console.Files
             Assert.That(authResponse.BearerToken, Is.Not.Null);
 
             var jwtClient = GetClient();
-            jwtClient.SetCookie("ss-jwt", authResponse.BearerToken);
+            jwtClient.SetTokenCookie(authResponse.BearerToken);
 
             var request = new Secured { Name = "test" };
             var response = jwtClient.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             var newClient = GetClient();
-            var cookieValue = jwtClient.GetCookieValues()["ss-jwt"];
-            newClient.SetCookie("ss-jwt", cookieValue);
+            var cookieValue = jwtClient.GetTokenCookie();
+            newClient.SetTokenCookie(cookieValue);
             response = newClient.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
         }
@@ -841,7 +1022,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public void Authenticating_once_with_ApiKeyAuth_BearerToken_does_not_establish_auth_session()
         {
-            var client = GetClientWithBearerToken(ApiKey.Id);
+            var client = GetClientWithBearerToken(ApiKey);
 
             var request = new Secured { Name = "test" };
             var response = client.Send(request);
@@ -863,7 +1044,7 @@ namespace RazorRockstars.Console.Files
         [Test]
         public async Task Authenticating_once_with_ApiKeyAuth_BearerToken_does_not_establish_auth_session_Async()
         {
-            var client = GetClientWithBearerToken(ApiKey.Id);
+            var client = GetClientWithBearerToken(ApiKey);
 
             var request = new Secured { Name = "test" };
             var response = await client.SendAsync<SecuredResponse>(request);
@@ -924,6 +1105,12 @@ namespace RazorRockstars.Console.Files
 
             Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(),
                 Is.StringContaining("<!--page:Login.cshtml-->"));
+
+            Assert.That(ListeningOn.CombineWith("/TestSessionPage").GetStringFromUrl(),
+                Is.StringContaining("IsAuthenticated:False"));
+
+            Assert.That(ListeningOn.CombineWith("/test/session/view").GetStringFromUrl(),
+                Is.StringContaining("IsAuthenticated:False"));
         }
 
         [Test]
@@ -936,6 +1123,18 @@ namespace RazorRockstars.Console.Files
             Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
                 requestFilter: req => req.AddBasicAuth(Username, Password)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+
+            Assert.That(ListeningOn.CombineWith("/test/session").GetJsonFromUrl(
+                requestFilter: req => req.AddBasicAuth(Username, Password)),
+                Is.StringContaining("\"IsAuthenticated\":true"));
+
+            Assert.That(ListeningOn.CombineWith("/TestSessionPage").GetStringFromUrl(
+                requestFilter: req => req.AddBasicAuth(Username, Password)),
+                Is.StringContaining("IsAuthenticated:True"));
+
+            Assert.That(ListeningOn.CombineWith("/test/session/view").GetStringFromUrl(
+                requestFilter: req => req.AddBasicAuth(Username, Password)),
+                Is.StringContaining("IsAuthenticated:True"));
         }
 
         [Test]
@@ -951,54 +1150,114 @@ namespace RazorRockstars.Console.Files
             Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
                 requestFilter: req => req.AddBearerToken(authResponse.BearerToken)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+
+            Assert.That(ListeningOn.CombineWith("/test/session").GetJsonFromUrl(
+                requestFilter: req => req.AddBearerToken(authResponse.BearerToken)),
+                Is.StringContaining("\"IsAuthenticated\":true"));
+
+            Assert.That(ListeningOn.CombineWith("/TestSessionPage").GetStringFromUrl(
+                requestFilter: req => req.AddBearerToken(authResponse.BearerToken)),
+                Is.StringContaining("IsAuthenticated:True"));
+
+            Assert.That(ListeningOn.CombineWith("/test/session/view").GetStringFromUrl(
+                requestFilter: req => req.AddBearerToken(authResponse.BearerToken)),
+                Is.StringContaining("IsAuthenticated:True"));
         }
 
         [Test]
         public void Can_access_Secured_Pages_with_ApiKeyAuth()
         {
             Assert.That(ListeningOn.CombineWith("/secured").GetStringFromUrl(
-                requestFilter: req => req.AddApiKeyAuth(ApiKey.Id)),
+                requestFilter: req => req.AddApiKeyAuth(ApiKey)),
                 Is.StringContaining("<!--view:Secured.cshtml-->"));
 
             Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
-                requestFilter: req => req.AddApiKeyAuth(ApiKey.Id)),
+                requestFilter: req => req.AddApiKeyAuth(ApiKey)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+
+            Assert.That(ListeningOn.CombineWith("/test/session").GetJsonFromUrl(
+                requestFilter: req => req.AddApiKeyAuth(ApiKey)),
+                Is.StringContaining("\"IsAuthenticated\":true"));
+
+            Assert.That(ListeningOn.CombineWith("/TestSessionPage").GetStringFromUrl(
+                requestFilter: req => req.AddApiKeyAuth(ApiKey)),
+                Is.StringContaining("IsAuthenticated:True"));
+
+            Assert.That(ListeningOn.CombineWith("/test/session/view").GetStringFromUrl(
+                requestFilter: req => req.AddApiKeyAuth(ApiKey)),
+                Is.StringContaining("IsAuthenticated:True"));
         }
 
         [Test]
         public async Task Can_access_Secured_Pages_with_ApiKeyAuth_async()
         {
             Assert.That(await ListeningOn.CombineWith("/secured").GetStringFromUrlAsync(
-                requestFilter: req => req.AddApiKeyAuth(ApiKey.Id)),
+                requestFilter: req => req.AddApiKeyAuth(ApiKey)),
                 Is.StringContaining("<!--view:Secured.cshtml-->"));
 
             Assert.That(await ListeningOn.CombineWith("/SecuredPage").GetStringFromUrlAsync(
-                requestFilter: req => req.AddApiKeyAuth(ApiKey.Id)),
+                requestFilter: req => req.AddApiKeyAuth(ApiKey)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+
+            Assert.That(await ListeningOn.CombineWith("/test/session").GetJsonFromUrlAsync(
+                requestFilter: req => req.AddApiKeyAuth(ApiKey)),
+                Is.StringContaining("\"IsAuthenticated\":true"));
+
+            Assert.That(await ListeningOn.CombineWith("/TestSessionPage").GetStringFromUrlAsync(
+                requestFilter: req => req.AddApiKeyAuth(ApiKey)),
+                Is.StringContaining("IsAuthenticated:True"));
+
+            Assert.That(await ListeningOn.CombineWith("/test/session/view").GetStringFromUrlAsync(
+                requestFilter: req => req.AddApiKeyAuth(ApiKey)),
+                Is.StringContaining("IsAuthenticated:True"));
         }
 
         [Test]
         public void Can_access_Secured_Pages_with_ApiKeyAuth_BearerToken()
         {
             Assert.That(ListeningOn.CombineWith("/secured").GetStringFromUrl(
-                requestFilter: req => req.AddBearerToken(ApiKey.Id)),
+                requestFilter: req => req.AddBearerToken(ApiKey)),
                 Is.StringContaining("<!--view:Secured.cshtml-->"));
 
             Assert.That(ListeningOn.CombineWith("/SecuredPage").GetStringFromUrl(
-                requestFilter: req => req.AddBearerToken(ApiKey.Id)),
+                requestFilter: req => req.AddBearerToken(ApiKey)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+
+            Assert.That(ListeningOn.CombineWith("/test/session").GetJsonFromUrl(
+                requestFilter: req => req.AddApiKeyAuth(ApiKey)),
+                Is.StringContaining("\"IsAuthenticated\":true"));
+
+            Assert.That(ListeningOn.CombineWith("/TestSessionPage").GetStringFromUrl(
+                requestFilter: req => req.AddBearerToken(ApiKey)),
+                Is.StringContaining("IsAuthenticated:True"));
+
+            Assert.That(ListeningOn.CombineWith("/test/session/view").GetStringFromUrl(
+                requestFilter: req => req.AddBearerToken(ApiKey)),
+                Is.StringContaining("IsAuthenticated:True"));
         }
 
         [Test]
         public async Task Can_access_Secured_Pages_with_ApiKeyAuth_BearerToken_Async()
         {
             Assert.That(await ListeningOn.CombineWith("/secured").GetStringFromUrlAsync(
-                requestFilter: req => req.AddBearerToken(ApiKey.Id)),
+                requestFilter: req => req.AddBearerToken(ApiKey)),
                 Is.StringContaining("<!--view:Secured.cshtml-->"));
 
             Assert.That(await ListeningOn.CombineWith("/SecuredPage").GetStringFromUrlAsync(
-                requestFilter: req => req.AddBearerToken(ApiKey.Id)),
+                requestFilter: req => req.AddBearerToken(ApiKey)),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+
+            Assert.That(await ListeningOn.CombineWith("/test/session").GetJsonFromUrlAsync(
+                requestFilter: req => req.AddBearerToken(ApiKey)),
+                Is.StringContaining("\"IsAuthenticated\":true"));
+
+            Assert.That(await ListeningOn.CombineWith("/TestSessionPage").GetStringFromUrlAsync(
+                requestFilter: req => req.AddBearerToken(ApiKey)),
+                Is.StringContaining("IsAuthenticated:True"));
+
+            Assert.That(await ListeningOn.CombineWith("/test/session/view").GetStringFromUrlAsync(
+                requestFilter: req => req.AddBearerToken(ApiKey)),
+                Is.StringContaining("IsAuthenticated:True"));
         }
 
         [Test]
@@ -1017,6 +1276,14 @@ namespace RazorRockstars.Console.Files
 
             Assert.That(client.Get<string>("/SecuredPage?format=html"),
                 Is.StringContaining("<!--page:SecuredPage.cshtml-->"));
+
+            Assert.That(client.Get(new TestSession()).IsAuthenticated);
+
+            Assert.That(client.Get<string>("/test/session"),
+                Is.StringContaining("\"IsAuthenticated\":true"));
+
+            Assert.That(client.Get<string>("/TestSessionPage"),
+                Is.StringContaining("IsAuthenticated:True"));
         }
 
         public static void AssertNoAccessToSecuredByRoleAndPermission(IServiceClient client)
@@ -1080,7 +1347,7 @@ namespace RazorRockstars.Console.Files
             var client = GetClientWithUserPassword(alwaysSend: true, userName: "user2");
             AssertAccessToSecuredByRoleAndPermission(client);
 
-            client = GetClientWithApiKey(ApiKeyWithRole.Id);
+            client = GetClientWithApiKey(ApiKeyWithRole);
             AssertAccessToSecuredByRoleAndPermission(client);
 
             var bearerToken = client.Get(new Authenticate()).BearerToken;
@@ -1304,6 +1571,47 @@ namespace RazorRockstars.Console.Files
 
             response = newClient.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
+        public void Can_ConvertSessionToToken_when_authenticating()
+        {
+            var client = GetClient();
+
+            var authResponse = client.Send(new Authenticate
+            {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password,
+                UseTokenCookie = true
+            });
+
+            var token = client.GetTokenCookie();
+            Assert.That(token, Is.Not.Null);
+            Assert.That(token, Is.EqualTo(authResponse.BearerToken));
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var clientWithToken = GetClient();
+            clientWithToken.SetTokenCookie(client.GetTokenCookie());
+
+            response = clientWithToken.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var clientWithSession = GetClient();
+            clientWithSession.SetSessionId(client.GetSessionId());
+
+            try
+            {
+                response = clientWithSession.Send(request);
+                Assert.Fail("should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
         }
     }
 

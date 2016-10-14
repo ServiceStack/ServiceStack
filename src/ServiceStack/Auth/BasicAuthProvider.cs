@@ -35,7 +35,7 @@ namespace ServiceStack.Auth
         {
             //API Keys are sent in Basic Auth Username and Password is Empty
             var userPass = req.GetBasicAuthUserAndPassword();
-            if (userPass != null && !string.IsNullOrEmpty(userPass.Value.Value))
+            if (!string.IsNullOrEmpty(userPass?.Value))
             {
                 //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
                 SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()

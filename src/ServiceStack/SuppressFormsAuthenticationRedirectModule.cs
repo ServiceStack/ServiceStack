@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETSTANDARD1_6
+using System;
 using System.Web;
 
 namespace ServiceStack
@@ -49,3 +50,4 @@ namespace ServiceStack
         }
     }
 }
+#endif

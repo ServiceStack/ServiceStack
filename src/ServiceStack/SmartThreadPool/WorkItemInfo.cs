@@ -1,3 +1,5 @@
+#if !NETSTANDARD1_6
+
 namespace Amib.Threading
 {
 	#region WorkItemInfo class
@@ -67,3 +69,5 @@ namespace Amib.Threading
 
 	#endregion
 }
+
+#endif
