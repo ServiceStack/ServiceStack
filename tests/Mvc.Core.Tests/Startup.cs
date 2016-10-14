@@ -71,11 +71,12 @@ namespace Mvc.Core.Tests
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            //app.Use(new RazorHandler("/notfound").Middleware);
             //app.Use(new RazorHandler("/login").Middleware);
             //app.Use(new StaticFileHandler("wwwroot/img/react-logo.png").Middleware);
             //app.Use(new StaticFileHandler("wwwroot/_ViewImports.cshtml").Middleware);
-            app.Use(new RequestInfoHandler());
+            //app.Use(new RequestInfoHandler());
+
+            app.Use(new RazorHandler("/notfound"));
 
             //Populate Rockstars
             using (var db = app.ApplicationServices.GetService<IDbConnectionFactory>().Open())

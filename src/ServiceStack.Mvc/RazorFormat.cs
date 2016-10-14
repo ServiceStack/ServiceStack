@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
@@ -235,70 +236,78 @@ namespace ServiceStack.Mvc
             var format = HostContext.GetPlugin<RazorFormat>();
             try
             {
-                if (viewEngineResult == null)
+                var view = viewEngineResult?.View;
+                if (view == null)
                 {
                     if (PathInfo == null)
                         throw new ArgumentNullException(nameof(PathInfo));
 
-                    viewEngineResult = format.GetPageFromPathInfo(PathInfo);
-
-                    if (viewEngineResult == null)
+                    //If resolving from PathInfo, same RazorPage is used so must fetch new instance each time
+                    var viewResult = format.GetPageFromPathInfo(PathInfo);
+                    if (viewResult == null)
                         throw new ArgumentException("Could not find Razor Page at " + PathInfo);
+
+                    view = viewResult.View;
                 }
 
-                res.ContentType = MimeTypes.Html;
-                var model = Model;
-                if (model == null)
-                    req.Items.TryGetValue("Model", out model);
-
-                ViewDataDictionary viewData = null;
-                if (model == null)
-                {
-                    var razorView = viewEngineResult.View as RazorView;
-                    var genericDef = razorView.RazorPage.GetType().FirstGenericType();
-                    var modelType = genericDef?.GetGenericArguments()[0];
-                    if (modelType != null && modelType != typeof(object))
-                    {
-                        model = DeserializeHttpRequest(modelType, req, req.ContentType);
-                        viewData = RazorFormat.CreateViewData(model);
-                    }
-                }
-
-                if (viewData == null)
-                {
-                    viewData = new ViewDataDictionary<object>(
-                        metadataProvider: new EmptyModelMetadataProvider(),
-                        modelState: new ModelStateDictionary());
-
-                    foreach (var cookie in req.Cookies)
-                    {
-                        viewData[cookie.Key] = cookie.Value.Value;
-                    }
-                    foreach (string header in req.Headers)
-                    {
-                        viewData[header] = req.Headers[header];
-                    }
-                    foreach (string key in req.QueryString)
-                    {
-                        viewData[key] = req.QueryString[key];
-                    }
-                    foreach (string key in req.FormData)
-                    {
-                        viewData[key] = req.QueryString[key];
-                    }
-                    foreach (var entry in req.Items)
-                    {
-                        viewData[entry.Key] = entry.Value;
-                    }
-                }
-
-                format.RenderView(req, viewData, viewEngineResult.View);
+                RenderView(format, req, res, view);
             }
             catch (Exception ex)
             {
                 //Can't set HTTP Headers which are already written at this point
                 req.Response.WriteErrorBody(ex);
             }
+        }
+
+        private void RenderView(RazorFormat format, IRequest req, IResponse res, IView view)
+        {
+            res.ContentType = MimeTypes.Html;
+            var model = Model;
+            if (model == null)
+                req.Items.TryGetValue("Model", out model);
+
+            ViewDataDictionary viewData = null;
+            if (model == null)
+            {
+                var razorView = view as RazorView;
+                var genericDef = razorView.RazorPage.GetType().FirstGenericType();
+                var modelType = genericDef?.GetGenericArguments()[0];
+                if (modelType != null && modelType != typeof(object))
+                {
+                    model = DeserializeHttpRequest(modelType, req, req.ContentType);
+                    viewData = RazorFormat.CreateViewData(model);
+                }
+            }
+
+            if (viewData == null)
+            {
+                viewData = new ViewDataDictionary<object>(
+                    metadataProvider: new EmptyModelMetadataProvider(),
+                    modelState: new ModelStateDictionary());
+
+                foreach (var cookie in req.Cookies)
+                {
+                    viewData[cookie.Key] = cookie.Value.Value;
+                }
+                foreach (string header in req.Headers)
+                {
+                    viewData[header] = req.Headers[header];
+                }
+                foreach (string key in req.QueryString)
+                {
+                    viewData[key] = req.QueryString[key];
+                }
+                foreach (string key in req.FormData)
+                {
+                    viewData[key] = req.QueryString[key];
+                }
+                foreach (var entry in req.Items)
+                {
+                    viewData[entry.Key] = entry.Value;
+                }
+            }
+
+            format.RenderView(req, viewData, view);
         }
 
         public override object CreateRequest(IRequest request, string operationName)
