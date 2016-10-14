@@ -1732,7 +1732,7 @@ namespace ServiceStack
                 throw new ArgumentOutOfRangeException("waitForMs");
 
             var tcs = new TaskCompletionSource<bool>();
-#if !(NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !NETSTANDARD1_1
             Timer timer = null;
             timer = new Timer(self => {
                 tcs.TrySetResult(true);
