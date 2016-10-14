@@ -1,9 +1,3 @@
-@using ServiceStack
-@using ServiceStack.Mvc
-@using ServiceStack.Text
-@using Chat
-
-@inherits ViewPage
 @{
     ViewBag.Title = "Server Sent Events Chat";
     var channels = Request.QueryString["channels"] ?? "home";
