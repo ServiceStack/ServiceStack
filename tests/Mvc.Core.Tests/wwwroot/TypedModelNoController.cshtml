@@ -11,7 +11,7 @@
     
 @Html.Partial("OtherPages", null)
 
-<div>@title</div>
+<div>@title</div>   
 <ul>
     @foreach (var rockstar in rockstars) {
         <li><a href="@rockstar.Url">@rockstar.LastName, @rockstar.FirstName</a> (<a href="?Age=@rockstar.Age">@rockstar.Age</a>)</li>

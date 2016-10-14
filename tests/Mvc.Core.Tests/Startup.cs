@@ -60,7 +60,7 @@ namespace Mvc.Core.Tests
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            //app.UseStaticFiles();
+            app.UseStaticFiles();
 
             app.UseServiceStack(new AppHost());
 
@@ -75,7 +75,7 @@ namespace Mvc.Core.Tests
             //app.Use(new RazorHandler("/login").Middleware);
             //app.Use(new StaticFileHandler("wwwroot/img/react-logo.png").Middleware);
             //app.Use(new StaticFileHandler("wwwroot/_ViewImports.cshtml").Middleware);
-            //app.Use(new RequestInfoHandler());
+            app.Use(new RequestInfoHandler());
 
             //Populate Rockstars
             using (var db = app.ApplicationServices.GetService<IDbConnectionFactory>().Open())
