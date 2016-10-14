@@ -162,9 +162,14 @@ namespace ServiceStack
         {
             if (authSession != null)
             {
-                return authSession.UserName != null && authSession.UserName.IndexOf('@') < 0
-                    ? authSession.UserName
-                    : authSession.DisplayName.SafeVarName();
+                long id;
+                var displayName = authSession.UserName != null 
+                    && authSession.UserName.IndexOf('@') == -1      // don't use email
+                    && !long.TryParse(authSession.UserName, out id) // don't use id number
+                        ? authSession.UserName
+                        : authSession.DisplayName.SafeVarName();
+
+                return displayName;
             }
             return null;
         }
