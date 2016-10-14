@@ -130,8 +130,6 @@ namespace ServiceStack
         /// <summary>
         /// Publish a MQ message over the <see cref="IMessageProducer"></see> implementation.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="message"></param>
         public virtual void PublishMessage<T>(T message)
         {
             if (MessageProducer == null)

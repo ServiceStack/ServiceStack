@@ -9,7 +9,9 @@ namespace ServiceStack
     /// Used by <see cref="RequestContext"></see> to track <see cref="Funq.Container"></see> created IDisposable instances.
     /// These instances are tracked and disposed at the end of a request.
     /// </summary>
+#if !NETSTANDARD1_6
     [Serializable]
+#endif
     public class DisposableTracker : IDisposable
     {
         public const string HashId = "__disposables";
@@ -19,7 +21,6 @@ namespace ServiceStack
         /// <summary>
         /// Adds disposable to the tracker
         /// </summary>
-        /// <param name="instance"></param>
         public void Add(IDisposable instance)
         {
             disposables.Add(new WeakReference(instance));
