@@ -3,16 +3,16 @@ using ServiceStack;
 
 namespace Check.ServiceInterface
 {
+    [Route("/Request1/", "GET")]
+    public partial class GetRequest1 : IReturn<List<ReturnedDto>>, IGet { }
+
+    [Route("/Request3", "GET")]
+    public partial class GetRequest2 : IReturn<ReturnedDto>, IGet { }
+
     public partial class ReturnedDto
     {
         public virtual int Id { get; set; }
     }
-
-    [Route("/Request1", "GET")]
-    public partial class GetRequest1 : IReturn<List<ReturnedDto>>, IGet { }
-
-    [Route("/Request2", "GET")]
-    public partial class GetRequest2 : IReturn<List<ReturnedDto>>, IGet { }
 
     public class ReturnGenericListServices : Service
     {
