@@ -395,6 +395,11 @@ namespace ServiceStack.Mvc
             var template = htmlHelper.GetRequest()?.GetTemplate();
             return template ?? defaultLayout;
         }
+
+        public static string GetQueryString(this IHtmlHelper htmlHelper, string paramName)
+        {
+            return htmlHelper.GetRequest().QueryString[paramName];
+        }
     }
 
     public abstract class ViewPage : ViewPage<object>
