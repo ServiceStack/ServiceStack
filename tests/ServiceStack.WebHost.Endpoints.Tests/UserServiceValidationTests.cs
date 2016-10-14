@@ -130,9 +130,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
-#if !NETCORE                
                 Assert.That(ex.StatusDescription, Is.EqualTo(ExpectedErrorCode));
-#endif
             }
         }
 
@@ -171,9 +169,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
-#if !NETCORE                
                 Assert.That(ex.StatusDescription, Is.EqualTo(ExpectedErrorCode));
-#endif
             }
         }
     }

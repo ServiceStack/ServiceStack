@@ -132,9 +132,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(404));
-#if !NETCORE                
                 Assert.That(webEx.StatusDescription, Is.EqualTo("Custom Status Description"));
-#endif
                 Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(HttpStatusCode.NotFound.ToString()));
             }
         }
@@ -166,9 +164,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(404));
-#if !NETCORE                
                 Assert.That(webEx.StatusDescription, Is.EqualTo("Custom Status Description"));
-#endif
                 Assert.That(webEx.ResponseStatus, Is.Null);
                 Assert.That(webEx.ResponseBody, Is.Null.Or.Empty);
             }

@@ -45,10 +45,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo(500));
-#if !NETCORE                
                 Assert.That(ex.StatusDescription, Is.EqualTo("NullReferenceException"));
                 Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
-#endif
             }
         }
 
@@ -64,10 +62,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             {
                 var ex = (WebServiceException)aex.UnwrapIfSingleException();
                 Assert.That(ex.StatusCode, Is.EqualTo(500));
-#if !NETCORE                
                 Assert.That(ex.StatusDescription, Is.EqualTo("NullReferenceException"));
                 Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
-#endif
             }
         }
 

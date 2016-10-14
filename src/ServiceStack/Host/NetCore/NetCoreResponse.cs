@@ -7,6 +7,7 @@ using ServiceStack.Web;
 using System.Net;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 
 namespace ServiceStack.Host.NetCore
@@ -68,7 +69,7 @@ namespace ServiceStack.Host.NetCore
             if (closed) return;
             if (!hasResponseBody && !response.HasStarted)
                 response.ContentLength = 0;
-                
+
             Flush();
             response.Body.Dispose();
             closed = true;
@@ -95,7 +96,11 @@ namespace ServiceStack.Host.NetCore
             set { response.StatusCode = value; }
         }
 
-        public string StatusDescription { get; set; } // Not available in .NET Core
+        public string StatusDescription 
+        { 
+            get { return response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase; }
+            set { response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = value; }
+        }
 
         public string ContentType
         {
