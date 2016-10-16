@@ -215,7 +215,7 @@ namespace ServiceStack.Mvc
 
     public class RazorHandler : ServiceStackHandlerBase
     {
-        private ViewEngineResult viewEngineResult;
+        private readonly ViewEngineResult viewEngineResult;
         protected object Model { get; set; }
         protected string PathInfo { get; set; }
 
