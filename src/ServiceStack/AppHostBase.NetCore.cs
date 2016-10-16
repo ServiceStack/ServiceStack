@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.IO;
 using ServiceStack.VirtualPath;
 using System.Linq;
+using ServiceStack.Configuration;
 
 namespace ServiceStack
 {
@@ -74,6 +75,17 @@ namespace ServiceStack
 
                 //Set VirtualFiles to point to ContentRootPath (Project Folder)
                 VirtualFiles = new FileSystemVirtualPathProvider(this, env.ContentRootPath);
+                RegisterLicenseFromAppSettings(AppSettings);
+            }
+        }
+
+        public static void RegisterLicenseFromAppSettings(IAppSettings appSettings)
+        {
+            //Automatically register license key stored in <appSettings/>
+            var licenceKeyText = appSettings.GetString(NetStandardPclExport.AppSettingsKey);
+            if (!string.IsNullOrEmpty(licenceKeyText))
+            {
+                LicenseUtils.RegisterLicense(licenceKeyText);
             }
         }
 
