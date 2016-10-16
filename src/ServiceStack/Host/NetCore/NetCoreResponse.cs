@@ -3,16 +3,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ServiceStack.Web;
 using System.Net;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using ServiceStack.Logging;
 
 namespace ServiceStack.Host.NetCore
 {
     public class NetCoreResponse : IHttpResponse
     {
+        private static ILog Log = LogManager.GetLogger(typeof(NetCoreResponse));
+
         private readonly NetCoreRequest request;
         private readonly HttpResponse response;
 
@@ -29,7 +33,29 @@ namespace ServiceStack.Host.NetCore
 
         public void AddHeader(string name, string value)
         {
-            response.Headers.Add(name, new StringValues(value));
+            try
+            {
+                StringValues values;
+                if (response.Headers.TryGetValue(name, out values))
+                {
+                    string[] existingValues = values.ToArray();
+                    if (!existingValues.Contains(value))
+                    {
+                        var newValues = new string[existingValues.Length + 1];
+                        existingValues.CopyTo(newValues, 0);
+                        newValues[newValues.Length - 1] = value;
+                        response.Headers[name] = new StringValues(newValues);
+                    }
+                }
+                else
+                {
+                    response.Headers.Add(name, new StringValues(value));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Failed Adding Headers[{name}]={value}: {ex.Message}", ex);
+            }
         }
 
         public string GetHeader(string name)
@@ -110,7 +136,8 @@ namespace ServiceStack.Host.NetCore
 
         public void SetCookie(Cookie cookie)
         {
-            response.Cookies.Append(cookie.Name, cookie.Value, new CookieOptions {
+            response.Cookies.Append(cookie.Name, cookie.Value, new CookieOptions
+            {
                 Domain = cookie.Domain,
                 Expires = cookie.Expires,
                 HttpOnly = cookie.HttpOnly,
