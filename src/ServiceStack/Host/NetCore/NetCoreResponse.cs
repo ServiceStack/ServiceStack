@@ -146,7 +146,7 @@ namespace ServiceStack.Host.NetCore
 
         public bool UseBufferedStream { get; set; }
 
-        public bool IsClosed { get; set; }
+        public bool IsClosed { get { return closed; } }
 
         public bool KeepAlive { get; set; }
 
