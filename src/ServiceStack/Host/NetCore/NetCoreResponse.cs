@@ -166,7 +166,7 @@ namespace ServiceStack.Host.NetCore
 
         public void ClearCookies()
         {
-            //response.Cookies.Delete();
+            response.Headers.Remove("Set-Cookie");
         }
 
         public ICookies Cookies { get; }
