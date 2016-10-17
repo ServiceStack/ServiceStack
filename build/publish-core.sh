@@ -11,6 +11,7 @@ declare -A projects=( \
  ["ServiceStack.HttpClient.Core"]="1.1 1.6" \
  ["ServiceStack.Common.Core"]="1.3" \
  ["ServiceStack.Interfaces.Core"]="1.1" \
+ ["ServiceStack.ProtoBuf.Core"]="1.6" \
 )
 
 #for each project copy files to Nuget.Core/$project/lib folder
