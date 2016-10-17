@@ -109,6 +109,7 @@
     <Compile Include="ConnectionInfoAttribute.cs" />
     <Compile Include="ContainerNetCoreExtensions.cs" />
     <Compile Include="CsvRequestLogger.cs" />
+    <Compile Include="DisposableTracker.cs" />
     <Compile Include="CustomRequestFilter.cs" />
     <Compile Include="FluentValidation\Internal\CollectionPropertyRule.cs" />
     <Compile Include="Host\Handlers\StaticContentHandler.cs" />
