@@ -238,7 +238,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var sessionId = cookies["ss-id"];
 
             var cookieContainer = new CookieContainer();
-            cookieContainer.Add(new Uri(new Uri(Config.AbsoluteBaseUri).Host),
+            cookieContainer.Add(new Uri(Config.AbsoluteBaseUri),
                 new Cookie
                 {
                     Name = "ss-id",
