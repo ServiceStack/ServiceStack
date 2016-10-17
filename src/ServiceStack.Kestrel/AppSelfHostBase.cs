@@ -144,12 +144,15 @@ namespace ServiceStack
             return AppHostBase.GetOrCreateRequest(app.ApplicationServices.GetService<IHttpContextAccessor>());
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            this.WebHost?.Dispose();
-            this.WebHost = null;
+            if (disposing)
+            {
+                this.WebHost?.Dispose();
+                this.WebHost = null;
+            }
 
-            base.Dispose();
+            base.Dispose(disposing);
         }
     }    
 }

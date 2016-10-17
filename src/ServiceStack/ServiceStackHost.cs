@@ -886,22 +886,39 @@ namespace ServiceStack
             return relativePath.MapProjectPath();
         }
 
-        public virtual void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
-            foreach (var callback in OnDisposeCallbacks)
+            if (disposing)
             {
-                callback(this);
+                //clear managed resources here
+                foreach (var callback in OnDisposeCallbacks)
+                {
+                    callback(this);
+                }
+
+                if (Container != null)
+                {
+                    Container.Dispose();
+                    Container = null;
+                }
+
+                JsConfig.Reset(); //Clears Runtime Attributes
+
+                Instance = null;
             }
+            //clear unmanaged resources here
 
-            if (Container != null)
-            {
-                Container.Dispose();
-                Container = null;
-            }
+            GC.SuppressFinalize(this);
+        }
 
-            JsConfig.Reset(); //Clears Runtime Attributes
+        public void Dispose()
+        {
+            Dispose(true);
+        }
 
-            Instance = null;
+        ~ServiceStackHost()
+        {
+            Dispose(false);
         }
     }
 }
