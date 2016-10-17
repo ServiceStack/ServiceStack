@@ -264,7 +264,7 @@ namespace ServiceStack
         /// <summary>
         /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
         /// </summary>
-        public Container Container { get; private set; }
+        public virtual Container Container { get; private set; }
 
         public IServiceRoutes Routes { get; set; }
 

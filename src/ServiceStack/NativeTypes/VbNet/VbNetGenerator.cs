@@ -69,6 +69,10 @@ namespace ServiceStack.NativeTypes.VbNet
             "Class"
         };
 
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
+
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
@@ -153,7 +157,10 @@ namespace ServiceStack.NativeTypes.VbNet
 
             var orderedTypes = allTypes
                 .OrderBy(x => x.Namespace)
-                .ThenBy(x => x.Name);
+                .ThenBy(x => x.Name)
+                .ToList();
+
+            orderedTypes = FilterTypes(orderedTypes);
 
             foreach (var type in orderedTypes)
             {

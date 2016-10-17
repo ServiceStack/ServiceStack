@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.Host.Handlers;
+using ServiceStack.Mvc;
 using ServiceStack.Text;
 
 namespace Chat
@@ -23,6 +25,7 @@ namespace Chat
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,12 +38,18 @@ namespace Chat
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseStaticFiles();
+
             app.UseServiceStack(new AppHost());
 
-            app.Run(async (context) =>
+            app.UseMvc(routes =>
             {
-                await context.Response.WriteAsync("Hello World!");
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            app.Use(new RequestInfoHandler());
         }
     }
 
@@ -56,14 +65,15 @@ namespace Chat
 
         public override void Configure(Container container)
         {
-            JsConfig.EmitCamelCaseNames = true;
-
-            Plugins.Add(new ServerEventsFeature());
             SetConfig(new HostConfig
             {
                 DefaultContentType = MimeTypes.Json,
                 AllowSessionIdsInHttpParams = true,
             });
+
+            Plugins.Add(new RazorFormat());
+            Plugins.Add(new ServerEventsFeature());
+
             this.CustomErrorHttpHandlers.Remove(HttpStatusCode.Forbidden);
 
             //Register all Authentication methods you want to enable for this web app.            

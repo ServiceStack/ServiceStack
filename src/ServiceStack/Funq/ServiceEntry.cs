@@ -1,7 +1,7 @@
 ﻿
 namespace Funq
 {
-    internal class ServiceEntry : IRegistration
+    public class ServiceEntry : IRegistration
     {
         protected ServiceEntry() { }
 

@@ -15,12 +15,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Platforms;
 using ServiceStack.Redis;
@@ -32,9 +34,13 @@ namespace ServiceStack.Mvc
 {
     public class RazorFormat : IPlugin, Html.IViewEngine
     {
+        public static ILog log = LogManager.GetLogger(typeof(RazorFormat));
+
         public IVirtualPathProvider VirtualFileSources { get; set; }
 
         public List<string> ViewLocations { get; set; }
+
+        public string PagesPath { get; set; } = "~/Views/Pages";
 
         IRazorViewEngine viewEngine;
         ITempDataProvider tempDataProvider;
@@ -61,6 +67,9 @@ namespace ServiceStack.Mvc
 
             viewEngine = appHost.TryResolve<IRazorViewEngine>();
             tempDataProvider = appHost.TryResolve<ITempDataProvider>();
+
+            if (viewEngine == null || tempDataProvider == null)
+                throw new Exception("MVC Services have not been configured, Please add `services.AddMvc()` to StartUp.ConfigureServices()");
         }
 
         public System.Web.IHttpHandler CatchAllHandler(string httpmethod, string pathInfo, string filepath)
@@ -81,7 +90,18 @@ namespace ServiceStack.Mvc
             if (!viewPath.EndsWith(".cshtml"))
                 viewPath += ".cshtml";
 
-            var viewEngineResult = viewEngine.GetView("", viewPath, isMainPage: false);
+            var viewEngineResult = viewEngine.GetView("", viewPath, 
+                isMainPage: viewPath == "~/wwwroot/default.cshtml");
+
+            if (!viewEngineResult.Success)
+            {
+                viewPath = PagesPath.CombineWith(pathInfo);
+                if (!viewPath.EndsWith(".cshtml"))
+                    viewPath += ".cshtml";
+
+                viewEngineResult = viewEngine.GetView("", viewPath,
+                    isMainPage: viewPath == $"{PagesPath}/default.cshtml");
+            }
 
             return viewEngineResult.Success 
                 ? viewEngineResult 
@@ -149,13 +169,8 @@ namespace ServiceStack.Mvc
         internal void RenderView(IRequest req, ViewDataDictionary viewData, IView view, string layout=null)
         {
             var razorView = view as RazorView;
-            var hold = razorView?.RazorPage.Layout;
             try
             {
-                //Changing Layout at runtime has no affect atm
-                if (layout != null && razorView != null)
-                    razorView.RazorPage.Layout = layout; //Change layout at runtime
-
                 var actionContext = new ActionContext(
                     ((HttpRequest) req.OriginalRequest).HttpContext,
                     new RouteData(),
@@ -165,6 +180,8 @@ namespace ServiceStack.Mvc
                 {
                     if (viewData == null)
                         viewData = CreateViewData((object)null);
+
+                    viewData["Layout"] = layout;
 
                     viewData[Keywords.IRequest] = req;
                     var viewContext = new ViewContext(
@@ -177,7 +194,15 @@ namespace ServiceStack.Mvc
 
                     view.RenderAsync(viewContext).GetAwaiter().GetResult();
 
-                    using (razorView?.RazorPage as IDisposable) {}
+                    try
+                    {
+                        using (razorView?.RazorPage as IDisposable) { }
+                    }
+                    catch (Exception ex)
+                    {
+                        //Throws "Cannot access a disposed object." on `MemoryPoolViewBufferScope` in Linux
+                        log.Warn("Error trying to dispose Razor View: " + ex.Message, ex);
+                    }
                 }
             }
             catch (Exception ex)
@@ -185,17 +210,12 @@ namespace ServiceStack.Mvc
                 //Can't set HTTP Headers which are already written at this point
                 req.Response.WriteErrorBody(ex);
             }
-            finally
-            {
-                if (layout != null && razorView != null)
-                    razorView.RazorPage.Layout = hold; //Restore view
-            }
         }
     }
 
     public class RazorHandler : ServiceStackHandlerBase
     {
-        private ViewEngineResult viewEngineResult;
+        private readonly ViewEngineResult viewEngineResult;
         protected object Model { get; set; }
         protected string PathInfo { get; set; }
 
@@ -216,62 +236,78 @@ namespace ServiceStack.Mvc
             var format = HostContext.GetPlugin<RazorFormat>();
             try
             {
-                if (viewEngineResult == null)
+                var view = viewEngineResult?.View;
+                if (view == null)
                 {
                     if (PathInfo == null)
                         throw new ArgumentNullException(nameof(PathInfo));
 
-                    viewEngineResult = format.GetPageFromPathInfo(PathInfo);
-
-                    if (viewEngineResult == null)
+                    //If resolving from PathInfo, same RazorPage is used so must fetch new instance each time
+                    var viewResult = format.GetPageFromPathInfo(PathInfo);
+                    if (viewResult == null)
                         throw new ArgumentException("Could not find Razor Page at " + PathInfo);
+
+                    view = viewResult.View;
                 }
 
-                res.ContentType = MimeTypes.Html;
-                var model = Model;
-                if (model == null)
-                    req.Items.TryGetValue("Model", out model);
-
-                ViewDataDictionary viewData = null;
-                if (model == null)
-                {
-                    var razorView = viewEngineResult.View as RazorView;
-                    var genericDef = razorView.RazorPage.GetType().FirstGenericType();
-                    var modelType = genericDef?.GetGenericArguments()[0];
-                    if (modelType != null && modelType != typeof(object))
-                    {
-                        model = DeserializeHttpRequest(modelType, req, req.ContentType);
-                        viewData = RazorFormat.CreateViewData(model);
-                    }
-                }
-
-                if (viewData == null)
-                {
-                    viewData = new ViewDataDictionary<object>(
-                        metadataProvider: new EmptyModelMetadataProvider(),
-                        modelState: new ModelStateDictionary());
-
-                    foreach (string header in req.Headers)
-                    {
-                        viewData[header] = req.Headers[header];
-                    }
-                    foreach (string key in req.QueryString)
-                    {
-                        viewData[key] = req.QueryString[key];
-                    }
-                    foreach (string key in req.FormData)
-                    {
-                        viewData[key] = req.QueryString[key];
-                    }
-                }
-
-                format.RenderView(req, viewData, viewEngineResult.View);
+                RenderView(format, req, res, view);
             }
             catch (Exception ex)
             {
                 //Can't set HTTP Headers which are already written at this point
                 req.Response.WriteErrorBody(ex);
             }
+        }
+
+        private void RenderView(RazorFormat format, IRequest req, IResponse res, IView view)
+        {
+            res.ContentType = MimeTypes.Html;
+            var model = Model;
+            if (model == null)
+                req.Items.TryGetValue("Model", out model);
+
+            ViewDataDictionary viewData = null;
+            if (model == null)
+            {
+                var razorView = view as RazorView;
+                var genericDef = razorView.RazorPage.GetType().FirstGenericType();
+                var modelType = genericDef?.GetGenericArguments()[0];
+                if (modelType != null && modelType != typeof(object))
+                {
+                    model = DeserializeHttpRequest(modelType, req, req.ContentType);
+                    viewData = RazorFormat.CreateViewData(model);
+                }
+            }
+
+            if (viewData == null)
+            {
+                viewData = new ViewDataDictionary<object>(
+                    metadataProvider: new EmptyModelMetadataProvider(),
+                    modelState: new ModelStateDictionary());
+
+                foreach (var cookie in req.Cookies)
+                {
+                    viewData[cookie.Key] = cookie.Value.Value;
+                }
+                foreach (string header in req.Headers)
+                {
+                    viewData[header] = req.Headers[header];
+                }
+                foreach (string key in req.QueryString)
+                {
+                    viewData[key] = req.QueryString[key];
+                }
+                foreach (string key in req.FormData)
+                {
+                    viewData[key] = req.QueryString[key];
+                }
+                foreach (var entry in req.Items)
+                {
+                    viewData[entry.Key] = entry.Value;
+                }
+            }
+
+            format.RenderView(req, viewData, view);
         }
 
         public override object CreateRequest(IRequest request, string operationName)
@@ -361,14 +397,35 @@ namespace ServiceStack.Mvc
                 ? new HtmlString(feature.Transform(markdown))
                 : new HtmlString(new MarkdownSharp.Markdown().Transform(markdown));
         }
+
+        public static string ResolveLayout(this IHtmlHelper htmlHelper, string defaultLayout)
+        {
+            var layout = htmlHelper.ViewData["Layout"] as string;
+            if (layout != null)
+                return layout;
+
+            var template = htmlHelper.GetRequest()?.GetTemplate();
+            return template ?? defaultLayout;
+        }
+
+        public static string GetQueryString(this IHtmlHelper htmlHelper, string paramName)
+        {
+            return htmlHelper.GetRequest().QueryString[paramName];
+        }
     }
 
     public abstract class ViewPage : ViewPage<object>
     {
     }
 
+    //Workaround base-class to fix R# intelli-sense issue
+    public abstract class ResharperViewPage<T> : ViewPage<object>
+    {
+        public T Dto => (T) Model;
+    }
+
     //Razor Pages still only work when base class is RazorPage<object>
-    public abstract class ViewPage<T> : RazorPage<object>, IDisposable
+    public abstract class ViewPage<T> : RazorPage<T>, IDisposable
     {
         public IHttpRequest Request
         {
@@ -382,7 +439,7 @@ namespace ServiceStack.Mvc
             }
         }
 
-        public T Dto => (T)Model;
+        public string GetLayout(string defaultLayout) => ViewData["Layout"] as string ?? defaultLayout;
 
         public bool IsError => ModelError != null || GetErrorStatus() != null;
 
@@ -464,6 +521,9 @@ namespace ServiceStack.Mvc
 
         public void Dispose()
         {
+            if (provider == null)
+                return;
+
             provider?.Dispose();
             provider = null;
             EndServiceStackRequest();

@@ -185,7 +185,18 @@ namespace ServiceStack
 
         public void AfterPluginsLoaded(IAppHost appHost)
         {
-            var scannedTypes = LoadFromAssemblies.SelectMany(x => x.GetTypes());
+            var scannedTypes = new List<Type>();
+            foreach (var assembly in LoadFromAssemblies)
+            {
+                try
+                {
+                    scannedTypes.AddRange(assembly.GetTypes());
+                }
+                catch (Exception ex)
+                {
+                    appHost.NotifyStartupException(ex);
+                }
+            }
 
             var misingRequestTypes = scannedTypes
                 .Where(x => x.HasInterface(typeof(IQueryDb)))

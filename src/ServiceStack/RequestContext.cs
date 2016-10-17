@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using ServiceStack.Logging;
 
 #if !NETSTANDARD1_6
 using System.Runtime.Remoting.Messaging;
@@ -12,6 +11,10 @@ using System.Threading;
 
 namespace ServiceStack
 {
+    /// <summary>
+    /// Abstraction to provide a context per request.
+    /// in spnet.web its equivalent to <see cref="System.Web.HttpContext"></see>.Current.Items falls back to CallContext
+    /// </summary>
     public class RequestContext
     {
         public static readonly RequestContext Instance = new RequestContext();
@@ -131,11 +134,11 @@ namespace ServiceStack
             if (instance == null) return;
             if (instance is IService) return; //IService's are already disposed right after they've been executed
 
-            DispsableTracker dispsableTracker = null;
-            if (!Items.Contains(DispsableTracker.HashId))
-                Items[DispsableTracker.HashId] = dispsableTracker = new DispsableTracker();
+            DisposableTracker dispsableTracker = null;
+            if (!Items.Contains(DisposableTracker.HashId))
+                Items[DisposableTracker.HashId] = dispsableTracker = new DisposableTracker();
             if (dispsableTracker == null)
-                dispsableTracker = (DispsableTracker)Items[DispsableTracker.HashId];
+                dispsableTracker = (DisposableTracker)Items[DisposableTracker.HashId];
             dispsableTracker.Add(instance);
         }
 
@@ -149,44 +152,16 @@ namespace ServiceStack
             if (!ServiceStackHost.Instance.Config.DisposeDependenciesAfterUse) return false;
 
             var ctxItems = Instance.Items;
-            var disposables = ctxItems[DispsableTracker.HashId] as DispsableTracker;
+            var disposables = ctxItems[DisposableTracker.HashId] as DisposableTracker;
 
             if (disposables != null)
             {
                 disposables.Dispose();
-                ctxItems.Remove(DispsableTracker.HashId);
+                ctxItems.Remove(DisposableTracker.HashId);
                 return true;
             }
 
             return false;
-        }
-    }
-
-#if !NETSTANDARD1_6
-    [Serializable]
-#endif
-    public class DispsableTracker : IDisposable
-    {
-        public static ILog Log = LogManager.GetLogger(typeof(RequestContext));
-
-        public const string HashId = "__disposables";
-
-        List<WeakReference> disposables = new List<WeakReference>();
-
-        public void Add(IDisposable instance)
-        {
-            disposables.Add(new WeakReference(instance));
-        }
-
-        public void Dispose()
-        {
-            foreach (var wr in disposables)
-            {
-                var disposable = (IDisposable)wr.Target;
-                if (!wr.IsAlive) continue;
-
-                HostContext.Release(disposable);
-            }
         }
     }
 }

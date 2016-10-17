@@ -72,6 +72,13 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"List", "[]"}
         };
 
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types)
+        {
+            return types.OrderTypesByDeps();
+        }
+
         private void AddTypeToSortedList(List<MetadataType> allTypes, List<MetadataType> sortedTypes, MetadataType metadataType)
         {
             if (sortedTypes.Contains(metadataType))
@@ -171,6 +178,8 @@ namespace ServiceStack.NativeTypes.TypeScript
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(requestTypes);
             allTypes.RemoveAll(x => x.IgnoreType(Config));
+
+            allTypes = FilterTypes(allTypes);
 
             //TypeScript doesn't support reusing same type name with different generic airity
             var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()

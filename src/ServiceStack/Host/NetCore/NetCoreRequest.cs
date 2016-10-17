@@ -38,8 +38,6 @@ namespace ServiceStack.Host.NetCore
             this.OperationName = operationName;
             this.request = context.Request;
             this.Items = new Dictionary<string, object>();
-            this.Response = new NetCoreResponse(this, context.Response);
-            this.RequestPreferences = new RequestPreferences(this);
             this.RequestAttributes = attrs;
         }
 
@@ -59,11 +57,19 @@ namespace ServiceStack.Host.NetCore
         }
 
         public object OriginalRequest => request;
-        public IResponse Response { get; }
+
+        private IResponse response;
+        public IResponse Response =>
+            response ?? (response = new NetCoreResponse(this, context.Response));
+
         public string OperationName { get; set; }
         public string Verb => request.Method;
         public RequestAttributes RequestAttributes { get; set; }
-        public IRequestPreferences RequestPreferences { get; }
+
+        private IRequestPreferences requestPreferences;
+        public IRequestPreferences RequestPreferences =>
+            requestPreferences ?? (requestPreferences = new RequestPreferences(this));
+
         public object Dto { get; set; }
         public string ContentType => request.ContentType;
 

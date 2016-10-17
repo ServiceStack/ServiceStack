@@ -3,17 +3,21 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ServiceStack.Web;
 using System.Net;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
+using ServiceStack.Logging;
 
 namespace ServiceStack.Host.NetCore
 {
     public class NetCoreResponse : IHttpResponse
     {
+        private static ILog Log = LogManager.GetLogger(typeof(NetCoreResponse));
+
         private readonly NetCoreRequest request;
         private readonly HttpResponse response;
         private bool hasResponseBody;
@@ -24,12 +28,36 @@ namespace ServiceStack.Host.NetCore
             this.response = response;
             this.Items = new Dictionary<string, object>();
             this.Cookies = new NetCoreCookies(response);
-            response.StatusCode = 200;
+
+            //Don't set StatusCode here as it disables Redirects from working in MVC 
+            //response.StatusCode = 200;
         }
 
         public void AddHeader(string name, string value)
         {
-            response.Headers[name] = new StringValues(value);
+            try
+            {
+                StringValues values;
+                if (response.Headers.TryGetValue(name, out values))
+                {
+                    string[] existingValues = values.ToArray();
+                    if (!existingValues.Contains(value))
+                    {
+                        var newValues = new string[existingValues.Length + 1];
+                        existingValues.CopyTo(newValues, 0);
+                        newValues[newValues.Length - 1] = value;
+                        response.Headers[name] = new StringValues(newValues);
+                    }
+                }
+                else
+                {
+                    response.Headers.Add(name, new StringValues(value));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Failed Adding Headers[{name}]={value}: {ex.Message}", ex);
+            }
         }
 
         public string GetHeader(string name)
@@ -126,7 +154,8 @@ namespace ServiceStack.Host.NetCore
 
         public void SetCookie(Cookie cookie)
         {
-            response.Cookies.Append(cookie.Name, cookie.Value, new CookieOptions {
+            response.Cookies.Append(cookie.Name, cookie.Value, new CookieOptions
+            {
                 Domain = cookie.Domain,
                 Expires = cookie.Expires,
                 HttpOnly = cookie.HttpOnly,

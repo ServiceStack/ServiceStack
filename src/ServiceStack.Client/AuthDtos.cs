@@ -9,7 +9,7 @@ using ServiceStack.DataAnnotations;
 namespace ServiceStack
 {
     [DataContract]
-    public class Authenticate : IReturn<AuthenticateResponse>, IMeta
+    public class Authenticate : IPost, IReturn<AuthenticateResponse>, IMeta
     {
         [DataMember(Order = 1)] public string provider { get; set; }
         [DataMember(Order = 2)] public string State { get; set; }
@@ -53,7 +53,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class Register : IReturn<RegisterResponse>
+    public class Register : IPost, IReturn<RegisterResponse>
     {
         [DataMember(Order = 1)] public string UserName { get; set; }
         [DataMember(Order = 2)] public string FirstName { get; set; }
@@ -83,7 +83,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class AssignRoles : IReturn<AssignRolesResponse>
+    public class AssignRoles : IPost, IReturn<AssignRolesResponse>
     {
         public AssignRoles()
         {
@@ -121,7 +121,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class UnAssignRoles : IReturn<UnAssignRolesResponse>
+    public class UnAssignRoles : IPost, IReturn<UnAssignRolesResponse>
     {
         public UnAssignRoles()
         {
@@ -158,7 +158,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class CancelRequest : IReturn<CancelRequestResponse>
+    public class CancelRequest : IPost, IReturn<CancelRequestResponse>
     {
         [DataMember(Order = 1)]
         public string Tag { get; set; }
@@ -180,7 +180,7 @@ namespace ServiceStack
     [Exclude(Feature.Soap)]
     [DataContract]
     [Route("/event-subscribers/{Id}", "POST")]
-    public class UpdateEventSubscriber : IReturn<UpdateEventSubscriberResponse>
+    public class UpdateEventSubscriber : IPost, IReturn<UpdateEventSubscriberResponse>
     {
         [DataMember(Order = 1)]
         public string Id { get; set; }
@@ -198,7 +198,7 @@ namespace ServiceStack
     }
 
     [Exclude(Feature.Soap)]
-    public class GetEventSubscribers : IReturn<List<Dictionary<string, string>>>
+    public class GetEventSubscribers : IGet, IReturn<List<Dictionary<string, string>>>
     {
         public string[] Channels { get; set; }
     }

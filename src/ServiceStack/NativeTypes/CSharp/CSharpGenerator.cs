@@ -36,6 +36,10 @@ namespace ServiceStack.NativeTypes.CSharp
             { "Decimal", "decimal" },    
         };
 
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
+
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
@@ -122,6 +126,8 @@ namespace ServiceStack.NativeTypes.CSharp
             allTypes.AddRange(requestTypes);
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(types);
+
+            allTypes = FilterTypes(allTypes);
 
             var orderedTypes = allTypes
                 .OrderBy(x => x.Namespace)

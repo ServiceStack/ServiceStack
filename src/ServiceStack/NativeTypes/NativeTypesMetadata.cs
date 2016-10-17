@@ -879,6 +879,12 @@ namespace ServiceStack.NativeTypes
             var includeList = GetIncludeList(metadata, config);
 
             metadata.Types.RemoveAll(x => x.IgnoreType(config, includeList));
+
+            var matchingResponseTypes = includeList != null 
+                ? metadata.Operations.Where(x => x.Response != null && includeList.Contains(x.Response.Name))
+                    .Map(x => x.Response).ToArray()
+                : TypeConstants<MetadataType>.EmptyArray;
+
             metadata.Operations.RemoveAll(x => x.Request.IgnoreType(config, includeList));
             metadata.Operations.Each(x => {
                 if (x.Response != null && x.Response.IgnoreType(config, includeList))
@@ -886,6 +892,17 @@ namespace ServiceStack.NativeTypes
                     x.Response = null;
                 }
             });
+
+            //When the included Type is a Response Type because defined in another Service that's not included
+            //ref: https://forums.servicestack.net/t/class-is-missing-from-generated-code/3030
+            foreach (var responseType in matchingResponseTypes)
+            {
+                if (!metadata.Operations.Any(x => x.Response != null && x.Response.Name == responseType.Name)
+                    && metadata.Types.All(x => x.Name != responseType.Name))
+                {
+                    metadata.Types.Add(responseType);
+                }
+            }
         }
 
         public static List<string> GetIncludeList(MetadataTypes metadata, MetadataTypesConfig config)
@@ -1018,6 +1035,102 @@ namespace ServiceStack.NativeTypes
             }
             metadata.Types.Each(x => map[x.Name] = x);
             return map.Values.ToList();
-        } 
+        }
+
+        public static void Push(this Dictionary<string, List<string>> map, string key, string value)
+        {
+            List<string> results;
+            if (!map.TryGetValue(key, out results))
+                map[key] = results = new List<string>();
+
+            if (!results.Contains(value))
+                results.Add(value);
+        }
+
+        public static List<string> GetValues(this Dictionary<string, List<string>> map, string key)
+        {
+            List<string> results;
+            map.TryGetValue(key, out results);
+            return results ?? new List<string>();
+        }
+
+        public static List<MetadataType> OrderTypesByDeps(this List<MetadataType> types)
+        {
+            var deps = new Dictionary<string, List<string>>();
+
+            foreach (var type in types)
+            {
+                var typeName = type.Name;
+
+                if (type.ReturnMarkerTypeName != null)
+                {
+                    if (!type.ReturnMarkerTypeName.GenericArgs.IsEmpty())
+                        type.ReturnMarkerTypeName.GenericArgs.Each(x => deps.Push(typeName, x));
+                    else
+                        deps.Push(typeName, type.ReturnMarkerTypeName.Name);
+                }
+                if (type.Inherits != null)
+                {
+                    if (!type.Inherits.GenericArgs.IsEmpty())
+                        type.Inherits.GenericArgs.Each(x => deps.Push(typeName, x));
+                    else
+                        deps.Push(typeName, type.Inherits.Name);
+                }
+                foreach (var p in type.Properties.Safe())
+                {
+                    if (!p.GenericArgs.IsEmpty())
+                        p.GenericArgs.Each(x => deps.Push(typeName, x));
+                    else
+                        deps.Push(typeName, p.Type);
+                }
+            }
+
+            var typesMap = types.ToSafeDictionary(x => x.Name);
+            var considered = new HashSet<string>();
+            var to = new List<MetadataType>();
+
+            foreach (var type in types)
+            {
+                foreach (var depType in GetDepTypes(deps, typesMap, considered, type))
+                {
+                    if (!to.Contains(depType))
+                        to.Add(depType);
+                }
+
+                if (!to.Contains(type))
+                    to.Add(type);
+
+                considered.Add(type.Name);
+            }
+
+            return to;
+        }
+
+        public static IEnumerable<MetadataType> GetDepTypes(
+            Dictionary<string, List<string>> deps,
+            Dictionary<string, MetadataType> typesMap,
+            HashSet<string> considered,
+            MetadataType type)
+        {
+            if (type == null) yield break;
+
+            var typeDeps = deps.GetValues(type.Name);
+            foreach (var typeDep in typeDeps)
+            {
+                MetadataType depType;
+                if (!typesMap.TryGetValue(typeDep, out depType)
+                    || considered.Contains(typeDep))
+                    continue;
+
+                considered.Add(typeDep);
+
+                foreach (var childDepType in GetDepTypes(deps, typesMap, considered, depType))
+                {
+                    yield return childDepType;
+                }
+
+                yield return depType;
+            }
+        }
     }
 }

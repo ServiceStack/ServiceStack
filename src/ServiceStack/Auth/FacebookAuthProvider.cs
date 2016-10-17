@@ -13,7 +13,7 @@ namespace ServiceStack.Auth
     public class FacebookAuthProvider : OAuthProvider
     {
         public const string Name = "facebook";
-        public static string Realm = "https://graph.facebook.com/v2.0/";
+        public static string Realm = "https://graph.facebook.com/v2.8/";
         public static string PreAuthUrl = "https://www.facebook.com/dialog/oauth";
         public static string[] DefaultFields = { "id", "name", "first_name", "last_name", "email" };
 
@@ -62,8 +62,8 @@ namespace ServiceStack.Auth
 
             try
             {
-                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
-                var authInfo = PclExportClient.Instance.ParseQueryString(contents);
+                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetJsonFromUrl();
+                var authInfo = JsonObject.Parse(contents);
                 tokens.AccessTokenSecret = authInfo["access_token"];
 
                 session.IsAuthenticated = true;
