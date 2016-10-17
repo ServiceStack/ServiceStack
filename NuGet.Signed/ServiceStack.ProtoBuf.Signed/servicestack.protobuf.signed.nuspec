@@ -18,7 +18,7 @@
     <copyright>Copyright 2013 Service Stack</copyright>
     <dependencies>
       <dependency id="protobuf-net" version="2.1.0" />
-      <dependency id="ServiceStack.Client.Signed" version="4.5" />
+      <dependency id="ServiceStack.Signed" version="4.5" />
     </dependencies> 
   </metadata>
   <files>
