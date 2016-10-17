@@ -20,6 +20,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             appHost = new IntegrationTestAppHost();
 	        appHost.Init();
             appHost.Start(BaseUrl);
+#if NETCORE
+			appHost.Config.DisableChunkedEncoding = true;
+#endif
         }
 
         [TestFixtureTearDown]

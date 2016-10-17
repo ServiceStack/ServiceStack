@@ -260,6 +260,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost = new ExceptionHandlingAppHostHttpListener();
             appHost.Init();
             appHost.Start(ListeningOn);
+#if NETCORE
+            appHost.Config.DisableChunkedEncoding = true;
+#endif
         }
 
         [TestFixtureTearDown]
@@ -454,9 +457,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(ex.StatusCode, Is.EqualTo(400));
                 Assert.That(ex.IsAny400());
-#if !NETCORE
                 Assert.That(ex.StatusDescription, Is.EqualTo(typeof(CustomException).Name));
-#endif
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(CustomException).Name));
                 Assert.That(ex.ErrorMessage, Is.EqualTo("User Defined Error"));
                 Assert.That(ex.ResponseBody, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));

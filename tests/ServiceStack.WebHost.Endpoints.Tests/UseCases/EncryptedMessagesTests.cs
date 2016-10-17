@@ -63,6 +63,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             appHost = new EncryptedMessagesAppHost()
                 .Init()
                 .Start(Config.AbsoluteBaseUri);
+#if NETCORE
+            appHost.Config.DisableChunkedEncoding = true;
+#endif
         }
 
         [TestFixtureTearDown]
