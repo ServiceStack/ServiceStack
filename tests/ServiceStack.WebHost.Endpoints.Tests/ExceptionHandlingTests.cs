@@ -292,10 +292,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.BadRequest));
-#if !NETCORE_SUPPORT
                 Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
                 Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
-#endif
             }
         }
 
@@ -310,10 +308,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.BadRequest));
-#if !NETCORE_SUPPORT
                 Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
                 Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
-#endif
             }
         }
 
@@ -328,10 +324,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.Forbidden));
-#if !NETCORE_SUPPORT
                 Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
                 Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
-#endif
             }
         }
 
@@ -347,9 +341,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(ex.IsAny400());
                 Assert.That(!ex.IsAny500());
-#if !NETCORE_SUPPORT
                 Assert.That(ex.ErrorCode, Is.EqualTo("ArgumentException"));
-#endif
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.BadRequest));
             }
         }
@@ -366,9 +358,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(ex.IsAny400());
                 Assert.That(!ex.IsAny500());
-#if !NETCORE_SUPPORT
                 Assert.That(ex.ErrorCode, Is.EqualTo("NotImplementedException"));
-#endif
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.MethodNotAllowed));
             }
         }
@@ -474,9 +464,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Assert.That((int)errorResponse.StatusCode, Is.EqualTo(500));
                 Assert.That(webEx.IsAny500());
-#if !NETCORE                
                 Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
-#endif
 
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
                 var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
@@ -503,9 +491,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Assert.That((int)errorResponse.StatusCode, Is.EqualTo(406));
                 Assert.That(webEx.IsAny400());
-#if !NETCORE                
                 Assert.That(errorResponse.StatusDescription, Is.EqualTo("CustomDescription"));
-#endif
             }
         }
 
@@ -522,9 +508,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 Assert.That((int)errorResponse.StatusCode, Is.EqualTo(500));
                 Assert.That(webEx.IsAny500());
-#if !NETCORE
                 Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
-#endif
 
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
                 var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();

@@ -220,9 +220,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(request.StatusCode.Value));
-#if !NETCORE                
                 Assert.That(webEx.Message, Is.EqualTo(request.StatusDescription));
-#endif
                 Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(request.ResponseStatus.ErrorCode));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo(request.ResponseStatus.Message));
             }

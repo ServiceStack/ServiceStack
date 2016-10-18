@@ -6,9 +6,9 @@ using NUnit.Framework;
 using ServiceStack.Common.Tests;
 using ServiceStack.Host;
 using ServiceStack.Logging;
+using ServiceStack.ProtoBuf;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
-using ServiceStack.ProtoBuf;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
