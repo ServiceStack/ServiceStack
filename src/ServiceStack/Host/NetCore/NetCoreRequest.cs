@@ -63,7 +63,7 @@ namespace ServiceStack.Host.NetCore
             response ?? (response = new NetCoreResponse(this, context.Response));
 
         public string OperationName { get; set; }
-        public string Verb => request.Method;
+        public string Verb => HttpMethod;
         public RequestAttributes RequestAttributes { get; set; }
 
         private IRequestPreferences requestPreferences;
