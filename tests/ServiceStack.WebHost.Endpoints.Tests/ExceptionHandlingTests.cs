@@ -260,9 +260,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost = new ExceptionHandlingAppHostHttpListener();
             appHost.Init();
             appHost.Start(ListeningOn);
-#if NETCORE
-            appHost.Config.DisableChunkedEncoding = true;
-#endif
         }
 
         [TestFixtureTearDown]
