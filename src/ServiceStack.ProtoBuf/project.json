@@ -19,22 +19,16 @@
   },
   "dependencies": {
     "NETStandard.Library": "1.6.0",
-    "ServiceStack.Interfaces": "1.0.*",
+    "protobuf-net": "2.1.0",
     "ServiceStack.Text": "1.0.*",
+    "ServiceStack.Interfaces": "1.0.*",
     "ServiceStack.Client": "1.0.*",
-    "ServiceStack": "1.0.*",
-    "protobuf-net" : "2.1.*"
+    "ServiceStack.Common": "1.0.*",
+    "ServiceStack": "1.0.*" 
   },
   "frameworks": {
     "netstandard1.6": {
       "dependencies": {
-        "System.Dynamic.Runtime": "4.0.11",
-        "System.Data.Common": "4.1.0",
-        "System.ComponentModel.Primitives": "4.1.0",
-        "System.Net.Primitives": "4.0.11",
-        "System.Net.NetworkInformation": "4.1.0",
-        "System.Net.Security" : "4.0.0",
-        "System.Reflection.TypeExtensions": "4.1.0"
       }
     }
   },
