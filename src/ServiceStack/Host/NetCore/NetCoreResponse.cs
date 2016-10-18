@@ -78,7 +78,7 @@ namespace ServiceStack.Host.NetCore
                 hasResponseBody = true;
             
             if (Platforms.PlatformNetCore.HostInstance.Config?.DisableChunkedEncoding == true)
-                response.ContentLength = bytes.Length;
+                 response.ContentLength = bytes.Length;
 
             response.Body.Write(bytes, 0, bytes.Length);
         }
@@ -87,12 +87,6 @@ namespace ServiceStack.Host.NetCore
 
         public void Close()
         {
-            if (closed) return;
-            if (!hasResponseBody && !response.HasStarted)
-                response.ContentLength = 0;
-
-            Flush();
-            response.Body.Close();
             closed = true;
         }
 
@@ -146,7 +140,7 @@ namespace ServiceStack.Host.NetCore
 
         public bool UseBufferedStream { get; set; }
 
-        public bool IsClosed { get { return closed; } }
+        public bool IsClosed => closed; 
 
         public bool KeepAlive { get; set; }
 
@@ -166,7 +160,7 @@ namespace ServiceStack.Host.NetCore
 
         public void ClearCookies()
         {
-            response.Headers.Remove("Set-Cookie");
+            response.Headers.Remove(HttpHeaders.SetCookie);
         }
 
         public ICookies Cookies { get; }

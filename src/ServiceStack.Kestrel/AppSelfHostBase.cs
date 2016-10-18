@@ -43,6 +43,8 @@ namespace ServiceStack
                 Config.WebHostPhysicalPath = env.WebRootPath ?? env.ContentRootPath;
 
                 AppHostBase.RegisterLicenseFromAppSettings(AppSettings);
+
+                Config.MetadataRedirectPath = "metadata";
             }
         }
 
