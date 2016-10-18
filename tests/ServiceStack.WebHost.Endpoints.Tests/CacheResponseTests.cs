@@ -186,7 +186,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(typeof (CacheServerFeatureTests).Name, typeof (CacheEtagServices).Assembly) {}
+                : base(typeof (CacheServerFeatureTests).Name, typeof (CacheEtagServices).GetAssembly()) {}
 
             public override void Configure(Container container)
             {
@@ -328,21 +328,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new ServerCacheUser { Id = 3, Value = "foo" };
 
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-ss-id", "1"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-ss-id"] = "1")
                 .FromJson<ServerCacheUser>();
 
             Assert.That(ServerCacheUser.Count, Is.EqualTo(1));
             AssertEquals(response, request);
 
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-ss-id", "1"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-ss-id"] = "1")
                 .FromJson<ServerCacheUser>();
 
             Assert.That(ServerCacheUser.Count, Is.EqualTo(1));
             AssertEquals(response, request);
 
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-ss-id", "2"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-ss-id"] = "2")
                 .FromJson<ServerCacheUser>();
 
             Assert.That(ServerCacheUser.Count, Is.EqualTo(2));
@@ -356,21 +356,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new ServerCacheRoles { Id = 3, Value = "foo" };
 
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-role", "RoleA"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-role"] = "RoleA")
                 .FromJson<ServerCacheRoles>();
 
             Assert.That(ServerCacheRoles.Count, Is.EqualTo(1));
             AssertEquals(response, request);
 
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-role", "RoleA"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-role"] = "RoleA")
                 .FromJson<ServerCacheRoles>();
 
             Assert.That(ServerCacheRoles.Count, Is.EqualTo(1));
             AssertEquals(response, request);
 
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-role", "RoleB"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-role"] = "RoleB")
                 .FromJson<ServerCacheRoles>();
 
             Assert.That(ServerCacheRoles.Count, Is.EqualTo(2));
@@ -399,7 +399,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             //JSON + No Accept-Encoding
             var webReq = (HttpWebRequest)WebRequest.Create(url);
             webReq.Accept = MimeTypes.Json;
+#if !NETCORE            
             webReq.AutomaticDecompression = DecompressionMethods.None;
+#endif
             var webRes = webReq.GetResponse();
             Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.Json));
             response = webRes.GetResponseStream().ReadFully().FromUtf8Bytes()
@@ -411,7 +413,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webReq = (HttpWebRequest)WebRequest.Create(url);
             webReq.Accept = MimeTypes.Json;
             webReq.Headers[HttpHeaders.AcceptEncoding] = CompressionTypes.GZip;
+#if !NETCORE            
             webReq.AutomaticDecompression = DecompressionMethods.GZip;
+#endif
             webRes = webReq.GetResponse();
             Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.Json));
             response = webRes.GetResponseStream().ReadFully().FromUtf8Bytes()

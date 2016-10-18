@@ -3,8 +3,10 @@ using System.IO;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Common;
-using ServiceStack.MiniProfiler.UI;
 using ServiceStack.Text;
+#if !NETCORE_SUPPORT
+using ServiceStack.MiniProfiler.UI;
+#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -36,7 +38,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class UniqueRequestAppHost : AppHostHttpListenerBase
     {
-        public UniqueRequestAppHost() : base("Unique Request Tests", typeof(UniqueRequestService).Assembly) {}
+        public UniqueRequestAppHost() : base("Unique Request Tests", typeof(UniqueRequestService).GetAssembly()) {}
         public override void Configure(Container container) {}
     }
 

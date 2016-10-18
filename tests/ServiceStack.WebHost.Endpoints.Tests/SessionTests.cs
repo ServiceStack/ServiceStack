@@ -94,7 +94,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public class SessionAppHost : AppHostHttpListenerBase
         {
-            public SessionAppHost() : base(typeof(SessionTests).Name, typeof(SessionTests).Assembly) { }
+            public SessionAppHost() : base(typeof(SessionTests).Name, typeof(SessionTests).GetAssembly()) { }
 
             public override void Configure(Container container)
             {
@@ -238,12 +238,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var sessionId = cookies["ss-id"];
 
             var cookieContainer = new CookieContainer();
-            cookieContainer.Add(new Cookie
-            {
-                Name = "ss-id",
-                Value = "some-other-id",
-                Domain = new Uri(Config.AbsoluteBaseUri).Host,
-            });
+            cookieContainer.Add(new Uri(Config.AbsoluteBaseUri),
+                new Cookie
+                {
+                    Name = "ss-id",
+                    Value = "some-other-id",
+                    Domain = new Uri(Config.AbsoluteBaseUri).Host,
+                });
 
             var response = Config.AbsoluteBaseUri
                 .CombineWith(new SessionTypedIncr().ToGetUrl())
@@ -297,7 +298,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_mock_IntegrationTest_Session_with_Request()
         {
-            using (new BasicAppHost(typeof(SessionService).Assembly).Init())
+            using (new BasicAppHost(typeof(SessionService).GetAssembly()).Init())
             {
                 var req = new MockHttpRequest();
                 req.Items[Keywords.Session] = 

@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class ServiceSetupAppHost : AppHostHttpListenerBase
     {
-        public ServiceSetupAppHost() : base("Service Setup Tests", typeof(Actual).Assembly) { }
+        public ServiceSetupAppHost() : base("Service Setup Tests", typeof(Actual).GetAssembly()) { }
         public override void Configure(Container container) { }
     }
 

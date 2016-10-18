@@ -65,17 +65,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public class HttpHandlerAppHost : AppSelfHostBase
         {
-            public HttpHandlerAppHost() : base("HttpHandlerAppHost", typeof(PerfServices).Assembly) { }
+            public HttpHandlerAppHost() : base("HttpHandlerAppHost", typeof(PerfServices).GetAssembly()) { }
 
             public override void Configure(Container container)
             {
             }
 
+#if !NETCORE_SUPPORT
             protected override void OnBeginRequest(HttpListenerContext context)
             {
                 Interlocked.Increment(ref BeginRequestCount);
                 base.OnBeginRequest(context);
             }
+#endif
 
             public override void OnEndRequest(IRequest request = null)
             {

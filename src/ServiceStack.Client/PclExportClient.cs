@@ -1714,7 +1714,7 @@ namespace ServiceStack
         {
         }
 
-#if !(NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !NETSTANDARD1_1
         public virtual ITimer CreateTimer(TimerCallback cb, TimeSpan timeOut, object state)
         {
 #if PCL
@@ -1732,7 +1732,7 @@ namespace ServiceStack
                 throw new ArgumentOutOfRangeException("waitForMs");
 
             var tcs = new TaskCompletionSource<bool>();
-#if !(NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !NETSTANDARD1_1
             Timer timer = null;
             timer = new Timer(self => {
                 tcs.TrySetResult(true);
@@ -1768,7 +1768,7 @@ namespace ServiceStack
 
         public virtual void CloseReadStream(Stream stream)
         {
-#if PCL
+#if PCL || NETSTANDARD1_1 || NETSTANDARD1_6
             stream.Dispose();
 #else
             stream.Close();
@@ -1777,7 +1777,7 @@ namespace ServiceStack
 
         public virtual void CloseWriteStream(Stream stream)
         {
-#if PCL
+#if PCL || NETSTANDARD1_1 || NETSTANDARD1_6
             stream.Dispose();
 #else
             stream.Close();

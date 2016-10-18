@@ -115,7 +115,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
             Assert.That(reponseWasAutoHandled.Result, Is.True);
 
-            Assert.That(mockResponse.ReadAsString(), Is.EqualTo("{\"Text\":null}"));
+            Assert.That(mockResponse.ReadAsString(), Is.EqualTo("{\"Text\":null}").Or.EqualTo("{\"text\":null}"));
         }
     }
 

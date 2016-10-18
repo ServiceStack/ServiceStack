@@ -56,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class RuntimeAttributeAppHost : AppSelfHostBase
         {
             public RuntimeAttributeAppHost()
-                : base(typeof(RuntimeAttributeTests).Name, typeof (RuntimeAttributeAppHost).Assembly)
+                : base(typeof(RuntimeAttributeTests).Name, typeof (RuntimeAttributeAppHost).GetAssembly())
             {
                 typeof(RuntimeAttributes)
                     .AddAttributes(new RuntimeAttributeRequestFilter());

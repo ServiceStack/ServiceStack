@@ -32,7 +32,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class AppHost : AppHostHttpListenerBase
         {
             public AppHost()
-                : base(typeof(CustomFormatTests).Name, typeof(CustomFormatTests).Assembly) { }
+                : base(typeof(CustomFormatTests).Name, typeof(CustomFormatTests).GetAssembly()) { }
 
             public override void Configure(Container container)
             {

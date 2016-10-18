@@ -118,13 +118,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AlwaysThrowsAppHost : AppHostHttpListenerBase
     {
         public AlwaysThrowsAppHost()
-            : base("Always Throws Service", typeof(AlwaysThrowsService).Assembly) { }
+            : base("Always Throws Service", typeof(AlwaysThrowsService).GetAssembly()) { }
 
         public override void Configure(Container container)
         {
             Plugins.Add(new ValidationFeature());
 
-            container.RegisterValidators(typeof(AlwaysThrowsValidator).Assembly);
+            container.RegisterValidators(typeof(AlwaysThrowsValidator).GetAssembly());
 
             Plugins.Add(new CustomAuthenticationPlugin());
         }
@@ -240,7 +240,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_Handle_Exception_from_AlwaysThrowsList_with_GET_route()
         {
             var client = CreateNewServiceClient();
+#if !NETCORE            
             if (client is WcfServiceClient) return;
+#endif
             try
             {
                 var response = client.Get<List<AlwaysThrows>>("/throwslist/404/{0}".Fmt(TestString));
@@ -334,6 +336,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+#if !NETCORE
     public class Soap11IntegrationTests : WebServicesTests
     {
         protected override IServiceClient CreateNewServiceClient()
@@ -349,4 +352,5 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new Soap12ServiceClient(ListeningOn);
         }
     }
+#endif
 }

@@ -35,6 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			appHost.Dispose();
 		}
 
+#if !NETCORE_SUPPORT
 		/// <summary>
 		/// first-name=tom&item-0=blah&item-1-delete=1
 		/// </summary>
@@ -63,6 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				Assert.Fail(errorResponse);
 			}
 		}
+#endif
 
 		[Test]
 		public void Does_use_request_binder_for_GET()

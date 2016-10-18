@@ -302,7 +302,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private readonly Action<Container> configureFn;
 
         public AuthAppHost(string webHostUrl, Action<Container> configureFn = null)
-            : base("Validation Tests", typeof(CustomerService).Assembly)
+            : base("Validation Tests", typeof(CustomerService).GetAssembly())
         {
             this.webHostUrl = webHostUrl;
             this.configureFn = configureFn;
@@ -946,6 +946,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+#if NETCORE
+        [Ignore("AllowAutoRedirect=false is not implemented in .NET Core")]
+#endif
         public void Html_clients_receive_redirect_to_login_page_when_accessing_unauthenticated()
         {
             var client = (ServiceClientBase)GetHtmlClient();
@@ -965,6 +968,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+#if NETCORE
+        [Ignore("AllowAutoRedirect=false is not implemented in .NET Core")]
+#endif
         public void Html_clients_receive_secured_url_attempt_in_login_page_redirect_query_string()
         {
             var client = (ServiceClientBase)GetHtmlClient();
@@ -994,6 +1000,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+#if NETCORE
+        [Ignore("AllowAutoRedirect=false is not implemented in .NET Core")]
+#endif
         public void Html_clients_receive_secured_url_including_query_string_within_login_page_redirect_query_string()
         {
             var client = (ServiceClientBase)GetHtmlClient();
@@ -1021,6 +1030,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+#if NETCORE
+        [Ignore("AllowAutoRedirect=false is not implemented in .NET Core")]
+#endif
         public void Html_clients_receive_session_ReferrerUrl_on_successful_authentication()
         {
             var client = (ServiceClientBase)GetHtmlClient();
@@ -1238,10 +1250,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
 
-        [TestCase(ExpectedException = typeof(AuthenticationException))]
+        [Test]
         public void Meaningful_Exception_for_Unknown_Auth_Header()
         {
-            var authInfo = new AuthenticationInfo("Negotiate,NTLM");
+            Assert.Throws<AuthenticationException>(() => new AuthenticationInfo("Negotiate,NTLM"));
         }
 
         [Test]

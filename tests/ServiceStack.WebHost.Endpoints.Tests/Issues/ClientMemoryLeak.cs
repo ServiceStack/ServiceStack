@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(typeof(ClientMemoryLeak).Name, typeof(LeakServices).Assembly)
+                : base(typeof(ClientMemoryLeak).Name, typeof(LeakServices).GetAssembly())
             { }
 
             public override void Configure(Container container) { }

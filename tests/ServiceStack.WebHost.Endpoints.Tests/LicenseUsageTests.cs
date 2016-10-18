@@ -54,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        [Ignore, Test]
+        [Ignore("TODO: Ingore reason"), Test]
         public void Allows_MegaDto_through_ServiceClient()
         {
             using (var appHost = new LicenseTestsAppHost(typeof(MegaDtoService)))

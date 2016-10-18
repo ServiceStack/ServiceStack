@@ -210,7 +210,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
 
             public ExceptionHandlingAppHostHttpListener()
-                : base("Exception handling tests", typeof(UserService).Assembly) { }
+                : base("Exception handling tests", typeof(UserService).GetAssembly()) { }
 
             public override void Configure(Container container)
             {
@@ -291,8 +291,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.BadRequest));
+                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
                 Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
             }
         }
@@ -307,8 +307,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.BadRequest));
+                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
                 Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
             }
         }
@@ -323,8 +323,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.Forbidden));
+                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
                 Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
             }
         }

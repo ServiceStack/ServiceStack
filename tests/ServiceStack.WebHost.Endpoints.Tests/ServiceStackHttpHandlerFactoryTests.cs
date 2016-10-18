@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            appHost = new BasicAppHost(GetType().Assembly).Init();
+            appHost = new BasicAppHost(GetType().GetAssembly()).Init();
             HostContext.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
             HostContext.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
         }
@@ -30,8 +30,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         readonly Dictionary<string, Type> pathInfoMap = new Dictionary<string, Type>
 		{
             {"Metadata", typeof(IndexMetadataHandler)},
+#if !NETCORE            
             {"Soap11", typeof(Soap11MessageReplyHttpHandler)},
             {"Soap12", typeof(Soap12MessageReplyHttpHandler)},
+#endif
 
             {"Json/Reply", typeof(JsonReplyHandler)},
             {"Json/OneWay", typeof(JsonOneWayHandler)},
@@ -45,11 +47,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {"Jsv/OneWay", typeof(JsvOneWayHandler)},
             {"Jsv/Metadata", typeof(JsvMetadataHandler)},
 
+#if !NETCORE
 			{"Soap11/Wsdl", typeof(Soap11WsdlMetadataHandler)},
 			{"Soap11/Metadata", typeof(Soap11MetadataHandler)},
 
 			{"Soap12/Wsdl", typeof(Soap12WsdlMetadataHandler)},
 			{"Soap12/Metadata", typeof(Soap12MetadataHandler)},
+#endif
 		};
 
         [Test]

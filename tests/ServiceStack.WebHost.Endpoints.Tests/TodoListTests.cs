@@ -88,7 +88,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			: AppHostHttpListenerBase
 		{
 			public TodoListAppHostHttpListener()
-				: base("TodoList Tests", typeof(TodoList).Assembly) { }
+				: base("TodoList Tests", typeof(TodoList).GetAssembly()) { }
 
 			public override void Configure(Container container) {}
 		}
