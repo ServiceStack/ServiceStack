@@ -147,7 +147,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var innerEx = ex.UnwrapIfSingleException().InnerException;
 #if !NETCORE
-                Assert.That(((WebException)webEx).Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
+                Assert.That(((WebException)innerEx).Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
 #else
                 Assert.That(innerEx.Message, Is.EqualTo("Couldn't resolve host name"));
 #endif        
