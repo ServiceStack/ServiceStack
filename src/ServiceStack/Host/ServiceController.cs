@@ -155,8 +155,11 @@ namespace ServiceStack.Host
                           returnMarker.GetGenericArguments()[0]
                         : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
                           mi.ReturnType
+#if NETSTANDARD1_6
+                        : Type.GetType(requestType.FullName + ResponseDtoSuffix + "," + requestType.GetAssembly().GetName().Name);
+#else                                                  
                         : AssemblyUtils.FindType(requestType.FullName + ResponseDtoSuffix);
-
+#endif
                     RegisterRestPaths(requestType);
 
                     appHost.Metadata.Add(serviceType, requestType, responseType);
