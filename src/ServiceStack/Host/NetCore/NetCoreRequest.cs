@@ -215,7 +215,7 @@ namespace ServiceStack.Host.NetCore
 
         public string[] AcceptTypes => request.Headers[HttpHeaders.Accept].ToArray();
 
-        public string PathInfo => WebUtility.UrlDecode(request.Path);
+        public string PathInfo => request.Path.Value.Replace("+", " ");  //Kestrel does not decode '+' into space
 
         public Stream InputStream => request.Body;
 
