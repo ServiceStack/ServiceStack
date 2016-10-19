@@ -199,6 +199,11 @@ namespace ServiceStack
         /// </summary>
         void LoadPlugin(params IPlugin[] plugins);
 
+        /// <summary>
+        /// Returns the Absolute File Path, relative from your AppHost's Project Path
+        /// </summary>
+        string MapProjectPath(string relativePath);
+
         [Obsolete("Renamed to VirtualFileSources")]
         IVirtualPathProvider VirtualPathProvider { get; set; }
 
