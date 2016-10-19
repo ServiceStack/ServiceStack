@@ -778,8 +778,6 @@ namespace ServiceStack
         /// Looks for first plugin of this type in Plugins.
         /// Reflection performance penalty.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public T GetPlugin<T>() where T : class, IPlugin
         {
             return Plugins.FirstOrDefault(x => x is T) as T;
