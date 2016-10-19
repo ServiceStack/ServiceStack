@@ -38,15 +38,42 @@ namespace ServiceStack
 
         public static ServiceStackHost Instance { get; protected set; }
 
+        /// <summary>
+        /// When the AppHost was instantiated.
+        /// </summary>
         public DateTime StartedAt { get; set; }
+        /// <summary>
+        /// When the Init function was done.
+        /// Called at begin of <see cref="OnAfterInit"/>
+        /// </summary>
         public DateTime? AfterInitAt { get; set; }
+        /// <summary>
+        /// When all configuration was completed.
+        /// Called at the end of <see cref="OnAfterInit"/>
+        /// </summary>
         public DateTime? ReadyAt { get; set; }
+        /// <summary>
+        /// If app currently runs for unit tests.
+        /// Used for overwritting AuthSession.
+        /// </summary>
         public bool TestMode { get; set; }
 
+        /// <summary>
+        /// The assemblies reflected to find api services.
+        /// These can be provided in the constructor call.
+        /// </summary>
         public Assembly[] ServiceAssemblies { get; private set; }
 
+        /// <summary>
+        /// Wether AppHost configuration is done.
+        /// Note: It doesn't mean the start function was called.
+        /// </summary>
         public bool HasStarted => ReadyAt != null;
 
+        /// <summary>
+        /// Wether AppHost is ready configured and either ready to run or already running.
+        /// Equals <see cref="HasStarted"/>
+        /// </summary>
         public static bool IsReady() => Instance?.ReadyAt != null;
 
         protected ServiceStackHost(string serviceName, params Assembly[] assembliesWithServices)
@@ -126,11 +153,19 @@ namespace ServiceStack
             //return new ServiceController(this, () => assembliesWithServices.ToList().SelectMany(x => x.GetTypes()));
         }
 
+        /// <summary>
+        /// Set the host config of the AppHost.
+        /// </summary>
         public virtual void SetConfig(HostConfig config)
         {
             Config = config;
         }
 
+        /// <summary>
+        /// Initializes the AppHost.
+        /// Calls the <see cref="Configure"/> method.
+        /// Should be called before start.
+        /// </summary>
         public virtual ServiceStackHost Init()
         {
             if (Instance != null)
@@ -203,6 +238,9 @@ namespace ServiceStack
             return GetVirtualFileSources();
         }
 
+        /// <summary>
+        /// Gets Full Directory Path of where the app is running
+        /// </summary>
         public virtual string GetWebRootPath() => Config.WebHostPhysicalPath;
 
         public virtual List<IVirtualPathProvider> GetVirtualFileSources()
@@ -220,6 +258,11 @@ namespace ServiceStack
             return pathProviders;
         }
 
+        /// <summary>
+        /// Starts the AppHost.
+        /// this methods needs to be overwritten in subclass to provider a listener to start handling requests.
+        /// </summary>
+        /// <param name="urlBase">Url to listen to</param>
         public virtual ServiceStackHost Start(string urlBase)
         {
             throw new NotImplementedException("Start(listeningAtUrlBase) is not supported by this AppHost");
@@ -274,10 +317,30 @@ namespace ServiceStack
 
         public IContentTypes ContentTypes { get; set; }
 
+        /// <summary>
+        /// Collection of PreRequest filters.
+        /// They are called before each request is handled by a service, but after an HttpHandler is by the <see cref="HttpHandlerFactory"/> chosen.
+        /// called in <see cref="ApplyPreRequestFilters"/>.
+        /// </summary>
         public List<Action<IRequest, IResponse>> PreRequestFilters { get; set; }
 
+        /// <summary>
+        /// Collection of RequestConverters.
+        /// Can be used to convert/change Input Dto
+        /// Called after routing and model binding, but before request filters.
+        /// All request converters are called unless <see cref="IResponse.IsClosed"></see>
+        /// Converter can return null, orginal model will be used.
+        /// 
+        /// Note one converter could influence the input for the next converter!
+        /// </summary>
         public List<Func<IRequest, object, object>> RequestConverters { get; set; }
 
+        /// <summary>
+        /// Collection of ResponseConverters.
+        /// Can be used to convert/change Output Dto
+        /// 
+        /// Called directly after response is handled, even before <see cref="ApplyResponseFilters"></see>!
+        /// </summary>
         public List<Func<IRequest, object, object>> ResponseConverters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; }
@@ -296,6 +359,10 @@ namespace ServiceStack
 
         public Dictionary<Type, ITypedFilter> GlobalTypedMessageResponseFilters { get; set; }
 
+        /// <summary>
+        /// Lists of view engines for this app.
+        /// If view is needed list is looped until view is found.
+        /// </summary>
         public List<IViewEngine> ViewEngines { get; set; }
 
         public List<HandleServiceExceptionDelegate> ServiceExceptionHandlers { get; set; }
@@ -322,6 +389,9 @@ namespace ServiceStack
 
         public List<string> PluginsLoaded { get; set; }
 
+        /// <summary>
+        /// Collection of added plugins.
+        /// </summary>
         public List<IPlugin> Plugins { get; set; }
 
         public IVirtualFiles VirtualFiles { get; set; }
@@ -668,26 +738,48 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Register singleton in the Ioc Container of the AppHost.
+        /// </summary>
         public virtual void Register<T>(T instance)
         {
             this.Container.Register(instance);
         }
 
+        /// <summary>
+        /// Registers type to be automatically wired by the Ioc container of the AppHost.
+        /// </summary>
+        /// <typeparam name="T">Concrete type</typeparam>
+        /// <typeparam name="TAs">Abstract type</typeparam>
         public virtual void RegisterAs<T, TAs>() where T : TAs
         {
             this.Container.RegisterAutoWiredAs<T, TAs>();
         }
 
+        /// <summary>
+        /// Tries to resolve type through the ioc container of the AppHost. 
+        /// Can return null.
+        /// </summary>
         public virtual T TryResolve<T>()
         {
             return this.Container.TryResolve<T>();
         }
 
+        /// <summary>
+        /// Resolves Type through the Ioc container of the AppHost.
+        /// </summary>
+        /// <exception cref="ResolutionException">If type is not registered</exception>
         public virtual T Resolve<T>()
         {
             return this.Container.Resolve<T>();
         }
 
+        /// <summary>
+        /// Looks for first plugin of this type in Plugins.
+        /// Reflection performance penalty.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public T GetPlugin<T>() where T : class, IPlugin
         {
             return Plugins.FirstOrDefault(x => x is T) as T;
