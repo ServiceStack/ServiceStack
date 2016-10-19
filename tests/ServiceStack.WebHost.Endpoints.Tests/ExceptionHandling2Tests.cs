@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using ProtoBuf;
-using ServiceStack.ProtoBuf;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.ProtoBuf;
+#if !NETCORE_SUPPORT
+using ServiceStack.ServiceModel;
+#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -130,7 +132,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AppHost : AppHostHttpListenerBase
     {
         public AppHost()
-            : base("Test ErrorHandling", typeof(ReqstarsService).Assembly)
+            : base("Test ErrorHandling", typeof(ReqstarsService).GetAssembly())
         {
         }
 
@@ -154,7 +156,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 appHost = new AppHost();
                 appHost.Init();
+#if !NETCORE_SUPPORT                
                 appHost.Config.DebugMode = true;
+#endif
                 appHost.Start(Config.ListeningOn);
             }
             catch (Exception ex)

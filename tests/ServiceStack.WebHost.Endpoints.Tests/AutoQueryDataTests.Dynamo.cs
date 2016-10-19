@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Amazon.DynamoDBv2;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Aws.DynamoDb;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
+using Amazon.DynamoDBv2;
+using ServiceStack.Aws.DynamoDb;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

@@ -90,7 +90,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
             Console.WriteLine(res.Headers);
-            Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Movies.csv"));
+            Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=Movies.csv"));
 
             var csvRows = res.ReadLines().ToList();
 
@@ -107,7 +107,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
-            Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Movies.csv"));
+            Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=Movies.csv"));
 
             var csvRows = res.ReadLines().ToList();
 
@@ -122,11 +122,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
-            Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Hello.csv"));
+            Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=Hello.csv"));
 
             var csv = res.ReadToEnd();
-            var lf = Environment.NewLine;
-            Assert.That(csv, Is.EqualTo("Result{0}\"Hello, World!\"{0}".Fmt(lf)));
+            Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
 
             Console.WriteLine(csv);
         }
@@ -139,11 +138,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
-            Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Hello.csv"));
+            Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=Hello.csv"));
 
             var csv = res.ReadToEnd();
-            var lf = Environment.NewLine;
-            Assert.That(csv, Is.EqualTo("Result{0}\"Hello, World!\"{0}".Fmt(lf)));
+            Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
 
             Console.WriteLine(csv);
         }
@@ -156,7 +154,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var res = req.GetResponse();
             Assert.That(res.ContentType, Is.EqualTo(MimeTypes.Csv));
-            Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Movies.csv"));
+            Assert.That(res.Headers[HttpHeaders.ContentDisposition].Replace("; ", ";"), Is.EqualTo("attachment;filename=Movies.csv"));
 
             var csvRows = res.ReadLines().ToList();
 

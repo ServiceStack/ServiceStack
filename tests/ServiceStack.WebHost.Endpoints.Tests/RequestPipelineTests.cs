@@ -169,7 +169,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class RequestPipelineAppHost : AppHostHttpListenerBase
     {
-        public RequestPipelineAppHost() : base(typeof(RequestPipelineTests).Name, typeof(RequestPipelineService).Assembly) { }
+        public RequestPipelineAppHost() : base(typeof(RequestPipelineTests).Name, typeof(RequestPipelineService).GetAssembly()) { }
 
         public override void Configure(Container container)
         {

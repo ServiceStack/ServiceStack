@@ -88,7 +88,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var url = string.Format("{0}test/timed?Milliseconds={1}", ListeningOn, sleepMs);
 			var req = WebRequest.Create(url) as HttpWebRequest;
 			//Set a short timeout so we'll give up before the request is processed
+#if !NETCORE			
 			req.Timeout = 100;
+#endif
 			try
 			{
 				var res = (HttpWebResponse)req.GetResponse();

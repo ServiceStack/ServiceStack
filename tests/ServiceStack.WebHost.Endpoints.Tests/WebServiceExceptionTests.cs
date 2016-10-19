@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using NUnit.Framework;
+#if !NETCORE_SUPPORT
 using ServiceStack.ServiceModel;
+#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

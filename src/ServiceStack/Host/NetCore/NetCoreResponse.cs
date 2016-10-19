@@ -8,6 +8,7 @@ using ServiceStack.Web;
 using System.Net;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using ServiceStack.Logging;
 
@@ -19,6 +20,7 @@ namespace ServiceStack.Host.NetCore
 
         private readonly NetCoreRequest request;
         private readonly HttpResponse response;
+        private bool hasResponseBody;
 
         public NetCoreResponse(NetCoreRequest request, HttpResponse response)
         {
@@ -72,6 +74,12 @@ namespace ServiceStack.Host.NetCore
         public void Write(string text)
         {
             var bytes = text.ToUtf8Bytes();
+            if (bytes.Length > 0)
+                hasResponseBody = true;
+            
+            if (Platforms.PlatformNetCore.HostInstance.Config?.DisableChunkedEncoding == true)
+                 response.ContentLength = bytes.Length;
+
             response.Body.Write(bytes, 0, bytes.Length);
         }
 
@@ -79,15 +87,15 @@ namespace ServiceStack.Host.NetCore
 
         public void Close()
         {
-            if (closed) return;
-            Flush();
-            response.Body.Close();
             closed = true;
         }
 
         public void End()
         {
             if (closed) return;
+            if (!hasResponseBody && !response.HasStarted)
+                response.ContentLength = 0;
+
             Flush();
             response.Body.Dispose();
             closed = true;
@@ -114,7 +122,11 @@ namespace ServiceStack.Host.NetCore
             set { response.StatusCode = value; }
         }
 
-        public string StatusDescription { get; set; } // Not available in .NET Core
+        public string StatusDescription 
+        { 
+            get { return response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase; }
+            set { response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = value; }
+        }
 
         public string ContentType
         {
@@ -128,7 +140,7 @@ namespace ServiceStack.Host.NetCore
 
         public bool UseBufferedStream { get; set; }
 
-        public bool IsClosed { get; set; }
+        public bool IsClosed => closed; 
 
         public bool KeepAlive { get; set; }
 
@@ -148,7 +160,7 @@ namespace ServiceStack.Host.NetCore
 
         public void ClearCookies()
         {
-            //response.Cookies.Delete();
+            response.Headers.Remove(HttpHeaders.SetCookie);
         }
 
         public ICookies Cookies { get; }

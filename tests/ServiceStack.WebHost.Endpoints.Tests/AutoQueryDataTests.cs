@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AutoQueryDataAppHost : AppSelfHostBase
     {
         public AutoQueryDataAppHost()
-            : base("AutoQuerData", typeof(AutoQueryService).Assembly)
+            : base("AutoQuerData", typeof(AutoQueryService).GetAssembly())
         { }
 
         public override void Configure(Container container)
@@ -375,7 +375,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public bool IsDynamoDb
         {
-            get { return appHost is AutoQueryDataDynamoAppHost; }
+            get 
+            {
+                return appHost is AutoQueryDataDynamoAppHost;
+            }
         }
 
         [Test]
@@ -1044,7 +1047,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.All(x => x.LastName == null));
             Assert.That(response.Results.Any(x => x.Age > 0));
             Assert.That(response.Results.All(x => x.DateDied == null));
-            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime).ToLocalTime()));
         }
 
         [Test]
@@ -1063,7 +1066,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.All(x => x.LastName == null));
             Assert.That(response.Results.Any(x => x.Age > 0));
             Assert.That(response.Results.All(x => x.DateDied == null));
-            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime).ToLocalTime()));
         }
 
         [Test]

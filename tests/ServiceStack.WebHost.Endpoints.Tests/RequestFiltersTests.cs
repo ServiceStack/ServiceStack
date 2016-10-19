@@ -98,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             private Guid currentSessionGuid;
 
             public RequestFiltersAppHostHttpListener()
-                : base("Request Filters Tests", typeof(GetFactorialService).Assembly) { }
+                : base("Request Filters Tests", typeof(GetFactorialService).GetAssembly()) { }
 
             public override void Configure(Container container)
             {
@@ -172,6 +172,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private static void Assert401(IServiceClient client, WebServiceException ex)
         {
+#if !NETCORE            
             if (client is Soap11ServiceClient || client is Soap12ServiceClient)
             {
                 if (ex.StatusCode != 401)
@@ -180,7 +181,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 }
                 return;
             }
-
+#endif
             Console.WriteLine(ex);
             Assert.That(ex.StatusCode, Is.EqualTo(401));
         }
@@ -300,7 +301,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (cookie != null)
             {
                 req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
-                req.CookieContainer.Add(new Cookie("ss-session", cookie.Value));
+                req.CookieContainer.Add(new Uri(ServiceClientBaseUri), new Cookie("ss-session", cookie.Value));
 
                 var dtoString = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
                 Assert.That(dtoString.Contains("Confidential"));
@@ -317,7 +318,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
 
             req.CookieContainer = new CookieContainer();
-            req.CookieContainer.Add(new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));
+            req.CookieContainer.Add(new Uri("http://localhost"), new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));
 
             try
             {
@@ -429,7 +430,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             protected override IRestClientAsync CreateNewRestClientAsync()
             {
                 return null; //TODO implement REST calls with DirectServiceClient (i.e. Unit Tests)
-                //EndpointHandlerBase.ServiceManager = new ServiceManager(true, typeof(SecureService).Assembly);
+                //EndpointHandlerBase.ServiceManager = new ServiceManager(true, typeof(SecureService).GetAssembly());
                 //return new DirectServiceClient(EndpointHandlerBase.ServiceManager);
             }
         }
@@ -490,7 +491,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-#if !IOS
+#if !(IOS || NETCORE)
 
         [TestFixture]
         public class Soap11IntegrationTests : RequestFiltersTests

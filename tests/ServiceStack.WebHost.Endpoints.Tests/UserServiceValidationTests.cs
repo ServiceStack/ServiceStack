@@ -69,12 +69,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
 
             public UserAppHostHttpListener()
-                : base("Validation Tests", typeof(UserValidationService).Assembly) { }
+                : base("Validation Tests", typeof(UserValidationService).GetAssembly()) { }
 
             public override void Configure(Container container)
             {
                 Plugins.Add(new ValidationFeature());
-                container.RegisterValidators(typeof(UserValidator).Assembly);
+                container.RegisterValidators(typeof(UserValidator).GetAssembly());
             }
         }
 

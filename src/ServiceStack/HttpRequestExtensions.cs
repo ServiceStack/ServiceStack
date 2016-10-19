@@ -247,7 +247,7 @@ namespace ServiceStack
             if (hasStatusCode != null)
                 return hasStatusCode.StatusCode;
 
-            if (HostContext.Config != null)
+            if (HostContext.AppHost != null && HostContext.Config != null)
             {
                 var exType = ex.GetType();
                 foreach (var entry in HostContext.Config.MapExceptionToStatusCode)

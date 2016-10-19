@@ -102,6 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(logBody, Is.EqualTo(request.ToJson()));
         }
 
+#if !NETCORE
         [Test]
         public void Can_see_RequestBody_in_RequestLogger_when_EnableRequestBodyTracking_Soap12()
         {
@@ -116,7 +117,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(logBody, Is.StringEnding(soap12end));
         }
 
-
         [Test]
         public void Can_see_RequestBody_in_RequestLogger_when_EnableRequestBodyTracking_Soap11()
         {
@@ -126,7 +126,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(appHost.LastRequestBody, Is.EqualTo(soap11));
             Assert.That(logBody, Is.EqualTo(soap11));
         }
-
+#endif
         
         string Run(IServiceClient client)
         {
@@ -147,7 +147,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class BufferedRequestAppHost : AppHostHttpListenerBase
     {
-        public BufferedRequestAppHost() : base(typeof(BufferedRequestTests).Name, typeof(MyService).Assembly) { }
+        public BufferedRequestAppHost() : base(typeof(BufferedRequestTests).Name, typeof(MyService).GetAssembly()) { }
 
         public string LastRequestBody { get; set; }
         public bool UseBufferredStream { get; set; }

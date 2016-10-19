@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class OperationTestsAppHost : AppHostHttpListenerBase
     {
-        public OperationTestsAppHost() : base(typeof(GetCustomer).Name, typeof(GetCustomer).Assembly) { }
+        public OperationTestsAppHost() : base(typeof(GetCustomer).Name, typeof(GetCustomer).GetAssembly()) { }
         public override void Configure(Container container) { }
     }
 
@@ -59,7 +59,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TearDown]
         public void OnTearDown()
         {
-            appHost.Config.WebHostUrl = null;
+            if (appHost?.Config?.WebHostUrl != null)
+                appHost.Config.WebHostUrl = null;
         }
 
         [Test]
@@ -107,15 +108,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public CultureSwitch(string culture)
         {
+#if NETCORE
+            _currentCulture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = new CultureInfo(culture);
+#else
             var currentThread = Thread.CurrentThread;
             _currentCulture = currentThread.CurrentCulture;
             var switchCulture = CultureInfo.GetCultureInfo(culture);
             currentThread.CurrentCulture = switchCulture;
+#endif
         }
 
         public void Dispose()
         {
+#if NETCORE
+            CultureInfo.CurrentCulture = _currentCulture;
+#else
             Thread.CurrentThread.CurrentCulture = _currentCulture;
+#endif
         }
     }
 }

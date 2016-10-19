@@ -439,10 +439,9 @@ namespace ServiceStack.Host.HttpListener
         }
 
         private bool disposed;
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposed) return;
-            base.Dispose();
 
             lock (this)
             {
@@ -452,16 +451,12 @@ namespace ServiceStack.Host.HttpListener
                 {
                     this.Stop();
                 }
-
                 //release unmanaged resources here...
+                
                 disposed = true;
             }
-        }
 
-        public override void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            base.Dispose(disposing);
         }
     }
 }

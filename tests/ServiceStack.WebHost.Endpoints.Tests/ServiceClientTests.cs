@@ -77,7 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Does_add_HttpHeaders_in_RequestFilter_for_Get_Async()
         {
             var client = (JsonServiceClient)GetClient();
-            client.RequestFilter = req => req.Headers.Add("Foo", "Bar");
+            client.RequestFilter = req => req.Headers["Foo"] = "Bar";
 
             var response = await client.GetAsync(new EchoRequestInfo());
 

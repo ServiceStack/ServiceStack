@@ -145,8 +145,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (AggregateException ex) //JsonHttpClient
             {
-                var webEx = (WebException)ex.UnwrapIfSingleException().InnerException;
-                Assert.That(webEx.Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
+                var innerEx = ex.UnwrapIfSingleException().InnerException;
+#if !NETCORE
+                Assert.That(((WebException)innerEx).Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
+#else
+                Assert.That(innerEx.Message, Is.EqualTo("Couldn't resolve host name"));
+#endif        
             }
             catch (WebException ex) //JsonServiceClient
             {

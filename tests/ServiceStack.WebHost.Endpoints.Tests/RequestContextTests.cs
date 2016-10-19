@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			: AppHostHttpListenerBase
 		{
 			public HeadersAppHostHttpListener()
-				: base("Request Filters Tests", typeof(HeadersService).Assembly) { }
+				: base("Request Filters Tests", typeof(HeadersService).GetAssembly()) { }
 
 			public override void Configure(Container container)
 			{
@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var map = new Dictionary<string, string>();
 			for (var i = 0; i < webResponse.Headers.Count; i++)
 			{
-				var header = webResponse.Headers.Keys[i];
+				var header = webResponse.Headers.AllKeys[i];
 				map[header] = webResponse.Headers[header];
 			}
 

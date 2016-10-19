@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		public class IntegrationTestAppHost : AppHostHttpListenerBase 
 		{
             public IntegrationTestAppHost()
-                : base("ServiceStack Examples", typeof(RestMovieService).Assembly)
+                : base("ServiceStack Examples", typeof(RestMovieService).GetAssembly())
             {
                 LogManager.LogFactory = new DebugLogFactory();
             }

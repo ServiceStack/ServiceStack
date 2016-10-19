@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class ReplyAllAppHost : AppSelfHostBase
     {
         public ReplyAllAppHost()
-            : base(typeof(ReplyAllTests).Name, typeof(ReplyAllService).Assembly)
+            : base(typeof(ReplyAllTests).Name, typeof(ReplyAllService).GetAssembly())
         { }
 
         public override void Configure(Container container)

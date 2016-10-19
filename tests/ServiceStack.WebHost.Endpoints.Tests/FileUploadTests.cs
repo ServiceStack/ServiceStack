@@ -88,6 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.ContentType.StartsWith(contentType));
         }
 
+#if !NETCORE_SUPPORT
         [Test]
         public void Can_POST_upload_file()
         {
@@ -107,6 +108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(r.Contents, Is.EqualTo(expectedContents));
             });
         }
+#endif
 
         [Test]
         public void Can_POST_upload_file_using_ServiceClient()

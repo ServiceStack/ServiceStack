@@ -63,7 +63,7 @@ namespace ServiceStack.Host.NetCore
             response ?? (response = new NetCoreResponse(this, context.Response));
 
         public string OperationName { get; set; }
-        public string Verb => request.Method;
+        public string Verb => HttpMethod;
         public RequestAttributes RequestAttributes { get; set; }
 
         private IRequestPreferences requestPreferences;
@@ -172,7 +172,8 @@ namespace ServiceStack.Host.NetCore
                 var nvc = new NameValueCollection();
                 foreach (var query in request.Query)
                 {
-                    nvc.Add(query.Key, query.Value);
+                    foreach (var value in query.Value)
+                        nvc.Add(query.Key, value);
                 }
                 return queryString = new NameValueCollectionWrapper(nvc);
             }

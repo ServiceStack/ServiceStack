@@ -83,7 +83,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private readonly ServiceStackHost appHost;
         class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(typeof(CsvServiceClientTests).Name, typeof(CsvServices).Assembly) {}
+            public AppHost() : base(typeof(CsvServiceClientTests).Name, typeof(CsvServices).GetAssembly()) {}
 
             public override void Configure(Container container) {}
         }

@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class IocAppHost : AppHostHttpListenerBase
     {
         public IocAppHost()
-            : base("IocApp Service", typeof(IocService).Assembly) { }
+            : base("IocApp Service", typeof(IocService).GetAssembly()) { }
 
         public override void Configure(Container container)
         {
@@ -39,6 +39,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+#if !NETCORE
     public class IocServiceAspNetTests : IocServiceTests
     {
         public override IServiceClient CreateClient(ResetIoc request = null)
@@ -48,6 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return client;
         }
     }
+#endif
 
     public class IocServiceHttpListenerTests : IocServiceTests
     {
