@@ -17,7 +17,7 @@
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
       <dependency id="ServiceStack.Common" version="4.5" />
-      <dependency id="EnyimMemcached" version="2.13" />
+      <dependency id="EnyimMemcached" version="2.16.0" />
     </dependencies>
   </metadata>
   <files>
