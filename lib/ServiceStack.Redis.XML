@@ -928,9 +928,9 @@
             <returns></returns>
         </member>
         <member name="T:ServiceStack.Redis.Support.SerializedObjectWrapper">
-            <summary>
-            wraps a serialized representation of an object
-            </summary>
+             <summary>
+             wraps a serialized representation of an object
+             </summary>
             
         </member>
         <member name="M:ServiceStack.Redis.Support.SerializedObjectWrapper.#ctor(System.UInt16,System.ArraySegment{System.Byte})">

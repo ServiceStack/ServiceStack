@@ -1237,6 +1237,18 @@
             <param name="recursionInfo">Tracks how deeply nested we are</param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.PlatformExtensions.AddAttributes(System.Reflection.PropertyInfo,System.Attribute[])">
+            <summary>
+            Add a Property attribute at runtime. 
+            <para>Not threadsafe, should only add attributes on Startup.</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.PlatformExtensions.ReplaceAttribute(System.Reflection.PropertyInfo,System.Attribute)">
+            <summary>
+            Add a Property attribute at runtime. 
+            <para>Not threadsafe, should only add attributes on Startup.</para>
+            </summary>
+        </member>
         <member name="T:ServiceStack.Licensing">
             <summary>
             Public Code API to register commercial license for ServiceStack.
@@ -1293,18 +1305,6 @@
         <member name="M:ServiceStack.ReflectionExtensions.CreateInstance(System.Type)">
             <summary>
             Creates a new instance from the default constructor of type
-            </summary>
-        </member>
-        <member name="M:ServiceStack.PlatformExtensions.AddAttributes(System.Reflection.PropertyInfo,System.Attribute[])">
-            <summary>
-            Add a Property attribute at runtime. 
-            <para>Not threadsafe, should only add attributes on Startup.</para>
-            </summary>
-        </member>
-        <member name="M:ServiceStack.PlatformExtensions.ReplaceAttribute(System.Reflection.PropertyInfo,System.Attribute)">
-            <summary>
-            Add a Property attribute at runtime. 
-            <para>Not threadsafe, should only add attributes on Startup.</para>
             </summary>
         </member>
         <member name="F:ServiceStack.StreamExtensions.DefaultBufferSize">
