@@ -155,7 +155,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 requestBody: "Param=" + param.UrlEncode(),
                 contentType: MimeTypes.FormUrlEncoded, accept: MimeTypes.Json);
 
-            var value = JsonObject.Parse(json)["Param"];
+            var value = JsonObject.Parse(json)["Param"]
+                        ?? JsonObject.Parse(json)["param"];
 
             Assert.That(value, Is.EqualTo(param));
         }

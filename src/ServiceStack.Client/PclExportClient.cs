@@ -36,6 +36,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
+using System.Globalization;
 
 #if NETFX_CORE || PCL || SL5 || NETSTANDARD1_1 
 //namespace System.Collections.Specialized
@@ -1791,7 +1792,12 @@ namespace ServiceStack
 
         public virtual void SetIfModifiedSince(HttpWebRequest webReq, DateTime lastModified)
         {
-#if !(PCL || SL5 || NETSTANDARD1_1 || NETSTANDARD1_6)
+#if (NETSTANDARD1_1 || NETSTANDARD1_6)
+            if (lastModified == DateTime.MinValue)
+                webReq.Headers.Remove(HttpHeaders.IfModifiedSince);
+            else
+                webReq.Headers[HttpHeaders.IfModifiedSince] = lastModified.ToUniversalTime().ToString("R", new DateTimeFormatInfo());
+#elif !(PCL || SL5)
             webReq.IfModifiedSince = lastModified;
 #endif
         }

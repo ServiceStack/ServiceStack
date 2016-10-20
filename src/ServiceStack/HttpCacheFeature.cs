@@ -243,7 +243,7 @@ namespace ServiceStack
                 if (ifModifiedSince != null)
                 {
                     DateTime modifiedSinceDate;
-                    if (DateTime.TryParse(ifModifiedSince, out modifiedSinceDate))
+                    if (DateTime.TryParse(ifModifiedSince, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out modifiedSinceDate))
                         return modifiedSinceDate <= lastModified.Value;
                 }
             }
