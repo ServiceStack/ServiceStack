@@ -8,7 +8,7 @@ namespace ServiceStack.NetCore
 {
     public class NetCoreContainerAdapter : IContainerAdapter
     {
-        private IServiceProvider appServices;
+        private readonly IServiceProvider appServices;
 
         public NetCoreContainerAdapter(IServiceProvider appServices)
         {

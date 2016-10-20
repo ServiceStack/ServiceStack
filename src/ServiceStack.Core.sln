@@ -65,6 +65,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ChatSelfHost", "..\tests\Ch
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ServiceStack.ProtoBuf", "ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.xproj", "{3B382DA7-442F-48E8-BD05-D438DA47FC68}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ServiceStack.Wire", "ServiceStack.Wire\ServiceStack.Wire.xproj", "{DE423183-1C08-4126-BE59-D63050F5015E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -151,6 +153,10 @@ Global
 		{3B382DA7-442F-48E8-BD05-D438DA47FC68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B382DA7-442F-48E8-BD05-D438DA47FC68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B382DA7-442F-48E8-BD05-D438DA47FC68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE423183-1C08-4126-BE59-D63050F5015E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE423183-1C08-4126-BE59-D63050F5015E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE423183-1C08-4126-BE59-D63050F5015E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE423183-1C08-4126-BE59-D63050F5015E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
