@@ -5,44 +5,45 @@ Join the [ServiceStack Google+ Community](https://plus.google.com/communities/11
 ### Simple, Fast, Versatile and full-featured Services Framework
 
 ServiceStack is a simple, fast, versatile and highly-productive full-featured [Web](http://razor.servicestack.net) and 
-[Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services) Framework that's 
-thoughtfully-architected to [reduce artificial complexity](https://github.com/ServiceStack/ServiceStack/wiki/Why-not-OData#why-not-complexity) and promote 
-[remote services best-practices](https://github.com/ServiceStack/ServiceStack/wiki/Advantages-of-message-based-web-services) 
-with a [message-based design](https://github.com/ServiceStack/ServiceStack/wiki/What-is-a-message-based-web-service) 
+[Web Services](http://docs.servicestack.net/web-services.html) Framework that's 
+thoughtfully-architected to [reduce artificial complexity](http://docs.servicestack.net/why-not-odata.html#why-not-complexity) and promote 
+[remote services best-practices](http://docs.servicestack.net/advantages-of-message-based-web-services.html) 
+with a [message-based design](http://docs.servicestack.net/what-is-a-message-based-web-service.html) 
 that allows for maximum re-use that can leverage an integrated 
-[Service Gateway](https://github.com/ServiceStack/ServiceStack/wiki/Service-Gateway) 
+[Service Gateway](http://docs.servicestack.net/service-gateway.html) 
 for the creation of loosely-coupled 
-[Modularized Service](https://github.com/ServiceStack/ServiceStack/wiki/Modularizing-services) Architectures.
+[Modularized Service](http://docs.servicestack.net/modularizing-services.html) Architectures.
 ServiceStack Services are consumable via an array of built-in fast data formats (inc. 
 [JSON](https://github.com/ServiceStack/ServiceStack.Text), 
 XML, 
-[CSV](https://github.com/ServiceStack/ServiceStack/wiki/CSV-Format), 
-[JSV](https://github.com/ServiceStack/ServiceStack.Text/wiki/JSV-Format), 
-[ProtoBuf](https://github.com/ServiceStack/ServiceStack/wiki/Protobuf-format) and 
-[MsgPack](https://github.com/ServiceStack/ServiceStack/wiki/MessagePack-Format)) 
-as well as XSD/WSDL for [SOAP endpoints](https://github.com/ServiceStack/ServiceStack/wiki/SOAP-support) and 
-[Rabbit MQ](https://github.com/ServiceStack/ServiceStack/wiki/Rabbit-MQ), 
-[Redis MQ](https://github.com/ServiceStack/ServiceStack/wiki/Messaging-and-Redis) and
+[CSV](http://docs.servicestack.net/csv-format.html), 
+[JSV](http://docs.servicestack.net/json-jsv-and-xml.html), 
+[ProtoBuf](http://docs.servicestack.net/protobuf-format.html), 
+[Wire](http://docs.servicestack.net/wire-format.html) and 
+[MsgPack](http://docs.servicestack.net/messagepack-format.html)) 
+as well as XSD/WSDL for [SOAP endpoints](http://docs.servicestack.net/soap-support.html) and 
+[Rabbit MQ](http://docs.servicestack.net/rabbit-mq.html), 
+[Redis MQ](http://docs.servicestack.net/messaging-and-redis.html) and
 [Amazon SQS](https://github.com/ServiceStack/ServiceStack.Aws#sqsmqserver) MQ hosts. 
 
 Its design and simplicity focus offers an unparalleled suite of productivity features that can be declaratively enabled 
 without code, from creating fully queryable Web API's with just a single Typed Request DTO with
-[Auto Query](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Query) supporting 
+[Auto Query](http://docs.servicestack.net/autoquery.html) supporting 
 [every major RDBMS](https://github.com/ServiceStack/ServiceStack.OrmLite#8-flavours-of-ormlite-is-on-nuget) 
 to the built-in support for
-[Auto Batched Requests](https://github.com/ServiceStack/ServiceStack/wiki/Auto-Batched-Requests) 
-or effortlessly enabling rich [HTTP Caching](https://github.com/ServiceStack/ServiceStack/wiki/HTTP-Caching) and
-[Encrypted Messaging](https://github.com/ServiceStack/ServiceStack/wiki/Encrypted-Messaging) 
-for all your existing services via [Plugins](https://github.com/ServiceStack/ServiceStack/wiki/Plugins).
+[Auto Batched Requests](http://docs.servicestack.net/auto-batched-requests.html) 
+or effortlessly enabling rich [HTTP Caching](http://docs.servicestack.net/http-caching.html) and
+[Encrypted Messaging](http://docs.servicestack.net/encrypted-messaging.html) 
+for all your existing services via [Plugins](http://docs.servicestack.net/plugins.html).
 
 Your same Services also serve as the Controller in ServiceStack's [Smart Razor Views](http://razor.servicestack.net/)
 reducing the effort to serve both 
 [Web and Single Page Apps](https://github.com/ServiceStackApps/LiveDemos) as well as 
 [Rich Desktop and Mobile Clients](https://github.com/ServiceStackApps/HelloMobile) that are able to deliver instant interactive 
-experiences using ServiceStack's real-time [Server Events](https://github.com/ServiceStack/ServiceStack/wiki/Server-Events).
+experiences using ServiceStack's real-time [Server Events](http://docs.servicestack.net/server-events.html).
 
 ServiceStack Services also maximize productivity for consumers providing an 
-[instant end-to-end typed API without code-gen](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) enabling
+[instant end-to-end typed API without code-gen](http://docs.servicestack.net/csharp-client.html) enabling
 the most productive development experience for developing .NET to .NET Web Services.
 
 ### [Generate Instant Typed APIs from within all Major IDEs!](https://github.com/ServiceStack/ServiceStack/wiki/Add-ServiceStack-Reference)
