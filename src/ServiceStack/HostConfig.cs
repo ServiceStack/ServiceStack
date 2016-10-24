@@ -132,8 +132,10 @@ namespace ServiceStack
                 UseHttpsLinks = false,
 #if !NETSTANDARD1_6
                 UseCamelCase = false,
+                EnableOptimizations = false,
 #else
                 UseCamelCase = true,
+                EnableOptimizations = true,
 #endif
                 DisableChunkedEncoding = false
             };
@@ -207,6 +209,7 @@ namespace ServiceStack
             this.AdminAuthSecret = instance.AdminAuthSecret;
             this.UseHttpsLinks = instance.UseHttpsLinks;
             this.UseCamelCase = instance.UseCamelCase;
+            this.EnableOptimizations = instance.EnableOptimizations;
             this.DisableChunkedEncoding = instance.DisableChunkedEncoding;
         }
 
@@ -294,6 +297,7 @@ namespace ServiceStack
         public bool UseHttpsLinks { get; set; }
 
         public bool UseCamelCase { get; set; }
+        public bool EnableOptimizations { get; set; }
 
         //Disables chunked encoding on Kestrel Server
         public bool DisableChunkedEncoding { get; set; }
