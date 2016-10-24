@@ -23,6 +23,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost = new ExampleAppHostHttpListener();
             appHost.Init();
             appHost.Start(ListeningOn);
+#if NETCORE            
+            appHost.Config.DisableChunkedEncoding = true;
+#endif
         }
 
         [TestFixtureTearDown]
