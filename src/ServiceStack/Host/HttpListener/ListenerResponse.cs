@@ -23,7 +23,7 @@ namespace ServiceStack.Host.HttpListener
         {
             this.response = response;
             this.Request = request;
-            this.Cookies = new Cookies(this);
+            this.Cookies = HostContext.AppHost.GetCookies(this);
             this.Items = new Dictionary<string, object>();
         }
 

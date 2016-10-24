@@ -27,7 +27,7 @@ namespace ServiceStack.Host.NetCore
             this.request = request;
             this.response = response;
             this.Items = new Dictionary<string, object>();
-            this.Cookies = new NetCoreCookies(response);
+            this.Cookies = HostContext.AppHost.GetCookies(this);
 
             //Don't set StatusCode here as it disables Redirects from working in MVC 
             //response.StatusCode = 200;
