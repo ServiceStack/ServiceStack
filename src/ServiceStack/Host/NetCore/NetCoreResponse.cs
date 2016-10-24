@@ -165,49 +165,6 @@ namespace ServiceStack.Host.NetCore
 
         public ICookies Cookies { get; }
     }
-
-    public class NetCoreCookies : ICookies
-    {
-        public const string RootPath = "/";
-        private HttpResponse response;
-
-        public NetCoreCookies(HttpResponse response)
-        {
-            this.response = response;
-        }
-
-        public void DeleteCookie(string cookieName)
-        {
-            response.Cookies.Delete(cookieName);
-        }
-
-        public void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
-        {
-            var options = new CookieOptions
-            {
-                Path = RootPath,
-                Expires = DateTime.UtcNow.AddYears(20)
-            };
-            if (secureOnly != null)
-            {
-                options.Secure = secureOnly.Value;
-            }
-            response.Cookies.Append(cookieName, cookieValue, options);
-        }
-
-        public void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
-        {
-            var options = new CookieOptions
-            {
-                Path = RootPath,
-            };
-            if (secureOnly != null)
-            {
-                options.Secure = secureOnly.Value;
-            }
-            response.Cookies.Append(cookieName, cookieValue, options);
-        }
-    }
 }
 
 #endif
