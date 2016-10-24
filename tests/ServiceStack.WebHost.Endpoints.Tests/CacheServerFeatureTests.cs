@@ -152,7 +152,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response, Is.EqualTo(request));
         }
 
-#if !NETCORE_SUPPORT
         [Test]
         public void Does_throw_304_when_not_ModifiedSince()
         {
@@ -160,7 +159,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new SetCache { LastModified = new DateTime(2016, 1, 1, 0, 0, 0) };
 
             client.RequestFilter = req =>
-                req.IfModifiedSince = request.LastModified.Value;
+                PclExportClient.Instance.SetIfModifiedSince(req, request.LastModified.Value);
 
             client.ResponseFilter = res =>
             {
@@ -187,7 +186,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new SetCache { LastModified = new DateTime(2016, 1, 1, 0, 0, 0) };
 
             client.RequestFilter = req =>
-                req.IfModifiedSince = request.LastModified.Value + TimeSpan.FromSeconds(1);
+                PclExportClient.Instance.SetIfModifiedSince(req, request.LastModified.Value + TimeSpan.FromSeconds(1));
 
             client.ResponseFilter = res =>
                 Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=600"));
@@ -195,7 +194,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Get(request);
             Assert.That(response, Is.EqualTo(request));
         }
-#endif
 
         [Test]
         public void Can_short_circuit_Service_implementation_when_ETag_matches()
@@ -259,7 +257,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response, Is.EqualTo(request));
         }
 
-#if !NETCORE_SUPPORT
         [Test]
         public void ToOptimizedResult_throws_304_when_not_ModifiedSince()
         {
@@ -277,7 +274,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 client.RequestFilter = req =>
-                    req.IfModifiedSince = lastModified.Value;
+                    PclExportClient.Instance.SetIfModifiedSince(req, lastModified.Value);
 
                 response = client.Get(request);
                 Assert.Fail("Should throw 304 NotModified");
@@ -288,7 +285,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     throw;
             }
         }
-#endif
 
         [Test]
         public void CachedServiceClient_does_return_cached_ETag_Requests()
