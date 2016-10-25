@@ -47,6 +47,11 @@ namespace ServiceStack.Support
         {
             return new DeflateStream(outputStream, CompressionMode.Compress);
         }
+
+        public Stream InflateStream(Stream inputStream)
+        {
+            return new DeflateStream(inputStream, CompressionMode.Decompress);
+        }
     }
 }
 #endif

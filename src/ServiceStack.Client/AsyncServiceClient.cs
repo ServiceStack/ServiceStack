@@ -322,7 +322,12 @@ namespace ServiceStack
                 }
 
                 // Read the response into a Stream object.
+#if NETSTANDARD1_1 || NETSTANDARD1_6
+                var responseStream = requestState.WebResponse.GetResponseStream()
+                    .Decompress(requestState.WebResponse.Headers[HttpHeaders.ContentEncoding]);
+#else
                 var responseStream = requestState.WebResponse.GetResponseStream();
+#endif
                 requestState.ResponseStream = responseStream;
 
                 var task = responseStream.ReadAsync(requestState.BufferRead, 0, BufferSize);

@@ -44,6 +44,11 @@ namespace ServiceStack.Support
         {
             return new GZipStream(outputStream, CompressionMode.Compress);
         }
+
+        public Stream GUnzipStream(Stream gzStream)
+        {
+            return new GZipStream(gzStream, CompressionMode.Decompress);
+        }
     }
 }
 #endif

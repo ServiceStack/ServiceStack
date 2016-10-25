@@ -68,6 +68,26 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Decompresses the specified gz buffer using inflate or gzip method
+        /// </summary>
+        /// <param name="gzStream">Compressed stream</param>
+        /// <param name="compressionType">Type of the compression. Can be "gzip" or "deflate"</param>
+        /// <returns>Decompressed stream</returns>
+        public static Stream Decompress(this Stream gzStream, string compressionType)
+        {
+            if (String.IsNullOrEmpty(compressionType))
+                return gzStream;
+
+            if (compressionType == CompressionTypes.Deflate)
+                return DeflateProvider.InflateStream(gzStream);
+
+            if (compressionType == CompressionTypes.GZip)
+                return GZipProvider.GUnzipStream(gzStream);
+
+            throw new NotSupportedException(compressionType);
+        }
+
+        /// <summary>
         /// Decompresses the specified gz buffer using the default compression method: Inflate
         /// </summary>
         public static byte[] DecompressBytes(this byte[] gzBuffer, string compressionType)
