@@ -89,6 +89,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
         [IgnoreDataMember]
         public string Ignored { get; set; }
+
+        [ApiMember(
+            Name = "Token",
+            ParameterType = "header",
+            DataType = "string",
+            IsRequired = true)]
+        public string Token { get; set; }
     }
 
     [Route("/swagger-complex", "POST")]
