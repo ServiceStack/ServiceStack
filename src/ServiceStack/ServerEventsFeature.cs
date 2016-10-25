@@ -401,6 +401,8 @@ namespace ServiceStack
             set { Interlocked.Exchange(ref LastPulseAtTicks, value.Ticks); }
         }
 
+        private long subscribed = 1;
+
         private readonly IResponse response;
         private long msgId;
 
@@ -476,7 +478,12 @@ namespace ServiceStack
 
         public void Unsubscribe()
         {
-            OnUnsubscribe?.Invoke(this);
+            if (Interlocked.CompareExchange(ref subscribed, 0, 1) == 1)
+            {
+                var fn = OnUnsubscribe;
+                OnUnsubscribe = null;
+                fn?.Invoke(this);
+            }
         }
 
         public void Dispose()
