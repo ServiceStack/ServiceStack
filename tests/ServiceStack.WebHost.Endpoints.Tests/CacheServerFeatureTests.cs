@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Caching;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
@@ -34,9 +35,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Dispose();
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            //clear cache after each test
+            var cache = Service.GlobalResolver.TryResolve<ICacheClient>();
+            cache.FlushAll();
+        }        
+
         protected JsonServiceClient GetClient()
         {
-            return new JsonServiceClient(Config.ListeningOn);
+            var client = new JsonServiceClient(Config.ListeningOn);
+#if NETCORE            
+            client.AddHeader(HttpHeaders.AcceptEncoding, "gzip,deflate");
+#endif
+            return client;
         }
 
         [Test]
