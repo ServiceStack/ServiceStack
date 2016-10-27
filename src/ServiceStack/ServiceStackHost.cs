@@ -577,7 +577,8 @@ namespace ServiceStack
 
             if (config.EnableOptimizations)
             {
-                MemoryStreamFactory.UseRecyclableMemoryStream = true;
+                //temporary turn it off, because RecyclableMemoryStream throws disposed exception
+                //MemoryStreamFactory.UseRecyclableMemoryStream = true;
             }
 
             var specifiedContentType = config.DefaultContentType; //Before plugins loaded

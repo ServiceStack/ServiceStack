@@ -315,6 +315,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public async Task<GetFactorialResponse> Any(ThrowErrorAwaitAsync request)
         {
+            await Task.Delay(0);
             throw new HttpError(HttpStatusCode.Forbidden, HttpStatusCode.Forbidden.ToString(), request.Message ?? "Request is forbidden");
         }
 

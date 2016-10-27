@@ -418,8 +418,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 #endif
             webRes = webReq.GetResponse();
             Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.Json));
-            response = webRes.GetResponseStream().ReadFully().FromUtf8Bytes()
-                .FromJson<ServerCacheOnly>();
+            var responseGzip = webRes.GetResponseStream().ReadFully();
+#if !NETCORE
+            response = responseGzip.FromUtf8Bytes().FromJson<ServerCacheOnly>();
+#else
+            response = responseGzip.Decompress("gzip").FromJson<ServerCacheOnly>();
+#endif
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(2)); //New encoding new cache
             AssertEquals(response, request);
 

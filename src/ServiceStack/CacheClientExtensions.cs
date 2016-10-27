@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ServiceStack.Caching;
 using ServiceStack.Web;
+using System.Globalization;
 
 namespace ServiceStack
 {
@@ -27,7 +28,7 @@ namespace ServiceStack
                 return null;
 
             DateTime checkLastModified;
-            if (!DateTime.TryParse(ifModifiedSince, out checkLastModified))
+            if (!DateTime.TryParse(ifModifiedSince, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out checkLastModified))
                 return null;
 
             return checkLastModified;
@@ -168,7 +169,7 @@ namespace ServiceStack
                 if (doCompression)
                 {
                     var lastModified = HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedResults()
-                        && request.Response.GetHeader(HttpHeaders.CacheControl) == null
+                        && String.IsNullOrEmpty(request.Response.GetHeader(HttpHeaders.CacheControl))
                         ? DateTime.UtcNow
                         : (DateTime?)null;
 

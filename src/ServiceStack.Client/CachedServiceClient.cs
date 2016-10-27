@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -143,7 +144,7 @@ namespace ServiceStack
             if (lastModifiedStr != null)
             {
                 DateTime lastModified;
-                if (DateTime.TryParse(lastModifiedStr, out lastModified))
+                if (DateTime.TryParse(lastModifiedStr, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out lastModified))
                     entry.LastModified = lastModified.ToUniversalTime();
             }
 

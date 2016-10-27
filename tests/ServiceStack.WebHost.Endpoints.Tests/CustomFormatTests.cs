@@ -36,6 +36,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
+                ContentTypes.ClearCustomFilters();
                 SetConfig(new HostConfig
                 {
                     DefaultContentType = MimeTypes.Json,
@@ -66,7 +67,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var json = Config.AbsoluteBaseUri.CombineWith("hellojson", "World")
                 .GetStringFromUrl(accept: "text/html,*/*;q=0.9");
 
-            Assert.That(json, Is.EqualTo("{\"Name\":\"Hello, World!\"}"));
+            Assert.That(json, Is.EqualTo("{\"Name\":\"Hello, World!\"}")
+                            .Or.EqualTo("{\"name\":\"Hello, World!\"}"));
         }
     }
 }

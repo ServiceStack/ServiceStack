@@ -1651,7 +1651,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.All(x => x.LastName == null));
             Assert.That(response.Results.Any(x => x.Age > 0));
             Assert.That(response.Results.All(x => x.DateDied == null));
-            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime).ToLocalTime()));
         }
 
         [Test]
@@ -1670,7 +1670,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.All(x => x.LastName == null));
             Assert.That(response.Results.Any(x => x.Age > 0));
             Assert.That(response.Results.All(x => x.DateDied == null));
-            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime).ToLocalTime()));
         }
 
         [Test]
