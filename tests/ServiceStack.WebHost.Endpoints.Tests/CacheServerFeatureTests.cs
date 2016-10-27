@@ -39,7 +39,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void TearDown()
         {
             //clear cache after each test
-            var cache = Service.GlobalResolver.TryResolve<ICacheClient>();
+            var cache = appHost.TryResolve<ICacheClient>();
             cache.FlushAll();
         }        
 
