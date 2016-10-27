@@ -138,7 +138,7 @@ namespace ServiceStack
             }
 
             //or SERVICESTACK_LICENSE Environment variable
-            licenceKeyText = Environment.GetEnvironmentVariable(EnvironmentKey);
+            licenceKeyText = Environment.GetEnvironmentVariable(EnvironmentKey)?.Trim();
             if (!string.IsNullOrEmpty(licenceKeyText))
             {
                 LicenseUtils.RegisterLicense(licenceKeyText);
@@ -223,12 +223,12 @@ namespace ServiceStack
         {
             var binPath = AssemblyUtils.GetAssemblyBinPath(Assembly.GetExecutingAssembly());
             Assembly assembly = null;
-            var assemblyDllPath = binPath + string.Format("{0}.{1}", assemblyName, "dll");
+            var assemblyDllPath = binPath + $"{assemblyName}.dll";
             if (File.Exists(assemblyDllPath))
             {
                 assembly = AssemblyUtils.LoadAssembly(assemblyDllPath);
             }
-            var assemblyExePath = binPath + string.Format("{0}.{1}", assemblyName, "exe");
+            var assemblyExePath = binPath + $"{assemblyName}.exe";
             if (File.Exists(assemblyExePath))
             {
                 assembly = AssemblyUtils.LoadAssembly(assemblyExePath);
