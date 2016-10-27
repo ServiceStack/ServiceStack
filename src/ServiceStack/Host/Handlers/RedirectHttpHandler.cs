@@ -10,11 +10,14 @@ namespace ServiceStack.Host.Handlers
         public RedirectHttpHandler()
         {
             this.RequestName = GetType().Name;
+            this.StatusCode = HttpStatusCode.Redirect;
         }
 
         public string RelativeUrl { get; set; }
 
         public string AbsoluteUrl { get; set; }
+
+        public HttpStatusCode StatusCode { get; set; }
 
         /// <summary>
         /// Non ASP.NET requests
@@ -29,7 +32,7 @@ namespace ServiceStack.Host.Handlers
 
             if (!string.IsNullOrEmpty(AbsoluteUrl))
             {
-                response.StatusCode = (int)HttpStatusCode.Redirect;
+                response.StatusCode = (int)StatusCode;
                 response.AddHeader(HttpHeaders.Location, this.AbsoluteUrl);
             }
             else
@@ -44,7 +47,7 @@ namespace ServiceStack.Host.Handlers
                     else
                         absoluteUrl = request.AbsoluteUri.CombineWith(this.RelativeUrl);
                 }
-                response.StatusCode = (int)HttpStatusCode.Redirect;
+                response.StatusCode = (int)StatusCode;
                 response.AddHeader(HttpHeaders.Location, absoluteUrl);
             }
 
@@ -66,7 +69,7 @@ namespace ServiceStack.Host.Handlers
 
             if (!string.IsNullOrEmpty(AbsoluteUrl))
             {
-                response.StatusCode = (int)HttpStatusCode.Redirect;
+                response.StatusCode = (int)StatusCode;
                 response.AddHeader(HttpHeaders.Location, this.AbsoluteUrl);
             }
             else
@@ -81,7 +84,7 @@ namespace ServiceStack.Host.Handlers
                     else
                         absoluteUrl = request.Url.AbsoluteUri.CombineWith(this.RelativeUrl);
                 }
-                response.StatusCode = (int)HttpStatusCode.Redirect;
+                response.StatusCode = (int)StatusCode;
                 response.AddHeader(HttpHeaders.Location, absoluteUrl);
             }
 
