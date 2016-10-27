@@ -1725,6 +1725,10 @@ namespace ServiceStack
 
         protected TResponse GetResponse<TResponse>(WebResponse webResponse)
         {
+#if NETSTANDARD1_1 || NETSTANDARD1_6
+            var compressionType = webResponse.Headers[HttpHeaders.ContentEncoding];
+#endif
+
             //Callee Needs to dispose of response manually
             if (typeof(TResponse) == typeof(HttpWebResponse) && webResponse is HttpWebResponse)
             {
@@ -1732,10 +1736,18 @@ namespace ServiceStack
             }
             if (typeof(TResponse) == typeof(Stream))
             {
+#if NETSTANDARD1_1 || NETSTANDARD1_6
+                return (TResponse)(object)webResponse.GetResponseStream().Decompress(compressionType);
+#else
                 return (TResponse)(object)webResponse.GetResponseStream();
+#endif
             }
 
+#if NETSTANDARD1_1 || NETSTANDARD1_6
+            using (var responseStream = webResponse.GetResponseStream().Decompress(compressionType))
+#else
             using (var responseStream = webResponse.GetResponseStream())
+#endif
             {
                 if (typeof(TResponse) == typeof(string))
                 {

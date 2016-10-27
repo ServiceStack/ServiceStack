@@ -152,6 +152,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
+#if NETCORE
+		[Ignore("HttpClient does not support `Expect: 100-Continue`. Should be fixed in .NET Core 1.1")]
+#endif
 		public void Does_use_request_binder_for_PUT()
 		{
             var response = client.Put<CustomRequestBinderResponse>("/customrequestbinder", new CustomRequestBinder());
