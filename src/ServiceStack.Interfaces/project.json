@@ -44,11 +44,11 @@
         ]
       },
       "frameworkAssemblies": {
-        "System.Runtime.Serialization.Primitives": "4.1.1-*",
-        "System.Runtime.Serialization.Xml": "4.1.1",
-        "System.Net.Requests": "4.0.11",
-        "System.Dynamic.Runtime": "4.0.11",
-        "Microsoft.CSharp": "4.0.1-*"
+        "System.Runtime.Serialization.Primitives": "4.0.0",
+        "System.Runtime.Serialization.Xml": "4.0.0",
+        "System.Net.Requests": "4.0.0",
+        "System.Dynamic.Runtime": "4.0.0",
+        "Microsoft.CSharp": "4.0.0"
       }
     },
     ".NETPortable,Version=v4.0,Profile=Profile344": {
