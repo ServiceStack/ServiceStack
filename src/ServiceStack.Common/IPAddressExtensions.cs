@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
 namespace ServiceStack
@@ -14,6 +13,9 @@ namespace ServiceStack
     /// </summary>
     public static class IPAddressExtensions
     {
+        [Obsolete("Temporary workaround to avoid accessing NetworkInformation (https://github.com/dotnet/corefx/issues/12969)")]
+        public static bool AccessNetworkInterface = true;
+
         public static IPAddress GetBroadcastAddress(this IPAddress address, IPAddress subnetMask)
         {
             var ipAdressBytes = address.GetAddressBytes();
@@ -114,14 +116,17 @@ namespace ServiceStack
             try
             {
 #if !SL5
-                foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+                if (AccessNetworkInterface)
                 {
-                    foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
+                    foreach (var ni in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
                     {
-                        if (uipi.Address.AddressFamily != AddressFamily.InterNetwork) continue;
+                        foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
+                        {
+                            if (uipi.Address.AddressFamily != AddressFamily.InterNetwork) continue;
 
-                        if (uipi.IPv4Mask == null) continue; //ignore 127.0.0.1
-                        map[uipi.Address] = uipi.IPv4Mask;
+                            if (uipi.IPv4Mask == null) continue; //ignore 127.0.0.1
+                            map[uipi.Address] = uipi.IPv4Mask;
+                        }
                     }
                 }
 #endif
@@ -144,12 +149,15 @@ namespace ServiceStack
             try
             {
 #if !SL5
-                foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+                if (AccessNetworkInterface)
                 {
-                    foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
+                    foreach (var ni in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
                     {
-                        if (uipi.Address.AddressFamily != AddressFamily.InterNetworkV6) continue;
-                        list.Add(uipi.Address);
+                        foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
+                        {
+                            if (uipi.Address.AddressFamily != AddressFamily.InterNetworkV6) continue;
+                            list.Add(uipi.Address);
+                        }
                     }
                 }
 #endif

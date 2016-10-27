@@ -6,6 +6,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
+#if !NETSTANDARD1_6
     public class Cookies : ICookies
     {
         readonly IHttpResponse httpRes;
@@ -57,6 +58,53 @@ namespace ServiceStack.Host
             httpRes.SetCookie(cookie);
         }
     }
+#else
+    public class Cookies : ICookies
+    {
+        public const string RootPath = "/";
+        private readonly Microsoft.AspNetCore.Http.HttpResponse response;
+
+        public Cookies(IHttpResponse response)
+            : this((Microsoft.AspNetCore.Http.HttpResponse)response.OriginalResponse){}
+
+        public Cookies(Microsoft.AspNetCore.Http.HttpResponse response)
+        {
+            this.response = response;
+        }
+
+        public void DeleteCookie(string cookieName)
+        {
+            response.Cookies.Delete(cookieName);
+        }
+
+        public void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
+        {
+            var options = new Microsoft.AspNetCore.Http.CookieOptions
+            {
+                Path = RootPath,
+                Expires = DateTime.UtcNow.AddYears(20)
+            };
+            if (secureOnly != null)
+            {
+                options.Secure = secureOnly.Value;
+            }
+            response.Cookies.Append(cookieName, cookieValue, options);
+        }
+
+        public void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
+        {
+            var options = new Microsoft.AspNetCore.Http.CookieOptions
+            {
+                Path = RootPath,
+            };
+            if (secureOnly != null)
+            {
+                options.Secure = secureOnly.Value;
+            }
+            response.Cookies.Append(cookieName, cookieValue, options);
+        }
+    }
+#endif
 
     public static class CookiesExtensions
     {

@@ -575,6 +575,11 @@ namespace ServiceStack
             if (config.UseCamelCase)
                 JsConfig.EmitCamelCaseNames = true;
 
+            if (config.EnableOptimizations)
+            {
+                MemoryStreamFactory.UseRecyclableMemoryStream = true;
+            }
+
             var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 
             var plugins = Plugins.ToArray();
