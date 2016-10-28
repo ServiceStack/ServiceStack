@@ -144,7 +144,7 @@ namespace ServiceStack.Serialization
                 }
                 catch (Exception ex)
                 {
-                    var error = new RequestBindingError();
+                    var error = new RequestBindingError { ErrorMessage = ex.Message };
 
                     if (propertyName != null)
                         error.PropertyName = propertyName;
@@ -180,5 +180,6 @@ namespace ServiceStack.Serialization
         public string PropertyName { get; set; }
         public string PropertyValueString { get; set; }
         public Type PropertyType { get; set; }
+        public string ErrorMessage { get; set; }
     }
 }
