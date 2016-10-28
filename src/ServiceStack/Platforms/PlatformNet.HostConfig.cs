@@ -136,7 +136,7 @@ namespace ServiceStack.Platforms
             {
                 var webServerSection = webConfig.GetSection("system.webServer");
                 var rawXml = webServerSection?.SectionInformation.GetRawXml();
-                if (!String.IsNullOrEmpty(rawXml))
+                if (!string.IsNullOrEmpty(rawXml))
                 {
                     SetPaths(config, ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
                 }
@@ -156,11 +156,19 @@ namespace ServiceStack.Platforms
 
         private static string ExtractHandlerPathFromWebServerConfigurationXml(string rawXml)
         {
-            return XDocument.Parse(rawXml).Root.Element("handlers")
-                .Descendants("add")
-                .Where(handler => EnsureHandlerTypeAttribute(handler).StartsWith("ServiceStack"))
-                .Select(handler => handler.Attribute("path").Value)
-                .FirstOrDefault();
+            try
+            {
+                return XDocument.Parse(rawXml).Root.Element("handlers")
+                    .Descendants("add")
+                    .Where(handler => EnsureHandlerTypeAttribute(handler).StartsWith("ServiceStack"))
+                    .Select(handler => handler.Attribute("path").Value)
+                    .FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                HostContext.AppHost?.OnStartupException(ex);
+                return null;
+            }
         }
 
         private static string EnsureHandlerTypeAttribute(XElement handler)
@@ -169,7 +177,7 @@ namespace ServiceStack.Platforms
             {
                 return handler.Attribute("type").Value;
             }
-            return String.Empty;
+            return string.Empty;
         }
 
         private static void SetPaths(HostConfig config, string handlerPath, string locationPath)
@@ -178,11 +186,11 @@ namespace ServiceStack.Platforms
 
             if (locationPath == null)
             {
-                handlerPath = handlerPath.Replace("*", String.Empty);
+                handlerPath = handlerPath.Replace("*", string.Empty);
             }
 
             config.HandlerFactoryPath = locationPath ??
-                                        (String.IsNullOrEmpty(handlerPath) ? null : handlerPath);
+                (string.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
             config.MetadataRedirectPath = "metadata";
         }
