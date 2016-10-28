@@ -223,9 +223,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [TestFixture]
-#if NETCORE    
-    [Ignore("TODO: Fix hang on .NET Core")]
-#endif
+
     public class RedisServerEventsTests : ServerEventsTests
     {
         protected override ServiceStackHost CreateAppHost()
@@ -251,6 +249,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
+
+            var redisEvents = appHost.Resolve<IServerEvents>() as RedisServerEvents;
+            if (redisEvents != null)
+                redisEvents.Dispose();
+
             appHost.Dispose();
         }
 
@@ -428,9 +431,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-#if NETCORE       
-        [Ignore("TODO: need to fix on .NET Core")]
-#endif
         public async Task Does_receive_messages()
         {
             using (var client1 = CreateServerEventsClient())
@@ -445,9 +445,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 await Task.WhenAll(client1.Connect(), client1.WaitForNextCommand()); //connect1 + join1
 
                 "client2.Connect()...".Print();
+                client2.Connect().WaitAsync();
+                "client2 connected".Print();
+
                 await Task.WhenAll(
-                    client2.Connect(), client2.WaitForNextCommand(), //connect2 + join2
-                    client1.WaitForNextCommand()); //join2
+                    client2.WaitForNextCommand(), //join2
+                    client1.WaitForNextCommand()).WaitAsync(); //join1
 
                 "Waiting for Msg1...".Print();
                 var taskMsg1 = client1.WaitForNextMessage();
