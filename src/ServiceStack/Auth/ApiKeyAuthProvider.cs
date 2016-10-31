@@ -205,7 +205,7 @@ namespace ServiceStack.Auth
                 if (response != null)
                     return response;
 
-                authService.Request.Items[Keywords.ApiKey] = apiKey; //typically set in PreAuthenticate
+                authService.Request.Items[Keywords.ApiKey] = apiKey;
 
                 return new AuthenticateResponse
                 {
@@ -242,10 +242,6 @@ namespace ServiceStack.Auth
 
         protected virtual ApiKey GetApiKey(IRequest req, string apiKey)
         {
-            var key = req.GetApiKey();
-            if (key != null)
-                return key;
-
             var authRepo = (IManageApiKeys)HostContext.AppHost.GetAuthRepository(req);
             using (authRepo as IDisposable)
             {
@@ -271,7 +267,6 @@ namespace ServiceStack.Auth
                 throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
 
             ValidateApiKey(apiKey);
-            req.Items[Keywords.ApiKey] = apiKey;
 
             var apiSessionKey = GetSessionKey(apiKey.Id);
             if (SessionCacheDuration != null)
@@ -283,6 +278,7 @@ namespace ServiceStack.Auth
 
                 if (session != null)
                 {
+                    req.Items[Keywords.ApiKey] = apiKey;
                     req.Items[Keywords.Session] = session;
                     return;
                 }
