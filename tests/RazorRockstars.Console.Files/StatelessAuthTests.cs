@@ -1098,6 +1098,40 @@ namespace RazorRockstars.Console.Files
         }
 
         [Test]
+        public void Can_Authenticate_with_ApiKeyAuth_SessionCacheDuration()
+        {
+            apiProvider.SessionCacheDuration = TimeSpan.FromSeconds(60);
+
+            var client = GetClientWithBearerToken(ApiKey);
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            //Does not preserve UserSession
+            var newClient = GetClient();
+            newClient.SetSessionId(client.GetSessionId());
+            try
+            {
+                response = newClient.Send(request);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
+
+            var cachedSession = appHost.GetCacheClient().Get<IAuthSession>(ApiKeyAuthProvider.GetSessionKey(ApiKey));
+            Assert.That(cachedSession.IsAuthenticated);
+
+            //Can call multiple times using cached UserSession
+            response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            apiProvider.SessionCacheDuration = null;
+        }
+
+        [Test]
         public void Can_not_access_Secured_Pages_without_Authentication()
         {
             Assert.That(ListeningOn.CombineWith("/secured").GetStringFromUrl(),
