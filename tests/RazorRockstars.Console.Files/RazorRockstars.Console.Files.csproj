@@ -146,7 +146,6 @@
     <Compile Include="MsgPackServiceTests.cs" />
     <Compile Include="RazorRockstars_FilesTests.cs" />
     <Compile Include="ReqStarsService.cs" />
-    <Compile Include="StatelessAuthTests.cs" />
     <Compile Include="ValidationService.cs" />
     <Compile Include="VirtualPathTests.cs" />
   </ItemGroup>

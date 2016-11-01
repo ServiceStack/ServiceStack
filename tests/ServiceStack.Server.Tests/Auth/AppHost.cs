@@ -5,24 +5,19 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using Funq;
-using ServiceStack;
-using ServiceStack.Api.Swagger;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
-using ServiceStack.Razor;
-using ServiceStack.Validation;
 using ServiceStack.Web;
 
 //The entire C# code for the stand-alone RazorRockstars demo.
-namespace RazorRockstars.Console.Files
+namespace ServiceStack.Server.Tests.Auth
 {
-    public class AppHost : AppHostHttpListenerBase
+    public class AppHost : AppSelfHostBase
     {
-        public AppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
+        public AppHost() : base("Test Auth", typeof(AppHost).GetAssembly()) { }
 
-        public bool EnableRazor = true;
         public RSAParameters? JwtRsaPrivateKey;
         public RSAParameters? JwtRsaPublicKey;
         public bool JwtEncryptPayload = false;
@@ -36,21 +31,14 @@ namespace RazorRockstars.Console.Files
         {
             Use?.Invoke(container);
 
-            if (EnableRazor)
-                Plugins.Add(new RazorFormat());
-
-            Plugins.Add(new SwaggerFeature());
-            Plugins.Add(new RequestInfoFeature());
-            Plugins.Add(new RequestLogsFeature());
-            Plugins.Add(new ServerEventsFeature());
-
-            Plugins.Add(new ValidationFeature());
-            container.RegisterValidators(typeof(AutoValidationValidator).Assembly);
+#if !NETSTANDARD1_6
+            Plugins.Add(new Razor.RazorFormat());
+#endif
 
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
             container.Register<IDbConnectionFactory>(dbFactory);
 
-            dbFactory.RegisterConnection("testdb", "~/App_Data/test.sqlite".MapAbsolutePath(), SqliteDialect.Provider);
+            dbFactory.RegisterConnection("testdb", MapProjectPath("~/App_Data/test.sqlite"), SqliteDialect.Provider);
 
             using (var db = dbFactory.OpenDbConnection())
             {
@@ -69,6 +57,29 @@ namespace RazorRockstars.Console.Files
                 AdminAuthSecret = "secret",
                 DebugMode = true,
             });
+
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                new IAuthProvider[] {
+                    new BasicAuthProvider(AppSettings),
+                    new CredentialsAuthProvider(AppSettings),
+                    new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
+                    new JwtAuthProvider(AppSettings)
+                    {
+                        AuthKey = JwtRsaPrivateKey != null || JwtRsaPublicKey != null ? null : AesUtils.CreateKey(),
+                        RequireSecureConnection = false,
+                        HashAlgorithm = JwtRsaPrivateKey != null || JwtRsaPublicKey != null ? "RS256" : "HS256",
+                        PublicKey = JwtRsaPublicKey,
+                        PrivateKey = JwtRsaPrivateKey,
+                        EncryptPayload = JwtEncryptPayload,
+                        FallbackAuthKeys = FallbackAuthKeys,
+                        FallbackPublicKeys = FallbackPublicKeys,
+                    },
+                })
+            {
+                IncludeRegistrationService = true,
+            });
+
+            container.Resolve<IAuthRepository>().InitSchema();
         }
 
         public override IDbConnection GetDbConnection(IRequest req = null)
@@ -84,16 +95,6 @@ namespace RazorRockstars.Console.Files
             return GetAuthRepositoryFn != null
                 ? GetAuthRepositoryFn(req)
                 : base.GetAuthRepository(req);
-        }
-
-        private static void Main(string[] args)
-        {
-            var appHost = new AppHost();
-            appHost.Init();
-            appHost.Start("http://*:1337/");
-            System.Console.WriteLine("Listening on http://localhost:1337/ ...");
-            System.Console.ReadLine();
-            System.Threading.Thread.Sleep(System.Threading.Timeout.Infinite);
         }
     }
 
@@ -281,38 +282,6 @@ namespace RazorRockstars.Console.Files
         public int Id { get; set; }
     }
 
-
-    [Route("/channels/{Channel}/raw")]
-    public class PostRawToChannel : IReturnVoid
-    {
-        public string From { get; set; }
-        public string ToUserId { get; set; }
-        public string Channel { get; set; }
-        public string Message { get; set; }
-        public string Selector { get; set; }
-    }
-
-    public class ServerEventsService : Service
-    {
-        public IServerEvents ServerEvents { get; set; }
-
-        public void Any(PostRawToChannel request)
-        {
-            var sub = ServerEvents.GetSubscriptionInfo(request.From);
-            if (sub == null)
-                throw HttpError.NotFound("Subscription {0} does not exist".Fmt(request.From));
-
-            if (request.ToUserId != null)
-            {
-                ServerEvents.NotifyUserId(request.ToUserId, request.Selector, request.Message);
-            }
-            else
-            {
-                ServerEvents.NotifyChannel(request.Channel, request.Selector, request.Message);
-            }
-        }
-    }
-
     [Route("/Content/hello/{Name*}")]
     public class TestWildcardRazorPage
     {
@@ -324,23 +293,6 @@ namespace RazorRockstars.Console.Files
         public object Get(TestWildcardRazorPage request)
         {
             return request;
-        }
-    }
-
-    [Route("/contentpages/{PathInfo*}")]
-    public class TestRazorContentPage
-    {
-        public string PathInfo { get; set; }
-    }
-
-    public class TestRazorContentPageService : Service
-    {
-        public object Any(TestRazorContentPage request)
-        {
-            return new HttpResult(request)
-            {
-                View = "/" + request.PathInfo
-            };
         }
     }
 
