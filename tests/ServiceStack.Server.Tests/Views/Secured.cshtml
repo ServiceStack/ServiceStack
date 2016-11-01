@@ -1,0 +1,11 @@
+﻿@inherits ViewPage<SecuredResponse>
+
+@{
+    base.RedirectIfNotAuthenticated();
+}
+
+<h1>Secure View</h1>
+
+<h3>@Model.Result</h3>
+
+<!--view:Secured.cshtml-->
