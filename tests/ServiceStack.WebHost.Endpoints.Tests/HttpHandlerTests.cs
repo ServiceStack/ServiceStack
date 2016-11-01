@@ -93,6 +93,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+#if NETCORE
+        [Ignore("NotFoundHttpHandler is not used in .NET Core and is skipped in AppSelfHostBase.ProcessRequest")]
+#endif
         public void Does_call_begin_and_end_on_Raw_HttpHandler_requests()
         {
             try
