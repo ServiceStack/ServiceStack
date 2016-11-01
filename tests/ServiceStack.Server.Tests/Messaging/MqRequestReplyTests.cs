@@ -153,6 +153,7 @@ namespace ServiceStack.Server.Tests.Messaging
             public long Result { get; set; }
         }
 
+        [Explicit("Takes too long")]
         [Test]
         public void Can_handle_multiple_rpc_clients()
         {
