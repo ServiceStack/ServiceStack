@@ -43,6 +43,12 @@ namespace ServiceStack.Server.Tests.Auth
             ApiKey = user1Client.Get(new GetApiKeys { Environment = "live" }).Results[0].Key;
         }
 
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
         protected virtual ServiceStackHost CreateAppHost() =>
             new AppHost {
                 Use = container => container.Register<IAuthRepository>(c =>
