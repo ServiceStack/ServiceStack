@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ServiceStack
 {
-    public static class ExecExtensions
+    public static class ExecUtils
     {
         public static void LogError(Type declaringType, string clientMethodName, Exception ex)
         {

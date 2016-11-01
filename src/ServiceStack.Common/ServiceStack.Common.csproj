@@ -117,7 +117,7 @@
     <Compile Include="EnumExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ExecExtensions.cs">
+    <Compile Include="ExecUtils.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ExpressionUtils.cs" />
