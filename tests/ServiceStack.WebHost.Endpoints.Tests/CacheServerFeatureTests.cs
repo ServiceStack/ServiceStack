@@ -4,8 +4,8 @@ using System.Linq;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Caching;
-using ServiceStack.OrmLite;
 using ServiceStack.Text;
+using System.Linq;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -426,9 +426,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(CachedRequest request)
         {
-            return Request.ToOptimizedResultUsingCache(Cache,
-                Request.QueryString.ToString(),
-                () => request);
+#if NETCORE
+            var cacheKey = String.Join("&", Request.QueryString.Cast<string>().Select(key => key + "=" + Request.QueryString[key]));
+#else
+            var cacheKey = Request.QueryString.ToString();
+#endif
+
+            return Request.ToOptimizedResultUsingCache(Cache, cacheKey, () => request);
         }
 
         public object Any(FailsAfterOnce request)
