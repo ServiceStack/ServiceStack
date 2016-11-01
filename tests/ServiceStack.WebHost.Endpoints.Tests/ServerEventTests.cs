@@ -326,7 +326,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var connectMsg = await taskConnect.WaitAsync(2000);
                 Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
 
-                await allJoinsReceived.Task;
+                await allJoinsReceived.Task.WaitAsync(3000);
 
                 Assert.That(joinMsgs.Count, Is.EqualTo(channels.Length));
                 for (int i = 0; i < channels.Length; i++)
