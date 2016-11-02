@@ -123,6 +123,7 @@ namespace ServiceStack.Host
             response.Cookies.Append(cookieName, cookieValue, options);
         }
     }
+#endif
 
     public static class CookiesExtensions
     {
