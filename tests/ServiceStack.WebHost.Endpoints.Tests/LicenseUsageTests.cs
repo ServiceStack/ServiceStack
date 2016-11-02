@@ -92,7 +92,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Allows_MegaDto_through_RabbitMqClients()
         {
-            var mqFactory = new RabbitMqMessageFactory(Config.RabbitMQConnString);
+            var mqFactory = new RabbitMqMessageFactory(connectionString: Config.RabbitMQConnString);
 
             var request = MegaDto.Create();
 
