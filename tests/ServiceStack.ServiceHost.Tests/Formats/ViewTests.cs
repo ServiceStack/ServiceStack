@@ -140,7 +140,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 this.Request = httpReq;
                 this.Headers = new Dictionary<string, string>();
                 this.MemoryStream = new MemoryStream();
-                this.Cookies = new Cookies(this);
+                this.Cookies = Host.Cookies.CreateCookies(this);
                 this.Items = new Dictionary<string, object>();
             }
 
