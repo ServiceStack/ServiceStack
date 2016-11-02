@@ -10,6 +10,7 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
+using TestsConfig = ServiceStack.WebHost.Endpoints.Tests.Config;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -18,8 +19,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public AutoQueryAppHost()
             : base("AutoQuery", typeof(AutoQueryService).GetAssembly()) { }
 
+        public static readonly string SqlServerConnString = TestsConfig.SqlServerConnString;
         public const string SqlServerNamedConnection = "SqlServer";
-        public const string SqlServerConnString = "Server=localhost;Database=test;User Id=test;Password=test;";
         public const string SqlServerProvider = "SqlServer2012";
 
         public static string SqliteFileConnString = "~/App_Data/autoquery.sqlite".MapProjectPath();

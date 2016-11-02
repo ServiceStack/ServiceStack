@@ -35,7 +35,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			appHost.Dispose();
 		}
 
-#if !NETCORE_SUPPORT
 		/// <summary>
 		/// first-name=tom&item-0=blah&item-1-delete=1
 		/// </summary>
@@ -48,13 +47,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			try
 			{
-				using (var sw = new StreamWriter(webReq.GetRequestStream()))
+				using (var sw = new StreamWriter(PclExport.Instance.GetRequestStream(webReq)))
 				{
-					sw.Write("&first-name=tom&item-0=blah&item-1-delete=1");
+#if !NETCORE
+					sw.Write("&");
+#endif
+					sw.Write("first-name=tom&item-0=blah&item-1-delete=1");
 				}
 				var response = new StreamReader(webReq.GetResponse().GetResponseStream()).ReadToEnd();
 
-				Assert.That(response, Is.EqualTo("{\"FirstName\":\"tom\",\"Item0\":\"blah\",\"Item1Delete\":\"1\"}"));
+				Assert.That(response, Is.EqualTo("{\"FirstName\":\"tom\",\"Item0\":\"blah\",\"Item1Delete\":\"1\"}")
+										.Or.EqualTo("{\"firstName\":\"tom\",\"item0\":\"blah\",\"item1Delete\":\"1\"}")
+				);
 			}
 			catch (WebException webEx)
 			{
@@ -64,7 +68,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				Assert.Fail(errorResponse);
 			}
 		}
-#endif
 
 		[Test]
 		public void Does_use_request_binder_for_GET()

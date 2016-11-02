@@ -120,7 +120,9 @@ namespace ServiceStack
             else
                 CallContext.FreeNamedDataSlot(_key);
 #else
-            AsyncRequestItems.Value = null;
+            //setting to AsyncLocal.Value to null does not really null it
+            //possible bug in .NET Core
+            AsyncRequestItems.Value?.Clear();
 #endif
         }
 

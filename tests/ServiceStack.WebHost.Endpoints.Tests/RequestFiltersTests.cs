@@ -146,7 +146,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         RequestFiltersAppHostHttpListener appHost;
 
-        public const string ServiceClientBaseUri = Config.ListeningOn;
+        string ServiceClientBaseUri = Config.ListeningOn;
 
         [TestFixtureSetUp]
         public void OnTestFixtureSetUp()

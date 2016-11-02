@@ -52,6 +52,11 @@ namespace ServiceStack.Host.NetCore
 
         public string GetRawBody()
         {
+            if (BufferedStream != null)
+            {
+                return BufferedStream.ToArray().FromUtf8Bytes();
+            }
+
             request.EnableRewind();
             return request.Body.ReadFully().FromUtf8Bytes();
         }
@@ -199,7 +204,18 @@ namespace ServiceStack.Host.NetCore
             }
         }
 
-        public bool UseBufferedStream { get; set; }
+        public bool UseBufferedStream
+        {
+            get { return BufferedStream != null; }
+            set
+            {
+                BufferedStream = value
+                    ? BufferedStream ?? new MemoryStream(request.Body.ReadFully())
+                    : null;
+            }
+        }
+
+        public MemoryStream BufferedStream { get; set; }
 
         public string RawUrl => UriHelper.GetDisplayUrl(request);
 
@@ -217,7 +233,7 @@ namespace ServiceStack.Host.NetCore
 
         public string PathInfo => request.Path.Value.Replace("+", " ");  //Kestrel does not decode '+' into space
 
-        public Stream InputStream => request.Body;
+        public Stream InputStream => BufferedStream ?? request.Body;
 
         public long ContentLength => request.ContentLength.GetValueOrDefault();
 
