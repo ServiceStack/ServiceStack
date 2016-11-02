@@ -1553,8 +1553,8 @@ namespace ServiceStack
                             }
                         }
                         outputStream.Write(newLine);
-                        outputStream.Write(boundary);
-                        outputStream.Write(fileCount != files.Length - 1 ? newLine : "--");
+                        if (fileCount == files.Length - 1)
+                            outputStream.Write(boundary + "--");
                     }
                 }
 
