@@ -6,13 +6,31 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-#if !NETSTANDARD1_6
-    public class Cookies : ICookies
+    public abstract class Cookies : ICookies
     {
-        readonly IHttpResponse httpRes;
         public const string RootPath = "/";
 
-        public Cookies(IHttpResponse httpRes)
+        public static Cookies CreateCookies(IHttpResponse httpRes)
+        {
+#if NETSTANDARD1_6
+            if (httpRes?.OriginalResponse is Microsoft.AspNetCore.Http.HttpResponse)
+            {
+                return new NetCoreCookies(httpRes);
+            }
+#endif
+            return new NetCookies(httpRes);
+        }
+
+        public abstract void DeleteCookie(string cookieName);
+        public abstract void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null);
+        public abstract void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null);
+    }
+
+    public class NetCookies : Cookies
+    {
+        readonly IHttpResponse httpRes;
+
+        public NetCookies(IHttpResponse httpRes)
         {
             this.httpRes = httpRes;
         }
@@ -20,7 +38,7 @@ namespace ServiceStack.Host
         /// <summary>
         /// Sets a persistent cookie which never expires
         /// </summary>
-        public void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
+        public override void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
             var cookie = new Cookie(cookieName, cookieValue, RootPath)
             {
@@ -36,7 +54,7 @@ namespace ServiceStack.Host
         /// <summary>
         /// Sets a session cookie which expires after the browser session closes
         /// </summary>
-        public void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
+        public override void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
             var cookie = new Cookie(cookieName, cookieValue, RootPath);
             if (secureOnly != null)
@@ -49,7 +67,7 @@ namespace ServiceStack.Host
         /// <summary>
         /// Deletes a specified cookie by setting its value to empty and expiration to -1 days
         /// </summary>
-        public void DeleteCookie(string cookieName)
+        public override void DeleteCookie(string cookieName)
         {
             var cookie = new Cookie(cookieName, string.Empty, "/")
             {
@@ -58,26 +76,25 @@ namespace ServiceStack.Host
             httpRes.SetCookie(cookie);
         }
     }
-#else
-    public class Cookies : ICookies
+
+    public class NetCoreCookies : Cookies
     {
-        public const string RootPath = "/";
         private readonly Microsoft.AspNetCore.Http.HttpResponse response;
 
-        public Cookies(IHttpResponse response)
+        public NetCoreCookies(IHttpResponse response)
             : this((Microsoft.AspNetCore.Http.HttpResponse)response.OriginalResponse){}
 
-        public Cookies(Microsoft.AspNetCore.Http.HttpResponse response)
+        public NetCoreCookies(Microsoft.AspNetCore.Http.HttpResponse response)
         {
             this.response = response;
         }
 
-        public void DeleteCookie(string cookieName)
+        public override void DeleteCookie(string cookieName)
         {
             response.Cookies.Delete(cookieName);
         }
 
-        public void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
+        public override void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
             var options = new Microsoft.AspNetCore.Http.CookieOptions
             {
@@ -91,7 +108,7 @@ namespace ServiceStack.Host
             response.Cookies.Append(cookieName, cookieValue, options);
         }
 
-        public void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
+        public override void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
             var options = new Microsoft.AspNetCore.Http.CookieOptions
             {
@@ -104,7 +121,6 @@ namespace ServiceStack.Host
             response.Cookies.Append(cookieName, cookieValue, options);
         }
     }
-#endif
 
     public static class CookiesExtensions
     {
