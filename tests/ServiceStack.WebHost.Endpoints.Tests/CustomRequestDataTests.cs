@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	public class CustomRequestDataTests
 	{
 		private const string ListeningOn = "http://localhost:1337/";
-		
+
 		ExampleAppHostHttpListener appHost;
 		readonly JsonServiceClient client = new JsonServiceClient(ListeningOn);
 		private string customUrl = ListeningOn.CombineWith("customrequestbinder");
@@ -49,7 +49,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				using (var sw = new StreamWriter(PclExport.Instance.GetRequestStream(webReq)))
 				{
-					sw.Write("&first-name=tom&item-0=blah&item-1-delete=1");
+#if !NETCORE
+					sw.Write("&");
+#endif
+					sw.Write("first-name=tom&item-0=blah&item-1-delete=1");
 				}
 				var response = new StreamReader(webReq.GetResponse().GetResponseStream()).ReadToEnd();
 
