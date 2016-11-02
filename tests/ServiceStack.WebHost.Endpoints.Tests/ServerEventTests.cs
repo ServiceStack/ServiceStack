@@ -307,8 +307,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var channels = new[] { "A", "B", "C" };
             using (var client = CreateServerEventsClient(channels))
             {
-                var taskConnect = client.Connect();
-
                 var joinMsgs = new List<ServerEventJoin>();
                 var allJoinsReceived = new TaskCompletionSource<bool>();
 
@@ -323,7 +321,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     }
                 };
 
-                var connectMsg = await taskConnect.WaitAsync(2000);
+                var connectMsg = await client.Connect().WaitAsync(2000);
                 Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
 
                 await allJoinsReceived.Task.WaitAsync(3000);
@@ -445,12 +443,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 await Task.WhenAll(client1.Connect(), client1.WaitForNextCommand()); //connect1 + join1
 
                 "client2.Connect()...".Print();
-                client2.Connect().WaitAsync();
-                "client2 connected".Print();
-
-                await Task.WhenAll(
-                    client2.WaitForNextCommand(), //join2
-                    client1.WaitForNextCommand()).WaitAsync(); //join1
+                var join1 = client1.WaitForNextCommand();
+                await Task.WhenAll(client2.Connect(), client2.WaitForNextCommand(), join1); //connect2 + join2 + join1
 
                 "Waiting for Msg1...".Print();
                 var taskMsg1 = client1.WaitForNextMessage();
