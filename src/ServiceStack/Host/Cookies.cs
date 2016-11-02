@@ -77,6 +77,7 @@ namespace ServiceStack.Host
         }
     }
 
+#if NETSTANDARD1_6
     public class NetCoreCookies : Cookies
     {
         private readonly Microsoft.AspNetCore.Http.HttpResponse response;
@@ -107,6 +108,7 @@ namespace ServiceStack.Host
             }
             response.Cookies.Append(cookieName, cookieValue, options);
         }
+#endif
 
         public override void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
