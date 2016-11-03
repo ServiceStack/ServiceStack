@@ -13,6 +13,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Messaging
 {
+    [Explicit("Integration Tests")]
     public class RabbitMqRequestReplyTests : MqRequestReplyTests
     {
         public override IMessageService CreateMqServer(int retryCount = 1)
@@ -21,6 +22,7 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    [Explicit("Integration Tests")]
     public class RedisMqRequestReplyTests : MqRequestReplyTests
     {
         public override IMessageService CreateMqServer(int retryCount = 1)
@@ -58,13 +60,11 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
-    [Explicit("Integration Tests")]
     [TestFixture]
     public abstract class MqRequestReplyTests
     {
         public abstract IMessageService CreateMqServer(int retryCount = 1);
 
-        [Explicit("Can hang CI")]
         [Test]
         public void Can_publish_messages_to_the_ReplyTo_temporary_queue()
         {
@@ -85,6 +85,32 @@ namespace ServiceStack.Server.Tests.Messaging
                     IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(replyToMq);
                     mqClient.Ack(responseMsg);
                     Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
+                }
+            }
+        }
+
+        [Test]
+        public void Can_send_message_with_custom_Header()
+        {
+            using (var mqServer = CreateMqServer())
+            {
+                mqServer.RegisterHandler<HelloIntro>(m =>
+                    new Message<HelloIntroResponse>(new HelloIntroResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) }) { Meta = m.Meta });
+                mqServer.Start();
+
+                using (var mqClient = mqServer.CreateMessageQueueClient())
+                {
+                    var replyToMq = mqClient.GetTempQueueName();
+                    mqClient.Publish(new Message<HelloIntro>(new HelloIntro { Name = "World" })
+                    {
+                        ReplyTo = replyToMq,
+                        Meta = new Dictionary<string, string> { { "Custom", "Header" } }
+                    });
+
+                    IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(replyToMq);
+                    mqClient.Ack(responseMsg);
+                    Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
+                    Assert.That(responseMsg.Meta["Custom"], Is.EqualTo("Header"));
                 }
             }
         }
@@ -114,32 +140,6 @@ namespace ServiceStack.Server.Tests.Messaging
                     mqClient.Ack(responseMsg);
                     Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
                     Assert.That(responseMsg.Tag, Is.EqualTo("Custom"));
-                }
-            }
-        }
-
-        [Test]
-        public void Can_send_message_with_custom_Header()
-        {
-            using (var mqServer = CreateMqServer())
-            {
-                mqServer.RegisterHandler<HelloIntro>(m =>
-                    new Message<HelloIntroResponse>(new HelloIntroResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) }) { Meta = m.Meta });
-                mqServer.Start();
-
-                using (var mqClient = mqServer.CreateMessageQueueClient())
-                {
-                    var replyToMq = mqClient.GetTempQueueName();
-                    mqClient.Publish(new Message<HelloIntro>(new HelloIntro { Name = "World" })
-                    {
-                        ReplyTo = replyToMq,
-                        Meta = new Dictionary<string, string> { { "Custom", "Header" } }
-                    });
-
-                    IMessage<HelloIntroResponse> responseMsg = mqClient.Get<HelloIntroResponse>(replyToMq);
-                    mqClient.Ack(responseMsg);
-                    Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
-                    Assert.That(responseMsg.Meta["Custom"], Is.EqualTo("Header"));
                 }
             }
         }
