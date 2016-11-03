@@ -73,6 +73,7 @@
     <Compile Include="ErrorsService.cs" />
     <Compile Include="MetadataDtoIssue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReturnDataService.cs" />
     <Compile Include="ReturnGenericListServices.cs" />
     <Compile Include="TestErrorService.cs" />
     <Compile Include="TestMinifierServices.cs" />
