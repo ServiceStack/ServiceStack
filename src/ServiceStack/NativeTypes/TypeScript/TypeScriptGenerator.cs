@@ -43,6 +43,8 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Double", "number"},
             {"Decimal", "number"},
             {"List", "Array"},
+            {"Byte[]", "Uint8Array"},
+            {"Stream", "Blob"},
         };
         private static string declaredEmptyString = "\"\"";
         private static Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
@@ -598,6 +600,9 @@ namespace ServiceStack.NativeTypes.TypeScript
         private string TypeAlias(string type)
         {
             type = type.SanitizeType();
+            if (type == "Byte[]")
+                return TypeAliases["Byte[]"];
+
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
                 return "{0}[]".Fmt(TypeAlias(arrParts[0]));
