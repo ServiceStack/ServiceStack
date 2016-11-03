@@ -70,10 +70,16 @@ namespace ServiceStack.Host
                 entry.ForwardedFor = request.Headers[HttpHeaders.XForwardedFor];
                 entry.Referer = request.Headers[HttpHeaders.Referer];
                 entry.Headers = request.Headers.ToDictionary();
-                entry.UserAuthId = request.GetItemOrCookie(HttpHeaders.XUserAuthId);
-                entry.SessionId = request.GetSessionId();
+                entry.UserAuthId = request.GetItemStringValue(HttpHeaders.XUserAuthId);
                 entry.Items = SerializableItems(request.Items);
                 entry.Session = EnableSessionTracking ? request.GetSession() : null;
+            }
+
+            var isClosed = request.Response.IsClosed;
+            if (!isClosed)
+            {
+                entry.UserAuthId = request.GetItemOrCookie(HttpHeaders.XUserAuthId);
+                entry.SessionId = request.GetSessionId();
             }
 
             if (HideRequestBodyForRequestDtoTypes != null
@@ -83,7 +89,10 @@ namespace ServiceStack.Host
                 entry.RequestDto = requestDto;
                 if (request != null)
                 {
-                    entry.FormData = request.FormData.ToDictionary();
+                    if (!isClosed)
+                    {
+                        entry.FormData = request.FormData.ToDictionary();
+                    }
 
                     if (EnableRequestBodyTracking)
                     {
