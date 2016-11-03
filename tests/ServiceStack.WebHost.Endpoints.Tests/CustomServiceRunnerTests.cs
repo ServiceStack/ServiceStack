@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class CustomServiceRunnerTests
     {
-        private const string ListeningOn = Config.AbsoluteBaseUri;
+        string ListeningOn = Config.AbsoluteBaseUri;
         private ServiceStackHost appHost;
 
         [TestFixtureSetUp]

@@ -63,7 +63,7 @@ namespace ServiceStack.Host.NetCore
         public string GetHeader(string name)
         {
             var values = response.Headers[name];
-            return values.ToString();
+            return values.Count > 0 ? values.ToString() : null;
         }
 
         public void Redirect(string url)
