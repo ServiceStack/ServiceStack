@@ -108,7 +108,6 @@ namespace ServiceStack.Host
             }
             response.Cookies.Append(cookieName, cookieValue, options);
         }
-#endif
 
         public override void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
