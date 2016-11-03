@@ -672,6 +672,13 @@ namespace Check.ServiceModel.Types
     {
         public int Id { get; set; }
     }
+
+    public class HelloTuple : IReturn<HelloTuple>
+    {
+        public Tuple<string,long,bool> Tuple { get; set; }
+
+        public List<Tuple<string, long, bool>> Tuples { get; set; }
+    }
 }
 
 

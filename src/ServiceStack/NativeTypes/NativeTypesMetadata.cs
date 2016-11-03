@@ -824,7 +824,7 @@ namespace ServiceStack.NativeTypes
             return genericTypeName + "<" + genericArgs + ">";
         }
 
-        private static List<string> SplitGenericArgs(string argList)
+        public static List<string> SplitGenericArgs(string argList)
         {
             var to = new List<string>();
             if (string.IsNullOrEmpty(argList))
@@ -842,7 +842,7 @@ namespace ServiceStack.NativeTypes
                         {
                             var arg = argList.Substring(lastPos, i - lastPos);
                             to.Add(arg);
-                            lastPos = i;
+                            lastPos = i + 1;
                         }
                         break;
                     case '<':
@@ -856,7 +856,7 @@ namespace ServiceStack.NativeTypes
 
             if (lastPos > 0)
             {
-                var arg = argList.Substring(lastPos + 1);
+                var arg = argList.Substring(lastPos);
                 to.Add(arg);
             }
             else

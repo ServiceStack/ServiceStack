@@ -290,6 +290,8 @@ namespace Check.ServiceInterface
         {
             return request;
         }
+
+        public object Any(HelloTuple request) => request;
     }
 
     public class GetUserSession : IReturn<CustomUserSession>
