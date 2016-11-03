@@ -72,7 +72,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Decimal", "0"},
             {"number", "0"},
             {"List", "[]"},
-            {"Uint8Array", "Uint8Array(0)"},
+            {"Uint8Array", "new Uint8Array(0)"},
         };
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
