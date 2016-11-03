@@ -64,6 +64,7 @@ namespace ServiceStack.Server.Tests.Messaging
     {
         public abstract IMessageService CreateMqServer(int retryCount = 1);
 
+        [Explicit("Can hang CI")]
         [Test]
         public void Can_publish_messages_to_the_ReplyTo_temporary_queue()
         {
