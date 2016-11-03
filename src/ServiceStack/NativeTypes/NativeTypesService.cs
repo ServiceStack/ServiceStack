@@ -216,6 +216,14 @@ namespace ServiceStack.NativeTypes
                 metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturnVoid)));
             }
 
+            if (typesConfig.ExportTypes == null)
+                typesConfig.ExportTypes = new HashSet<Type>();
+
+            typesConfig.ExportTypes.Add(typeof(Tuple<>));
+            typesConfig.ExportTypes.Add(typeof(Tuple<,>));
+            typesConfig.ExportTypes.Add(typeof(Tuple<,,>));
+            typesConfig.ExportTypes.Add(typeof(Tuple<,,,>));
+
             var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return typeScript;
         }

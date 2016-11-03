@@ -167,7 +167,7 @@ namespace ServiceStack.NativeTypes
                 considered.Add(t);
                 queue.Enqueue(t);
 
-                if ((!t.IsSystemType()
+                if ((!(t.IsSystemType() && !t.IsTuple())
                         && (t.IsClass() || t.IsEnum() || t.IsInterface())
                         && !t.IsGenericParameter)
                     || exportTypes.Contains(t))
@@ -427,7 +427,7 @@ namespace ServiceStack.NativeTypes
 
         public List<MetadataPropertyType> ToProperties(Type type)
         {
-            var props = (!type.IsUserType() && !type.IsInterface()) || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
+            var props = (!type.IsUserType() && !type.IsInterface() && !type.IsTuple()) || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
                 ? null
                 : GetInstancePublicProperties(type).Select(x => ToProperty(x)).ToList();
 

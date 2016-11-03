@@ -735,6 +735,9 @@ namespace ServiceStack.NativeTypes.TypeScript
             }
             else
             {
+                if (node.Text == "Tuple")
+                    node.Text += "`" + node.Children.Count;
+
                 sb.Append(TypeAlias(node.Text));
                 if (node.Children.Count > 0)
                 {
