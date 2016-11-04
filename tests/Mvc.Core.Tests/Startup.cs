@@ -111,6 +111,11 @@ namespace Mvc.Core.Tests
 
         public override void Configure(Container container)
         {
+            SetConfig(new HostConfig
+            {
+                HandlerFactoryPath = "api"
+            });
+
             Plugins.Add(new RazorFormat());
 
             //Works but recommend handling 404 at end of .NET Core pipeline

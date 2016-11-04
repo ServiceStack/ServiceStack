@@ -94,7 +94,22 @@ namespace ServiceStack
             //Keep in sync with Kestrel/AppSelfHostBase.cs
             var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
 
-            var httpReq = context.ToRequest(operationName);
+            var pathInfo = context.Request.Path.HasValue
+                ? context.Request.Path.Value
+                : "/";
+
+            var mode = Config.HandlerFactoryPath;
+            if (!string.IsNullOrEmpty(mode))
+            {
+                if (pathInfo.IndexOf(mode, StringComparison.Ordinal) != 1)
+                    return next();
+
+                pathInfo = pathInfo.Substring(mode.Length + 1);
+            }
+
+            var httpReq = new NetCoreRequest(context, operationName, RequestAttributes.None, pathInfo);
+            httpReq.RequestAttributes = httpReq.GetAttributes();
+
             var httpRes = httpReq.Response;
             var handler = HttpHandlerFactory.GetHandler(httpReq);
 

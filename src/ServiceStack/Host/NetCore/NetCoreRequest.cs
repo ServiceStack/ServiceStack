@@ -32,13 +32,14 @@ namespace ServiceStack.Host.NetCore
         private readonly HttpContext context;
         private readonly HttpRequest request;
 
-        public NetCoreRequest(HttpContext context, string operationName, RequestAttributes attrs = RequestAttributes.None)
+        public NetCoreRequest(HttpContext context, string operationName, RequestAttributes attrs = RequestAttributes.None, string pathInfo = null)
         {
             this.context = context;
             this.OperationName = operationName;
             this.request = context.Request;
             this.Items = new Dictionary<string, object>();
             this.RequestAttributes = attrs;
+            this.PathInfo = (pathInfo ?? request.Path.Value).Replace("+", " ");  //Kestrel does not decode '+' into space
         }
 
         public T TryResolve<T>()
@@ -217,9 +218,9 @@ namespace ServiceStack.Host.NetCore
 
         public MemoryStream BufferedStream { get; set; }
 
-        public string RawUrl => UriHelper.GetDisplayUrl(request);
+        public string RawUrl => request.GetDisplayUrl();
 
-        public string AbsoluteUri => UriHelper.GetDisplayUrl(request);
+        public string AbsoluteUri => request.GetDisplayUrl();
 
         public string UserHostAddress => request.HttpContext.Connection.RemoteIpAddress.ToString();
 
@@ -231,7 +232,7 @@ namespace ServiceStack.Host.NetCore
 
         public string[] AcceptTypes => request.Headers[HttpHeaders.Accept].ToArray();
 
-        public string PathInfo => request.Path.Value.Replace("+", " ");  //Kestrel does not decode '+' into space
+        public string PathInfo { get; set; }
 
         public Stream InputStream => BufferedStream ?? request.Body;
 
