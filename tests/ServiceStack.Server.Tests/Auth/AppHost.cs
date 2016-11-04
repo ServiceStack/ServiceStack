@@ -31,7 +31,7 @@ namespace ServiceStack.Server.Tests.Auth
         {
             Use?.Invoke(container);
 
-#if !NETSTANDARD1_6
+#if !NETCORE
             Plugins.Add(new Razor.RazorFormat());
 #endif
 

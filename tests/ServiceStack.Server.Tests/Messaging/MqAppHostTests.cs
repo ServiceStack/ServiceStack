@@ -11,7 +11,7 @@ namespace ServiceStack.Server.Tests.Messaging
     public class MqAppHost : AppSelfHostBase
     {
         public MqAppHost()
-            : base(typeof(MqAppHost).Name, typeof(MqAppHostServices).Assembly) {}
+            : base(typeof(MqAppHost).Name, typeof(MqAppHostServices).GetAssembly()) {}
 
         public override void Configure(Container container)
         {

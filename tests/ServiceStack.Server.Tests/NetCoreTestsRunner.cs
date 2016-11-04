@@ -7,7 +7,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.Server.Tests
 {
     public class NetCoreTestsRunner
     {

@@ -1,0 +1,51 @@
+{
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": ["NETCORE_SUPPORT", "NETCORE", "DEBUG", "TRACE"]
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": ["NETCORE_SUPPORT", "NETCORE", "TRACE"],
+        "optimize": true
+      }
+    }
+  },
+  "buildOptions": {
+    "debugType": "portable",
+    "emitEntryPoint": true
+  },
+  "exclude": ["RawRequestTests.cs"],
+  "dependencies": {
+    "Microsoft.NETCore.App": {
+      "type": "platform",
+      "version": "1.0.1"
+    },
+    "NUnitLite" : "3.4.1",
+    "AWSSDK.Core": "3.3.0.2",
+    "AWSSDK.DynamoDBv2": "3.3.0",
+    "ServiceStack.Interfaces" : "1.0.*",
+    "ServiceStack.Text" : "1.0.*",
+    "ServiceStack.Common" : "1.0.*",
+    "ServiceStack.Client" : "1.0.*",
+    "ServiceStack.HttpClient": "1.0.*",
+    "ServiceStack.Server": "1.0.*",
+    "ServiceStack": "1.0.*",
+    "ServiceStack.Kestrel": "1.0.*",
+    "ServiceStack.OrmLite": "1.0.*",
+    "ServiceStack.OrmLite.Sqlite": "1.0.*",
+    "ServiceStack.OrmLite.SqlServer": "1.0.*",
+    "ServiceStack.RabbitMq": "1.0.*",
+    "ServiceStack.Aws": "1.0.*"
+  },
+  "frameworks": {
+   "netcoreapp1.0": { 
+       "imports": "dnxcore50",
+	     "dependencies" : {
+        "System.Threading": "4.0.11",
+        "System.Reflection.TypeExtensions": "4.1.0"
+      }	
+    }
+  }
+}

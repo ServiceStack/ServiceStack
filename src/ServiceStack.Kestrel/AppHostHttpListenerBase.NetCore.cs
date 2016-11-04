@@ -1,5 +1,5 @@
-//remove this wrapper file when AppHostHttpListener will be implemented on .NET core
-#if NETCORE_SUPPORT
+//Created for compatibility to run tests on .NET Core
+#if NETSTANDARD1_6
 using System.Reflection;
 
 namespace ServiceStack
@@ -29,5 +29,4 @@ namespace ServiceStack
         { }
     }
 }
-
 #endif
