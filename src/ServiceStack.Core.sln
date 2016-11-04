@@ -22,6 +22,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{FA46AB18-F252-43F5-BEBC-12700EBC90A4}"
 	ProjectSection(SolutionItems) = preProject
 		..\build\build-core.sh = ..\build\build-core.sh
+		..\lib\copy-netcore.bat = ..\lib\copy-netcore.bat
 		..\lib\netstandard1.3\copy.bat = ..\lib\netstandard1.3\copy.bat
 		..\build\publish-core.sh = ..\build\publish-core.sh
 		..\NuGet.Core\ServiceStack.Api.Swagger.Core\ServiceStack.Api.Swagger.Core.nuspec = ..\NuGet.Core\ServiceStack.Api.Swagger.Core\ServiceStack.Api.Swagger.Core.nuspec
