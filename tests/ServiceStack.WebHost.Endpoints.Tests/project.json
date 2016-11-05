@@ -22,7 +22,7 @@
       "type": "platform",
       "version": "1.0.1"
     },
-    "NUnitLite" : "3.4.1",
+    "NUnitLite" : "3.5.0",
     "ServiceStack.Interfaces" : "1.0.*",
     "ServiceStack.Text" : "1.0.*",
     "ServiceStack.Common" : "1.0.*",
