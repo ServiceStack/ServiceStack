@@ -16,7 +16,8 @@ namespace ServiceStack.Server.Tests.Caching
         public const string AbsoluteBaseUri = ServiceStackBaseUri + "/";
         public const string ListeningOn = ServiceStackBaseUri + "/";
 
-        public static string SqlServerBuildDb = "Server=localhost;Database=test;User Id=test;Password=test;";
+        public static readonly string SqlServerBuildDb = Environment.GetEnvironmentVariable("CI_SQLSERVER")
+                                            ?? "Server=localhost;Database=test;User Id=test;Password=test;";
     }
 
     public class SqlServerOrmLiteCacheClientTests : CacheClientTestsBase
