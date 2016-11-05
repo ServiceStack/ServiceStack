@@ -399,7 +399,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.StatusCode, Is.EqualTo(409));
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo("Conflict"));
                 Assert.That(ex.ResponseStatus.Message, Is.EqualTo("POST HttpError CONFLICT"));
-                Assert.That(ex.ResponseStatus.StackTrace, Is.Not.Null);
             }
 
             try
@@ -417,7 +416,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.StatusCode, Is.EqualTo(500));
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo("Exception"));
                 Assert.That(ex.ResponseStatus.Message, Is.EqualTo("POST Generic Exception"));
-                Assert.That(ex.ResponseStatus.StackTrace, Is.Not.Null);
             }
         }
 
