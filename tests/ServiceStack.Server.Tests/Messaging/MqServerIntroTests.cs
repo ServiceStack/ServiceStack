@@ -18,7 +18,7 @@ namespace ServiceStack.Server.Tests.Messaging
     {
         public override IMessageService CreateMqServer(int retryCount = 1)
         {
-            return new RabbitMqServer { RetryCount = retryCount };
+            return new RabbitMqServer (connectionString: Config.RabbitMQConnString) { RetryCount = retryCount };
         }
     }
 
@@ -138,6 +138,14 @@ namespace ServiceStack.Server.Tests.Messaging
             });
             mqServer.Start();
         }
+
+        protected override void Dispose(bool disposable)
+        {
+            var mqServer = TryResolve<IMessageService>();
+            mqServer?.Dispose();
+            
+            base.Dispose(disposable);
+        }
     }
 
     [TestFixture]
@@ -243,7 +251,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Does_process_messages_in_HttpListener_AppHost()
         {
-            using (var appHost = new AppHost(() => CreateMqServer()).Init())
+            using (var appHost = new AppHost(() => CreateMqServer()).Init().Start(Config.ListeningOn))
             {
                 using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
                 {
@@ -259,7 +267,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Does_process_multi_messages_in_HttpListener_AppHost()
         {
-            using (var appHost = new AppHost(() => CreateMqServer()).Init())
+            using (var appHost = new AppHost(() => CreateMqServer()).Init().Start(Config.ListeningOn))
             {
                 using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
                 {
@@ -341,6 +349,7 @@ namespace ServiceStack.Server.Tests.Messaging
                     mqClient.Ack(responseMsg);
                     Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, World!"));
                 }
+                appHost.Resolve<IMessageService>().Dispose();
             }
         }
     }
@@ -349,7 +358,7 @@ namespace ServiceStack.Server.Tests.Messaging
     {
         public override IMessageService CreateMqServer(IAppHost host, int retryCount = 1)
         {
-            return new RabbitMqServer
+            return new RabbitMqServer(connectionString: Config.RabbitMQConnString)
             {
                 RetryCount = retryCount,
                 ResponseFilter = r => { host.OnEndRequest(null); return r; }
@@ -442,6 +451,7 @@ namespace ServiceStack.Server.Tests.Messaging
 
                     Assert.That(disposeCount, Is.EqualTo(1));
                 }
+                appHost.Resolve<IMessageService>().Dispose();
             }
         }
     }

@@ -341,7 +341,6 @@
     <Compile Include="Support\Types\Customer.cs" />
     <Compile Include="XmlMetaDataHandlerTests.cs" />
     <Compile Include="NetCoreExtensions.cs" />
-    <Compile Include="AppHostHttpListenerBase.Core.cs" />
     <Compile Include="HttpUtility.Core.cs" />
   </ItemGroup>
   <ItemGroup>

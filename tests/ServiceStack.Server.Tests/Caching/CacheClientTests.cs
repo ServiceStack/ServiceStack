@@ -10,16 +10,6 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Caching
 {
-    public class Config
-    {
-        public const string ServiceStackBaseUri = "http://localhost:20000";
-        public const string AbsoluteBaseUri = ServiceStackBaseUri + "/";
-        public const string ListeningOn = ServiceStackBaseUri + "/";
-
-        public static readonly string SqlServerBuildDb = Environment.GetEnvironmentVariable("CI_SQLSERVER")
-                                            ?? "Server=localhost;Database=test;User Id=test;Password=test;";
-    }
-
     public class SqlServerOrmLiteCacheClientTests : CacheClientTestsBase
     {
         public override ICacheClient CreateClient()
