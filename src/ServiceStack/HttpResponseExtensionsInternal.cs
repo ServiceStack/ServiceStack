@@ -384,6 +384,9 @@ namespace ServiceStack
         public static Task WriteErrorToResponse(this IResponse httpRes, IRequest httpReq,
             string contentType, string operationName, string errorMessage, Exception ex, int statusCode)
         {
+            if (ex == null)
+                ex = new Exception(errorMessage);
+
             var errorDto = ex.ToErrorResponse();
             HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
 
