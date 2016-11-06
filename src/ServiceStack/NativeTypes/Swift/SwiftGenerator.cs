@@ -26,14 +26,15 @@ namespace ServiceStack.NativeTypes.Swift
         public static List<string> DefaultImports = new List<string>
         {
             "Foundation",
+            "ServiceStackClient",
         };
 
         public static ConcurrentDictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"Boolean", "Bool"},
-            {"DateTime", "NSDate"},
-            {"TimeSpan", "NSTimeInterval"},
-            {"DateTimeOffset", "NSDate"},
+            {"DateTime", "Date"},
+            {"TimeSpan", "TimeInterval"},
+            {"DateTimeOffset", "Date"},
             {"Guid", "String"},
             {"Char", "Character"},
             {"Byte", "Int8"},
