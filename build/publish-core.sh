@@ -12,6 +12,7 @@ declare -A projects=( \
  ["ServiceStack.Common.Core"]="1.3" \
  ["ServiceStack.Interfaces.Core"]="1.1" \
  ["ServiceStack.ProtoBuf.Core"]="1.6" \
+ ["ServiceStack.MsgPack.Core"]="1.6" \
  ["ServiceStack.Wire.Core"]="1.6" \
 )
 
