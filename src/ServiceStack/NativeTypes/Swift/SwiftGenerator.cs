@@ -47,6 +47,7 @@ namespace ServiceStack.NativeTypes.Swift
             {"Single", "Float"},
             {"Double", "Double"},
             {"Decimal", "Double"},
+            {"Stream", "Data"},
         }.ToConcurrentDictionary();
 
         public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
@@ -550,7 +551,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("}");
 
             //fromObject()
-            sbExt.AppendLine("public static func fromObject(_ any:AnyObject) -> {0}? {{".Fmt(typeName));
+            sbExt.AppendLine("public static func fromObject(_ any:Any) -> {0}? {{".Fmt(typeName));
             sbExt = sbExt.Indent();
             sbExt.AppendLine("switch any {");
             sbExt.AppendLine("case let i as Int: return {0}(rawValue: i)".Fmt(typeName));
