@@ -300,7 +300,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Can_publish_and_receive_messages_with_MessageFactory()
         {
-            using (var mqFactory = new RabbitMqMessageFactory("localhost"))
+            using (var mqFactory = new RabbitMqMessageFactory(Config.RabbitMQConnString))
             using (var mqClient = mqFactory.CreateMessageQueueClient())
             {
                 mqClient.Publish(new Hello { Name = "Foo" });
