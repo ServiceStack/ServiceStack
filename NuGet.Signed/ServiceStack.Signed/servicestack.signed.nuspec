@@ -27,11 +27,12 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="lib\**\*.*" target="lib" />
-    <file src="..\..\src\ServiceStack\**\*.cs" target="src\ServiceStack" />
-    <file src="..\..\src\ServiceStack\**\*.js" target="src" />
-    <file src="..\..\src\ServiceStack\**\*.css" target="src" />
-    <file src="..\..\src\ServiceStack\**\*.html" target="src" />
-    <file src="..\..\src\ServiceStack\**\*.tmpl" target="src" />
+    <file src="lib/**/*.*" target="lib" />
+    <file src="../../src/ServiceStack/**/*.cs" target="src" />
+    <file src="../../src/ServiceStack/**/*.js" target="src" />
+    <file src="../../src/ServiceStack/**/*.ts" target="src" />
+    <file src="../../src/ServiceStack/**/*.css" target="src" />
+    <file src="../../src/ServiceStack/**/*.html" target="src" />
+    <file src="../../src/ServiceStack/**/*.tmpl" target="src" />
   </files>
 </package>
