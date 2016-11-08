@@ -864,7 +864,7 @@ namespace ServiceStack
                    : RequestAttributes.External;
         }
 
-        public static bool IsInLocalSubnet(IPAddress ipAddress)
+        public static bool IsInLocalSubnet(this IPAddress ipAddress)
         {
             var ipAddressBytes = ipAddress.GetAddressBytes();
             switch (ipAddress.AddressFamily)

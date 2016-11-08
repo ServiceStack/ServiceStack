@@ -425,6 +425,7 @@ namespace ServiceStack.NativeTypes.Swift
                 return;
 
             var typeName = Type(type.Name, type.GenericArgs);
+            typeName = typeName.LeftPart('<'); // Type<QueryResponse<T>> into correct mapping Type<QueryResponse>
 
             var typeNameOnly = typeName.LeftPart('<');
 
@@ -437,7 +438,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             //func typeConfig()
 
-            var isGenericType = !type.GenericArgs.IsEmpty();
+            var isGenericType = type.GenericArgs?.Length > 0 || type.Inherits?.GenericArgs?.Length > 0;
             if (!isGenericType)
             {
                 sbExt.AppendLine("public static var metadata = Metadata.create([");
