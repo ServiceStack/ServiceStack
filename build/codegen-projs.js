@@ -32,6 +32,7 @@ var SIGN_PROJS = [
     '../../ServiceStack.OrmLite/src/ServiceStack.OrmLite.MySql/ServiceStack.OrmLite.MySql.csproj',
     '../src/ServiceStack.Common/ServiceStack.Common.csproj',
     '../src/ServiceStack.Client/ServiceStack.Client.csproj',
+    '../src/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj',
     '../src/ServiceStack.Server/ServiceStack.Server.csproj',
     '../src/ServiceStack.Razor/ServiceStack.Razor.csproj',
     '../src/ServiceStack.ProtoBuf/ServiceStack.ProtoBuf.csproj',
