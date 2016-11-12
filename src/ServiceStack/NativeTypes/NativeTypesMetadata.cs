@@ -327,10 +327,14 @@ namespace ServiceStack.NativeTypes
             }
             else
             {
-                var genericMarker = type.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
+                var genericMarker = type != typeof(IReturn<>)
+                    ? type.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>))
+                    : null;
+
                 if (genericMarker != null)
                 {
-                    metaType.ReturnMarkerTypeName = ToTypeName(genericMarker.GetGenericArguments().First());
+                    var returnType = genericMarker.GetGenericArguments().First();
+                    metaType.ReturnMarkerTypeName = ToTypeName(returnType);
                 }
             }
 
