@@ -1,4 +1,5 @@
-﻿using Check.ServiceModel;
+﻿using System;
+using Check.ServiceModel;
 using ServiceStack;
 
 namespace Check.ServiceInterface
@@ -9,6 +10,11 @@ namespace Check.ServiceInterface
         public object Any(CustomHttpError request)
         {
             throw new HttpError(request.StatusCode, request.StatusDescription);
+        }
+
+        public object Any(AlwaysThrows request)
+        {
+            throw new Exception(request.GetType().Name);
         }
     }
 

@@ -19,4 +19,7 @@ namespace Check.ServiceModel
         public string Custom { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
     }
+
+    [Route("/alwaysthrows")]
+    public class AlwaysThrows : IReturn<AlwaysThrows> { }
 }

@@ -75,7 +75,7 @@ namespace CheckWeb
             Plugins.Add(new AdminFeature());
 
             Plugins.Add(new PostmanFeature());
-            Plugins.Add(new CorsFeature(allowedMethods: "GET, POST, PUT, DELETE, PATCH, OPTIONS"));
+            Plugins.Add(new CorsFeature());
 
             Plugins.Add(new RequestLogsFeature {
                 RequestLogger = new CsvRequestLogger(),
@@ -115,7 +115,7 @@ namespace CheckWeb
                 db.Insert(new PgRockstar { Id = 1, FirstName = "PostgreSQL", LastName = "Named Connection", Age = 1 });
             }
 
-            this.GlobalHtmlErrorHttpHandler = new RazorHandler("GlobalErrorHandler.cshtml");
+            //this.GlobalHtmlErrorHttpHandler = new RazorHandler("GlobalErrorHandler.cshtml");
 
             // Configure JSON serialization properties.
             this.ConfigureSerialization(container);

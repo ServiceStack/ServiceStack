@@ -28,7 +28,7 @@ namespace ServiceStack.Server.Tests.Messaging
         public void TestFixtureSetUp()
         {
             RedisClient.NewFactoryFn = () => new RedisClient(TestConfig.SingleHost);
-            LogManager.LogFactory = new ConsoleLogFactory();
+            //LogManager.LogFactory = new ConsoleLogFactory();
         }
 
         private static RedisMqServer CreateMqServer(int noOfRetries = 2)
