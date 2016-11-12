@@ -163,6 +163,7 @@ namespace ServiceStack.Server.Tests.Auth
         }
     }
 
+    [Explicit("Requires MongoDB Dependency")]
     public class MongoDbAuthRepoStatelessAuthTests : StatelessAuthTests
     {
         protected override ServiceStackHost CreateAppHost()
