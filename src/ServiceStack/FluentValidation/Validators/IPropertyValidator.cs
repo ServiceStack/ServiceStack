@@ -33,6 +33,7 @@ namespace ServiceStack.FluentValidation.Validators
         IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context);
         ICollection<Func<object, object>> CustomMessageFormatArguments { get; }
         Func<object, object> CustomStateProvider { get; set; }
+        Severity Severity { get; set; }
         IStringSource ErrorMessageSource { get; set; }
         string ErrorCode { get; set; }
     }

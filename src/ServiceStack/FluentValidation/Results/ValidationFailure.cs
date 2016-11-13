@@ -68,6 +68,11 @@ namespace ServiceStack.FluentValidation.Results
         public object CustomState { get; set; }
 
         /// <summary>
+ 		/// Custom severity level associated with the failure.
+ 		/// </summary>
+ 		public Severity Severity { get; set; }
+
+        /// <summary>
         /// Placeholder values used for string substitution when building ErrorMessage
         /// </summary>
         public Dictionary<string,string> PlaceholderValues { get; set; }
