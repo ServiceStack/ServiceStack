@@ -43,6 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlSer
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{369EF365-4822-4823-A050-6F6950046E84}"
 	ProjectSection(SolutionItems) = preProject
+		..\build\build-sn.proj = ..\build\build-sn.proj
 		..\build\copy-sn.bat = ..\build\copy-sn.bat
 	EndProjectSection
 EndProject
@@ -51,6 +52,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Aws.Signed", "..\..\ServiceStack.Aws\src\ServiceStack.Aws\ServiceStack.Aws.Signed.csproj", "{EC090B85-E208-4B4E-AE19-BBFEF51E4560}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Admin.Signed", "..\..\Admin\src\ServiceStack.Admin\ServiceStack.Admin.Signed.csproj", "{C6EB693E-64D1-4271-BE68-0B78D186003E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.HttpClient.Signed", "ServiceStack.HttpClient\ServiceStack.HttpClient.Signed.csproj", "{C05DE4A1-84C5-481B-8BD4-C837A1303B01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -173,6 +176,18 @@ Global
 		{C6EB693E-64D1-4271-BE68-0B78D186003E}.Signed|Any CPU.Build.0 = Signed|Any CPU
 		{C6EB693E-64D1-4271-BE68-0B78D186003E}.Signed|x86.ActiveCfg = Signed|Any CPU
 		{C6EB693E-64D1-4271-BE68-0B78D186003E}.Signed|x86.Build.0 = Signed|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Debug|x86.Build.0 = Debug|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|x86.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Release|x86.Build.0 = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|Any CPU.Build.0 = Signed|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|x86.ActiveCfg = Release|Any CPU
+		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -97,7 +97,6 @@ namespace ServiceStack.Host.NetCore
                 response.ContentLength = 0;
 
             Flush();
-            response.Body.Dispose();
             closed = true;
         }
 

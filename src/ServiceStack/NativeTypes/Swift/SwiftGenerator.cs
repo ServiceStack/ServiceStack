@@ -26,14 +26,15 @@ namespace ServiceStack.NativeTypes.Swift
         public static List<string> DefaultImports = new List<string>
         {
             "Foundation",
+            "ServiceStackClient",
         };
 
         public static ConcurrentDictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"Boolean", "Bool"},
-            {"DateTime", "NSDate"},
-            {"TimeSpan", "NSTimeInterval"},
-            {"DateTimeOffset", "NSDate"},
+            {"DateTime", "Date"},
+            {"TimeSpan", "TimeInterval"},
+            {"DateTimeOffset", "Date"},
             {"Guid", "String"},
             {"Char", "Character"},
             {"Byte", "Int8"},
@@ -46,6 +47,7 @@ namespace ServiceStack.NativeTypes.Swift
             {"Single", "Float"},
             {"Double", "Double"},
             {"Decimal", "Double"},
+            {"Stream", "Data"},
         }.ToConcurrentDictionary();
 
         public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
@@ -75,7 +77,7 @@ namespace ServiceStack.NativeTypes.Swift
             var sbExt = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("SwiftVersion: 2.0");
+            sb.AppendLine("SwiftVersion: 3.0");
             sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
@@ -312,7 +314,7 @@ namespace ServiceStack.NativeTypes.Swift
                         typeName = Type(type.Name, null);
                         foreach (var arg in type.GenericArgs)
                         {
-                            typeAliases.Add("public typealias {0} = {0}".Fmt(arg));
+                            typeAliases.Add($"associatedtype {arg}");
                         }
                     }
                 }
@@ -321,7 +323,7 @@ namespace ServiceStack.NativeTypes.Swift
                     ? " : " + (string.Join(", ", extends.ToArray()))
                     : "";
 
-                sb.AppendLine("public {0} {1}{2}".Fmt(defType, typeName, extend));
+                sb.AppendLine($"public {defType} {typeName}{extend}");
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
@@ -350,7 +352,7 @@ namespace ServiceStack.NativeTypes.Swift
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine("public var {0}:Int = {1}".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
+                    sb.AppendLine($"public var {"Version".PropertyStyle()}:Int = {Config.AddImplicitVersion}");
                 }
 
                 var initCollections = feature.ShouldInitializeCollections(type, Config.InitializeCollections);
@@ -390,7 +392,7 @@ namespace ServiceStack.NativeTypes.Swift
                         : implStr;
 
                     var genericType = interfaceParts[1].Substring(0, interfaceParts[1].Length - 1);
-                    typeAliases.Add("public typealias {0} = {1}".Fmt(alias, genericType));
+                    typeAliases.Add($"public typealias {alias} = {genericType}");
                 }
 
                 extends.Add(implStr);
@@ -423,6 +425,7 @@ namespace ServiceStack.NativeTypes.Swift
                 return;
 
             var typeName = Type(type.Name, type.GenericArgs);
+            typeName = typeName.LeftPart('<'); // Type<QueryResponse<T>> into correct mapping Type<QueryResponse>
 
             var typeNameOnly = typeName.LeftPart('<');
 
@@ -435,7 +438,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             //func typeConfig()
 
-            var isGenericType = !type.GenericArgs.IsEmpty();
+            var isGenericType = type.GenericArgs?.Length > 0 || type.Inherits?.GenericArgs?.Length > 0;
             if (!isGenericType)
             {
                 sbExt.AppendLine("public static var metadata = Metadata.create([");
@@ -534,7 +537,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("}");
 
             //fromString()
-            sbExt.AppendLine("public static func fromString(strValue:String) -> {0}? {{".Fmt(typeName));
+            sbExt.AppendLine("public static func fromString(_ strValue:String) -> {0}? {{".Fmt(typeName));
             sbExt = sbExt.Indent();
 
             sbExt.AppendLine("switch strValue {");
@@ -549,7 +552,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("}");
 
             //fromObject()
-            sbExt.AppendLine("public static func fromObject(any:AnyObject) -> {0}? {{".Fmt(typeName));
+            sbExt.AppendLine("public static func fromObject(_ any:Any) -> {0}? {{".Fmt(typeName));
             sbExt = sbExt.Indent();
             sbExt.AppendLine("switch any {");
             sbExt.AppendLine("case let i as Int: return {0}(rawValue: i)".Fmt(typeName));
@@ -1021,6 +1024,7 @@ namespace ServiceStack.NativeTypes.Swift
             "struct",
             "subscript",
             "typealias",
+            "associatedtype",
             "var",
             "break",
             "case",

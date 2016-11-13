@@ -8,6 +8,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
@@ -84,6 +85,35 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             return new SoapDeserializationExceptionResponse();
         }
+    }
+
+    public class ThrowsInFilterAttribute : RequestFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object requestDto)
+        {
+            var dto = (ThrowsInFilter)requestDto;
+
+            var status = (HttpStatusCode)dto.StatusCode.GetValueOrDefault(400);
+            var errorMsg = dto.Message ?? nameof(ThrowsInFilter);
+
+            if (dto.ExceptionType == nameof(HttpError))
+                throw new HttpError(status, errorMsg);
+
+            throw new Exception(errorMsg);
+        }
+    }
+
+    public class ThrowsInFilter : IReturn<ThrowsInFilter>
+    {
+        public string ExceptionType { get; set; }
+        public string Message { get; set; }
+        public int? StatusCode { get; set; }
+    }
+
+    [ThrowsInFilter]
+    public class ThrowsInFilterService : Service
+    {
+        public object Any(ThrowsInFilter request) => request;
     }
 
     [TestFixture]
@@ -248,8 +278,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
-            var req = (HttpWebRequest)WebRequest.Create(
-                string.Format("{0}{1}/reply/Insecure", ServiceClientBaseUri, format));
+            var req = (HttpWebRequest)WebRequest.Create($"{ServiceClientBaseUri}{format}/reply/Insecure");
 
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -346,6 +375,48 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return;
             }
             Assert.Fail("Should throw WebServiceException.StatusCode == 401");
+        }
+
+        [Test]
+        public async Task Does_populate_ResponseStatus_when_Exception_thrown_in_RequestFilter()
+        {
+            var client = CreateNewRestClientAsync();
+            if (client == null) return;
+
+            try
+            {
+                var response = await client.PostAsync(new ThrowsInFilter
+                {
+                    StatusCode = 409,
+                    ExceptionType = nameof(HttpError),
+                    Message = "POST HttpError CONFLICT",
+                });
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(409));
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo("Conflict"));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("POST HttpError CONFLICT"));
+            }
+
+            try
+            {
+                var response = await client.PostAsync(new ThrowsInFilter
+                {
+                    ExceptionType = nameof(Exception),
+                    Message = "POST Generic Exception",
+                });
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(500));
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo("Exception"));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("POST Generic Exception"));
+            }
         }
 
         [Test]

@@ -89,6 +89,8 @@
 
       <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ClientFiles>
       <ClientFilesSL5 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ClientFilesSL5>
+        
+      <HttpClientFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/ServiceStack.HttpClient.*"></HttpClientFiles>
 
       <CommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Common.*"></CommonFiles>
       <CommonFilesSL5 Include="$(SrcDir)/ServiceStack.Common.SL5/bin/$(Configuration)/ServiceStack.Common.*"></CommonFilesSL5>
@@ -132,6 +134,17 @@
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client.Signed/servicestack.client.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.HttpClient -->
+    
+    <MSBuild Projects="../src/ServiceStack.HttpClient/ServiceStack.HttpClient.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <Copy SourceFiles="%(HttpClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.HttpClient.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.HttpClient.Signed/lib/net45')" />
+    <Copy SourceFiles="%(HttpClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.HttpClient.Signed/lib/net45" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.HttpClient.Signed/servicestack.httpclient.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Common -->

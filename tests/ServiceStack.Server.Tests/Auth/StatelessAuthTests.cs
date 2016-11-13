@@ -166,6 +166,7 @@ namespace ServiceStack.Server.Tests.Auth
     }
 
 #if !NETCORE_SUPPORT
+    [Explicit("Requires MongoDB Dependency")]
     public class MongoDbAuthRepoStatelessAuthTests : StatelessAuthTests
     {
         protected override ServiceStackHost CreateAppHost()
@@ -890,6 +891,28 @@ namespace ServiceStack.Server.Tests.Auth
 
             Assert.That(regenResponse.Results.Map(x => x.Key), Is.EquivalentTo(
                 apiKeyResponse.Results.Map(x => x.Key)));
+        }
+
+        [Test]
+        public void Doesnt_allow_sending_invalid_APIKeys()
+        {
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                Credentials = new NetworkCredential("InvalidKey", ""),
+            };
+
+            var request = new Secured { Name = "live" };
+            try
+            {
+                var response = client.Send(request);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo("NotFound"));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("ApiKey does not exist"));
+                Assert.That(ex.ResponseStatus.StackTrace, Is.Not.Null);
+            }
         }
 
         [Test]

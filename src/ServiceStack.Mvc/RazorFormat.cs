@@ -176,7 +176,9 @@ namespace ServiceStack.Mvc
                     new RouteData(),
                     new ActionDescriptor());
 
-                using (var sw = new StreamWriter(req.Response.OutputStream))
+                var stream = req.Response.OutputStream;
+
+                var sw = new StreamWriter(stream);
                 {
                     if (viewData == null)
                         viewData = CreateViewData((object)null);
@@ -194,13 +196,14 @@ namespace ServiceStack.Mvc
 
                     view.RenderAsync(viewContext).GetAwaiter().GetResult();
 
+                    sw.Flush();
+
                     try
                     {
                         using (razorView?.RazorPage as IDisposable) { }
                     }
                     catch (Exception ex)
                     {
-                        //Throws "Cannot access a disposed object." on `MemoryPoolViewBufferScope` in Linux
                         log.Warn("Error trying to dispose Razor View: " + ex.Message, ex);
                     }
                 }

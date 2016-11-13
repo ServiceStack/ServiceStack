@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceStack.Host.NetCore;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -53,7 +54,22 @@ namespace ServiceStack
             //Keep in sync with AppHostBase.NetCore.cs
             var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
 
-            var httpReq = context.ToRequest(operationName);
+            var pathInfo = context.Request.Path.HasValue
+                ? context.Request.Path.Value
+                : "/";
+
+            var mode = Config.HandlerFactoryPath;
+            if (!string.IsNullOrEmpty(mode))
+            {
+                if (pathInfo.IndexOf(mode, StringComparison.Ordinal) != 1)
+                    return next();
+
+                pathInfo = pathInfo.Substring(mode.Length + 1);
+            }
+
+            var httpReq = new NetCoreRequest(context, operationName, RequestAttributes.None, pathInfo);
+            httpReq.RequestAttributes = httpReq.GetAttributes();
+
             var httpRes = httpReq.Response;
             var handler = HttpHandlerFactory.GetHandler(httpReq);
 

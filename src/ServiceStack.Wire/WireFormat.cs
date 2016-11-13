@@ -8,10 +8,12 @@
 
     public class WireFormat : IPlugin, IWirePlugin
     {
-        public WireFormat()
-        {
-            serializer = new Serializer(new SerializerOptions(true, false, null, null, null));
-        }
+        public static Serializer WireSerializer = new Serializer(new SerializerOptions(
+            versionTolerance:true, 
+            preserveObjectReferences:false, 
+            surrogates:null, 
+            serializerFactories:null, 
+            knownTypes:null));
 
         public void Register(IAppHost appHost)
         {
@@ -19,8 +21,6 @@
                 Serialize,
                 Deserialize);
         }
-
-        private static Serializer serializer;
 
         public static void Serialize(IRequest requestContext, object dto, Stream outputStream)
         {
@@ -32,7 +32,7 @@
             if (dto == null) return;
             try
             {
-                serializer.Serialize(dto, outputStream);
+                WireSerializer.Serialize(dto, outputStream);
             }
             catch (Exception ex)
             {
@@ -44,7 +44,7 @@
         {
             try
             {
-                return serializer.Deserialize(fromStream);
+                return WireSerializer.Deserialize(fromStream);
             }
             catch (Exception ex)
             {

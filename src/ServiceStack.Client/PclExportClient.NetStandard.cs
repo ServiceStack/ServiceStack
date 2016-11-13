@@ -16,8 +16,6 @@ using System.Collections.Generic;
 
 namespace ServiceStack
 {
-    using System.Web;
-
     public class NetStandardPclExportClient : PclExportClient
     {
         public static NetStandardPclExportClient Provider = new NetStandardPclExportClient();

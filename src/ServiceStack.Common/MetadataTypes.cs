@@ -22,7 +22,7 @@ namespace ServiceStack
             bool addServiceStackTypes = true,
             bool addModelExtensions = true,
             bool addPropertyAccessors = true,
-            bool excludeGenericBaseTypes = true,
+            bool excludeGenericBaseTypes = false,
             bool settersReturnThis = true,
             bool makePropertiesOptional = true,
             bool makeDataContractsExtensible = false,
