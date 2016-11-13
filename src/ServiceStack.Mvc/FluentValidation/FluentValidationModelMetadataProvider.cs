@@ -148,6 +148,8 @@ namespace FluentValidation.Mvc {
             set { throw new NotImplementedException(); }
         }
 
+        public Severity Severity { get; set; }
+
         public Attribute ToAttribute()
         {
             return attribute;
