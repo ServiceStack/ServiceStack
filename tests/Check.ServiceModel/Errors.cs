@@ -22,4 +22,10 @@ namespace Check.ServiceModel
 
     [Route("/alwaysthrows")]
     public class AlwaysThrows : IReturn<AlwaysThrows> { }
+
+    [Route("/alwaysthrowsfilterattribute")]
+    public class AlwaysThrowsFilterAttribute : IReturn<AlwaysThrowsFilterAttribute> { }
+
+    [Route("/alwaysthrowsglobalfilter")]
+    public class AlwaysThrowsGlobalFilter : IReturn<AlwaysThrowsGlobalFilter> { }
 }

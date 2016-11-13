@@ -77,6 +77,12 @@ namespace CheckWeb
             Plugins.Add(new PostmanFeature());
             Plugins.Add(new CorsFeature());
 
+            GlobalRequestFilters.Add((req, res, dto) =>
+            {
+                if (dto is AlwaysThrowsGlobalFilter)
+                    throw new Exception(dto.GetType().Name);
+            });
+
             Plugins.Add(new RequestLogsFeature {
                 RequestLogger = new CsvRequestLogger(),
             });

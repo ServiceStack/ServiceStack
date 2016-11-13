@@ -412,6 +412,8 @@ namespace ServiceStack
                 ? (errorMessage ?? HttpStatus.GetStatusDescription(statusCode))
                 : hold;
 
+            httpRes.ApplyGlobalResponseHeaders();
+
             var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
             serializer?.Invoke(httpReq, errorDto, httpRes);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using Check.ServiceModel;
 using ServiceStack;
+using ServiceStack.Web;
 
 namespace Check.ServiceInterface
 {
@@ -15,6 +16,19 @@ namespace Check.ServiceInterface
         public object Any(AlwaysThrows request)
         {
             throw new Exception(request.GetType().Name);
+        }
+
+        [AlwaysThrows]
+        public object Any(AlwaysThrowsFilterAttribute request) => request;
+
+        public object Any(AlwaysThrowsGlobalFilter request) => request;        
+    }
+
+    public class AlwaysThrowsAttribute : RequestFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object requestDto)
+        {
+            throw new Exception(requestDto.GetType().Name);
         }
     }
 
