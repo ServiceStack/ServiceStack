@@ -21,7 +21,7 @@
       "type": "platform",
       "version": "1.0.0"
     },
-    "NUnitLite" : "3.2.1",
+    "NUnitLite" : "3.5.0",
     "AWSSDK.Core": "3.3.0.2",
     "AWSSDK.DynamoDBv2": "3.3.0",
     "ServiceStack.Interfaces" : "1.0.*",

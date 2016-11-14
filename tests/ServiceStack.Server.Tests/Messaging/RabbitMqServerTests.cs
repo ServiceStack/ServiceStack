@@ -32,7 +32,7 @@ namespace ServiceStack.Server.Tests.Messaging
     [TestFixture, Category("Integration")]
     public class RabbitMqServerTests
     {
-        private const string ConnectionString = "localhost";
+        static readonly string ConnectionString = Config.RabbitMQConnString;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
@@ -74,55 +74,56 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Utils_publish_Reverse_messages()
         {
-            var mqHost = new RabbitMqServer(ConnectionString);
-            var mqClient = mqHost.CreateMessageQueueClient();
-            Publish_4_messages(mqClient);
-            mqHost.Stop();
+            using (var mqHost = new RabbitMqServer(ConnectionString))
+            using (var mqClient = mqHost.CreateMessageQueueClient())
+            {
+                Publish_4_messages(mqClient);
+            }
         }
 
         [Test]
         public void Utils_publish_Rot13_messages()
         {
-            var mqHost = new RabbitMqServer(ConnectionString);
-            var mqClient = mqHost.CreateMessageQueueClient();
-            Publish_4_Rot13_messages(mqClient);
-            mqHost.Stop();
+            using (var mqHost = new RabbitMqServer(ConnectionString))
+            using (var mqClient = mqHost.CreateMessageQueueClient())
+            {
+                Publish_4_Rot13_messages(mqClient);
+            }
         }
 
         [Test]
         public void Only_allows_1_BgThread_to_run_at_a_time()
         {
-            var mqHost = CreateMqServer();
-
-            mqHost.RegisterHandler<Reverse>(x => x.GetBody().Value.Reverse());
-            mqHost.RegisterHandler<Rot13>(x => x.GetBody().Value.ToRot13());
-
-            5.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Start()));
-            ExecUtils.RetryOnException(() =>
+            using (var mqHost = CreateMqServer())
             {
-                Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
-                Assert.That(mqHost.BgThreadCount, Is.EqualTo(1));
-                Thread.Sleep(100);
-            }, TimeSpan.FromSeconds(5));
+                mqHost.RegisterHandler<Reverse>(x => x.GetBody().Value.Reverse());
+                mqHost.RegisterHandler<Rot13>(x => x.GetBody().Value.ToRot13());
 
-            10.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Stop()));
-            ExecUtils.RetryOnException(() =>
-            {
-                Assert.That(mqHost.GetStatus(), Is.EqualTo("Stopped"));
-                Thread.Sleep(100);
-            }, TimeSpan.FromSeconds(5));
+                5.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Start()));
+                ExecUtils.RetryOnException(() =>
+                {
+                    Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
+                    Assert.That(mqHost.BgThreadCount, Is.EqualTo(1));
+                    Thread.Sleep(100);
+                }, TimeSpan.FromSeconds(5));
 
-            ThreadPool.QueueUserWorkItem(y => mqHost.Start());
-            ExecUtils.RetryOnException(() =>
-            {
-                Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
-                Assert.That(mqHost.BgThreadCount, Is.EqualTo(2));
-                Thread.Sleep(100);
-            }, TimeSpan.FromSeconds(5));
+                10.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Stop()));
+                ExecUtils.RetryOnException(() =>
+                {
+                    Assert.That(mqHost.GetStatus(), Is.EqualTo("Stopped"));
+                    Thread.Sleep(100);
+                }, TimeSpan.FromSeconds(5));
 
-            //Debug.WriteLine(mqHost.GetStats());
+                ThreadPool.QueueUserWorkItem(y => mqHost.Start());
+                ExecUtils.RetryOnException(() =>
+                {
+                    Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
+                    Assert.That(mqHost.BgThreadCount, Is.EqualTo(2));
+                    Thread.Sleep(100);
+                }, TimeSpan.FromSeconds(5));
 
-            mqHost.Dispose();
+                //Debug.WriteLine(mqHost.GetStats());
+            }
         }
 
         [Test]
@@ -169,32 +170,36 @@ namespace ServiceStack.Server.Tests.Messaging
         public void Can_receive_and_process_same_reply_responses()
         {
             var called = 0;
-            var mqHost = CreateMqServer();
-
-            using (var conn = mqHost.ConnectionFactory.CreateConnection())
-            using (var channel = conn.CreateModel())
+            using (var mqHost = CreateMqServer())
             {
-                channel.PurgeQueue<Incr>();
+
+                using (var conn = mqHost.ConnectionFactory.CreateConnection())
+                using (var channel = conn.CreateModel())
+                {
+                    channel.PurgeQueue<Incr>();
+                }
+
+                mqHost.RegisterHandler<Incr>(m =>
+                {
+                    Debug.WriteLine("In Incr #" + m.GetBody().Value);
+                    Interlocked.Increment(ref called);
+                    return m.GetBody().Value > 0 ? new Incr { Value = m.GetBody().Value - 1 } : null;
+                });
+
+                mqHost.Start();
+
+                var incr = new Incr { Value = 5 };
+                using (var mqClient = mqHost.CreateMessageQueueClient())
+                {
+                    mqClient.Publish(incr);
+                }
+
+                ExecUtils.RetryOnException(() =>
+                {
+                    Assert.That(called, Is.EqualTo(1 + incr.Value));
+                    Thread.Sleep(100);
+                }, TimeSpan.FromSeconds(5));
             }
-
-            mqHost.RegisterHandler<Incr>(m => {
-                Debug.WriteLine("In Incr #" + m.GetBody().Value);
-                Interlocked.Increment(ref called);
-                return m.GetBody().Value > 0 ? new Incr { Value = m.GetBody().Value - 1 } : null;
-            });
-
-            mqHost.Start();
-
-            var mqClient = mqHost.CreateMessageQueueClient();
-
-            var incr = new Incr { Value = 5 };
-            mqClient.Publish(incr);
-
-            ExecUtils.RetryOnException(() =>
-            {
-                Assert.That(called, Is.EqualTo(1 + incr.Value));
-                Thread.Sleep(100);
-            }, TimeSpan.FromSeconds(5));
         }
 
         public class Hello : IReturn<HelloResponse>
@@ -213,36 +218,39 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Can_receive_and_process_standard_request_reply_combo()
         {
-            var mqHost = CreateMqServer();
-
-            using (var conn = mqHost.ConnectionFactory.CreateConnection())
-            using (var channel = conn.CreateModel())
+            using (var mqHost = CreateMqServer())
             {
-                channel.PurgeQueue<Hello>();
-                channel.PurgeQueue<HelloResponse>();
+                using (var conn = mqHost.ConnectionFactory.CreateConnection())
+                using (var channel = conn.CreateModel())
+                {
+                    channel.PurgeQueue<Hello>();
+                    channel.PurgeQueue<HelloResponse>();
+                }
+
+                string messageReceived = null;
+
+                mqHost.RegisterHandler<Hello>(m =>
+                    new HelloResponse { Result = "Hello, " + m.GetBody().Name });
+
+                mqHost.RegisterHandler<HelloResponse>(m =>
+                {
+                    messageReceived = m.GetBody().Result; return null;
+                });
+
+                mqHost.Start();
+
+                using (var mqClient = mqHost.CreateMessageQueueClient())
+                {
+                    var dto = new Hello { Name = "ServiceStack" };
+                    mqClient.Publish(dto);
+
+                    ExecUtils.RetryOnException(() =>
+                    {
+                        Assert.That(messageReceived, Is.EqualTo("Hello, ServiceStack"));
+                        Thread.Sleep(100);
+                    }, TimeSpan.FromSeconds(5));
+                }
             }
-
-            string messageReceived = null;
-
-            mqHost.RegisterHandler<Hello>(m =>
-                new HelloResponse { Result = "Hello, " + m.GetBody().Name });
-
-            mqHost.RegisterHandler<HelloResponse>(m => {
-                messageReceived = m.GetBody().Result; return null;
-            });
-
-            mqHost.Start();
-
-            var mqClient = mqHost.CreateMessageQueueClient();
-
-            var dto = new Hello { Name = "ServiceStack" };
-            mqClient.Publish(dto);
-
-            ExecUtils.RetryOnException(() =>
-            {
-                Assert.That(messageReceived, Is.EqualTo("Hello, ServiceStack"));
-                Thread.Sleep(100);
-            }, TimeSpan.FromSeconds(5));
         }
 
         public class Wait
@@ -275,23 +283,24 @@ namespace ServiceStack.Server.Tests.Messaging
 
                 mqHost.Start();
 
-                var mqClient = mqHost.CreateMessageQueueClient();
-
-                var dto = new Wait { ForMs = 100 };
-                msgs.Times(i => mqClient.Publish(dto));
-
-                ExecUtils.RetryOnException(() =>
+                using (var mqClient = mqHost.CreateMessageQueueClient())
                 {
-                    Assert.That(timesCalled, Is.EqualTo(msgs));
-                    Thread.Sleep(100);
-                }, TimeSpan.FromSeconds(5));
+                    var dto = new Wait { ForMs = 100 };
+                    msgs.Times(i => mqClient.Publish(dto));
+
+                    ExecUtils.RetryOnException(() =>
+                    {
+                        Assert.That(timesCalled, Is.EqualTo(msgs));
+                        Thread.Sleep(100);
+                    }, TimeSpan.FromSeconds(5));
+                }
             }
         }
 
         [Test]
         public void Can_publish_and_receive_messages_with_MessageFactory()
         {
-            using (var mqFactory = new RabbitMqMessageFactory("localhost"))
+            using (var mqFactory = new RabbitMqMessageFactory(Config.RabbitMQConnString))
             using (var mqClient = mqFactory.CreateMessageQueueClient())
             {
                 mqClient.Publish(new Hello { Name = "Foo" });
@@ -307,50 +316,50 @@ namespace ServiceStack.Server.Tests.Messaging
             string receivedMsgApp = null;
             string receivedMsgType = null;
 
-            var mqServer = CreateMqServer();
-            mqServer.PublishMessageFilter = (queueName, properties, msg) =>
+            using (var mqServer = CreateMqServer())
             {
-                properties.AppId = "app:{0}".Fmt(queueName);
-            };
-            mqServer.GetMessageFilter = (queueName, basicMsg) =>
-            {
-                var props = basicMsg.BasicProperties;
-                receivedMsgType = props.Type; //automatically added by RabbitMqProducer
+                mqServer.PublishMessageFilter = (queueName, properties, msg) =>
+                {
+                    properties.AppId = "app:{0}".Fmt(queueName);
+                };
+                mqServer.GetMessageFilter = (queueName, basicMsg) =>
+                {
+                    var props = basicMsg.BasicProperties;
+                    receivedMsgType = props.Type; //automatically added by RabbitMqProducer
                 receivedMsgApp = props.AppId;
-            };
+                };
 
-            mqServer.RegisterHandler<Hello>(m => {
-                return new HelloResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) };
-            });
+                mqServer.RegisterHandler<Hello>(m => {
+                    return new HelloResponse { Result = "Hello, {0}!".Fmt(m.GetBody().Name) };
+                });
 
-            mqServer.Start();
+                mqServer.Start();
 
-            using (var mqClient = mqServer.CreateMessageQueueClient())
-            {
-                mqClient.Publish(new Hello { Name = "Bugs Bunny" });
-            }
+                using (var mqClient = mqServer.CreateMessageQueueClient())
+                {
+                    mqClient.Publish(new Hello { Name = "Bugs Bunny" });
+                }
 
-            Thread.Sleep(100);
+                Thread.Sleep(100);
 
-            mqServer.Dispose();
+                Assert.That(receivedMsgApp, Is.EqualTo("app:{0}".Fmt(QueueNames<Hello>.In)));
+                Assert.That(receivedMsgType, Is.EqualTo(typeof(Hello).Name));
 
-            Assert.That(receivedMsgApp, Is.EqualTo("app:{0}".Fmt(QueueNames<Hello>.In)));
-            Assert.That(receivedMsgType, Is.EqualTo(typeof(Hello).Name));
+                using (IConnection connection = mqServer.ConnectionFactory.CreateConnection())
+                using (IModel channel = connection.CreateModel())
+                {
+                    var queueName = QueueNames<HelloResponse>.In;
+                    channel.RegisterQueue(queueName);
 
-            using (IConnection connection = mqServer.ConnectionFactory.CreateConnection())
-            using (IModel channel = connection.CreateModel())
-            {
-                var queueName = QueueNames<HelloResponse>.In;
-                channel.RegisterQueue(queueName);
+                    var basicMsg = channel.BasicGet(queueName, noAck: true);
+                    var props = basicMsg.BasicProperties;
 
-                var basicMsg = channel.BasicGet(queueName, noAck: true);
-                var props = basicMsg.BasicProperties;
+                    Assert.That(props.Type, Is.EqualTo(typeof(HelloResponse).Name));
+                    Assert.That(props.AppId, Is.EqualTo("app:{0}".Fmt(queueName)));
 
-                Assert.That(props.Type, Is.EqualTo(typeof(HelloResponse).Name));
-                Assert.That(props.AppId, Is.EqualTo("app:{0}".Fmt(queueName)));
-
-                var msg = basicMsg.ToMessage<HelloResponse>();
-                Assert.That(msg.GetBody().Result, Is.EqualTo("Hello, Bugs Bunny!"));
+                    var msg = basicMsg.ToMessage<HelloResponse>();
+                    Assert.That(msg.GetBody().Result, Is.EqualTo("Hello, Bugs Bunny!"));
+                }
             }
         }
 
@@ -358,29 +367,30 @@ namespace ServiceStack.Server.Tests.Messaging
         public void Messages_with_null_Response_is_published_to_OutMQ()
         {
             int msgsReceived = 0;
-            var mqServer = CreateMqServer();
-            mqServer.RegisterHandler<HelloNull>(m =>
+            using (var mqServer = CreateMqServer())
             {
-                Interlocked.Increment(ref msgsReceived);
-                return null;
-            });
+                mqServer.RegisterHandler<HelloNull>(m =>
+                {
+                    Interlocked.Increment(ref msgsReceived);
+                    return null;
+                });
 
-            mqServer.Start();
+                mqServer.Start();
 
-            using (mqServer)
-            using (var mqClient = mqServer.CreateMessageQueueClient())
-            {
-                mqClient.Publish(new HelloNull { Name = "Into the Void" });
+                using (var mqClient = mqServer.CreateMessageQueueClient())
+                {
+                    mqClient.Publish(new HelloNull { Name = "Into the Void" });
 
-                var msg = mqClient.Get<HelloNull>(QueueNames<HelloNull>.Out, TimeSpan.FromSeconds(5));
-                Assert.That(msg, Is.Not.Null);
+                    var msg = mqClient.Get<HelloNull>(QueueNames<HelloNull>.Out, TimeSpan.FromSeconds(5));
+                    Assert.That(msg, Is.Not.Null);
 
-                HelloNull response = msg.GetBody();
+                    HelloNull response = msg.GetBody();
 
-                Thread.Sleep(100);
+                    Thread.Sleep(100);
 
-                Assert.That(response.Name, Is.EqualTo("Into the Void"));
-                Assert.That(msgsReceived, Is.EqualTo(1));
+                    Assert.That(response.Name, Is.EqualTo("Into the Void"));
+                    Assert.That(msgsReceived, Is.EqualTo(1));
+                }
             }
         }
 
@@ -388,31 +398,33 @@ namespace ServiceStack.Server.Tests.Messaging
         public void Messages_with_null_Response_is_published_to_ReplyMQ()
         {
             int msgsReceived = 0;
-            var mqServer = CreateMqServer();
-            mqServer.RegisterHandler<HelloNull>(m =>
+            using (var mqServer = CreateMqServer())
             {
-                Interlocked.Increment(ref msgsReceived);
-                return null;
-            });
-
-            mqServer.Start();
-
-            using (mqServer)
-            using (var mqClient = mqServer.CreateMessageQueueClient())
-            {
-                var replyMq = mqClient.GetTempQueueName();
-                mqClient.Publish(new Message<HelloNull>(new HelloNull { Name = "Into the Void" }) {
-                    ReplyTo = replyMq
+                mqServer.RegisterHandler<HelloNull>(m =>
+                {
+                    Interlocked.Increment(ref msgsReceived);
+                    return null;
                 });
 
-                var msg = mqClient.Get<HelloNull>(replyMq);
+                mqServer.Start();
 
-                HelloNull response = msg.GetBody();
+                using (var mqClient = mqServer.CreateMessageQueueClient())
+                {
+                    var replyMq = mqClient.GetTempQueueName();
+                    mqClient.Publish(new Message<HelloNull>(new HelloNull { Name = "Into the Void" })
+                    {
+                        ReplyTo = replyMq
+                    });
 
-                Thread.Sleep(100);
+                    var msg = mqClient.Get<HelloNull>(replyMq);
 
-                Assert.That(response.Name, Is.EqualTo("Into the Void"));
-                Assert.That(msgsReceived, Is.EqualTo(1));
+                    HelloNull response = msg.GetBody();
+
+                    Thread.Sleep(100);
+
+                    Assert.That(response.Name, Is.EqualTo("Into the Void"));
+                    Assert.That(msgsReceived, Is.EqualTo(1));
+                }
             }
         }
     }
@@ -424,68 +436,71 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Does_process_all_messages_and_Starts_Stops_correctly_with_multiple_threads_racing()
         {
-            var mqHost = RabbitMqServerTests.CreateMqServer();
-
-            using (var conn = mqHost.ConnectionFactory.CreateConnection())
-            using (var channel = conn.CreateModel())
+            using (var mqHost = RabbitMqServerTests.CreateMqServer())
             {
-                channel.PurgeQueue<Reverse>();
-                channel.PurgeQueue<Rot13>();
+                using (var conn = mqHost.ConnectionFactory.CreateConnection())
+                using (var channel = conn.CreateModel())
+                {
+                    channel.PurgeQueue<Reverse>();
+                    channel.PurgeQueue<Rot13>();
+                }
+
+                var reverseCalled = 0;
+                var rot13Called = 0;
+
+                mqHost.RegisterHandler<Reverse>(x =>
+                {
+                    "Processing Reverse {0}...".Print(Interlocked.Increment(ref reverseCalled));
+                    return x.GetBody().Value.Reverse();
+                });
+                mqHost.RegisterHandler<Rot13>(x =>
+                {
+                    "Processing Rot13 {0}...".Print(Interlocked.Increment(ref rot13Called));
+                    return x.GetBody().Value.ToRot13();
+                });
+
+                using (var mqClient = mqHost.CreateMessageQueueClient())
+                {
+                    mqClient.Publish(new Reverse { Value = "Hello" });
+                    mqClient.Publish(new Reverse { Value = "World" });
+                    mqClient.Publish(new Rot13 { Value = "ServiceStack" });
+
+                    mqHost.Start();
+
+                    ExecUtils.RetryOnException(() =>
+                    {
+                        Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
+                        Assert.That(mqHost.GetStats().TotalMessagesProcessed, Is.EqualTo(3));
+                        Thread.Sleep(100);
+                    }, TimeSpan.FromSeconds(5));
+
+                    mqClient.Publish(new Reverse { Value = "Foo" });
+                    mqClient.Publish(new Rot13 { Value = "Bar" });
+
+                    10.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Start()));
+                    Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
+
+                    5.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Stop()));
+                    ExecUtils.RetryOnException(() =>
+                    {
+                        Assert.That(mqHost.GetStatus(), Is.EqualTo("Stopped"));
+                        Thread.Sleep(100);
+                    }, TimeSpan.FromSeconds(5));
+
+                    10.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Start()));
+                    ExecUtils.RetryOnException(() =>
+                    {
+                        Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
+                        Thread.Sleep(100);
+                    }, TimeSpan.FromSeconds(5));
+
+                    Debug.WriteLine("\n" + mqHost.GetStats());
+
+                    Assert.That(mqHost.GetStats().TotalMessagesProcessed, Is.GreaterThanOrEqualTo(5));
+                    Assert.That(reverseCalled, Is.EqualTo(3));
+                    Assert.That(rot13Called, Is.EqualTo(2));
+                }
             }
-
-            var reverseCalled = 0;
-            var rot13Called = 0;
-
-            mqHost.RegisterHandler<Reverse>(x => {
-                "Processing Reverse {0}...".Print(Interlocked.Increment(ref reverseCalled));
-                return x.GetBody().Value.Reverse();
-            });
-            mqHost.RegisterHandler<Rot13>(x => {
-                "Processing Rot13 {0}...".Print(Interlocked.Increment(ref rot13Called));
-                return x.GetBody().Value.ToRot13();
-            });
-
-            var mqClient = mqHost.CreateMessageQueueClient();
-            mqClient.Publish(new Reverse { Value = "Hello" });
-            mqClient.Publish(new Reverse { Value = "World" });
-            mqClient.Publish(new Rot13 { Value = "ServiceStack" });
-
-            mqHost.Start();
-
-            ExecUtils.RetryOnException(() =>
-            {
-                Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
-                Assert.That(mqHost.GetStats().TotalMessagesProcessed, Is.EqualTo(3));
-                Thread.Sleep(100);
-            }, TimeSpan.FromSeconds(5));
-
-            mqClient.Publish(new Reverse { Value = "Foo" });
-            mqClient.Publish(new Rot13 { Value = "Bar" });
-
-            10.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Start()));
-            Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
-
-            5.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Stop()));
-            ExecUtils.RetryOnException(() =>
-            {
-                Assert.That(mqHost.GetStatus(), Is.EqualTo("Stopped"));
-                Thread.Sleep(100);
-            }, TimeSpan.FromSeconds(5));
-
-            10.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Start()));
-            ExecUtils.RetryOnException(() =>
-            {
-                Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
-                Thread.Sleep(100);
-            }, TimeSpan.FromSeconds(5));
-
-            Debug.WriteLine("\n" + mqHost.GetStats());
-
-            Assert.That(mqHost.GetStats().TotalMessagesProcessed, Is.GreaterThanOrEqualTo(5));
-            Assert.That(reverseCalled, Is.EqualTo(3));
-            Assert.That(rot13Called, Is.EqualTo(2));
-
-            mqHost.Dispose();
         }
 
 
@@ -495,55 +510,57 @@ namespace ServiceStack.Server.Tests.Messaging
             var retryCount = 1;
             var totalRetries = 1 + retryCount; //in total, inc. first try
 
-            var mqHost = RabbitMqServerTests.CreateMqServer(retryCount);
-
-            using (var conn = mqHost.ConnectionFactory.CreateConnection())
-            using (var channel = conn.CreateModel())
+            using (var mqHost = RabbitMqServerTests.CreateMqServer(retryCount))
             {
-                channel.PurgeQueue<Reverse>();
-                channel.PurgeQueue<Rot13>();
-                channel.PurgeQueue<AlwaysThrows>();
+                using (var conn = mqHost.ConnectionFactory.CreateConnection())
+                using (var channel = conn.CreateModel())
+                {
+                    channel.PurgeQueue<Reverse>();
+                    channel.PurgeQueue<Rot13>();
+                    channel.PurgeQueue<AlwaysThrows>();
+                }
+
+                var reverseCalled = 0;
+                var rot13Called = 0;
+
+                mqHost.RegisterHandler<Reverse>(x => { Interlocked.Increment(ref reverseCalled); return x.GetBody().Value.Reverse(); });
+                mqHost.RegisterHandler<Rot13>(x => { Interlocked.Increment(ref rot13Called); return x.GetBody().Value.ToRot13(); });
+                mqHost.RegisterHandler<AlwaysThrows>(x => { throw new Exception("Always Throwing! " + x.GetBody().Value); });
+                mqHost.Start();
+
+                using (var mqClient = mqHost.CreateMessageQueueClient())
+                {
+                    mqClient.Publish(new AlwaysThrows { Value = "1st" });
+                    mqClient.Publish(new Reverse { Value = "Hello" });
+                    mqClient.Publish(new Reverse { Value = "World" });
+                    mqClient.Publish(new Rot13 { Value = "ServiceStack" });
+
+                    ExecUtils.RetryOnException(() =>
+                    {
+                        Assert.That(mqHost.GetStats().TotalMessagesFailed, Is.EqualTo(1 * totalRetries));
+                        Assert.That(mqHost.GetStats().TotalMessagesProcessed, Is.EqualTo(2 + 1));
+                        Thread.Sleep(100);
+                    }, TimeSpan.FromSeconds(5));
+
+                    5.Times(x => mqClient.Publish(new AlwaysThrows { Value = "#" + x }));
+
+                    mqClient.Publish(new Reverse { Value = "Hello" });
+                    mqClient.Publish(new Reverse { Value = "World" });
+                    mqClient.Publish(new Rot13 { Value = "ServiceStack" });
+                }
+                //Debug.WriteLine(mqHost.GetStatsDescription());
+
+                ExecUtils.RetryOnException(() =>
+                {
+                    Assert.That(mqHost.GetStats().TotalMessagesFailed, Is.EqualTo((1 + 5) * totalRetries));
+                    Assert.That(mqHost.GetStats().TotalMessagesProcessed, Is.EqualTo(6));
+
+                    Assert.That(reverseCalled, Is.EqualTo(2 + 2));
+                    Assert.That(rot13Called, Is.EqualTo(1 + 1));
+
+                    Thread.Sleep(100);
+                }, TimeSpan.FromSeconds(5));
             }
-
-            var reverseCalled = 0;
-            var rot13Called = 0;
-
-            mqHost.RegisterHandler<Reverse>(x => { Interlocked.Increment(ref reverseCalled); return x.GetBody().Value.Reverse(); });
-            mqHost.RegisterHandler<Rot13>(x => { Interlocked.Increment(ref rot13Called); return x.GetBody().Value.ToRot13(); });
-            mqHost.RegisterHandler<AlwaysThrows>(x => { throw new Exception("Always Throwing! " + x.GetBody().Value); });
-            mqHost.Start();
-
-            var mqClient = mqHost.CreateMessageQueueClient();
-            mqClient.Publish(new AlwaysThrows { Value = "1st" });
-            mqClient.Publish(new Reverse { Value = "Hello" });
-            mqClient.Publish(new Reverse { Value = "World" });
-            mqClient.Publish(new Rot13 { Value = "ServiceStack" });
-
-            ExecUtils.RetryOnException(() =>
-            {
-                Assert.That(mqHost.GetStats().TotalMessagesFailed, Is.EqualTo(1 * totalRetries));
-                Assert.That(mqHost.GetStats().TotalMessagesProcessed, Is.EqualTo(2 + 1));
-                Thread.Sleep(100);
-            }, TimeSpan.FromSeconds(5));
-
-            5.Times(x => mqClient.Publish(new AlwaysThrows { Value = "#" + x }));
-
-            mqClient.Publish(new Reverse { Value = "Hello" });
-            mqClient.Publish(new Reverse { Value = "World" });
-            mqClient.Publish(new Rot13 { Value = "ServiceStack" });
-
-            //Debug.WriteLine(mqHost.GetStatsDescription());
-
-            ExecUtils.RetryOnException(() =>
-            {
-                Assert.That(mqHost.GetStats().TotalMessagesFailed, Is.EqualTo((1 + 5) * totalRetries));
-                Assert.That(mqHost.GetStats().TotalMessagesProcessed, Is.EqualTo(6));
-
-                Assert.That(reverseCalled, Is.EqualTo(2 + 2));
-                Assert.That(rot13Called, Is.EqualTo(1 + 1));
-
-                Thread.Sleep(100);
-            }, TimeSpan.FromSeconds(5));
         }
 
         [Test]
@@ -561,17 +578,19 @@ namespace ServiceStack.Server.Tests.Messaging
 
                 mqServer.RegisterHandler<Reverse>(x => { Interlocked.Increment(ref reverseCalled); return x.GetBody().Value.Reverse(); });
 
-                var mqClient = mqServer.CreateMessageQueueClient();
-                RabbitMqServerTests.Publish_4_messages(mqClient);
-
-                mqServer.Start();
-
-                ExecUtils.RetryOnException(() =>
+                using (var mqClient = mqServer.CreateMessageQueueClient())
                 {
-                    Assert.That(mqServer.GetStats().TotalMessagesProcessed, Is.EqualTo(4));
-                    Assert.That(reverseCalled, Is.EqualTo(4));
-                    Thread.Sleep(100);
-                }, TimeSpan.FromSeconds(5));
+                    RabbitMqServerTests.Publish_4_messages(mqClient);
+
+                    mqServer.Start();
+
+                    ExecUtils.RetryOnException(() =>
+                    {
+                        Assert.That(mqServer.GetStats().TotalMessagesProcessed, Is.EqualTo(4));
+                        Assert.That(reverseCalled, Is.EqualTo(4));
+                        Thread.Sleep(100);
+                    }, TimeSpan.FromSeconds(5));
+                }
             }
         }
     }

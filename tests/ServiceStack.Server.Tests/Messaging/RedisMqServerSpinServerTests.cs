@@ -48,17 +48,17 @@ namespace ServiceStack.Server.Tests.Messaging
 
             mqServer.RegisterHandler<Spin10>(m => {
                 var sw = Stopwatch.StartNew();
-                while (sw.ElapsedMilliseconds < 10) Thread.SpinWait(100000);
+                SpinWait.SpinUntil(() => sw.ElapsedMilliseconds < 10);
                 return new Spin10 { Id = Interlocked.Increment(ref counter.Spin10) };
             });
             mqServer.RegisterHandler<Spin100>(m => {
                 var sw = Stopwatch.StartNew();
-                while (sw.ElapsedMilliseconds < 100) Thread.SpinWait(100000);
+                SpinWait.SpinUntil(() => sw.ElapsedMilliseconds < 100);
                 return new Spin100 { Id = Interlocked.Increment(ref counter.Spin100) };
             });
             mqServer.RegisterHandler<Spin1000>(m => {
                 var sw = Stopwatch.StartNew();
-                while (sw.ElapsedMilliseconds < 1000) Thread.SpinWait(100000);
+                SpinWait.SpinUntil(() => sw.ElapsedMilliseconds < 1000);
                 return new Spin1000 { Id = Interlocked.Increment(ref counter.Spin1000) };
             });
 

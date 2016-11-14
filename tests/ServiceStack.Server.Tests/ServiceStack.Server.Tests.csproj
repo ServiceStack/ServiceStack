@@ -138,6 +138,7 @@
     <Compile Include="Services\UnRetryableFail.cs" />
     <Compile Include="TestConfig.cs" />
     <Compile Include="TransientServiceMessagingTests.cs" />
+    <Compile Include="Config.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDB\ServiceStack.Authentication.MongoDb.csproj">

@@ -21,7 +21,7 @@
       "type": "platform",
       "version": "1.0.0"
     },
-    "NUnitLite": "3.2.1",
+    "NUnitLite": "3.5.0",
     "Microsoft.Data.SQLite": "1.0.*",
     "Microsoft.Extensions.Logging.Console": "1.0.0",
     "ServiceStack": "1.0.*",

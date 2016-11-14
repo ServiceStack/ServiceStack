@@ -149,7 +149,7 @@ namespace ServiceStack.Host.NetCore
         {
             response.Cookies.Append(cookie.Name, cookie.Value, new CookieOptions
             {
-                Domain = cookie.Domain,
+                Domain = String.IsNullOrEmpty(cookie.Domain) ? null : cookie.Domain,
                 Expires = cookie.Expires,
                 HttpOnly = cookie.HttpOnly,
                 Path = cookie.Path,

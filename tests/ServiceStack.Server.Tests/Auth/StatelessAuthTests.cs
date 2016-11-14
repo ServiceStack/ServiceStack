@@ -8,10 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Funq;
-using MongoDB.Driver;
 using NUnit.Framework;
 using ServiceStack.Auth;
+#if !NETCORE_SUPPORT
+using MongoDB.Driver;
 using ServiceStack.Authentication.MongoDb;
+#endif
 using ServiceStack.Aws.DynamoDb;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
@@ -163,6 +165,7 @@ namespace ServiceStack.Server.Tests.Auth
         }
     }
 
+#if !NETCORE_SUPPORT
     [Explicit("Requires MongoDB Dependency")]
     public class MongoDbAuthRepoStatelessAuthTests : StatelessAuthTests
     {
@@ -178,6 +181,7 @@ namespace ServiceStack.Server.Tests.Auth
             };
         }
     }
+#endif
 
     public class OrmLiteStatelessAuthTests : StatelessAuthTests
     {
@@ -264,7 +268,7 @@ namespace ServiceStack.Server.Tests.Auth
 
         class JwtAuthProviderReaderAppHost : AppHostHttpListenerBase
         {
-            public JwtAuthProviderReaderAppHost() : base(typeof(FallbackAuthKeyTests).Name, typeof(AppHost).Assembly) { }
+            public JwtAuthProviderReaderAppHost() : base(typeof(FallbackAuthKeyTests).Name, typeof(AppHost).GetAssembly()) { }
 
             public override void Configure(Container container)
             {
@@ -400,7 +404,7 @@ namespace ServiceStack.Server.Tests.Auth
 
         class JwtAuthProviderReaderAppHost : AppHostHttpListenerBase
         {
-            public JwtAuthProviderReaderAppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
+            public JwtAuthProviderReaderAppHost() : base("Test Razor", typeof(AppHost).GetAssembly()) { }
 
             public override void Configure(Container container)
             {

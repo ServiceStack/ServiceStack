@@ -1,12 +1,13 @@
-﻿#if !NETSTANDARD1_6
-
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 
 namespace ServiceStack.Server.Tests.Auth
 {
+#if NETCORE_SUPPORT
+    [Ignore("Not working on .NET Core")]
+#endif
     public class OrmLiteStatelessAuthRazorTests : StatelessAuthRazorTests
     {
     }
@@ -254,5 +255,3 @@ namespace ServiceStack.Server.Tests.Auth
         }
     }
 }
-
-#endif
