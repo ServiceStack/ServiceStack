@@ -134,7 +134,7 @@ namespace ServiceStack.Mvc
             if (viewEngineResult == null)
                 return false;
 
-            RenderView(req, CreateViewData(dto), viewEngineResult.View, req.GetTemplate());
+            RenderView(req, res, CreateViewData(dto), viewEngineResult.View, req.GetTemplate());
 
             return true;
         }
@@ -166,7 +166,7 @@ namespace ServiceStack.Mvc
             };
         }
 
-        internal void RenderView(IRequest req, ViewDataDictionary viewData, IView view, string layout=null)
+        internal void RenderView(IRequest req, IResponse res, ViewDataDictionary viewData, IView view, string layout=null)
         {
             var razorView = view as RazorView;
             try
@@ -176,7 +176,7 @@ namespace ServiceStack.Mvc
                     new RouteData(),
                     new ActionDescriptor());
 
-                var stream = req.Response.OutputStream;
+                var stream = res.OutputStream;
 
                 var sw = new StreamWriter(stream);
                 {
@@ -310,7 +310,7 @@ namespace ServiceStack.Mvc
                 }
             }
 
-            format.RenderView(req, viewData, view);
+            format.RenderView(req, res, viewData, view);
         }
 
         public override object CreateRequest(IRequest request, string operationName)
