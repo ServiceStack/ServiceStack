@@ -113,7 +113,7 @@ namespace Mvc.Core.Tests
         {
             SetConfig(new HostConfig
             {
-                HandlerFactoryPath = "api"
+                //HandlerFactoryPath = "api"
             });
 
             Plugins.Add(new RazorFormat());

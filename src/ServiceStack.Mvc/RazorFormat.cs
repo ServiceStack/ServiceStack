@@ -113,9 +113,14 @@ namespace ServiceStack.Mvc
         public string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer = null,
             Html.HtmlHelper htmlHelper = null) => null;
 
+        private const string RenderException = "RazorFormat.Exception";
+
         public bool ProcessRequest(IRequest req, IResponse res, object dto)
         {
             if (req.Dto == null || dto == null)
+                return false;
+
+            if (req.Items.ContainsKey(RenderException))
                 return false;
 
             var httpResult = dto as IHttpResult;
@@ -134,7 +139,26 @@ namespace ServiceStack.Mvc
             if (viewEngineResult == null)
                 return false;
 
-            RenderView(req, res, CreateViewData(dto), viewEngineResult.View, req.GetTemplate());
+            ViewDataDictionary viewData = null;
+
+            var errorDto = dto as ErrorResponse;
+            if (errorDto != null)
+            {
+                var razorView = viewEngineResult.View as RazorView;
+                var genericDef = razorView.RazorPage.GetType().FirstGenericType();
+                var modelType = genericDef?.GetGenericArguments()[0];
+                if (modelType != null && modelType != typeof(object))
+                {
+                    var model = modelType.CreateInstance();
+                    viewData = CreateViewData(model);
+                    req.Items[Formats.HtmlFormat.ErrorStatusKey] = errorDto;
+                }
+            }
+
+            if (viewData == null)
+                viewData = CreateViewData(dto);
+
+            RenderView(req, res, viewData, viewEngineResult.View, req.GetTemplate());
 
             return true;
         }
@@ -210,6 +234,7 @@ namespace ServiceStack.Mvc
             }
             catch (Exception ex)
             {
+                req.Items[RenderException] = ex;
                 //Can't set HTTP Headers which are already written at this point
                 req.Response.WriteErrorBody(ex);
             }
