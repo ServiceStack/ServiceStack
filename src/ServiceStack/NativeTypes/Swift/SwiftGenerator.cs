@@ -26,7 +26,7 @@ namespace ServiceStack.NativeTypes.Swift
         public static List<string> DefaultImports = new List<string>
         {
             "Foundation",
-            "ServiceStackClient",
+            //"ServiceStackClient", //Required when using Swift Package Manager, not in Xcode
         };
 
         public static ConcurrentDictionary<string, string> TypeAliases = new Dictionary<string, string>
