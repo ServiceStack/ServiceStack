@@ -50,5 +50,7 @@ namespace ServiceStack.FluentValidation.Validators
             get { return null; }
             set { }
         }
+
+        public Severity Severity { get; set; }
     }
 }

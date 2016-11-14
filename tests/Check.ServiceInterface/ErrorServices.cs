@@ -17,11 +17,14 @@ namespace Check.ServiceInterface
         {
             throw new Exception(request.GetType().Name);
         }
+    }
 
+    public class AlwaysThrowsService : Service
+    {
         [AlwaysThrows]
         public object Any(AlwaysThrowsFilterAttribute request) => request;
 
-        public object Any(AlwaysThrowsGlobalFilter request) => request;        
+        public object Any(AlwaysThrowsGlobalFilter request) => request;
     }
 
     public class AlwaysThrowsAttribute : RequestFilterAttribute
