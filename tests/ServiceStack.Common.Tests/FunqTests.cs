@@ -1,5 +1,4 @@
-﻿#if !NETCORE_SUPPORT
-using Funq;
+﻿using Funq;
 using NUnit.Framework;
 
 namespace ServiceStack.Common.Tests
@@ -30,7 +29,6 @@ namespace ServiceStack.Common.Tests
             container.AutoWire(m);
             Assert.Throws<ResolutionException>(() => container.Resolve<IBar>());
             Assert.IsNull(m.Bar); // FAILS HERE
-        }         
+        }
     }
 }
-#endif

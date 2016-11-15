@@ -276,13 +276,13 @@ namespace Funq
             return Expression.Call(containerParam, method);
         }
 
-        private static Dictionary<Type, Func<object>> tryResolveCache = new Dictionary<Type, Func<object>>();
+        private static Dictionary<Type, Func<Container,object>> tryResolveCache = new Dictionary<Type, Func<Container, object>>();
 
         public object TryResolve(Type type)
         {
-            Func<object> fn;
+            Func<Container, object> fn;
             if (tryResolveCache.TryGetValue(type, out fn))
-                return fn();
+                return fn(this);
 
             var mi = typeof(Container).GetMethods(BindingFlags.Public | BindingFlags.Instance)
                 .First(x => x.Name == "TryResolve" &&
@@ -291,21 +291,23 @@ namespace Funq
 
             var genericMi = mi.MakeGenericMethod(type);
 
-            fn = Expression.Lambda<Func<object>>(
-                    Expression.Call(Expression.Constant(this), genericMi)
+            var p = Expression.Parameter(typeof(Container), "container");
+            fn = Expression.Lambda<Func<Container, object>>(
+                    Expression.Call(p, genericMi),
+                    p
                 ).Compile();
 
-            Dictionary<Type, Func<object>> snapshot, newCache;
+            Dictionary<Type, Func<Container, object>> snapshot, newCache;
             do
             {
                 snapshot = tryResolveCache;
-                newCache = new Dictionary<Type, Func<object>>(tryResolveCache) {
+                newCache = new Dictionary<Type, Func<Container, object>>(tryResolveCache) {
                     [type] = fn
                 };
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref tryResolveCache, newCache, snapshot), snapshot));
 
-            return fn();
+            return fn(this);
         }
     }
 }
