@@ -16,7 +16,7 @@ using ServiceStack.ServiceHost.Tests.UseCase.Services;
 
 namespace ServiceStack.ServiceHost.Tests.UseCase
 {
-    [Ignore]
+    [Ignore("Performance tests")]
     [TestFixture]
     public class CustomerUseCase
     {
