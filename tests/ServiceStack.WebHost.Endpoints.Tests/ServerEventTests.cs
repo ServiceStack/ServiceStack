@@ -278,8 +278,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var task = client.Connect();
                 var connectMsg = await task.WaitAsync();
 
-                Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
-                Assert.That(connectMsg.UnRegisterUrl, Is.StringStarting(Config.AbsoluteBaseUri));
+                Assert.That(connectMsg.HeartbeatUrl, Does.StartWith(Config.AbsoluteBaseUri));
+                Assert.That(connectMsg.UnRegisterUrl, Does.StartWith(Config.AbsoluteBaseUri));
                 Assert.That(connectMsg.HeartbeatIntervalMs, Is.GreaterThan(0));
                 Assert.That(connectMsg.IdleTimeoutMs, Is.EqualTo(TimeSpan.FromSeconds(30).TotalMilliseconds));
             }
@@ -294,7 +294,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var taskMsg = client.WaitForNextCommand();
 
                 var connectMsg = await taskConnect.WaitAsync();
-                Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
+                Assert.That(connectMsg.HeartbeatUrl, Does.StartWith(Config.AbsoluteBaseUri));
 
                 var joinMsg = (ServerEventJoin)await taskMsg.WaitAsync();
                 Assert.That(joinMsg.DisplayName, Is.EqualTo(client.ConnectionInfo.DisplayName));
@@ -322,7 +322,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 };
 
                 var connectMsg = await client.Connect().WaitAsync(2000);
-                Assert.That(connectMsg.HeartbeatUrl, Is.StringStarting(Config.AbsoluteBaseUri));
+                Assert.That(connectMsg.HeartbeatUrl, Does.StartWith(Config.AbsoluteBaseUri));
 
                 await allJoinsReceived.Task.WaitAsync(3000);
 

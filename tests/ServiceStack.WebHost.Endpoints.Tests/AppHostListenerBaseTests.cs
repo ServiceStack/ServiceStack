@@ -159,13 +159,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webReq.Accept = "*/*";
             using (var webRes = webReq.GetResponse())
             {
-                Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.JavaScript));
+                Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.JavaScript));
                 response = webRes.ReadToEnd();
             }
 
             Assert.That(response, Is.Not.Null, "No response received");
             Console.WriteLine(response);
-            Assert.That(response, Is.StringStarting("cb("));
+            Assert.That(response, Does.StartWith("cb("));
             Assert.That(response, Is.StringEnding(")"));
         }
 

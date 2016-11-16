@@ -458,7 +458,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
                 Assert.That(ex.StatusDescription, Is.EqualTo("KeyNotFoundException"));
-                Assert.That(ex.ResponseStatus.Message, Is.StringStarting(EncryptedMessagesFeature.ErrorKeyNotFound.Substring(0,10)));
+                Assert.That(ex.ResponseStatus.Message, Does.StartWith(EncryptedMessagesFeature.ErrorKeyNotFound.Substring(0,10)));
             }
         }
     }
