@@ -1612,13 +1612,13 @@ namespace ServiceStack
                     foreach (var key in nameValueCollection.AllKeys)
                     {
                         outputStream.Write(boundary + newLine);
-                        outputStream.Write("Content-Disposition: form-data;name=\"{0}\"{1}".FormatWith(key, newLine));
-                        outputStream.Write("Content-Type: text/plain;charset=utf-8{0}{1}".FormatWith(newLine, newLine));
+                        outputStream.Write($"Content-Disposition: form-data;name=\"{key}\"{newLine}");
+                        outputStream.Write($"Content-Type: text/plain;charset=utf-8{newLine}{newLine}");
                         outputStream.Write(nameValueCollection[key] + newLine);
                     }
 
                     outputStream.Write(boundary + newLine);
-                    outputStream.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}{3}".FormatWith(fieldName, fileName, newLine, newLine));
+                    outputStream.Write($"Content-Disposition: form-data;name=\"{fieldName}\";filename=\"{fileName}\"{newLine}{newLine}");
                     var buffer = new byte[4096];
                     int byteCount;
                     int bytesWritten = 0;
