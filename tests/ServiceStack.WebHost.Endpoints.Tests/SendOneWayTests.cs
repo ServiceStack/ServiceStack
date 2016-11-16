@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         OneWayServiceAppHostHttpListener appHost;
         private IRestClient client;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new OneWayServiceAppHostHttpListener();
@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             OneWayService.LastResult = null;
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();

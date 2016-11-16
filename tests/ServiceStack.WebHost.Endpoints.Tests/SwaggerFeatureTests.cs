@@ -308,7 +308,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         SwaggerFeatureAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new SwaggerFeatureAppHostHttpListener();
@@ -316,7 +316,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

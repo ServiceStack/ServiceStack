@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private const string BaseUri = "http://localhost:8001";
         private UniqueRequestAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new UniqueRequestAppHost();
@@ -56,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(BaseUri + "/");
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

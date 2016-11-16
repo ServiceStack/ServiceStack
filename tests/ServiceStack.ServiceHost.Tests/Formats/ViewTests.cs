@@ -22,7 +22,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         private MarkdownFormat markdownFormat;
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             var json = "~/AppData/ALFKI.json".MapProjectPath().ReadAllText();
@@ -39,7 +39,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             markdownFormat = appHost.GetPlugin<MarkdownFormat>();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

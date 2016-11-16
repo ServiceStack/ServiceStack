@@ -246,7 +246,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         protected abstract ServiceStackHost CreateAppHost();
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
 
@@ -1223,7 +1223,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost = CreateAppHost();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

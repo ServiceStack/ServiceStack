@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost().Init();
@@ -43,7 +43,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             productArgs = new { products = products };
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

@@ -16,7 +16,7 @@ namespace RazorRockstars.Console.Files
 
         private AppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new AppHost();
@@ -24,7 +24,7 @@ namespace RazorRockstars.Console.Files
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

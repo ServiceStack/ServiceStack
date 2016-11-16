@@ -122,7 +122,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private CustomValidationAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new CustomValidationAppHost();
@@ -130,7 +130,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

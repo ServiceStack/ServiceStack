@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             appHost.Start(BaseUrl);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

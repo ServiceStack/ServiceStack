@@ -17,7 +17,7 @@ namespace RazorRockstars.Console.Files
     {
         AppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
@@ -26,7 +26,7 @@ namespace RazorRockstars.Console.Files
             appHost.Start("http://*:1337/");
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

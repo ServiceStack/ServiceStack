@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private BufferedRequestAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BufferedRequestAppHost();
@@ -19,7 +19,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private BufferedRequestAppHost appHost;
         MyRequest request = new MyRequest { Data = "RequestData" };
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BufferedRequestAppHost { EnableRequestBodyTracking = true };
@@ -88,7 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

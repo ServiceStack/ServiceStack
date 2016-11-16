@@ -26,7 +26,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         private MarkdownFormat markdownFormat;
         Dictionary<string, object> templateArgs;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             staticTemplatePath = "~/Views/Shared/_Layout.shtml".MapProjectPath();

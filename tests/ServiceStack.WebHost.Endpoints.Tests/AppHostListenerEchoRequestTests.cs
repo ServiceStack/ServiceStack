@@ -81,7 +81,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private AppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new AppHost();
@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

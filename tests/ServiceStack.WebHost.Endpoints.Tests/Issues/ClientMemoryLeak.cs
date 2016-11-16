@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
                 .Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TearDown()
         {
             appHost.Dispose();

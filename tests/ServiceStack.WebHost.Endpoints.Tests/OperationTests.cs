@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private OperationTestsAppHost appHost;
 	    private OperationControl operationControl;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new OperationTestsAppHost();
@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -85,7 +85,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             operationControl.Render(new HtmlTextWriter(stringWriter));
 
             string html = stringWriter.ToString();
-            Assert.That(html, Is.StringContaining("<a href=\"http://localhost/metadata\">&lt;back to all web services</a>"));
+            Assert.That(html, Does.Contain("<a href=\"http://localhost/metadata\">&lt;back to all web services</a>"));
         }
 
         [Test]

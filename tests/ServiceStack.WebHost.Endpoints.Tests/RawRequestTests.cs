@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 		ExampleAppHostHttpListener appHost;
 		
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void OnTestFixtureStartUp() 
 		{
 			appHost = new ExampleAppHostHttpListener();
@@ -56,7 +56,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 									 DateTime.Now, Config.AbsoluteBaseUri);
 		}
 
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();

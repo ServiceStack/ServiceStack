@@ -22,7 +22,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
     {
         private const int Times = 100000;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             OrmLite.OrmLiteConfig.DialectProvider = new SqliteOrmLiteDialectProvider();

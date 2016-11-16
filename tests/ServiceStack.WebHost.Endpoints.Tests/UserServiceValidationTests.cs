@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         static UserAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new UserAppHostHttpListener();
@@ -88,7 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

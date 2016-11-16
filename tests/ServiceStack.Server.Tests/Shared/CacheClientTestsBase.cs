@@ -138,7 +138,7 @@ namespace ServiceStack.Server.Tests.Shared
             Cache = CreateClient();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             Cache.Dispose();
@@ -361,7 +361,7 @@ namespace ServiceStack.Server.Tests.Shared
             Parallel.Invoke(fns.ToArray());
 
             var entry = cache.Get<string>("concurrent-test");
-            Assert.That(entry, Is.StringStarting("Data: "));
+            Assert.That(entry, Does.StartWith("Data: "));
         }
 
         [Test]

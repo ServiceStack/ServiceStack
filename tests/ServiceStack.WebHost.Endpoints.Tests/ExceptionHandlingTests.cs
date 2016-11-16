@@ -254,7 +254,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         ExceptionHandlingAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new ExceptionHandlingAppHostHttpListener();
@@ -262,7 +262,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();

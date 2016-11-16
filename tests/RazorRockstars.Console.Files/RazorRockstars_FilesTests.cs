@@ -25,7 +25,7 @@ namespace RazorRockstars.Console.Files
 
         Stopwatch startedAt;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
@@ -35,7 +35,7 @@ namespace RazorRockstars.Console.Files
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             "Time Taken {0}ms".Fmt(startedAt.ElapsedMilliseconds).Print();
@@ -54,10 +54,10 @@ namespace RazorRockstars.Console.Files
         public void Does_not_use_same_razor_page_instance()
         {
             var html = GetRazorInstanceHtml();
-            Assert.That(html, Is.StringContaining("<h5>Counter: 1</h5>"));
+            Assert.That(html, Does.Contain("<h5>Counter: 1</h5>"));
 
             html = GetRazorInstanceHtml();
-            Assert.That(html, Is.StringContaining("<h5>Counter: 1</h5>"));
+            Assert.That(html, Does.Contain("<h5>Counter: 1</h5>"));
         }
 
         private static string GetRazorInstanceHtml()

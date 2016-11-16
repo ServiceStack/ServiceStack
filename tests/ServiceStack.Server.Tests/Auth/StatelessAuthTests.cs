@@ -296,7 +296,7 @@ namespace ServiceStack.Server.Tests.Auth
             .Start("http://*:2337/");
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -433,7 +433,7 @@ namespace ServiceStack.Server.Tests.Auth
             .Start("http://*:2337/");
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -717,7 +717,7 @@ namespace ServiceStack.Server.Tests.Auth
                 }.ToJson());
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

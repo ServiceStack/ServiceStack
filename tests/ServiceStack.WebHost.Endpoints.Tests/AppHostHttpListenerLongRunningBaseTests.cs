@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private const string ListeningOn = "http://localhost:1337/";
         ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureStartUp()
         {
             appHost = new ExampleAppHostHttpListenerPool()
@@ -24,7 +24,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Console.WriteLine("ExampleAppHost Created at {0}, listening on {1}", DateTime.Now, ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();

@@ -35,7 +35,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             };
 
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapProjectPath();

@@ -24,7 +24,7 @@ namespace ServiceStack.Server.Tests.Messaging
             public string Value { get; set; }
         }
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             RedisClient.NewFactoryFn = () => new RedisClient(TestConfig.SingleHost);

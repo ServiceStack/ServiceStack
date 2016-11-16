@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		private string customUrl = ListeningOn.CombineWith("customrequestbinder");
 		private string predefinedUrl = ListeningOn.CombineWith("json/reply/customrequestbinder");
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void OnTestFixtureSetUp()
 		{
 			appHost = new ExampleAppHostHttpListener();
@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			appHost.Start(ListeningOn);
 		}
 
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();

@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		ExampleAppHostHttpListener appHost;
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void OnTestFixtureSetUp()
 		{
 			LogManager.LogFactory = new ConsoleLogFactory();
@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			appHost.Start(ListeningOn);
 		}
 
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void OnTestFixtureTearDown()
 		{
 			Dispose();

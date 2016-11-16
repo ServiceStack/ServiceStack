@@ -40,7 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private EncodingTestsAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new EncodingTestsAppHost();
@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

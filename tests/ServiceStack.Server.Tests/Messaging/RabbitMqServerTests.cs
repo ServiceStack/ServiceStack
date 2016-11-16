@@ -34,7 +34,7 @@ namespace ServiceStack.Server.Tests.Messaging
     {
         static readonly string ConnectionString = Config.RabbitMQConnString;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
