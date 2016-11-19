@@ -578,8 +578,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                     var msg1 = await msgTask.WaitAsync();
 
-                    msgTask = client1.WaitForNextMessage();
-
                     serverEvents.Reset(); //Dispose all existing subscriptions
 
                     using (var client2 = CreateServerEventsClient())
@@ -588,6 +586,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                         await Task.WhenAny(client1.Connect(), Task.Delay(2000));
 
+                        msgTask = client1.WaitForNextMessage();
                         client2.PostChat("msg2 from client2");
                     }
 
