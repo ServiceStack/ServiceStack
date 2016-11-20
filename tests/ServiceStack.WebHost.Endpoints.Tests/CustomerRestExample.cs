@@ -111,7 +111,7 @@ namespace NewApi.Customers
 
         ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new AppHost()
@@ -119,7 +119,7 @@ namespace NewApi.Customers
                 .Start(BaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

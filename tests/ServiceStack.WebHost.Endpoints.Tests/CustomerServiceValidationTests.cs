@@ -123,7 +123,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
         static ValidationAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new ValidationAppHostHttpListener();
@@ -131,7 +131,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();

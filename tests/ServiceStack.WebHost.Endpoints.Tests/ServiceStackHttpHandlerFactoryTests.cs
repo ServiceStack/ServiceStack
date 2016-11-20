@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost(GetType().GetAssembly()).Init();
@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             HostContext.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

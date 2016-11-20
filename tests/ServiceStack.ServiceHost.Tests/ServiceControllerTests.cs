@@ -84,7 +84,7 @@ namespace ServiceStack.ServiceHost.Tests
                 var requestType = typeof(GenericService<>).GetGenericArguments()[0];
                 var exception = Assert.Throws<NotImplementedException>(() => appHost.ServiceController.GetService(requestType));
 
-                Assert.That(exception.Message, Is.StringContaining("Unable to resolve service"));
+                Assert.That(exception.Message, Does.Contain("Unable to resolve service"));
             }
         }
 
@@ -103,7 +103,7 @@ namespace ServiceStack.ServiceHost.Tests
                 var exception = Assert.Throws<System.NotImplementedException>(() =>
                     appHost.ServiceController.GetService(typeof(Generic3<>)));
 
-                Assert.That(exception.Message, Is.StringContaining("Unable to resolve service"));
+                Assert.That(exception.Message, Does.Contain("Unable to resolve service"));
             }
         }
 

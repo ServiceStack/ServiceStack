@@ -77,7 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 .Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

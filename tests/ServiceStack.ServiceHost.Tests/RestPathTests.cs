@@ -13,13 +13,13 @@ namespace ServiceStack.ServiceHost.Tests
     {
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost().Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -275,11 +275,12 @@ namespace ServiceStack.ServiceHost.Tests
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void Cannot_have_variable_after_wildcard()
         {
-            AssertMatch("/content/{Slug*}/{Version}",
-                "/content/wildcard/slug/path/1", "*/content", new SlugRequest(), -1);
+            Assert.Throws<ArgumentException>(() => {
+                AssertMatch("/content/{Slug*}/{Version}",
+                    "/content/wildcard/slug/path/1", "*/content", new SlugRequest(), -1);
+            });
         }
 
         [Test]

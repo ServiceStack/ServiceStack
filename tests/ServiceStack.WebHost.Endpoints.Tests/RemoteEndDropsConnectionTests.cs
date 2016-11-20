@@ -19,7 +19,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			LogManager.LogFactory = new TestLogFactory();
 		}
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void OnTestFixtureStartUp()
 		{
 			appHost = new ExampleAppHostHttpListener();
@@ -31,7 +31,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				DateTime.Now, ListeningOn);
 		}
 
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();

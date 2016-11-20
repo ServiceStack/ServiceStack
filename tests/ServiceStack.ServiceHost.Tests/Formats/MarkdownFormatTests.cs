@@ -35,7 +35,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             };
 
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapProjectPath();
@@ -75,7 +75,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             var html = markdownFormat.RenderStaticPageHtml("AppData/NoTemplate/Static");
 
             Assert.That(html, Is.Not.Null);
-            Assert.That(html, Is.StringStarting("<h1>Static Markdown template</h1>"));
+            Assert.That(html, Does.StartWith("<h1>Static Markdown template</h1>"));
         }
 
         [Test]
@@ -87,7 +87,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             html.Print();
 
             Assert.That(html, Is.Not.Null);
-            Assert.That(html, Is.StringStarting("<!doctype html>"));
+            Assert.That(html, Does.StartWith("<!doctype html>"));
         }
 
         [Test]

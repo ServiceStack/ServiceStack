@@ -178,7 +178,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         string ServiceClientBaseUri = Config.ListeningOn;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new RequestFiltersAppHostHttpListener();
@@ -186,7 +186,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();

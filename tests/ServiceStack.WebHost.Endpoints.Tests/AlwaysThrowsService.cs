@@ -177,7 +177,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new AlwaysThrowsAppHost()
@@ -185,7 +185,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

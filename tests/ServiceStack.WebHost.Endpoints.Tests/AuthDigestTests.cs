@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
         ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new AuthDigestAppHost(WebHostUrl, Configure);
@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();

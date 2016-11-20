@@ -38,7 +38,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         JsonServiceClient client = new JsonServiceClient(BaseUri);
         private ServiceSetupAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new ServiceSetupAppHost();
@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(BaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

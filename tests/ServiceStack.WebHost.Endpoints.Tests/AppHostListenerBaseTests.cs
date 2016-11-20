@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             LogManager.LogFactory = new ConsoleLogFactory();
         }
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureStartUp()
         {
             appHost = new ExampleAppHostHttpListener()
@@ -35,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             "ExampleAppHost Created at {0}, listening on {1}".Print(DateTime.Now, ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -159,13 +159,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webReq.Accept = "*/*";
             using (var webRes = webReq.GetResponse())
             {
-                Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.JavaScript));
+                Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.JavaScript));
                 response = webRes.ReadToEnd();
             }
 
             Assert.That(response, Is.Not.Null, "No response received");
             Console.WriteLine(response);
-            Assert.That(response, Is.StringStarting("cb("));
+            Assert.That(response, Does.StartWith("cb("));
             Assert.That(response, Is.StringEnding(")"));
         }
 

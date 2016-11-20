@@ -153,7 +153,7 @@ namespace ServiceStack.Configuration
         {
             if (originalSetting == null) return null;
 
-            var lines = originalSetting.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            var lines = originalSetting.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             return lines.Length > 1 
                 ? string.Join("", lines.Select(x => x.Trim())) 
                 : originalSetting;

@@ -9,7 +9,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
     [TestFixture]
     public class CachedServiceTests
     {
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnBeforeEachTest()
         {
             var jsonClient = new JsonServiceClient(Config.ServiceStackBaseUri);

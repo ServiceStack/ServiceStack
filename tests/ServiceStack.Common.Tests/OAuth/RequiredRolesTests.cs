@@ -13,14 +13,14 @@ namespace ServiceStack.Common.Tests.OAuth
     {
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost().Init();
             AuthenticateService.Init(() => new AuthUserSession(), new CredentialsAuthProvider());
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

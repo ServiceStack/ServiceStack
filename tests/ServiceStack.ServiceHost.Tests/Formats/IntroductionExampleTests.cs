@@ -26,7 +26,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         private List<Product> products;
         Dictionary<string, object> productArgs;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             this.products = new List<Product> {

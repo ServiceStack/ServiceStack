@@ -20,7 +20,7 @@
   "dependencies": {
     "Microsoft.NETCore.App": {
       "type": "platform",
-      "version": "1.0.1"
+      "version": "1.1.0"
     },
     "NUnitLite" : "3.5.0",
     "ServiceStack.Interfaces" : "1.0.*",
@@ -42,12 +42,12 @@
     "Moq": "4.6.38-alpha"
   },
   "frameworks": {
-   "netcoreapp1.0": { 
+   "netcoreapp1.1": { 
        "imports": "dnxcore50",
 	     "dependencies" : {
-        "System.Reflection.TypeExtensions": "4.1.0",
-        "System.Threading": "4.0.11",
-        "Microsoft.AspNetCore.WebUtilities": "1.0.0"
+        "System.Reflection.TypeExtensions": "4.*",
+        "System.Threading": "4.*",
+        "Microsoft.AspNetCore.WebUtilities": "1.*"
       }	
     }
   }

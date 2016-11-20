@@ -75,7 +75,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         readonly FileInfo uploadedFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
         readonly FileInfo uploadedTextFile = new FileInfo("~/TestExistingDir/textfile.txt".MapProjectPath());
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TextFixtureSetUp()
         {
             try
@@ -90,7 +90,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             if (appHost != null) appHost.Dispose();

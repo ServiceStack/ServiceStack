@@ -8,7 +8,7 @@ namespace ServiceStack.Auth.Tests
         protected JsonServiceClient Client { get; set; }
         protected static readonly string BaseUri = "http://localhost:8080/api";
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             Client = new JsonServiceClient(BaseUri);
@@ -17,7 +17,7 @@ namespace ServiceStack.Auth.Tests
 
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             Client.Get<AuthenticateResponse>("/auth/logout");

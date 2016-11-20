@@ -219,7 +219,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -240,7 +240,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .GetJsonFromUrl(responseFilter: res =>
                 {
-                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                    Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json));
                     Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
                 })
                 .FromJson<ServerCacheOnly>();
@@ -251,7 +251,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .GetJsonFromUrl(responseFilter: res =>
                 {
-                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                    Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json));
                     Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
                 })
                 .FromJson<ServerCacheOnly>();
@@ -274,7 +274,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .GetJsonFromUrl(responseFilter: res =>
                 {
-                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                    Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json));
                     Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
                 })
                 .FromJson<ServerCacheOnlyAsync>();
@@ -285,7 +285,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .GetJsonFromUrl(responseFilter: res =>
                 {
-                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                    Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json));
                     Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
                 })
                 .FromJson<ServerCacheOnlyAsync>();
@@ -389,7 +389,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             //JSON + Deflate
             response = url.GetJsonFromUrl(responseFilter: res =>
             {
-                Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json));
             })
                 .FromJson<ServerCacheOnly>();
 
@@ -403,7 +403,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webReq.AutomaticDecompression = DecompressionMethods.None;
 #endif
             var webRes = webReq.GetResponse();
-            Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.Json));
+            Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.Json));
             response = webRes.GetResponseStream().ReadFully().FromUtf8Bytes()
                 .FromJson<ServerCacheOnly>();
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(1)); //Uses plain json cache from #1
@@ -417,7 +417,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webReq.AutomaticDecompression = DecompressionMethods.GZip;
 #endif
             webRes = webReq.GetResponse();
-            Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.Json));
+            Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.Json));
             var responseGzip = webRes.GetResponseStream().ReadFully();
 #if !NETCORE
             response = responseGzip.FromUtf8Bytes().FromJson<ServerCacheOnly>();
@@ -429,7 +429,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             //XML + Deflate
             response = url.GetXmlFromUrl(responseFilter: res => {
-                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Xml));
+                    Assert.That(res.ContentType, Does.StartWith(MimeTypes.Xml));
                 })
                 .FromXml<ServerCacheOnly>();
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(3));
@@ -438,10 +438,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             //HTML + Deflate
             var html = url.GetStringFromUrl(requestFilter:req => req.ContentType = MimeTypes.Html);
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(4));
-            Assert.That(html, Is.StringStarting("<!doctype html>"));
+            Assert.That(html, Does.StartWith("<!doctype html>"));
             html = url.GetStringFromUrl(requestFilter: req => req.ContentType = MimeTypes.Html);
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(4));
-            Assert.That(html, Is.StringStarting("<!doctype html>"));
+            Assert.That(html, Does.StartWith("<!doctype html>"));
         }
 
         [Test]

@@ -14,13 +14,13 @@ namespace RazorRockstars.Web.Tests
 	{
         Stopwatch startedAt;
 
-	    [TestFixtureSetUp]
+	    [OneTimeSetUp]
 	    public void TestFixtureSetUp()
 	    {
 	        startedAt = Stopwatch.StartNew();
 	    }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             "Time Taken {0}ms".Fmt(startedAt.ElapsedMilliseconds).Print();

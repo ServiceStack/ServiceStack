@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
 
             ServiceStackHost appHost;
 
-            [TestFixtureSetUp]
+            [OneTimeSetUp]
             public void TestFixtureSetUp()
             {
                 appHost = new AppHost()
@@ -54,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
                     .Start(Config.ListeningOn);
             }
 
-            [TestFixtureTearDown]
+            [OneTimeTearDown]
             public void TestFixtureTearDown()
             {
                 appHost.Dispose();

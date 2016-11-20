@@ -250,7 +250,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         AttributeFiltersAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new AttributeFiltersAppHostHttpListener();
@@ -258,7 +258,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
