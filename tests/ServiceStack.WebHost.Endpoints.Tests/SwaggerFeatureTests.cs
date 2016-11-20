@@ -308,7 +308,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         SwaggerFeatureAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new SwaggerFeatureAppHostHttpListener();
@@ -316,7 +316,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -418,7 +418,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 appHost.Config.UseHttpsLinks = true;
 
                 var resources = client.Get<SwaggerResourcesResponse>("/resources");
-                Assert.That(resources.BasePath.ToLowerInvariant(), Is.StringStarting("https"));
+                Assert.That(resources.BasePath.ToLowerInvariant(), Does.StartWith("https"));
             }
             finally
             {
@@ -436,7 +436,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var resource = client.Get<SwaggerApiDeclaration>("/resource/swagger");
                 resource.PrintDump();
 
-                Assert.That(resource.BasePath.ToLowerInvariant(), Is.StringStarting("https"));
+                Assert.That(resource.BasePath.ToLowerInvariant(), Does.StartWith("https"));
             }
             finally
             {

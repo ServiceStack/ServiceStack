@@ -16,7 +16,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost
@@ -31,7 +31,7 @@ namespace ServiceStack.Common.Tests.OAuth
             }.Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

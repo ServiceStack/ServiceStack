@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private RouteAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new RouteAppHost();
@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -37,7 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Html));
                 });
 
-            Assert.That(response, Is.StringStarting("<!doctype html>"));
+            Assert.That(response, Does.StartWith("<!doctype html>"));
         }
 
         [Test]
@@ -91,7 +91,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Html));
                 });
 
-            Assert.That(response, Is.StringStarting("<!doctype html>"));
+            Assert.That(response, Does.StartWith("<!doctype html>"));
         }
 
         [Test]
@@ -266,7 +266,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private ModifiedRouteAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new ModifiedRouteAppHost();
@@ -274,7 +274,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

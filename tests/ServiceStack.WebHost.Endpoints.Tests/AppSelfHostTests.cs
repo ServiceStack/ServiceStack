@@ -70,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

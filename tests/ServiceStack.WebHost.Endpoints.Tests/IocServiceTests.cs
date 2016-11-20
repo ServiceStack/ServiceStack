@@ -57,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         IocAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new IocAppHost();
@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             if (appHost != null)

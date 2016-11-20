@@ -64,7 +64,7 @@ namespace ServiceStack.Common.Tests
     {
         private OrmLiteAppSettings settings;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             settings = new OrmLiteAppSettings(

@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         string ListeningOn = Config.ListeningOn;
         ExampleAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TextFixtureSetUp()
         {
             try
@@ -32,7 +32,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

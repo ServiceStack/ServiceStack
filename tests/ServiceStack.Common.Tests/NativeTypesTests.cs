@@ -13,7 +13,7 @@ namespace ServiceStack.Common.Tests
     {
         ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost =
@@ -24,7 +24,7 @@ namespace ServiceStack.Common.Tests
                 }.Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();

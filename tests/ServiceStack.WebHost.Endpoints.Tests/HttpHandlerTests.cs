@@ -54,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -106,7 +106,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebException ex)
             {
-                Assert.That(ex.Message, Is.StringContaining("(404) Not Found"));
+                Assert.That(ex.Message, Does.Contain("(404) Not Found"));
 
                 Assert.That(BeginRequestCount, Is.EqualTo(1));
                 Thread.Sleep(1);

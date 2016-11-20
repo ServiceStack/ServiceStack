@@ -86,7 +86,7 @@ namespace ServiceStack.Server.Tests.Messaging
                 .Start(Config.ListeningOn);
     }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

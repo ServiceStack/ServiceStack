@@ -74,7 +74,7 @@ namespace RazorRockstars.Console.Files
 
         AppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
@@ -85,7 +85,7 @@ namespace RazorRockstars.Console.Files
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             Dispose();
@@ -164,7 +164,7 @@ namespace RazorRockstars.Console.Files
 
         AppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
@@ -175,7 +175,7 @@ namespace RazorRockstars.Console.Files
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             Dispose();

@@ -254,7 +254,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         ExceptionHandlingAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new ExceptionHandlingAppHostHttpListener();
@@ -262,7 +262,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -415,7 +415,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
-                Assert.That(body, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+                Assert.That(body, Does.StartWith("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
             }
         }
 
@@ -431,7 +431,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
-                Assert.That(body, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+                Assert.That(body, Does.StartWith("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
             }
 
             try
@@ -447,7 +447,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.StatusDescription, Is.EqualTo(typeof(CustomException).Name));
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(CustomException).Name));
                 Assert.That(ex.ErrorMessage, Is.EqualTo("User Defined Error"));
-                Assert.That(ex.ResponseBody, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+                Assert.That(ex.ResponseBody, Does.StartWith("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
             }
         }
 

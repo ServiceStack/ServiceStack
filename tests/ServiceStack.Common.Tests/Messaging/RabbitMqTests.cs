@@ -26,7 +26,7 @@ namespace ServiceStack.Common.Tests.Messaging
         private const string ExchangeTopic = "mq:tests.topic";
         private const string ExchangeFanout = "mq:tests.fanout";
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             using (IConnection connection = mqFactory.CreateConnection())

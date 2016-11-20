@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
                 .Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

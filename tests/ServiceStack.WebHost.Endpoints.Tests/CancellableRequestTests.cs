@@ -47,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new CancellableRequestAppHost()
@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();

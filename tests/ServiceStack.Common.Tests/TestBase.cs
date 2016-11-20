@@ -36,7 +36,7 @@ namespace ServiceStack.Common.Tests
             this.AppHost = new BasicAppHost(serviceAssemblies).Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             this.AppHost.Dispose();

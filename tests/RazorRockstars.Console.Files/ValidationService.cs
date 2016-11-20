@@ -83,7 +83,7 @@ namespace RazorRockstars.Console.Files
 
         Stopwatch startedAt;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
@@ -93,7 +93,7 @@ namespace RazorRockstars.Console.Files
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             "Time Taken {0}ms".Fmt(startedAt.ElapsedMilliseconds).Print();

@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
             client = new JsonServiceClient(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TearDown()
         {
             appHost.Dispose();

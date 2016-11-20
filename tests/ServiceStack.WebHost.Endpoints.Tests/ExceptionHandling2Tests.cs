@@ -149,7 +149,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         AppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void Init()
         {
             try
@@ -165,7 +165,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TearDown()
         {
             appHost.Dispose();

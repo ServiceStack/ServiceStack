@@ -20,7 +20,7 @@
   "dependencies": {
     "Microsoft.NETCore.App": {
       "type": "platform",
-      "version": "1.0.1"
+      "version": "1.1.0"
     },
     "NUnitLite" : "3.5.0",
     "AWSSDK.Core": "3.3.0.2",
@@ -40,11 +40,11 @@
     "ServiceStack.Aws": "1.0.*"
   },
   "frameworks": {
-   "netcoreapp1.0": { 
+   "netcoreapp1.1": { 
        "imports": "dnxcore50",
 	     "dependencies" : {
-        "System.Threading": "4.0.11",
-        "System.Reflection.TypeExtensions": "4.1.0"
+        "System.Threading": "4.*",
+        "System.Reflection.TypeExtensions": "4.*"
       }	
     }
   }

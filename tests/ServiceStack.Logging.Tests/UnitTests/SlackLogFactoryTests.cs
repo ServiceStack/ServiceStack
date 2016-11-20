@@ -50,7 +50,7 @@ namespace ServiceStack.Logging.Tests.UnitTests
     {
         readonly AppSelfHostBase testAppHost = new TestAppHost();
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void SetUp()
         {
             testAppHost.Init().Start("http://localhost:22334/");

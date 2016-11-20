@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private const string ListeningOn = "http://localhost:1337/";
         ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureStartUp()
         {
             appHost = new ExampleAppHostHttpListenerPool()
@@ -24,7 +24,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Console.WriteLine("ExampleAppHost Created at {0}, listening on {1}", DateTime.Now, ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -149,13 +149,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webReq.Accept = "*/*";
             using (var webRes = webReq.GetResponse())
             {
-                Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.JavaScript));
+                Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.JavaScript));
                 response = webRes.ReadToEnd();
             }
 
             Assert.That(response, Is.Not.Null, "No response received");
             Console.WriteLine(response);
-            Assert.That(response, Is.StringStarting("cb("));
+            Assert.That(response, Does.StartWith("cb("));
             Assert.That(response, Is.StringEnding(")"));
         }
 

@@ -670,7 +670,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client = new JsonServiceClient(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

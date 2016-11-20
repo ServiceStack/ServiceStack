@@ -116,7 +116,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private BufferedRequestAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BufferedRequestAppHost { EnableRequestBodyTracking = true };
@@ -124,7 +124,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -154,7 +154,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             string response = client.Get<string>("/poco/Test");
 
-            Assert.That(response, Is.StringContaining("Hello, Test"));
+            Assert.That(response, Does.Contain("Hello, Test"));
         }
 
         [Test, TestCaseSource("RestClients")]
@@ -162,7 +162,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             byte[] response = client.Get<byte[]>("/poco/Test");
 
-            Assert.That(response.FromUtf8Bytes(), Is.StringContaining("Hello, Test"));
+            Assert.That(response.FromUtf8Bytes(), Does.Contain("Hello, Test"));
         }
 
         [Test, TestCaseSource("RestClients")]
@@ -172,7 +172,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             using (response)
             {
                 var bytes = response.ReadFully();
-                Assert.That(bytes.FromUtf8Bytes(), Is.StringContaining("Hello, Test"));
+                Assert.That(bytes.FromUtf8Bytes(), Does.Contain("Hello, Test"));
             }
         }
 
@@ -186,7 +186,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             using (var stream = response.GetResponseStream())
             using (var sr = new StreamReader(stream))
             {
-                Assert.That(sr.ReadToEnd(), Is.StringContaining("Hello, Test"));
+                Assert.That(sr.ReadToEnd(), Does.Contain("Hello, Test"));
             }
         }
 

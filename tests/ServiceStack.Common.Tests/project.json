@@ -19,11 +19,11 @@
   "dependencies": {
     "Microsoft.NETCore.App": {
       "type": "platform",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     "NUnitLite" : "3.5.0",
-    "AWSSDK.Core": "3.3.0.2",
-    "AWSSDK.DynamoDBv2": "3.3.0",
+    "AWSSDK.Core": "3.3.4.1",
+    "AWSSDK.DynamoDBv2": "3.3.0.2",
     "ServiceStack.Interfaces" : "1.0.*",
     "ServiceStack.Text" : "1.0.*",
     "ServiceStack.Common" : "1.0.*",
@@ -32,10 +32,10 @@
     "ServiceStack.Kestrel": "1.0.*"
   },
   "frameworks": {
-   "netcoreapp1.0": { 
+   "netcoreapp1.1": { 
        "imports": "dnxcore50",
 	     "dependencies" : {
-        "System.Reflection.TypeExtensions": "4.1.0"
+        "System.Reflection.TypeExtensions": "4.*"
       }	
     }
   }
