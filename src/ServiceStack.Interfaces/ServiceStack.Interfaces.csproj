@@ -83,6 +83,7 @@
     <Compile Include="DataAnnotations\DescriptionAttribute.cs" />
     <Compile Include="DataAnnotations\EnumAsIntAttribute.cs" />
     <Compile Include="DataAnnotations\ExcludeAttribute.cs" />
+    <Compile Include="DataAnnotations\SqlServerMemoryOptimizedAttribute.cs" />
     <Compile Include="DataAnnotations\PostCreateTableAttribute.cs" />
     <Compile Include="DataAnnotations\PostDropTableAttribute.cs" />
     <Compile Include="DataAnnotations\PreCreateTableAttribute.cs" />
