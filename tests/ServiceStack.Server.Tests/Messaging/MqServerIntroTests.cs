@@ -18,7 +18,7 @@ namespace ServiceStack.Server.Tests.Messaging
     {
         public override IMessageService CreateMqServer(int retryCount = 1)
         {
-            return new RabbitMqServer (connectionString: Config.RabbitMQConnString) { RetryCount = retryCount };
+            return new RabbitMqServer(connectionString: Config.RabbitMQConnString) { RetryCount = retryCount };
         }
     }
 
@@ -86,6 +86,24 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    [Restrict(RequestAttributes.MessageQueue)]
+    public class MqRestriction : IReturn<MqRestrictionResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class MqRestrictionResponse
+    {
+        public string Result { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public class MqRestrictionService : Service
+    {
+        public object Any(MqRestriction request) =>
+            new MqRestrictionResponse { Result = request.Name };
+    }
+
     public class AppHost : AppSelfHostBase
     {
         private readonly Func<IMessageService> createMqServerFn;
@@ -136,6 +154,7 @@ namespace ServiceStack.Server.Tests.Messaging
                 var response = ExecuteMessage(m, req);
                 return response;
             });
+            mqServer.RegisterHandler<MqRestriction>(ExecuteMessage);
             mqServer.Start();
         }
 
@@ -143,7 +162,7 @@ namespace ServiceStack.Server.Tests.Messaging
         {
             var mqServer = TryResolve<IMessageService>();
             mqServer?.Dispose();
-            
+
             base.Dispose(disposable);
         }
     }
@@ -287,6 +306,26 @@ namespace ServiceStack.Server.Tests.Messaging
                     responseMsg = mqClient.Get<HelloIntroResponse>(QueueNames<HelloIntroResponse>.In);
                     mqClient.Ack(responseMsg);
                     Assert.That(responseMsg.GetBody().Result, Is.EqualTo("Hello, Bar!"));
+                }
+            }
+        }
+
+        [Test]
+        public void Does_allow_MessageQueue_restricted_Services()
+        {
+            using (var appHost = new AppHost(() => CreateMqServer()).Init().Start(Config.ListeningOn))
+            {
+                using (var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient())
+                {
+                    mqClient.Publish(new MqRestriction
+                    {
+                        Name = "MQ Restriction",
+                    });
+
+                    var responseMsg = mqClient.Get<MqRestrictionResponse>(QueueNames<MqRestrictionResponse>.In);
+                    mqClient.Ack(responseMsg);
+                    Assert.That(responseMsg.GetBody().Result,
+                        Is.EqualTo("MQ Restriction"));
                 }
             }
         }

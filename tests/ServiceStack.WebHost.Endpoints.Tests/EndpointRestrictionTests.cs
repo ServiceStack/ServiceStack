@@ -207,6 +207,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             ShouldAllowAccessWhen<SecureLiveEnvironmentRestriction>(RequestAttributes.External | RequestAttributes.Secure | RequestAttributes.HttpPost | RequestAttributes.OneWay);
         }
 
+        [Test]
+        public void Can_access_from_MQ()
+        {
+            ShouldAllowAccessWhen<MessageQueueRestriction>(RequestAttributes.Localhost | RequestAttributes.MessageQueue | RequestAttributes.HttpPost);
+        }
 
         [Ignore("TODO: Ignore reason")]
         [Test]
