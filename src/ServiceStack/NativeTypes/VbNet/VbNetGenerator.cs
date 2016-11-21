@@ -82,7 +82,11 @@ namespace ServiceStack.NativeTypes.VbNet
             if (Config.GlobalNamespace == null)
             {
                 metadata.Types.Each(x => namespaces.Add(x.Namespace));
-                metadata.Operations.Each(x => namespaces.Add(x.Request.Namespace));
+                metadata.Operations.Each(x => {
+                    namespaces.Add(x.Request.Namespace);
+                    if (x.Response != null)
+                        namespaces.Add(x.Response.Namespace);
+                });
             }
             else
             {

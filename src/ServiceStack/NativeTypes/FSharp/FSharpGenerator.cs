@@ -37,7 +37,11 @@ namespace ServiceStack.NativeTypes.FSharp
             var typeNamespaces = new HashSet<string>();
             metadata.RemoveIgnoredTypesForNet(Config);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
-            metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
+            metadata.Operations.Each(x => {
+                typeNamespaces.Add(x.Request.Namespace);
+                if (x.Response != null)
+                    typeNamespaces.Add(x.Response.Namespace);
+            });
 
             // Look first for shortest Namespace ending with `ServiceModel` convention, else shortest ns
             var globalNamespace = Config.GlobalNamespace
