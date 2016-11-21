@@ -2,22 +2,21 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
-	[Restrict(RequestAttributes.Localhost)]
-	[DataContract]
-	public class LocalhostRestriction { }
+    [Restrict(RequestAttributes.Localhost)]
+    [DataContract]
+    public class LocalhostRestriction { }
 
-	[DataContract]
-	public class LocalhostRestrictionResponse { }
+    [DataContract]
+    public class LocalhostRestrictionResponse { }
 
-	public class LocalhostRestrictionService
-		: TestServiceBase<LocalhostRestriction>
-	{
-		protected override object Run(LocalhostRestriction request)
-		{
-			return new LocalhostRestrictionResponse();
-		}
-	}
-
+    public class LocalhostRestrictionService
+        : TestServiceBase<LocalhostRestriction>
+    {
+        protected override object Run(LocalhostRestriction request)
+        {
+            return new LocalhostRestrictionResponse();
+        }
+    }
 
     public class LocalhostRestrictionOnService : IReturn<Response> { }
 
@@ -29,5 +28,4 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
             return new Response();
         }
     }
-
 }
