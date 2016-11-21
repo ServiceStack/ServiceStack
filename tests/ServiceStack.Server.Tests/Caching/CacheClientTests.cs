@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Caching;
+using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Redis;
 using ServiceStack.Server.Tests.Shared;
-using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Caching
 {
@@ -88,5 +87,38 @@ namespace ServiceStack.Server.Tests.Caching
         {
             return new RedisManagerPool("127.0.0.1").GetCacheClient();
         }
+    }
+
+    public class SqlServerMemoryOptimizedOrmLiteCacheClientTests : CacheClientTestsBase
+    {
+        public override ICacheClient CreateClient()
+        {
+            var cache = new OrmLiteCacheClient<SqlServerMemoryOptimizedCacheEntry>
+            {
+                DbFactory = new OrmLiteConnectionFactory(
+                    Config.SqlServerBuildDb, SqlServer2014Dialect.Provider)
+            };
+
+            using (var db = cache.DbFactory.Open())
+            {
+                db.DropTable<SqlServerMemoryOptimizedCacheEntry>();
+            }
+
+            cache.InitSchema();
+
+            return cache;
+        }
+    }
+
+    [SqlServerMemoryOptimized(SqlServerDurability.SchemaOnly)]
+    public class SqlServerMemoryOptimizedCacheEntry : ICacheEntry
+    {
+        [PrimaryKey]
+        public string Id { get; set; }
+        [StringLength(StringLengthAttribute.MaxText)]
+        public string Data { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
     }
 }
