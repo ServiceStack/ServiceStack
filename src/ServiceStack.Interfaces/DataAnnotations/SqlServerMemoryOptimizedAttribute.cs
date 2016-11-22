@@ -19,4 +19,26 @@ namespace ServiceStack.DataAnnotations
         SchemaOnly, // (non-durable table) recreated upon server restart, data is lost, no transaction logging and checkpoints
         SchemaAndData  // (durable table) data persists upon server restart
     }
+
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    public class SqlServerBucketCountAttribute : AttributeBase
+    {
+        public SqlServerBucketCountAttribute(int bucketCount)
+        {
+            BucketCount = bucketCount;
+        }
+
+        public int BucketCount { get; set; }
+    }
+
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    public class SqlServerCollateAttribute : AttributeBase
+    {
+        public SqlServerCollateAttribute(string collation)
+        {
+            Collation = collation;
+        }
+
+        public string Collation { get; set; }
+    }
 }
