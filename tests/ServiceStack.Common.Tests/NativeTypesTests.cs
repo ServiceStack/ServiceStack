@@ -240,7 +240,22 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void IncludeTypes_ReturnsStructTypes_If_IncludeTypes_NoWildcard_Csharp()
+        public void Custom_ValueTypes_defaults_to_use_opaque_strings_csharp()
+        {
+            var result = appHost.ExecuteService(new TypesCSharp
+            {
+                IncludeTypes = new List<string> { "DtoRequestWithStructProperty" },
+            });
+
+            var stringResult = result.ToString();
+
+            StringAssert.Contains("class DtoRequestWithStructProperty", stringResult);
+            StringAssert.Contains("public virtual string StructType { get; set; }", stringResult);
+            StringAssert.Contains("public virtual string NullableStructType { get; set; }", stringResult);
+        }
+
+        [Test]
+        public void Custom_ValueTypes_can_be_exported_csharp()
         {
             var result = appHost.ExecuteService(new TypesCSharp
             {
@@ -256,7 +271,7 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void Can_export_ValueType_as_different_Type_in_Java()
+        public void Custom_ValueTypes_can_be_exported_as_different_Type_in_java()
         {
             JavaGenerator.TypeAliases["StructType"] = "JavaStruct";
 
