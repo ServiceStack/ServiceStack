@@ -214,6 +214,7 @@
     <Compile Include="Issues\NetworkIssues.cs" />
     <Compile Include="Issues\RequestScopeIssue.cs" />
     <Compile Include="Issues\XmlContentTypeIssue.cs" />
+    <Compile Include="MockSessionTests.cs" />
     <Compile Include="ReplyAllTests.cs" />
     <Compile Include="MultiTennantAppHostTests.cs" />
     <Compile Include="RequestPipelineTests.cs" />

@@ -8,13 +8,13 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Data;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Testing;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -258,58 +258,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_mock_IntegrationTest_Session_with_Request()
         {
-            var mockRequest = new MockHttpRequest();
-            mockRequest.Items[Keywords.Session] = new AuthUserSession
+            var mockRequest = new MockHttpRequest
             {
-                UserName = "Mocked",
+                Items = { [Keywords.Session] = new AuthUserSession { UserName = "Mocked" } }
             };
+
             using (var service = HostContext.ResolveService<SessionService>(mockRequest))
             {
                 Assert.That(service.GetSession().UserName, Is.EqualTo("Mocked"));
-            }
-        }
-    }
-
-    public class MockSessionTests
-    {
-        [Test]
-        public void Can_mock_UnitTest_Session_with_IOC()
-        {
-            var appHost = new BasicAppHost
-            {
-                TestMode = true,
-                ConfigureContainer = container =>
-                {
-                    container.Register<IAuthSession>(c => new AuthUserSession
-                    {
-                        UserName = "Mocked",
-                    });
-                }
-            }.Init();
-
-            var service = new SessionService {
-                Request = new MockHttpRequest()
-            };
-            Assert.That(service.GetSession().UserName, Is.EqualTo("Mocked"));
-
-            appHost.Dispose();
-        }
-
-        [Test]
-        public void Can_mock_IntegrationTest_Session_with_Request()
-        {
-            using (new BasicAppHost(typeof(SessionService).GetAssembly()).Init())
-            {
-                var req = new MockHttpRequest();
-                req.Items[Keywords.Session] = 
-                    new AuthUserSession {
-                        UserName = "Mocked",
-                    };
-
-                using (var service = HostContext.ResolveService<SessionService>(req))
-                {
-                    Assert.That(service.GetSession().UserName, Is.EqualTo("Mocked"));
-                }
             }
         }
     }
