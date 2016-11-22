@@ -13,6 +13,7 @@ namespace ServiceStack.NativeTypes.CSharp
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
+        private List<MetadataType> allTypes;
 
         public CSharpGenerator(MetadataTypesConfig config)
         {
@@ -87,6 +88,7 @@ namespace ServiceStack.NativeTypes.CSharp
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
+            sb.AppendLine("{0}ExportValueTypes: {1}".Fmt(defaultValue("ExportValueTypes"), Config.ExportValueTypes));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
@@ -123,7 +125,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            var allTypes = new List<MetadataType>();
+            allTypes = new List<MetadataType>();
             allTypes.AddRange(requestTypes);
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(types);
@@ -348,7 +350,7 @@ namespace ServiceStack.NativeTypes.CSharp
 
             foreach (var prop in collectionProps)
             {
-                sb.AppendLine($"{prop.Name.SafeToken()} = new {Type(prop.Type, prop.GenericArgs,includeNested:true)}{{}};");
+                sb.AppendLine($"{prop.Name.SafeToken()} = new {Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs,includeNested:true)}{{}};");
             }
 
             sb = sb.UnIndent();
@@ -370,7 +372,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.Type, prop.GenericArgs, includeNested:true);
+                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs, includeNested:true);
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;

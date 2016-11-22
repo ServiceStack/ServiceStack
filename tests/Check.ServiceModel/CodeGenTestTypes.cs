@@ -416,6 +416,7 @@ namespace Check.ServiceModel.Types
     public class HelloStruct : IReturn<HelloStruct>
     {
         public Point Point { get; set; }
+        public Point? NullablePoint { get; set; }
     }
 
     public abstract class HelloBase

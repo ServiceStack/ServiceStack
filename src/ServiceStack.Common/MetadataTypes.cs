@@ -81,6 +81,7 @@ namespace ServiceStack
         public List<string> IncludeTypes { get; set; }
         public List<string> ExcludeTypes { get; set; }
         public List<string> TreatTypesAsStrings { get; set; }
+        public bool ExportValueTypes { get; set; }
 
         public string GlobalNamespace { get; set; }
         public bool ExcludeNamespace { get; set; }
@@ -185,6 +186,8 @@ namespace ServiceStack
         public string Name { get; set; }
         public string Type { get; set; }
         public bool? IsValueType { get; set; }
+        public bool? IsSystemType { get; set; }
+        public bool? IsEnum { get; set; }
         public string TypeNamespace { get; set; }
         public string[] GenericArgs { get; set; }
         public string Value { get; set; }

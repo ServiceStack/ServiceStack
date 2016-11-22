@@ -12,6 +12,7 @@ namespace ServiceStack.NativeTypes.TypeScript
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
         List<string> conflictTypeNames = new List<string>();
+        List<MetadataType> allTypes;
 
         public TypeScriptGenerator(MetadataTypesConfig config)
         {
@@ -177,7 +178,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             // Base Types need to be written first
             var types = CreateSortedTypeList(metadata.Types);
 
-            var allTypes = new List<MetadataType>();
+            allTypes = new List<MetadataType>();
             allTypes.AddRange(types);
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(requestTypes);
@@ -448,7 +449,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.Type, prop.GenericArgs);
+                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
                     var optional = "";
                     if (propType.EndsWith("?"))
                     {

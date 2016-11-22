@@ -102,9 +102,7 @@ namespace ServiceStack
 
         public static string GetMetadataPropertyType(this Type type)
         {
-            return type.IsValueType() && !type.IsSystemType() && !type.IsEnum()
-                ? "string"
-                : GetOperationName(type);
+            return GetOperationName(type);
         }
 
         public static string GetOperationName(this Type type)

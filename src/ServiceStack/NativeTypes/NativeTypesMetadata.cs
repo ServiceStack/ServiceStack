@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using ServiceStack.Metadata;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -55,6 +56,7 @@ namespace ServiceStack.NativeTypes
                 IncludeTypes = TrimArgs(req.IncludeTypes ?? defaults.IncludeTypes),
                 ExcludeTypes = TrimArgs(req.ExcludeTypes ?? defaults.ExcludeTypes),
                 TreatTypesAsStrings = TrimArgs(req.TreatTypesAsStrings ?? defaults.TreatTypesAsStrings),
+                ExportValueTypes = req.ExportValueTypes ?? defaults.ExportValueTypes,
                 ExportAttributes = defaults.ExportAttributes,
                 ExportTypes = defaults.ExportTypes,
                 IgnoreTypes = defaults.IgnoreTypes,
@@ -66,10 +68,7 @@ namespace ServiceStack.NativeTypes
 
         public static List<string> TrimArgs(List<string> from)
         {
-            if (from == null)
-                return null;
-
-            var to = from.Map(x => x == null ? x : x.Trim());
+            var to = from?.Map(x => x?.Trim());
             return to;
         }
 
@@ -564,6 +563,8 @@ namespace ServiceStack.NativeTypes
                 Attributes = ToAttributes(pi.GetCustomAttributes(false)),
                 Type = pi.PropertyType.GetMetadataPropertyType(),
                 IsValueType = pi.PropertyType.IsValueType() ? true : (bool?)null,
+                IsSystemType = pi.PropertyType.IsSystemType() ? true : (bool?)null,
+                IsEnum = pi.PropertyType.IsEnum() ? true : (bool?)null,
                 TypeNamespace = pi.PropertyType.Namespace,
                 DataMember = ToDataMember(pi.GetDataMember()),
                 GenericArgs = pi.PropertyType.IsGenericType()
@@ -627,6 +628,8 @@ namespace ServiceStack.NativeTypes
                 Attributes = ToAttributes(propertyAttrs),
                 Type = pi.ParameterType.GetOperationName(),
                 IsValueType = pi.ParameterType.IsValueType() ? true : (bool?)null,
+                IsSystemType = pi.ParameterType.IsSystemType() ? true : (bool?)null,
+                IsEnum = pi.ParameterType.IsEnum() ? true : (bool?)null,
                 TypeNamespace = pi.ParameterType.Namespace,
                 Description = pi.GetDescription(),
             };
@@ -1135,6 +1138,36 @@ namespace ServiceStack.NativeTypes
 
                 yield return depType;
             }
+        }
+
+        public static string GetTypeName(this MetadataPropertyType prop, MetadataTypesConfig config, List<MetadataType> allTypes)
+        {
+            if (prop.IsValueType != true || prop.IsEnum == true)
+                return prop.Type;
+
+            if (prop.IsSystemType == true)
+            {
+                if (prop.Type != "Nullable`1" || prop.GenericArgs?.Length != 1)
+                    return prop.Type;
+
+                if (config.ExportValueTypes)
+                    return prop.Type;
+
+                // Find out if the ValueType is not a SystemType or Enum by looking if this Info is declared in another prop
+                var genericArg = prop.GenericArgs[0];
+                var typeInfo = allTypes.Where(x => x.Properties != null)
+                    .SelectMany(x => x.Properties)
+                    .FirstOrDefault(x => x.Type == genericArg);
+
+                return typeInfo != null && typeInfo.IsSystemType != true && typeInfo.IsEnum != true
+                    ? "String"
+                    : prop.Type;
+            }
+
+            //Whether or not to emit the Struct Type Name, info: https://github.com/ServiceStack/Issues/issues/503#issuecomment-262133343
+            return config.ExportValueTypes
+                ? prop.Type
+                : "String";
         }
     }
 }

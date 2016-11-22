@@ -12,13 +12,12 @@ namespace ServiceStack.NativeTypes.Java
     public class JavaGenerator
     {
         readonly MetadataTypesConfig Config;
-        List<MetadataType> AllTypes;
         List<string> conflictTypeNames = new List<string>();
+        List<MetadataType> allTypes;
 
         public JavaGenerator(MetadataTypesConfig config)
         {
             Config = config;
-            AllTypes = new List<MetadataType>();
         }
 
         public static string DefaultGlobalNamespace = "dtos";
@@ -153,20 +152,21 @@ namespace ServiceStack.NativeTypes.Java
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            AllTypes.AddRange(requestTypes);
-            AllTypes.AddRange(responseTypes);
-            AllTypes.AddRange(types);
+            allTypes = new List<MetadataType>();
+            allTypes.AddRange(requestTypes);
+            allTypes.AddRange(responseTypes);
+            allTypes.AddRange(types);
 
-            AllTypes = FilterTypes(AllTypes);
+            allTypes = FilterTypes(allTypes);
 
             //TypeScript doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
+            var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
 
-            this.conflictTypeNames = AllTypes
+            this.conflictTypeNames = allTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
@@ -177,7 +177,7 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("{");
 
             //ServiceStack core interfaces
-            foreach (var type in AllTypes)
+            foreach (var type in allTypes)
             {
                 var fullTypeName = type.GetFullName();
                 if (requestTypes.Contains(type))
@@ -437,7 +437,7 @@ namespace ServiceStack.NativeTypes.Java
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.Type, prop.GenericArgs);
+                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
 
                     var fieldName = prop.Name.SafeToken().PropertyStyle();
                     var accessorName = fieldName.ToPascalCase();

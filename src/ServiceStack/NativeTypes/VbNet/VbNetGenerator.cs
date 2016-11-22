@@ -13,6 +13,7 @@ namespace ServiceStack.NativeTypes.VbNet
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
+        private List<MetadataType> allTypes;
 
         public VbNetGenerator(MetadataTypesConfig config)
         {
@@ -154,7 +155,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            var allTypes = new List<MetadataType>();
+            allTypes = new List<MetadataType>();
             allTypes.AddRange(requestTypes);
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(types);
@@ -406,7 +407,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.Type, prop.GenericArgs, includeNested:true);
+                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs, includeNested:true);
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;

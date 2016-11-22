@@ -1,5 +1,6 @@
 ﻿#if !NETCORE_SUPPORT
 using NUnit.Framework;
+using ServiceStack.NativeTypes.Java;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
@@ -237,14 +238,50 @@ namespace ServiceStack.Common.Tests
 
             Assert.AreEqual(includeTypes, result);
         }
+
+        [Test]
+        public void IncludeTypes_ReturnsStructTypes_If_IncludeTypes_NoWildcard_Csharp()
+        {
+            var result = appHost.ExecuteService(new TypesCSharp
+            {
+                IncludeTypes = new List<string> { "DtoRequestWithStructProperty" },
+                ExportValueTypes = true,
+            });
+
+            var stringResult = result.ToString();
+
+            StringAssert.Contains("class DtoRequestWithStructProperty", stringResult);
+            StringAssert.Contains("public virtual StructType StructType { get; set; }", stringResult);
+            StringAssert.Contains("public virtual StructType? NullableStructType { get; set; }", stringResult);
+        }
+
+        [Test]
+        public void Can_export_ValueType_as_different_Type_in_Java()
+        {
+            JavaGenerator.TypeAliases["StructType"] = "JavaStruct";
+
+            var result = appHost.ExecuteService(new TypesJava
+            {
+                IncludeTypes = new List<string> { "DtoRequestWithStructProperty" },
+                ExportValueTypes = true,
+            });
+
+            var stringResult = result.ToString();
+
+            StringAssert.Contains("class DtoRequestWithStructProperty", stringResult);
+            StringAssert.Contains("public JavaStruct StructType = null;", stringResult);
+            StringAssert.Contains("public JavaStruct NullableStructType = null;", stringResult);
+
+            string value;
+            JavaGenerator.TypeAliases.TryRemove("StructType", out value);
+        }
     }
 
     public class NativeTypesTestService : Service
     {
-        public object Any(Dto request)
-        {
-            return "just a test";
-        }
+        public object Any(Dto request) => request;
+
+        public object Any(DtoRequestWithStructProperty request) => request;
     }
 
     public class Dto : IReturn<DtoResponse>
@@ -276,6 +313,17 @@ namespace ServiceStack.Common.Tests
     {
         public object Any(GetRequest1 request) => request;
         public object Any(GetRequest2 request) => request;
+    }
+
+    public class DtoRequestWithStructProperty : IReturn<DtoResponse>
+    {
+        public StructType StructType { get; set; }
+        public StructType? NullableStructType { get; set; }
+    }
+
+    public struct StructType
+    {
+        public int Id;
     }
 }
 #endif

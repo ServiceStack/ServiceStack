@@ -12,6 +12,7 @@ namespace ServiceStack.NativeTypes.FSharp
     {
         readonly MetadataTypesConfig Config;
         private readonly NativeTypesFeature feature;
+        private List<MetadataType> allTypes;
 
         public FSharpGenerator(MetadataTypesConfig config)
         {
@@ -69,6 +70,7 @@ namespace ServiceStack.NativeTypes.FSharp
             sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(defaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}ExportValueTypes: {1}".Fmt(defaultValue("ExportValueTypes"), Config.ExportValueTypes));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
@@ -88,7 +90,7 @@ namespace ServiceStack.NativeTypes.FSharp
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            var allTypes = new List<MetadataType>();
+            allTypes = new List<MetadataType>();
             allTypes.AddRange(types);
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(requestTypes);
@@ -269,7 +271,7 @@ namespace ServiceStack.NativeTypes.FSharp
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.Type, prop.GenericArgs);
+                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
@@ -312,7 +314,7 @@ namespace ServiceStack.NativeTypes.FSharp
 
         private string GetDefaultLiteral(MetadataPropertyType prop, MetadataType type)
         {
-            var propType = Type(prop.Type, prop.GenericArgs);
+            var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
 
             var initCollections = feature.ShouldInitializeCollections(type, Config.InitializeCollections);
             if (initCollections && prop.IsCollection())
@@ -321,7 +323,7 @@ namespace ServiceStack.NativeTypes.FSharp
                     ? "[||]" 
                     : "new {0}()".Fmt(propType);
             }
-            return prop.IsValueType.GetValueOrDefault()
+            return prop.IsValueType.GetValueOrDefault() && propType != "String"
                 ? "new {0}()".Fmt(propType)
                 : "null";
         }

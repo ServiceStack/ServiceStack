@@ -13,14 +13,13 @@ namespace ServiceStack.NativeTypes.Swift
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
-        List<MetadataType> AllTypes;
+        List<MetadataType> allTypes;
         List<string> conflictTypeNames = new List<string>();
 
         public SwiftGenerator(MetadataTypesConfig config)
         {
             Config = config;
             feature = HostContext.GetPlugin<NativeTypesFeature>();
-            AllTypes = new List<MetadataType>();
         }
 
         public static List<string> DefaultImports = new List<string>
@@ -115,27 +114,28 @@ namespace ServiceStack.NativeTypes.Swift
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            AllTypes.AddRange(requestTypes);
-            AllTypes.AddRange(responseTypes);
-            AllTypes.AddRange(types);
+            allTypes = new List<MetadataType>();
+            allTypes.AddRange(requestTypes);
+            allTypes.AddRange(responseTypes);
+            allTypes.AddRange(types);
 
-            AllTypes = FilterTypes(AllTypes);
+            allTypes = FilterTypes(allTypes);
 
             //Swift doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
+            var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
 
-            this.conflictTypeNames = AllTypes
+            this.conflictTypeNames = allTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
             defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
 
             //ServiceStack core interfaces
-            foreach (var type in AllTypes)
+            foreach (var type in allTypes)
             {
                 var fullTypeName = type.GetFullName();
                 if (requestTypes.Contains(type))
@@ -576,7 +576,7 @@ namespace ServiceStack.NativeTypes.Swift
             {
                 if (wasAdded) sb.AppendLine();
 
-                var propTypeName = Type(prop.Type, prop.GenericArgs);
+                var propTypeName = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
                 var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
                 var optional = "";
                 var defaultValue = "";
@@ -729,7 +729,7 @@ namespace ServiceStack.NativeTypes.Swift
             if (typeName == null)
                 return null;
 
-            var foundType = AllTypes
+            var foundType = allTypes
                 .FirstOrDefault(x => (typeName.Namespace == null || x.Namespace == typeName.Namespace)
                     && x.Name == typeName.Name
                     && x.GenericArgs.Safe().Count() == typeName.GenericArgs.Safe().Count());
