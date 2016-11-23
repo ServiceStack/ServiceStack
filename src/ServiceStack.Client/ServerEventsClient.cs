@@ -70,13 +70,10 @@ namespace ServiceStack
         static int DefaultHeartbeatMs = 10 * 1000;
         static int DefaultIdleTimeoutMs = 30 * 1000;
         private bool stopped = true;
-        public bool IsStopped
-        {
-            get { return stopped; }
-        }
+        public bool IsStopped => stopped;
 
         byte[] buffer;
-        Encoding encoding = new UTF8Encoding();
+        readonly Encoding encoding = new UTF8Encoding();
 
         HttpWebRequest httpReq;
         HttpWebResponse response;
@@ -85,15 +82,9 @@ namespace ServiceStack
 
         public ServerEventConnect ConnectionInfo { get; private set; }
 
-        public string SubscriptionId
-        {
-            get { return ConnectionInfo != null ? ConnectionInfo.Id : null; }
-        }
+        public string SubscriptionId => ConnectionInfo?.Id;
 
-        public string ConnectionDisplayName
-        {
-            get { return ConnectionInfo != null ? ConnectionInfo.DisplayName : "(not connected)"; }
-        }
+        public string ConnectionDisplayName => ConnectionInfo != null ? ConnectionInfo.DisplayName : "(not connected)";
 
         private string eventStreamPath;
         public string EventStreamUri { get; private set; }
@@ -103,7 +94,7 @@ namespace ServiceStack
             get
             {
                 var meta = this.ServiceClient as IServiceClientMeta;
-                return meta != null ? meta.BaseUri : null;
+                return meta?.BaseUri;
             }
             set
             {
@@ -172,8 +163,7 @@ namespace ServiceStack
             httpReq.CookieContainer = ((IHasCookieContainer)ServiceClient).CookieContainer;
             //httpReq.AllowReadStreamBuffering = false; //.NET v4.5
 
-            if (EventStreamRequestFilter != null)
-                EventStreamRequestFilter(httpReq);
+            EventStreamRequestFilter?.Invoke(httpReq);
 
             response = (HttpWebResponse)PclExport.Instance.GetResponse(httpReq);
             var stream = response.GetResponseStream();
@@ -238,19 +228,17 @@ namespace ServiceStack
             var hold = connectTcs;
             connectTcs = new TaskCompletionSource<ServerEventConnect>();
 
-            if (OnConnect != null)
-                OnConnect(ConnectionInfo);
+            OnConnect?.Invoke(ConnectionInfo);
 
             hold.SetResult(ConnectionInfo); //needs to be at end or control yielded before Heartbeat can start
         }
 
         protected void StartNewHeartbeat()
         {
-            if (ConnectionInfo == null || string.IsNullOrEmpty(ConnectionInfo.HeartbeatUrl))
+            if (string.IsNullOrEmpty(ConnectionInfo?.HeartbeatUrl))
                 return;
 
-            if (heartbeatTimer != null)
-                heartbeatTimer.Cancel();
+            heartbeatTimer?.Cancel();
 
 #if !NETSTANDARD1_1
             heartbeatTimer = PclExportClient.Instance.CreateTimer(Heartbeat,
