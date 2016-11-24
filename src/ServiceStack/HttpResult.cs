@@ -59,13 +59,10 @@ namespace ServiceStack
 
             if (!asAttachment) return;
 
-            var headerValue =
-                "attachment; " +
-                "filename=\"" + fileResponse.Name + "\"; " +
-                "size=" + fileResponse.Length + "; " +
-                "creation-date=" + fileResponse.CreationTimeUtc.ToString("R").Replace(",", "") + "; " +
-                "modification-date=" + fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "") + "; " +
-                "read-date=" + fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "");
+            var headerValue = $"attachment; filename=\"{fileResponse.Name}\"; size={fileResponse.Length}; " +
+                              $"creation-date={fileResponse.CreationTimeUtc.ToString("R").Replace(",", "")}; " +
+                              $"modification-date={fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "")}; " +
+                              $"read-date={fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "")}";
 
             this.Headers = new Dictionary<string, string>
             {
@@ -85,11 +82,7 @@ namespace ServiceStack
 
             if (!asAttachment) return;
 
-            var headerValue =
-                "attachment; " +
-                "filename=\"" + fileResponse.Name + "\"; " +
-                "size=" + fileResponse.Length + "; " +
-                "modification-date=" + fileResponse.LastModified.ToString("R").Replace(",", "");
+            var headerValue = $"attachment; filename=\"{fileResponse.Name}\"; size={fileResponse.Length}; modification-date={fileResponse.LastModified.ToString("R").Replace(",", "")}";
 
             this.Headers = new Dictionary<string, string>
             {
