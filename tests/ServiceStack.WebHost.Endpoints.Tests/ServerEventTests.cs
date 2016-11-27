@@ -1112,8 +1112,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(client1.Channels, Is.EquivalentTo(new[] { "A", "B" }));
                 Assert.That(client2.Channels, Is.EquivalentTo(new[] { "B" }));
 
-                Assert.That(client1.EventStreamUri, Is.StringEnding("?channels=A,B"));
-                Assert.That(client2.EventStreamUri, Is.StringEnding("?channels=B"));
+                Assert.That(client1.EventStreamUri, Does.EndWith("?channels=A,B"));
+                Assert.That(client2.EventStreamUri, Does.EndWith("?channels=B"));
 
                 await client1.SubscribeToChannelsAsync("C");
                 await client2.SubscribeToChannelsAsync("C");
@@ -1128,8 +1128,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(client1.Channels, Is.EquivalentTo(new[] { "A", "B", "C" }));
                 Assert.That(client2.Channels, Is.EquivalentTo(new[] { "B", "C" }));
 
-                Assert.That(client1.EventStreamUri, Is.StringEnding("?channels=A,B,C"));
-                Assert.That(client2.EventStreamUri, Is.StringEnding("?channels=B,C"));
+                Assert.That(client1.EventStreamUri, Does.EndWith("?channels=A,B,C"));
+                Assert.That(client2.EventStreamUri, Does.EndWith("?channels=B,C"));
             }
         }
 
@@ -1171,8 +1171,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(client1.Channels, Is.EquivalentTo(new[] { "A", "C" }));
                 Assert.That(client2.Channels, Is.EquivalentTo(new[] { "B", "C" }));
 
-                Assert.That(client1.EventStreamUri, Is.StringEnding("?channels=A,C"));
-                Assert.That(client2.EventStreamUri, Is.StringEnding("?channels=B,C"));
+                Assert.That(client1.EventStreamUri, Does.EndWith("?channels=A,C"));
+                Assert.That(client2.EventStreamUri, Does.EndWith("?channels=B,C"));
 
                 await client1.UnsubscribeFromChannelsAsync("C");
                 await client2.UnsubscribeFromChannelsAsync("C");
@@ -1187,8 +1187,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(client1.Channels, Is.EquivalentTo(new[] { "A" }));
                 Assert.That(client2.Channels, Is.EquivalentTo(new[] { "B" }));
 
-                Assert.That(client1.EventStreamUri, Is.StringEnding("?channels=A"));
-                Assert.That(client2.EventStreamUri, Is.StringEnding("?channels=B"));
+                Assert.That(client1.EventStreamUri, Does.EndWith("?channels=A"));
+                Assert.That(client2.EventStreamUri, Does.EndWith("?channels=B"));
             }
         }
     }

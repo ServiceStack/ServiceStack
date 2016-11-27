@@ -156,7 +156,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response, Is.Not.Null, "No response received");
             Console.WriteLine(response);
             Assert.That(response, Does.StartWith("cb("));
-            Assert.That(response, Is.StringEnding(")"));
+            Assert.That(response, Does.EndWith(")"));
         }
 
         [Test, Ignore("Helper test")]
