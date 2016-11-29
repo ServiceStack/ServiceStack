@@ -676,6 +676,7 @@ namespace ServiceStack
                                 string.Join(", ", sub.Channels));
 
                         expired.Add(sub);
+	                    continue;
                     }
 
                     if (Log.IsDebugEnabled)
