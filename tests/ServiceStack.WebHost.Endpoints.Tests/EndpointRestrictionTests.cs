@@ -257,7 +257,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             const RequestAttributes format =
                 RequestAttributes.Soap11 | RequestAttributes.Soap12 | RequestAttributes.Xml | RequestAttributes.Json |
                 RequestAttributes.Jsv | RequestAttributes.ProtoBuf | RequestAttributes.Csv | RequestAttributes.Html |
-                RequestAttributes.Yaml | RequestAttributes.MsgPack | RequestAttributes.FormatOther;
+                RequestAttributes.Wire | RequestAttributes.MsgPack | RequestAttributes.FormatOther;
             Assert.That((format.ToAllowedFlagsSet() & format) == format);
 
             const RequestAttributes endpoint =

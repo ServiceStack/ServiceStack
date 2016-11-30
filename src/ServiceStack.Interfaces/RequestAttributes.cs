@@ -15,7 +15,7 @@ namespace ServiceStack
         AnySecurityMode = Secure | InSecure,
         AnyHttpMethod = HttpHead | HttpGet | HttpPost | HttpPut | HttpDelete | HttpPatch | HttpOptions | HttpOther,
         AnyCallStyle = OneWay | Reply,
-        AnyFormat = Soap11 | Soap12 | Xml | Json | Jsv | Html | ProtoBuf | Csv | MsgPack | Yaml | FormatOther,
+        AnyFormat = Soap11 | Soap12 | Xml | Json | Jsv | Html | ProtoBuf | Csv | MsgPack | Wire | FormatOther,
         AnyEndpoint = Http | MessageQueue | Tcp | EndpointOther,
         InternalNetworkAccess = Localhost | LocalSubnet,
 
@@ -56,7 +56,7 @@ namespace ServiceStack
         //e.g. text/csv
         Csv = 1 << 21,
         Html = 1 << 22,
-        Yaml = 1 << 23,
+        Wire = 1 << 23,
         MsgPack = 1 << 24,
         FormatOther = 1 << 25,
 
@@ -110,7 +110,7 @@ namespace ServiceStack
         ProtoBuf = 1 << 20,
         Csv = 1 << 21,
         Html = 1 << 22,
-        Yaml = 1 << 23,
+        Wire = 1 << 23,
         MsgPack = 1 << 24,
         Other = 1 << 25,
     }

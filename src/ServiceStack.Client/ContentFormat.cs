@@ -32,7 +32,7 @@ namespace ServiceStack
 
                 case MimeTypes.Yaml:
                 case MimeTypes.YamlText:
-                    return RequestAttributes.Yaml;
+                    return RequestAttributes.FormatOther;
 
                 case MimeTypes.Csv:
                     return RequestAttributes.Csv;
@@ -45,6 +45,9 @@ namespace ServiceStack
 
                 case MimeTypes.MsgPack:
                     return RequestAttributes.MsgPack;
+
+                case MimeTypes.Wire:
+                    return RequestAttributes.Wire;
             }
 
             return RequestAttributes.FormatOther;
@@ -122,6 +125,9 @@ namespace ServiceStack
 
                 case MimeTypes.MsgPack:
                     return Feature.MsgPack;
+
+                case MimeTypes.Wire:
+                    return Feature.Wire;
             }
 
             return Feature.CustomFormat;
@@ -173,8 +179,8 @@ namespace ServiceStack
                 case Format.Html:
                     return MimeTypes.Html;
 
-                case Format.Yaml:
-                    return MimeTypes.Yaml;
+                case Format.Wire:
+                    return MimeTypes.Wire;
 
                 default:
                     return null;
