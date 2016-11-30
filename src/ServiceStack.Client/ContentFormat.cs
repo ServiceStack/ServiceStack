@@ -69,6 +69,7 @@ namespace ServiceStack
                 case MimeTypes.MsgPack:
                 case MimeTypes.Binary:
                 case MimeTypes.Bson:
+                case MimeTypes.Wire:
                     return true;
             }
 
