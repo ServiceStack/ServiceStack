@@ -110,6 +110,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auth\ApiKeyAuthTests.cs" />
     <Compile Include="Auth\AppHost.cs" />
     <Compile Include="Auth\StatelessAuthRazorTests.cs" />
     <Compile Include="Auth\StatelessAuthTests.cs" />
