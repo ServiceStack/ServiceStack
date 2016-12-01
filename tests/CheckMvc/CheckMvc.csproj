@@ -55,10 +55,6 @@
       <HintPath>..\..\src\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ServiceStack.Client, Version=4.0.40.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\ServiceStack.Client.4.0.40\lib\net40\ServiceStack.Client.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=4.0.0.0, Culture=neutral, PublicKeyToken=e06fbc6124f57c43, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
@@ -178,6 +174,10 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
+      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
+      <Name>ServiceStack.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
       <Name>ServiceStack.Common</Name>
