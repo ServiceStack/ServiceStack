@@ -162,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionExecTests.cs" />
+    <Compile Include="AllowFilesTests.cs" />
     <Compile Include="AttributeTests.cs" />
     <Compile Include="CheckWebTests.cs" />
     <Compile Include="Configuration\AppSettingsTests.cs" />

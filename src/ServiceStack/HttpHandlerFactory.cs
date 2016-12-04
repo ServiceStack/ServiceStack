@@ -313,11 +313,22 @@ namespace ServiceStack
 
         // no handler registered 
         // serve the file from the filesystem, restricting to a safelist of extensions
-        private static bool ShouldAllow(string filePath)
+        public static bool ShouldAllow(string filePath)
         {
-            var fileExt = System.IO.Path.GetExtension(filePath);
-            if (string.IsNullOrEmpty(fileExt)) return false;
-            return HostContext.Config.AllowFileExtensions.Contains(fileExt.Substring(1));
+            var parts = filePath.SplitOnLast('.');
+            if (parts.Length == 1 || string.IsNullOrEmpty(parts[1]))
+                return false;
+
+            var fileExt = parts[1];
+            if (HostContext.Config.AllowFileExtensions.Contains(fileExt))
+                return true;
+
+            foreach (var pathGlob in HostContext.Config.AllowFilePaths)
+            {
+                if (filePath.GlobPath(pathGlob))
+                    return true;
+            }
+            return false;
         }
 
         public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo, string requestPath, string filePath)

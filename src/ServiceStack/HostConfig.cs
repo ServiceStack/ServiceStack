@@ -73,6 +73,10 @@ namespace ServiceStack
                     "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv",
                     "flv", "swf", "xap", "xaml", "ogg", "ogv", "mp4", "webm", "eot", "ttf", "woff", "woff2", "map"
                 },
+                AllowFilePaths = new List<string>
+                {
+                    "jspm_packages/**/*.json"
+                },
                 DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
                 DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
                 EnableFeatures = Feature.All,
@@ -175,6 +179,7 @@ namespace ServiceStack
             this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
             this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
             this.AllowFileExtensions = instance.AllowFileExtensions;
+            this.AllowFilePaths = instance.AllowFilePaths;
             this.EnableFeatures = instance.EnableFeatures;
             this.WriteErrorsToResponse = instance.WriteErrorsToResponse;
             this.DisposeDependenciesAfterUse = instance.DisposeDependenciesAfterUse;
@@ -242,6 +247,7 @@ namespace ServiceStack
         public HashSet<string> IgnoreFormatsInMetadata { get; set; }
 
         public HashSet<string> AllowFileExtensions { get; set; }
+        public List<string> AllowFilePaths { get; set; }
 
         public string WebHostUrl { get; set; }
         public string WebHostPhysicalPath { get; set; }
