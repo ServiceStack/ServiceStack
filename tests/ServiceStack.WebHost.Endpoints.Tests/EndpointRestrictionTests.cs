@@ -37,7 +37,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public void ShouldDenyAccessWhen<TRequestDto>(RequestAttributes withScenario)
         {
-            ShouldThrow<UnauthorizedAccessException>(() => appHost.ExecuteService(typeof(TRequestDto).New(), withScenario));
+            ShouldThrow<UnauthorizedAccessException>(() => 
+                appHost.ExecuteService(typeof(TRequestDto).New(), withScenario));
         }
 
         public void ShouldDenyAccessForAllOtherScenarios<TRequestDto>(params RequestAttributes[] notIncluding)
@@ -118,9 +119,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void InternalRestriction_allows_calls_from_Localhost_and_LocalSubnet()
         {
+            ShouldAllowAccessWhen<InProcessRestriction>(RequestAttributes.InProcess);
             ShouldAllowAccessWhen<InternalRestriction>(RequestAttributes.Localhost);
             ShouldAllowAccessWhen<InternalRestriction>(RequestAttributes.LocalSubnet);
             ShouldDenyAccessWhen<LocalSubnetRestriction>(RequestAttributes.External);
+        }
+
+        [Test]
+        public void InProcessRestriction_does_not_allow_any_other_NetworkAccess()
+        {
+            ShouldAllowAccessWhen<InProcessRestriction>(RequestAttributes.InProcess);
+            ShouldDenyAccessWhen<InProcessRestriction>(RequestAttributes.Localhost);
+            ShouldDenyAccessWhen<InProcessRestriction>(RequestAttributes.LocalSubnet);
+            ShouldDenyAccessWhen<InProcessRestriction>(RequestAttributes.External);
         }
 
         [Test]

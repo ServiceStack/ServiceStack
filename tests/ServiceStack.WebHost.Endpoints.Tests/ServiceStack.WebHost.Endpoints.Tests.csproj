@@ -324,8 +324,6 @@
     <Compile Include="Support\Services\HttpPostXmlOrSecureLocalSubnetRestrictionService.cs" />
     <Compile Include="Support\Services\SecureLocalSubnetRestrictionService.cs" />
     <Compile Include="Support\Services\InternalRestrictionService.cs" />
-    <Compile Include="Support\Services\LocalhostRestrictionService.cs" />
-    <Compile Include="Support\Services\LocalSubnetRestrictionService.cs" />
     <Compile Include="Support\Services\NestedService.cs" />
     <Compile Include="ServiceStackHostTests.cs" />
     <Compile Include="Support\Operations\GetCustomers.cs" />
