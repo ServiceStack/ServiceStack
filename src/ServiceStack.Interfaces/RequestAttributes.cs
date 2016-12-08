@@ -11,13 +11,13 @@ namespace ServiceStack
         None = 0,
 
         Any = AnyNetworkAccessType | AnySecurityMode | AnyHttpMethod | AnyCallStyle | AnyFormat,
-        AnyNetworkAccessType = External | Localhost | LocalSubnet,
+        AnyNetworkAccessType = External | LocalSubnet | Localhost | InProcess,
         AnySecurityMode = Secure | InSecure,
         AnyHttpMethod = HttpHead | HttpGet | HttpPost | HttpPut | HttpDelete | HttpPatch | HttpOptions | HttpOther,
         AnyCallStyle = OneWay | Reply,
         AnyFormat = Soap11 | Soap12 | Xml | Json | Jsv | Html | ProtoBuf | Csv | MsgPack | Wire | FormatOther,
         AnyEndpoint = Http | MessageQueue | Tcp | EndpointOther,
-        InternalNetworkAccess = Localhost | LocalSubnet,
+        InternalNetworkAccess = InProcess | Localhost | LocalSubnet,
 
         //Whether it came from an Internal or External address
         Localhost = 1 << 0,
