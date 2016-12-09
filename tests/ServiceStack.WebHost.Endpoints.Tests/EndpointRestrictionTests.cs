@@ -143,7 +143,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             ShouldDenyAccessWhen<SecureLocalSubnetRestriction>(RequestAttributes.Secure | RequestAttributes.Localhost);
             ShouldAllowAccessWhen<SecureLocalSubnetRestriction>(RequestAttributes.Secure | RequestAttributes.LocalSubnet);
 
-            ShouldDenyAccessWhen<SecureLocalSubnetRestriction>(RequestAttributes.Secure | RequestAttributes.InternalNetworkAccess);
+            ShouldDenyAccessWhen<SecureLocalSubnetRestriction>(RequestAttributes.Secure | RequestAttributes.External);
             ShouldDenyAccessForOtherNetworkAccessScenarios<SecureLocalSubnetRestriction>(RequestAttributes.LocalSubnet);
         }
 
