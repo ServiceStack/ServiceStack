@@ -166,7 +166,7 @@ namespace ServiceStack
         }
 
 #if NETFX_CORE
-        internal static string CalculateMD5Hash(string input)
+        public static string CalculateMD5Hash(string input)
         {
             var alg = HashAlgorithmProvider.OpenAlgorithm("MD5");
             IBuffer buff = CryptographicBuffer.ConvertStringToBinary(input, BinaryStringEncoding.Utf8);
@@ -177,7 +177,7 @@ namespace ServiceStack
 #endif
 
 #if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
-        internal static string CalculateMD5Hash(string input)
+        public static string CalculateMD5Hash(string input)
         {
             // copied/pasted by adamfowleruk
             // step 1, calculate MD5 hash from input
