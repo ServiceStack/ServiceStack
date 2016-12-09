@@ -34,6 +34,13 @@
         "assembly": "../../lib/netstandard1.3/ServiceStack.Text.dll",
         "pdb": "../../lib/netstandard1.3/ServiceStack.Text.pdb"
       }
+    },
+    "Silverlight,Version=v5.0": {
+      "dependencies": {},
+      "bin": {
+        "assembly": "../../lib/sl5/ServiceStack.Text.dll",
+        "pdb": "../../lib/sl5/ServiceStack.Text.pdb"
+      }
     }
   },
   "version": "1.0.0"

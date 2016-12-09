@@ -1,6 +1,7 @@
 ﻿{
   "frameworks": {
-    "net45": {}
+    "net45": {},
+    "Silverlight,Version=v5.0": {}
   },
   "runtimes": {
     "win": {}

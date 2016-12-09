@@ -126,10 +126,6 @@
       <Project>{0C042251-611A-4DE2-9380-0A3D0F4EA9B1}</Project>
       <Name>ServiceStack.Client.SL5</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.PCL.csproj">
-      <Project>{42e1c8c0-a163-44cc-92b1-8f416f2c0b01}</Project>
-      <Name>ServiceStack.Interfaces.PCL</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PclTest.ServiceModel.SL5\PclTest.ServiceModel.SL5.csproj">
       <Project>{7582E93E-5525-4965-ADDB-FC980B12E876}</Project>
       <Name>PclTest.ServiceModel.SL5</Name>
