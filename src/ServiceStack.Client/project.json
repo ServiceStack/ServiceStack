@@ -51,13 +51,6 @@
         "System.Dynamic.Runtime": "4.0.11",
         "Microsoft.CSharp": "4.0.1-*"
       }
-    },
-    "Silverlight,Version=v5.0": {
-      "buildOptions": {
-        "define": [
-          "SL5"
-        ] 
-      }
     }
   },
   "version": "1.0.0"
