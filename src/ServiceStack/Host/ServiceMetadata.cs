@@ -450,7 +450,7 @@ namespace ServiceStack.Host
                     else if (p.IsArray())
                     {
                         var elType = p.Type.LeftPart('[');
-                        type = FindMetadataType(metadataTypes, elType);
+                        type = FindMetadataType(metadataTypes, elType, p.TypeNamespace);
                         if (type != null && !types.Contains(type))
                         {
                             types.Add(type);
