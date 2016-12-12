@@ -125,6 +125,9 @@ namespace ServiceStack.Common.Web
                 throw new InvalidOperationException(
                     "Sending Range Responses requires a seekable stream eg. FileStream or MemoryStream");
 
+            if ( end >= fromStream.Length )
+                throw new ArgumentOutOfRangeException("end", "The specified end index was outside the bounds of the source stream.");
+
             long totalBytesToSend = end - start + 1;
             const int bufferSize = 0x1000;
             var buffer = new byte[bufferSize];
