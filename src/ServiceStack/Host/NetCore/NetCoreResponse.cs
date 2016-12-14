@@ -147,14 +147,11 @@ namespace ServiceStack.Host.NetCore
 
         public void SetCookie(Cookie cookie)
         {
-            response.Cookies.Append(cookie.Name, cookie.Value, new CookieOptions
-            {
-                Domain = String.IsNullOrEmpty(cookie.Domain) ? null : cookie.Domain,
-                Expires = cookie.Expires,
-                HttpOnly = cookie.HttpOnly,
-                Path = cookie.Path,
-                Secure = cookie.Secure,
-            });
+            if (!HostContext.AppHost.AllowSetCookie(Request, cookie.Name))
+                return;
+
+            var cookieOptions = cookie.ToCookieOptions();
+            response.Cookies.Append(cookie.Name, cookie.Value, cookieOptions);
         }
 
         public void ClearCookies()

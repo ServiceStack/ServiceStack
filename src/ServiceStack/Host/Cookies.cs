@@ -3,6 +3,9 @@ using System.Net;
 using System.Web;
 using ServiceStack.Text;
 using ServiceStack.Web;
+#if NETSTANDARD1_6
+using Microsoft.AspNetCore.Http;
+#endif
 
 namespace ServiceStack.Host
 {
@@ -147,6 +150,29 @@ namespace ServiceStack.Host
                 httpCookie.Domain = HostContext.Config.RestrictAllCookiesToDomain;
             }
             return httpCookie;
+        }
+#endif
+
+#if NETSTANDARD1_6
+        public static CookieOptions ToCookieOptions(this Cookie cookie)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                Path = cookie.Path,
+                Expires = cookie.Expires,
+                HttpOnly = !HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
+                Secure = cookie.Secure
+            };
+
+            if (!string.IsNullOrEmpty(cookie.Domain))
+            {
+                cookieOptions.Domain = cookie.Domain;
+            }
+            else if (HostContext.Config.RestrictAllCookiesToDomain != null)
+            {
+                cookieOptions.Domain = HostContext.Config.RestrictAllCookiesToDomain;
+            }
+            return cookieOptions;
         }
 #endif
 
