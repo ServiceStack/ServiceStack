@@ -100,7 +100,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var testEncoding = "test://?&% encoding";
             var url = "{0}echo?Param={1}".Fmt(Config.AbsoluteBaseUri, testEncoding.UrlEncode());
-            Assert.That(url, Is.StringEnding("/echo?Param=test%3a%2f%2f%3f%26%25+encoding"));
+            Assert.That(url, Does.EndWith("/echo?Param=test%3a%2f%2f%3f%26%25+encoding"));
 
             var json = url.GetJsonFromUrl();
             var response = json.FromJson<Echo>();
@@ -112,7 +112,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var testEncoding = "test encoding";
             var url = "{0}echo/{1}".Fmt(Config.AbsoluteBaseUri, testEncoding.UrlEncode());
-            Assert.That(url, Is.StringEnding("/echo/test+encoding"));
+            Assert.That(url, Does.EndWith("/echo/test+encoding"));
 
             var json = url.GetJsonFromUrl();
             var response = json.FromJson<Echo>();

@@ -112,9 +112,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var logBody = Run(new Soap12ServiceClient(Config.ServiceStackBaseUri));
 
             Assert.That(appHost.LastRequestBody, Does.StartWith(soap12start));
-            Assert.That(appHost.LastRequestBody, Is.StringEnding(soap12end));
+            Assert.That(appHost.LastRequestBody, Does.EndWith(soap12end));
             Assert.That(logBody, Does.StartWith(soap12start));
-            Assert.That(logBody, Is.StringEnding(soap12end));
+            Assert.That(logBody, Does.EndWith(soap12end));
         }
 
         [Test]
