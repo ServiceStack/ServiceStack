@@ -129,6 +129,7 @@
     <Compile Include="NativeTypes\Kotlin\KotlinGenerator.cs" />
     <Compile Include="NetCore\NetCoreContainerAdapter.cs" />
     <Compile Include="NetCore\NetCoreLogFactory.cs" />
+    <Compile Include="NetCore\NetCoreQueryStringCollection.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="Platforms\PlatformNet.Wcf.cs" />
     <Compile Include="Platforms\PlatformNet.Config.cs" />

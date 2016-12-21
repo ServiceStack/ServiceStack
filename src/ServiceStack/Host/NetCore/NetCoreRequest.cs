@@ -15,6 +15,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
+using ServiceStack.NetCore;
 
 namespace ServiceStack.Host.NetCore
 {
@@ -175,13 +176,7 @@ namespace ServiceStack.Host.NetCore
                 if (queryString != null)
                     return queryString;
 
-                var nvc = new NameValueCollection();
-                foreach (var query in request.Query)
-                {
-                    foreach (var value in query.Value)
-                        nvc.Add(query.Key, value);
-                }
-                return queryString = new NameValueCollectionWrapper(nvc);
+                return queryString = new NetCoreQueryStringCollection(request.Query);
             }
         }
 
