@@ -278,7 +278,17 @@ namespace ServiceStack
 
         public static Dictionary<string, string> ToDictionary(this INameValueCollection nameValues)
         {
-            return ToDictionary((NameValueCollection)nameValues.Original);
+            var map = new Dictionary<string, string>(nameValues.Count);
+
+            foreach(var key in nameValues.AllKeys)
+            {
+                if (key != null)
+                {
+                    map[key] = nameValues[key];
+                }
+            }
+
+            return map;
         }
 
         public static Dictionary<string, string> ToDictionary(this NameValueCollection nameValues)
