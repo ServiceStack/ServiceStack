@@ -249,10 +249,15 @@ namespace ServiceStack
         protected void Heartbeat(object state)
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("[SSE-CLIENT] Prep for Heartbeat...");
+                log.Debug("[SSE-CLIENT] Prep for Heartbeat...");
 
             if (cancel.IsCancellationRequested)
+            {
+                if (log.IsDebugEnabled)
+                    log.Debug("[SSE-CLIENT] Heartbeat CancellationRequested");
+
                 return;
+            }
 
             if (ConnectionInfo == null)
                 return;
@@ -266,14 +271,16 @@ namespace ServiceStack
 
             EnsureSynchronizationContext();
 
-            ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter: req =>
-            {
+            if (log.IsDebugEnabled)
+                log.Debug("[SSE-CLIENT] Sending Heartbeat...");
+
+            ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter: req => {
                     var hold = httpReq;
                     if (hold != null)
                         req.CookieContainer = hold.CookieContainer;
 
-                HeartbeatRequestFilter?.Invoke(req);
-            })
+                    HeartbeatRequestFilter?.Invoke(req);
+                })
                 .Success(t =>
                 {
                     if (cancel.IsCancellationRequested)
