@@ -271,15 +271,15 @@ namespace ServiceStack
 
             EnsureSynchronizationContext();
 
-            if (log.IsDebugEnabled)
-                log.Debug("[SSE-CLIENT] Sending Heartbeat...");
-
             ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter: req => {
                     var hold = httpReq;
                     if (hold != null)
                         req.CookieContainer = hold.CookieContainer;
 
                     HeartbeatRequestFilter?.Invoke(req);
+
+                    if (log.IsDebugEnabled)
+                        log.Debug("[SSE-CLIENT] Sending Heartbeat...");
                 })
                 .Success(t =>
                 {
