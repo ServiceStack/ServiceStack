@@ -229,6 +229,24 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         public string Id { get; set; }
     }
 
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    public sealed class CustomApiResponseAttribute : ApiResponseAttribute
+    {
+        private static int errCode = 402;
+
+        public CustomApiResponseAttribute()
+            : base(++errCode, Guid.NewGuid().ToString()) {}
+    }
+
+    [ApiResponse(400, "Code 1")]
+    [CustomApiResponse()]
+    [ApiResponse(402, "Code 2")]
+    [CustomApiResponse()]
+    [CustomApiResponse()]
+    [ApiResponse(401, "Code 3")]
+    [Route("/swagger/multiattrtest", Verbs = "POST", Summary = "Sample request")]
+    public sealed class SwaggerMultiApiResponseTest : IReturnVoid {}
+
     public class SwaggerTestService : Service
     {
         public object Any(SwaggerTest request)
@@ -285,5 +303,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         {
             return request;
         }
+
+        public object Any(SwaggerMultiApiResponseTest request) => request;
     }
 }
