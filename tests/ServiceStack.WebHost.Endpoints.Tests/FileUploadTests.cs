@@ -138,7 +138,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
 
             var request = new FileUpload { CustomerId = 123, CustomerName = "Foo,Bar" };
-            var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/fileuploads", uploadFile, request);
+            var response = client.PostFileWithRequest<FileUploadResponse>(
+                ListeningOn + "/fileuploads", 
+                uploadFile, 
+                request);
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
             Assert.That(response.Name, Is.EqualTo("upload"));
