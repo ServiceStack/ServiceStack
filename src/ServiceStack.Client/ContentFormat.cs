@@ -1,3 +1,5 @@
+using System;
+
 namespace ServiceStack
 {
     public static class ContentFormat
@@ -53,14 +55,67 @@ namespace ServiceStack
             return RequestAttributes.FormatOther;
         }
 
+        //lowercases and trims left part of content-type prior ';'
         public static string GetRealContentType(string contentType)
         {
-            return contentType?.Split(';')[0].ToLower().Trim();
+            if (contentType == null)
+                return null;
+
+            int start = -1, end = -1;
+
+            for(int i=0; i < contentType.Length; i++)
+            {
+                if (!char.IsWhiteSpace(contentType[i]))
+                {
+                    if (contentType[i] == ';')
+                        break;
+                    if (start == -1)
+                    {
+                        start = i;
+                    }
+                    end = i;
+                }
+            }
+
+            return start != -1 
+                    ? contentType.Substring(start, end - start + 1).ToLowerInvariant()
+                    :  null;
         }
 
+        //Compares two string from start to ';' char, case-insensitive,
+        //ignoring (trimming) spaces at start and end
         public static bool MatchesContentType(this string contentType, string matchesContentType)
         {
-            return GetRealContentType(contentType) == GetRealContentType(matchesContentType);
+            if (contentType == null || matchesContentType == null)
+                return false;
+            
+            int start = -1, matchStart = -1, matchEnd = -1;
+
+            for(int i=0; i < contentType.Length; i++)
+            {
+                if (!char.IsWhiteSpace(contentType[i]))
+                {
+                    start = i;
+                    break;
+                }
+            }
+
+            for(int i=0; i < matchesContentType.Length; i++)
+            {
+                if (!char.IsWhiteSpace(matchesContentType[i]))
+                {
+                    if (matchesContentType[i] == ';')
+                        break;
+                    if (matchStart == -1)
+                        matchStart = i;
+                    matchEnd = i;
+                }
+            }
+            
+            return start != -1 && matchStart != -1 && matchEnd != -1
+                  && String.Compare(contentType, start,
+                        matchesContentType, matchStart, matchEnd - matchStart + 1,
+                        StringComparison.OrdinalIgnoreCase) == 0;
         }
 
         public static bool IsBinary(this string contentType)
@@ -135,7 +190,7 @@ namespace ServiceStack
 
         public static string GetContentFormat(Format format)
         {
-            var formatStr = format.ToString().ToLower();
+            var formatStr = format.ToString().ToLowerInvariant();
             return format == Format.MsgPack || format == Format.ProtoBuf
                 ? "x-" + formatStr
                 : formatStr;

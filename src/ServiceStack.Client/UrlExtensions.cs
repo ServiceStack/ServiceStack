@@ -107,11 +107,30 @@ namespace ServiceStack
 
         public static string GetOperationName(this Type type)
         {
-            var typeName = type.FullName?.LeftPart("[[")   //Generic Fullname
-                .Replace(type.Namespace + ".", "") //Trim Namespaces
-                .Replace("+", ".") ?? type.Name;
+            string fullname = type.FullName;
+            int genericPrefixIndex = type.IsGenericParameter ? 1 : 0;
+                
+            if (fullname == null)
+                return genericPrefixIndex > 0 ? "'" + type.Name : type.Name;
 
-            return type.IsGenericParameter ? "'" + typeName : typeName;
+            int startIndex = type.Namespace != null ? type.Namespace.Length + 1: 0; //trim namespace + "."
+            int endIndex = fullname.IndexOf("[[", startIndex);  //Generic Fullname
+            if (endIndex == -1)
+                endIndex = fullname.Length;
+
+            char[] op = new char[endIndex - startIndex + genericPrefixIndex];
+            char cur;
+
+            for(int i = startIndex; i < endIndex; i++)
+            {
+                cur = fullname[i];
+                op[i - startIndex + genericPrefixIndex] = cur != '+' ? cur : '.';
+            }
+
+            if (genericPrefixIndex > 0)
+                op[0] = '\'';
+            
+            return new string(op);
         }
 
         public static string ExpandTypeName(this Type type)

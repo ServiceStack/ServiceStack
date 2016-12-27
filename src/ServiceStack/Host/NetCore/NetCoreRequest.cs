@@ -159,12 +159,7 @@ namespace ServiceStack.Host.NetCore
                 if (headers != null)
                     return headers;
 
-                var nvc = new NameValueCollection();
-                foreach (var header in request.Headers)
-                {
-                    nvc.Add(header.Key, header.Value);
-                }
-                return headers = new NameValueCollectionWrapper(nvc);
+                return headers = new NetCoreHeadersCollection(request.Headers);
             }
         }
 

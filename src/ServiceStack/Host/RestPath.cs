@@ -13,9 +13,10 @@ namespace ServiceStack.Host
     {
         private const string WildCard = "*";
         private const char WildCardChar = '*';
-        private const string PathSeperator = "/";
-        private const char PathSeperatorChar = '/';
-        private const char ComponentSeperator = '.';
+        private const string PathSeparator = "/";
+        private const char PathSeparatorChar = '/';
+        private static readonly char[] PathSeparatorCharArray = new char[] {'/'};
+        private const char ComponentSeparator = '.';
         private const string VariablePrefix = "{";
 
         private readonly bool[] componentsWithSeparators;
@@ -63,20 +64,21 @@ namespace ServiceStack.Host
 
         public static string[] GetPathPartsForMatching(string pathInfo)
         {
-            var parts = pathInfo.ToLower().Split(PathSeperatorChar)
-                .Where(x => !string.IsNullOrEmpty(x)).ToArray();
+            var parts = pathInfo.ToLowerInvariant()
+                .Split(PathSeparatorCharArray, StringSplitOptions.RemoveEmptyEntries);
+
             return parts;
         }
 
         public static IEnumerable<string> GetFirstMatchHashKeys(string[] pathPartsForMatching)
         {
-            var hashPrefix = pathPartsForMatching.Length + PathSeperator;
+            var hashPrefix = pathPartsForMatching.Length + PathSeparator;
             return GetPotentialMatchesWithPrefix(hashPrefix, pathPartsForMatching);
         }
 
         public static IEnumerable<string> GetFirstMatchWildCardHashKeys(string[] pathPartsForMatching)
         {
-            const string hashPrefix = WildCard + PathSeperator;
+            const string hashPrefix = WildCard + PathSeparator;
             return GetPotentialMatchesWithPrefix(hashPrefix, pathPartsForMatching);
         }
 
@@ -85,7 +87,7 @@ namespace ServiceStack.Host
             foreach (var part in pathPartsForMatching)
             {
                 yield return hashPrefix + part;
-                var subParts = part.Split(ComponentSeperator);
+                var subParts = part.Split(ComponentSeparator);
                 if (subParts.Length == 1) continue;
 
                 foreach (var subPart in subParts)
@@ -119,15 +121,13 @@ namespace ServiceStack.Host
 
             //We only split on '.' if the restPath has them. Allows for /{action}.{type}
             var hasSeparators = new List<bool>();
-            foreach (var component in this.Path.Split(PathSeperatorChar))
+            foreach (var component in this.Path.Split(PathSeparatorCharArray, StringSplitOptions.RemoveEmptyEntries))
             {
-                if (string.IsNullOrEmpty(component)) continue;
-
                 if (component.Contains(VariablePrefix)
-                    && component.Contains(ComponentSeperator))
+                    && component.Contains(ComponentSeparator))
                 {
                     hasSeparators.Add(true);
-                    componentsList.AddRange(component.Split(ComponentSeperator));
+                    componentsList.AddRange(component.Split(ComponentSeparator));
                 }
                 else
                 {
@@ -165,7 +165,7 @@ namespace ServiceStack.Host
                 else
                 {
                     this.literalsToMatch[i] = component.ToLower();
-                    sbHashKey.Append(i + PathSeperatorChar.ToString() + this.literalsToMatch);
+                    sbHashKey.Append(i + PathSeparator + this.literalsToMatch);
 
                     if (firstLiteralMatch == null)
                     {
@@ -188,8 +188,8 @@ namespace ServiceStack.Host
             this.IsWildCardPath = this.wildcardCount > 0;
 
             this.FirstMatchHashKey = !this.IsWildCardPath
-                ? this.PathComponentsCount + PathSeperator + firstLiteralMatch
-                : WildCardChar + PathSeperator + firstLiteralMatch;
+                ? this.PathComponentsCount + PathSeparator + firstLiteralMatch
+                : WildCardChar + PathSeparator + firstLiteralMatch;
 
             this.IsValid = sbHashKey.Length > 0;
             this.UniqueMatchHashKey = StringBuilderCache.ReturnAndFree(sbHashKey);
@@ -350,7 +350,7 @@ namespace ServiceStack.Host
                 if (this.PathComponentsCount != this.TotalComponentsCount
                     && this.componentsWithSeparators[i])
                 {
-                    var subComponents = component.Split(ComponentSeperator);
+                    var subComponents = component.Split(ComponentSeparator);
                     if (subComponents.Length < 2) return false;
                     totalComponents.AddRange(subComponents);
                 }
@@ -371,8 +371,7 @@ namespace ServiceStack.Host
 
         public object CreateRequest(string pathInfo, Dictionary<string, string> queryStringAndFormData, object fromInstance)
         {
-            var requestComponents = pathInfo.Split(PathSeperatorChar)
-                .Where(x => !string.IsNullOrEmpty(x)).ToArray();
+            var requestComponents = pathInfo.Split(PathSeparatorCharArray, StringSplitOptions.RemoveEmptyEntries);
 
             ExplodeComponents(ref requestComponents);
 
@@ -419,7 +418,7 @@ namespace ServiceStack.Host
                         sb.Append(value);
                         for (var j = pathIx + 1; j < requestComponents.Length; j++)
                         {
-                            sb.Append(PathSeperatorChar + requestComponents[j]);
+                            sb.Append(PathSeparatorChar + requestComponents[j]);
                         }
                         value = StringBuilderCache.ReturnAndFree(sb);
                     }
@@ -436,7 +435,7 @@ namespace ServiceStack.Host
                             pathIx++;
                             while (!string.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
                             {
-                                sb.Append(PathSeperatorChar + requestComponents[pathIx++]);
+                                sb.Append(PathSeparatorChar + requestComponents[pathIx++]);
                             }
                             value = StringBuilderCache.ReturnAndFree(sb);
                         }
