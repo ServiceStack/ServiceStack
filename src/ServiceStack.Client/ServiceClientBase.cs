@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -833,26 +832,17 @@ namespace ServiceStack
             }
             else
             {
+#if !SL5
                 if (RequestCompressionType == CompressionTypes.Deflate)
                 {
-                    using (var zip = new DeflateStream(requestStream, CompressionMode.Compress))
-                    {
-                        SerializeToStream(requestContext, request, zip);
-                        zip.Close();
-                    }
+                    requestStream = new System.IO.Compression.DeflateStream(requestStream, System.IO.Compression.CompressionMode.Compress);
                 }
                 else if (RequestCompressionType == CompressionTypes.GZip)
                 {
-                    using (var zip = new GZipStream(requestStream, CompressionMode.Compress))
-                    {
-                        SerializeToStream(requestContext, request, zip);
-                        zip.Close();
-                    }
+                    requestStream = new System.IO.Compression.GZipStream(requestStream, System.IO.Compression.CompressionMode.Compress);
                 }
-                else
-                {
-                    SerializeToStream(null, request, requestStream);
-                }
+#endif
+                SerializeToStream(null, request, requestStream);
             }
         }
 
