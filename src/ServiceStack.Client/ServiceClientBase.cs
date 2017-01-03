@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -154,6 +155,17 @@ namespace ServiceStack
             {
                 disableAutoCompression = value;
                 asyncClient.DisableAutoCompression = value;
+            }
+        }
+
+        private string requestCompressionType;
+        public string RequestCompressionType
+        {
+            get { return requestCompressionType; }
+            set
+            {
+                requestCompressionType = value;
+                asyncClient.RequestCompressionType = value;
             }
         }
 
@@ -808,13 +820,40 @@ namespace ServiceStack
             var bytes = request as byte[];
             var stream = request as Stream;
             if (str != null)
+            {
                 requestStream.Write(str);
+            }
             else if (bytes != null)
+            {
                 requestStream.Write(bytes, 0, bytes.Length);
+            }
             else if (stream != null)
+            {
                 stream.WriteTo(requestStream);
+            }
             else
-                SerializeToStream(null, request, requestStream);
+            {
+                if (RequestCompressionType == CompressionTypes.Deflate)
+                {
+                    using (var zip = new DeflateStream(requestStream, CompressionMode.Compress))
+                    {
+                        SerializeToStream(requestContext, request, zip);
+                        zip.Close();
+                    }
+                }
+                else if (RequestCompressionType == CompressionTypes.GZip)
+                {
+                    using (var zip = new GZipStream(requestStream, CompressionMode.Compress))
+                    {
+                        SerializeToStream(requestContext, request, zip);
+                        zip.Close();
+                    }
+                }
+                else
+                {
+                    SerializeToStream(null, request, requestStream);
+                }
+            }
         }
 
         private WebRequest PrepareWebRequest(string httpMethod, string requestUri, object request, Action<HttpWebRequest> sendRequestAction)
@@ -875,6 +914,9 @@ namespace ServiceStack
                 if (httpMethod.HasRequestBody())
                 {
                     client.ContentType = ContentType;
+
+                    if (RequestCompressionType != null)
+                        client.Headers[HttpHeaders.ContentEncoding] = RequestCompressionType;
 
                     if (sendRequestAction != null)
                         sendRequestAction(client);

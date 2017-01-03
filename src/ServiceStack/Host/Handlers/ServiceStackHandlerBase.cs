@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
@@ -133,7 +134,15 @@ namespace ServiceStack.Host.Handlers
                     var deserializer = HostContext.ContentTypes.GetStreamDeserializer(contentType);
                     if (deserializer != null)
                     {
-                        return deserializer(requestType, httpReq.InputStream);
+                        var stream = httpReq.InputStream;
+
+                        var enc = httpReq.GetContentEncoding();
+                        if (enc == CompressionTypes.Deflate)
+                            stream = new DeflateStream(httpReq.InputStream, CompressionMode.Decompress);
+                        else if (enc == CompressionTypes.GZip)
+                            stream = new GZipStream(httpReq.InputStream, CompressionMode.Decompress);
+
+                        return deserializer(requestType, stream);
                     }
                 }
             }

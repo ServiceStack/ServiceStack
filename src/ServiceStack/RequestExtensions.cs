@@ -25,6 +25,11 @@ namespace ServiceStack
             return null;
         }
 
+        public static string GetContentEncoding(this IRequest request)
+        {
+            return request.Headers.Get(HttpHeaders.ContentEncoding);
+        }
+
         public static string GetHeader(this IRequest request, string headerName)
         {
             return request.Headers.Get(headerName);
