@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -28,6 +29,17 @@ namespace ServiceStack
         public static string GetContentEncoding(this IRequest request)
         {
             return request.Headers.Get(HttpHeaders.ContentEncoding);
+        }
+
+        public static Stream GetInputStream(this IRequest req, Stream stream)
+        {
+            var enc = req.GetContentEncoding();
+            if (enc == CompressionTypes.Deflate)
+                return new DeflateStream(stream, CompressionMode.Decompress);
+            if (enc == CompressionTypes.GZip)
+                return new GZipStream(stream, CompressionMode.Decompress);
+
+            return stream;
         }
 
         public static string GetHeader(this IRequest request, string headerName)

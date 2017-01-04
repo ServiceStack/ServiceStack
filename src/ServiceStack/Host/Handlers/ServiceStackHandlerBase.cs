@@ -134,15 +134,7 @@ namespace ServiceStack.Host.Handlers
                     var deserializer = HostContext.ContentTypes.GetStreamDeserializer(contentType);
                     if (deserializer != null)
                     {
-                        var stream = httpReq.InputStream;
-
-                        var enc = httpReq.GetContentEncoding();
-                        if (enc == CompressionTypes.Deflate)
-                            stream = new DeflateStream(httpReq.InputStream, CompressionMode.Decompress);
-                        else if (enc == CompressionTypes.GZip)
-                            stream = new GZipStream(httpReq.InputStream, CompressionMode.Decompress);
-
-                        return deserializer(requestType, stream);
+                        return deserializer(requestType, httpReq.InputStream);
                     }
                 }
             }

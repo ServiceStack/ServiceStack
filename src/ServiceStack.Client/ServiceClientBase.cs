@@ -157,16 +157,7 @@ namespace ServiceStack
             }
         }
 
-        private string requestCompressionType;
-        public string RequestCompressionType
-        {
-            get { return requestCompressionType; }
-            set
-            {
-                requestCompressionType = value;
-                asyncClient.RequestCompressionType = value;
-            }
-        }
+        public string RequestCompressionType { get; set; }
 
         /// <summary>
         /// The user name for basic authentication
@@ -843,6 +834,8 @@ namespace ServiceStack
                 }
 #endif
                 SerializeToStream(null, request, requestStream);
+
+                requestStream.Close();
             }
         }
 

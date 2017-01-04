@@ -1,7 +1,9 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Reflection;
+using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
@@ -10,6 +12,26 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    [DataContract]
+    [Route("/hellogzip")]
+    //[Route("/hello/{Name}")]
+    public class HelloGzip : IReturn<HelloResponse>
+    {
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public List<string> Test { get; set; }
+    }
+
+    public class HelloService : IService
+    {
+        public object Any(HelloGzip request)
+        {
+            return new HelloResponse { Result = $"Hello, {request.Name} ({request.Test?.Count})" };
+        }
+    }
+
     [TestFixture]
     public class GzipJsonServiceClientTests
     {
@@ -31,6 +53,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 : base(nameof(GzipJsonServiceClientTests), typeof(HelloService).GetAssembly()) { }
 
             public override void Configure(Container container) {}
+        }
+
+        [Test]
+        public void Can_send_GZip_client_request_list()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn)
+            {
+                RequestCompressionType = CompressionTypes.GZip,
+            };
+            var response = client.Post(new HelloGzip
+            {
+                Name = "GZIP",
+                Test = new List<string> { "Test" }
+            });
+            Assert.That(response.Result, Is.EqualTo("Hello, GZIP (1)"));
+        }
+
+        [Test]
+        public void Can_send_GZip_client_request_list_HttpClient()
+        {
+            var client = new JsonHttpClient(Config.ListeningOn)
+            {
+                RequestCompressionType = CompressionTypes.GZip,
+            };
+            var response = client.Post(new HelloGzip
+            {
+                Name = "GZIP",
+                Test = new List<string> { "Test" }
+            });
+            Assert.That(response.Result, Is.EqualTo("Hello, GZIP (1)"));
         }
 
         [Test]

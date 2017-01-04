@@ -89,7 +89,6 @@ namespace ServiceStack
 
         public string BaseUri { get; set; }
         public bool DisableAutoCompression { get; set; }
-        public string RequestCompressionType { get; set; }
 
         public string UserName { get; set; }
 
