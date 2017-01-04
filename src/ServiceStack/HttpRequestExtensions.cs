@@ -611,7 +611,7 @@ namespace ServiceStack
 
                 if (end == -1) 
                 {
-                    if (pi.Length > formatMaxLength)
+                    if (pi.Length - start > formatMaxLength)
                         return null;
                     else
                         end = pi.Length;
