@@ -261,6 +261,17 @@ namespace ServiceStack.ServiceHost.Tests
         }
 
         [Test]
+        public void Can_configure_and_resolve_Named_instances()
+        {
+            var container = new Container();
+            container.Register<IFoo>("foo1", new Foo());
+            container.Register<IFoo>("foo2", new Foo2());
+
+            Assert.That(container.ResolveNamed<IFoo>("foo1") is Foo);
+            Assert.That(container.ResolveNamed<IFoo>("foo2") is Foo2);
+        }
+
+        [Test]
         public void Can_autowire_named_instances()
         {
             var container = new Container();
