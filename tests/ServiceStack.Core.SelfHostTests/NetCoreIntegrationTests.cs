@@ -316,6 +316,8 @@ namespace ServiceStack.Core.SelfHostTests
                 Assert.That(response.Results["NetCoreScopedRequest"], Is.EqualTo(5));
                 Assert.That(response.Results["FunqScoped"], Is.EqualTo(5));
                 Assert.That(response.Results.Where(x => x.Key.EndsWith("Transient")).All(e => e.Value == 5));
+
+                HostContext.AppHost.Dispose();
             }
         }
     }

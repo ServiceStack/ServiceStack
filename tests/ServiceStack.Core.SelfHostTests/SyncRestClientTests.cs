@@ -45,22 +45,18 @@ namespace RestFiles.Tests
         private const string TestUploadFileContents = "THIS FILE IS USED FOR UPLOADING IN TESTS";
         public string FilesRootDir;
 
-        TestAppHost appHost;
+        ServiceStackHost appHost;
 
         [OneTimeSetUp]
         public void TextFixtureSetUp()
         {
-            appHost = new TestAppHost();
-            appHost.Init();
-            appHost.Start(TestAppHost.ListeningOn);
+            appHost = new TestAppHost()
+                .Init()
+                .Start(TestAppHost.ListeningOn);
         }
 
         [OneTimeTearDown]
-        public void TestFixtureTearDown()
-        {
-            appHost?.Dispose();
-            appHost = null;
-        }
+        public void TestFixtureTearDown() => appHost.Dispose();
 
         [SetUp]
         public void OnBeforeEachTest()
