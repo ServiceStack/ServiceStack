@@ -4,18 +4,17 @@ using System.IO.Compression;
 using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [DataContract]
-    [Route("/hellogzip")]
-    //[Route("/hello/{Name}")]
-    public class HelloGzip : IReturn<HelloResponse>
+    [Route("/hellozip")]
+    public class HelloZip : IReturn<HelloZipResponse>
     {
         [DataMember]
         public string Name { get; set; }
@@ -24,20 +23,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<string> Test { get; set; }
     }
 
-    public class HelloService : IService
+    [DataContract]
+    public class HelloZipResponse
     {
-        public object Any(HelloGzip request)
+        [DataMember]
+        public string Result { get; set; }
+    }
+
+    public class HelloZipService : IService
+    {
+        public object Any(HelloZip request)
         {
-            return new HelloResponse { Result = $"Hello, {request.Name} ({request.Test?.Count})" };
+            return request.Test == null
+                ? new HelloZipResponse { Result = $"Hello, {request.Name}" }
+                : new HelloZipResponse { Result = $"Hello, {request.Name} ({request.Test?.Count})" };
         }
     }
 
     [TestFixture]
-    public class GzipJsonServiceClientTests
+    public class ZipServiceClientTests
     {
         private readonly ServiceStackHost appHost;
 
-        public GzipJsonServiceClientTests()
+        public ZipServiceClientTests()
         {
             appHost = new AppHost()
                 .Init()
@@ -50,7 +58,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(GzipJsonServiceClientTests), typeof(HelloService).GetAssembly()) { }
+                : base(nameof(ZipServiceClientTests), typeof(HelloZipService).GetAssembly()) { }
 
             public override void Configure(Container container) {}
         }
@@ -62,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 RequestCompressionType = CompressionTypes.GZip,
             };
-            var response = client.Post(new HelloGzip
+            var response = client.Post(new HelloZip
             {
                 Name = "GZIP",
                 Test = new List<string> { "Test" }
@@ -77,7 +85,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 RequestCompressionType = CompressionTypes.GZip,
             };
-            var response = client.Post(new HelloGzip
+            var response = client.Post(new HelloZip
+            {
+                Name = "GZIP",
+                Test = new List<string> { "Test" }
+            });
+            Assert.That(response.Result, Is.EqualTo("Hello, GZIP (1)"));
+        }
+
+        [Test]
+        public async Task Can_send_GZip_client_request_list_HttpClient_async()
+        {
+            var client = new JsonHttpClient(Config.ListeningOn)
+            {
+                RequestCompressionType = CompressionTypes.GZip,
+            };
+            var response = await client.PostAsync(new HelloZip
             {
                 Name = "GZIP",
                 Test = new List<string> { "Test" }
@@ -92,7 +115,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 RequestCompressionType = CompressionTypes.GZip,
             };
-            var response = client.Post(new Hello { Name = "GZIP" });
+            var response = client.Post(new HelloZip { Name = "GZIP" });
             Assert.That(response.Result, Is.EqualTo("Hello, GZIP"));
         }
 
@@ -103,7 +126,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 RequestCompressionType = CompressionTypes.Deflate,
             };
-            var response = client.Post(new Hello { Name = "Deflate" });
+            var response = client.Post(new HelloZip { Name = "Deflate" });
             Assert.That(response.Result, Is.EqualTo("Hello, Deflate"));
         }
 
@@ -114,7 +137,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 RequestCompressionType = CompressionTypes.GZip,
             };
-            var response = client.Post(new Hello { Name = "GZIP" });
+            var response = client.Post(new HelloZip { Name = "GZIP" });
             Assert.That(response.Result, Is.EqualTo("Hello, GZIP"));
         }
 
@@ -125,7 +148,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 RequestCompressionType = CompressionTypes.Deflate,
             };
-            var response = client.Post(new Hello { Name = "Deflate" });
+            var response = client.Post(new HelloZip { Name = "Deflate" });
             Assert.That(response.Result, Is.EqualTo("Hello, Deflate"));
         }
 
@@ -136,7 +159,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 RequestCompressionType = CompressionTypes.GZip,
             };
-            var response = client.Post(new Hello { Name = "GZIP" });
+            var response = client.Post(new HelloZip { Name = "GZIP" });
             Assert.That(response.Result, Is.EqualTo("Hello, GZIP"));
         }
     }
