@@ -154,7 +154,7 @@ namespace ServiceStack
 
         public static string FromFormat(this Format format)
         {
-            var formatStr = format.ToString().ToLower();
+            var formatStr = format.ToString().ToLowerInvariant();
             if (format == Format.ProtoBuf || format == Format.MsgPack)
                 return "x-" + formatStr;
             return formatStr;

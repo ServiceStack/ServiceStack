@@ -182,7 +182,7 @@ namespace ServiceStack.Host
                 }
                 else
                 {
-                    this.literalsToMatch[i] = component.ToLower();
+                    this.literalsToMatch[i] = component.ToLowerInvariant();
                     sbHashKey.Append(i + PathSeparator + this.literalsToMatch);
 
                     if (firstLiteralMatch == null)
@@ -224,14 +224,14 @@ namespace ServiceStack.Host
                 foreach (var propertyInfo in this.RequestType.GetSerializableProperties())
                 {
                     propertyName = propertyInfo.Name;
-                    propertyNamesMap.Add(propertyName.ToLower(), propertyName);
+                    propertyNamesMap.Add(propertyName.ToLowerInvariant(), propertyName);
                 }
                 if (JsConfig.IncludePublicFields)
                 {
                     foreach (var fieldInfo in this.RequestType.GetSerializableFields())
                     {
                         propertyName = fieldInfo.Name;
-                        propertyNamesMap.Add(propertyName.ToLower(), propertyName);
+                        propertyNamesMap.Add(propertyName.ToLowerInvariant(), propertyName);
                     }
                 }
             }

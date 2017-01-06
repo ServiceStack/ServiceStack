@@ -514,7 +514,7 @@ namespace ServiceStack.NativeTypes.FSharp
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += "IsRequired={0}".Fmt(dmMeta.IsRequired.ToString().ToLower());
+                    dmArgs += "IsRequired={0}".Fmt(dmMeta.IsRequired.ToString().ToLowerInvariant());
                 }
 
                 if (dmMeta.EmitDefaultValue != null)
@@ -522,7 +522,7 @@ namespace ServiceStack.NativeTypes.FSharp
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += "EmitDefaultValue={0}".Fmt(dmMeta.EmitDefaultValue.ToString().ToLower());
+                    dmArgs += "EmitDefaultValue={0}".Fmt(dmMeta.EmitDefaultValue.ToString().ToLowerInvariant());
                 }
 
                 dmArgs = "({0})".Fmt(dmArgs);

@@ -56,7 +56,7 @@ namespace ServiceStack
             if (pos < 0)
                 throw new AuthenticationException($"Authentication header not supported: {authHeader}");
 
-            method = authHeader.Substring(0, pos).ToLower();
+            method = authHeader.Substring(0, pos).ToLowerInvariant();
             string remainder = authHeader.Substring(pos + 1);
 
             // split the rest by comma, then =
