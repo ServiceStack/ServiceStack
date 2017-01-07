@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using Funq;
 using NUnit.Framework;
@@ -63,13 +64,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
-            appHost = new AppHost()
+            appHost = new AppHost();
+            var dirPath = ClearFolders();
+
+            Directory.CreateDirectory(dirPath.AppendPath("mount1", "dir1"));
+            File.WriteAllText(dirPath.AppendPath("mount1", "file.txt"), "MOUNT1");
+            File.WriteAllText(dirPath.AppendPath("mount1", "dir1", "nested-file.txt"), "NESTED MOUNT1");
+
+            Directory.CreateDirectory(dirPath.AppendPath("mount2", "dir2"));
+            File.WriteAllText(dirPath.AppendPath("mount2", "file.txt"), "MOUNT2");
+            File.WriteAllText(dirPath.AppendPath("mount2", "dir2", "nested-file.txt"), "NESTED MOUNT2");
+
+            appHost
                 .Init()
                 .Start(Config.ListeningOn);
         }
 
+        private string ClearFolders()
+        {
+            var dirPath = appHost.MapProjectPath("~/App_Data");
+            if (Directory.Exists(dirPath.AppendPath("mount1")))
+                Directory.Delete(dirPath.AppendPath("mount1"), recursive: true);
+            if (Directory.Exists(dirPath.AppendPath("mount2")))
+                Directory.Delete(dirPath.AppendPath("mount2"), recursive: true);
+            return dirPath;
+        }
+
         [OneTimeTearDown]
-        public void TestFixtureTearDown() => appHost.Dispose();
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+            ClearFolders();
+        }
 
         [Test]
         public void Can_resolve_file_from_mapped_path()
