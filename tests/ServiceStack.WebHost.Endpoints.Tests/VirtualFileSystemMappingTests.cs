@@ -138,6 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.FileSize, Is.GreaterThan(0));
         }
 
+        [Explicit]
         [Test]
         public void Can_resolve_mapped_files_directly()
         {
