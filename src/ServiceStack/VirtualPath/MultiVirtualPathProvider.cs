@@ -52,12 +52,12 @@ namespace ServiceStack.VirtualPath
 
         public override IEnumerable<IVirtualFile> GetRootFiles()
         {
-            return ChildProviders.SelectMany(x => x.RootDirectory.Files);
+            return ChildProviders.SelectMany(x => x.GetRootFiles());
         }
 
         public override IEnumerable<IVirtualDirectory> GetRootDirectories()
         {
-            return ChildProviders.SelectMany(x => x.RootDirectory.Directories);
+            return ChildProviders.SelectMany(x => x.GetRootDirectories());
         }
 
         public override bool IsSharedFile(IVirtualFile virtualFile)
