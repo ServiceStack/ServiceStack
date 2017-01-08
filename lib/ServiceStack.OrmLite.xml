@@ -2734,7 +2734,7 @@
             <para>db.InsertAll(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } })</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.UpdateAsync``1(System.Data.IDbConnection,``0,System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.UpdateAsync``1(System.Data.IDbConnection,``0,System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
             <summary>
             Updates 1 POCO. All fields are updated except for the PrimaryKey which is used as the identity selector. E.g:
             <para>db.Update(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 })</para>
@@ -2747,7 +2747,7 @@
             <para>new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.UpdateAllAsync``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0},System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.UpdateAllAsync``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
             <summary>
             Updates 1 or more POCOs in a transaction. E.g:
             <para>db.UpdateAll(new[] { new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 } })</para>
@@ -2962,7 +2962,7 @@
             Project results with references from a number of joined tables into a different model
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,``0,ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,``0,ServiceStack.OrmLite.SqlExpression{``0},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
             <summary>
             Use an SqlExpression to select which fields to update and construct the where expression, E.g: 
             
@@ -2976,7 +2976,7 @@
               UPDATE "Person" SET "FirstName" = 'JJ'
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
              <summary>
              Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
              
@@ -2987,7 +2987,7 @@
                UPDATE "Person" SET "FirstName" = 'JJ'
              </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
             <summary>
             Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
             
@@ -2995,7 +2995,7 @@
               UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
              <summary>
              Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
              
@@ -3006,7 +3006,7 @@
                UPDATE "Person" SET "FirstName" = 'JJ'
              </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAddAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAddAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
              <summary>
              Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
              Numeric fields generates an increment sql which is usefull to increment counters, etc...
@@ -3019,7 +3019,7 @@
                UPDATE "Person" SET "Age" = "Age" + 5
              </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,``0,System.String[],System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,``0,System.String[],System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
             <summary>
             Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
             
@@ -3027,7 +3027,7 @@
               UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAddAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0},System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAddAsync``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
             <summary>
             Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
             Numeric fields generates an increment sql which is usefull to increment counters, etc...
@@ -3045,7 +3045,7 @@
               UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("FirstName" = 'Jimi')
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAsync``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAsync``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
             <summary>
             Updates all values set on item matching the where condition (if any). E.g
             
@@ -3053,7 +3053,7 @@
               UPDATE "Person" SET "Id" = 1,"FirstName" = 'JJ',"LastName" = NULL,"Age" = 0 WHERE ("LastName" = 'Hendrix')
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAsync``1(System.Data.IDbConnection,System.Object,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateAsync``1(System.Data.IDbConnection,System.Object,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
             <summary>
             Updates all matching fields populated on anonymousType that matches where condition (if any). E.g:
             
@@ -3438,7 +3438,7 @@
             Project results with references from a number of joined tables into a different model
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,``0,ServiceStack.OrmLite.SqlExpression{``0})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,``0,ServiceStack.OrmLite.SqlExpression{``0},System.Action{System.Data.IDbCommand})">
             <summary>
             Use an SqlExpression to select which fields to update and construct the where expression, E.g: 
             
@@ -3452,7 +3452,7 @@
               UPDATE "Person" SET "FirstName" = 'JJ'
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand})">
              <summary>
              Update only fields in the specified expression that matches the where condition (if any), E.g:
              
@@ -3463,7 +3463,7 @@
                UPDATE "Person" SET "FirstName" = 'JJ'
              </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0},System.Action{System.Data.IDbCommand})">
             <summary>
             Update only fields in the specified expression that matches the where condition (if any), E.g:
             
@@ -3471,7 +3471,7 @@
               UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand})">
              <summary>
              Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
              
@@ -3485,7 +3485,7 @@
                UPDATE "Person" SET "FirstName" = 'JJ', "Age" = 27
              </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,``0,System.String[],System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,``0,System.String[],System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand})">
             <summary>
             Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
             
@@ -3493,7 +3493,7 @@
               UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateAdd``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateAdd``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand})">
              <summary>
              Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
              Numeric fields generates an increment sql which is usefull to increment counters, etc...
@@ -3506,7 +3506,7 @@
                UPDATE "Person" SET "Age" = "Age" + 5
              </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateAdd``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateAdd``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},ServiceStack.OrmLite.SqlExpression{``0},System.Action{System.Data.IDbCommand})">
             <summary>
             Update record, updating only fields specified in updateOnly that matches the where condition (if any), E.g:
             Numeric fields generates an increment sql which is usefull to increment counters, etc...
@@ -3524,7 +3524,7 @@
               UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("FirstName" = 'Jimi')
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.Update``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.Update``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand})">
             <summary>
             Updates all values set on item matching the where condition (if any). E.g
             
@@ -3532,7 +3532,7 @@
               UPDATE "Person" SET "Id" = 1,"FirstName" = 'JJ',"LastName" = NULL,"Age" = 0 WHERE ("LastName" = 'Hendrix')
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.Update``1(System.Data.IDbConnection,System.Object,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.Update``1(System.Data.IDbConnection,System.Object,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand})">
             <summary>
             Updates all matching fields populated on anonymousType that matches where condition (if any). E.g:
             
@@ -4090,11 +4090,11 @@
             <para>var id = db.Insert(new Person { Id = 1, FirstName = "Jimi }, selectIdentity:true)</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Insert``1(System.Data.IDbConnection,``0[])">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.InsertUsingDefaults``1(System.Data.IDbConnection,``0[])">
             <summary>
-            Insert 1 or more POCOs in a transaction. E.g:
-            <para>db.Insert(new Person { Id = 1, FirstName = "Tupac", LastName = "Shakur", Age = 25 },</para>
-            <para>          new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
+            Insert 1 or more POCOs in a transaction using Table default values when defined. E.g:
+            <para>db.InsertUsingDefaults(new Person { FirstName = "Tupac", LastName = "Shakur" },</para>
+            <para>                       new Person { FirstName = "Biggie", LastName = "Smalls" })</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.InsertAll``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0})">
@@ -4103,7 +4103,14 @@
             <para>db.InsertAll(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } })</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Update``1(System.Data.IDbConnection,``0)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Insert``1(System.Data.IDbConnection,``0[])">
+            <summary>
+            Insert 1 or more POCOs in a transaction. E.g:
+            <para>db.Insert(new Person { Id = 1, FirstName = "Tupac", LastName = "Shakur", Age = 25 },</para>
+            <para>          new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Update``1(System.Data.IDbConnection,``0,System.Action{System.Data.IDbCommand})">
             <summary>
             Updates 1 POCO. All fields are updated except for the PrimaryKey which is used as the identity selector. E.g:
             <para>db.Update(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 })</para>
@@ -4116,7 +4123,7 @@
             <para>new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.UpdateAll``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.UpdateAll``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0},System.Action{System.Data.IDbCommand})">
             <summary>
             Updates 1 or more POCOs in a transaction. E.g:
             <para>db.UpdateAll(new[] { new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 } })</para>

@@ -17,7 +17,7 @@
     <language>en-US</language>
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
-      <dependency id="Wire" version="0.8.1" />
+      <dependency id="Wire" version="0.8.2" />
       <dependency id="ServiceStack" version="4.5" />
     </dependencies> 
   </metadata>

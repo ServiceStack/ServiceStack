@@ -6,7 +6,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     [DataContract]
     [Route("/hello")] //Optional: Define an alternate REST-ful url for this service
     [Route("/hello/{Name}")]
-    public class Hello
+    public class Hello : IReturn<HelloResponse>
     {
         [DataMember]
         public string Name { get; set; }

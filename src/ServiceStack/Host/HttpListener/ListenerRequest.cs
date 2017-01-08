@@ -231,7 +231,7 @@ namespace ServiceStack.Host.HttpListener
         }
 
         public MemoryStream BufferedStream { get; set; }
-        public Stream InputStream => BufferedStream ?? request.InputStream;
+        public Stream InputStream => this.GetInputStream(BufferedStream ?? request.InputStream);
 
         public long ContentLength => request.ContentLength64;
 

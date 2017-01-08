@@ -9,7 +9,7 @@ namespace ServiceStack.Auth
     {
         static readonly ILog Log = LogManager.GetLogger(typeof(AuthMetadataProvider));
 
-        public const string DefaultNoProfileImgUrl = "https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/no-profile64.png";
+        public static string DefaultNoProfileImgUrl = "https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/no-profile64.png";
 
         public const string ProfileUrlKey = "profileUrl";
 

@@ -157,6 +157,8 @@ namespace ServiceStack
             }
         }
 
+        public string RequestCompressionType { get; set; }
+
         /// <summary>
         /// The user name for basic authentication
         /// </summary>
@@ -808,13 +810,33 @@ namespace ServiceStack
             var bytes = request as byte[];
             var stream = request as Stream;
             if (str != null)
+            {
                 requestStream.Write(str);
+            }
             else if (bytes != null)
+            {
                 requestStream.Write(bytes, 0, bytes.Length);
+            }
             else if (stream != null)
+            {
                 stream.WriteTo(requestStream);
+            }
             else
+            {
+#if !SL5
+                if (RequestCompressionType == CompressionTypes.Deflate)
+                {
+                    requestStream = new System.IO.Compression.DeflateStream(requestStream, System.IO.Compression.CompressionMode.Compress);
+                }
+                else if (RequestCompressionType == CompressionTypes.GZip)
+                {
+                    requestStream = new System.IO.Compression.GZipStream(requestStream, System.IO.Compression.CompressionMode.Compress);
+                }
+#endif
                 SerializeToStream(null, request, requestStream);
+
+                requestStream.Close();
+            }
         }
 
         private WebRequest PrepareWebRequest(string httpMethod, string requestUri, object request, Action<HttpWebRequest> sendRequestAction)
@@ -875,6 +897,9 @@ namespace ServiceStack
                 if (httpMethod.HasRequestBody())
                 {
                     client.ContentType = ContentType;
+
+                    if (RequestCompressionType != null)
+                        client.Headers[HttpHeaders.ContentEncoding] = RequestCompressionType;
 
                     if (sendRequestAction != null)
                         sendRequestAction(client);

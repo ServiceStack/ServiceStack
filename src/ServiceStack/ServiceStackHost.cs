@@ -206,6 +206,8 @@ namespace ServiceStack
 
             LogInitComplete();
 
+            HttpHandlerFactory.Init();
+
             return this;
         }
 

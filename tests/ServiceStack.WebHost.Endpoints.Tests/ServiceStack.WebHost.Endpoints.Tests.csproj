@@ -206,6 +206,8 @@
     <Compile Include="CsvServiceClientTests.cs" />
     <Compile Include="CustomerRestExample.cs" />
     <Compile Include="CustomFormatTests.cs" />
+    <Compile Include="VirtualFileSystemMappingTests.cs" />
+    <Compile Include="ZipServiceClientTests.cs" />
     <Compile Include="HttpErrorSyncTests.cs" />
     <Compile Include="HttpHandlerTests.cs" />
     <Compile Include="Issues\AutoQueryJoinReferenceId.cs" />

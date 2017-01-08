@@ -85,6 +85,7 @@
     <Compile Include="DataAnnotations\ExcludeAttribute.cs" />
     <Compile Include="DataAnnotations\SqlServerBucketCountAttribute.cs" />
     <Compile Include="DataAnnotations\SqlServerCollateAttribute.cs" />
+    <Compile Include="DataAnnotations\SqlServerFileTableAttribute.cs" />
     <Compile Include="DataAnnotations\SqlServerMemoryOptimizedAttribute.cs" />
     <Compile Include="DataAnnotations\PostCreateTableAttribute.cs" />
     <Compile Include="DataAnnotations\PostDropTableAttribute.cs" />

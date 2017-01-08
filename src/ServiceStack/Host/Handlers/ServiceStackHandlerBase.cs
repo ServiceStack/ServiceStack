@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
@@ -128,12 +129,19 @@ namespace ServiceStack.Host.Handlers
         {
             try
             {
-                if (!string.IsNullOrEmpty(contentType) && httpReq.ContentLength > 0)
+                if (!string.IsNullOrEmpty(contentType))
                 {
-                    var deserializer = HostContext.ContentTypes.GetStreamDeserializer(contentType);
-                    if (deserializer != null)
+                    //.NET Core HttpClient Zip Content-Length omission is reported as 0
+                    var hasContentBody = httpReq.ContentLength > 0
+                        || (httpReq.Verb.HasRequestBody() && httpReq.GetContentEncoding() != null);
+
+                    if (hasContentBody)
                     {
-                        return deserializer(requestType, httpReq.InputStream);
+                        var deserializer = HostContext.ContentTypes.GetStreamDeserializer(contentType);
+                        if (deserializer != null)
+                        {
+                            return deserializer(requestType, httpReq.InputStream);
+                        }
                     }
                 }
             }

@@ -36,6 +36,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
     }
 
+    [Explicit]
     public class DynamoDbAuthUserSessionTests : AuthUserSessionTests
     {
         public override IUserAuthRepository CreateAuthRepo()

@@ -224,7 +224,7 @@ namespace ServiceStack.Host.NetCore
 
         public string PathInfo { get; set; }
 
-        public Stream InputStream => BufferedStream ?? request.Body;
+        public Stream InputStream => this.GetInputStream(BufferedStream ?? request.Body);
 
         public long ContentLength => request.ContentLength.GetValueOrDefault();
 

@@ -501,6 +501,7 @@
     <Compile Include="VirtualPath\AbstractVirtualPathProviderBase.cs" />
     <Compile Include="VirtualPath\FileSystemVirtualDirectory.cs" />
     <Compile Include="VirtualPath\FileSystemVirtualFile.cs" />
+    <Compile Include="VirtualPath\FileSystemMapping.cs" />
     <Compile Include="VirtualPath\FileSystemVirtualPathProvider.cs" />
     <Compile Include="VirtualPath\InMemoryVirtualPathProvider.cs" />
     <Compile Include="VirtualPath\MultiVirtualPathProvider.cs" />

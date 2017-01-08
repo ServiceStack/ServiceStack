@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -39,6 +40,7 @@ namespace ServiceStack
         public string BaseUri { get; set; }
 
         public string Format { get; private set; }
+        public string RequestCompressionType { get; set; }
         public string ContentType = MimeTypes.Json;
 
         public string SyncReplyBaseUri { get; set; }
@@ -159,6 +161,61 @@ namespace ServiceStack
 
         private int activeAsyncRequests = 0;
 
+        internal sealed class GzipContent : HttpContent
+        {
+            private readonly HttpContent content;
+            public GzipContent(HttpContent content)
+            {
+                this.content = content;
+                foreach (var header in content.Headers)
+                {
+                    Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+                Headers.ContentEncoding.Add(CompressionTypes.GZip);
+            }
+
+            protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+            {
+                using (var zip = new GZipStream(stream, CompressionMode.Compress, true))
+                {
+                    await content.CopyToAsync(zip);
+                }
+            }
+
+            protected override bool TryComputeLength(out long length)
+            {
+                length = -1;
+                return false;
+            }
+        }
+        internal sealed class DeflateContent : HttpContent
+        {
+            private readonly HttpContent content;
+            public DeflateContent(HttpContent content)
+            {
+                this.content = content;
+                foreach (var header in content.Headers)
+                {
+                    Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+                Headers.ContentEncoding.Add(CompressionTypes.Deflate);
+            }
+
+            protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+            {
+                using (var zip = new DeflateStream(stream, CompressionMode.Compress, true))
+                {
+                    await content.CopyToAsync(zip);
+                }
+            }
+
+            protected override bool TryComputeLength(out long length)
+            {
+                length = -1;
+                return false;
+            }
+        }
+
         public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
         {
             if (!httpMethod.HasRequestBody() && request != null)
@@ -206,14 +263,29 @@ namespace ServiceStack
                     var bytes = request as byte[];
                     var stream = request as Stream;
                     if (str != null)
+                    {
                         httpReq.Content = new StringContent(str);
+                    }
                     else if (bytes != null)
+                    {
                         httpReq.Content = new ByteArrayContent(bytes);
+                    }
                     else if (stream != null)
+                    {
                         httpReq.Content = new StreamContent(stream);
+                    }
                     else
                     {
                         httpReq.Content = new StringContent(request.ToJson(), Encoding.UTF8, ContentType);
+                    }
+
+                    if (RequestCompressionType == CompressionTypes.Deflate)
+                    {
+                        httpReq.Content = new DeflateContent(httpReq.Content);
+                    }
+                    else if (RequestCompressionType == CompressionTypes.GZip)
+                    {
+                        httpReq.Content = new GzipContent(httpReq.Content);
                     }
                 }
             }
