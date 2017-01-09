@@ -172,7 +172,7 @@ namespace ServiceStack.Host
                 return action(request, instance, requestDto);
             }
 
-            var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLower();
+            var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLowerInvariant();
             throw new NotImplementedException(
                 "Could not find method named {1}({0}) or Any({0}) on Service {2}"
                 .Fmt(requestDto.GetType().GetOperationName(), expectedMethodName, typeof(TService).GetOperationName()));

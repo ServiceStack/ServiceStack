@@ -56,7 +56,7 @@ namespace ServiceStack
                 var rootFiles = appHost.VirtualFileSources.GetRootFiles().ToList();
                 foreach (var file in rootFiles)
                 {
-                    var fileNameLower = file.Name.ToLower();
+                    var fileNameLower = file.Name.ToLowerInvariant();
                     if (DefaultRootFileName == null && config.DefaultDocuments.Contains(fileNameLower))
                     {
                         //Can't serve Default.aspx pages so ignore and allow for next default document
@@ -74,7 +74,7 @@ namespace ServiceStack
 
                 foreach (var dir in appHost.VirtualFileSources.GetRootDirectories())
                 {
-                    WebHostRootFileNames.Add(dir.Name.ToLower());
+                    WebHostRootFileNames.Add(dir.Name.ToLowerInvariant());
                 }
 
                 if (!string.IsNullOrEmpty(config.DefaultRedirectPath))

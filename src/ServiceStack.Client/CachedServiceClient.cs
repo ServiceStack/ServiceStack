@@ -161,7 +161,7 @@ namespace ServiceStack
                 foreach (var part in parts)
                 {
                     var kvp = part.Split('=');
-                    var key = kvp[0].Trim().ToLower();
+                    var key = kvp[0].Trim().ToLowerInvariant();
 
                     switch (key)
                     {

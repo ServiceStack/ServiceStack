@@ -273,6 +273,7 @@ namespace ServiceStack.Host
             var matchUsingPathParts = RestPath.GetPathPartsForMatching(pathInfo);
 
             List<RestPath> firstMatches;
+            IRestPath bestMatch = null;
 
             var yieldedHashMatches = RestPath.GetFirstMatchHashKeys(matchUsingPathParts);
             foreach (var potentialHashMatch in yieldedHashMatches)
@@ -283,15 +284,15 @@ namespace ServiceStack.Host
                 foreach (var restPath in firstMatches)
                 {
                     var score = restPath.MatchScore(httpMethod, matchUsingPathParts);
-                    if (score > bestScore) bestScore = score;
+                    if (score > bestScore) 
+                    {
+                        bestScore = score;
+                        bestMatch = restPath;
+                    }
                 }
                 if (bestScore > 0)
                 {
-                    foreach (var restPath in firstMatches)
-                    {
-                        if (bestScore == restPath.MatchScore(httpMethod, matchUsingPathParts))
-                            return restPath;
-                    }
+                    return bestMatch;
                 }
             }
 
@@ -304,15 +305,15 @@ namespace ServiceStack.Host
                 foreach (var restPath in firstMatches)
                 {
                     var score = restPath.MatchScore(httpMethod, matchUsingPathParts);
-                    if (score > bestScore) bestScore = score;
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        bestMatch = restPath;
+                    }
                 }
                 if (bestScore > 0)
                 {
-                    foreach (var restPath in firstMatches)
-                    {
-                        if (bestScore == restPath.MatchScore(httpMethod, matchUsingPathParts))
-                            return restPath;
-                    }
+                    return bestMatch;
                 }
             }
 

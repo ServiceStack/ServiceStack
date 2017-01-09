@@ -591,7 +591,7 @@ namespace ServiceStack.NativeTypes.CSharp
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += $"IsRequired={dmMeta.IsRequired.ToString().ToLower()}";
+                    dmArgs += $"IsRequired={dmMeta.IsRequired.ToString().ToLowerInvariant()}";
                 }
 
                 if (dmMeta.EmitDefaultValue != null)
@@ -599,7 +599,7 @@ namespace ServiceStack.NativeTypes.CSharp
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += $"EmitDefaultValue={dmMeta.EmitDefaultValue.ToString().ToLower()}";
+                    dmArgs += $"EmitDefaultValue={dmMeta.EmitDefaultValue.ToString().ToLowerInvariant()}";
                 }
 
                 dmArgs = $"({dmArgs})";
