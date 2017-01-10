@@ -43,7 +43,7 @@ namespace ServiceStack.Host
             // There should be at least to parts
             if (parts.Length < 2) return null;
             // It has to be a digest request
-            if (parts[0].ToLower() != "digest") return null;
+            if (parts[0].ToLowerInvariant() != "digest") return null;
             // Remove uptil the first space
             auth = auth.Substring(auth.IndexOf(' '));
             

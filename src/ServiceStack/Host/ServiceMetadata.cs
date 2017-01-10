@@ -68,7 +68,7 @@ namespace ServiceStack.Host
             };
 
             this.OperationsMap[requestType] = operation;
-            this.OperationNamesMap[operation.Name.ToLower()] = operation;
+            this.OperationNamesMap[operation.Name.ToLowerInvariant()] = operation;
             if (responseType != null)
             {
                 this.ResponseTypes.Add(responseType);
@@ -143,7 +143,7 @@ namespace ServiceStack.Host
         public Type GetOperationType(string operationTypeName)
         {
             Operation operation;
-            var opName = operationTypeName.ToLower();
+            var opName = operationTypeName.ToLowerInvariant();
             if (!OperationNamesMap.TryGetValue(opName, out operation))
             {
                 var arrayPos = opName.LastIndexOf('[');
@@ -296,7 +296,7 @@ namespace ServiceStack.Host
                 return true;
 
             Operation operation;
-            OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
+            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
             if (operation == null) return false;
 
             var canCall = HasImplementation(operation, format);
@@ -317,7 +317,7 @@ namespace ServiceStack.Host
                 return true;
 
             Operation operation;
-            OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
+            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
             if (operation == null) return false;
 
             var canCall = HasImplementation(operation, format);
