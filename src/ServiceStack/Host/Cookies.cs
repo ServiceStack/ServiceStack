@@ -204,7 +204,7 @@ namespace ServiceStack.Host
             {
                 sb.Append(";Secure");
             }
-            if (cookie.HttpOnly)
+            if (!HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly)
             {
                 sb.Append(";HttpOnly");
             }
