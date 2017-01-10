@@ -55,12 +55,12 @@ namespace ServiceStack
 
         public class RedisIndex
         {
-            public const string Subscription = "sse:id:{0}";
-            public const string ActiveSubscriptionsSet = "sse:ids";
-            public const string ChannelSet = "sse:channel:{0}";
-            public const string UserIdSet = "sse:userid:{0}";
-            public const string UserNameSet = "sse:username:{0}";
-            public const string SessionSet = "sse:session:{0}";
+            public static string Subscription = "sse:id:{0}";
+            public static string ActiveSubscriptionsSet = "sse:ids";
+            public static string ChannelSet = "sse:channel:{0}";
+            public static string UserIdSet = "sse:userid:{0}";
+            public static string UserNameSet = "sse:username:{0}";
+            public static string SessionSet = "sse:session:{0}";
         }
 
         public IRedisClientsManager clientsManager;
