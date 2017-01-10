@@ -4,7 +4,9 @@ using System.IO;
 using NUnit.Framework;
 using ServiceStack.Formats;
 using ServiceStack.Support.Markdown;
+#if !NETCORE_SUPPORT
 using ServiceStack.ServiceHost.Tests.Formats_Razor;
+#endif
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
@@ -21,6 +23,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
         }
 
+#if !NETCORE_SUPPORT
         [Test]
         public void Does_replace_foreach_statements_with_expr_placeholders()
         {
@@ -56,7 +59,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             Console.WriteLine(html);
             Assert.That(html, Contains.Substring(expected));
         }
-
+#endif
         [Test]
         public void Does_replace_multiple_statements_with_expr_placeholders()
         {

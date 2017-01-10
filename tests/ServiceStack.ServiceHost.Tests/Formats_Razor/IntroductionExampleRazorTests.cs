@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if !NETCORE_SUPPORT
+using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
@@ -216,3 +217,4 @@ the date: 02/06/2013 06:42:45</p>
 
     }
 }
+#endif

@@ -41,7 +41,7 @@ namespace ServiceStack.ServiceHost.Tests
         {
 
             public AttributeFiltersAppHostHttpListener()
-                : base("Service Creation Tests", typeof(ServiceCreationService).Assembly) { }
+                : base("Service Creation Tests", typeof(ServiceCreationService).GetAssembly()) { }
 
             public override void Configure(Funq.Container container)
             {

@@ -26,7 +26,7 @@ namespace ServiceStack.ServiceHost.Tests.Routes
         public void Can_Register_NewApi_Routes_From_Assembly()
         {
             var routes = new ServiceRoutes(appHost);
-            routes.AddFromAssembly(typeof(NewApiRestServiceWithAllVerbsImplemented).Assembly);
+            routes.AddFromAssembly(typeof(NewApiRestServiceWithAllVerbsImplemented).GetAssembly());
 
             RestPath restWithAllMethodsRoute =
                 (from r in appHost.RestPaths
@@ -59,7 +59,7 @@ namespace ServiceStack.ServiceHost.Tests.Routes
         public void Can_Register_NewApi_Routes_With_Id_and_Any_Fallback_From_Assembly()
         {
             var routes = new ServiceRoutes(appHost);
-            routes.AddFromAssembly(typeof(NewApiRequestDtoWithIdService).Assembly);
+            routes.AddFromAssembly(typeof(NewApiRequestDtoWithIdService).GetAssembly());
 
             var route = (from r in appHost.RestPaths
                          where r.Path == "/NewApiRequestDtoWithId"
@@ -80,7 +80,7 @@ namespace ServiceStack.ServiceHost.Tests.Routes
         public void Can_Register_NewApi_Routes_With_Field_Id_and_Any_Fallback_From_Assembly()
         {
             var routes = new ServiceRoutes(appHost);
-            routes.AddFromAssembly(typeof(NewApiRequestDtoWithFieldIdService).Assembly);
+            routes.AddFromAssembly(typeof(NewApiRequestDtoWithFieldIdService).GetAssembly());
 
             var route = (from r in appHost.RestPaths
                          where r.Path == "/NewApiRequestDtoWithFieldId"

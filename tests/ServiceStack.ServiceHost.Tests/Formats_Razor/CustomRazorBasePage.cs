@@ -1,4 +1,5 @@
-﻿using ServiceStack.Razor;
+﻿#if !NETCORE_SUPPORT
+using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.AppData;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
@@ -9,3 +10,4 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         public NorthwindHelpers Nwnd = new NorthwindHelpers();
     }
 }
+#endif

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿#if !NETCORE_SUPPORT
+using System.Linq;
 using System.Web;
 using NUnit.Framework;
 using ServiceStack.VirtualPath;
@@ -82,3 +83,4 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         }
     }
 }
+#endif

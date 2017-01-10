@@ -13,7 +13,7 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Can_register_all_services_in_an_assembly()
         {
-            using (var appHost = new BasicAppHost(typeof(BasicService).Assembly).Init())
+            using (var appHost = new BasicAppHost(typeof(BasicService).GetAssembly()).Init())
             {
                 var container = appHost.Container;
                 var serviceController = appHost.ServiceController;
@@ -31,7 +31,7 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Can_override_service_creation_with_custom_implementation()
         {
-            using (var appHost = new BasicAppHost(typeof(BasicService).Assembly).Init())
+            using (var appHost = new BasicAppHost(typeof(BasicService).GetAssembly()).Init())
             {
                 var container = appHost.Container;
                 var serviceController = appHost.ServiceController;
@@ -63,7 +63,7 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Can_inject_RequestContext_for_IRequiresRequestContext_services()
         {
-            using (var appHost = new BasicAppHost(typeof(RequiresService).Assembly).Init())
+            using (var appHost = new BasicAppHost(typeof(RequiresService).GetAssembly()).Init())
             {
                 var serviceController = appHost.ServiceController;
 
@@ -78,7 +78,7 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Generic_Service_should_not_get_registered_with_generic_parameter()
         {
-            using (var appHost = new BasicAppHost(typeof(GenericService<>).Assembly).Init())
+            using (var appHost = new BasicAppHost(typeof(GenericService<>).GetAssembly()).Init())
             {
                 // We should definately *not* be able to call the generic service with a "T" request object :)
                 var requestType = typeof(GenericService<>).GetGenericArguments()[0];
@@ -163,7 +163,7 @@ namespace ServiceStack.ServiceHost.Tests
 
     public class AppHost : AppHostHttpListenerBase
     {
-        public AppHost() : base("Test", typeof(AppHost).Assembly) { }
+        public AppHost() : base("Test", typeof(AppHost).GetAssembly()) { }
 
         public override void Configure(Container container)
         {

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !NETCORE_SUPPORT
+using NUnit.Framework;
 using ServiceStack.Razor;
 using ServiceStack.Testing;
 using ServiceStack.Text;
@@ -41,3 +42,4 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         }
     }
 }
+#endif

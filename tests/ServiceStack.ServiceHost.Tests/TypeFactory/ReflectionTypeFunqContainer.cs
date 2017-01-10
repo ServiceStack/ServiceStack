@@ -52,7 +52,7 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 
             foreach (var propertyInfo in serviceType.GetProperties())
             {
-                if (propertyInfo.PropertyType.IsValueType) continue;
+                if (propertyInfo.PropertyType.IsValueType()) continue;
 
                 var propertyValue = resolveFn(propertyInfo.PropertyType);
                 var propertySetter = propertyInfo.GetSetMethod();

@@ -215,7 +215,7 @@ namespace ServiceStack.ServiceHost.Tests
             container.Register(c => new Foo());
             container.Register(c => new Bar());
 
-            GetType().Assembly.GetTypes()
+            GetType().GetAssembly().GetTypes()
                 .Where(x => x.IsOrHasGenericInterfaceTypeOf(typeof(ICommand<>)))
                 .Each(x => container.RegisterAutoWiredType(x));
 

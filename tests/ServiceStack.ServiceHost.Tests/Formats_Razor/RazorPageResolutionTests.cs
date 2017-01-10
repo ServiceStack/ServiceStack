@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETCORE_SUPPORT
+using System;
 using NUnit.Framework;
 using ServiceStack.Razor;
 using ServiceStack.Testing;
@@ -300,7 +301,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
         private string ExecuteViewPage<TRequest>() where TRequest : new()
         {
-            var responseDtoType = typeof(TRequest).Assembly.GetType(typeof(TRequest).FullName + "Response");
+            var responseDtoType = typeof(TRequest).GetAssembly().GetType(typeof(TRequest).FullName + "Response");
             var responseDto = Activator.CreateInstance(responseDtoType);
             var mockReq = new MockHttpRequest { OperationName = typeof(TRequest).Name, Dto = new TRequest() };
             var mockRes = new MockHttpResponse(mockReq) { Dto = responseDto };
@@ -328,3 +329,4 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         public class ChildViewWithoutSiblingLayoutResponse { }
     }
 }
+#endif

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETCORE_SUPPORT
+using System;
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
@@ -392,3 +393,4 @@ current date/year: 2017</p>
 
     }
 }
+#endif

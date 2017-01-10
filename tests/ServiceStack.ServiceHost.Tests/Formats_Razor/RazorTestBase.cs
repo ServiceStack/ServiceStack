@@ -1,3 +1,4 @@
+#if !NETCORE_SUPPORT
 using System;
 using System.Collections.Generic;
 using ServiceStack.Razor;
@@ -22,3 +23,4 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         protected RazorFormat RazorFormat;
     }
 }
+#endif
