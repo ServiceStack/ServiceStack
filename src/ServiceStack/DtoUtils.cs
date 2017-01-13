@@ -134,8 +134,16 @@ namespace ServiceStack
         /// <returns></returns>
         public static object CreateErrorResponse(object request, Exception ex)
         {
+            var originalEx = ex;
             ex = HostContext.AppHost?.ResolveResponseException(ex) ?? ex;
             var responseStatus = ex.ToResponseStatus();
+
+            //If ResponseStatus is null fallback to use original Exception
+            if (responseStatus == null)
+            {
+                ex = originalEx;
+                responseStatus = ex.ToResponseStatus();
+            }
 
             if (HostContext.DebugMode)
             {
