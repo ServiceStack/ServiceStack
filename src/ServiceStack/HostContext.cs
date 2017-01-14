@@ -23,6 +23,8 @@ namespace ServiceStack
 
         public static ServiceStackHost AppHost => ServiceStackHost.Instance;
 
+        public static AsyncContext Async = new AsyncContext();
+
         private static ServiceStackHost AssertAppHost()
         {
             if (ServiceStackHost.Instance == null)

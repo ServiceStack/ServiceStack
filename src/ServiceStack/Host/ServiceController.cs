@@ -421,7 +421,7 @@ namespace ServiceStack.Host
                     var taskResponse = response as Task;
                     if (taskResponse != null)
                     {
-                        taskResponse.ContinueWith(task => appHost.Release(service));
+                        HostContext.Async.ContinueWith(request, taskResponse, task => appHost.Release(service));
                     }
                     else
                     {
@@ -583,7 +583,7 @@ namespace ServiceStack.Host
             var taskObj = response as Task<object>;
             if (taskObj != null)
             {
-                return taskObj.ContinueWith(t =>
+                return HostContext.Async.ContinueWith(req, taskObj, t => 
                 {
                     var taskArray = t.Result as Task[];
                     if (taskArray != null)
@@ -681,7 +681,7 @@ namespace ServiceStack.Host
                 Task firstAsyncError = null;
 
                 //execute each async service sequentially
-                return dtosList.EachAsync((dto, i) =>
+                var task = dtosList.EachAsync((dto, i) =>
                 {
                     //short-circuit on first error and don't exec any more handlers
                     if (firstAsyncError != null)
@@ -698,8 +698,8 @@ namespace ServiceStack.Host
                         return firstAsyncError = asyncResponses[i];
                     }
                     return asyncResponses[i];
-                })
-                .ContinueWith(x => {
+                });
+                return HostContext.Async.ContinueWith(req, task, x => {
                     if (firstAsyncError != null)
                         return (object)firstAsyncError;
 

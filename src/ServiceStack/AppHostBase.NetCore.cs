@@ -129,7 +129,7 @@ namespace ServiceStack
                 }
 
                 var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
-                task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+                HostContext.Async.ContinueWith(httpReq, task, x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
                 //Matches Exceptions handled in HttpListenerBase.InitTask()
 
                 return task;

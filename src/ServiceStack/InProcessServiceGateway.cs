@@ -102,7 +102,7 @@ namespace ServiceStack
         private Task<TResponse> ExecAsync<TResponse>(object request)
         {
             var responseTask = HostContext.ServiceController.ExecuteAsync(request, req, applyFilters:false);
-            return responseTask.ContinueWith(task => ConvertToResponse<TResponse>(task.Result));
+            return HostContext.Async.ContinueWith(req, responseTask, task => ConvertToResponse<TResponse>(task.Result));
         }
 
         public TResponse Send<TResponse>(object requestDto)
@@ -132,8 +132,8 @@ namespace ServiceStack
 
             req.RequestAttributes |= RequestAttributes.InProcess;
 
-            return ExecAsync<TResponse>(requestDto)
-                .ContinueWith(task => {
+            var responseTask = ExecAsync<TResponse>(requestDto);
+            return HostContext.Async.ContinueWith(req, responseTask, task => {
                     req.Dto = holdDto;
                     req.RequestAttributes = holdAttrs;
                     ResetVerb(holdVerb);
@@ -185,8 +185,8 @@ namespace ServiceStack
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
             req.RequestAttributes |= RequestAttributes.InProcess;
 
-            return ExecAsync<TResponse[]>(typedArray)
-                .ContinueWith(task => 
+            var responseTask = ExecAsync<TResponse[]>(typedArray);
+            return HostContext.Async.ContinueWith(req, responseTask, task => 
                 {
                     req.Dto = holdDto;
                     req.RequestAttributes = holdAttrs;
@@ -229,8 +229,8 @@ namespace ServiceStack
             req.RequestAttributes |= RequestAttributes.OneWay;
             req.RequestAttributes |= RequestAttributes.InProcess;
 
-            return HostContext.ServiceController.ExecuteAsync(requestDto, req, applyFilters: false)
-                .ContinueWith(task => 
+            var responseTask = HostContext.ServiceController.ExecuteAsync(requestDto, req, applyFilters: false);
+            return HostContext.Async.ContinueWith(req, responseTask, task => 
                 {
                     req.Dto = holdDto;
                     req.RequestAttributes = holdAttrs;
@@ -273,8 +273,8 @@ namespace ServiceStack
             req.RequestAttributes &= ~RequestAttributes.Reply;
             req.RequestAttributes |= RequestAttributes.OneWay;
 
-            return HostContext.ServiceController.ExecuteAsync(typedArray, req, applyFilters: false)
-                .ContinueWith(task =>
+            var responseTask = HostContext.ServiceController.ExecuteAsync(typedArray, req, applyFilters: false);
+            return HostContext.Async.ContinueWith(req, responseTask, task =>
                 {
                     req.Dto = holdDto;
                     req.RequestAttributes = holdAttrs;

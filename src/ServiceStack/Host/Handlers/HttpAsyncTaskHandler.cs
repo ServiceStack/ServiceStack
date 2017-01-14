@@ -127,7 +127,7 @@ namespace ServiceStack.Host.Handlers
 
             var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
 
-            task.ContinueWith(ar =>
+            HostContext.Async.ContinueWith(task, ar =>
                 cb(ar));
 
             if (task.Status == TaskStatus.Created)
@@ -159,7 +159,7 @@ namespace ServiceStack.Host.Handlers
                 operationName = RequestName;
 
             var task = ProcessRequestAsync(httpReq, httpRes, operationName);
-            task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+            HostContext.Async.ContinueWith(httpReq, task, x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
             return task;
         }
 #endif

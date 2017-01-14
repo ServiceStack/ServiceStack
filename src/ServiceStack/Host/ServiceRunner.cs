@@ -124,7 +124,7 @@ namespace ServiceStack.Host
                     {
                         taskResponse.Start();
                     }
-                    return taskResponse.ContinueWith(task =>
+                    return HostContext.Async.ContinueWith(request, taskResponse, task =>
                     {
                         if (task.IsFaulted)
                         {
