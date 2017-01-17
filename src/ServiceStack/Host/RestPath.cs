@@ -80,6 +80,37 @@ namespace ServiceStack.Host
             return parts;
         }
 
+        public static List<int> GetPathIndexesForMatching(string pathInfo)
+        {
+            var indexes = new List<int>(16);
+            int length = 0;
+
+            for(int i = 0; i < pathInfo.Length; i++)
+            {
+                if (pathInfo[i] == PathSeparatorChar)
+                {
+                    //skip empty entries 
+                    if (length > 0)
+                    {
+                        indexes.Add(length);
+                        length = 0;
+                    }
+                } else {
+                    //new path part is coming
+                    if (length == 0)
+                        indexes.Add(i);
+                    length++;
+                }
+            }
+
+            //if last char in the pathInfo is not a separator char then add length
+            if (length > 0)
+                indexes.Add(length);
+
+            return indexes;
+        }
+
+
         private static string GetHashPrefix(string[] pathPartsForMatching)
         {
             //array lookup for predefined hashes is 7 times faster than switch-case [0 to 15]
@@ -88,6 +119,14 @@ namespace ServiceStack.Host
                 ? prefixesLookup[pathPartsForMatching.Length]
                 : pathPartsForMatching.Length.ToString() + PathSeparator;
         }
+
+        private static string GetHashPrefix(int len)
+        {
+            return len < prefixesLookup.Length 
+                ? prefixesLookup[len]
+                : len.ToString() + PathSeparator;
+        }
+
 
         public static IEnumerable<string> GetFirstMatchHashKeys(string[] pathPartsForMatching)
         {
@@ -104,6 +143,21 @@ namespace ServiceStack.Host
         {
             foreach (var part in pathPartsForMatching)
             {
+                yield return hashPrefix + part;
+                var subParts = part.Split(ComponentSeparator);
+                if (subParts.Length == 1) continue;
+
+                foreach (var subPart in subParts)
+                {
+                    yield return hashPrefix + subPart;
+                }
+            }
+        }
+        private static IEnumerable<string> GetPotentialMatchesWithPrefix(string hashPrefix, string pathPartsForMatching, List<int> indexes)
+        {
+            for (int i = 0; i < indexes.Count; i += 2)
+            {
+                var part = pathPartsForMatching.Substring(indexes[i], indexes[i + 1]);
                 yield return hashPrefix + part;
                 var subParts = part.Split(ComponentSeparator);
                 if (subParts.Length == 1) continue;
@@ -256,6 +310,120 @@ namespace ServiceStack.Host
         private readonly Dictionary<string, string> propertyNamesMap = new Dictionary<string, string>();
 
         public static Func<RestPath, string, string[], int> CalculateMatchScore { get; set; }
+
+        public int MatchScore(string httpMethod, string pathInfo, List<int> pathInfoIndexes)
+        {
+            //if (CalculateMatchScore != null)
+            //    return CalculateMatchScore(this, httpMethod, withPathInfoParts);
+
+            int wildcardMatchCount;
+            var isMatch = IsMatch(httpMethod, pathInfo, pathInfoIndexes, out wildcardMatchCount);
+            if (!isMatch) return -1;
+
+            var score = 0;
+
+            //Routes with least wildcard matches get the highest score
+            score += Math.Max((100 - wildcardMatchCount), 1) * 1000;
+
+            //Routes with less variable (and more literal) matches
+            score += Math.Max((10 - VariableArgsCount), 1) * 100;
+
+            //Exact verb match is better than ANY
+            var exactVerb = httpMethod == AllowedVerbs;
+            score += exactVerb ? 10 : 1;
+
+            return score;
+        }
+
+        public bool IsMatch(string httpMethod, string pathInfo, List<int> pathInfoIndexes, out int wildcardMatchCount)
+        {
+            wildcardMatchCount = 0;
+
+            if (pathInfoIndexes.Count/2 != this.PathComponentsCount && !this.IsWildCardPath) return false;
+            if (!this.AllowsAllVerbs && !this.AllowedVerbs.Contains(httpMethod.ToUpper())) return false;
+
+            if (!ExplodeComponents(pathInfo, pathInfoIndexes)) return false;
+            if (this.TotalComponentsCount != pathInfoIndexes.Count/2 && !this.IsWildCardPath) return false;
+
+            int pathIx = 0;
+            for (var i = 0; i < this.TotalComponentsCount; i++)
+            {
+                if (this.isWildcard[i])
+                {
+                    if (i < this.TotalComponentsCount - 1)
+                    {
+                        // Continue to consume up until a match with the next literal
+                        while (pathIx < pathInfoIndexes.Count / 2 && pathInfo.IndexOf(this.literalsToMatch[i + 1], pathInfoIndexes[i * 2], pathInfoIndexes[i * 2 + 1], StringComparison.OrdinalIgnoreCase)  != -1)
+                        {
+                            pathIx++;
+                            wildcardMatchCount++;
+                        }
+
+                        // Ensure there are still enough parts left to match the remainder
+                        if ((pathInfoIndexes.Count / 2 - pathIx) < (this.TotalComponentsCount - i - 1))
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // A wildcard at the end matches the remainder of path
+                        wildcardMatchCount += pathInfoIndexes.Count / 2 - pathIx;
+                        pathIx = pathInfoIndexes.Count / 2;
+                    }
+                }
+                else
+                {
+                    var literalToMatch = this.literalsToMatch[i];
+                    if (literalToMatch == null)
+                    {
+                        // Matching an ordinary (non-wildcard) variable consumes a single part
+                        pathIx++;
+                        continue;
+                    }
+
+                    if (pathInfoIndexes.Count / 2 <= pathIx || pathInfo.IndexOf(literalToMatch, pathInfoIndexes[pathIx], pathInfoIndexes[pathIx + 1]) != -1) return false;
+                    pathIx++;
+                }
+            }
+
+            return pathIx == pathInfoIndexes.Count / 2;
+        }
+
+        private bool ExplodeComponents(string pathInfo, List<int> partsIndexes)
+        {
+            for (var i = 0; i < partsIndexes.Count/2; i++)
+            {
+                int start = partsIndexes[i * 2];
+                int count = partsIndexes[i * 2 + 1];
+
+                if (this.PathComponentsCount != this.TotalComponentsCount
+                    && this.componentsWithSeparators[i])
+                {
+                    int prev = start;
+                    int next = start;
+
+                    while (count > 0 && (next = pathInfo.IndexOf(ComponentSeparator, prev, count)) != -1)
+                    {
+                        partsIndexes.Add(prev);
+                        partsIndexes.Add(next - prev);
+                        count -= (next - prev + 1);
+                        prev = next + 1;
+                    };
+
+                    ///No ComponentSeparator found;
+                    if (prev == start)
+                        return false;
+                }
+                else
+                {
+                    partsIndexes.Add(start);
+                    partsIndexes.Add(count);
+                }
+            }
+
+            return false;
+        }
 
         public int MatchScore(string httpMethod, string[] withPathInfoParts)
         {

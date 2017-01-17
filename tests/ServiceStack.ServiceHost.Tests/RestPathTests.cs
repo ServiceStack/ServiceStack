@@ -148,6 +148,17 @@ namespace ServiceStack.ServiceHost.Tests
         }
 
         [Test]
+        public void Can_get_path_indexes()
+        {
+            var indexes = RestPath.GetPathIndexesForMatching("/json/reply/hello/world");
+            Assert.That(indexes, Is.EquivalentTo(new int[]{ 1,4, 6,5, 12,5, 18,5 }));
+            indexes = RestPath.GetPathIndexesForMatching("/json/reply/hello/world/");
+            Assert.That(indexes, Is.EquivalentTo(new int[]{ 1,4, 6,5, 12,5, 18,5 }));
+            indexes = RestPath.GetPathIndexesForMatching("/json/reply/hello////world");
+            Assert.That(indexes, Is.EquivalentTo(new int[]{ 1,4, 6,5, 12,5, 21,5 }));
+        }
+
+        [Test]
         public void Can_support_BBC_REST_Apis()
         {
             /*
