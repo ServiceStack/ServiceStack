@@ -228,8 +228,8 @@ namespace CheckWeb
             // Enable support for Swagger API browser
             Plugins.Add(new SwaggerFeature
             {
-                UseBootstrapTheme = true, 
-                LogoUrl = "//lh6.googleusercontent.com/-lh7Gk4ZoVAM/AAAAAAAAAAI/AAAAAAAAAAA/_0CgCb4s1e0/s32-c/photo.jpg"
+                //UseBootstrapTheme = true, 
+                //LogoUrl = "//lh6.googleusercontent.com/-lh7Gk4ZoVAM/AAAAAAAAAAI/AAAAAAAAAAA/_0CgCb4s1e0/s32-c/photo.jpg"
             });
             //Plugins.Add(new CorsFeature()); // Uncomment if the services to be available from external sites
         }
