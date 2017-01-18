@@ -807,8 +807,7 @@ namespace ServiceStack
                     if (implicitQuery.ValueStyle == ValueStyle.Multiple)
                     {
                         if (seq == null)
-                            throw new ArgumentException("{0} requires {1} values"
-                                .Fmt(implicitQuery.Field, implicitQuery.ValueArity));
+                            throw new ArgumentException($"{implicitQuery.Field} requires {implicitQuery.ValueArity} values");
 
                         var args = new object[implicitQuery.ValueArity];
                         int i = 0;
@@ -817,7 +816,10 @@ namespace ServiceStack
                             if (i < args.Length)
                             {
                                 format = format.Replace("{Value" + (i + 1) + "}", "{" + i + "}");
-                                args[i++] = x;
+                                var arg = x;
+                                if (implicitQuery.ValueFormat != null)
+                                    arg = string.Format(implicitQuery.ValueFormat, arg);
+                                args[i++] = arg;
                             }
                         }
 
@@ -838,7 +840,9 @@ namespace ServiceStack
                     }
 
                     if (implicitQuery.ValueFormat != null)
+                    {
                         value = string.Format(implicitQuery.ValueFormat, value);
+                    }
                 }
             }
             else
@@ -978,7 +982,11 @@ namespace ServiceStack
         public static QueryDbFieldAttribute Init(this QueryDbFieldAttribute query)
         {
             query.ValueStyle = ValueStyle.Single;
-            if (query.Template == null || query.ValueFormat != null) return query;
+            if (query.Template == null)
+                return query;
+            if (query.ValueFormat != null 
+                && !(query.Template.Contains("{Value1}") || query.Template.Contains("{Values}")))
+                return query;
 
             var i = 0;
             while (query.Template.Contains("{Value" + (i + 1) + "}")) i++;
