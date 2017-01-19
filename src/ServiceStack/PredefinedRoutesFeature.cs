@@ -19,7 +19,7 @@ namespace ServiceStack
 
         private static IHttpHandler GetHandlerForPathParts(string[] pathParts)
         {
-            var pathController = pathParts[0].ToLower();
+            var pathController = pathParts[0].ToLowerInvariant();
             if (pathParts.Length == 1)
             {
 #if !NETSTANDARD1_6
@@ -32,7 +32,7 @@ namespace ServiceStack
                 return null;
             }
 
-            var pathAction = pathParts[1].ToLower();
+            var pathAction = pathParts[1].ToLowerInvariant();
             var requestName = pathParts.Length > 2 ? pathParts[2] : null;
             var isReply = pathAction == "reply";
             var isOneWay = pathAction == "oneway";
