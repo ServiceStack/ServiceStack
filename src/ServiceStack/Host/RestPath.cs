@@ -133,10 +133,21 @@ namespace ServiceStack.Host
             return GetPotentialMatchesWithPrefix(GetHashPrefix(pathPartsForMatching), pathPartsForMatching);
         }
 
+        public static IEnumerable<string> GetFirstMatchHashKeys(string pathInfo, List<int> indexes)
+        {
+            return GetPotentialMatchesWithPrefix(GetHashPrefix(indexes.Count / 2), pathInfo, indexes);
+        }
+
         public static IEnumerable<string> GetFirstMatchWildCardHashKeys(string[] pathPartsForMatching)
         {
             const string hashPrefix = WildCard + PathSeparator;
             return GetPotentialMatchesWithPrefix(hashPrefix, pathPartsForMatching);
+        }
+
+        public static IEnumerable<string> GetFirstMatchWildCardHashKeys(string pathInfo, List<int> partsIndexes)
+        {
+            const string hashPrefix = WildCard + PathSeparator;
+            return GetPotentialMatchesWithPrefix(hashPrefix, pathInfo, partsIndexes);
         }
 
         private static IEnumerable<string> GetPotentialMatchesWithPrefix(string hashPrefix, string[] pathPartsForMatching)
@@ -353,7 +364,7 @@ namespace ServiceStack.Host
                     if (i < this.TotalComponentsCount - 1)
                     {
                         // Continue to consume up until a match with the next literal
-                        while (pathIx < pathInfoIndexes.Count / 2 && pathInfo.IndexOf(this.literalsToMatch[i + 1], pathInfoIndexes[i * 2], pathInfoIndexes[i * 2 + 1], StringComparison.OrdinalIgnoreCase)  != -1)
+                        while (pathIx < pathInfoIndexes.Count / 2 && pathInfo.IndexOf(this.literalsToMatch[i + 1], pathInfoIndexes[i * 2], pathInfoIndexes[i * 2 + 1], StringComparison.OrdinalIgnoreCase)  == -1)
                         {
                             pathIx++;
                             wildcardMatchCount++;
@@ -382,7 +393,10 @@ namespace ServiceStack.Host
                         continue;
                     }
 
-                    if (pathInfoIndexes.Count / 2 <= pathIx || pathInfo.IndexOf(literalToMatch, pathInfoIndexes[pathIx], pathInfoIndexes[pathIx + 1]) != -1) return false;
+                    if (pathInfoIndexes.Count / 2 <= pathIx 
+                        || pathInfo.IndexOf(literalToMatch, pathInfoIndexes[pathIx * 2], pathInfoIndexes[pathIx * 2  + 1], StringComparison.OrdinalIgnoreCase) == -1)
+                            return false;
+
                     pathIx++;
                 }
             }
@@ -392,37 +406,57 @@ namespace ServiceStack.Host
 
         private bool ExplodeComponents(string pathInfo, List<int> partsIndexes)
         {
-            for (var i = 0; i < partsIndexes.Count/2; i++)
+            int initialCount = partsIndexes.Count / 2;
+
+            for (int i = 0, cur = 0; i < initialCount; i++, cur++)
             {
-                int start = partsIndexes[i * 2];
-                int count = partsIndexes[i * 2 + 1];
+                int start = partsIndexes[cur * 2];
+                int count = partsIndexes[cur * 2 + 1];
 
                 if (this.PathComponentsCount != this.TotalComponentsCount
                     && this.componentsWithSeparators[i])
                 {
                     int prev = start;
                     int next = start;
+                    var componentIndexes = new List<int>();
 
                     while (count > 0 && (next = pathInfo.IndexOf(ComponentSeparator, prev, count)) != -1)
                     {
-                        partsIndexes.Add(prev);
-                        partsIndexes.Add(next - prev);
+                        componentIndexes.Add(prev);
+                        componentIndexes.Add(next - prev);
                         count -= (next - prev + 1);
                         prev = next + 1;
                     };
 
                     ///No ComponentSeparator found;
-                    if (prev == start)
+                    if (componentIndexes.Count == 0)
                         return false;
-                }
-                else
-                {
-                    partsIndexes.Add(start);
-                    partsIndexes.Add(count);
+                    
+                    //add last component after ComponentSeparator
+                    componentIndexes.Add(prev);
+                    componentIndexes.Add(count);
+                    
+                    //first element of component indexes is the same as 
+                    partsIndexes [cur * 2 + 1] = componentIndexes[1];
+
+                    for (int j = 1; j < componentIndexes.Count / 2; j++)
+                    {
+                        if (i == initialCount / 2 - 1)
+                        {
+                            partsIndexes.Add(componentIndexes[j * 2]);
+                            partsIndexes.Add(componentIndexes[j * 2 + 1]);
+                        }
+                        else
+                        {
+                            cur++;
+                            partsIndexes.Insert(cur * 2, componentIndexes[j * 2]);
+                            partsIndexes.Insert(cur * 2 + 1, componentIndexes[j * 2 + 1]);
+                        }
+                    }
                 }
             }
 
-            return false;
+            return true;
         }
 
         public int MatchScore(string httpMethod, string[] withPathInfoParts)

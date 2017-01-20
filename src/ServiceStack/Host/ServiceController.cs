@@ -192,7 +192,7 @@ namespace ServiceStack.Host
                 && !serviceType.ContainsGenericParameters();
         }
 
-        public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
+        public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>(1024, StringComparer.OrdinalIgnoreCase);
 
         public void RegisterRestPaths(Type requestType)
         {
@@ -270,12 +270,12 @@ namespace ServiceStack.Host
 
         public IRestPath GetRestPathForRequest(string httpMethod, string pathInfo)
         {
-            var matchUsingPathParts = RestPath.GetPathPartsForMatching(pathInfo);
+            var pathPartsIndexes = RestPath.GetPathIndexesForMatching(pathInfo);
 
             List<RestPath> firstMatches;
             IRestPath bestMatch = null;
 
-            var yieldedHashMatches = RestPath.GetFirstMatchHashKeys(matchUsingPathParts);
+            var yieldedHashMatches = RestPath.GetFirstMatchHashKeys(pathInfo, pathPartsIndexes);
             foreach (var potentialHashMatch in yieldedHashMatches)
             {
                 if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches)) continue;
@@ -283,7 +283,7 @@ namespace ServiceStack.Host
                 var bestScore = -1;
                 foreach (var restPath in firstMatches)
                 {
-                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts);
+                    var score = restPath.MatchScore(httpMethod, pathInfo, pathPartsIndexes);
                     if (score > bestScore) 
                     {
                         bestScore = score;
@@ -296,7 +296,7 @@ namespace ServiceStack.Host
                 }
             }
 
-            var yieldedWildcardMatches = RestPath.GetFirstMatchWildCardHashKeys(matchUsingPathParts);
+            var yieldedWildcardMatches = RestPath.GetFirstMatchWildCardHashKeys(pathInfo, pathPartsIndexes);
             foreach (var potentialHashMatch in yieldedWildcardMatches)
             {
                 if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches)) continue;
@@ -304,7 +304,7 @@ namespace ServiceStack.Host
                 var bestScore = -1;
                 foreach (var restPath in firstMatches)
                 {
-                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts);
+                    var score = restPath.MatchScore(httpMethod, pathInfo, pathPartsIndexes);
                     if (score > bestScore)
                     {
                         bestScore = score;
