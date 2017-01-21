@@ -500,7 +500,7 @@ namespace ServiceStack
 
         public virtual void OnBeforeInit()
         {
-            Container.Register<IHashProvider>(c => new SaltedHash());
+            Container.Register<IHashProvider>(c => new SaltedHash()).ReusedWithin(ReuseScope.None);
         }
 
         //After configure called
