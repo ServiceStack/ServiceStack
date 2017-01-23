@@ -12,7 +12,7 @@ namespace ServiceStack
 {
     public class HttpHandlerFactory : IHttpHandlerFactory
     {
-        static readonly List<string> WebHostRootFileNames = new List<string>();
+        static readonly HashSet<string> WebHostRootFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static string WebHostPhysicalPath = null;
         private static string DefaultRootFileName = null;
         //internal static string ApplicationBaseUrl = null;
@@ -106,7 +106,7 @@ namespace ServiceStack
                     {
                         IsIntegratedPipeline = IsIntegratedPipeline,
                         WebHostPhysicalPath = WebHostPhysicalPath,
-                        WebHostRootFileNames = WebHostRootFileNames,
+                        WebHostRootFileNames = WebHostRootFileNames.ToList(),
                         WebHostUrl = config.WebHostUrl,
                         DefaultRootFileName = DefaultRootFileName,
                         DefaultHandler = debugDefaultHandler,
@@ -120,7 +120,7 @@ namespace ServiceStack
                     {
                         IsIntegratedPipeline = IsIntegratedPipeline,
                         WebHostPhysicalPath = WebHostPhysicalPath,
-                        WebHostRootFileNames = WebHostRootFileNames,
+                        WebHostRootFileNames = WebHostRootFileNames.ToList(),
                         WebHostUrl = config.WebHostUrl,
                         DefaultRootFileName = DefaultRootFileName,
                         DefaultHandler = debugDefaultHandler,
@@ -332,16 +332,15 @@ namespace ServiceStack
         {
             var appHost = HostContext.AppHost;
 
-            var pathParts = pathInfo.TrimStart('/').Split('/');
-            if (pathParts.Length == 0) return NotFoundHttpHandler;
+            var firstPathPart = RestPath.GetFirstPathPart(pathInfo);
+            if (firstPathPart == null) return NotFoundHttpHandler;
 
             string contentType;
             var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo, out contentType);
             if (restPath != null)
                 return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
 
-            var existingFile = pathParts[0].ToLower();
-            if (WebHostRootFileNames.Contains(existingFile))
+            if (WebHostRootFileNames.Contains(firstPathPart))
             {
                 var fileExt = System.IO.Path.GetExtension(filePath);
                 var isFileRequest = !string.IsNullOrEmpty(fileExt);
@@ -349,7 +348,7 @@ namespace ServiceStack
                 if (!isFileRequest && !HostAutoRedirectsDirs)
                 {
                     //If pathInfo is for Directory try again with redirect including '/' suffix
-                    if (!pathInfo.EndsWith("/"))
+                    if (!pathInfo.EndsWith("/", StringComparison.Ordinal))
                     {
                         var appFilePath = filePath.Substring(0, filePath.Length - requestPath.Length);
                         var redirect = Host.Handlers.StaticFileHandler.DirectoryExists(filePath, appFilePath);

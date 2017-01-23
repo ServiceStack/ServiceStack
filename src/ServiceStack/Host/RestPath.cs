@@ -80,6 +80,22 @@ namespace ServiceStack.Host
             return parts;
         }
 
+        public static string GetFirstPathPart(string pathInfo)
+        {
+            int i = 0;
+
+            while (pathInfo[i] == PathSeparatorChar && i < pathInfo.Length) i++;
+
+            if (i < pathInfo.Length)
+            {
+                int last = pathInfo.IndexOf(PathSeparatorChar, i);
+               
+               return last == -1 ? pathInfo.Substring(i) : pathInfo.Substring(i, last - i);
+            }
+
+            return null;
+        }
+
         public static List<int> GetPathIndexesForMatching(string pathInfo)
         {
             var indexes = new List<int>(16);
