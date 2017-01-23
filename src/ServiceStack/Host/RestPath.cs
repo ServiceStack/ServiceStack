@@ -364,7 +364,10 @@ namespace ServiceStack.Host
                     if (i < this.TotalComponentsCount - 1)
                     {
                         // Continue to consume up until a match with the next literal
-                        while (pathIx < pathInfoIndexes.Count / 2 && pathInfo.IndexOf(this.literalsToMatch[i + 1], pathInfoIndexes[i * 2], pathInfoIndexes[i * 2 + 1], StringComparison.OrdinalIgnoreCase)  == -1)
+                        while (pathIx < pathInfoIndexes.Count / 2 
+                            && ( pathInfoIndexes[i * 2 + 1] != this.literalsToMatch[i + 1].Length
+                                || pathInfo.IndexOf(this.literalsToMatch[i + 1], pathInfoIndexes[i * 2], pathInfoIndexes[i * 2 + 1], StringComparison.OrdinalIgnoreCase)  == -1)
+                        )
                         {
                             pathIx++;
                             wildcardMatchCount++;
@@ -394,6 +397,7 @@ namespace ServiceStack.Host
                     }
 
                     if (pathInfoIndexes.Count / 2 <= pathIx 
+                        || pathInfoIndexes[pathIx * 2  + 1] != literalToMatch.Length
                         || pathInfo.IndexOf(literalToMatch, pathInfoIndexes[pathIx * 2], pathInfoIndexes[pathIx * 2  + 1], StringComparison.OrdinalIgnoreCase) == -1)
                             return false;
 
