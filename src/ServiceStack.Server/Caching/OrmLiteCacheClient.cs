@@ -475,6 +475,20 @@ namespace ServiceStack.Caching
         public DateTime ModifiedDate { get; set; }
     }
 
+    [SqlServerMemoryOptimized(SqlServerDurability.SchemaOnly)]
+    public class SqlServerMemoryOptimizedCacheEntry : ICacheEntry
+    {
+        [PrimaryKey]
+        [StringLength(StringLengthAttribute.MaxText)]
+        [SqlServerBucketCount(1000000)]
+        public string Id { get; set; }
+        [StringLength(StringLengthAttribute.MaxText)]
+        public string Data { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
+    }
+
     public static class DbExtensions
     {
         public static string Serialize<T>(this IDbConnection db, T value)
