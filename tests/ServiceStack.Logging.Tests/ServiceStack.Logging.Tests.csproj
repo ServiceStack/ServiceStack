@@ -131,7 +131,10 @@
     <Compile Include="UnitTests\Log4NetLoggerTests.cs" />
     <Compile Include="UnitTests\LogManagerTests.cs" />
     <Compile Include="UnitTests\NLogTests.cs" />
+    <Compile Include="UnitTests\SerilogFactoryTests.cs" />
+    <Compile Include="UnitTests\SerilogLoggerTests.cs" />
     <Compile Include="UnitTests\UnitTestBase.cs" />
+    <Compile Include="UseCases\UsingSerilog.cs" />
     <Compile Include="UseCases\UsingEntLib5.cs" />
     <Compile Include="UseCases\UsingEventLog.cs" />
     <Compile Include="UseCases\UseCaseBase.cs" />
@@ -192,6 +195,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.csproj">
       <Project>{6b31f200-073c-46d4-b389-05646e035939}</Project>
       <Name>ServiceStack.Logging.NLog</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Logging.Serilog\ServiceStack.Logging.Serilog.csproj">
+      <Project>{D13C55F2-2688-41E1-B4D1-6B6609851844}</Project>
+      <Name>ServiceStack.Logging.Serilog</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
