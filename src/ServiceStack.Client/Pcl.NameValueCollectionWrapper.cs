@@ -34,6 +34,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using System.Text;
 
 #if PCL || SL5 || NETSTANDARD1_1
 using ServiceStack.Pcl;
@@ -326,24 +327,41 @@ namespace ServiceStack
             return nameValues;
         }
 
+        public static string ToFormUrlEncoded(this INameValueCollection queryParams)
+        {
+            var sb = StringBuilderCache.Allocate();
+            foreach (string key in queryParams)
+            {
+                var values = queryParams.GetValues(key);
+                AppendKeyValue(sb, key, values);
+            }
+
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
         public static string ToFormUrlEncoded(this NameValueCollection queryParams)
         {
             var sb = StringBuilderCache.Allocate();
             foreach (string key in queryParams)
             {
                 var values = queryParams.GetValues(key);
-                if (values == null) continue;
-
-                foreach (var value in values)
-                {
-                    if (sb.Length > 0)
-                        sb.Append('&');
-
-                    sb.Append($"{key.UrlEncode()}={value.UrlEncode()}");
-                }
+                AppendKeyValue(sb, key, values);
             }
 
             return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        private static void AppendKeyValue(StringBuilder sb, string key, string[] values)
+        {
+            if (values == null) return;
+
+            foreach (var value in values)
+            {
+                if (sb.Length > 0)
+                    sb.Append('&');
+
+                sb.Append($"{key.UrlEncode()}={value.UrlEncode()}");
+            }
         }
 
     }

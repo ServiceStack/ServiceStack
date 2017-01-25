@@ -31,7 +31,8 @@ namespace ServiceStack.NetCore
 
         public IEnumerator GetEnumerator()
         {
-            return originalQuery.GetEnumerator();
+            foreach(var pair in originalQuery)
+                yield return pair.Key;
         }
         #endregion
 
