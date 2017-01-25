@@ -421,6 +421,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                         "Version".PropertyStyle(), isClass ? "" : "?", Config.AddImplicitVersion));
                 }
 
+                if (type.Name == "IReturn`1")
+                {
+                    sb.AppendLine("createResponse() : T;".Fmt(type.Name));
+                }
+
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
