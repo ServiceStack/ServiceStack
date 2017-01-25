@@ -1470,12 +1470,12 @@
             </summary>
         </member>
         <member name="T:ServiceStack.Redis.RedisNativeClient">
-            <summary>
-            This class contains all the common operations for the RedisClient.
-            The client contains a 1:1 mapping of c# methods to redis operations of the same name.
+             <summary>
+             This class contains all the common operations for the RedisClient.
+             The client contains a 1:1 mapping of c# methods to redis operations of the same name.
             
-            Not threadsafe use a pooled manager
-            </summary>
+             Not threadsafe use a pooled manager
+             </summary>
         </member>
         <member name="F:ServiceStack.Redis.RedisNativeClient.active">
             <summary>
