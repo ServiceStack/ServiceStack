@@ -269,7 +269,7 @@
           if (o.supportedContentTypes) {
             consumes = o.supportedContentTypes;
           }
-          op = new SwaggerOperation(o.nickname, resource_path, o.httpMethod, o.parameters, o.summary, o.notes, o.responseClass, o.errorResponses, this, o.consumes, o.produces);
+          op = new SwaggerOperation(o.nickname, resource_path, o.method, o.parameters, o.summary, o.notes, o.responseClass, o.responseMessages, this, o.consumes, o.produces);
           this.operations[op.nickname] = op;
           _results.push(this.operationsArray.push(op));
         }
@@ -386,12 +386,12 @@
         }
       }
       this.dataTypeWithRef = this.refDataType != null ? this.dataType + '[' + this.refDataType + ']' : this.dataType;
-      if (obj.allowableValues != null) {
-        this.valueType = obj.allowableValues.valueType;
-        this.values = obj.allowableValues.values;
-        if (this.values != null) {
+      this.values = obj.enum;
+      if (this.values != null) {
           this.valuesString = "'" + this.values.join("' or '") + "'";
-        }
+      }
+      if (obj.allowableValues != null) {
+        this.valueType = obj.Items.valueType;
       }
     }
 
@@ -436,17 +436,17 @@
 
   SwaggerOperation = (function() {
 
-    function SwaggerOperation(nickname, path, httpMethod, parameters, summary, notes, responseClass, errorResponses, resource, consumes, produces) {
+    function SwaggerOperation(nickname, path, method, parameters, summary, notes, responseClass, responseMessages, resource, consumes, produces) {
       var parameter, v, _i, _j, _len, _len1, _ref, _ref1, _ref2,
         _this = this;
       this.nickname = nickname;
       this.path = path;
-      this.httpMethod = httpMethod;
+      this.method = method;
       this.parameters = parameters != null ? parameters : [];
       this.summary = summary;
       this.notes = notes;
       this.responseClass = responseClass;
-      this.errorResponses = errorResponses;
+      this.responseMessages = responseMessages;
       this.resource = resource;
       this.consumes = consumes;
       this.produces = produces;
@@ -458,12 +458,12 @@
       if (this.path == null) {
         this.resource.api.fail("SwaggerOperation " + nickname + " is missing path.");
       }
-      if (this.httpMethod == null) {
-        this.resource.api.fail("SwaggerOperation " + nickname + " is missing httpMethod.");
+      if (this.method == null) {
+        this.resource.api.fail("SwaggerOperation " + nickname + " is missing method.");
       }
       this.path = this.path.replace('{format}', 'json');
-      this.httpMethod = this.httpMethod.toLowerCase();
-      this.isGetMethod = this.httpMethod === "get";
+      this.method = this.method.toLowerCase();
+      this.isGetMethod = this.method === "get";
       this.resourceName = this.resource.name;
       if (((_ref = this.responseClass) != null ? _ref.toLowerCase() : void 0) === 'void') {
         this.responseClass = void 0;
@@ -472,7 +472,7 @@
         this.responseClassSignature = this.getSignature(this.responseClass, this.resource.models);
         this.responseSampleJSON = this.getSampleJSON(this.responseClass, this.resource.models);
       }
-      this.errorResponses = this.errorResponses || [];
+      this.responseMessages = this.responseMessages || [];
       _ref1 = this.parameters;
       for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
         parameter = _ref1[_i];
@@ -576,7 +576,7 @@
         body = args.body;
         delete args.body;
       }
-      return new SwaggerRequest(this.httpMethod, this.urlify(args), headers, body, callback, error, this);
+      return new SwaggerRequest(this.method, this.urlify(args), headers, body, callback, error, this);
     };
 
     SwaggerOperation.prototype.pathJson = function() {

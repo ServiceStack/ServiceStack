@@ -10,6 +10,6 @@
         public const string Double = "double";
         public const string String = "string";
         public const string Date = "Date";
-        public const string Array = "Array";
+        public const string Array = "array";
     }
 }
