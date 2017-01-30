@@ -100,6 +100,17 @@ namespace ServiceStack.Common.Tests
                 Is.EquivalentTo(testB.FromUserFileTypes.ConvertAll(x => x.ToEnum<UserFileType>())));
         }
 
+        [Test]
+        public void Does_get_generic_args()
+        {
+            var returnType = typeof(IReturn<>);
+            var argsCount = returnType.GetGenericArguments().Length;
+            Assert.That(argsCount, Is.EqualTo(1));
+
+            argsCount = typeof(ServiceStack.Messaging.Message<>).GetGenericArguments().Length;
+            Assert.That(argsCount, Is.EqualTo(1));
+        }
+
 #if !NETCORE
         [Test]
         public void Can_cache_a_geneneric_tuple_activator()
