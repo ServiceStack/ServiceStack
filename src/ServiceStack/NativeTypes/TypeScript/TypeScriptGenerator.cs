@@ -423,7 +423,11 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 if (type.Name == "IReturn`1")
                 {
-                    sb.AppendLine("createResponse() : T;".Fmt(type.Name));
+                    sb.AppendLine("createResponse() : T;");
+                }
+                else if (type.Name == "IReturnVoid")
+                {
+                    sb.AppendLine("createResponse() : void;");
                 }
 
                 AddProperties(sb, type,
