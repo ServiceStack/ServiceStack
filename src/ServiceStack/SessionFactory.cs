@@ -10,6 +10,8 @@ namespace ServiceStack
     {
         private readonly ICacheClient cacheClient;
 
+        public TimeSpan? SessionExpiry { get; set; }
+
         public SessionFactory(ICacheClient cacheClient)
         {
             this.cacheClient = cacheClient;
@@ -41,7 +43,11 @@ namespace ServiceStack
 
             public void Set<T>(string key, T value)
             {
-                cacheClient.Set(this.prefixNs + key, value);
+                var expiry = HostContext.GetPlugin<SessionFeature>()?.SessionBagExpiry;
+                if (expiry != null)
+                    cacheClient.Set(this.prefixNs + key, value, expiry.Value);
+                else
+                    cacheClient.Set(this.prefixNs + key, value);
             }
 
             public T Get<T>(string key)
