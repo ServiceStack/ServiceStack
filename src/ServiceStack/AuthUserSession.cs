@@ -65,14 +65,14 @@ namespace ServiceStack
 
         public virtual bool HasPermission(string permission, IAuthRepository authRepo)
         {
-            if (UserAuthId == null)
-                return false;
-
             if (!FromToken) //If populated from a token it should have the complete list of permissions
             {
                 var managesRoles = authRepo as IManageRoles;
                 if (managesRoles != null)
                 {
+                    if (UserAuthId == null)
+                        return false;
+
                     return managesRoles.HasPermission(this.UserAuthId, permission);
                 }
             }
@@ -82,14 +82,14 @@ namespace ServiceStack
 
         public virtual bool HasRole(string role, IAuthRepository authRepo)
         {
-            if (UserAuthId == null)
-                return false;
-
             if (!FromToken) //If populated from a token it should have the complete list of roles
             {
                 var managesRoles = authRepo as IManageRoles;
                 if (managesRoles != null)
                 {
+                    if (UserAuthId == null)
+                        return false;
+
                     return managesRoles.HasRole(this.UserAuthId, role);
                 }
             }
