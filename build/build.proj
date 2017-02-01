@@ -323,7 +323,7 @@
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45')" />
-    <Copy SourceFiles="%(NLogFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45" />
+    <Copy SourceFiles="%(SerilogFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Serilog/servicestack.logging.Serilog.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
