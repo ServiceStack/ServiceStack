@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("ServiceStack")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyCompany("Service Stack LLC")]
+[assembly: AssemblyCompany("ServiceStack, Inc.")]
 [assembly: AssemblyProduct("ServiceStack")]
 [assembly: AssemblyCopyright("Copyright (c) ServiceStack 2016")]
 [assembly: AssemblyTrademark("Service Stack")]

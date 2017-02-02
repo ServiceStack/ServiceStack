@@ -15,7 +15,7 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>ProtoBuf Fast Binary Serializer Format ContentType REST Web Services ServiceStack</tags>
     <language>en-US</language>
-    <copyright>Copyright 2016 Service Stack</copyright>
+    <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
       <dependency id="protobuf-net" version="2.1.0" />
       <dependency id="ServiceStack" version="4.5" />

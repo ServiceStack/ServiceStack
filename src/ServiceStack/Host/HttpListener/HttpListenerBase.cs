@@ -1,6 +1,6 @@
 ﻿#if !NETSTANDARD1_6 
 
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;

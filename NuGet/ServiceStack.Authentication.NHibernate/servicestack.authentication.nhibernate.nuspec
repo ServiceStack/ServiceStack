@@ -17,7 +17,7 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>ServiceStack Authentication Authorization NHibernate SQLServer Sqlite Oracle MySql PostgreSQL POCO Code-First</tags>
     <language>en-US</language> 
-    <copyright>Copyright 2016 Service Stack</copyright>
+    <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
       <dependency id="ServiceStack" version="4.5" />
       <dependency id="NHibernate" version="4.0.4.4000" />

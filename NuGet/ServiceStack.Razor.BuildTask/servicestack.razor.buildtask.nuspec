@@ -18,7 +18,7 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>Razor ViewEngine View Templates Controllers Mono ASP.NET Self-Host ServiceStack</tags>
     <language>en-US</language>
-    <copyright>Copyright 2016 Service Stack</copyright>
+    <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
       <dependency id="ServiceStack.Razor" version="4.5" />
       <dependency id="Microsoft.AspNet.Razor" version="3.2.3" />

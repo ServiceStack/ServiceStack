@@ -18,7 +18,7 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>MVC ServiceStack MiniProfiler FluentValidation Controller</tags>
     <language>en-US</language>
-    <copyright>Copyright 2016 Service Stack</copyright>
+    <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
       <dependency id="ServiceStack" version="4.5" />
     </dependencies>

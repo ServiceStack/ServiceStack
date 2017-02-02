@@ -16,7 +16,7 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>ServiceStack Common Framework Clients ServiceClients Gateway</tags>
     <language>en-US</language>
-    <copyright>Copyright 2016 Service Stack</copyright>
+    <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
       <dependency id="ServiceStack.Interfaces" version="4.5" />
       <dependency id="ServiceStack.Text" version="4.5" />

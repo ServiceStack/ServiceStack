@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ServiceStack")]
 [assembly: AssemblyProduct("ServiceStack.Logging.Slack")]
-[assembly: AssemblyCopyright("Copyright © ServiceStack LLC 2016")]
+[assembly: AssemblyCopyright("Copyright © ServiceStack, Inc. 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
