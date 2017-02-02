@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>ServiceStack.Logging.Serilog</id>
+    <version>4.5.0</version>
+    <title>ServiceStack.Logging.Slack</title>
+    <authors>Service Stack</authors>
+    <owners>Service Stack</owners>
+    <summary>Serilog logging provider for ServiceStack</summary>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+        Provides Serilog logging provider for ServiceStack projects
+    </description>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
+    <tags>servicestack serilog log logging logger provider adapter</tags>
+    <language>en-US</language>
+    <copyright>Copyright 2017 ServiceStack</copyright>
+    <dependencies>
+      <dependency id="ServiceStack.Interfaces" version="4.5" />
+      <dependency id="Serilog" version="2.3.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Logging.Serilog\**\*.cs" target="src" />
+  </files>
+</package> 
