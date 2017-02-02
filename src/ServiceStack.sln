@@ -41,6 +41,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Logging.EventLog\servicestack.logging.eventlog.nuspec = ..\NuGet\ServiceStack.Logging.EventLog\servicestack.logging.eventlog.nuspec
 		..\NuGet\ServiceStack.Logging.Log4Net\servicestack.logging.log4net.nuspec = ..\NuGet\ServiceStack.Logging.Log4Net\servicestack.logging.log4net.nuspec
 		..\NuGet\ServiceStack.Logging.NLog\servicestack.logging.nlog.nuspec = ..\NuGet\ServiceStack.Logging.NLog\servicestack.logging.nlog.nuspec
+		..\NuGet\ServiceStack.Logging.Serilog\servicestack.logging.serilog.nuspec = ..\NuGet\ServiceStack.Logging.Serilog\servicestack.logging.serilog.nuspec
 		..\NuGet\ServiceStack.Logging.Slack\servicestack.logging.slack.nuspec = ..\NuGet\ServiceStack.Logging.Slack\servicestack.logging.slack.nuspec
 		..\NuGet\ServiceStack.MsgPack\servicestack.msgpack.nuspec = ..\NuGet\ServiceStack.MsgPack\servicestack.msgpack.nuspec
 		..\NuGet\ServiceStack.Mvc\servicestack.mvc.nuspec = ..\NuGet\ServiceStack.Mvc\servicestack.mvc.nuspec

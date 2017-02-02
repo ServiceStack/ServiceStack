@@ -133,6 +133,7 @@
       <EventLogFiles Include="$(SrcDir)/ServiceStack.Logging.EventLog/bin/$(Configuration)/ServiceStack.Logging.EventLog.*"></EventLogFiles>
       <Log4NetFiles Include="$(SrcDir)/ServiceStack.Logging.Log4Net/bin/$(Configuration)/ServiceStack.Logging.Log4Net.*"></Log4NetFiles>
       <NLogFiles Include="$(SrcDir)/ServiceStack.Logging.NLog/bin/$(Configuration)/ServiceStack.Logging.NLog.*"></NLogFiles>
+      <SerilogFiles Include="$(SrcDir)/ServiceStack.Logging.Serilog/bin/$(Configuration)/ServiceStack.Logging.Serilog.*"></SerilogFiles>
       <SlackFiles Include="$(SrcDir)/ServiceStack.Logging.Slack/bin/$(Configuration)/ServiceStack.Logging.Slack.*"></SlackFiles>
 
       <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
@@ -313,6 +314,18 @@
     <Copy SourceFiles="%(NLogFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.NLog/lib/net45" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.NLog/servicestack.logging.nlog.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Logging.Serilog -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Serilog/ServiceStack.Logging.Serilog.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45')" />
+    <Copy SourceFiles="%(SerilogFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Serilog/servicestack.logging.Serilog.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Logging.Slack -->
