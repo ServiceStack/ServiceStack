@@ -2,7 +2,9 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 
 namespace ServiceStack
 {
@@ -13,6 +15,8 @@ namespace ServiceStack
     {
         public long Id { get; set; }
         public DateTime DateTime { get; set; }
+        public HttpStatusCode StatusCode { get; set; }
+        public string StatusDescription { get; set; }
         public string HttpMethod { get; set; }
         public string AbsoluteUri { get; set; }
         public string PathInfo { get; set; }
@@ -29,6 +33,8 @@ namespace ServiceStack
         public object Session { get; set; }
         public object ResponseDto { get; set; }
         public object ErrorResponse { get; set; }
+        public string ExceptionSource { get; set; }
+        public IDictionary ExceptionData { get; set; }
         public TimeSpan RequestDuration { get; set; }
     }
 }
