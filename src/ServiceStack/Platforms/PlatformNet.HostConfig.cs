@@ -159,8 +159,8 @@ namespace ServiceStack.Platforms
             try
             {
                 return XDocument.Parse(rawXml).Root.Element("handlers")
-                    .Descendants("add")
-                    .Where(handler => EnsureHandlerTypeAttribute(handler).StartsWith("ServiceStack"))
+                    ?.Descendants("add")
+                    ?.Where(handler => EnsureHandlerTypeAttribute(handler).StartsWith("ServiceStack"))
                     .Select(handler => handler.Attribute("path").Value)
                     .FirstOrDefault();
             }
