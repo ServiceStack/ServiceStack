@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using ServiceStack.Web;
 
@@ -73,6 +74,8 @@ namespace ServiceStack.Host
                 entry.UserAuthId = request.GetItemStringValue(HttpHeaders.XUserAuthId);
                 entry.Items = SerializableItems(request.Items);
                 entry.Session = EnableSessionTracking ? request.GetSession() : null;
+                entry.StatusCode = (HttpStatusCode) request.Response.StatusCode;
+                entry.StatusDescription = request.Response.StatusDescription;
 
                 var isClosed = request.Response.IsClosed;
                 if (!isClosed)
@@ -103,7 +106,26 @@ namespace ServiceStack.Host
             else
             {
                 if (EnableErrorTracking)
+                {
                     entry.ErrorResponse = ToSerializableErrorResponse(response);
+
+                    var httpError = response as IHttpError;
+                    if (httpError != null)
+                    {
+                        entry.StatusCode = httpError.StatusCode;
+                        entry.StatusDescription = httpError.StatusDescription;
+                    }
+
+                    var exception = response as Exception;
+                    if (exception != null)
+                    {
+                        if (exception.InnerException != null)
+                            exception = exception.InnerException;
+                        
+                        entry.ExceptionSource = exception.Source;
+                        entry.ExceptionData = exception.Data;
+                    }
+                }
             }
 
             return entry;
