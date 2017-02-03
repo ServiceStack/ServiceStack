@@ -74,7 +74,7 @@ namespace ServiceStack.Host
                 entry.UserAuthId = request.GetItemStringValue(HttpHeaders.XUserAuthId);
                 entry.Items = SerializableItems(request.Items);
                 entry.Session = EnableSessionTracking ? request.GetSession() : null;
-                entry.StatusCode = (HttpStatusCode) request.Response.StatusCode;
+                entry.StatusCode = request.Response.StatusCode;
                 entry.StatusDescription = request.Response.StatusDescription;
 
                 var isClosed = request.Response.IsClosed;
@@ -112,7 +112,7 @@ namespace ServiceStack.Host
                     var httpError = response as IHttpError;
                     if (httpError != null)
                     {
-                        entry.StatusCode = httpError.StatusCode;
+                        entry.StatusCode = (int)httpError.StatusCode;
                         entry.StatusDescription = httpError.StatusDescription;
                     }
 

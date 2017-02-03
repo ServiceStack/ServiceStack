@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Net;
 
 namespace ServiceStack
 {
@@ -15,7 +14,7 @@ namespace ServiceStack
     {
         public long Id { get; set; }
         public DateTime DateTime { get; set; }
-        public HttpStatusCode StatusCode { get; set; }
+        public int StatusCode { get; set; }
         public string StatusDescription { get; set; }
         public string HttpMethod { get; set; }
         public string AbsoluteUri { get; set; }
