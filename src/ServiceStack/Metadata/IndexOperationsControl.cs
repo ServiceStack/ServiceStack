@@ -165,7 +165,7 @@ namespace ServiceStack.Metadata
                 ? new ListTemplate
                 {
                     Title = metadata.PluginLinksTitle,
-                    ListItemsMap = metadata.PluginLinks,
+                    ListItemsMap = ToAbsoluteUrls(metadata.PluginLinks),
                     ListItemTemplate = @"<li><a href=""{0}"">{1}</a></li>"
                 }.ToString()
                 : "";
@@ -174,7 +174,7 @@ namespace ServiceStack.Metadata
                 ? new ListTemplate
                 {
                     Title = metadata.DebugLinksTitle,
-                    ListItemsMap = metadata.DebugLinks,
+                    ListItemsMap = ToAbsoluteUrls(metadata.DebugLinks),
                     ListItemTemplate = @"<li><a href=""{0}"">{1}</a></li>"
                 }.ToString()
                 : "";
@@ -193,5 +193,19 @@ namespace ServiceStack.Metadata
             output.Write(renderedTemplate);
         }
 
+        public Dictionary<string, string> ToAbsoluteUrls(Dictionary<string, string> linksMap)
+        {
+            var to = new Dictionary<string,string>();
+            var baseUrl = Request.GetBaseUrl();
+
+            foreach (var entry in linksMap)
+            {
+                var url = baseUrl.CombineWith(entry.Key);
+                to[url] = entry.Value;
+            }
+
+            return to;
+        }
     }
+
 }
