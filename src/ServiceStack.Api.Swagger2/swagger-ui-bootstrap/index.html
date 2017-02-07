@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Documentation</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+    <style>
+        .verb {
+            font-size: 105%;
+        }
+        .panel-title a:first-child:hover {
+            text-decoration: none;
+        }
+        .tab-pane div:first-child {
+            margin-top: 20px;
+        }
+        pre {
+            border: none;
+        }
+        .string {
+            color: green;
+        }
+        .number {
+            color: darkorange;
+        }
+        .boolean {
+            color: blue;
+        }
+        .null {
+            color: magenta;
+        }
+        .key {
+            color: red;
+        }
+        #title {
+            background: url({LogoUrl}) no-repeat 10px 10px;
+            font-size: 24px;
+            line-height: 24px;
+            padding: 15px 0 15px 45px;
+        }
+    </style>
+        
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js" type="text/javascript"></script>   
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+    <script src="jiko.js" type="text/javascript"></script>
+</head>
+    <body>
+        <script>
+            var template = jiko.loadFile("swagger-like-template.html");
+            var test = [];
+            function getRequest(url) {
+                return $.ajax({
+                    type: "GET",
+                    url: url,
+                    contentType: "text/json"
+                });
+            }
+
+            $(document).ready(function () {
+                var resourcesRequest = getRequest("http://petstore.swagger.io/v2/swagger.json");
+                resourcesRequest.done(function (resources) {
+                    resources.apis.forEach(function (api, key) {
+                        var placeholder = $('<div />').css({'margin-bottom': '1em'}).appendTo($("#main")), 
+                            apiRequest = getRequest(resources.basePath + api.path);
+                        apiRequest.done(function (data) {
+                            _.extend(data, { api: api });
+                            test.push(data);
+                            data.order = key;
+                            placeholder.append(template.apiAccordion(data));
+                        });
+                    });
+                });
+            });
+        </script>
+        <div class="container">
+            <nav class="navbar navbar-default" role="navigation">
+                <div class="navbar-header">
+                    <a id="title" class="navbar-brand" href="#">ApiDocs</a>
+                </div>
+            </nav>
+        </div>
+
+        <div class="container">
+            <div id="main" class="panel-group">
+                
+            </div>
+        </div>
+        
+    </body>
+</html>

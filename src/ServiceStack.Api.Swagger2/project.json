@@ -1,0 +1,46 @@
+{
+  "buildOptions": {
+    "embed": {
+      "include": [
+          "swagger-ui/**/*.*",
+          "swagger-ui-bootstrap/**/*.*"
+      ]
+    }
+  },
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": [
+          "DEBUG",
+          "TRACE"
+        ]
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": [
+          "TRACE"
+        ],
+        "optimize": true
+      }
+    }
+  },
+  "dependencies": {
+    "NETStandard.Library": "1.6.0",
+    "System.ServiceModel.Primitives": "4.1.0",
+    "System.Xml.XmlSerializer": "4.0.11",
+    "System.Runtime.Serialization.Primitives": "4.1.1",
+    "ServiceStack.Text": "1.0.*",
+    "ServiceStack.Interfaces": "1.0.*",
+    "ServiceStack.Client": "1.0.*",
+    "ServiceStack.Common": "1.0.*",
+    "ServiceStack": "1.0.*" 
+  },
+  "frameworks": {
+    "netstandard1.6": {
+      "dependencies": {
+      }
+    }
+  },
+  "version": "1.0.0"
+}
