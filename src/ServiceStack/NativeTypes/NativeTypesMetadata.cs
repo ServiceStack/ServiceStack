@@ -193,6 +193,11 @@ namespace ServiceStack.NativeTypes
                     continue;
                 }
 
+                if (IsSystemWhitespaceNamespace(type))
+                {
+                    metadata.Namespaces.AddIfNotExists(type.Namespace);
+                }
+
                 if (type.DeclaringType != null)
                 {
                     if (!ignoreTypeFn(type.DeclaringType))
@@ -275,6 +280,11 @@ namespace ServiceStack.NativeTypes
                 || (type.Namespace != null
                     && type.Namespace.StartsWith("System")
                     && type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>)));
+        }
+
+        private static bool IsSystemWhitespaceNamespace(Type type)
+        {
+            return type.Namespace == "System.IO";
         }
 
         public MetadataTypeName ToTypeName(Type type)
