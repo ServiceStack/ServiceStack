@@ -269,6 +269,8 @@ namespace ServiceStack.NativeTypes
             if (typesConfig.AddServiceStackTypes)
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
 
+            ExportMissingSystemTypes(typesConfig);
+
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
             metadataTypes.Types.RemoveAll(x => x.Name == "Service");
@@ -289,12 +291,22 @@ namespace ServiceStack.NativeTypes
             if (typesConfig.AddServiceStackTypes)
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
 
+            ExportMissingSystemTypes(typesConfig);
+
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
             metadataTypes.Types.RemoveAll(x => x.Name == "Service");
 
             var java = new KotlinGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return java;
+        }
+
+        private static void ExportMissingSystemTypes(MetadataTypesConfig typesConfig)
+        {
+            if (typesConfig.ExportTypes == null)
+                typesConfig.ExportTypes = new HashSet<Type>();
+
+            typesConfig.ExportTypes.Add(typeof(KeyValuePair<,>));
         }
     }
 }

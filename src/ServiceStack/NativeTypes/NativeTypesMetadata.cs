@@ -155,7 +155,7 @@ namespace ServiceStack.NativeTypes
                 || t == typeof(Enum)
                 || considered.Contains(t)
                 || skipTypes.Contains(t)
-                || (ignoreNamespaces.Contains(t.Namespace) && !exportTypes.Contains(t));
+                || (ignoreNamespaces.Contains(t.Namespace) && !exportTypes.ContainsMatch(t));
 
             Action<Type> registerTypeFn = null;
             registerTypeFn = t =>
@@ -169,7 +169,7 @@ namespace ServiceStack.NativeTypes
                 if ((!(t.IsSystemType() && !t.IsTuple())
                         && (t.IsClass() || t.IsEnum() || t.IsInterface())
                         && !t.IsGenericParameter)
-                    || exportTypes.Contains(t))
+                    || exportTypes.ContainsMatch(t))
                 {
                     metadata.Types.Add(ToType(t));
 
@@ -208,7 +208,7 @@ namespace ServiceStack.NativeTypes
                     continue;
 
                 if (!type.IsUserType() && !type.IsInterface()
-                    && !exportTypes.Contains(type))
+                    && !exportTypes.ContainsMatch(type))
                     continue;
 
                 if (!type.HasInterface(typeof(IService)))
@@ -324,8 +324,11 @@ namespace ServiceStack.NativeTypes
                 IsAbstract = type.IsAbstract() ? true : (bool?)null,
             };
 
-            if (type.BaseType() != null && type.BaseType() != typeof(object) && !type.IsEnum()
-                && !type.HasInterface(typeof(IService)))
+            if (type.BaseType() != null && 
+                type.BaseType() != typeof(object) && 
+                type.BaseType() != typeof(ValueType) &&
+                !type.IsEnum() && 
+                !type.HasInterface(typeof(IService)))
             {
                 metaType.Inherits = ToTypeName(type.BaseType());
             }
@@ -422,7 +425,7 @@ namespace ServiceStack.NativeTypes
 
         private MetadataTypeName[] ToInterfaces(Type type)
         {
-            return type.GetInterfaces().Where(x => config.ExportTypes.Contains(x)).Map(x =>
+            return type.GetInterfaces().Where(x => config.ExportTypes.ContainsMatch(x)).Map(x =>
                 new MetadataTypeName {
                     Name = x.Name,
                     Namespace = x.Namespace,
@@ -440,7 +443,11 @@ namespace ServiceStack.NativeTypes
 
         public List<MetadataPropertyType> ToProperties(Type type)
         {
-            var props = (!type.IsUserType() && !type.IsInterface() && !type.IsTuple()) || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
+            var props = (!type.IsUserType() && 
+                         !type.IsInterface() && 
+                         !type.IsTuple() &&
+                         !(config.ExportTypes.ContainsMatch(type) && JsConfig.TreatValueAsRefTypes.ContainsMatch(type))) 
+                || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
                 ? null
                 : GetInstancePublicProperties(type).Select(x => ToProperty(x)).ToList();
 
@@ -996,8 +1003,8 @@ namespace ServiceStack.NativeTypes
 
         public static bool IgnoreType(this MetadataType type, MetadataTypesConfig config, List<string> overrideIncludeType = null)
         {
-            // If is a systemType and export types doesn't include this
-            if (type.IgnoreSystemType() && config.ExportTypes.All(x => x.Name != type.Name))
+            // If is a systemType and export types doesn't include this 
+            if (type.IgnoreSystemType() && config.ExportTypes.All(x => x.Name != type.Name && !type.Name.StartsWith(x.Name + "`")))
                 return true;
 
             var includes = overrideIncludeType ?? config.IncludeTypes;
@@ -1201,6 +1208,17 @@ namespace ServiceStack.NativeTypes
             return config.ExportValueTypes
                 ? prop.Type
                 : "String";
+        }
+
+        internal static bool ContainsMatch(this HashSet<Type> types, Type target)
+        {
+            if (types == null)
+                return false;
+
+            if (types.Contains(target))
+                return true;
+
+            return types.Any(x => x.IsGenericTypeDefinition() && target.IsOrHasGenericInterfaceTypeOf(x));
         }
     }
 }
