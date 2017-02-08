@@ -696,6 +696,29 @@ namespace ServiceStack.NativeTypes
             };
         }
 
+        public static MetadataType ToMetadataType(this MetadataTypeName type)
+        {
+            if (type == null) return null;
+
+            return new MetadataType
+            {
+                Name = type.Name,
+                Namespace = type.Namespace,
+                GenericArgs = type.GenericArgs
+            };
+        }
+
+        public static List<MetadataType> GetAllMetadataTypes(this MetadataTypes metadata)
+        {
+            var allTypes = new List<MetadataType>();
+            allTypes.AddRange(metadata.Types);
+            allTypes.AddRange(metadata.Operations.Where(x => x.Request != null).Select(x => x.Request));
+            allTypes.AddRange(metadata.Operations.Where(x => x.Response != null).Select(x => x.Response));
+            allTypes.AddRange(metadata.Operations.Where(x => x.Request?.ReturnMarkerTypeName != null).Select(
+                x => x.Request.ReturnMarkerTypeName.ToMetadataType()));
+            return allTypes;
+        }
+
         public static HashSet<string> GetReferencedTypeNames(this MetadataType type)
         {
             var to = new HashSet<string>();
