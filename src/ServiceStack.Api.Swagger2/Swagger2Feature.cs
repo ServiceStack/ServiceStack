@@ -4,9 +4,9 @@ using System.Text.RegularExpressions;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
 
-namespace ServiceStack.Api.Swagger
+namespace ServiceStack.Api.Swagger2
 {
-    public class SwaggerFeature : IPlugin, IPreInitPlugin
+    public class Swagger2Feature : IPlugin, IPreInitPlugin
     {
         /// <summary>
         /// Gets or sets <see cref="Regex"/> pattern to filter available resources. 
@@ -23,19 +23,19 @@ namespace ServiceStack.Api.Swagger
 
         public string LogoUrl { get; set; }
 
-        public Action<SwaggerResourcesResponse> ResourcesResponseFilter { get; set; }
+        public Action<Swagger2ResourcesResponse> ResourcesResponseFilter { get; set; }
 
-        public Action<SwaggerApiDeclaration> ApiDeclarationFilter { get; set; }
+        public Action<Swagger2ApiDeclaration> ApiDeclarationFilter { get; set; }
 
-        public Action<SwaggerOperation> OperationFilter { get; set; }
+        public Action<Swagger2Operation> OperationFilter { get; set; }
 
-        public Action<SwaggerModel> ModelFilter { get; set; }
+        public Action<Swagger2Model> ModelFilter { get; set; }
 
-        public Action<SwaggerProperty> ModelPropertyFilter { get; set; }
+        public Action<Swagger2Property> ModelPropertyFilter { get; set; }
 
         public Dictionary<string, string> RouteSummary { get; set; }
 
-        public SwaggerFeature()
+        public Swagger2Feature()
         {
             LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-24.png";
             RouteSummary = new Dictionary<string, string>();
@@ -43,33 +43,33 @@ namespace ServiceStack.Api.Swagger
 
         public void Configure(IAppHost appHost)
         {
-            appHost.Config.EmbeddedResourceSources.Add(typeof(SwaggerFeature).GetAssembly());
+            appHost.Config.EmbeddedResourceSources.Add(typeof(Swagger2Feature).GetAssembly());
         }
 
         public void Register(IAppHost appHost)
         {
             if (ResourceFilterPattern != null)
-                SwaggerResourcesService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
+                Swagger2ResourcesService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
 
-            SwaggerResourcesService.ResourcesResponseFilter = ResourcesResponseFilter;
+            Swagger2ResourcesService.ResourcesResponseFilter = ResourcesResponseFilter;
 
-            SwaggerApiService.UseCamelCaseModelPropertyNames = UseCamelCaseModelPropertyNames;
-            SwaggerApiService.UseLowercaseUnderscoreModelPropertyNames = UseLowercaseUnderscoreModelPropertyNames;
-            SwaggerApiService.DisableAutoDtoInBodyParam = DisableAutoDtoInBodyParam;
-            SwaggerApiService.ApiDeclarationFilter = ApiDeclarationFilter;
-            SwaggerApiService.OperationFilter = OperationFilter;
-            SwaggerApiService.ModelFilter = ModelFilter;
-            SwaggerApiService.ModelPropertyFilter = ModelPropertyFilter;
+            Swagger2ApiService.UseCamelCaseModelPropertyNames = UseCamelCaseModelPropertyNames;
+            Swagger2ApiService.UseLowercaseUnderscoreModelPropertyNames = UseLowercaseUnderscoreModelPropertyNames;
+            Swagger2ApiService.DisableAutoDtoInBodyParam = DisableAutoDtoInBodyParam;
+            Swagger2ApiService.ApiDeclarationFilter = ApiDeclarationFilter;
+            Swagger2ApiService.OperationFilter = OperationFilter;
+            Swagger2ApiService.ModelFilter = ModelFilter;
+            Swagger2ApiService.ModelPropertyFilter = ModelPropertyFilter;
 
-            appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
-            appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });
+            appHost.RegisterService(typeof(Swagger2ResourcesService), new[] { "/resources" });
+            appHost.RegisterService(typeof(Swagger2ApiService), new[] { Swagger2ResourcesService.RESOURCE_PATH + "/{Name*}" });
 
             var swaggerUrl = UseBootstrapTheme
-                ? "swagger-ui-bootstrap/"
-                : "swagger-ui/";
+                ? "swagger2-ui-bootstrap/"
+                : "swagger2-ui/";
 
             appHost.GetPlugin<MetadataFeature>()
-                .AddPluginLink(swaggerUrl, "Swagger UI");
+                .AddPluginLink(swaggerUrl, "Swagger2 UI");
 
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
             {
@@ -77,16 +77,16 @@ namespace ServiceStack.Api.Swagger
                 IVirtualFile patchFile = null;
                 switch (pathInfo)
                 {
-                    case "/swagger-ui":
-                    case "/swagger-ui/":
-                    case "/swagger-ui/default.html":
-                        indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui/index.html");
-                        patchFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch.js");
+                    case "/swagger2-ui":
+                    case "/swagger2-ui/":
+                    case "/swagger2-ui/default.html":
+                        indexFile = appHost.VirtualFileSources.GetFile("/swagger2-ui/index.html");
+                        patchFile = appHost.VirtualFileSources.GetFile("/swagger2-ui/patch.js");
                         break;
-                    case "/swagger-ui-bootstrap":
-                    case "/swagger-ui-bootstrap/":
-                    case "/swagger-ui-bootstrap/index.html":
-                        indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui-bootstrap/index.html");
+                    case "/swagger2-ui-bootstrap":
+                    case "/swagger2-ui-bootstrap/":
+                    case "/swagger2-ui-bootstrap/index.html":
+                        indexFile = appHost.VirtualFileSources.GetFile("/swagger2-ui-bootstrap/index.html");
                         break;
                     default:
                         indexFile = null;
@@ -116,13 +116,13 @@ namespace ServiceStack.Api.Swagger
                         return html;
                     });
                 }
-                return pathInfo.StartsWith("/swagger-ui") ? new StaticFileHandler() : null;
+                return pathInfo.StartsWith("/swagger2-ui") ? new StaticFileHandler() : null;
             });
         }
 
         public static bool IsEnabled
         {
-            get { return HostContext.HasPlugin<SwaggerFeature>(); }
+            get { return HostContext.HasPlugin<Swagger2Feature>(); }
         }
     }
 }

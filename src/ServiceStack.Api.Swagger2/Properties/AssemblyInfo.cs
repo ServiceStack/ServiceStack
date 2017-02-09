@@ -27,4 +27,4 @@ using System.Runtime.Serialization;
 [assembly: AssemblyFileVersion("4.0.0.0")]
 
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
-    ClrNamespace = "ServiceStack.Api.Swagger")]
+    ClrNamespace = "ServiceStack.Api.Swagger2")]

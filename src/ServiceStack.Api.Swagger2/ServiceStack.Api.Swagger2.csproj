@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{01D3F057-7984-498F-8B0A-EB375701E204}</ProjectGuid>
+    <ProjectGuid>{5E258282-86A6-4780-AB25-5E458F2E6F70}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.Api.Swagger</RootNamespace>
-    <AssemblyName>ServiceStack.Api.Swagger</AssemblyName>
+    <RootNamespace>ServiceStack.Api.Swagger2</RootNamespace>
+    <AssemblyName>ServiceStack.Api.Swagger2</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -31,7 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\ServiceStack.Api.Swagger.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\ServiceStack.Api.Swagger2.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Signed|AnyCPU'">
@@ -64,9 +64,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\IOrderedDictionary.cs" />
     <Compile Include="Support\OrderedDictionary.cs" />
-    <Compile Include="SwaggerApiService.cs" />
-    <Compile Include="SwaggerFeature.cs" />
-    <Compile Include="SwaggerResourcesService.cs" />
+    <Compile Include="Swagger2ApiService.cs" />
+    <Compile Include="Swagger2Feature.cs" />
+    <Compile Include="Swagger2ResourcesService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
@@ -79,55 +79,64 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="swagger-ui-bootstrap\index.html" />
-    <EmbeddedResource Include="swagger-ui-bootstrap\jiko.js" />
-    <EmbeddedResource Include="swagger-ui-bootstrap\swagger-like-template.html" />
-    <EmbeddedResource Include="swagger-ui\css\screen.css" />
-    <EmbeddedResource Include="swagger-ui\images\logo_small.png" />
-    <EmbeddedResource Include="swagger-ui\images\pet_store_api.png" />
-    <EmbeddedResource Include="swagger-ui\images\throbber.gif" />
-    <EmbeddedResource Include="swagger-ui\images\wordnik_api.png" />
-    <EmbeddedResource Include="swagger-ui\index.html" />
-    <EmbeddedResource Include="swagger-ui\lib\backbone-min.js" />
-    <EmbeddedResource Include="swagger-ui\lib\highlight.7.3.pack.js" />
-    <EmbeddedResource Include="swagger-ui\lib\jquery-1.8.0.min.js" />
-    <EmbeddedResource Include="swagger-ui\lib\jquery.ba-bbq.min.js" />
-    <EmbeddedResource Include="swagger-ui\lib\jquery.slideto.min.js" />
-    <EmbeddedResource Include="swagger-ui\lib\jquery.wiggle.min.js" />
-    <EmbeddedResource Include="swagger-ui\lib\shred.bundle.js" />
-    <EmbeddedResource Include="swagger-ui\lib\shred\content.js" />
-    <EmbeddedResource Include="swagger-ui\lib\underscore-min.js" />
-    <EmbeddedResource Include="swagger-ui\swagger-ui.js" />
-    <EmbeddedResource Include="swagger-ui\swagger-ui.min.js" />
+    <EmbeddedResource Include="swagger2-ui-bootstrap\index.html" />
+    <EmbeddedResource Include="swagger2-ui-bootstrap\jiko.js" />
+    <EmbeddedResource Include="swagger2-ui-bootstrap\swagger-like-template.html" />
+    <EmbeddedResource Include="swagger2-ui\css\screen.css" />
+    <EmbeddedResource Include="swagger2-ui\images\logo_small.png" />
+    <EmbeddedResource Include="swagger2-ui\images\pet_store_api.png" />
+    <EmbeddedResource Include="swagger2-ui\images\throbber.gif" />
+    <EmbeddedResource Include="swagger2-ui\images\wordnik_api.png" />
+    <EmbeddedResource Include="swagger2-ui\index.html" />
+    <EmbeddedResource Include="swagger2-ui\lib\backbone-min.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\jquery-1.8.0.min.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\jquery.ba-bbq.min.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\jquery.slideto.min.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\jquery.wiggle.min.js" />
+    <EmbeddedResource Include="swagger2-ui\swagger-ui.js" />
+    <EmbeddedResource Include="swagger2-ui\swagger-ui.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="swagger-ui\css\reset.css" />
-    <EmbeddedResource Include="swagger-ui\images\explorer_icons.png" />
-    <EmbeddedResource Include="swagger-ui\lib\swagger-oauth.js" />
-    <EmbeddedResource Include="swagger-ui\o2c.html" />
+    <EmbeddedResource Include="swagger2-ui\css\reset.css" />
+    <EmbeddedResource Include="swagger2-ui\images\explorer_icons.png" />
+    <EmbeddedResource Include="swagger2-ui\lib\swagger-oauth.js" />
+    <EmbeddedResource Include="swagger2-ui\o2c.html" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="swagger-ui\lib\swagger-client.js" />
+    <EmbeddedResource Include="swagger2-ui\css\typography.css" />
+    <EmbeddedResource Include="swagger2-ui\lib\marked.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="swagger-ui\css\typography.css" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-700.svg" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.svg" />
-    <EmbeddedResource Include="swagger-ui\lib\handlebars-2.0.0.js" />
-    <EmbeddedResource Include="swagger-ui\lib\marked.js" />
+    <EmbeddedResource Include="swagger2-ui\patch.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-700.eot" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-700.ttf" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-700.woff" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-700.woff2" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.eot" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.ttf" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.woff" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.woff2" />
+    <EmbeddedResource Include="swagger2-ui\css\print.css" />
+    <EmbeddedResource Include="swagger2-ui\css\style.css" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="swagger-ui\patch.js" />
+    <EmbeddedResource Include="swagger2-ui\fonts\DroidSans-Bold.ttf" />
+    <EmbeddedResource Include="swagger2-ui\fonts\DroidSans.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="swagger2-ui\images\collapse.gif" />
+    <EmbeddedResource Include="swagger2-ui\images\expand.gif" />
+    <EmbeddedResource Include="swagger2-ui\images\favicon-16x16.png" />
+    <EmbeddedResource Include="swagger2-ui\images\favicon-32x32.png" />
+    <EmbeddedResource Include="swagger2-ui\images\favicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="swagger2-ui\lib\es5-shim.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\handlebars-4.0.5.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\highlight.9.1.0.pack.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\highlight.9.1.0.pack_extended.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\js-yaml.min.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\jsoneditor.min.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\lodash.min.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\object-assign-pollyfill.js" />
+    <EmbeddedResource Include="swagger2-ui\lib\sanitize-html.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="swagger2-ui\lib\shred\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -10,13 +10,13 @@ using ServiceStack.NativeTypes;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.Api.Swagger
+namespace ServiceStack.Api.Swagger2
 {
-    using ServiceStack.Api.Swagger.Support;
+    using ServiceStack.Api.Swagger2.Support;
 
     [DataContract]
     [Exclude(Feature.Soap)]
-    public class SwaggerResource : IReturn<SwaggerApiDeclaration>
+    public class Swagger2Resource : IReturn<Swagger2ApiDeclaration>
     {
         [DataMember(Name = "apiKey")]
         public string ApiKey { get; set; }
@@ -25,12 +25,12 @@ namespace ServiceStack.Api.Swagger
     }
 
     [DataContract]
-    public class SwaggerApiDeclaration
+    public class Swagger2ApiDeclaration
     {
         [DataMember(Name = "swaggerVersion")]
         public string SwaggerVersion
         {
-            get { return "1.2"; }
+            get { return "2.10"; }
         }
         [DataMember(Name = "apiVersion")]
         public string ApiVersion { get; set; }
@@ -39,9 +39,9 @@ namespace ServiceStack.Api.Swagger
         [DataMember(Name = "resourcePath")]
         public string ResourcePath { get; set; }
         [DataMember(Name = "apis")]
-        public List<SwaggerApi> Apis { get; set; }
+        public List<Swagger2Api> Apis { get; set; }
         [DataMember(Name = "models")]
-        public Dictionary<string, SwaggerModel> Models { get; set; }
+        public Dictionary<string, Swagger2Model> Models { get; set; }
         [DataMember(Name = "produces")]
         public List<string> Produces { get; set; }
         [DataMember(Name = "consumes")]
@@ -49,7 +49,7 @@ namespace ServiceStack.Api.Swagger
     }
 
     [DataContract]
-    public class SwaggerModel
+    public class Swagger2Model
     {
         [DataMember(Name = "id")]
         public string Id { get; set; }
@@ -58,7 +58,7 @@ namespace ServiceStack.Api.Swagger
         [DataMember(Name = "required")]
         public List<string> Required { get; set; }
         [DataMember(Name = "properties")]
-        public OrderedDictionary<string, SwaggerProperty> Properties { get; set; }
+        public OrderedDictionary<string, Swagger2Property> Properties { get; set; }
         [DataMember(Name = "subTypes")]
         public List<string> SubTypes { get; set; }
         [DataMember(Name = "discriminator")]
@@ -66,18 +66,18 @@ namespace ServiceStack.Api.Swagger
     }
 
     [DataContract]
-    public class SwaggerApi
+    public class Swagger2Api
     {
         [DataMember(Name = "path")]
         public string Path { get; set; }
         [DataMember(Name = "description")]
         public string Description { get; set; }
         [DataMember(Name = "operations")]
-        public List<SwaggerOperation> Operations { get; set; }
+        public List<Swagger2Operation> Operations { get; set; }
     }
 
     [DataContract]
-    public class SwaggerOperation
+    public class Swagger2Operation
     {
         [DataMember(Name = "method")]
         public string Method { get; set; }
@@ -88,9 +88,9 @@ namespace ServiceStack.Api.Swagger
         [DataMember(Name = "nickname")]
         public string Nickname { get; set; }
         [DataMember(Name = "parameters")]
-        public List<SwaggerParameter> Parameters { get; set; }
+        public List<Swagger2Parameter> Parameters { get; set; }
         [DataMember(Name = "responseMessages")]
-        public List<SwaggerResponseMessage> ResponseMessages { get; set; }
+        public List<Swagger2ResponseMessage> ResponseMessages { get; set; }
         [DataMember(Name = "produces")]
         public List<string> Produces { get; set; }
         [DataMember(Name = "consumes")]
@@ -104,7 +104,7 @@ namespace ServiceStack.Api.Swagger
     }
 
     [DataContract]
-    public class SwaggerResponseMessage
+    public class Swagger2ResponseMessage
     {
         [DataMember(Name = "code")]
         public int Code { get; set; }
@@ -124,7 +124,7 @@ namespace ServiceStack.Api.Swagger
     }
 
     [DataContract]
-    public abstract class SwaggerDataTypeFields
+    public abstract class Swagger2DataTypeFields
     {
         [DataMember(Name = "type")]
         public string Type { get; set; }
@@ -145,14 +145,14 @@ namespace ServiceStack.Api.Swagger
     }
 
     [DataContract]
-    public class SwaggerProperty : SwaggerDataTypeFields
+    public class Swagger2Property : Swagger2DataTypeFields
     {
         [DataMember(Name = "description")]
         public string Description { get; set; }
     }
 
     [DataContract]
-    public class SwaggerParameter : SwaggerDataTypeFields
+    public class Swagger2Parameter : Swagger2DataTypeFields
     {
         [DataMember(Name = "paramType")]
         public string ParamType { get; set; }
@@ -183,20 +183,20 @@ namespace ServiceStack.Api.Swagger
     }
 
     [AddHeader(DefaultContentType = MimeTypes.Json)]
-    [DefaultRequest(typeof(SwaggerResource))]
+    [DefaultRequest(typeof(Swagger2Resource))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class SwaggerApiService : Service
+    public class Swagger2ApiService : Service
     {
         internal static bool UseCamelCaseModelPropertyNames { get; set; }
         internal static bool UseLowercaseUnderscoreModelPropertyNames { get; set; }
         internal static bool DisableAutoDtoInBodyParam { get; set; }
 
-        internal static Action<SwaggerApiDeclaration> ApiDeclarationFilter { get; set; }
-        internal static Action<SwaggerOperation> OperationFilter { get; set; }
-        internal static Action<SwaggerModel> ModelFilter { get; set; }
-        internal static Action<SwaggerProperty> ModelPropertyFilter { get; set; }
+        internal static Action<Swagger2ApiDeclaration> ApiDeclarationFilter { get; set; }
+        internal static Action<Swagger2Operation> OperationFilter { get; set; }
+        internal static Action<Swagger2Model> ModelFilter { get; set; }
+        internal static Action<Swagger2Property> ModelPropertyFilter { get; set; }
 
-        public object Get(SwaggerResource request)
+        public object Get(Swagger2Resource request)
         {
             var path = "/" + request.Name;
             var map = HostContext.ServiceController.RestPathMap;
@@ -213,7 +213,7 @@ namespace ServiceStack.Api.Swagger
                 paths.AddRange(visiblePaths);
             }
 
-            var models = new Dictionary<string, SwaggerModel>();
+            var models = new Dictionary<string, Swagger2Model>();
             foreach (var restPath in paths.SelectMany(x => x.Verbs.Select(y => new {Value = x, Verb = y})))
             {
                 ParseModel(models, restPath.Value.RequestType, restPath.Value.Path, restPath.Verb);
@@ -222,7 +222,7 @@ namespace ServiceStack.Api.Swagger
             var apis = paths.Select(p => FormatMethodDescription(p, models))
                 .ToArray().OrderBy(md => md.Path).ToList();
 
-            var result = new SwaggerApiDeclaration
+            var result = new Swagger2ApiDeclaration
             {
                 ApiVersion = HostContext.Config.ApiVersion,
                 ResourcePath = path,
@@ -310,12 +310,12 @@ namespace ServiceStack.Api.Swagger
 		    return typeName;
 		}
 
-        private void ParseResponseModel(IDictionary<string, SwaggerModel> models, Type modelType)
+        private void ParseResponseModel(IDictionary<string, Swagger2Model> models, Type modelType)
         {
             ParseModel(models, modelType, null, null);
         }
 
-        private void ParseModel(IDictionary<string, SwaggerModel> models, Type modelType, string route, string verb)
+        private void ParseModel(IDictionary<string, Swagger2Model> models, Type modelType, string route, string verb)
         {
             if (IsSwaggerScalarType(modelType) || modelType.ExcludesFeature(Feature.Metadata)) return;
 
@@ -323,11 +323,11 @@ namespace ServiceStack.Api.Swagger
             if (models.ContainsKey(modelId)) return;
 
             var modelTypeName = GetModelTypeName(modelType);
-            var model = new SwaggerModel
+            var model = new Swagger2Model
             {
                 Id = modelId,
                 Description = modelType.GetDescription() ?? modelTypeName,
-                Properties = new OrderedDictionary<string, SwaggerProperty>()
+                Properties = new OrderedDictionary<string, Swagger2Property>()
             };
             models[model.Id] = model;
 
@@ -380,7 +380,7 @@ namespace ServiceStack.Api.Swagger
                         continue;
 
                     var propertyType = prop.PropertyType;
-                    var modelProp = new SwaggerProperty
+                    var modelProp = new Swagger2Property
                     {
                         Type = GetSwaggerTypeName(propertyType, route, verb),
                         Description = prop.GetDescription(),
@@ -470,7 +470,7 @@ namespace ServiceStack.Api.Swagger
             return values;
         }
 
-        private string GetResponseClass(IRestPath restPath, IDictionary<string, SwaggerModel> models)
+        private string GetResponseClass(IRestPath restPath, IDictionary<string, Swagger2Model> models)
         {
             // Given: class MyDto : IReturn<X>. Determine the type X.
             foreach (var i in restPath.RequestType.GetInterfaces())
@@ -505,7 +505,7 @@ namespace ServiceStack.Api.Swagger
                 .ToList();
         }
 
-        private SwaggerApi FormatMethodDescription(RestPath restPath, Dictionary<string, SwaggerModel> models)
+        private Swagger2Api FormatMethodDescription(RestPath restPath, Dictionary<string, Swagger2Model> models)
         {
             var verbs = new List<string>();
             var summary = restPath.Summary ?? restPath.RequestType.GetDescription();
@@ -518,11 +518,11 @@ namespace ServiceStack.Api.Swagger
             var routePath = restPath.Path.Replace("*","");
             var requestType = restPath.RequestType;
 
-            var md = new SwaggerApi
+            var md = new Swagger2Api
             {
                 Path = routePath,
                 Description = summary,
-                Operations = verbs.Map(verb => new SwaggerOperation
+                Operations = verbs.Map(verb => new Swagger2Operation
                 {
                     Method = verb,
                     Nickname = requestType.Name,
@@ -541,14 +541,14 @@ namespace ServiceStack.Api.Swagger
             return attr != null && attr.Values != null ? attr.Values.ToList() : null;
         }
 
-        private List<SwaggerParameter> ParseParameters(string verb, Type operationType, IDictionary<string, SwaggerModel> models, string route)
+        private List<Swagger2Parameter> ParseParameters(string verb, Type operationType, IDictionary<string, Swagger2Model> models, string route)
         {
             var hasDataContract = operationType.HasAttribute<DataContractAttribute>();
 
             var properties = operationType.GetProperties();
             var paramAttrs = new Dictionary<string, ApiMemberAttribute[]>();
             var allowableParams = new List<ApiAllowableValuesAttribute>();
-            var defaultOperationParameters = new List<SwaggerParameter>();
+            var defaultOperationParameters = new List<Swagger2Parameter>();
 
             var hasApiMembers = false;
 
@@ -583,7 +583,7 @@ namespace ServiceStack.Api.Swagger
                         ? "form" 
                         : "query";
 
-                defaultOperationParameters.Add(new SwaggerParameter {
+                defaultOperationParameters.Add(new Swagger2Parameter {
                     Type = GetSwaggerTypeName(property.PropertyType),
                     AllowMultiple = false,
                     Description = property.PropertyType.GetDescription(),
@@ -597,7 +597,7 @@ namespace ServiceStack.Api.Swagger
             var methodOperationParameters = defaultOperationParameters;
             if (hasApiMembers)
             {
-                methodOperationParameters = new List<SwaggerParameter>();
+                methodOperationParameters = new List<Swagger2Parameter>();
                 foreach (var key in paramAttrs.Keys)
                 {
                     var apiMembers = paramAttrs[key];
@@ -608,7 +608,7 @@ namespace ServiceStack.Api.Swagger
                             && !string.Equals(member.ParameterType, "model")
                             && methodOperationParameters.All(x => x.Name != (member.Name ?? key)))
                         {
-                            methodOperationParameters.Add(new SwaggerParameter
+                            methodOperationParameters.Add(new Swagger2Parameter
                             {
                                 Type = member.DataType ?? SwaggerType.String,
                                 AllowMultiple = member.AllowMultiple,
@@ -629,7 +629,7 @@ namespace ServiceStack.Api.Swagger
                     && !methodOperationParameters.Any(p => "body".EqualsIgnoreCase(p.ParamType)))
                 {
                     ParseModel(models, operationType, route, verb);
-                    methodOperationParameters.Add(new SwaggerParameter
+                    methodOperationParameters.Add(new Swagger2Parameter
                     {
                         ParamType = "body",
                         Name = "body",

@@ -70,9 +70,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\IOrderedDictionary.cs" />
     <Compile Include="Support\OrderedDictionary.cs" />
-    <Compile Include="SwaggerApiService.cs" />
-    <Compile Include="SwaggerFeature.cs" />
-    <Compile Include="SwaggerResourcesService.cs" />
+    <Compile Include="Swagger2ApiService.cs" />
+    <Compile Include="Swagger2Feature.cs" />
+    <Compile Include="Swagger2ResourcesService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Signed.csproj">
