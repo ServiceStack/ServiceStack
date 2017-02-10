@@ -32,22 +32,6 @@ namespace ServiceStack.Api.Swagger2
         public Swagger2Info Info { get; set; }
     }
 
-    [DataContract]
-    public class Swagger2Info
-    {
-        [DataMember(Name = "title")]
-        public string Title { get; set; }
-        [DataMember(Name = "description")]
-        public string Description { get; set; }
-        [DataMember(Name = "termsOfServiceUrl")]
-        public string TermsOfServiceUrl { get; set; }
-        [DataMember(Name = "contact")]
-        public string Contact { get; set; }
-        [DataMember(Name = "license")]
-        public string License { get; set; }
-        [DataMember(Name = "licenseUrl")]
-        public string LicenseUrl { get; set; }
-    }
 
     [DataContract]
     public class Swagger2ResourceRef

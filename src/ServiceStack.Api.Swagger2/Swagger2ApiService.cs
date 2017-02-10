@@ -15,6 +15,298 @@ namespace ServiceStack.Api.Swagger2
     using ServiceStack.Api.Swagger2.Support;
 
     [DataContract]
+    public class Swagger2ApiDeclaration
+    {
+        [DataMember(Name = "swagger")]
+        public string Swagger => "2.0";
+
+        [DataMember(Name = "info")]
+        public Swagger2Info Info { get; set; }
+
+        [DataMember(Name = "host")]
+        public string Host { get; set; }
+
+        [DataMember(Name = "basePath")]
+        public string BasePath { get; set; }
+
+        [DataMember(Name = "schemes")]
+        public List<string> Schemes { get; set; }
+
+        [DataMember(Name = "consumes")]
+        public List<string> Consumes { get; set; }
+
+        [DataMember(Name = "produces")]
+        public List<string> Produces { get; set; }
+
+        [DataMember(Name = "paths")]
+        public Dictionary<string, Swagger2Path> Paths { get; set; }
+
+        [DataMember(Name = "definitions")]
+        public Dictionary<string, Swagger2Schema> Definitions { get; set; }
+
+        [DataMember(Name = "parameters")]
+        public Dictionary<string, Swagger2Parameter> Parameters { get; set; }
+
+        [DataMember(Name = "responses")]
+        public Dictionary<string, Swagger2Response> Responses { get; set; }
+
+        [DataMember(Name = "securityDefinitions")]
+        public Dictionary<string, Swagger2SecuritySchema> SecurityDefinitions { get; set; }
+
+        [DataMember(Name = "security")]
+        public Dictionary<string, List<string>> Security { get; set; }
+
+        [DataMember(Name = "tags")]
+        public Swagger2Tag Tags { get; set; }
+
+        [DataMember(Name = "externalDocs")]
+        public Swagger2ExternalDocumentation ExternalDocs { get; set; }
+    }
+
+    [DataContract]
+    public class Swagger2Info
+    {
+        [DataMember(Name = "title")]
+        public string Title { get; set; }
+        [DataMember(Name = "description")]
+        public string Description { get; set; }
+        [DataMember(Name = "termsOfServiceUrl")]
+        public string TermsOfServiceUrl { get; set; }
+        [DataMember(Name = "contact")]
+        public Swagger2Contact Contact { get; set; }
+        [DataMember(Name = "license")]
+        public Swagger2License License { get; set; }
+        [DataMember(Name = "version")]
+        public string Version { get; set; }
+    }
+
+    [DataContract]
+    public class Swagger2Contact
+    {
+        [DataMember(Name = "name")]
+        public string Name { get; set; }
+        [DataMember(Name = "url")]
+        public string Url { get; set; }
+        [DataMember(Name = "email")]
+        public string Email { get; set; }
+    }
+
+    [DataContract]
+    public class Swagger2License
+    {
+        [DataMember(Name = "name")]
+        public string Name { get; set; }
+        [DataMember(Name = "url")]
+        public string Url { get; set; }
+    }
+
+
+    [DataContract]
+    public abstract class Swagger2DataTypeFields
+    {
+        [DataMember(Name = "type")]
+        public string Type { get; set; }
+        [DataMember(Name = "format")]
+        public string Format { get; set; }
+        [DataMember(Name = "items")]
+        public Dictionary<string, string> Items { get; set; }
+        [DataMember(Name = "collectionFormat")]
+        public string CollectionFormat { get; set; }
+        [DataMember(Name = "default")]
+        public string Default { get; set; }
+        [DataMember(Name = "maximum")]
+        public string Maximum { get; set; }
+        [DataMember(Name = "exclusiveMaximum")]
+        public string ExclusiveMaximum { get; set; }
+        [DataMember(Name = "minimum")]
+        public string Minimum { get; set; }
+        [DataMember(Name = "exclusiveMinimum")]
+        public string ExclusiveMinimum { get; set; }
+        [DataMember(Name = "maxLength")]
+        public int MaxLength { get; set; }
+        [DataMember(Name = "minLength")]
+        public int MinLength { get; set; }
+        [DataMember(Name = "pattern")]
+        public string Pattern { get; set; }
+        [DataMember(Name = "maxItems")]
+        public int MaxItems { get; set; }
+        [DataMember(Name = "minItems")]
+        public int MinItems { get; set; }
+        [DataMember(Name = "uniqueItems")]
+        public bool UniqueItems { get; set; }
+        [DataMember(Name = "enum")]
+        public List<string> Enum { get; set; }
+        [DataMember(Name = "multipleOf")]
+        public int MultipleOf { get; set; }
+    }
+
+    [DataContract]
+    public class Swagger2Response
+    {
+        [DataMember(Name = "description")]
+        public string Description { get; set; }
+        [DataMember(Name = "schema")]
+        public Swagger2Schema Schema { get; set; }
+        [DataMember(Name = "headers")]
+        public Dictionary<string, Swagger2Property> Headers { get; set; }
+        [DataMember(Name = "examples")]
+        public Dictionary<string, string> Examples { get; set; }
+    }
+
+    [DataContract]
+    public class Swagger2Schema : Swagger2DataTypeFields
+    {
+        [DataMember(Name = "discriminator")]
+        public string Discriminator { get; set; }
+        [DataMember(Name = "readOnly")]
+        public bool ReadOnly { get; set; }
+        [DataMember(Name = "xml")]
+        public Swagger2XmlObject Xml { get; set; }
+        [DataMember(Name = "externalDocs")]
+        public Swagger2ExternalDocumentation ExternalDocs { get; set; }
+        [DataMember(Name = "example")]
+        public string Example { get; set; }
+
+        //TODO: allOf, properties, additionalProperties
+    }
+
+    [DataContract]
+    public class Swagger2Path
+    {
+        [DataMember(Name = "$ref")]
+        public string Ref { get; set; }
+        [DataMember(Name = "get")]
+        public Swagger2Operation Get { get; set; }
+        [DataMember(Name = "put")]
+        public Swagger2Operation Put { get; set; }
+        [DataMember(Name = "post")]
+        public Swagger2Operation Post { get; set; }
+        [DataMember(Name = "delete")]
+        public Swagger2Operation Delete { get; set; }
+        [DataMember(Name = "options")]
+        public Swagger2Operation Options { get; set; }
+        [DataMember(Name = "head")]
+        public Swagger2Operation Head { get; set; }
+        [DataMember(Name = "patch")]
+        public Swagger2Operation Patch { get; set; }
+        [DataMember(Name = "parameters")]
+        public List<Swagger2Parameter> Parameters { get; set; }
+    }
+
+    [DataContract]
+    public class Swagger2Operation
+    {
+        [DataMember(Name = "tags")]
+        public List<string> Tags { get; set; }
+        [DataMember(Name = "summary")]
+        public string Summary { get; set; }
+        [DataMember(Name = "description")]
+        public string Description { get; set; }
+        [DataMember(Name = "externalDocs")]
+        public Swagger2ExternalDocumentation ExternalDocs { get; set; }
+        [DataMember(Name = "operationId")]
+        public string OperationId { get; set; }
+        [DataMember(Name = "consumes")]
+        public List<string> Consumes { get; set; }
+        [DataMember(Name = "produces")]
+        public List<string> Produces { get; set; }
+        [DataMember(Name = "parameters")]
+        public List<Swagger2Parameter> Parameters { get; set; }
+        [DataMember(Name = "responses")]
+        public Dictionary<string, Swagger2Response> Responses { get; set; }
+        [DataMember(Name = "schemes")]
+        public List<string> Schemes { get; set; }
+        [DataMember(Name = "deprecated")]
+        public bool Deprecated { get; set; }
+        [DataMember(Name = "deprecated")]
+        public Dictionary<string, List<string>> Security { get; set; }
+    }
+
+    [DataContract]
+    public class Swagger2Parameter : Swagger2DataTypeFields
+    {
+        [DataMember(Name = "name")]
+        public string Name { get; set; }
+        [DataMember(Name = "in")]
+        public string In { get; set; }
+        [DataMember(Name = "description")]
+        public string Description { get; set; }
+        [DataMember(Name = "required")]
+        public bool Required { get; set; }
+        [DataMember(Name = "schema")]
+        public Swagger2Schema Schema { get; set; }
+        [DataMember(Name = "allowEmptyValue")]
+        public bool AllowEmptyValue { get; set; }
+    }
+
+    [DataContract]
+    public class Swagger2XmlObject
+    {
+        [DataMember(Name = "name")]
+        public string Name { get; set; }
+        [DataMember(Name = "namespace")]
+        public string Namespace { get; set; }
+        [DataMember(Name = "prefix")]
+        public string Prefix { get; set; }
+        [DataMember(Name = "attribute")]
+        public bool Attribute { get; set; }
+        [DataMember(Name = "wrapped")]
+        public bool Wrapped { get; set; }
+    }
+
+    [DataContract]
+    public class Swagger2SecuritySchema
+    {
+        [DataMember(Name = "type")]
+        public string Type { get; set; }
+        [DataMember(Name = "description")]
+        public string Description { get; set; }
+        [DataMember(Name = "name")]
+        public string Name { get; set; }
+        [DataMember(Name = "in")]
+        public string In { get; set; }
+        [DataMember(Name = "flow")]
+        public string Flow { get; set; }
+        [DataMember(Name = "authorizationUrl")]
+        public string AuthorizationUrl { get; set; }
+        [DataMember(Name = "tokenUrl")]
+        public string TokenUrl { get; set; }
+        [DataMember(Name = "scopes")]
+        public Dictionary<string, string> Scopes { get; set; }
+    }
+
+    [DataContract]
+    public class Swagger2ExternalDocumentation
+    {
+        [DataMember(Name = "description")]
+        public string Description { get; set; }
+        [DataMember(Name = "url")]
+        public string Url { get; set;  }
+    }
+
+    [DataContract]
+    public class Swagger2Tag
+    {
+        [DataMember(Name = "name")]
+        public string Name { get; set; }
+        [DataMember(Name = "description")]
+        public string Description { get; set; }
+        [DataMember(Name = "externalDocs")]
+        public Swagger2ExternalDocumentation ExternalDocs { get; set; }
+    }
+
+    [DataContract]
+    public class Swagger2Security
+    {
+        [DataMember(Name = "name")]
+        public string Name { get; set; }
+        [DataMember(Name = "description")]
+        public string Description { get; set; }
+        [DataMember(Name = "externalDocs")]
+        public Swagger2ExternalDocumentation ExternalDocs { get; set; }
+    }
+
+    [DataContract]
     [Exclude(Feature.Soap)]
     public class Swagger2Resource : IReturn<Swagger2ApiDeclaration>
     {
@@ -25,163 +317,93 @@ namespace ServiceStack.Api.Swagger2
     }
 
     [DataContract]
-    public class Swagger2ApiDeclaration
-    {
-        [DataMember(Name = "swaggerVersion")]
-        public string SwaggerVersion
-        {
-            get { return "2.10"; }
-        }
-        [DataMember(Name = "apiVersion")]
-        public string ApiVersion { get; set; }
-        [DataMember(Name = "basePath")]
-        public string BasePath { get; set; }
-        [DataMember(Name = "resourcePath")]
-        public string ResourcePath { get; set; }
-        [DataMember(Name = "apis")]
-        public List<Swagger2Api> Apis { get; set; }
-        [DataMember(Name = "models")]
-        public Dictionary<string, Swagger2Model> Models { get; set; }
-        [DataMember(Name = "produces")]
-        public List<string> Produces { get; set; }
-        [DataMember(Name = "consumes")]
-        public List<string> Consumes { get; set; }
-    }
-
-    [DataContract]
-    public class Swagger2Model
-    {
-        [DataMember(Name = "id")]
-        public string Id { get; set; }
-        [DataMember(Name = "description")]
-        public string Description { get; set; }
-        [DataMember(Name = "required")]
-        public List<string> Required { get; set; }
-        [DataMember(Name = "properties")]
-        public OrderedDictionary<string, Swagger2Property> Properties { get; set; }
-        [DataMember(Name = "subTypes")]
-        public List<string> SubTypes { get; set; }
-        [DataMember(Name = "discriminator")]
-        public string Discriminator { get; set; }
-    }
-
-    [DataContract]
-    public class Swagger2Api
-    {
-        [DataMember(Name = "path")]
-        public string Path { get; set; }
-        [DataMember(Name = "description")]
-        public string Description { get; set; }
-        [DataMember(Name = "operations")]
-        public List<Swagger2Operation> Operations { get; set; }
-    }
-
-    [DataContract]
-    public class Swagger2Operation
-    {
-        [DataMember(Name = "method")]
-        public string Method { get; set; }
-        [DataMember(Name = "summary")]
-        public string Summary { get; set; }
-        [DataMember(Name = "notes")]
-        public string Notes { get; set; }
-        [DataMember(Name = "nickname")]
-        public string Nickname { get; set; }
-        [DataMember(Name = "parameters")]
-        public List<Swagger2Parameter> Parameters { get; set; }
-        [DataMember(Name = "responseMessages")]
-        public List<Swagger2ResponseMessage> ResponseMessages { get; set; }
-        [DataMember(Name = "produces")]
-        public List<string> Produces { get; set; }
-        [DataMember(Name = "consumes")]
-        public List<string> Consumes { get; set; }
-        [DataMember(Name = "deprecated")]
-        public string Deprecated { get; set; }
-        [DataMember(Name = "responseClass")]
-        public string ResponseClass { get; set; }
-        [DataMember(Name = "errorResponses")]
-        public List<ErrorResponseStatus> ErrorResponses { get; set; }
-    }
-
-    [DataContract]
-    public class Swagger2ResponseMessage
-    {
-        [DataMember(Name = "code")]
-        public int Code { get; set; }
-        [DataMember(Name = "message")]
-        public string Message { get; set; }
-        [DataMember(Name = "responseModel")]
-        public string ResponseModel { get; set; }
-    }
-
-    [DataContract]
-    public class ErrorResponseStatus
-    {
-        [DataMember(Name = "code")]
-        public int StatusCode { get; set; }
-        [DataMember(Name = "reason")]
-        public string Reason { get; set; }
-    }
-
-    [DataContract]
-    public abstract class Swagger2DataTypeFields
-    {
-        [DataMember(Name = "type")]
-        public string Type { get; set; }
-        [DataMember(Name = "format")]
-        public string Format { get; set; }
-        [DataMember(Name = "defaultValue")]
-        public string DefaultValue { get; set; }
-        [DataMember(Name = "enum")]
-        public List<string> Enum { get; set; }
-        [DataMember(Name = "minimum")]
-        public string Minimum { get; set; }
-        [DataMember(Name = "maximum")]
-        public string Maximum { get; set; }
-        [DataMember(Name = "items")]
-        public Dictionary<string, string> Items { get; set; }
-        [DataMember(Name = "uniqueItems")]
-        public bool? UniqueItems { get; set; }
-    }
-
-    [DataContract]
     public class Swagger2Property : Swagger2DataTypeFields
     {
         [DataMember(Name = "description")]
         public string Description { get; set; }
     }
 
-    [DataContract]
-    public class Swagger2Parameter : Swagger2DataTypeFields
-    {
-        [DataMember(Name = "paramType")]
-        public string ParamType { get; set; }
-        [DataMember(Name = "name")]
-        public string Name { get; set; }
-        [DataMember(Name = "description")]
-        public string Description { get; set; }
-        [DataMember(Name = "required")]
-        public bool Required { get; set; }
-        [DataMember(Name = "allowMultiple")]
-        public bool AllowMultiple { get; set; }
-    }
+    //old declarations
+    /*    [DataContract]
+        public class Swagger2Model
+        {
+            [DataMember(Name = "id")]
+            public string Id { get; set; }
+            [DataMember(Name = "description")]
+            public string Description { get; set; }
+            [DataMember(Name = "required")]
+            public List<string> Required { get; set; }
+            [DataMember(Name = "properties")]
+            public OrderedDictionary<string, Swagger2Property> Properties { get; set; }
+            [DataMember(Name = "subTypes")]
+            public List<string> SubTypes { get; set; }
+            [DataMember(Name = "discriminator")]
+            public string Discriminator { get; set; }
+        }
 
-    [DataContract]
-    public class ParameterAllowableValues
-    {
-        [DataMember(Name = "valueType")]
-        public string ValueType { get; set; }
+        [DataContract]
+        public class Swagger2Api
+        {
+            [DataMember(Name = "path")]
+            public string Path { get; set; }
+            [DataMember(Name = "description")]
+            public string Description { get; set; }
+            [DataMember(Name = "operations")]
+            public List<Swagger2Operation> Operations { get; set; }
+        }
 
-        [DataMember(Name = "values")]
-        public string[] Values { get; set; }
 
-        [DataMember(Name = "min")]
-        public int? Min { get; set; }
+        [DataContract]
+        public class Swagger2ResponseMessage
+        {
+            [DataMember(Name = "code")]
+            public int Code { get; set; }
+            [DataMember(Name = "message")]
+            public string Message { get; set; }
+            [DataMember(Name = "responseModel")]
+            public string ResponseModel { get; set; }
+        }
 
-        [DataMember(Name = "max")]
-        public int? Max { get; set; }
-    }
+        [DataContract]
+        public class ErrorResponseStatus
+        {
+            [DataMember(Name = "code")]
+            public int StatusCode { get; set; }
+            [DataMember(Name = "reason")]
+            public string Reason { get; set; }
+        }
 
+        [DataContract]
+        public class Swagger2Parameter : Swagger2DataTypeFields
+        {
+            [DataMember(Name = "paramType")]
+            public string ParamType { get; set; }
+            [DataMember(Name = "name")]
+            public string Name { get; set; }
+            [DataMember(Name = "description")]
+            public string Description { get; set; }
+            [DataMember(Name = "required")]
+            public bool Required { get; set; }
+            [DataMember(Name = "allowMultiple")]
+            public bool AllowMultiple { get; set; }
+        }
+
+        [DataContract]
+        public class ParameterAllowableValues
+        {
+            [DataMember(Name = "valueType")]
+            public string ValueType { get; set; }
+
+            [DataMember(Name = "values")]
+            public string[] Values { get; set; }
+
+            [DataMember(Name = "min")]
+            public int? Min { get; set; }
+
+            [DataMember(Name = "max")]
+            public int? Max { get; set; }
+        }
+        */
     [AddHeader(DefaultContentType = MimeTypes.Json)]
     [DefaultRequest(typeof(Swagger2Resource))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
