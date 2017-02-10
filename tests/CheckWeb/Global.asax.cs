@@ -298,4 +298,14 @@ namespace CheckWeb
             Profiler.Stop();
         }
     }
+
+    public static class HtmlHelpers
+    {
+        public static MvcHtmlString DisplayPrice(this HtmlHelper html, decimal price)
+        {
+            return MvcHtmlString.Create(price == 0
+                ? "<span>FREE!</span>"
+                : $"{price:C2}");
+        }
+    }
 }
