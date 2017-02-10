@@ -217,8 +217,7 @@ namespace ServiceStack.NativeTypes
                 metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturnVoid)));
             }
 
-            if (typesConfig.ExportTypes == null)
-                typesConfig.ExportTypes = new HashSet<Type>();
+            ExportMissingSystemTypes(typesConfig);
 
             typesConfig.ExportTypes.Add(typeof(Tuple<>));
             typesConfig.ExportTypes.Add(typeof(Tuple<,>));
@@ -241,6 +240,8 @@ namespace ServiceStack.NativeTypes
             //Include SS types by removing ServiceStack namespaces
             if (typesConfig.AddServiceStackTypes)
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
+
+            ExportMissingSystemTypes(typesConfig);
 
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
