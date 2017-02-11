@@ -253,9 +253,11 @@ namespace ServiceStack.NativeTypes.Java
 
         private bool ReferencesGson(MetadataTypes metadata)
         {
-            return metadata.GetAllMetadataTypes().Any(x => JavaGeneratorExtensions.JavaKeyWords.Contains(x.Name)
-                || x.Properties.Safe().Any(p => p.DataMember != null && p.DataMember.Name != null)
-                || (x.ReturnMarkerTypeName != null && x.ReturnMarkerTypeName.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
+            return metadata.GetAllMetadataTypes()
+                .Any(x => x.Properties.Safe().Any(p => JavaGeneratorExtensions.JavaKeyWords.Contains(p.Name.PropertyStyle()))
+                    || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
+                    || (x.ReturnMarkerTypeName != null && x.ReturnMarkerTypeName.Name.IndexOf('`') >= 0) //uses TypeToken<T>
+                );
         }
 
         private static bool ReferencesStream(MetadataTypes metadata)
