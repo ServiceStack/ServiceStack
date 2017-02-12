@@ -15,12 +15,6 @@ namespace ServiceStack.Host
 
         public static Cookies CreateCookies(IHttpResponse httpRes)
         {
-#if NETSTANDARD1_6
-            if (httpRes?.OriginalResponse is Microsoft.AspNetCore.Http.HttpResponse)
-            {
-                return new NetCoreCookies(httpRes);
-            }
-#endif
             return new NetCookies(httpRes);
         }
 
@@ -80,53 +74,6 @@ namespace ServiceStack.Host
         }
     }
 
-#if NETSTANDARD1_6
-    public class NetCoreCookies : Cookies
-    {
-        private readonly Microsoft.AspNetCore.Http.HttpResponse response;
-
-        public NetCoreCookies(IHttpResponse response)
-            : this((Microsoft.AspNetCore.Http.HttpResponse)response.OriginalResponse){}
-
-        public NetCoreCookies(Microsoft.AspNetCore.Http.HttpResponse response)
-        {
-            this.response = response;
-        }
-
-        public override void DeleteCookie(string cookieName)
-        {
-            response.Cookies.Delete(cookieName);
-        }
-
-        public override void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
-        {
-            var options = new Microsoft.AspNetCore.Http.CookieOptions
-            {
-                Path = RootPath,
-                Expires = DateTime.UtcNow.AddYears(20)
-            };
-            if (secureOnly != null)
-            {
-                options.Secure = secureOnly.Value;
-            }
-            response.Cookies.Append(cookieName, cookieValue, options);
-        }
-
-        public override void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
-        {
-            var options = new Microsoft.AspNetCore.Http.CookieOptions
-            {
-                Path = RootPath,
-            };
-            if (secureOnly != null)
-            {
-                options.Secure = secureOnly.Value;
-            }
-            response.Cookies.Append(cookieName, cookieValue, options);
-        }
-    }
-#endif
-
     public static class CookiesExtensions
     {
         private static readonly DateTime Session = DateTime.MinValue;
@@ -159,7 +106,7 @@ namespace ServiceStack.Host
             var cookieOptions = new CookieOptions
             {
                 Path = cookie.Path,
-                Expires = cookie.Expires,
+                Expires = cookie.Expires == DateTime.MinValue ? (DateTimeOffset?)null : cookie.Expires,
                 HttpOnly = !HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
                 Secure = cookie.Secure
             };
@@ -204,7 +151,7 @@ namespace ServiceStack.Host
             {
                 sb.Append(";Secure");
             }
-            if (cookie.HttpOnly)
+            if (!HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly)
             {
                 sb.Append(";HttpOnly");
             }
