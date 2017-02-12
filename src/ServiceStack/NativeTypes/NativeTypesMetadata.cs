@@ -296,7 +296,7 @@ namespace ServiceStack.NativeTypes
                 Name = type.GetOperationName(),
                 Namespace = type.Namespace,
                 GenericArgs = type.IsGenericType()
-                    ? type.GetGenericArguments().Select(x => x.GetOperationName()).ToArray()
+                    ? type.GetGenericArguments().Select(x => x.GetFullyQualifiedName()).ToArray()
                     : null,
             };
         }
