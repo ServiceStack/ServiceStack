@@ -9,25 +9,13 @@ using Microsoft.AspNetCore.Http;
 
 namespace ServiceStack.Host
 {
-    public abstract class Cookies : ICookies
+    public class Cookies : ICookies
     {
         public const string RootPath = "/";
 
-        public static Cookies CreateCookies(IHttpResponse httpRes)
-        {
-            return new NetCookies(httpRes);
-        }
-
-        public abstract void DeleteCookie(string cookieName);
-        public abstract void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null);
-        public abstract void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null);
-    }
-
-    public class NetCookies : Cookies
-    {
         readonly IHttpResponse httpRes;
 
-        public NetCookies(IHttpResponse httpRes)
+        public Cookies(IHttpResponse httpRes)
         {
             this.httpRes = httpRes;
         }
@@ -35,7 +23,7 @@ namespace ServiceStack.Host
         /// <summary>
         /// Sets a persistent cookie which never expires
         /// </summary>
-        public override void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
+        public void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
             var cookie = new Cookie(cookieName, cookieValue, RootPath)
             {
@@ -51,7 +39,7 @@ namespace ServiceStack.Host
         /// <summary>
         /// Sets a session cookie which expires after the browser session closes
         /// </summary>
-        public override void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
+        public void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
             var cookie = new Cookie(cookieName, cookieValue, RootPath);
             if (secureOnly != null)
@@ -64,9 +52,9 @@ namespace ServiceStack.Host
         /// <summary>
         /// Deletes a specified cookie by setting its value to empty and expiration to -1 days
         /// </summary>
-        public override void DeleteCookie(string cookieName)
+        public void DeleteCookie(string cookieName)
         {
-            var cookie = new Cookie(cookieName, string.Empty, "/")
+            var cookie = new Cookie(cookieName, string.Empty, RootPath)
             {
                 Expires = DateTime.UtcNow.AddDays(-1)
             };
