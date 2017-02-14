@@ -1,11 +1,9 @@
 ﻿#if NETSTANDARD1_6
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
-using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Logging;
 using ServiceStack.NetCore;
@@ -18,9 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using ServiceStack.IO;
 using ServiceStack.VirtualPath;
-using System.Linq;
 using ServiceStack.Configuration;
 
 namespace ServiceStack

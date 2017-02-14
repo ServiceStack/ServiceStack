@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using ServiceStack.Configuration;

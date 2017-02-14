@@ -4,9 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
-using ServiceStack.Metadata;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -238,10 +236,12 @@ namespace ServiceStack.NativeTypes
                     ? type.BaseType().GetGenericTypeDefinition()
                     : null;
 
+#pragma warning disable 618
                 if (!ignoreTypeFn(type.BaseType()) || 
                     genericBaseTypeDef == typeof(QueryBase<,>) ||
                     genericBaseTypeDef == typeof(QueryDb<,>) ||
                     genericBaseTypeDef == typeof(QueryData<,>))
+#pragma warning restore 618
                 {
                     if (genericBaseTypeDef != null)
                     {

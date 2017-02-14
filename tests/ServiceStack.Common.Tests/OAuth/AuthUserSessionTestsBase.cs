@@ -95,14 +95,14 @@ namespace ServiceStack.Common.Tests.OAuth
             .Register(null);
 
             mockService = new Mock<IServiceBase>();
-            mockService.Expect(x => x.TryResolve<IAuthRepository>()).Returns(userAuthRepository);
+            mockService.Setup(x => x.TryResolve<IAuthRepository>()).Returns(userAuthRepository);
             requestContext = new BasicRequest
             {
                 Headers = {
                     {"X-ss-id", SessionExtensions.CreateRandomSessionId() }
                 }
             };
-            mockService.Expect(x => x.Request).Returns(requestContext);
+            mockService.Setup(x => x.Request).Returns(requestContext);
             service = mockService.Object;
 
             RegisterDto = new Register

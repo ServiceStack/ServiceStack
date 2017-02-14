@@ -20,11 +20,8 @@ namespace ServiceStack.FluentValidation.Internal
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Results;
     using Validators;
 
@@ -37,7 +34,7 @@ namespace ServiceStack.FluentValidation.Internal
         /// <summary>
         /// Creates a new property rule from a lambda expression.
         /// </summary>
-        public new static CollectionPropertyRule<TProperty> Create<T>(Expression<Func<T, IEnumerable<TProperty>>> expression, Func<CascadeMode> cascadeModeThunk)
+        public static CollectionPropertyRule<TProperty> Create<T>(Expression<Func<T, IEnumerable<TProperty>>> expression, Func<CascadeMode> cascadeModeThunk)
         {
             var member = expression.GetMember();
             var compiled = expression.Compile();

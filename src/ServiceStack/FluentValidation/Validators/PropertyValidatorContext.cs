@@ -19,16 +19,11 @@
 namespace ServiceStack.FluentValidation.Validators
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using Attributes;
     using Internal;
 
     public class PropertyValidatorContext
     {
         private readonly MessageFormatter messageFormatter = new MessageFormatter();
-        private bool propertyValueSet;
         private readonly Lazy<object> propertyValueContainer;
 
         public ValidationContext ParentContext { get; private set; }
