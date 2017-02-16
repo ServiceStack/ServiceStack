@@ -13,7 +13,10 @@ namespace ServiceStack.VirtualPath
     /// <summary>
     /// In Memory Virtual Path Provider.
     /// </summary>
-    public class InMemoryVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFiles, IWriteableVirtualPathProvider
+    public class InMemoryVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFiles
+#pragma warning disable 618
+        , IWriteableVirtualPathProvider
+#pragma warning restore 618
     {
         public InMemoryVirtualPathProvider(IAppHost appHost)
             : base(appHost)
@@ -42,7 +45,7 @@ namespace ServiceStack.VirtualPath
             return files.FirstOrDefault(x => x.FilePath == filePath);
         }
 
-        public IVirtualDirectory GetDirectory(string dirPath)
+        public override IVirtualDirectory GetDirectory(string dirPath)
         {
             var dir = new InMemoryVirtualDirectory(this, dirPath);
             return dir.Files.Any()

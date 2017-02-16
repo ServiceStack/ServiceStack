@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceHost.Tests
             var headers = PclExportClient.Instance.NewNameValueCollection();
             headers.Add("Authorization", authHeader);
 
-            requestMock.Expect(e => e.Headers).Returns(headers);
+            requestMock.Setup(e => e.Headers).Returns(headers);
 
             var res = requestMock.Object.GetDigestAuth();
 

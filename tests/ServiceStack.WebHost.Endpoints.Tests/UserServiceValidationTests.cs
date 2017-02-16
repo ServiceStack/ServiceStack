@@ -26,7 +26,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class UserValidator : AbstractValidator<UserValidation>, IRequiresRequest
     {
         public IAddressValidator AddressValidator { get; set; }
-        public IRequest Request { get; set; }
 
         public UserValidator()
         {

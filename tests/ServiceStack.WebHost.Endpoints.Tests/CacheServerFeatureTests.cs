@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Caching;
-using ServiceStack.Text;
-using System.Linq;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

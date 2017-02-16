@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -638,7 +637,7 @@ namespace ServiceStack
                 EnsureSynchronizationContext();
                 try {
                     ConnectionInfo.UnRegisterUrl.GetStringFromUrl();
-                } catch (Exception ignore) {}
+                } catch (Exception) {}
             }
 
             using (response)

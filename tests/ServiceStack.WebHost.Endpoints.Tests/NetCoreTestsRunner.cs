@@ -1,11 +1,9 @@
 using NUnitLite;
 using NUnit.Common;
 using System.Reflection;
-using ServiceStack;
 using ServiceStack.Text;
 using System;
 using System.Globalization;
-using System.Threading;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

@@ -6,7 +6,6 @@ using Moq;
 using NUnit.Framework;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Testing;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Tests
@@ -46,9 +45,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
         {
             var handler = new TestHandler();
             var request = new Mock<IHttpRequest>();
-            request.Expect(req => req.UserHostAddress).Returns(format);
-            request.Expect(req => req.IsSecureConnection).Returns(false);
-            request.Expect(req => req.Verb).Returns("GET");
+            request.Setup(req => req.UserHostAddress).Returns(format);
+            request.Setup(req => req.IsSecureConnection).Returns(false);
+            request.Setup(req => req.Verb).Returns("GET");
 
             Assert.AreEqual(expected | RequestAttributes.HttpGet | RequestAttributes.InSecure, request.Object.GetAttributes());
         }

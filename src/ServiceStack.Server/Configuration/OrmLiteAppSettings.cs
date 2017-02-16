@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
@@ -100,7 +99,7 @@ namespace ServiceStack.Configuration
             return base.GetNullableString(name);
         }
 
-        public void Set<T>(string key, T value)
+        public override void Set<T>(string key, T value)
         {
             DbSettings.Set(key, value);
         }

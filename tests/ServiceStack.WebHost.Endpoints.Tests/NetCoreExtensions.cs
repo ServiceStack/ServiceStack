@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using ServiceStack;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -12,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return (HttpWebResponse)PclExport.Instance.GetResponse(request);
         }
 
-        public static bool AddRange(this HttpWebRequest request, int from, int to) 
+        public static bool AddRange(this HttpWebRequest request, int from, int? to) 
         {
             string rangeSpecifier = "bytes";
             string curRange = request.Headers[HttpRequestHeader.Range];
