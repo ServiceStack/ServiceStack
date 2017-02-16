@@ -36,7 +36,9 @@ namespace ServiceStack.Support.Markdown
 	    private static ILog Log = LogManager.GetLogger(typeof (Evaluator));
 
 		const string StaticMethodName = "__tmp";
+#if !NETSTANDARD1_6
 		Assembly compiledAssembly;
+#endif
 		Type compiledType = null;
 		object compiled = null;
 		EmptyCtorDelegate compiledTypeCtorFn;

@@ -140,6 +140,11 @@
     <Compile Include="Platforms\PlatformNetCore.cs" />
     <Compile Include="Platforms\PlatformNetCore.Web.cs" />
     <Compile Include="Platforms\PlatformNetCore.Config.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="RequiresSchemaProviders.cs" />
     <Compile Include="CancellableRequestsFeature.cs" />
     <Compile Include="Configuration\EnvironmentVariableSettings.cs" />
@@ -524,7 +529,6 @@
     <Compile Include="Html\ViewDataDictionary.cs" />
     <Compile Include="Html\ViewDataDictionary`1.cs" />
     <Compile Include="Html\ViewDataInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="Html\ITemplatePage.cs" />
     <Compile Include="FileExtensions.cs" />
     <Compile Include="Host\HttpFile.cs" />
@@ -676,7 +680,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <CustomToolNamespace>ServiceStack.ResourceDesigner</CustomToolNamespace>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

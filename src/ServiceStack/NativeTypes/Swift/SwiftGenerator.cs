@@ -737,10 +737,12 @@ namespace ServiceStack.NativeTypes.Swift
             if (foundType != null)
                 return foundType;
 
+#pragma warning disable 618
             if (typeName.Name == typeof(QueryBase).Name || 
                 typeName.Name == typeof(QueryBase<>).Name || 
                 typeName.Name == typeof(QueryDb<>).Name)
                 return CreateType(typeof(QueryBase)); //Properties are on QueryBase
+#pragma warning restore 618
 
 
             if (typeName.Name == typeof(AuthUserSession).Name)

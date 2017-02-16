@@ -5,5 +5,8 @@
   "runtimes": {
     "win": {},
     "win-x86": {}
+  },
+  "dependencies": {
+    "Moq": "4.5.30"
   }
 }

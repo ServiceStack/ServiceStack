@@ -134,7 +134,7 @@ namespace ServiceStack.Html
                     {
                         modelState.Add(kvp.Key, valueState);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         throw;
                     }

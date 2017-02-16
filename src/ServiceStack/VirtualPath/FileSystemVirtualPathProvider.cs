@@ -5,7 +5,11 @@ using ServiceStack.IO;
 
 namespace ServiceStack.VirtualPath
 {
-    public class FileSystemVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFiles, IWriteableVirtualPathProvider
+    public class FileSystemVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFiles
+#pragma warning disable 618
+        , IWriteableVirtualPathProvider
+#pragma warning restore 618
+
     {
         protected DirectoryInfo RootDirInfo;
         protected FileSystemVirtualDirectory RootDir;
