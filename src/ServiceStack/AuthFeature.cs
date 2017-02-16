@@ -45,7 +45,7 @@ namespace ServiceStack
 
         public int? MaxLoginAttempts { get; set; }
 
-        public Func<IServiceBase, Authenticate, AuthenticateResponse, object> AuthResponseDecorator { get; set; }
+        public Func<AuthFilterContext, object> AuthResponseDecorator { get; set; }
 
         public bool IncludeAssignRoleServices
         {

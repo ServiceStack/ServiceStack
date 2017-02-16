@@ -513,19 +513,19 @@ namespace ServiceStack.Auth
             feature.AuthResponseDecorator = AuthenticateResponseDecorator;
         }
 
-        public object AuthenticateResponseDecorator(IServiceBase authService, Authenticate request, AuthenticateResponse authResponse)
+        public object AuthenticateResponseDecorator(AuthFilterContext authCtx)
         {
-            if (authResponse.BearerToken == null || request.UseTokenCookie != true)
-                return authResponse;
+            if (authCtx.AuthResponse.BearerToken == null || authCtx.AuthRequest.UseTokenCookie != true)
+                return authCtx.AuthResponse;
 
-            authService.Request.RemoveSession(authService.GetSessionId());
+            authCtx.AuthService.Request.RemoveSession(authCtx.AuthService.GetSessionId());
 
-            return new HttpResult(authResponse)
+            return new HttpResult(authCtx.AuthResponse)
             {
                 Cookies = {
-                    new Cookie(Keywords.TokenCookie, authResponse.BearerToken, Cookies.RootPath) {
+                    new Cookie(Keywords.TokenCookie, authCtx.AuthResponse.BearerToken, Cookies.RootPath) {
                         HttpOnly = true,
-                        Secure = authService.Request.IsSecureConnection,
+                        Secure = authCtx.AuthService.Request.IsSecureConnection,
                         Expires = DateTime.UtcNow.Add(ExpireTokensIn),
                     }
                 }

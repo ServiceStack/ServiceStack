@@ -37,9 +37,11 @@ namespace ServiceStack.Auth
             base.Init(appSettings);
         }
 
-        public AuthenticateResponse Execute(IServiceBase authService, IAuthProvider authProvider, IAuthSession session, AuthenticateResponse response)
+        public void Execute(AuthFilterContext authContext)
         {
-            if (SetBearerTokenOnAuthenticateResponse && response.BearerToken == null && session.IsAuthenticated)
+            var session = authContext.Session;
+            var authService = authContext.AuthService;
+            if (SetBearerTokenOnAuthenticateResponse && authContext.AuthResponse.BearerToken == null && session.IsAuthenticated)
             {
                 if (!RequireSecureConnection || authService.Request.IsSecureConnection)
                 {
@@ -51,11 +53,9 @@ namespace ServiceStack.Auth
                         perms = authRepo.GetPermissions(session.UserAuthId);
                     }
 
-                    response.BearerToken = CreateJwtBearerToken(session, roles, perms);
+                    authContext.AuthResponse.BearerToken = CreateJwtBearerToken(session, roles, perms);
                 }
             }
-
-            return response;
         }
 
         public string CreateJwtBearerToken(IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null)
