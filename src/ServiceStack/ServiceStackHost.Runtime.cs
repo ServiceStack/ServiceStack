@@ -652,7 +652,7 @@ namespace ServiceStack
             return TryResolve<IAuthRepository>();
         }
 
-        public virtual ICookies GetCookies(IHttpResponse res) => Cookies.CreateCookies(res);
+        public virtual ICookies GetCookies(IHttpResponse res) => new Cookies(res);
     }
 
 }
