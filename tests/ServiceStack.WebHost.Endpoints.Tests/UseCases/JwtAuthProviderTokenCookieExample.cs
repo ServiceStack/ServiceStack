@@ -138,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             authClient.Send(new ConvertSessionToToken());
             jwtToken = authClient.GetTokenCookie(); //From ss-tok Cookie
-            Assert.That(jwtToken, Is.EqualTo(authResponse.BearerToken));
+            Assert.That(jwtToken, Is.Not.Null);
 
             response = authClient.Send(new HelloJwt { Name = "from auth service" });
             Assert.That(response.Result, Is.EqualTo("Hello, from auth service"));
