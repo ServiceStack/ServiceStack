@@ -32,13 +32,10 @@ namespace ServiceStack.Auth
             {
                 if (tokens.UserId != null)
                 {
-                    var oauthToken = new OAuthAccessToken
-                    {
-                        OAuthProvider = this,
-                        AccessToken = tokens.AccessToken,
-                        AccessTokenSecret = tokens.AccessTokenSecret,
-                    };
-                    var json = AuthHttpGateway.DownloadTwitterUserInfo(oauthToken, tokens.UserId);
+                    var json = AuthHttpGateway.DownloadTwitterUserInfo(
+                        ConsumerKey, ConsumerSecret,
+                        tokens.AccessToken, tokens.AccessTokenSecret, 
+                        tokens.UserId);
                     var objs = JsonObject.ParseArray(json);
                     if (objs.Count > 0)
                     {

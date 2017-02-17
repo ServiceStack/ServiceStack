@@ -251,14 +251,18 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        // 
+        public static string AuthorizeRequest(OAuthProvider provider, string oauthToken, string oauthTokenSecret,
+            string method, Uri uri, string data)
+        {
+            return AuthorizeRequest(provider.ConsumerKey, provider.ConsumerSecret, oauthToken, oauthTokenSecret, method, uri, data);
+        }
+
         // Assign the result to the Authorization header, like this:
         // request.Headers [HttpRequestHeader.Authorization] = AuthorizeRequest (...)
-        //
-        public static string AuthorizeRequest(OAuthProvider provider, string oauthToken, string oauthTokenSecret, string method, Uri uri, string data)
+        public static string AuthorizeRequest(string consumerKey, string consumerSecret, string oauthToken, string oauthTokenSecret, string method, Uri uri, string data)
         {
-            var headers = new Dictionary<string, string>() {
-                { "oauth_consumer_key", provider.ConsumerKey },
+            var headers = new Dictionary<string, string> {
+                { "oauth_consumer_key", consumerKey },
                 { "oauth_nonce", MakeNonce () },
                 { "oauth_signature_method", "HMAC-SHA1" },
                 { "oauth_timestamp", MakeTimestamp () },
@@ -284,7 +288,7 @@ namespace ServiceStack.Auth
             }
 
             string signature = MakeSignature(method, uri.AbsoluteUri.LeftPart('?'), signatureHeaders);
-            string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, oauthTokenSecret);
+            string compositeSigningKey = MakeSigningKey(consumerSecret, oauthTokenSecret);
             string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
             headers.Add("oauth_signature", OAuthUtils.PercentEncode(oauth_signature));

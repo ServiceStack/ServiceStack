@@ -117,10 +117,9 @@ namespace ServiceStack.Common.Tests.OAuth
     ""full_name"":""{1}""
 }";
 
-        public string DownloadTwitterUserInfo(OAuthAccessToken oauthToken, string twitterUserId)
+        public string DownloadTwitterUserInfo(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId)
         {
             twitterUserId.ThrowIfNullOrEmpty("twitterUserId");
-
             return JsonTwitter.Fmt(Tokens.DisplayName);
         }
 

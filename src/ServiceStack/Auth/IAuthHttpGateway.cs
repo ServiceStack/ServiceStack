@@ -5,7 +5,7 @@ namespace ServiceStack.Auth
 {
     public interface IAuthHttpGateway
     {
-        string DownloadTwitterUserInfo(OAuthAccessToken oauthToken, string twitterUserId);
+        string DownloadTwitterUserInfo(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId);
         string DownloadFacebookUserInfo(string facebookCode, params string[] fields);
         string DownloadYammerUserInfo(string yammerUserId);
     }
@@ -18,24 +18,27 @@ namespace ServiceStack.Auth
 
         public static string YammerUserUrl = "https://www.yammer.com/api/v1/users/{0}.json";
 
-        public string DownloadTwitterUserInfo(OAuthAccessToken oauthToken, string twitterUserId)
+        public string DownloadTwitterUserInfo(string consumerKey, string consumerSecret,
+            string accessToken, string accessTokenSecret, string twitterUserId)
         {
-            twitterUserId.ThrowIfNullOrEmpty("twitterUserId");
-
-            var url = TwitterUserUrl.Fmt(twitterUserId);
-            var json = GetJsonFromOAuthUrl(oauthToken, url);
-            return json;
+            twitterUserId.ThrowIfNullOrEmpty(nameof(twitterUserId));
+            return GetJsonFromOAuthUrl(consumerKey, consumerSecret, accessToken, accessTokenSecret,
+                TwitterUserUrl.Fmt(twitterUserId));
         }
 
-        public static string GetJsonFromOAuthUrl(OAuthAccessToken oauthToken, string url)
+        public static string GetJsonFromOAuthUrl(
+            string consumerKey, string consumerSecret,
+            string accessToken, string accessTokenSecret, 
+            string url, string data = null)
         {
             var uri = new Uri(url);
             var webReq = (HttpWebRequest)WebRequest.Create(uri);
             webReq.Accept = MimeTypes.Json;
-            if (oauthToken.AccessToken != null)
+
+            if (accessToken != null)
             {
                 webReq.Headers[HttpRequestHeader.Authorization] = OAuthAuthorizer.AuthorizeRequest(
-                    oauthToken.OAuthProvider, oauthToken.AccessToken, oauthToken.AccessTokenSecret, HttpMethods.Get, uri, null);
+                    consumerKey, consumerSecret, accessToken, accessTokenSecret, HttpMethods.Get, uri, data);
             }
 
             using (var webRes = PclExport.Instance.GetResponse(webReq))
@@ -88,12 +91,4 @@ namespace ServiceStack.Auth
             return json;
         }
     }
-
-    public class OAuthAccessToken
-    {
-        public OAuthProvider OAuthProvider { get; set; }
-        public string AccessToken { get; set; }
-        public string AccessTokenSecret { get; set; }
-    }
-
 }
