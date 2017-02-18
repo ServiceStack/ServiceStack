@@ -4,6 +4,7 @@ using System.Net;
 using Check.ServiceModel;
 using ServiceStack;
 using ServiceStack.Data;
+using ServiceStack.FluentValidation;
 
 namespace Check.ServiceInterface
 {
@@ -61,6 +62,21 @@ namespace Check.ServiceInterface
             }
 
             return request;
+        }
+
+        public object Any(ThrowValidation request)
+        {
+            return request.ConvertTo<ThrowValidationResponse>();
+        }
+    }
+
+    public class ThrowValidationValidator : AbstractValidator<ThrowValidation>
+    {
+        public ThrowValidationValidator()
+        {
+            RuleFor(x => x.Age).InclusiveBetween(1, 120);
+            RuleFor(x => x.Required).NotEmpty();
+            RuleFor(x => x.Email).NotEmpty().EmailAddress();
         }
     }
 }

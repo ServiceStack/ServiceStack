@@ -48,6 +48,7 @@ namespace CheckWeb
             {
                 //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Html },
+                UseCamelCase = true,
                 //AllowJsConfig = false,
 
                 // Set to return JSON if no request content type is defined
@@ -212,6 +213,7 @@ namespace CheckWeb
             Plugins.Add(new ValidationFeature());
 
             container.RegisterValidators(typeof(AppHost).Assembly);
+            container.RegisterValidators(typeof(ThrowValidationValidator).Assembly);
         }
 
         /// <summary>
