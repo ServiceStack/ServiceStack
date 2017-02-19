@@ -47,7 +47,7 @@ namespace ServiceStack.Auth
                 {
                     IEnumerable<string> roles = null, perms = null;
                     var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request) as IManageRoles;
-                    if (authRepo != null)
+                    if (authRepo != null && session.UserAuthId != null)
                     {
                         roles = authRepo.GetRoles(session.UserAuthId);
                         perms = authRepo.GetPermissions(session.UserAuthId);
