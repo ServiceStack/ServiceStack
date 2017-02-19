@@ -20,6 +20,49 @@ namespace ServiceStack.Auth
             this.AuthorizeUrl = appSettings.Get("oauth.twitter.AuthorizeUrl", Realm + "oauth/authenticate");
         }
 
+        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        {
+            var tokens = Init(authService, ref session, request);
+
+            //Default OAuth logic based on Twitter's OAuth workflow
+            if (!tokens.RequestToken.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
+            {
+                OAuthUtils.RequestToken = tokens.RequestToken;
+                OAuthUtils.RequestTokenSecret = tokens.RequestTokenSecret;
+                OAuthUtils.AuthorizationToken = request.oauth_token;
+                OAuthUtils.AuthorizationVerifier = request.oauth_verifier;
+
+                if (OAuthUtils.AcquireAccessToken())
+                {
+                    session.IsAuthenticated = true;
+                    tokens.AccessToken = OAuthUtils.AccessToken;
+                    tokens.AccessTokenSecret = OAuthUtils.AccessTokenSecret;
+
+                    return OnAuthenticated(authService, session, tokens, OAuthUtils.AuthInfo)
+                        ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access
+                }
+
+                //No Joy :(
+                tokens.RequestToken = null;
+                tokens.RequestTokenSecret = null;
+                this.SaveSession(authService, session, SessionExpiry);
+                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+            }
+            if (OAuthUtils.AcquireRequestToken())
+            {
+                tokens.RequestToken = OAuthUtils.RequestToken;
+                tokens.RequestTokenSecret = OAuthUtils.RequestTokenSecret;
+                this.SaveSession(authService, session, SessionExpiry);
+
+                //Redirect to OAuth provider to approve access
+                return authService.Redirect(AccessTokenUrlFilter(this, this.AuthorizeUrl
+                    .AddQueryParam("oauth_token", tokens.RequestToken)
+                    .AddQueryParam("oauth_callback", session.ReferrerUrl)));
+            }
+
+            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));
+        }
+
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             if (authInfo.ContainsKey("user_id"))
