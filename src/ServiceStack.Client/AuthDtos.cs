@@ -30,7 +30,10 @@ namespace ServiceStack
 
         [DataMember(Order = 15)] public bool? UseTokenCookie { get; set; }
 
-        [DataMember(Order = 16)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 16)] public string AccessToken { get; set; }
+        [DataMember(Order = 17)] public string AccessTokenSecret { get; set; }
+
+        [DataMember(Order = 18)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]

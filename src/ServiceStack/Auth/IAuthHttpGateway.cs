@@ -5,6 +5,7 @@ namespace ServiceStack.Auth
 {
     public interface IAuthHttpGateway
     {
+        string VerifyTwitterCredentials(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret);
         string DownloadTwitterUserInfo(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId);
         string DownloadFacebookUserInfo(string facebookCode, params string[] fields);
         string DownloadYammerUserInfo(string yammerUserId);
@@ -13,6 +14,7 @@ namespace ServiceStack.Auth
     public class AuthHttpGateway : IAuthHttpGateway
     {
         public static string TwitterUserUrl = "https://api.twitter.com/1.1/users/lookup.json?user_id={0}";
+        public static string TwitterVerifyCredentialsUrl = "https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true";
 
         public static string FacebookUserUrl = "https://graph.facebook.com/v2.8/me?access_token={0}";
 
@@ -24,6 +26,11 @@ namespace ServiceStack.Auth
             twitterUserId.ThrowIfNullOrEmpty(nameof(twitterUserId));
             return GetJsonFromOAuthUrl(consumerKey, consumerSecret, accessToken, accessTokenSecret,
                 TwitterUserUrl.Fmt(twitterUserId));
+        }
+
+        public string VerifyTwitterCredentials(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret)
+        {
+            return GetJsonFromOAuthUrl(consumerKey, consumerSecret, accessToken, accessTokenSecret, TwitterVerifyCredentialsUrl);
         }
 
         public static string GetJsonFromOAuthUrl(

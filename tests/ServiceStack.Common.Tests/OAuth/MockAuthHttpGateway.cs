@@ -138,6 +138,12 @@ namespace ServiceStack.Common.Tests.OAuth
             return JsonYammer.Fmt(Tokens.UserId, Tokens.DisplayName,
                 Tokens.FirstName, Tokens.LastName, Tokens.Email);
         }
+
+        public string VerifyTwitterCredentials(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret)
+        {
+            var json = JsonTwitter.Fmt(Tokens.DisplayName);
+            return json.Substring(1, json.Length - 2);
+        }
     }
 }
 #endif

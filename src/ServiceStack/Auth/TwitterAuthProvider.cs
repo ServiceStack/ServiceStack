@@ -24,6 +24,28 @@ namespace ServiceStack.Auth
         {
             var tokens = Init(authService, ref session, request);
 
+            //Transfering AccessToken/Secret from Mobile/Desktop App to Server
+            if (request.AccessToken != null && request.AccessTokenSecret != null)
+            {
+                session.IsAuthenticated = true;
+
+                long userId;
+                if (request.UserName != null && long.TryParse(request.UserName, out userId))
+                    tokens.UserId = userId.ToString();
+
+                tokens.AccessToken = request.AccessToken;
+                tokens.AccessTokenSecret = request.AccessTokenSecret;
+
+                var authResponse = OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
+                if (authResponse != null)
+                    return authResponse;
+
+                var isHtml = authService.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
+                return isHtml
+                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    : null; //return default AuthenticateResponse
+            }
+
             //Default OAuth logic based on Twitter's OAuth workflow
             if (!tokens.RequestToken.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
             {
@@ -71,37 +93,68 @@ namespace ServiceStack.Auth
             if (authInfo.ContainsKey("screen_name"))
                 tokens.UserName = authInfo.GetValueOrDefault("screen_name");
 
+            var userId = tokens.UserId ?? userSession.TwitterUserId;
+
             try
             {
-                if (tokens.UserId != null)
+                if (userId != null)
                 {
                     var json = AuthHttpGateway.DownloadTwitterUserInfo(
                         ConsumerKey, ConsumerSecret,
-                        tokens.AccessToken, tokens.AccessTokenSecret, 
-                        tokens.UserId);
+                        tokens.AccessToken, tokens.AccessTokenSecret,
+                        userId);
+
                     var objs = JsonObject.ParseArray(json);
                     if (objs.Count > 0)
                     {
-                        var obj = objs[0];
-                        tokens.DisplayName = obj.Get("name");
-
-                        string profileUrl;
-                        if (obj.TryGetValue("profile_image_url", out profileUrl))
-                            tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
-
-                        if (SaveExtendedUserInfo)
-                        {
-                            obj.Each(x => authInfo[x.Key] = x.Value);
-                        }
+                        ParseJsonObject(objs[0], tokens, authInfo);
                     }
+                }
+                else if (tokens.AccessToken != null && tokens.AccessTokenSecret != null)
+                {
+                    var json = AuthHttpGateway.VerifyTwitterCredentials(
+                        ConsumerKey, ConsumerSecret,
+                        tokens.AccessToken, tokens.AccessTokenSecret);
+
+                    var obj = JsonObject.Parse(json);
+                    ParseJsonObject(obj, tokens, authInfo);
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"Could not retrieve twitter user info for '{userSession.TwitterUserId}'", ex);
+                if (userId != null)
+                    Log.Error($"Could not retrieve twitter user info for '{userId}'", ex);
+
+                throw;
             }
 
             LoadUserOAuthProvider(userSession, tokens);
+        }
+
+        private void ParseJsonObject(JsonObject obj, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        {
+            tokens.DisplayName = obj.Get("name");
+
+            var userId = obj.Get("id_str");
+            if (!string.IsNullOrEmpty(userId))
+                tokens.UserId = userId;
+
+            var userName = obj.Get("screen_name");
+            if (!string.IsNullOrEmpty(userName))
+                tokens.UserName = userName;
+
+            var email = obj.Get("email");
+            if (!string.IsNullOrEmpty(email))
+                tokens.Email = email;
+
+            string profileUrl;
+            if (obj.TryGetValue("profile_image_url", out profileUrl))
+                tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+
+            if (SaveExtendedUserInfo)
+            {
+                obj.Each(x => authInfo[x.Key] = x.Value);
+            }
         }
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
@@ -112,6 +165,7 @@ namespace ServiceStack.Auth
             userSession.TwitterUserId = tokens.UserId ?? userSession.TwitterUserId;
             userSession.TwitterScreenName = tokens.UserName ?? userSession.TwitterScreenName;
             userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+            userSession.Email = tokens.Email ?? userSession.Email;
         }
     }
 
