@@ -195,7 +195,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var serviceTokensTw = MockAuthHttpGateway.Tokens = twitterGatewayTokens;
             var authInfo = new Dictionary<string, string> {
-                {"user_id", "133371690876022785"},
+                {"user_id", "17575623"},
                 {"screen_name", "demisbellot"},
             };
             var twitterAuth = GetTwitterAuthProvider();
@@ -316,7 +316,7 @@ namespace ServiceStack.Common.Tests.OAuth
             //Twitter
             MockAuthHttpGateway.Tokens = twitterGatewayTokens;
             var authInfo = new Dictionary<string, string> {
-                {"user_id", "133371690876022785"},
+                {"user_id", "17575623"},
                 {"screen_name", "demisbellot"},
             };
             var twitterAuth = GetTwitterAuthProvider();
