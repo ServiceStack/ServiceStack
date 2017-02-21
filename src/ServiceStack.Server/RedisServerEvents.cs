@@ -409,7 +409,14 @@ namespace ServiceStack
             local.Reset();
             using (var redis = clientsManager.GetClient())
             {
-                redis.FlushDb();
+                var keysToDelete = new List<string> { RedisIndex.ActiveSubscriptionsSet };
+
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.Subscription.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.ChannelSet.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.UserIdSet.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.UserNameSet.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.SessionSet.Replace("{0}", "*")));
+                redis.RemoveAll(keysToDelete);
             }
         }
 
