@@ -54,6 +54,14 @@ namespace ServiceStack.RabbitMq
             channel.RegisterDlq(queueNames.Dlq);
         }
 
+        private static RabbitMqServer GetRabbitMqServer()
+        {
+            if (HostContext.AppHost == null)
+                return null;
+
+            return HostContext.TryResolve<IMessageService>() as RabbitMqServer;
+        }
+
         public static void RegisterQueue(this IModel channel, string queueName)
         {
             var args = new Dictionary<string, object> {
@@ -61,8 +69,7 @@ namespace ServiceStack.RabbitMq
                 {"x-dead-letter-routing-key", queueName.Replace(".inq",".dlq").Replace(".priorityq",".dlq") },
             };
 
-            var feature = HostContext.TryResolve<IMessageService>() as RabbitMqServer;
-            feature?.CreateQueueFilter?.Invoke(queueName, args);
+            GetRabbitMqServer()?.CreateQueueFilter?.Invoke(queueName, args);
 
             if (!QueueNames.IsTempQueue(queueName)) //Already declared in GetTempQueueName()
             {
@@ -75,8 +82,8 @@ namespace ServiceStack.RabbitMq
         public static void RegisterDlq(this IModel channel, string queueName)
         {
             var args = new Dictionary<string, object>();
-            var feature = HostContext.TryResolve<IMessageService>() as RabbitMqServer;
-            feature?.CreateQueueFilter?.Invoke(queueName, args);
+
+            GetRabbitMqServer()?.CreateQueueFilter?.Invoke(queueName, args);
 
             channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: args);
             channel.QueueBind(queueName, QueueNames.ExchangeDlq, routingKey: queueName);
@@ -85,8 +92,8 @@ namespace ServiceStack.RabbitMq
         public static void RegisterTopic(this IModel channel, string queueName)
         {
             var args = new Dictionary<string, object>();
-            var feature = HostContext.TryResolve<IMessageService>() as RabbitMqServer;
-            feature?.CreateQueueFilter?.Invoke(queueName, args);
+
+            GetRabbitMqServer()?.CreateQueueFilter?.Invoke(queueName, args);
 
             channel.QueueDeclare(queueName, durable: false, exclusive: false, autoDelete: false, arguments: args);
             channel.QueueBind(queueName, QueueNames.ExchangeTopic, routingKey: queueName);
