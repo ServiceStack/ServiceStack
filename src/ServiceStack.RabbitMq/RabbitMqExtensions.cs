@@ -61,6 +61,9 @@ namespace ServiceStack.RabbitMq
                 {"x-dead-letter-routing-key", queueName.Replace(".inq",".dlq").Replace(".priorityq",".dlq") },
             };
 
+            var feature = HostContext.TryResolve<IMessageService>() as RabbitMqServer;
+            feature?.CreateQueueFilter?.Invoke(queueName, args);
+
             if (!QueueNames.IsTempQueue(queueName)) //Already declared in GetTempQueueName()
             {
                 channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: args);
@@ -71,13 +74,21 @@ namespace ServiceStack.RabbitMq
 
         public static void RegisterDlq(this IModel channel, string queueName)
         {
-            channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            var args = new Dictionary<string, object>();
+            var feature = HostContext.TryResolve<IMessageService>() as RabbitMqServer;
+            feature?.CreateQueueFilter?.Invoke(queueName, args);
+
+            channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: args);
             channel.QueueBind(queueName, QueueNames.ExchangeDlq, routingKey: queueName);
         }
 
         public static void RegisterTopic(this IModel channel, string queueName)
         {
-            channel.QueueDeclare(queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
+            var args = new Dictionary<string, object>();
+            var feature = HostContext.TryResolve<IMessageService>() as RabbitMqServer;
+            feature?.CreateQueueFilter?.Invoke(queueName, args);
+
+            channel.QueueDeclare(queueName, durable: false, exclusive: false, autoDelete: false, arguments: args);
             channel.QueueBind(queueName, QueueNames.ExchangeTopic, routingKey: queueName);
         }
 

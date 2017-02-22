@@ -73,6 +73,8 @@ namespace ServiceStack.RabbitMq
             set { messageFactory.GetMessageFilter = value; }
         }
 
+        public Action<string, Dictionary<string,object>> CreateQueueFilter { get; set; }
+
         /// <summary>
         /// Execute global transformation or custom logic before a request is processed.
         /// Must be thread-safe.
