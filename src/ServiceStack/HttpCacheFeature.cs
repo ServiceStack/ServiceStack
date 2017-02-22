@@ -37,7 +37,7 @@ namespace ServiceStack
                 return;
 
             var cacheInfo = req.GetItem(Keywords.CacheInfo) as CacheInfo;
-            if (cacheInfo != null && cacheInfo.CacheKey != null)
+            if (cacheInfo?.CacheKey != null)
             {
                 if (CacheAndWriteResponse(cacheInfo, req, res, response))
                     return;
@@ -137,9 +137,9 @@ namespace ServiceStack
 
                 if (encoding != null)
                 {
+                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
                     responseBytes = responseBytes.CompressBytes(encoding);
                     cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
-                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
                 }
             }
 

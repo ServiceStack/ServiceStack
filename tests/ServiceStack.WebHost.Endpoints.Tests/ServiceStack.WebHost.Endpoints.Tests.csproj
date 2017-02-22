@@ -198,6 +198,7 @@
     <Compile Include="CacheServerFeatureTests.cs" />
     <Compile Include="CancellableRequestTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="CompressResponseTests.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="ContentTypeTests.cs" />
     <Compile Include="CsvServiceClientTests.cs" />
