@@ -191,9 +191,8 @@ namespace ServiceStack
 
         protected virtual bool ApplyResponseFiltersSingle(IRequest req, IResponse res, object response)
         {
-            var responseDto = response.GetResponseDto();
-            var attributes = responseDto != null
-                ? FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType())
+            var attributes = req.Dto != null
+                ? FilterAttributeCache.GetResponseFilterAttributes(req.Dto.GetType())
                 : null;
 
             //Exec all ResponseFilter attributes with Priority < 0
