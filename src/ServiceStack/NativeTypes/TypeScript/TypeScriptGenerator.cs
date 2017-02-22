@@ -201,7 +201,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             if (!string.IsNullOrEmpty(globalNamespace))
             {
-                var moduleDef = Config.ExportAsTypes ? "" : "declare ";
+                var moduleDef = Config.ExportAsTypes ? "export " : "declare ";
                 sb.AppendLine();
                 sb.AppendLine("{0}module {1}".Fmt(moduleDef, globalNamespace.SafeToken()));
                 sb.AppendLine("{");
