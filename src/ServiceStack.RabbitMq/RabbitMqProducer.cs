@@ -107,10 +107,7 @@ namespace ServiceStack.RabbitMq
                 }
             }
 
-            if (PublishMessageFilter != null)
-            {
-                PublishMessageFilter(queueName, props, message);
-            }
+            PublishMessageFilter?.Invoke(queueName, props, message);
 
             var messageBytes = message.Body.ToJson().ToUtf8Bytes();
 
@@ -118,10 +115,7 @@ namespace ServiceStack.RabbitMq
                 routingKey: queueName,
                 basicProperties: props, body: messageBytes);
 
-            if (OnPublishedCallback != null)
-            {
-                OnPublishedCallback();
-            }
+            OnPublishedCallback?.Invoke();
         }
 
         static HashSet<string> Queues = new HashSet<string>();
@@ -180,10 +174,7 @@ namespace ServiceStack.RabbitMq
 
                 var basicMsg = Channel.BasicGet(queueName, noAck: noAck);
 
-                if (GetMessageFilter != null)
-                {
-                    GetMessageFilter(queueName, basicMsg);
-                }
+                GetMessageFilter?.Invoke(queueName, basicMsg);
 
                 return basicMsg;
             }

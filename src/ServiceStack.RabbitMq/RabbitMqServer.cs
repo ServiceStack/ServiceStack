@@ -19,10 +19,7 @@ namespace ServiceStack.RabbitMq
         /// <summary>
         /// The RabbitMQ.Client Connection factory to introspect connection properties and create a low-level connection
         /// </summary>
-        public ConnectionFactory ConnectionFactory
-        {
-            get { return messageFactory.ConnectionFactory; }
-        }
+        public ConnectionFactory ConnectionFactory => messageFactory.ConnectionFactory;
 
         /// <summary>
         /// Whether Rabbit MQ should auto-retry connecting when a connection to Rabbit MQ Server instance is dropped
@@ -56,10 +53,7 @@ namespace ServiceStack.RabbitMq
         /// The Message Factory used by this MQ Server
         /// </summary>
         private RabbitMqMessageFactory messageFactory;
-        public IMessageFactory MessageFactory
-        {
-            get { return messageFactory; }
-        }
+        public IMessageFactory MessageFactory => messageFactory;
 
         public Action<string, IBasicProperties, IMessage> PublishMessageFilter
         {
@@ -123,10 +117,7 @@ namespace ServiceStack.RabbitMq
         }
 
         private IConnection connection;
-        private IConnection Connection
-        {
-            get { return connection ?? (connection = ConnectionFactory.CreateConnection()); }
-        }
+        private IConnection Connection => connection ?? (connection = ConnectionFactory.CreateConnection());
 
         private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap
             = new Dictionary<Type, IMessageHandlerFactory>();
@@ -137,10 +128,7 @@ namespace ServiceStack.RabbitMq
         private RabbitMqWorker[] workers;
         private Dictionary<string, int[]> queueWorkerIndexMap;
 
-        public List<Type> RegisteredTypes
-        {
-            get { return handlerMap.Keys.ToList(); }
-        }
+        public List<Type> RegisteredTypes => handlerMap.Keys.ToList();
 
         public RabbitMqServer(string connectionString="localhost",
             string username = null, string password = null)
@@ -161,7 +149,6 @@ namespace ServiceStack.RabbitMq
             AutoReconnect = true;
         }
 
-
         public virtual void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn)
         {
             RegisterHandler(processMessageFn, null, noOfThreads: 1);
@@ -180,9 +167,7 @@ namespace ServiceStack.RabbitMq
         public virtual void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads)
         {
             if (handlerMap.ContainsKey(typeof(T)))
-            {
                 throw new ArgumentException("Message handler has already been registered for type: " + typeof(T).Name);
-            }
 
             handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
             handlerThreadCountMap[typeof(T)] = noOfThreads;
@@ -212,10 +197,7 @@ namespace ServiceStack.RabbitMq
 
         private Thread bgThread; //Subscription controller thread
         private long bgThreadCount = 0;
-        public long BgThreadCount
-        {
-            get { return Interlocked.CompareExchange(ref bgThreadCount, 0, 0); }
-        }
+        public long BgThreadCount => Interlocked.CompareExchange(ref bgThreadCount, 0, 0);
 
         public virtual IMessageHandlerStats GetStats()
         {
@@ -487,7 +469,9 @@ namespace ServiceStack.RabbitMq
 
         public virtual void StartWorkerThreads()
         {
-            Log.Debug("Starting all Rabbit MQ Server worker threads...");
+            if (Log.IsDebugEnabled)
+                Log.Debug("Starting all Rabbit MQ Server worker threads...");
+
             foreach (var worker in workers)
             {
                 try
@@ -496,7 +480,7 @@ namespace ServiceStack.RabbitMq
                 }
                 catch (Exception ex)
                 {
-                    if (this.ErrorHandler != null) this.ErrorHandler(ex);
+                    ErrorHandler?.Invoke(ex);
                     Log.Warn("Could not START Rabbit MQ worker thread: " + ex.Message);
                 }
             }
@@ -504,7 +488,9 @@ namespace ServiceStack.RabbitMq
 
         public virtual void StopWorkerThreads()
         {
-            Log.Debug("Stopping all Rabbit MQ Server worker threads...");
+            if (Log.IsDebugEnabled)
+                Log.Debug("Stopping all Rabbit MQ Server worker threads...");
+
             foreach (var worker in workers)
             {
                 try
@@ -513,7 +499,7 @@ namespace ServiceStack.RabbitMq
                 }
                 catch (Exception ex)
                 {
-                    if (this.ErrorHandler != null) this.ErrorHandler(ex);
+                    ErrorHandler?.Invoke(ex);
                     Log.Warn("Could not STOP Rabbit MQ worker thread: " + ex.Message);
                 }
             }
@@ -521,8 +507,9 @@ namespace ServiceStack.RabbitMq
 
         void DisposeWorkerThreads()
         {
-            Log.Debug("Disposing all Rabbit MQ Server worker threads...");
-            if (workers != null) workers.Each(x => x.Dispose());
+            if (Log.IsDebugEnabled)
+                Log.Debug("Disposing all Rabbit MQ Server worker threads...");
+            workers?.Each(x => x.Dispose());
         }
 
         void WorkerErrorHandler(RabbitMqWorker source, Exception ex)
@@ -588,7 +575,7 @@ namespace ServiceStack.RabbitMq
             }
             catch (Exception ex)
             {
-                if (this.ErrorHandler != null) this.ErrorHandler(ex);
+                ErrorHandler?.Invoke(ex);
             }
 
             try
@@ -601,7 +588,7 @@ namespace ServiceStack.RabbitMq
             }
             catch (Exception ex)
             {
-                if (this.ErrorHandler != null) this.ErrorHandler(ex);
+                ErrorHandler?.Invoke(ex);
             }
 
         }
