@@ -5,6 +5,7 @@ using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Auth
 {
@@ -12,11 +13,34 @@ namespace ServiceStack.Server.Tests.Auth
     {
         public string Name { get; set; }
     }
-    
+
     [Authenticate]
     public class RequiresAuthService : Service
     {
-        public object Any(RequiresAuth request) => request;
+        public static ApiKey LastApiKey;
+
+        public object Any(RequiresAuth request)
+        {
+            LastApiKey = base.Request.GetApiKey();
+            return request;
+        }
+    }
+
+    public class RequiresAuthAction : IReturn<RequiresAuthAction>
+    {
+        public string Name { get; set; }
+    }
+
+    public class RequiresAuthActionService : Service
+    {
+        public static ApiKey LastApiKey;
+
+        [Authenticate]
+        public object Any(RequiresAuthAction request)
+        {
+            LastApiKey = base.Request.GetApiKey();
+            return request;
+        }
     }
 
     [TestFixture]
@@ -63,6 +87,7 @@ namespace ServiceStack.Server.Tests.Auth
 
         public ApiKeyAuthTests()
         {
+            //System.Diagnostics.Debugger.Break();
             appHost = new AppHost()
                .Init()
                .Start("http://*:2337/");
@@ -92,6 +117,7 @@ namespace ServiceStack.Server.Tests.Auth
         public void Does_return_APIKey_for_ApiKey_request_in_GlobalRequestFilters()
         {
             AppHost.LastApiKey = null;
+            RequiresAuthService.LastApiKey = null;
 
             var client = new JsonServiceClient(ListeningOn)
             {
@@ -103,6 +129,26 @@ namespace ServiceStack.Server.Tests.Auth
             Assert.That(response.Name, Is.EqualTo(request.Name));
 
             Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+            Assert.That(RequiresAuthService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+        }
+
+        [Test]
+        public void Does_return_APIKey_for_ApiKey_request_in_GlobalRequestFilters_Action()
+        {
+            AppHost.LastApiKey = null;
+            RequiresAuthActionService.LastApiKey = null;
+
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                Credentials = new NetworkCredential(liveKey.Id, ""),
+            };
+
+            var request = new RequiresAuthAction { Name = "foo" };
+            var response = client.Send(request);
+            Assert.That(response.Name, Is.EqualTo(request.Name));
+
+            Assert.That(AppHost.LastApiKey?.Id, Is.EqualTo(liveKey.Id));
+            Assert.That(RequiresAuthActionService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
         }
     }
 }
