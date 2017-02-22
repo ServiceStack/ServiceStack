@@ -68,6 +68,7 @@ namespace ServiceStack.RabbitMq
         }
 
         public Action<string, Dictionary<string,object>> CreateQueueFilter { get; set; }
+        public Action<string, Dictionary<string,object>> CreateTopicFilter { get; set; }
 
         /// <summary>
         /// Execute global transformation or custom logic before a request is processed.

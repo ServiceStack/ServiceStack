@@ -93,7 +93,7 @@ namespace ServiceStack.RabbitMq
         {
             var args = new Dictionary<string, object>();
 
-            GetRabbitMqServer()?.CreateQueueFilter?.Invoke(queueName, args);
+            GetRabbitMqServer()?.CreateTopicFilter?.Invoke(queueName, args);
 
             channel.QueueDeclare(queueName, durable: false, exclusive: false, autoDelete: false, arguments: args);
             channel.QueueBind(queueName, QueueNames.ExchangeTopic, routingKey: queueName);
