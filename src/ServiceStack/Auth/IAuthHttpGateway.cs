@@ -8,6 +8,7 @@ namespace ServiceStack.Auth
     {
         bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, out string userId);
         string DownloadTwitterUserInfo(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId);
+        bool VerifyFacebookAccessToken(string appId, string accessToken);
         string DownloadFacebookUserInfo(string facebookCode, params string[] fields);
         string DownloadYammerUserInfo(string yammerUserId);
     }
@@ -18,6 +19,7 @@ namespace ServiceStack.Auth
         public static string TwitterVerifyCredentialsUrl = "https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true";
 
         public static string FacebookUserUrl = "https://graph.facebook.com/v2.8/me?access_token={0}";
+        public static string FacebookVerifyTokenUrl = "https://graph.facebook.com/v2.8/app?access_token={0}";
 
         public static string YammerUserUrl = "https://www.yammer.com/api/v1/users/{0}.json";
 
@@ -64,6 +66,27 @@ namespace ServiceStack.Auth
                 return webRes.ReadToEnd();
         }
 
+        public bool VerifyFacebookAccessToken(string appId, string accessToken)
+        {
+            if (string.IsNullOrEmpty(appId) || string.IsNullOrEmpty(accessToken))
+                return false;
+
+            try
+            {
+                var url = FacebookVerifyTokenUrl.Fmt(accessToken);
+                var json = url.GetJsonFromUrl();
+
+                var obj = JsonObject.Parse(json);
+                var tokenAppId = obj.Get("id");
+
+                return tokenAppId == appId;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public string DownloadFacebookUserInfo(string facebookCode, params string[] fields)
         {
             facebookCode.ThrowIfNullOrEmpty("facebookCode");
@@ -74,7 +97,7 @@ namespace ServiceStack.Auth
                 url = url.AddQueryParam("fields", string.Join(",", fields));
             }
 
-            var json = url.GetStringFromUrl();
+            var json = url.GetJsonFromUrl();
             return json;
         }
 

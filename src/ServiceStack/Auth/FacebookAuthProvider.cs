@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Web;
 using ServiceStack.Configuration;
@@ -34,8 +35,28 @@ namespace ServiceStack.Auth
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = Init(authService, ref session, request);
-            var httpRequest = authService.Request;
 
+            //Transfering AccessToken/Secret from Mobile/Desktop App to Server
+            if (request.AccessToken != null)
+            {
+                tokens.AccessTokenSecret = request.AccessToken;
+
+                if (!AuthHttpGateway.VerifyFacebookAccessToken(AppId, tokens.AccessTokenSecret))
+                    return HttpError.Unauthorized("AccessToken is not for App: " + AppId);
+
+                session.IsAuthenticated = true;
+
+                var authResponse = OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
+                if (authResponse != null)
+                    return authResponse;
+
+                var isHtml = authService.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
+                return isHtml
+                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    : null; //return default AuthenticateResponse
+            }
+
+            var httpRequest = authService.Request;
             var error = httpRequest.QueryString["error_reason"]
                 ?? httpRequest.QueryString["error"]
                 ?? httpRequest.QueryString["error_code"]
@@ -84,7 +105,7 @@ namespace ServiceStack.Auth
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
+        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             try
             {
