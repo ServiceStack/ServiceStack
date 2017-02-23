@@ -1,11 +1,12 @@
 using System;
 using System.Net;
+using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
     public interface IAuthHttpGateway
     {
-        string VerifyTwitterCredentials(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret);
+        bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, out string userId);
         string DownloadTwitterUserInfo(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId);
         string DownloadFacebookUserInfo(string facebookCode, params string[] fields);
         string DownloadYammerUserInfo(string yammerUserId);
@@ -28,9 +29,20 @@ namespace ServiceStack.Auth
                 TwitterUserUrl.Fmt(twitterUserId));
         }
 
-        public string VerifyTwitterCredentials(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret)
+        public bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, out string userId)
         {
-            return GetJsonFromOAuthUrl(consumerKey, consumerSecret, accessToken, accessTokenSecret, TwitterVerifyCredentialsUrl);
+            try
+            {
+                var json = GetJsonFromOAuthUrl(consumerKey, consumerSecret, accessToken, accessTokenSecret, TwitterVerifyCredentialsUrl);
+                var obj = JsonObject.Parse(json);
+                userId = obj.Get("id_str");
+                return !string.IsNullOrEmpty(userId);
+            }
+            catch
+            {
+                userId = null;
+                return false;
+            }
         }
 
         public static string GetJsonFromOAuthUrl(

@@ -139,10 +139,15 @@ namespace ServiceStack.Common.Tests.OAuth
                 Tokens.FirstName, Tokens.LastName, Tokens.Email);
         }
 
-        public string VerifyTwitterCredentials(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret)
+        public bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret,
+            out string userId)
         {
-            var json = JsonTwitter.Fmt(Tokens.DisplayName);
-            return json.Substring(1, json.Length - 2);
+            throw new System.NotImplementedException();
+        }
+
+        public bool VerifyFacebookAccessToken(string appId, string accessToken)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

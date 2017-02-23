@@ -27,14 +27,22 @@ namespace ServiceStack.Auth
             //Transfering AccessToken/Secret from Mobile/Desktop App to Server
             if (request.AccessToken != null && request.AccessTokenSecret != null)
             {
-                session.IsAuthenticated = true;
-
-                long userId;
-                if (request.UserName != null && long.TryParse(request.UserName, out userId))
-                    tokens.UserId = userId.ToString();
-
                 tokens.AccessToken = request.AccessToken;
                 tokens.AccessTokenSecret = request.AccessTokenSecret;
+
+                string userId;
+                var validToken = AuthHttpGateway.VerifyTwitterAccessToken(
+                    ConsumerKey, ConsumerSecret,
+                    tokens.AccessToken, tokens.AccessTokenSecret, out userId);
+
+                if (!validToken)
+                    return HttpError.Unauthorized("AccessToken is invalid");
+
+                if (!string.IsNullOrEmpty(request.UserName) && userId != request.UserName)
+                    return HttpError.Unauthorized("AccessToken does not match UserId: " + request.UserName);
+
+                tokens.UserId = userId;
+                session.IsAuthenticated = true;
 
                 var authResponse = OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
                 if (authResponse != null)
@@ -107,17 +115,27 @@ namespace ServiceStack.Auth
                     var objs = JsonObject.ParseArray(json);
                     if (objs.Count > 0)
                     {
-                        ParseJsonObject(objs[0], tokens, authInfo);
-                    }
-                }
-                else if (tokens.AccessToken != null && tokens.AccessTokenSecret != null)
-                {
-                    var json = AuthHttpGateway.VerifyTwitterCredentials(
-                        ConsumerKey, ConsumerSecret,
-                        tokens.AccessToken, tokens.AccessTokenSecret);
+                        var obj = objs[0];
 
-                    var obj = JsonObject.Parse(json);
-                    ParseJsonObject(obj, tokens, authInfo);
+                        tokens.DisplayName = obj.Get("name");
+
+                        var userName = obj.Get("screen_name");
+                        if (!string.IsNullOrEmpty(userName))
+                            tokens.UserName = userName;
+
+                        var email = obj.Get("email");
+                        if (!string.IsNullOrEmpty(email))
+                            tokens.Email = email;
+
+                        string profileUrl;
+                        if (obj.TryGetValue("profile_image_url", out profileUrl))
+                            tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+
+                        if (SaveExtendedUserInfo)
+                        {
+                            obj.Each(x => authInfo[x.Key] = x.Value);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -129,32 +147,6 @@ namespace ServiceStack.Auth
             }
 
             LoadUserOAuthProvider(userSession, tokens);
-        }
-
-        private void ParseJsonObject(JsonObject obj, IAuthTokens tokens, Dictionary<string, string> authInfo)
-        {
-            tokens.DisplayName = obj.Get("name");
-
-            var userId = obj.Get("id_str");
-            if (!string.IsNullOrEmpty(userId))
-                tokens.UserId = userId;
-
-            var userName = obj.Get("screen_name");
-            if (!string.IsNullOrEmpty(userName))
-                tokens.UserName = userName;
-
-            var email = obj.Get("email");
-            if (!string.IsNullOrEmpty(email))
-                tokens.Email = email;
-
-            string profileUrl;
-            if (obj.TryGetValue("profile_image_url", out profileUrl))
-                tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
-
-            if (SaveExtendedUserInfo)
-            {
-                obj.Each(x => authInfo[x.Key] = x.Value);
-            }
         }
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
