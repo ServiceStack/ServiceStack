@@ -205,6 +205,7 @@
     <Compile Include="CustomerRestExample.cs" />
     <Compile Include="CustomFormatTests.cs" />
     <Compile Include="IntegrationTests\OAuthIntegrationTests.cs" />
+    <Compile Include="CustomOrmLiteAuthRepositoryTests.cs" />
     <Compile Include="UseCases\JwtAuthProviderTokenCookieExample.cs" />
     <Compile Include="VirtualFileSystemMappingTests.cs" />
     <Compile Include="ZipServiceClientTests.cs" />
