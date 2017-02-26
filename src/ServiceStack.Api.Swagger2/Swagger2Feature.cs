@@ -29,10 +29,10 @@ namespace ServiceStack.Api.Swagger2
 
         public Action<Swagger2Operation> OperationFilter { get; set; }
 
-        public Action<Swagger2Model> ModelFilter { get; set; }
+        //public Action<Swagger2Model> ModelFilter { get; set; }
 
         public Action<Swagger2Property> ModelPropertyFilter { get; set; }
-
+        
         public Dictionary<string, string> RouteSummary { get; set; }
 
         public Swagger2Feature()
@@ -58,10 +58,10 @@ namespace ServiceStack.Api.Swagger2
             Swagger2ApiService.DisableAutoDtoInBodyParam = DisableAutoDtoInBodyParam;
             Swagger2ApiService.ApiDeclarationFilter = ApiDeclarationFilter;
             Swagger2ApiService.OperationFilter = OperationFilter;
-            Swagger2ApiService.ModelFilter = ModelFilter;
+            //Swagger2ApiService.ModelFilter = ModelFilter;
             Swagger2ApiService.ModelPropertyFilter = ModelPropertyFilter;
 
-            appHost.RegisterService(typeof(Swagger2ResourcesService), new[] { "/resources" });
+            appHost.RegisterService(typeof(Swagger2ResourcesService), new[] { "/resources2" });
             appHost.RegisterService(typeof(Swagger2ApiService), new[] { Swagger2ResourcesService.RESOURCE_PATH + "/{Name*}" });
 
             var swaggerUrl = UseBootstrapTheme
