@@ -9,6 +9,7 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -103,14 +104,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string CustomField { get; set; }
     }
     
-    public class CustomRegisterService : RegisterService<CustomUserAuth> { }
-
     public class CustomOrmLiteAuthRepositoryTests
     {
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(CustomOrmLiteAuthRepositoryTests), typeof(CustomRegisterService).GetAssembly()) { }
+                : base(nameof(CustomOrmLiteAuthRepositoryTests), typeof(CustomOrmLiteAuthRepositoryTests).GetAssembly()) { }
 
             public override void Configure(Container container)
             {
@@ -122,7 +121,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Plugins.Add(new AuthFeature(() => new CustomAuthUserSession(),
                     new IAuthProvider[] {
                         new CredentialsAuthProvider(AppSettings),
-                    }));
+                    }) {
+                        IncludeRegistrationService = true
+                    });
 
                 container.Register<IDbConnectionFactory>(c =>
                     new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));

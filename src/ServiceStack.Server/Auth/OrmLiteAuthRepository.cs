@@ -157,7 +157,7 @@ namespace ServiceStack.Auth
         }
     }
 
-    public abstract class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys
+    public abstract class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -749,6 +749,16 @@ namespace ServiceStack.Auth
             {
                 db.SaveAll(apiKeys);
             });
+        }
+
+        public IUserAuth CreateUserAuth()
+        {
+            return (IUserAuth) typeof(TUserAuth).CreateInstance();
+        }
+
+        public IUserAuthDetails CreateUserAuthDetails()
+        {
+            return (IUserAuthDetails)typeof(TUserAuthDetails).CreateInstance();
         }
     }
 }
