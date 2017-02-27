@@ -23,8 +23,6 @@ namespace ServiceStack.Api.Swagger2
 
         public string LogoUrl { get; set; }
 
-        public Action<Swagger2ResourcesResponse> ResourcesResponseFilter { get; set; }
-
         public Action<Swagger2ApiDeclaration> ApiDeclarationFilter { get; set; }
 
         public Action<Swagger2Operation> OperationFilter { get; set; }
@@ -48,10 +46,8 @@ namespace ServiceStack.Api.Swagger2
 
         public void Register(IAppHost appHost)
         {
-            if (ResourceFilterPattern != null)
-                Swagger2ResourcesService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
-
-            Swagger2ResourcesService.ResourcesResponseFilter = ResourcesResponseFilter;
+//            if (ResourceFilterPattern != null)
+//                Swagger2ApiService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
 
             Swagger2ApiService.UseCamelCaseModelPropertyNames = UseCamelCaseModelPropertyNames;
             Swagger2ApiService.UseLowercaseUnderscoreModelPropertyNames = UseLowercaseUnderscoreModelPropertyNames;
@@ -61,8 +57,7 @@ namespace ServiceStack.Api.Swagger2
             //Swagger2ApiService.ModelFilter = ModelFilter;
             Swagger2ApiService.ModelPropertyFilter = ModelPropertyFilter;
 
-            appHost.RegisterService(typeof(Swagger2ResourcesService), new[] { "/resources2" });
-            appHost.RegisterService(typeof(Swagger2ApiService), new[] { Swagger2ResourcesService.RESOURCE_PATH + "/{Name*}" });
+            appHost.RegisterService(typeof(Swagger2ApiService), new[] { "/resources2" });
 
             var swaggerUrl = UseBootstrapTheme
                 ? "swagger2-ui-bootstrap/"

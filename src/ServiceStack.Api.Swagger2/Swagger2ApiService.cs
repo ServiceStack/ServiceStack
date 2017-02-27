@@ -180,6 +180,8 @@ namespace ServiceStack.Api.Swagger2
     [DataContract]
     public class Swagger2Schema : Swagger2DataTypeFields
     {
+        [DataMember(Name = "$ref")]
+        public string Ref { get; set; }
         [DataMember(Name = "discriminator")]
         public string Discriminator { get; set; }
         [DataMember(Name = "readOnly")]
@@ -334,12 +336,10 @@ namespace ServiceStack.Api.Swagger2
 
     [DataContract]
     [Exclude(Feature.Soap)]
-    public class Swagger2Resource : IReturn<Swagger2ApiDeclaration>
+    public class Swagger2Resources : IReturn<Swagger2ApiDeclaration>
     {
         [DataMember(Name = "apiKey")]
         public string ApiKey { get; set; }
-        [DataMember(Name = "name")]
-        public string Name { get; set; }
     }
 
     [DataContract]
@@ -433,7 +433,7 @@ namespace ServiceStack.Api.Swagger2
         }
         */
     [AddHeader(DefaultContentType = MimeTypes.Json)]
-    [DefaultRequest(typeof(Swagger2Resource))]
+    [DefaultRequest(typeof(Swagger2Resources))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class Swagger2ApiService : Service
     {
@@ -446,9 +446,8 @@ namespace ServiceStack.Api.Swagger2
         //internal static Action<Swagger2Model> ModelFilter { get; set; }
         internal static Action<Swagger2Property> ModelPropertyFilter { get; set; }
 
-        public object Get(Swagger2Resource request)
+        public object Get(Swagger2Resources request)
         {
-            var path = "/" + request.Name;
             var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
@@ -594,11 +593,11 @@ namespace ServiceStack.Api.Swagger2
 		    return typeName;
 		}
 
-        /*private void ParseResponseModel(IDictionary<string, Swagger2Model> models, Type modelType)
+        private void ParseResponseModel(IDictionary<string, Swagger2Schema> models, Type modelType)
         {
-            ParseModel(models, modelType, null, null);
+            ParseDefinitions(models, modelType, null, null);
         }
-        */
+        
 
         private void ParseDefinitions(IDictionary<string, Swagger2Schema> models, Type modelType, string route, string verb)
         {
@@ -887,7 +886,61 @@ namespace ServiceStack.Api.Swagger2
             return values;
         }
 
-        /*private string GetResponseClass(IRestPath restPath, IDictionary<string, Swagger2Model> models)
+        private Swagger2Schema GetResponseSchema(IRestPath restPath, IDictionary<string, Swagger2Schema> models)
+        {
+            // Given: class MyDto : IReturn<X>. Determine the type X.
+            foreach (var i in restPath.RequestType.GetInterfaces())
+            {
+                if (i.IsGenericType() && i.GetGenericTypeDefinition() == typeof(IReturn<>))
+                {
+                    var returnType = i.GetGenericArguments()[0];
+                    // Handle IReturn<List<SomeClass>> or IReturn<SomeClass[]>
+                    if (IsListType(returnType))
+                    {
+                        var schema = new Swagger2Schema()
+                        {
+                            Type = SwaggerType.Array,
+                        };
+                        var listItemType = GetListElementType(returnType);
+                        ParseResponseModel(models, listItemType);
+                        if (IsSwaggerScalarType(listItemType))
+                        {
+                            schema.Items = new Dictionary<string, string>
+                            {
+                                { "type", GetSwaggerTypeName(listItemType) },
+                                { "format", GetSwaggerTypeFormat(listItemType) }
+                            };
+                        }
+                        else
+                        {
+                            schema.Items = new Dictionary<string, string> { { "$ref", "#/definitions/" + GetModelTypeName(listItemType) } };
+                        }
+
+                        return schema;
+                    }
+                    ParseResponseModel(models, returnType);
+
+                    var genericArgType = i.GetGenericArguments()[0];
+                    if (IsSwaggerScalarType(genericArgType))
+                    {
+                        return new Swagger2Schema()
+                        {
+                            Type = GetSwaggerTypeName(genericArgType),
+                            Format = GetSwaggerTypeFormat(genericArgType)
+                        };
+                    }
+
+                    return new Swagger2Schema()
+                    {
+                        Ref = "#/definitions/" + GetModelTypeName(genericArgType)
+                    };
+                }
+            }
+
+            return new Swagger2Schema() { Type = Swagger2Type.String };
+        }
+
+        private string GetResponseClass(IRestPath restPath, IDictionary<string, Swagger2Schema> models)
         {
             // Given: class MyDto : IReturn<X>. Determine the type X.
             foreach (var i in restPath.RequestType.GetInterfaces())
@@ -908,18 +961,26 @@ namespace ServiceStack.Api.Swagger2
             }
 
             return null;
-        }*/
+        }
 
-        private static Dictionary<string, Swagger2Response> GetMethodResponseCodes(Type requestType)
+        private Dictionary<string, Swagger2Response> GetMethodResponseCodes(IRestPath restPath, IDictionary<string, Swagger2Schema> models, Type requestType)
         {
             var responses = new Dictionary<string, Swagger2Response>();
 
+            var responseSchema = GetResponseSchema(restPath, models);
+
+            responses.Add("200", new Swagger2Response()
+            {
+                Schema = responseSchema,
+                Description = "TODO: description"
+            });
+                
             //TODO: order by status code
-            foreach(var attr in requestType.AllAttributes<ApiResponseAttribute>())
+            foreach (var attr in requestType.AllAttributes<ApiResponseAttribute>())
             {
                 responses.Add(attr.StatusCode.ToString(), new Swagger2Response()
                 {
-                    Description = attr.Description
+                    Description = attr.Description,
                 });
             }
 
@@ -959,6 +1020,7 @@ namespace ServiceStack.Api.Swagger2
                         Description = notes,
                         OperationId = requestType.Name,
                         Parameters = ParseParameters(verb, requestType, models, routePath),
+                        Responses = GetMethodResponseCodes(restPath, models, requestType),
                         Consumes = new List<string>() { "application/json" },
                         Produces = new List<string>() { "application/json" }
                     };
@@ -996,39 +1058,6 @@ namespace ServiceStack.Api.Swagger2
             return apiPaths;
         }
 
-
-        /*
-        private Swagger2Api FormatMethodDescription(RestPath restPath, Dictionary<string, Swagger2Model> models)
-        {
-            var verbs = new List<string>();
-            var summary = restPath.Summary ?? restPath.RequestType.GetDescription();
-            var notes = restPath.Notes;
-
-            verbs.AddRange(restPath.AllowsAllVerbs
-                ? new[] {"GET", "POST", "PUT", "DELETE"}
-                : restPath.AllowedVerbs.Split(new[] {',', ' '}, StringSplitOptions.RemoveEmptyEntries));
-
-            var routePath = restPath.Path.Replace("*","");
-            var requestType = restPath.RequestType;
-
-            var md = new Swagger2Api
-            {
-                Path = routePath,
-                Description = summary,
-                Operations = verbs.Map(verb => new Swagger2Operation
-                {
-                    OperationId = requestType.Name,
-                    Nickname = requestType.Name,
-                    Summary = summary,
-                    Notes = notes,
-                    Parameters = ParseParameters(verb, requestType, models, routePath),
-                    ResponseClass = GetResponseClass(restPath, models),
-                    Responses = GetMethodResponseCodes(requestType)
-                })
-            };
-            return md;
-        }
-        */
         private static List<string> GetEnumValues(ApiAllowableValuesAttribute attr)
         {
             return attr != null && attr.Values != null ? attr.Values.ToList() : null;

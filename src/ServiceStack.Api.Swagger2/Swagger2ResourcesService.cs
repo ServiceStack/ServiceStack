@@ -7,7 +7,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Api.Swagger2
 {
-    [DataContract]
+/*    [DataContract]
     public class Swagger2Resources : IReturn<Swagger2ResourcesResponse>
     {
         [DataMember(Name = "apiKey")]
@@ -132,4 +132,5 @@ namespace ServiceStack.Api.Swagger2
             }
         }
     }
+    */
 }
