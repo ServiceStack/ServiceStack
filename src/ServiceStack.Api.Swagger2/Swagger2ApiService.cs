@@ -18,19 +18,12 @@ namespace ServiceStack.Api.Swagger2
     {
         public const string Array = "array";
         public const string Boolean = "boolean";
-        public const string Byte = "string";
-        public const string Binary = "string";
-        public const string Date = "string";
-        public const string DateTime = "string";
-        public const string Double = "number";
-        public const string Float = "number";
-        public const string Int = "integer";
-        public const string Long = "integer";
+        public const string Number = "number";
+        public const string Integer = "integer";
         public const string String = "string";
-        public const string Password = "string";
     }
 
-    public static class Swagger2Format
+    public static class Swagger2TypeFormat
     {
         public const string Array = "int32";
         public const string Byte = "byte";
@@ -475,56 +468,8 @@ namespace ServiceStack.Api.Swagger2
             {
                 ParseDefinitions(definitions, restPath.Value.RequestType, restPath.Value.Path, restPath.Verb);
             }
-           
-            /*
-           var models = new Dictionary<string, Swagger2Model>();
-            foreach (var restPath in paths.SelectMany(x => x.Verbs.Select(y => new {Value = x, Verb = y})))
-            {
-                ParseModel(models, restPath.Value.RequestType, restPath.Value.Path, restPath.Verb);
-            }*/
 
-            var apiPaths = new Dictionary<string, Swagger2Path>();
-
-            foreach (var restPath in paths)
-            {
-                Swagger2Path curPath;
-
-                if (!apiPaths.TryGetValue(restPath.Path, out curPath))
-                {
-                    curPath = new Swagger2Path();
-                    apiPaths.Add(restPath.Path, curPath);
-                }
-
-                foreach (var verb in restPath.Verbs)
-                {
-                    var operation = new Swagger2Operation()
-                    {
-                        Summary = restPath.Summary,
-                        Description = restPath.Summary,
-                        OperationId = restPath.RequestType.Name,
-                        Consumes = new List<string>() { "application/json" },
-                        Produces = new List<string>() { "application/json" }
-                    };
-
-                    switch(verb)
-                    {
-                        case "GET": curPath.Get = operation; break;
-                        case "POST": curPath.Post = operation; break;
-                        case "PUT": curPath.Put = operation; break;
-                        case "DELETE": curPath.Delete = operation; break;
-                        case "HEAD": curPath.Head = operation; break;
-                        case "PATCH": curPath.Patch = operation; break;
-                        case "ANY":
-                            curPath.Get = operation;
-                            curPath.Post = operation;
-                            curPath.Put = operation;
-                            curPath.Patch = operation;
-                            curPath.Delete = operation;
-                            curPath.Head = operation;
-                            break;
-                    }
-                }
-            }
+            var apiPaths = ParseOperations(paths, definitions);
 
             //var apis = paths.Select(p => FormatMethodDescription(p, models))
             //    .ToArray().OrderBy(md => md.Path).ToList();
@@ -557,35 +502,35 @@ namespace ServiceStack.Api.Swagger2
         }
 
         private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarTypes = new Dictionary<Type, string> {
-            {typeof(byte), Swagger2Type.Byte},
-            {typeof(sbyte), Swagger2Type.Byte},
+            {typeof(byte), Swagger2Type.String},
+            {typeof(sbyte), Swagger2Type.String},
             {typeof(bool), Swagger2Type.Boolean},
-            {typeof(short), Swagger2Type.Int},
-            {typeof(ushort), Swagger2Type.Int},
-            {typeof(int), Swagger2Type.Int},
-            {typeof(uint), Swagger2Type.Int},
-            {typeof(long), Swagger2Type.Long},
-            {typeof(ulong), Swagger2Type.Long},
-            {typeof(float), Swagger2Type.Float},
-            {typeof(double), Swagger2Type.Double},
-            {typeof(decimal), Swagger2Type.Double},
+            {typeof(short), Swagger2Type.Integer},
+            {typeof(ushort), Swagger2Type.Integer},
+            {typeof(int), Swagger2Type.Integer},
+            {typeof(uint), Swagger2Type.Integer},
+            {typeof(long), Swagger2Type.Integer},
+            {typeof(ulong), Swagger2Type.Integer},
+            {typeof(float), Swagger2Type.Number},
+            {typeof(double), Swagger2Type.Number},
+            {typeof(decimal), Swagger2Type.Number},
             {typeof(string), Swagger2Type.String},
-            {typeof(DateTime), Swagger2Type.DateTime}
+            {typeof(DateTime), Swagger2Type.String}
         };
 
         private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarFormats = new Dictionary<Type, string> {
-            {typeof(byte), Swagger2Format.Byte},
-            {typeof(sbyte), Swagger2Format.Byte},
-            {typeof(short), Swagger2Format.Int},
-            {typeof(ushort), Swagger2Format.Int},
-            {typeof(int), Swagger2Format.Int},
-            {typeof(uint), Swagger2Format.Int},
-            {typeof(long), Swagger2Format.Long},
-            {typeof(ulong), Swagger2Format.Long},
-            {typeof(float), Swagger2Format.Float},
-            {typeof(double), Swagger2Format.Double},
-            {typeof(decimal), Swagger2Format.Double},
-            {typeof(DateTime), Swagger2Format.DateTime}
+            {typeof(byte), Swagger2TypeFormat.Byte},
+            {typeof(sbyte), Swagger2TypeFormat.Byte},
+            {typeof(short), Swagger2TypeFormat.Int},
+            {typeof(ushort), Swagger2TypeFormat.Int},
+            {typeof(int), Swagger2TypeFormat.Int},
+            {typeof(uint), Swagger2TypeFormat.Int},
+            {typeof(long), Swagger2TypeFormat.Long},
+            {typeof(ulong), Swagger2TypeFormat.Long},
+            {typeof(float), Swagger2TypeFormat.Float},
+            {typeof(double), Swagger2TypeFormat.Double},
+            {typeof(decimal), Swagger2TypeFormat.Double},
+            {typeof(DateTime), Swagger2TypeFormat.DateTime}
         };
 
 
@@ -980,6 +925,78 @@ namespace ServiceStack.Api.Swagger2
 
             return responses;
         }
+
+        private Dictionary<string, Swagger2Path> ParseOperations(List<RestPath> restPaths, Dictionary<string, Swagger2Schema> models)
+        {
+            var apiPaths = new Dictionary<string, Swagger2Path>();
+
+            foreach (var restPath in restPaths)
+            {
+                var verbs = new List<string>();
+                var summary = restPath.Summary ?? restPath.RequestType.GetDescription();
+                var notes = restPath.Notes;
+
+                verbs.AddRange(restPath.AllowsAllVerbs
+                    ? new[] { "GET", "POST", "PUT", "DELETE" }
+                    : restPath.AllowedVerbs.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+                var routePath = restPath.Path.Replace("*", "");
+                var requestType = restPath.RequestType;
+
+                Swagger2Path curPath;
+
+                if (!apiPaths.TryGetValue(restPath.Path, out curPath))
+                {
+                    curPath = new Swagger2Path();
+                    apiPaths.Add(restPath.Path, curPath);
+                }
+
+                foreach (var verb in verbs)
+                {
+                    var operation = new Swagger2Operation()
+                    {
+                        Summary = summary,
+                        Description = notes,
+                        OperationId = requestType.Name,
+                        Parameters = ParseParameters(verb, requestType, models, routePath),
+                        Consumes = new List<string>() { "application/json" },
+                        Produces = new List<string>() { "application/json" }
+                    };
+
+                    switch(verb)
+                    {
+                        case "GET": curPath.Get = operation; break;
+                        case "POST": curPath.Post = operation; break;
+                        case "PUT": curPath.Put = operation; break;
+                        case "DELETE": curPath.Delete = operation; break;
+                        case "PATCH": curPath.Patch = operation; break;
+                        case "HEAD": curPath.Head = operation; break;
+                        case "OPTIONS": curPath.Options = operation; break;
+                    }
+                }
+            }
+
+/*
+            var md = new Swagger2Api
+            {
+                Path = routePath,
+                Description = summary,
+                Operations = verbs.Map(verb => new Swagger2Operation
+                {
+                    OperationId = requestType.Name,
+                    Nickname = requestType.Name,
+                    Summary = summary,
+                    Notes = notes,
+                    Parameters = ParseParameters(verb, requestType, models, routePath),
+                    ResponseClass = GetResponseClass(restPath, models),
+                    Responses = GetMethodResponseCodes(requestType)
+                })
+            };
+            */
+            return apiPaths;
+        }
+
+
         /*
         private Swagger2Api FormatMethodDescription(RestPath restPath, Dictionary<string, Swagger2Model> models)
         {
@@ -1016,8 +1033,8 @@ namespace ServiceStack.Api.Swagger2
         {
             return attr != null && attr.Values != null ? attr.Values.ToList() : null;
         }
-        /*
-        private List<Swagger2Parameter> ParseParameters(string verb, Type operationType, IDictionary<string, Swagger2Model> models, string route)
+        
+        private List<Swagger2Parameter> ParseParameters(string verb, Type operationType, IDictionary<string, Swagger2Schema> models, string route)
         {
             var hasDataContract = operationType.HasAttribute<DataContractAttribute>();
 
@@ -1061,10 +1078,11 @@ namespace ServiceStack.Api.Swagger2
 
                 defaultOperationParameters.Add(new Swagger2Parameter {
                     Type = GetSwaggerTypeName(property.PropertyType),
-                    AllowMultiple = false,
+                    Format = GetSwaggerTypeFormat(property.PropertyType),
+                    //AllowMultiple = false,
                     Description = property.PropertyType.GetDescription(),
                     Name = propertyName,
-                    ParamType = paramType,
+                    In = paramType,
                     Required = paramType == "path",
                     Enum = GetEnumValues(allowableValuesAttrs.FirstOrDefault()),
                 });
@@ -1087,10 +1105,10 @@ namespace ServiceStack.Api.Swagger2
                             methodOperationParameters.Add(new Swagger2Parameter
                             {
                                 Type = member.DataType ?? SwaggerType.String,
-                                AllowMultiple = member.AllowMultiple,
+                                //AllowMultiple = member.AllowMultiple,
                                 Description = member.Description,
                                 Name = member.Name ?? key,
-                                ParamType = member.GetParamType(operationType, member.Verb ?? verb),
+                                In = member.GetParamType(operationType, member.Verb ?? verb),
                                 Required = member.IsRequired,
                                 Enum = GetEnumValues(allowableParams.FirstOrDefault(attr => attr.Name == (member.Name ?? key)))
                             });
@@ -1102,20 +1120,21 @@ namespace ServiceStack.Api.Swagger2
             if (!DisableAutoDtoInBodyParam)
             {
                 if (!HttpMethods.Get.EqualsIgnoreCase(verb) && !HttpMethods.Delete.EqualsIgnoreCase(verb) 
-                    && !methodOperationParameters.Any(p => "body".EqualsIgnoreCase(p.ParamType)))
+                    && !methodOperationParameters.Any(p => "body".EqualsIgnoreCase(p.In)))
                 {
-                    ParseModel(models, operationType, route, verb);
+                    ParseDefinitions(models, operationType, route, verb);
                     methodOperationParameters.Add(new Swagger2Parameter
                     {
-                        ParamType = "body",
+                        In = "body",
                         Name = "body",
                         Type = GetSwaggerTypeName(operationType, route, verb),
+                        Format = GetSwaggerTypeFormat(operationType, route, verb)
                     });
                 }
             }
             return methodOperationParameters;
         }
-        */
+        
 
     }
 }
