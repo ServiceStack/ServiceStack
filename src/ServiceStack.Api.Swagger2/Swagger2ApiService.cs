@@ -734,7 +734,7 @@ namespace ServiceStack.Api.Swagger2
 
             var responseSchema = GetResponseSchema(restPath, models);
 
-            responses.Add("200", new Swagger2Response()
+            responses.Add("default", new Swagger2Response()
             {
                 Schema = responseSchema,
                 Description = "TODO: description"

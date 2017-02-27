@@ -57,7 +57,7 @@ namespace ServiceStack.Api.Swagger2
             //Swagger2ApiService.ModelFilter = ModelFilter;
             Swagger2ApiService.ModelPropertyFilter = ModelPropertyFilter;
 
-            appHost.RegisterService(typeof(Swagger2ApiService), new[] { "/resources2" });
+            appHost.RegisterService(typeof(Swagger2ApiService), new[] { "/swagger2-api" });
 
             var swaggerUrl = UseBootstrapTheme
                 ? "swagger2-ui-bootstrap/"
@@ -97,7 +97,7 @@ namespace ServiceStack.Api.Swagger2
                     return new CustomResponseHandler((req, res) =>
                     {
                         res.ContentType = MimeTypes.Html;
-                        var resourcesUrl = req.ResolveAbsoluteUrl("~/resources");
+                        var resourcesUrl = req.ResolveAbsoluteUrl("~/swagger2-api");
                         html = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)
                             .Replace("ApiDocs", HostContext.ServiceName)
                             .Replace("{LogoUrl}", LogoUrl);
