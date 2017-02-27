@@ -124,6 +124,9 @@ namespace ServiceStack.Auth
 
                 foreach (var role in AllRoles.Safe())
                 {
+                    if (session.Roles.Contains(role))
+                        continue;
+
                     if (user.IsInRole(role))
                         session.Roles.AddIfNotExists(role);
                 }
