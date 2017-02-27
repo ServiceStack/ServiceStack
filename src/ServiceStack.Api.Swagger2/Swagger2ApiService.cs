@@ -182,6 +182,10 @@ namespace ServiceStack.Api.Swagger2
     {
         [DataMember(Name = "$ref")]
         public string Ref { get; set; }
+        [DataMember(Name = "title")]
+        public string Title { get; set; }
+        [DataMember(Name = "description")]
+        public string Description { get; set; }
         [DataMember(Name = "discriminator")]
         public string Discriminator { get; set; }
         [DataMember(Name = "readOnly")]
@@ -193,9 +197,11 @@ namespace ServiceStack.Api.Swagger2
         [DataMember(Name = "example")]
         public string Example { get; set; }
 
-        //TODO: allOf, additionalProperties
+        //TODO: allOf
         [DataMember(Name = "properties")]
         public OrderedDictionary<string, Swagger2Property> Properties { get; set; }
+        [DataMember(Name = "additionalProperties")]
+        public OrderedDictionary<string, Swagger2Property> AdditionalProperties { get; set; }
     }
 
     [DataContract]
@@ -351,87 +357,6 @@ namespace ServiceStack.Api.Swagger2
         public string Description { get; set; }
     }
 
-    //old declarations
-    /*    [DataContract]
-        public class Swagger2Model
-        {
-            [DataMember(Name = "id")]
-            public string Id { get; set; }
-            [DataMember(Name = "description")]
-            public string Description { get; set; }
-            [DataMember(Name = "required")]
-            public List<string> Required { get; set; }
-            [DataMember(Name = "properties")]
-            public OrderedDictionary<string, Swagger2Property> Properties { get; set; }
-            [DataMember(Name = "subTypes")]
-            public List<string> SubTypes { get; set; }
-            [DataMember(Name = "discriminator")]
-            public string Discriminator { get; set; }
-        }
-
-        [DataContract]
-        public class Swagger2Api
-        {
-            [DataMember(Name = "path")]
-            public string Path { get; set; }
-            [DataMember(Name = "description")]
-            public string Description { get; set; }
-            [DataMember(Name = "operations")]
-            public List<Swagger2Operation> Operations { get; set; }
-        }
-
-
-        [DataContract]
-        public class Swagger2ResponseMessage
-        {
-            [DataMember(Name = "code")]
-            public int Code { get; set; }
-            [DataMember(Name = "message")]
-            public string Message { get; set; }
-            [DataMember(Name = "responseModel")]
-            public string ResponseModel { get; set; }
-        }
-
-        [DataContract]
-        public class ErrorResponseStatus
-        {
-            [DataMember(Name = "code")]
-            public int StatusCode { get; set; }
-            [DataMember(Name = "reason")]
-            public string Reason { get; set; }
-        }
-
-        [DataContract]
-        public class Swagger2Parameter : Swagger2DataTypeFields
-        {
-            [DataMember(Name = "paramType")]
-            public string ParamType { get; set; }
-            [DataMember(Name = "name")]
-            public string Name { get; set; }
-            [DataMember(Name = "description")]
-            public string Description { get; set; }
-            [DataMember(Name = "required")]
-            public bool Required { get; set; }
-            [DataMember(Name = "allowMultiple")]
-            public bool AllowMultiple { get; set; }
-        }
-
-        [DataContract]
-        public class ParameterAllowableValues
-        {
-            [DataMember(Name = "valueType")]
-            public string ValueType { get; set; }
-
-            [DataMember(Name = "values")]
-            public string[] Values { get; set; }
-
-            [DataMember(Name = "min")]
-            public int? Min { get; set; }
-
-            [DataMember(Name = "max")]
-            public int? Max { get; set; }
-        }
-        */
     [AddHeader(DefaultContentType = MimeTypes.Json)]
     [DefaultRequest(typeof(Swagger2Resources))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
@@ -451,13 +376,12 @@ namespace ServiceStack.Api.Swagger2
             var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
-            var basePath = base.Request.GetBaseUrl();
+            var basePath = new Uri(base.Request.GetBaseUrl());
 
             var meta = HostContext.Metadata;
             foreach (var key in map.Keys)
             {
                 var restPaths = map[key];
-                //var selectedPaths = restPaths.Where( x => x.Path == path || x.Path.StartsWith(path + "/"));
                 var visiblePaths = restPaths.Where(x => meta.IsVisible(Request, Format.Json, x.RequestType.Name));
                 paths.AddRange(visiblePaths);
             }
@@ -468,21 +392,20 @@ namespace ServiceStack.Api.Swagger2
                 ParseDefinitions(definitions, restPath.Value.RequestType, restPath.Value.Path, restPath.Verb);
             }
 
+            //TODO: order by path
             var apiPaths = ParseOperations(paths, definitions);
-
-            //var apis = paths.Select(p => FormatMethodDescription(p, models))
-            //    .ToArray().OrderBy(md => md.Path).ToList();
 
             var result = new Swagger2ApiDeclaration
             {
                 Info = new Swagger2Info()
                 {
+                    Title = HostContext.ServiceName,
                     Version = HostContext.Config.ApiVersion,
                 },
                 Paths = apiPaths,
-                BasePath = basePath,
-                Schemes = new List<string> { "http", "https" }, //TODO: get https from config
-                Host = HostConfig.ServiceStackPath,
+                BasePath = basePath.AbsolutePath,
+                Schemes = new List<string> { basePath.Scheme }, //TODO: get https from config
+                Host = basePath.Authority,
                 Consumes = new List<string>(){ "application/json"},
                 Definitions = definitions
             };
@@ -610,7 +533,7 @@ namespace ServiceStack.Api.Swagger2
             var model = new Swagger2Schema
             {
                 Type = "object",
-                //Description = modelType.GetDescription() ?? modelTypeName,
+                Description = modelType.GetDescription() ?? modelTypeName,
                 Properties = new OrderedDictionary<string, Swagger2Property>()
             };
             models[modelId] = model;
@@ -732,141 +655,6 @@ namespace ServiceStack.Api.Swagger2
             }
         }
 
-
-/*
-        private void ParseModel(IDictionary<string, Swagger2Model> models, Type modelType, string route, string verb)
-        {
-            if (IsSwaggerScalarType(modelType) || modelType.ExcludesFeature(Feature.Metadata)) return;
-
-            var modelId = GetModelTypeName(modelType, route, verb);
-            if (models.ContainsKey(modelId)) return;
-
-            var modelTypeName = GetModelTypeName(modelType);
-            var model = new Swagger2Model
-            {
-                Id = modelId,
-                Description = modelType.GetDescription() ?? modelTypeName,
-                Properties = new OrderedDictionary<string, Swagger2Property>()
-            };
-            models[model.Id] = model;
-
-            var properties = modelType.GetProperties();
-
-            // Order model properties by DataMember.Order if [DataContract] and [DataMember](s) defined
-            // Ordering defined by: http://msdn.microsoft.com/en-us/library/ms729813.aspx
-            var dataContractAttr = modelType.FirstAttribute<DataContractAttribute>();
-            if (dataContractAttr != null && properties.Any(prop => prop.IsDefined(typeof(DataMemberAttribute), true)))
-            {
-                var typeOrder = new List<Type> { modelType };
-                var baseType = modelType.BaseType();
-                while (baseType != null)
-                {
-                    typeOrder.Add(baseType);
-                    baseType = baseType.BaseType();
-                }              
-                
-                var propsWithDataMember = properties.Where(prop => prop.IsDefined(typeof(DataMemberAttribute), true));
-                var propDataMemberAttrs = properties.ToDictionary(prop => prop, prop => prop.FirstAttribute<DataMemberAttribute>());
-
-                properties = propsWithDataMember
-                    .OrderBy(prop => propDataMemberAttrs[prop].Order)                // Order by DataMember.Order
-                    .ThenByDescending(prop => typeOrder.IndexOf(prop.DeclaringType)) // Then by BaseTypes First
-                    .ThenBy(prop =>                                                  // Then by [DataMember].Name / prop.Name
-                    {
-                        var name = propDataMemberAttrs[prop].Name;
-                        return name.IsNullOrEmpty() ? prop.Name : name;
-                    }).ToArray();
-            }
-
-            var parseProperties = modelType.IsUserType();
-            if (parseProperties)
-            {
-                foreach (var prop in properties)
-                {
-                    if (prop.HasAttribute<IgnoreDataMemberAttribute>())
-                        continue;
-
-                    var apiMembers = prop
-                        .AllAttributes<ApiMemberAttribute>()
-                        .OrderByDescending(attr => attr.Route)
-                        .ToList();
-                    var apiDoc = apiMembers
-                        .Where(attr => string.IsNullOrEmpty(verb) || string.IsNullOrEmpty(attr.Verb) || (verb ?? "").Equals(attr.Verb))
-                        .Where(attr => string.IsNullOrEmpty(route) || string.IsNullOrEmpty(attr.Route) || (route ?? "").StartsWith(attr.Route))
-                        .FirstOrDefault(attr => attr.ParameterType == "body" || attr.ParameterType == "model");
-
-                    if (apiMembers.Any(x => x.ExcludeInSchema))
-                        continue;
-
-                    var propertyType = prop.PropertyType;
-                    var modelProp = new Swagger2Parameter
-                    {
-                        Type = GetSwaggerTypeName(propertyType, route, verb),
-                        Description = prop.GetDescription(),
-                    };
-
-                    if ((propertyType.IsValueType() && !IsNullable(propertyType)) || apiMembers.Any(x => x.IsRequired))
-                    {
-                        modelProp.Required = true;
-                    }
-
-                    if (IsListType(propertyType))
-                    {
-                        modelProp.Type = SwaggerType.Array;
-                        var listItemType = GetListElementType(propertyType);
-                        modelProp.Items = new Dictionary<string, string> {
-                            { IsSwaggerScalarType(listItemType) 
-                                ? "type" 
-                                : "$ref", GetSwaggerTypeName(listItemType, route, verb) }
-                        };
-                        ParseModel(models, listItemType, route, verb);
-                    }
-                    else if ((Nullable.GetUnderlyingType(propertyType) ?? propertyType).IsEnum())
-                    {
-                        var enumType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
-                        if (enumType.IsNumericType())
-                        {
-                            var underlyingType = Enum.GetUnderlyingType(enumType);
-                            modelProp.Type = GetSwaggerTypeName(underlyingType, route, verb);
-                            modelProp.Enum = GetNumericValues(enumType, underlyingType).ToList();
-                        }
-                        else
-                        {
-                            modelProp.Type = SwaggerType.String;
-                            modelProp.Enum = Enum.GetNames(enumType).ToList();
-                        }
-                    }
-                    else
-                    {
-                        ParseModel(models, propertyType, route, verb);
-
-                        var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
-                        if (propAttr != null && propAttr.DataType != null)
-                            modelProp.Type = propAttr.DataType;
-                    }
-
-                    if (apiDoc != null && modelProp.Description == null)
-                        modelProp.Description = apiDoc.Description;
-
-                    var allowableValues = prop.FirstAttribute<ApiAllowableValuesAttribute>();
-                    if (allowableValues != null)
-                        modelProp.Enum = GetEnumValues(allowableValues);
-
-                    if (ModelPropertyFilter != null)
-                    {
-                        ModelPropertyFilter(modelProp);
-                    }
-
-                    model.Properties[GetModelPropertyName(prop)] = modelProp;
-                }
-            }
-
-            if (ModelFilter != null)
-            {
-                ModelFilter(model);
-            }
-        }
-  */      
         private static string GetModelPropertyName(PropertyInfo prop)
         {
             var dataMemberAttr = prop.FirstAttribute<DataMemberAttribute>();
@@ -940,29 +728,6 @@ namespace ServiceStack.Api.Swagger2
             return new Swagger2Schema() { Type = Swagger2Type.String };
         }
 
-        private string GetResponseClass(IRestPath restPath, IDictionary<string, Swagger2Schema> models)
-        {
-            // Given: class MyDto : IReturn<X>. Determine the type X.
-            foreach (var i in restPath.RequestType.GetInterfaces())
-            {
-                if (i.IsGenericType() && i.GetGenericTypeDefinition() == typeof(IReturn<>))
-                {
-                    var returnType = i.GetGenericArguments()[0];
-                    // Handle IReturn<List<SomeClass>> or IReturn<SomeClass[]>
-                    if (IsListType(returnType))
-                    {
-                        var listItemType = GetListElementType(returnType);
-                        ParseResponseModel(models, listItemType);
-                        return string.Format("List[{0}]", GetSwaggerTypeName(listItemType));
-                    }
-                    ParseResponseModel(models, returnType);
-                    return GetSwaggerTypeName(i.GetGenericArguments()[0]);
-                }
-            }
-
-            return null;
-        }
-
         private Dictionary<string, Swagger2Response> GetMethodResponseCodes(IRestPath restPath, IDictionary<string, Swagger2Schema> models, Type requestType)
         {
             var responses = new Dictionary<string, Swagger2Response>();
@@ -1017,7 +782,7 @@ namespace ServiceStack.Api.Swagger2
                     var operation = new Swagger2Operation()
                     {
                         Summary = summary,
-                        Description = notes,
+                        Description = summary,
                         OperationId = requestType.Name,
                         Parameters = ParseParameters(verb, requestType, models, routePath),
                         Responses = GetMethodResponseCodes(restPath, models, requestType),
@@ -1038,23 +803,6 @@ namespace ServiceStack.Api.Swagger2
                 }
             }
 
-/*
-            var md = new Swagger2Api
-            {
-                Path = routePath,
-                Description = summary,
-                Operations = verbs.Map(verb => new Swagger2Operation
-                {
-                    OperationId = requestType.Name,
-                    Nickname = requestType.Name,
-                    Summary = summary,
-                    Notes = notes,
-                    Parameters = ParseParameters(verb, requestType, models, routePath),
-                    ResponseClass = GetResponseClass(restPath, models),
-                    Responses = GetMethodResponseCodes(requestType)
-                })
-            };
-            */
             return apiPaths;
         }
 
@@ -1102,10 +850,12 @@ namespace ServiceStack.Api.Swagger2
                 var paramType = inPath
                     ? "path" 
                     : verb == HttpMethods.Post || verb == HttpMethods.Put 
-                        ? "form" 
+                        ? "formData"
                         : "query";
 
-                defaultOperationParameters.Add(new Swagger2Parameter {
+
+                var parameter = new Swagger2Parameter
+                {
                     Type = GetSwaggerTypeName(property.PropertyType),
                     Format = GetSwaggerTypeFormat(property.PropertyType),
                     //AllowMultiple = false,
@@ -1114,7 +864,43 @@ namespace ServiceStack.Api.Swagger2
                     In = paramType,
                     Required = paramType == "path",
                     Enum = GetEnumValues(allowableValuesAttrs.FirstOrDefault()),
-                });
+                };
+
+                if (!IsSwaggerScalarType(property.PropertyType) && !IsListType(property.PropertyType))
+                {
+                    parameter.Type = null;
+                    parameter.Format = null;
+                    parameter.Schema = new Swagger2Schema() { Ref = "#/definitions/" + GetModelTypeName(property.PropertyType, route, verb) };
+                }
+                else if (IsListType(property.PropertyType))
+                {
+                    parameter = new Swagger2Parameter
+                    {
+                        Type = Swagger2Type.Array,
+                        CollectionFormat = "multi",
+                        Description = property.PropertyType.GetDescription(),
+                        Name = propertyName,
+                        In = paramType,
+                        Required = paramType == "path"
+                    };
+
+                    var listItemType = GetListElementType(property.PropertyType);
+                    if (IsSwaggerScalarType(listItemType))
+                    {
+                        parameter.Items = new Dictionary<string, string>
+                        {
+                            { "type", GetSwaggerTypeName(listItemType, route, verb) },
+                            { "format", GetSwaggerTypeFormat(listItemType, route, verb) }
+                        };
+                    }
+                    else
+                    {
+                        parameter.Items = new Dictionary<string, string> { { "$ref", "#/definitions/" + GetModelTypeName(listItemType, route, verb) } };
+                    }
+                    ParseDefinitions(models, listItemType, route, verb);
+                }
+
+                defaultOperationParameters.Add(parameter);
             }
 
             var methodOperationParameters = defaultOperationParameters;
@@ -1146,7 +932,8 @@ namespace ServiceStack.Api.Swagger2
                 }
             }
 
-            if (!DisableAutoDtoInBodyParam)
+            //FIX: this is commented, because it breaks validation of swagger2 schema
+            /*if (!DisableAutoDtoInBodyParam)
             {
                 if (!HttpMethods.Get.EqualsIgnoreCase(verb) && !HttpMethods.Delete.EqualsIgnoreCase(verb) 
                     && !methodOperationParameters.Any(p => "body".EqualsIgnoreCase(p.In)))
@@ -1160,7 +947,7 @@ namespace ServiceStack.Api.Swagger2
                         Format = GetSwaggerTypeFormat(operationType, route, verb)
                     });
                 }
-            }
+            }*/
             return methodOperationParameters;
         }
         
