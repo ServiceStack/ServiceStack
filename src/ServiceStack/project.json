@@ -14,7 +14,8 @@
         "define": [
           "DEBUG",
           "TRACE"
-        ]
+        ],
+        "debugType": "portable"
       }
     },
     "Release": {
