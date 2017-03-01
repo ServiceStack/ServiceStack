@@ -2001,11 +2001,7 @@ namespace ServiceStack
 
         public static void SetUserAgent(this HttpWebRequest req, string userAgent)
         {
-#if !(PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
-            req.UserAgent = userAgent;
-#else
-            req.Headers[HttpRequestHeader.UserAgent] = userAgent;
-#endif
+            PclExport.Instance.SetUserAgent(req, userAgent);
         }
     }
 
