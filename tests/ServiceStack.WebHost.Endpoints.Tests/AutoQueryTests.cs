@@ -380,6 +380,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string LastName { get; set; }
     }
 
+    public class QueryFieldsImplicitConventions : QueryDb<Rockstar>
+    {
+        [QueryDbField(Term = QueryTerm.Or)]
+        public string FirstNameContains { get; set; }
+
+        [QueryDbField(Term = QueryTerm.Or)]
+        public string LastNameEndsWith { get; set; }
+    }
+
     [QueryDb(QueryTerm.Or)]
     public class QueryGetRockstars : QueryDb<Rockstar>
     {
@@ -1098,6 +1107,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
             Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Does_retain_implicit_convention_when_not_overriding_template_or_ValueFormat()
+        {
+            var response = client.Get(new QueryFieldsImplicitConventions { FirstNameContains = "im" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = client.Get(new QueryFieldsImplicitConventions { LastNameEndsWith = "son" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
         }
 
         [Test]

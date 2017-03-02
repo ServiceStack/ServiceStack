@@ -769,8 +769,10 @@ namespace ServiceStack
                 if (match == null)
                     continue;
 
-                if (implicitQuery == null)
-                    implicitQuery = match.ImplicitQuery;
+                implicitQuery = implicitQuery == null 
+                    ? match.ImplicitQuery 
+                    : implicitQuery.Combine(match.ImplicitQuery);
+
                 var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
 
                 var value = entry.Value(dto);
@@ -1002,6 +1004,23 @@ namespace ServiceStack
                     : ValueStyle.List;
             }
             return query;
+        }
+
+        public static QueryDbFieldAttribute Combine(this QueryDbFieldAttribute field, QueryDbFieldAttribute convention)
+        {
+            if (convention == null)
+                return field;
+
+            return new QueryDbFieldAttribute
+            {
+                Term = field.Term,
+                Operand = field.Operand ?? convention.Operand,
+                Template = field.Template ?? convention.Template,
+                Field = field.Field ?? convention.Field,
+                ValueFormat = field.ValueFormat ?? convention.ValueFormat,
+                ValueStyle = field.ValueStyle,
+                ValueArity = field.ValueArity != 0 ? field.ValueArity : convention.ValueArity,
+            };
         }
 
         public static SqlExpression<From> CreateQuery<From>(this IAutoQueryDb autoQuery, IQueryDb<From> model, IRequest request)
