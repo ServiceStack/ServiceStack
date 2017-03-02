@@ -18,15 +18,19 @@
 
 namespace ServiceStack.FluentValidation
 {
-	using System;
-	using System.Collections.Generic;
-    using Results;
-	using System.Linq;
+    using System;
+    using System.Linq;
+    using ServiceStack.Model;
+    using ServiceStack.Validation;
+    using System.Collections.Generic;
+    using ServiceStack.FluentValidation.Results;
+    using ServiceStack.Text;
 
-	/// <summary>
+    /// <summary>
 	/// An exception that represents failed validation
 	/// </summary>
-	public class ValidationException : Exception {
+	public class ValidationException : ArgumentException, IResponseStatusConvertible
+    {
 		/// <summary>
 		/// Validation errors
 		/// </summary>
@@ -60,5 +64,17 @@ namespace ServiceStack.FluentValidation
 			var arr = errors.Select(x => "\r\n -- " + x.ErrorMessage).ToArray();
 			return "Validation failed: " + string.Join("", arr);
 		}
-	}
+
+        public ResponseStatus ToResponseStatus()
+        {
+            var errors = Errors.Map(x =>
+                new ValidationErrorField(x.ErrorCode, x.PropertyName, x.ErrorMessage)
+                {
+                    Meta = x.CustomState as Dictionary<string, string> ?? x.FormattedMessagePlaceholderValues.ToStringDictionary()
+                });
+
+            var responseStatus = ResponseStatusUtils.CreateResponseStatus(typeof(ValidationException).GetOperationName(), Message, errors);
+            return responseStatus;
+        }
+    }
 }
