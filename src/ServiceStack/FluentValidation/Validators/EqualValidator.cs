@@ -36,19 +36,22 @@ namespace ServiceStack.FluentValidation.Validators
 
 		public EqualValidator(object valueToCompare, IEqualityComparer comparer)
 			: base(nameof(Messages.equal_error), typeof(Messages)) {
-			ValueToCompare = valueToCompare;
+            ErrorCodeSource = new StaticStringSource(ValidationErrors.Equal);
+            ValueToCompare = valueToCompare;
 			this.comparer = comparer;
 		}
 
 		public EqualValidator(Func<object, object> comparisonProperty, MemberInfo member)
 			: base(nameof(Messages.equal_error), typeof(Messages))  {
-			func = comparisonProperty;
+            ErrorCodeSource = new StaticStringSource(ValidationErrors.Equal);
+            func = comparisonProperty;
 			MemberToCompare = member;
 		}
 
 		public EqualValidator(Func<object, object> comparisonProperty, MemberInfo member, IEqualityComparer comparer)
 			: base(nameof(Messages.equal_error), typeof(Messages)) {
-			func = comparisonProperty;
+            ErrorCodeSource = new StaticStringSource(ValidationErrors.Equal);
+            func = comparisonProperty;
 			MemberToCompare = member;
 			this.comparer = comparer;
 		}
