@@ -466,9 +466,9 @@ namespace System.Threading.Tasks
 			else
 			{
 				Func<Exception, Exception> prepForRemoting = null;
-#if !PORTABLE && !PORTABLE40 && !NETSTANDARD
-				try
-				{
+#if !PORTABLE && !PORTABLE40 && !NETSTANDARD1_6
+                try
+                {
 					if (AppDomain.CurrentDomain.IsFullyTrusted)
 					{
 						// .NET 4 - do the same thing Lazy<T> does by calling Exception.PrepForRemoting
