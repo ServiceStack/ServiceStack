@@ -23,10 +23,10 @@ namespace ServiceStack.FluentValidation.Results {
 	using ServiceStack.Web;
 
     /// <summary>
-	/// The result of running a validator
-	/// </summary>
-#if !PORTABLE && !PORTABLE40 && !NETSTANDARD
-	[Serializable]
+    /// The result of running a validator
+    /// </summary>
+#if !PORTABLE && !PORTABLE40 && !NETSTANDARD1_6
+    [Serializable]
 #endif
 	public class ValidationResult {
 		private readonly IList<ValidationFailure> errors;

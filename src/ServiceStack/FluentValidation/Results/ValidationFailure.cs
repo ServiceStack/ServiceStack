@@ -21,11 +21,11 @@ namespace ServiceStack.FluentValidation.Results
 	using System;
 	using System.Collections.Generic;
 
-	/// <summary>
-	/// Defines a validation failure
-	/// </summary>
-#if !PORTABLE && !PORTABLE40 && !NETSTANDARD
-	[Serializable]
+    /// <summary>
+    /// Defines a validation failure
+    /// </summary>
+#if !PORTABLE && !PORTABLE40 && !NETSTANDARD1_6
+    [Serializable]
 #endif
 	public class ValidationFailure {
 		private ValidationFailure() {
