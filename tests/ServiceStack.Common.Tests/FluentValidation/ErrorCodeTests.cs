@@ -123,7 +123,7 @@ namespace ServiceStack.Common.Tests.FluentValidation
         [Test]
         public void LengthContainsPlaceholders()
         {
-            Assert.IsTrue(Result.Errors.Where(f => f.ErrorCode == ValidationErrors.Length).Any(f => f.PlaceholderValues.ContainsKey("MinLength")));
+            Assert.IsTrue(Result.Errors.Where(f => f.ErrorCode == ValidationErrors.Length).Any(f => f.FormattedMessagePlaceholderValues.ContainsKey("MinLength")));
         }
 
         [Test]

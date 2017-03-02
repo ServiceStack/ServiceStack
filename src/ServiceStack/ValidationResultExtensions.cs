@@ -4,6 +4,8 @@ using ServiceStack.Validation;
 
 namespace ServiceStack
 {
+    using ServiceStack.Text;
+
     public static class ValidationResultExtensions
     {
         /// <summary>
@@ -18,7 +20,7 @@ namespace ServiceStack
             {
                 validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage, error.AttemptedValue)
                 {
-                    Meta = error.CustomState as Dictionary<string, string> ?? error.PlaceholderValues
+                    Meta = error.CustomState as Dictionary<string, string> ?? error.FormattedMessagePlaceholderValues.ToStringDictionary()
                 });
             }
 

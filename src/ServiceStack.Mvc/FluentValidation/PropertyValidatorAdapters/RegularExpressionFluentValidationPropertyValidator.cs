@@ -20,7 +20,7 @@ namespace FluentValidation.Mvc {
 			if (!ShouldGenerateClientSideRules()) yield break;
 
 			var formatter = new MessageFormatter().AppendPropertyName(Rule.GetDisplayName());
-			string message = formatter.BuildMessage(RegexValidator.ErrorMessageSource.GetString());
+			string message = formatter.BuildMessage(RegexValidator.ErrorMessageSource.GetString(Metadata));
 			yield return new ModelClientValidationRegexRule(message, RegexValidator.Expression);
 		}
 	}

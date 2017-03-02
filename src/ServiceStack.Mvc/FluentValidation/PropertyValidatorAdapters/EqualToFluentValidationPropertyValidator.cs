@@ -30,7 +30,7 @@ namespace FluentValidation.Mvc {
 					.AppendArgument("PropertyValue", propertyToCompare.Name);
 
 
-				string message = formatter.BuildMessage(EqualValidator.ErrorMessageSource.GetString());
+				string message = formatter.BuildMessage(EqualValidator.ErrorMessageSource.GetString(Metadata));
 				yield return new ModelClientValidationEqualToRule(message, CompareAttribute.FormatPropertyForClientValidation(propertyToCompare.Name)) ;
 			}
 		}
