@@ -424,8 +424,10 @@ namespace ServiceStack.Api.Swagger2
         }
 
         private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarTypes = new Dictionary<Type, string> {
-            {typeof(byte), Swagger2Type.String},
-            {typeof(sbyte), Swagger2Type.String},
+            {typeof(byte[]), Swagger2Type.String},
+            {typeof(sbyte[]), Swagger2Type.String},
+            {typeof(byte), Swagger2Type.Integer},
+            {typeof(sbyte), Swagger2Type.Integer},
             {typeof(bool), Swagger2Type.Boolean},
             {typeof(short), Swagger2Type.Integer},
             {typeof(ushort), Swagger2Type.Integer},
@@ -441,8 +443,10 @@ namespace ServiceStack.Api.Swagger2
         };
 
         private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarFormats = new Dictionary<Type, string> {
-            {typeof(byte), Swagger2TypeFormat.Byte},
-            {typeof(sbyte), Swagger2TypeFormat.Byte},
+            {typeof(byte[]), Swagger2TypeFormat.Byte},
+            {typeof(sbyte[]), Swagger2TypeFormat.Byte},
+            {typeof(byte), Swagger2TypeFormat.Int},
+            {typeof(sbyte), Swagger2TypeFormat.Int},
             {typeof(short), Swagger2TypeFormat.Int},
             {typeof(ushort), Swagger2TypeFormat.Int},
             {typeof(int), Swagger2TypeFormat.Int},
@@ -478,6 +482,13 @@ namespace ServiceStack.Api.Swagger2
             var lookupType = Nullable.GetUnderlyingType(type) ?? type;
 
             string format = null;
+
+            //special case for response types byte[]. If byte[] is in response
+            //then we should use `binary` swagger type, because it's octet-encoded
+            //otherwise we use `byte` swagger type for base64-encoded input
+            if (route == null && verb == null && type == typeof(byte[]))
+                return Swagger2TypeFormat.Binary;
+
             ClrTypesToSwaggerScalarFormats.TryGetValue(lookupType, out format);
             return format;
         }
@@ -496,6 +507,10 @@ namespace ServiceStack.Api.Swagger2
 
         private static bool IsListType(Type type)
         {
+            //Swagger2 specification has a special data format for type byte[] ('byte', 'binary' or 'file'), so it's not a list
+            if (type == typeof(byte[]))
+                return false;
+
             return GetListElementType(type) != null;
         }
 
@@ -773,7 +788,10 @@ namespace ServiceStack.Api.Swagger2
 
                 if (!apiPaths.TryGetValue(restPath.Path, out curPath))
                 {
-                    curPath = new Swagger2Path();
+                    curPath = new Swagger2Path()
+                    {
+                        Parameters = new List<Swagger2Parameter>() { GetFormatJsonParameter() }
+                    };
                     apiPaths.Add(restPath.Path, curPath);
                 }
 
@@ -783,7 +801,7 @@ namespace ServiceStack.Api.Swagger2
                     {
                         Summary = summary,
                         Description = summary,
-                        OperationId = requestType.Name,
+                        OperationId = requestType.Name + GetOperationNamePostfix(verb),
                         Parameters = ParseParameters(verb, requestType, models, routePath),
                         Responses = GetMethodResponseCodes(restPath, models, requestType),
                         Consumes = new List<string>() { "application/json" },
@@ -804,6 +822,26 @@ namespace ServiceStack.Api.Swagger2
             }
 
             return apiPaths;
+        }
+
+
+        static readonly Dictionary<string, string> postfixes = new Dictionary<string, string>()
+        {
+            { "GET", "_Get" },      //'Get' or 'List' to pass Autorest validation
+            { "PUT", "_Create" },   //'Create' to pass Autorest validation
+            { "POST", "_Post" },
+            { "PATCH", "_Update" }, //'Update' to pass Autorest validation
+            { "DELETE", "_Delete" } //'Delete' to pass Autorest validation
+        };
+            
+        /// Returns operation postfix to make operationId unique and swagger json be validable
+        private static string GetOperationNamePostfix(string verb)
+        {
+            string postfix = null;
+
+            postfixes.TryGetValue(verb, out postfix);
+
+            return postfix ?? String.Empty;
         }
 
         private static List<string> GetEnumValues(ApiAllowableValuesAttribute attr)
@@ -856,8 +894,8 @@ namespace ServiceStack.Api.Swagger2
 
                 var parameter = new Swagger2Parameter
                 {
-                    Type = GetSwaggerTypeName(property.PropertyType),
-                    Format = GetSwaggerTypeFormat(property.PropertyType),
+                    Type = GetSwaggerTypeName(property.PropertyType, route, verb),
+                    Format = GetSwaggerTypeFormat(property.PropertyType, route, verb),
                     //AllowMultiple = false,
                     Description = property.PropertyType.GetDescription(),
                     Name = propertyName,
@@ -951,6 +989,17 @@ namespace ServiceStack.Api.Swagger2
             return methodOperationParameters;
         }
         
+        private Swagger2Parameter GetFormatJsonParameter()
+        {
+            return new Swagger2Parameter()
+            {
+                Type = Swagger2Type.String,
+                Name = "format",
+                Description = "Specifies response output format",
+                Default = "json",
+                In = "query",
+            };
+        }
 
     }
 }
