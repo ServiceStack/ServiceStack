@@ -304,14 +304,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string RockstarGenreName { get; set; }
     }
 
-
-
     public class QueryOverridedRockstars : QueryDb<Rockstar>
     {
         public int? Age { get; set; }
     }
 
     public class QueryOverridedCustomRockstars : QueryDb<Rockstar, CustomRockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    public class QueryCaseInsensitiveOrderBy : QueryDb<Rockstar>
     {
         public int? Age { get; set; }
     }
@@ -579,6 +582,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return AutoQuery.Execute(dto, q);
         }
 
+        public object Any(QueryCaseInsensitiveOrderBy dto)
+        {
+            var q = AutoQuery.CreateQuery(dto, Request);
+            if (q.OrderByExpression != null)
+                q.OrderByExpression += " COLLATE NOCASE";
+
+            return AutoQuery.Execute(dto, q);
+        }
+
         public object Any(StreamMovies dto)
         {
             var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
@@ -732,6 +744,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Can_execute_overridden_basic_query_with_case_insensitive_orderBy()
+        {
+            var response = client.Get(new QueryCaseInsensitiveOrderBy { Age = 27, OrderBy = "FirstName" });
+
+            Assert.That(response.Results.Count, Is.EqualTo(3));
         }
 
         [Test]
