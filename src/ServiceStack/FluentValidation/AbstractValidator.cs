@@ -36,7 +36,7 @@ namespace ServiceStack.FluentValidation
 	/// Base class for entity validator classes.
 	/// </summary>
 	/// <typeparam name="T">The type of the object being validated</typeparam>
-	public abstract class AbstractValidator<T> : IValidator<T>, IEnumerable<IValidationRule>
+	public abstract class AbstractValidator<T> : IValidator<T>, IEnumerable<IValidationRule>, IRequiresRequest
     {
         public virtual IRequest Request { get; set; }
 
@@ -57,7 +57,7 @@ namespace ServiceStack.FluentValidation
 		ValidationResult IValidator.Validate(object instance) {
 			instance.Guard("Cannot pass null to Validate.");
 			if(! ((IValidator)this).CanValidateInstancesOfType(instance.GetType())) {
-				throw new InvalidOperationException(string.Format("Cannot validate instances of type '{0}'. This validator can only validate instances of type '{1}'.", instance.GetType().Name, typeof(T).Name));
+				throw new InvalidOperationException(string.Format("Cannot validate instances of type '{0}'. This validator can only validate instances of type '{1}'.", instance.GetType().GetOperationName(), typeof(T).GetOperationName()));
 			}
 
 			return Validate((T)instance);
@@ -66,7 +66,7 @@ namespace ServiceStack.FluentValidation
 		Task<ValidationResult> IValidator.ValidateAsync(object instance, CancellationToken cancellation) {
 			instance.Guard("Cannot pass null to Validate.");
 			if (!((IValidator) this).CanValidateInstancesOfType(instance.GetType())) {
-				throw new InvalidOperationException(string.Format("Cannot validate instances of type '{0}'. This validator can only validate instances of type '{1}'.", instance.GetType().Name, typeof (T).Name));
+				throw new InvalidOperationException(string.Format("Cannot validate instances of type '{0}'. This validator can only validate instances of type '{1}'.", instance.GetType().GetOperationName(), typeof (T).GetOperationName()));
 			}
 
 			return ValidateAsync((T) instance, cancellation);
@@ -81,7 +81,7 @@ namespace ServiceStack.FluentValidation
             var newContext = new ValidationContext<T>((T)context.InstanceToValidate, context.PropertyChain, context.Selector) {
 				IsChildContext = context.IsChildContext,
 				RootContextData = context.RootContextData,
-                Request = context.Request
+                Request = Request
             };
 
 			return Validate(newContext);
@@ -90,10 +90,13 @@ namespace ServiceStack.FluentValidation
 		Task<ValidationResult> IValidator.ValidateAsync(ValidationContext context, CancellationToken cancellation) {
 			context.Guard("Cannot pass null to Validate");
 
-			var newContext = new ValidationContext<T>((T) context.InstanceToValidate, context.PropertyChain, context.Selector) {
+            if (Request == null)
+                Request = context.Request;
+
+            var newContext = new ValidationContext<T>((T) context.InstanceToValidate, context.PropertyChain, context.Selector) {
 				IsChildContext = context.IsChildContext,
 				RootContextData = context.RootContextData,
-                Request = context.Request
+                Request = Request
             };
 
 			return ValidateAsync(newContext, cancellation);
@@ -117,8 +120,15 @@ namespace ServiceStack.FluentValidation
 		/// <param name="instance">The object to validate</param>
 		/// <param name="cancellation">Cancellation token</param>
 		/// <returns>A ValidationResult object containing any validation failures</returns>
-		public Task<ValidationResult> ValidateAsync(T instance, CancellationToken cancellation = new CancellationToken()) {
-			return ValidateAsync(new ValidationContext<T>(instance, new PropertyChain(), ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory()), cancellation);
+		public Task<ValidationResult> ValidateAsync(T instance, CancellationToken cancellation = new CancellationToken())
+		{
+		    return
+		        ValidateAsync(
+		            new ValidationContext<T>(instance, new PropertyChain(),
+		                ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory())
+		            {
+		                Request = Request
+		            }, cancellation);
 		}
 
 		/// <summary>
@@ -129,8 +139,12 @@ namespace ServiceStack.FluentValidation
 		public virtual ValidationResult Validate(ValidationContext<T> context) {
 			context.Guard("Cannot pass null to Validate.");
 			context.InstanceToValidate.Guard("Cannot a pass null model to Validate.");
-			var failures = nestedValidators.SelectMany(x => x.Validate(context));
-			return new ValidationResult(failures);
+			var failures = nestedValidators.SelectMany(x => x.Validate(context)).ToList();
+
+            if (Request == null)
+                    Request = context.Request;
+
+            return new ValidationResult(failures){ Request = Request };
 		}
 
 		/// <summary>
