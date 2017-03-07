@@ -52,6 +52,7 @@ namespace ServiceStack
         public Dictionary<string, ServerEventCallback> Handlers { get; set; }
         public Dictionary<string, ServerEventCallback> NamedReceivers { get; set; }
         public List<Type> ReceiverTypes { get; set; } 
+        public bool StrictMode { get; set; }
 
         public ServerEventsClient RegisterReceiver<T>()
             where T : IReceiver
@@ -88,6 +89,8 @@ namespace ServiceStack
 
             ReceiverExecContext receiverCtx;
             ReceiverExec<T>.RequestTypeExecMap.TryGetValue(target, out receiverCtx);
+            if (StrictMode && receiverCtx != null && !receiverCtx.Method.EqualsIgnoreCase(target))
+                receiverCtx = null;
 
             if (receiverCtx == null)
                 ReceiverExec<T>.MethodNameExecMap.TryGetValue(target, out receiverCtx);
@@ -124,6 +127,7 @@ namespace ServiceStack
         public string Id { get; set; }
         public Type RequestType { get; set; }
         public Type ServiceType { get; set; }
+        public string Method { get; set; }
         public ActionInvokerFn Exec { get; set; }
 
         public static string Key(string method, string requestDtoName)
@@ -166,6 +170,7 @@ namespace ServiceStack
                     Id = ReceiverExecContext.Key(actionName, requestType.GetOperationName()),
                     ServiceType = typeof(T),
                     RequestType = requestType,
+                    Method = mi.Name
                 };
 
                 try

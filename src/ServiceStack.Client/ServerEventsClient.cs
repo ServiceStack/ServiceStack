@@ -149,6 +149,7 @@ namespace ServiceStack
             this.ReceiverTypes = new List<Type>();
             this.Handlers = new Dictionary<string, ServerEventCallback>();
             this.NamedReceivers = new Dictionary<string, ServerEventCallback>();
+            this.StrictMode = true;
         }
 
         public ServerEventsClient Start()
