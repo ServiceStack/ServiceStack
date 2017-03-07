@@ -814,28 +814,27 @@ namespace ServiceStack.FluentValidation
 			return validator.Validate(context);
 		}
 
-		/// <summary>
-		/// Validates certain properties of the specified instance.
-		/// </summary>
-		/// <param name="validator"></param>
-		/// <param name="instance">The object to validate</param>
-		/// <param name="properties">The names of the properties to validate.</param>
-		/// <returns>A ValidationResult object containing any validation failures.</returns>
-		public static ValidationResult Validate<T>(this IValidator<T> validator, T instance, params string[] properties) {
+        /// <summary>
+        /// Validates certain properties of the specified instance.
+        /// </summary>
+        /// <param name="validator">The validator this method is extending.</param>
+        /// <param name="instance">The instance of the type we are validating.</param>
+        /// <param name="properties">The names of the properties to validate.</param>
+        /// <returns>A ValidationResult object containing any validation failures.</returns>
+        public static ValidationResult Validate<T>(this IValidator<T> validator, T instance, params string[] properties) {
 			var context = new ValidationContext<T>(instance, new PropertyChain(), ValidatorOptions.ValidatorSelectors.MemberNameValidatorSelectorFactory(properties));
 			return validator.Validate(context);
 		}
 
-		/// <summary>
-		/// Validates an object using either a custom validator selector or a ruleset.
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="validator"></param>
-		/// <param name="instance"></param>
-		/// <param name="selector"></param>
-		/// <param name="ruleSet"></param>
-		/// <returns></returns>
-		public static ValidationResult Validate<T>(this IValidator<T> validator, T instance, IValidatorSelector selector = null, string ruleSet = null) {
+        /// <summary>
+        /// Validates an object using either a custom validator selector or a ruleset.
+        /// </summary>
+        /// <param name="validator">The validator this method is extending.</param>
+        /// <param name="instance">The instance of the type we are validating.</param>
+        /// <param name="selector">Optional: The selector to use. Selector and ruleset cannot both be specified.</param>
+        /// <param name="ruleSet">Optional: The ruleset to validate against. Selector and ruleset cannot both be specified.</param>
+        /// <returns>A ValidationResult object containing any validation failures</returns>
+        public static ValidationResult Validate<T>(this IValidator<T> validator, T instance, IValidatorSelector selector = null, string ruleSet = null) {
 			if(selector != null && ruleSet != null) {
 				throw new InvalidOperationException("Cannot specify both an IValidatorSelector and a RuleSet.");
 			}
@@ -866,28 +865,27 @@ namespace ServiceStack.FluentValidation
 			return validator.ValidateAsync(context);
 		}
 
-		/// <summary>
-		/// Validates certain properties of the specified instance asynchronously.
-		/// </summary>
-		/// <param name="validator"></param>
-		/// <param name="instance">The object to validate</param>
-		/// <param name="properties">The names of the properties to validate.</param>
-		/// <returns>A ValidationResult object containing any validation failures.</returns>
-		public static Task<ValidationResult> ValidateAsync<T>(this IValidator<T> validator, T instance, params string[] properties) {
+        /// <summary>
+        /// Validates certain properties of the specified instance asynchronously.
+        /// </summary>
+        /// <param name="validator">The validator this method is extending.</param>
+        /// <param name="instance">The object to validate</param>
+        /// <param name="properties">The names of the properties to validate.</param>
+        /// <returns>A ValidationResult object containing any validation failures.</returns>
+        public static Task<ValidationResult> ValidateAsync<T>(this IValidator<T> validator, T instance, params string[] properties) {
 			var context = new ValidationContext<T>(instance, new PropertyChain(), ValidatorOptions.ValidatorSelectors.MemberNameValidatorSelectorFactory(properties));
 			return validator.ValidateAsync(context);
 		}
 
-		/// <summary>
-		/// Validates an object asynchronously using a custom valdiator selector or a ruleset
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="validator"></param>
-		/// <param name="instance"></param>
-		/// <param name="selector"></param>
-		/// <param name="ruleSet"></param>
-		/// <returns></returns>
-		public static Task<ValidationResult> ValidateAsync<T>(this IValidator<T> validator, T instance, IValidatorSelector selector = null, string ruleSet = null) {
+        /// <summary>
+        /// Validates an object asynchronously using a custom validator selector or a ruleset
+        /// </summary>
+        /// <param name="validator">The validator this method is extending.</param>
+        /// <param name="instance">The instance of the type we are validating.</param>
+        /// <param name="selector">Optional: The selector to use. Selector and ruleset cannot both be specified.</param>
+        /// <param name="ruleSet">Optional: The ruleset to validate against. Selector and ruleset cannot both be specified.</param>
+        /// <returns>A Task for a ValidationResult object containing any validation failures.</returns>
+        public static Task<ValidationResult> ValidateAsync<T>(this IValidator<T> validator, T instance, IValidatorSelector selector = null, string ruleSet = null) {
 			if (selector != null && ruleSet != null) {
 				throw new InvalidOperationException("Cannot specify both an IValidatorSelector and a RuleSet.");
 			}
@@ -910,15 +908,36 @@ namespace ServiceStack.FluentValidation
 		/// </summary>
 		/// <param name="validator">The validator this method is extending.</param>
 		/// <param name="instance">The instance of the type we are validating.</param>
-		/// <param name="ruleSet">Optional: a ruleset when need to validate against.</param>
-		public static void ValidateAndThrow<T>(this IValidator<T> validator, T instance, string ruleSet = null) {
-			var result = validator.Validate(instance, ruleSet: ruleSet);
+		public static void ValidateAndThrow<T>(this IValidator<T> validator, T instance) {
+			var result = validator.Validate(instance);
 
 			if (!result.IsValid) {
 				throw new ValidationException(result.Errors);
 			}
 		}
 
+        /// <summary>
+		/// Performs validation and then throws an exception if validation fails.
+		/// </summary>
+		/// <param name="validator">The validator this method is extending.</param>
+		/// <param name="instance">The instance of the type we are validating.</param>
+		/// <param name="ruleSet">The ruleset to validate against.</param>
+		public static void ValidateAndThrow<T>(this IValidator<T> validator, T instance, string ruleSet)
+        {
+            var result = validator.Validate(instance, ruleSet: ruleSet);
+
+            if (!result.IsValid)
+            {
+                throw new ValidationException(result.Errors);
+            }
+        }
+
+        /// <summary>
+        /// Performs validation and then throws an exception if validation fails.
+        /// </summary>
+        /// <param name="validator">The validator this method is extending.</param>
+        /// <param name="instance">The instance of the type we are validating.</param>
+        /// <param name="ruleSet">The ruleset to validate against.</param>
         public static void ValidateAndThrow<T>(this IValidator<T> validator, T instance, ApplyTo ruleSet)
         {
             validator.ValidateAndThrow(instance, ruleSet.ToString().ToUpper());
