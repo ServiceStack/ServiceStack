@@ -481,7 +481,7 @@
         $.ss.eventSource = this[0];
         $.ss.eventOptions = opt = opt || {};
         if (opt.handlers) {
-            $.extend($.ss.handlers, opt.handlers);
+            $.extend($.ss.handlers, opt.handlers || {});
         }
         function onMessage(e) {
             var parts = $.ss.splitOnFirst(e.data, ' ');
@@ -491,7 +491,6 @@
                 e.channel = selParts[0];
                 selector = selParts[1];
             }
-            var json = parts[1];
             var msg = json ? JSON.parse(json) : null;
 
             parts = $.ss.splitOnFirst(selector, '.');
@@ -507,6 +506,9 @@
             var tokens = $.ss.splitOnFirst(target, '$'),
                 cmd = tokens[0], cssSel = tokens[1],
                 $els = cssSel && $(cssSel), el = $els && $els[0];
+
+            $.extend(e, { cmd: cmd, op: op, selector: selector, target: target, cssSelector: cssSel });
+            var json = parts[1];
             if (op == "cmd") {
                 if (cmd == "onConnect") {
                     $.extend(opt, msg);
@@ -560,10 +562,12 @@
                 $.ss.invokeReceiver(r, cmd, el, msg, e, op);
             }
 
-            if (opt.success) {
-                opt.success(selector, msg, e);
-            }
+            var fn = $.ss.handlers["onMessage"];
+            if (fn) fn.cal(el || document.body, msg, e);
+
+            if (opt.success) opt.success(selector, msg, e); //deprecated
         }
+
         $.ss.eventSource.onmessage = onMessage;
     };
 });
