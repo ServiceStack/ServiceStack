@@ -569,5 +569,15 @@
         }
 
         $.ss.eventSource.onmessage = onMessage;
+
+        var hold = $.ss.eventSource.onerror;
+        $.ss.eventSource.onerror = function () {
+            var args = arguments;
+            window.setTimeout(function () {
+                $.ss.reconnectServerEvents({ errorArgs: args });
+                if (hold)
+                    hold.apply(args);
+            }, 10000);
+        };
     };
 });
