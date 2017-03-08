@@ -63,7 +63,7 @@ namespace ServiceStack.Api.Swagger2
         public List<string> Produces { get; set; }
 
         [DataMember(Name = "paths")]
-        public Dictionary<string, Swagger2Path> Paths { get; set; }
+        public OrderedDictionary<string, Swagger2Path> Paths { get; set; }
 
         [DataMember(Name = "definitions")]
         public Dictionary<string, Swagger2Schema> Definitions { get; set; }
@@ -81,7 +81,7 @@ namespace ServiceStack.Api.Swagger2
         public Dictionary<string, List<string>> Security { get; set; }
 
         [DataMember(Name = "tags")]
-        public Swagger2Tag Tags { get; set; }
+        public List<Swagger2Tag> Tags { get; set; }
 
         [DataMember(Name = "externalDocs")]
         public Swagger2ExternalDocumentation ExternalDocs { get; set; }
@@ -368,7 +368,7 @@ namespace ServiceStack.Api.Swagger2
 
         internal static Action<Swagger2ApiDeclaration> ApiDeclarationFilter { get; set; }
         internal static Action<Swagger2Operation> OperationFilter { get; set; }
-        //internal static Action<Swagger2Model> ModelFilter { get; set; }
+        internal static Action<Swagger2Schema> ModelFilter { get; set; }
         internal static Action<Swagger2Property> ModelPropertyFilter { get; set; }
 
         public object Get(Swagger2Resources request)
@@ -392,8 +392,8 @@ namespace ServiceStack.Api.Swagger2
                 ParseDefinitions(definitions, restPath.Value.RequestType, restPath.Value.Path, restPath.Verb);
             }
 
-            //TODO: order by path
-            var apiPaths = ParseOperations(paths, definitions);
+            var tags = new List<Swagger2Tag>();
+            var apiPaths = ParseOperations(paths, definitions, tags);
 
             var result = new Swagger2ApiDeclaration
             {
@@ -406,17 +406,17 @@ namespace ServiceStack.Api.Swagger2
                 BasePath = basePath.AbsolutePath,
                 Schemes = new List<string> { basePath.Scheme }, //TODO: get https from config
                 Host = basePath.Authority,
-                Consumes = new List<string>(){ "application/json"},
-                Definitions = definitions
+                Consumes = new List<string>() { "application/json" },
+                Definitions = definitions,
+                Tags = tags.OrderBy(t => t.Name).ToList()
             };
 
-            
+
             /*if (OperationFilter != null)
                 apis.Each(x => x.Operations.Each(OperationFilter));
-
-            if (ApiDeclarationFilter != null)
-                ApiDeclarationFilter(result);
                 */
+            ApiDeclarationFilter?.Invoke(result);
+
             return new HttpResult(result)
             {
                 ResultScope = () => JsConfig.With(includeNullValues: false)
@@ -767,9 +767,9 @@ namespace ServiceStack.Api.Swagger2
             return responses;
         }
 
-        private Dictionary<string, Swagger2Path> ParseOperations(List<RestPath> restPaths, Dictionary<string, Swagger2Schema> models)
+        private OrderedDictionary<string, Swagger2Path> ParseOperations(List<RestPath> restPaths, Dictionary<string, Swagger2Schema> models, List<Swagger2Tag> tags)
         {
-            var apiPaths = new Dictionary<string, Swagger2Path>();
+            var apiPaths = new OrderedDictionary<string, Swagger2Path>();
 
             foreach (var restPath in restPaths)
             {
@@ -793,6 +793,8 @@ namespace ServiceStack.Api.Swagger2
                         Parameters = new List<Swagger2Parameter>() { GetFormatJsonParameter() }
                     };
                     apiPaths.Add(restPath.Path, curPath);
+
+                    tags.Add(new Swagger2Tag() { Name = restPath.Path, Description = summary });
                 }
 
                 foreach (var verb in verbs)
@@ -805,7 +807,8 @@ namespace ServiceStack.Api.Swagger2
                         Parameters = ParseParameters(verb, requestType, models, routePath),
                         Responses = GetMethodResponseCodes(restPath, models, requestType),
                         Consumes = new List<string>() { "application/json" },
-                        Produces = new List<string>() { "application/json" }
+                        Produces = new List<string>() { "application/json" },
+                        Tags = new List<string>() { restPath.Path }
                     };
 
                     switch(verb)

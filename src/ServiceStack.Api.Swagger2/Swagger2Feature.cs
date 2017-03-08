@@ -27,7 +27,7 @@ namespace ServiceStack.Api.Swagger2
 
         public Action<Swagger2Operation> OperationFilter { get; set; }
 
-        //public Action<Swagger2Model> ModelFilter { get; set; }
+        public Action<Swagger2Schema> ModelFilter { get; set; }
 
         public Action<Swagger2Property> ModelPropertyFilter { get; set; }
         
@@ -54,7 +54,7 @@ namespace ServiceStack.Api.Swagger2
             Swagger2ApiService.DisableAutoDtoInBodyParam = DisableAutoDtoInBodyParam;
             Swagger2ApiService.ApiDeclarationFilter = ApiDeclarationFilter;
             Swagger2ApiService.OperationFilter = OperationFilter;
-            //Swagger2ApiService.ModelFilter = ModelFilter;
+            Swagger2ApiService.ModelFilter = ModelFilter;
             Swagger2ApiService.ModelPropertyFilter = ModelPropertyFilter;
 
             appHost.RegisterService(typeof(Swagger2ApiService), new[] { "/swagger2-api" });
