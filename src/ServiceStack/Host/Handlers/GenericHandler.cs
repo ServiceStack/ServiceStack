@@ -33,7 +33,7 @@ namespace ServiceStack.Host.Handlers
             {
                 var requestDto = GetCustomRequestFromBinder(req, requestType) 
                     ?? (DeserializeHttpRequest(requestType, req, HandlerContentType)
-                        ?? requestType.CreateInstance());
+                    ?? requestType.CreateInstance());
 
                 return appHost.ApplyRequestConverters(req, requestDto);
             }
