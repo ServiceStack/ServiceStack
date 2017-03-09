@@ -21,6 +21,7 @@ namespace ServiceStack.Api.Swagger2
         public const string Number = "number";
         public const string Integer = "integer";
         public const string String = "string";
+        public const string Object = "object";
     }
 
     public static class Swagger2TypeFormat
@@ -386,7 +387,10 @@ namespace ServiceStack.Api.Swagger2
                 paths.AddRange(visiblePaths);
             }
 
-            var definitions = new Dictionary<string, Swagger2Schema>();
+            var definitions = new Dictionary<string, Swagger2Schema>() {
+                { "Object",  new Swagger2Schema() {Description = "Object", Type = Swagger2Type.Object, Properties = new OrderedDictionary<string, Swagger2Property>() } }
+            };
+
             foreach (var restPath in paths.SelectMany(x => x.Verbs.Select(y => new { Value = x, Verb = y })))
             {
                 ParseDefinitions(definitions, restPath.Value.RequestType, restPath.Value.Path, restPath.Verb);
@@ -547,7 +551,7 @@ namespace ServiceStack.Api.Swagger2
             var modelTypeName = GetModelTypeName(modelType);
             var model = new Swagger2Schema
             {
-                Type = "object",
+                Type = Swagger2Type.Object,
                 Description = modelType.GetDescription() ?? modelTypeName,
                 Properties = new OrderedDictionary<string, Swagger2Property>()
             };
@@ -740,7 +744,7 @@ namespace ServiceStack.Api.Swagger2
                 }
             }
 
-            return new Swagger2Schema() { Type = Swagger2Type.String };
+            return new Swagger2Schema() { Ref = "#/definitions/Object" };
         }
 
         private Dictionary<string, Swagger2Response> GetMethodResponseCodes(IRestPath restPath, IDictionary<string, Swagger2Schema> models, Type requestType)
