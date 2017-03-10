@@ -73,7 +73,7 @@ namespace ServiceStack.Api.Swagger2
         public Dictionary<string, Swagger2Parameter> Parameters { get; set; }
 
         [DataMember(Name = "responses")]
-        public Dictionary<string, Swagger2Response> Responses { get; set; }
+        public OrderedDictionary<string, Swagger2Response> Responses { get; set; }
 
         [DataMember(Name = "securityDefinitions")]
         public Dictionary<string, Swagger2SecuritySchema> SecurityDefinitions { get; set; }
@@ -198,7 +198,8 @@ namespace ServiceStack.Api.Swagger2
         [DataMember(Name = "example")]
         public string Example { get; set; }
 
-        //TODO: allOf
+        [DataMember(Name = "allOf")]
+        public Swagger2Schema AllOf { get; set; }
         [DataMember(Name = "properties")]
         public OrderedDictionary<string, Swagger2Property> Properties { get; set; }
         [DataMember(Name = "additionalProperties")]
@@ -248,7 +249,7 @@ namespace ServiceStack.Api.Swagger2
         [DataMember(Name = "parameters")]
         public List<Swagger2Parameter> Parameters { get; set; }
         [DataMember(Name = "responses")]
-        public Dictionary<string, Swagger2Response> Responses { get; set; }
+        public OrderedDictionary<string, Swagger2Response> Responses { get; set; }
         [DataMember(Name = "schemes")]
         public List<string> Schemes { get; set; }
         [DataMember(Name = "deprecated")]
@@ -747,9 +748,9 @@ namespace ServiceStack.Api.Swagger2
             return new Swagger2Schema() { Ref = "#/definitions/Object" };
         }
 
-        private Dictionary<string, Swagger2Response> GetMethodResponseCodes(IRestPath restPath, IDictionary<string, Swagger2Schema> models, Type requestType)
+        private OrderedDictionary<string, Swagger2Response> GetMethodResponseCodes(IRestPath restPath, IDictionary<string, Swagger2Schema> models, Type requestType)
         {
-            var responses = new Dictionary<string, Swagger2Response>();
+            var responses = new OrderedDictionary<string, Swagger2Response>();
 
             var responseSchema = GetResponseSchema(restPath, models);
 
@@ -759,7 +760,6 @@ namespace ServiceStack.Api.Swagger2
                 Description = "TODO: description"
             });
                 
-            //TODO: order by status code
             foreach (var attr in requestType.AllAttributes<ApiResponseAttribute>())
             {
                 responses.Add(attr.StatusCode.ToString(), new Swagger2Response()
