@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
+using ServiceStack.Api.Swagger2.Specification;
 
 namespace ServiceStack.Api.Swagger2
 {
