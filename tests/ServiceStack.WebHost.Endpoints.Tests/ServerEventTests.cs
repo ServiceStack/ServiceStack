@@ -1191,6 +1191,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(client2.EventStreamUri, Does.EndWith("?channels=B"));
             }
         }
+
+        [Test]
+        public async Task Does_fire_multiple_listeners_for_custom_trigger()
+        {
+            var msgs1 = new List<ServerEventMessage>();
+            var msgs2 = new List<ServerEventMessage>();
+
+            using (var client1 = CreateServerEventsClient())
+            using (var client2 = CreateServerEventsClient())
+            {
+                Action<ServerEventMessage> handler = msg => {
+                    msgs1.Add(msg);
+                };
+
+                client1.AddListener("customEvent", handler);
+                client1.AddListener("customEvent", msg => {
+                    msgs2.Add(msg);
+                });
+
+                await client1.Connect();
+                await client2.Connect();
+
+                client2.PostRaw("trigger.customEvent", "arg");
+                await Task.Delay(500);
+
+                Assert.That(msgs1.Count, Is.EqualTo(1));
+                Assert.That(msgs2.Count, Is.EqualTo(1));
+
+                client1.RemoveListener("customEvent", handler);
+
+                client2.PostRaw("trigger.customEvent", "arg");
+                await Task.Delay(500);
+
+                Assert.That(msgs1.Count, Is.EqualTo(1));
+                Assert.That(msgs2.Count, Is.EqualTo(2));
+            }
+        }
     }
 
     class Conf
