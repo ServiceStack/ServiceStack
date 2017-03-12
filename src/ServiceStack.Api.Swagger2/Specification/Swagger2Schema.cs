@@ -28,6 +28,6 @@ namespace ServiceStack.Api.Swagger2.Specification
         [DataMember(Name = "properties")]
         public OrderedDictionary<string, Swagger2Property> Properties { get; set; }
         [DataMember(Name = "additionalProperties")]
-        public OrderedDictionary<string, Swagger2Property> AdditionalProperties { get; set; }
+        public Swagger2Property AdditionalProperties { get; set; }
     }
 }

@@ -26,7 +26,10 @@ namespace ServiceStack.Api.Swagger2
 
         public Action<Swagger2ApiDeclaration> ApiDeclarationFilter { get; set; }
 
-        public Action<Swagger2Operation> OperationFilter { get; set; }
+        /// <summary>
+        /// Operation filter. Action takes a verb and operation as parameters
+        /// </summary>
+        public Action<string, Swagger2Operation> OperationFilter { get; set; }
 
         public Action<Swagger2Schema> ModelFilter { get; set; }
 
@@ -47,8 +50,8 @@ namespace ServiceStack.Api.Swagger2
 
         public void Register(IAppHost appHost)
         {
-//            if (ResourceFilterPattern != null)
-//                Swagger2ApiService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
+            if (ResourceFilterPattern != null)
+                Swagger2ApiService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
 
             Swagger2ApiService.UseCamelCaseModelPropertyNames = UseCamelCaseModelPropertyNames;
             Swagger2ApiService.UseLowercaseUnderscoreModelPropertyNames = UseLowercaseUnderscoreModelPropertyNames;
