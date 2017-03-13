@@ -41,7 +41,6 @@ namespace ServiceStack.Auth
         public string AccessTokenUrl { get; set; }
         public OAuthAuthorizer OAuthUtils { get; set; }
 
-        public bool SaveExtendedUserInfo { get; set; }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {

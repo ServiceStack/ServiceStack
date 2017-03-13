@@ -44,11 +44,11 @@ namespace ServiceStack.Auth
                 tokens.UserId = userId;
                 session.IsAuthenticated = true;
 
-                var authResponse = OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
-                if (authResponse != null)
-                    return authResponse;
+                var failedResult = OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
+                var isHtml = authService.Request.IsHtml();
+                if (failedResult != null)
+                    return ConvertToClientError(failedResult, isHtml);
 
-                var isHtml = authService.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
                 return isHtml
                     ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
                     : null; //return default AuthenticateResponse
