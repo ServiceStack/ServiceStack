@@ -426,6 +426,7 @@ namespace ServiceStack.Auth
             var sessionId = jwtPayload.GetValue("jid", SessionExtensions.CreateRandomSessionId);
             var session = SessionFeature.CreateNewSession(req, sessionId);
 
+            session.AuthProvider = Name;
             session.PopulateFromMap(jwtPayload);
 
             PopulateSessionFilter?.Invoke(session, jwtPayload, req);
