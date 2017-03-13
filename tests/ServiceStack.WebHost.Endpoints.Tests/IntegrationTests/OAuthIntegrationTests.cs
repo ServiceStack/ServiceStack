@@ -80,5 +80,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             Assert.That(response.UserName, Is.EqualTo("mythz"));
             Assert.That(response.DisplayName, Is.EqualTo("Demis Bellot"));
         }
+
+        [Test]
+        public void Can_authenticate_GoogleOAuth2_with_AccessToken()
+        {
+            var client = new JsonServiceClient("http://localhost:11001/");
+
+            var request = new Authenticate
+            {
+                provider = "GoogleOAuth",
+                AccessToken = AccessTokens["GoogleOAuth"],
+            };
+
+            var response = client.Post(request);
+
+            response.PrintDump();
+
+            Assert.That(response.UserId, Is.Not.Null);
+            Assert.That(response.SessionId, Is.Not.Null);
+            Assert.That(response.DisplayName, Is.EqualTo("Demis Bellot"));
+        }
     }
 }
