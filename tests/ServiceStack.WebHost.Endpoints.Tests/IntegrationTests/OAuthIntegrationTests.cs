@@ -98,7 +98,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 
             Assert.That(response.UserId, Is.Not.Null);
             Assert.That(response.SessionId, Is.Not.Null);
-            Assert.That(response.DisplayName, Is.EqualTo("Demis Bellot"));
         }
     }
 }
