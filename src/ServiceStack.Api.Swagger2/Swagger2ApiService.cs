@@ -705,22 +705,56 @@ namespace ServiceStack.Api.Swagger2
                 }
             }
 
-            //FIX: this is commented, because it breaks validation of swagger2 schema
-            /*if (!DisableAutoDtoInBodyParam)
+            if (!DisableAutoDtoInBodyParam)
             {
-                if (!HttpMethods.Get.EqualsIgnoreCase(verb) && !HttpMethods.Delete.EqualsIgnoreCase(verb) 
+                if (!HttpMethods.Get.EqualsIgnoreCase(verb) && !HttpMethods.Delete.EqualsIgnoreCase(verb)
                     && !methodOperationParameters.Any(p => "body".EqualsIgnoreCase(p.In)))
                 {
                     ParseDefinitions(models, operationType, route, verb);
-                    methodOperationParameters.Add(new Swagger2Parameter
+
+                    var parameter = new Swagger2Parameter
                     {
                         In = "body",
                         Name = "body",
                         Type = GetSwaggerTypeName(operationType),
                         Format = GetSwaggerTypeFormat(operationType, route, verb)
-                    });
+                    };
+
+                    var dictSchema = GetDictionaryModel(models, operationType, route, verb);
+                    if (dictSchema != null)
+                    {
+                        parameter.Type = parameter.Format = null;
+                        parameter.Schema = dictSchema;
+                    } else if (!IsSwaggerScalarType(operationType) && !IsListType(operationType))
+                    {
+                        parameter.Type = parameter.Format = null;
+                        parameter.Schema = new Swagger2Schema() { Ref = "#/definitions/" + GetModelTypeName(operationType) };
+                    } else if (IsListType(operationType))
+                    {
+                        parameter.Type = Swagger2Type.Array;
+                        parameter.Format = null;
+                        parameter.CollectionFormat = "multi";
+
+                        var listItemType = GetListElementType(operationType);
+                        if (IsSwaggerScalarType(listItemType))
+                        {
+                            parameter.Items = new Dictionary<string, string>
+                            {
+                                { "type", GetSwaggerTypeName(listItemType) },
+                                { "format", GetSwaggerTypeFormat(listItemType, route, verb) }
+                            };
+                        }
+                        else
+                        {
+                            parameter.Items = new Dictionary<string, string> { { "$ref", "#/definitions/" + GetModelTypeName(listItemType) } };
+                        }
+                        ParseDefinitions(models, listItemType, route, verb);
+                    }
+
+                    methodOperationParameters.Add(parameter);
                 }
-            }*/
+            }
+
             return methodOperationParameters;
         }
         
