@@ -21,6 +21,7 @@ namespace ServiceStack.Auth
         public string RedirectUrl { get; set; }
 
         public bool PersistSession { get; set; }
+        public bool SaveExtendedUserInfo { get; set; }
 
         public Action<AuthUserSession, IAuthTokens, Dictionary<string, string>> LoadUserAuthFilter { get; set; }
 
@@ -149,8 +150,11 @@ namespace ServiceStack.Auth
             }
 
             var hasTokens = tokens != null && authInfo != null;
-            if (hasTokens)
+            if (hasTokens && SaveExtendedUserInfo)
             {
+                if (tokens.Items == null)
+                    tokens.Items = new Dictionary<string, string>();
+
                 authInfo.ForEach((x, y) => tokens.Items[x] = y);
             }
 
@@ -319,7 +323,7 @@ namespace ServiceStack.Auth
 
         protected virtual bool UserNameAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)
         {
-            if (tokens != null && tokens.UserName != null)
+            if (tokens?.UserName != null)
             {
                 var userWithUserName = authRepo.GetUserAuthByUserName(tokens.UserName);
                 if (userWithUserName == null)
@@ -333,7 +337,7 @@ namespace ServiceStack.Auth
 
         protected virtual bool EmailAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)
         {
-            if (tokens != null && tokens.Email != null)
+            if (tokens?.Email != null)
             {
                 var userWithEmail = authRepo.GetUserAuthByUserName(tokens.Email);
                 if (userWithEmail == null) 
@@ -411,6 +415,27 @@ namespace ServiceStack.Auth
             session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
             session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
                 .ConvertAll(x => (IAuthTokens)x);
+        }
+
+        protected virtual object ConvertToClientError(object failedResult, bool isHtml)
+        {
+            if (!isHtml)
+            {
+                var httpRes = failedResult as IHttpResult;
+                if (httpRes != null)
+                {
+                    string location;
+                    if (httpRes.Headers.TryGetValue(HttpHeaders.Location, out location))
+                    {
+                        var parts = location.SplitOnLast("f=");
+                        if (parts.Length == 2)
+                        {
+                            return new HttpError(HttpStatusCode.BadRequest, parts[1], parts[1].SplitCamelCase());
+                        }
+                    }
+                }
+            }
+            return failedResult;
         }
     }
 
