@@ -871,7 +871,7 @@ namespace ServiceStack
 
         public void Patch(IReturnVoid request)
         {
-            SendAsync<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, request), null).WaitSyncResponse();
+            SendAsync<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, request), request).WaitSyncResponse();
         }
 
         public TResponse Patch<TResponse>(IReturn<TResponse> request)
