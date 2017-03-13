@@ -55,7 +55,8 @@ namespace ServiceStack
         [DataMember(Order = 39)] public virtual string ProfileUrl { get; set; }
         [DataMember(Order = 40)] public virtual string Sequence { get; set; }
         [DataMember(Order = 41)] public long Tag { get; set; }
-        [DataMember(Order = 42)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
+        [DataMember(Order = 42)] public string AuthProvider { get; set; }
+        [DataMember(Order = 43)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {

@@ -140,6 +140,8 @@ namespace ServiceStack.Auth
 
         public virtual IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
+            session.AuthProvider = Provider;
+
             var userSession = session as AuthUserSession;
             if (userSession != null)
             {
