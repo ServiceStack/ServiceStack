@@ -139,6 +139,16 @@ namespace ServiceStack.Common.Tests.OAuth
                 Tokens.FirstName, Tokens.LastName, Tokens.Email);
         }
 
+        public string DownloadGithubUserInfo(string accessToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public string DownloadGithubUserEmailsInfo(string accessToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret,
             out string userId)
         {

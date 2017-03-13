@@ -11,6 +11,8 @@ namespace ServiceStack.Auth
         bool VerifyFacebookAccessToken(string appId, string accessToken);
         string DownloadFacebookUserInfo(string facebookCode, params string[] fields);
         string DownloadYammerUserInfo(string yammerUserId);
+        string DownloadGithubUserInfo(string accessToken);
+        string DownloadGithubUserEmailsInfo(string accessToken);
     }
 
     public class AuthHttpGateway : IAuthHttpGateway
@@ -22,6 +24,9 @@ namespace ServiceStack.Auth
         public static string FacebookVerifyTokenUrl = "https://graph.facebook.com/v2.8/app?access_token={0}";
 
         public static string YammerUserUrl = "https://www.yammer.com/api/v1/users/{0}.json";
+
+        public static string GithubUserUrl = "https://api.github.com/user?access_token={0}";
+        public static string GithubUserEmailsUrl = "https://api.github.com/user/emails?access_token={0}";
 
         public string DownloadTwitterUserInfo(string consumerKey, string consumerSecret,
             string accessToken, string accessTokenSecret, string twitterUserId)
@@ -98,6 +103,32 @@ namespace ServiceStack.Auth
             }
 
             var json = url.GetJsonFromUrl();
+            return json;
+        }
+
+        public string DownloadGithubUserInfo(string accessToken)
+        {
+            if (string.IsNullOrEmpty(accessToken))
+                throw new ArgumentNullException(nameof(accessToken));
+
+            var url = GithubUserUrl.Fmt(accessToken);
+
+            var json = url.GetJsonFromUrl(
+                httpReq => httpReq.UserAgent = ServiceClientBase.DefaultUserAgent);
+
+            return json;
+        }
+
+        public string DownloadGithubUserEmailsInfo(string accessToken)
+        {
+            if (string.IsNullOrEmpty(accessToken))
+                throw new ArgumentNullException(nameof(accessToken));
+
+            var url = GithubUserEmailsUrl.Fmt(accessToken);
+
+            var json = url.GetJsonFromUrl(
+                httpReq => httpReq.UserAgent = ServiceClientBase.DefaultUserAgent);
+
             return json;
         }
 
