@@ -1,5 +1,8 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Collections.Generic;
+using NUnit.Framework;
 using ServiceStack;
+using ServiceStack.Auth;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
@@ -7,16 +10,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
     [Explicit]
     public class OAuthIntegrationTests
     {
+        private Dictionary<string,string> AccessTokens { get; set; }
+
+        public OAuthIntegrationTests()
+        {
+            AccessTokens = "~/App_Data/accesstokens.txt".MapProjectPath()
+                .ReadAllText()
+                .ParseKeyValueText(delimiter:" ");
+        }
+
         [Test]
-        public void Can_transfer_access_tokens_to_server()
+        public void Can_authenticate_twitter_with_AccessToken()
         {
             var client = new JsonServiceClient("http://localhost:11001/");
 
             var request = new Authenticate
             {
-                provider = "twitter",
+                provider = TwitterAuthProvider.Name,
                 AccessToken = "2931572242-zmVKk5leFHJXJWRUpQqyEkdlRlNbDMjNlUcXViJ",
-                AccessTokenSecret = "wt7BL444VIG8WPp1g071WO7Z9diIi34iQRnXQ28umcR50"
+                AccessTokenSecret = AccessTokens[TwitterAuthProvider.Name]
             };
 
             var response = client.Post(request);
@@ -26,6 +38,47 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             Assert.That(response.UserId, Is.Not.Null);
             Assert.That(response.SessionId, Is.Not.Null);
             Assert.That(response.DisplayName, Is.EqualTo("TechStacks"));
+        }
+
+        [Test]
+        public void Can_authenticate_facebook_with_AccessToken()
+        {
+            var client = new JsonServiceClient("http://localhost:11001/");
+
+            var request = new Authenticate
+            {
+                provider = FacebookAuthProvider.Name,
+                AccessToken = AccessTokens[FacebookAuthProvider.Name],
+            };
+
+            var response = client.Post(request);
+
+            response.PrintDump();
+
+            Assert.That(response.UserId, Is.Not.Null);
+            Assert.That(response.SessionId, Is.Not.Null);
+            Assert.That(response.DisplayName, Is.EqualTo("Demis Bellot"));
+        }
+
+        [Test]
+        public void Can_authenticate_github_with_AccessToken()
+        {
+            var client = new JsonServiceClient("http://localhost:11001/");
+
+            var request = new Authenticate
+            {
+                provider = GithubAuthProvider.Name,
+                AccessToken = AccessTokens[GithubAuthProvider.Name],
+            };
+
+            var response = client.Post(request);
+
+            response.PrintDump();
+
+            Assert.That(response.UserId, Is.Not.Null);
+            Assert.That(response.SessionId, Is.Not.Null);
+            Assert.That(response.UserName, Is.EqualTo("mythz"));
+            Assert.That(response.DisplayName, Is.EqualTo("Demis Bellot"));
         }
     }
 }
