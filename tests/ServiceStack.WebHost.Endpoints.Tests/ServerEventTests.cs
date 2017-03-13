@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [Route("/channels/{Channel}/object")]
-    public class PostObjectToChannel
+    public class PostObjectToChannel : IReturnVoid
     {
         public string ToUserId { get; set; }
         public string Channel { get; set; }
@@ -1226,6 +1226,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 Assert.That(msgs1.Count, Is.EqualTo(1));
                 Assert.That(msgs2.Count, Is.EqualTo(2));
+
+                Assert.That(msgs1.All(x => x.Json.FromJson<string>() == "arg"));
+                Assert.That(msgs2.All(x => x.Json.FromJson<string>() == "arg"));
             }
         }
     }
