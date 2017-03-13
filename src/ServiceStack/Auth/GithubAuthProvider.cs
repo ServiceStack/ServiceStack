@@ -32,6 +32,8 @@ namespace ServiceStack.Auth
 
         public string[] Scopes { get; set; }
 
+        public string VerifyAccessTokenUrl { get; set; } = "https://api.github.com/applications/{0}/tokens/{1}";
+
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = Init(authService, ref session, request);
@@ -39,6 +41,14 @@ namespace ServiceStack.Auth
             //Transfering AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
             {
+                //https://developer.github.com/v3/oauth_authorizations/#check-an-authorization
+
+                var url = VerifyAccessTokenUrl.Fmt(ClientId, request.AccessToken);
+                var json = url.GetJsonFromUrl(requestFilter: httpReq => {
+                    PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent);
+                    httpReq.AddBasicAuth(ClientId, ClientSecret);
+                });
+
                 var isHtml = authService.Request.IsHtml();
                 var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
                 if (failedResult != null)
