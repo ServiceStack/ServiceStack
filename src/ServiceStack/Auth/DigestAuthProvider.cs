@@ -107,6 +107,7 @@ namespace ServiceStack.Auth
 
         public override IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
+            session.AuthProvider = Name;
             var userSession = session as AuthUserSession;
             if (userSession != null)
             {
