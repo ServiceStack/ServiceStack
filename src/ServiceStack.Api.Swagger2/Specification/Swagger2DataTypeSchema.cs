@@ -11,7 +11,7 @@ namespace ServiceStack.Api.Swagger2.Specification
         [DataMember(Name = "format")]
         public string Format { get; set; }
         [DataMember(Name = "items")]
-        public Dictionary<string, string> Items { get; set; }
+        public Dictionary<string, object> Items { get; set; }
         [DataMember(Name = "collectionFormat")]
         public string CollectionFormat { get; set; }
         [DataMember(Name = "default")]
@@ -36,9 +36,17 @@ namespace ServiceStack.Api.Swagger2.Specification
         public string MinItems { get; set; }
         [DataMember(Name = "uniqueItems")]
         public bool? UniqueItems { get; set; }
+        [DataMember(Name = "maxProperties")]
+        public string MaxProperties { get; set; }
+        [DataMember(Name = "minProperties")]
+        public string MinProperties { get; set; }
+        [DataMember(Name = "required")]
+        public bool? Required { get; set; }
         [DataMember(Name = "enum")]
         public List<string> Enum { get; set; }
         [DataMember(Name = "multipleOf")]
         public string MultipleOf { get; set; }
+        [DataMember(Name = "x-nullable")]
+        public bool? Nullable { get; set; }
     }
 }
