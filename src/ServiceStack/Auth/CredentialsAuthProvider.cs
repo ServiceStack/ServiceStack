@@ -235,6 +235,7 @@ namespace ServiceStack.Auth
             finally
             {
                 this.SaveSession(authService, session, SessionExpiry);
+                authService.Request.Items[Keywords.DidAuthenticate] = true;
             }
 
             return null;
