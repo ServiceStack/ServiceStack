@@ -152,7 +152,7 @@ namespace ServiceStack.Api.Swagger2
         {
             return ClrTypesToSwaggerScalarTypes.ContainsKey(type) 
                 || (Nullable.GetUnderlyingType(type) ?? type).IsEnum()
-                || type.IsValueType()
+                || (type.IsValueType() && !IsKeyValuePairType(type))
                 || type.IsNullableType();
         }
 
@@ -234,15 +234,39 @@ namespace ServiceStack.Api.Swagger2
             };
         }
 
+        private static bool IsKeyValuePairType(Type type)
+        {
+            return type.IsGenericType() && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
+        }
+
+        private Swagger2Schema GetKeyValuePairModel(IDictionary<string, Swagger2Schema> models, Type modelType, string route, string verb)
+        {
+            if (!IsKeyValuePairType(modelType))
+                return null;
+
+            var keyType = modelType.GetTypeGenericArguments()[0];
+            var valueType = modelType.GetTypeGenericArguments()[1];
+
+            return new Swagger2Schema()
+            {
+                Type = Swagger2Type.Object,
+                Description = modelType.GetDescription() ?? GetModelTypeName(modelType),
+                Properties = new OrderedDictionary<string, Swagger2Property>()
+                {
+                    { "Key", GetSwaggerProperty(models, keyType, route, verb) },
+                    { "Value", GetSwaggerProperty(models, valueType, route, verb) }
+                }
+            };
+        }
+
         private static bool IsRequiredType(Type type)
         {
             return !type.IsNullableType() && type != typeof(string);
         }
 
-
         private static string GetModelTypeName(Type modelType)
 		{
-		    if (modelType.IsValueType() || modelType.IsNullableType())
+		    if ((!IsKeyValuePairType(modelType) && modelType.IsValueType()) || modelType.IsNullableType())
 		        return Swagger2Type.String;
 
 		    if (!modelType.IsGenericType())
@@ -256,7 +280,12 @@ namespace ServiceStack.Api.Swagger2
         {
             var modelProp = new Swagger2Property();
 
-            if (IsListType(propertyType))
+            if (IsKeyValuePairType(propertyType))
+            {
+                ParseDefinitions(models, propertyType, route, verb);
+                modelProp.Ref = "#/definitions/" + GetModelTypeName(propertyType);
+            }
+            else if (IsListType(propertyType))
             {
                 modelProp.Type = Swagger2Type.Array;
                 var listItemType = GetListElementType(propertyType);
@@ -323,14 +352,15 @@ namespace ServiceStack.Api.Swagger2
             var modelId = GetModelTypeName(modelType);
             if (models.ContainsKey(modelId)) return;
 
-            var model = GetDictionaryModel(models, modelType, route, verb);
-                
-            model = model ?? new Swagger2Schema
-            {
-                Type = Swagger2Type.Object,
-                Description = modelType.GetDescription() ?? GetModelTypeName(modelType),
-                Properties = new OrderedDictionary<string, Swagger2Property>()
-            };
+            var model = GetDictionaryModel(models, modelType, route, verb) 
+                ?? GetKeyValuePairModel(models, modelType, route, verb)
+                ?? new Swagger2Schema
+                {   
+                    Type = Swagger2Type.Object,
+                    Description = modelType.GetDescription() ?? GetModelTypeName(modelType),
+                    Properties = new OrderedDictionary<string, Swagger2Property>()
+                };
+
             models[modelId] = model;
 
             var properties = modelType.GetProperties();
@@ -463,6 +493,7 @@ namespace ServiceStack.Api.Swagger2
                                 { "type", GetSwaggerTypeName(listItemType) },
                                 { "format", GetSwaggerTypeFormat(listItemType) }
                             };
+
                         }
                         else
                         {
