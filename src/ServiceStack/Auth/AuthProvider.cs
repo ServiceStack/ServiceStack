@@ -357,7 +357,7 @@ namespace ServiceStack.Auth
             return session.ReferrerUrl;
         }
 
-        protected virtual bool IsAccountLocked(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens=null)
+        internal virtual bool IsAccountLocked(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens=null)
         {
             return userAuth?.LockedDate != null;
         }
@@ -406,7 +406,7 @@ namespace ServiceStack.Auth
             return referrerUrl;
         }
 
-        protected void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
+        internal void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
         {
             if (authRepo == null)
                 return;

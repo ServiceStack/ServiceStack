@@ -167,6 +167,11 @@ namespace ServiceStack.Auth
         public TimeSpan ExpireTokensIn { get; set; }
 
         /// <summary>
+        /// How long should JWT Refresh Tokens be valid for. (default 365 days)
+        /// </summary>
+        public TimeSpan ExpireRefreshTokensIn { get; set; }
+
+        /// <summary>
         /// Convenient overload to initialize ExpireTokensIn with an Integer
         /// </summary>
         public int ExpireTokensInDays
@@ -208,6 +213,7 @@ namespace ServiceStack.Auth
             RequireHashAlgorithm = true;
             Issuer = "ssjwt";
             ExpireTokensIn = TimeSpan.FromDays(14);
+            ExpireRefreshTokensIn = TimeSpan.FromDays(365);
             FallbackAuthKeys = new List<byte[]>();
             FallbackPublicKeys = new List<RSAParameters>();
 
@@ -242,6 +248,7 @@ namespace ServiceStack.Auth
                     InvalidateTokensIssuedBefore = dateStr.FromJsv<DateTime>();
 
                 ExpireTokensIn = appSettings.Get("jwt.ExpireTokensIn", ExpireTokensIn);
+                ExpireRefreshTokensIn = appSettings.Get("jwt.ExpireRefreshTokensIn", ExpireRefreshTokensIn);
 
                 var intStr = appSettings.GetString("jwt.ExpireTokensInDays");
                 if (intStr != null)
@@ -311,28 +318,9 @@ namespace ServiceStack.Auth
                     if (RequireSecureConnection && !req.IsSecureConnection)
                         throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
 
-                    var header = parts[0];
-                    var payload = parts[1];
-                    var signatureBytes = parts[2].FromBase64UrlSafe();
-
-                    var headerJson = header.FromBase64UrlSafe().FromUtf8Bytes();
-                    var payloadBytes = payload.FromBase64UrlSafe();
-
-                    var headerData = headerJson.FromJson<Dictionary<string, string>>();
-
-                    var bytesToSign = string.Concat(header, ".", payload).ToUtf8Bytes();
-
-                    var algorithm = headerData["alg"];
-
-                    //Potential Security Risk for relying on user-specified algorithm: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
-                    if (RequireHashAlgorithm && algorithm != HashAlgorithm)
-                        throw new NotSupportedException("Invalid algoritm '{0}', expected '{1}'".Fmt(algorithm, HashAlgorithm));
-
-                    if (!VerifyPayload(algorithm, bytesToSign, signatureBytes))
+                    var jwtPayload = GetVerifiedJwtPayload(parts);
+                    if (jwtPayload == null) //not verified
                         return;
-
-                    var payloadJson = payloadBytes.FromUtf8Bytes();
-                    var jwtPayload = JsonObject.Parse(payloadJson);
 
                     var session = CreateSessionFromPayload(req, jwtPayload);
                     req.Items[Keywords.Session] = session;
@@ -402,7 +390,50 @@ namespace ServiceStack.Auth
             }
         }
 
+        public JsonObject GetVerifiedJwtPayload(string[] jwtParts)
+        {
+            var header = jwtParts[0];
+            var payload = jwtParts[1];
+            var signatureBytes = jwtParts[2].FromBase64UrlSafe();
+
+            var headerJson = header.FromBase64UrlSafe().FromUtf8Bytes();
+            var payloadBytes = payload.FromBase64UrlSafe();
+
+            var headerData = headerJson.FromJson<Dictionary<string, string>>();
+
+            var bytesToSign = string.Concat(header, ".", payload).ToUtf8Bytes();
+
+            var algorithm = headerData["alg"];
+
+            //Potential Security Risk for relying on user-specified algorithm: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
+            if (RequireHashAlgorithm && algorithm != HashAlgorithm)
+                throw new NotSupportedException("Invalid algoritm '{0}', expected '{1}'".Fmt(algorithm, HashAlgorithm));
+
+            if (!VerifyPayload(algorithm, bytesToSign, signatureBytes))
+                return null;
+
+            var payloadJson = payloadBytes.FromUtf8Bytes();
+            var jwtPayload = JsonObject.Parse(payloadJson);
+            return jwtPayload;
+        }
+
         private IAuthSession CreateSessionFromPayload(IRequest req, JsonObject jwtPayload)
+        {
+            AssertJwtPayloadIsValid(jwtPayload);
+
+            var sessionId = jwtPayload.GetValue("jid", SessionExtensions.CreateRandomSessionId);
+            var session = SessionFeature.CreateNewSession(req, sessionId);
+
+            session.AuthProvider = Name;
+            session.PopulateFromMap(jwtPayload);
+
+            PopulateSessionFilter?.Invoke(session, jwtPayload, req);
+
+            HostContext.AppHost.OnSessionFilter(session, sessionId);
+            return session;
+        }
+
+        public void AssertJwtPayloadIsValid(JsonObject jwtPayload)
         {
             var expiresAt = GetUnixTime(jwtPayload, "exp");
             var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
@@ -422,17 +453,6 @@ namespace ServiceStack.Auth
                 if (audience != Audience)
                     throw new TokenException("Invalid Audience: " + audience);
             }
-
-            var sessionId = jwtPayload.GetValue("jid", SessionExtensions.CreateRandomSessionId);
-            var session = SessionFeature.CreateNewSession(req, sessionId);
-
-            session.AuthProvider = Name;
-            session.PopulateFromMap(jwtPayload);
-
-            PopulateSessionFilter?.Invoke(session, jwtPayload, req);
-
-            HostContext.AppHost.OnSessionFilter(session, sessionId);
-            return session;
         }
 
         public bool VerifyPayload(string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
