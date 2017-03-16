@@ -358,6 +358,9 @@ namespace ServiceStack.Auth
             if (string.IsNullOrEmpty(request.RefreshToken))
                 throw new ArgumentNullException(nameof(request.RefreshToken));
 
+            if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(request.RefreshToken))
+                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid, nameof(request.RefreshToken));
+
             var userRepo = AuthRepository as IUserAuthRepository;
             if (userRepo == null)
                 throw new NotSupportedException("JWT Refresh Tokens requires a registered IUserAuthRepository");
