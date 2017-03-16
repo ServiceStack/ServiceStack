@@ -1,6 +1,6 @@
 ﻿using Funq;
 using NUnit.Framework;
-using ServiceStack.Api.Swagger2;
+using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
 using ServiceStack.Logging;
 using ServiceStack.OpenApi.Tests.Services;
@@ -94,7 +94,7 @@ namespace ServiceStack.OpenApi.Tests.Host
                     new CredentialsAuthProvider(AppSettings),
                 }));
 
-            Plugins.Add(new Swagger2Feature());
+            Plugins.Add(new OpenApiFeature());
 
             /*Plugins.Add(new AutoQueryFeature
             {

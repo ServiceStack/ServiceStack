@@ -195,13 +195,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger2\ServiceStack.Api.Swagger2.csproj">
-      <Project>{5e258282-86a6-4780-ab25-5e458f2e6f70}</Project>
-      <Name>ServiceStack.Api.Swagger2</Name>
-    </ProjectReference>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+    <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">
+      <Project>{5e258282-86a6-4780-ab25-5e458f2e6f70}</Project>
+      <Name>ServiceStack.Api.OpenApi</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
