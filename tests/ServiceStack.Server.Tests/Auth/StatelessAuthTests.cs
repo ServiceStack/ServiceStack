@@ -1341,13 +1341,6 @@ namespace ServiceStack.Server.Tests.Auth
             jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
                 jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
 
-            var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
-            {
-                UserAuthId = "1",
-                DisplayName = "Test",
-                Email = "as@if.com"
-            });
-
             jwtProvider.CreatePayloadFilter = null;
 
             var authClient = GetClientWithUserPassword(alwaysSend: true);
@@ -1376,13 +1369,6 @@ namespace ServiceStack.Server.Tests.Auth
             var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
             jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
                 jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
-
-            var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
-            {
-                UserAuthId = "1",
-                DisplayName = "Test",
-                Email = "as@if.com"
-            });
 
             jwtProvider.CreatePayloadFilter = null;
 
