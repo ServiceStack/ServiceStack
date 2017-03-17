@@ -12,9 +12,9 @@ namespace AutorestClient
     using System.Threading.Tasks;
 
     /// <summary>
-    /// GetRequest1 operations.
+    /// ReturnArrayRequest operations.
     /// </summary>
-    public partial interface IGetRequest1
+    public partial interface IReturnArrayRequest
     {
         /// <param name='format'>
         /// Specifies response output format

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ServiceStack;
+using System.Linq;
 
 namespace ServiceStack.OpenApi.Test.Services
 {
@@ -8,15 +9,30 @@ namespace ServiceStack.OpenApi.Test.Services
         public virtual int Id { get; set; }
     }
 
-    [Route("/Request1", "GET")]
-    public partial class GetRequest1 : IReturn<List<ReturnedDto>>, IGet { }
+    [Route("/return-list", "GET")]
+    public partial class ReturnListRequest : IReturn<List<ReturnedDto>>, IGet { }
 
-    [Route("/Request2", "GET")]
-    public partial class GetRequest2 : IReturn<List<ReturnedDto>>, IGet { }
+    [Route("/return-array", "GET")]
+    public partial class ReturnArrayRequest : IReturn<ReturnedDto[]>, IGet { }
+
+    [Route("/return-keyvaluepair", "GET")]
+    public partial class ReturnKeyValuePairRequest : IReturn<KeyValuePair<string, string>>, IGet { }
+
+
+    public partial class ReturnListRequest : IReturn<List<ReturnedDto>>, IGet { }
+
 
     public class ReturnGenericListServices : Service
     {
-        public object Any(GetRequest1 request) => request;
-        public object Any(GetRequest2 request) => request;
+        public static readonly ReturnedDto[] returnedDtos = new ReturnedDto[] {
+            new ReturnedDto() {Id = 1 },
+            new ReturnedDto() {Id = 2 },
+            new ReturnedDto() {Id = 3 },
+        };
+
+        public object Any(ReturnListRequest request) => returnedDtos.ToList();
+        public object Any(ReturnArrayRequest request) => returnedDtos;
+
+        public object Any(ReturnKeyValuePairRequest request) => new KeyValuePair<string, string>("key1", "value1");
     }
 }

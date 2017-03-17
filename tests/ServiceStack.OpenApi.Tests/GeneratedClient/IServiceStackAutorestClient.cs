@@ -28,14 +28,19 @@ namespace AutorestClient
 
 
         /// <summary>
-        /// Gets the IGetRequest1.
+        /// Gets the IReturnListRequest.
         /// </summary>
-        IGetRequest1 GetRequest1 { get; }
+        IReturnListRequest ReturnListRequest { get; }
 
         /// <summary>
-        /// Gets the IGetRequest2.
+        /// Gets the IReturnArrayRequest.
         /// </summary>
-        IGetRequest2 GetRequest2 { get; }
+        IReturnArrayRequest ReturnArrayRequest { get; }
+
+        /// <summary>
+        /// Gets the IReturnKeyValuePairRequest.
+        /// </summary>
+        IReturnKeyValuePairRequest ReturnKeyValuePairRequest { get; }
 
         /// <summary>
         /// Gets the IHelloOperations.

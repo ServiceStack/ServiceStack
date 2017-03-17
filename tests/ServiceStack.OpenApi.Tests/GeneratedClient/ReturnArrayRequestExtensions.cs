@@ -11,9 +11,9 @@ namespace AutorestClient
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Extension methods for GetRequest2.
+    /// Extension methods for ReturnArrayRequest.
     /// </summary>
-    public static partial class GetRequest2Extensions
+    public static partial class ReturnArrayRequestExtensions
     {
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -21,7 +21,7 @@ namespace AutorestClient
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static IList<ReturnedDto> Get(this IGetRequest2 operations, string format = "json")
+            public static IList<ReturnedDto> Get(this IReturnArrayRequest operations, string format = "json")
             {
                 return operations.GetAsync(format).GetAwaiter().GetResult();
             }
@@ -35,7 +35,7 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<ReturnedDto>> GetAsync(this IGetRequest2 operations, string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<ReturnedDto>> GetAsync(this IReturnArrayRequest operations, string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.GetWithHttpMessagesAsync(format, null, cancellationToken).ConfigureAwait(false))
                 {

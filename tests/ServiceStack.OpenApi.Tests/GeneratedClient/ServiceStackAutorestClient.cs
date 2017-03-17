@@ -31,14 +31,19 @@ namespace AutorestClient
         public JsonSerializerSettings DeserializationSettings { get; private set; }
 
         /// <summary>
-        /// Gets the IGetRequest1.
+        /// Gets the IReturnListRequest.
         /// </summary>
-        public virtual IGetRequest1 GetRequest1 { get; private set; }
+        public virtual IReturnListRequest ReturnListRequest { get; private set; }
 
         /// <summary>
-        /// Gets the IGetRequest2.
+        /// Gets the IReturnArrayRequest.
         /// </summary>
-        public virtual IGetRequest2 GetRequest2 { get; private set; }
+        public virtual IReturnArrayRequest ReturnArrayRequest { get; private set; }
+
+        /// <summary>
+        /// Gets the IReturnKeyValuePairRequest.
+        /// </summary>
+        public virtual IReturnKeyValuePairRequest ReturnKeyValuePairRequest { get; private set; }
 
         /// <summary>
         /// Gets the IHelloOperations.
@@ -204,8 +209,9 @@ namespace AutorestClient
         /// </summary>
         private void Initialize()
         {
-            GetRequest1 = new GetRequest1(this);
-            GetRequest2 = new GetRequest2(this);
+            ReturnListRequest = new ReturnListRequest(this);
+            ReturnArrayRequest = new ReturnArrayRequest(this);
+            ReturnKeyValuePairRequest = new ReturnKeyValuePairRequest(this);
             Hello = new HelloOperations(this);
             HelloList = new HelloListOperations(this);
             HelloArray = new HelloArrayOperations(this);

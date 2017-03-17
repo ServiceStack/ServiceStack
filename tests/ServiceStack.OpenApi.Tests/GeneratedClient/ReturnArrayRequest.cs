@@ -16,12 +16,12 @@ namespace AutorestClient
     using System.Threading.Tasks;
 
     /// <summary>
-    /// GetRequest2 operations.
+    /// ReturnArrayRequest operations.
     /// </summary>
-    public partial class GetRequest2 : IServiceOperations<ServiceStackAutorestClient>, IGetRequest2
+    public partial class ReturnArrayRequest : IServiceOperations<ServiceStackAutorestClient>, IReturnArrayRequest
     {
         /// <summary>
-        /// Initializes a new instance of the GetRequest2 class.
+        /// Initializes a new instance of the ReturnArrayRequest class.
         /// </summary>
         /// <param name='client'>
         /// Reference to the service client.
@@ -29,7 +29,7 @@ namespace AutorestClient
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        public GetRequest2(ServiceStackAutorestClient client)
+        public ReturnArrayRequest(ServiceStackAutorestClient client)
         {
             if (client == null)
             {
@@ -73,7 +73,7 @@ namespace AutorestClient
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "Request2").ToString();
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "return-array").ToString();
             List<string> _queryParameters = new List<string>();
             if (format != null)
             {
