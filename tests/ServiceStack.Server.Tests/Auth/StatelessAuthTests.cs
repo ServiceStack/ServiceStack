@@ -1361,6 +1361,41 @@ namespace ServiceStack.Server.Tests.Auth
         }
 
         [Test]
+        public async Task Can_Auto_reconnect_with_RefreshToken_after_expired_token_HttpClient_Async()
+        {
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+            jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
+                jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
+
+            jwtProvider.CreatePayloadFilter = null;
+
+            var authClient = new JsonHttpClient(ListeningOn);
+            var refreshToken = (await authClient.SendAsync(new Authenticate
+            {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password,
+            })).RefreshToken;
+
+            Assert.That(refreshToken, Is.Not.Null); //On Auth using non IAuthWithRequest
+
+            var postAuthRefreshToken = (await authClient.SendAsync(new Authenticate())).RefreshToken;
+            Assert.That(postAuthRefreshToken, Is.Null); //After Auth
+
+            var client = new JsonHttpClient(ListeningOn)
+            {
+                RefreshToken = refreshToken
+            };
+
+            var request = new Secured { Name = "test" };
+            var response = await client.SendAsync(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            response = await client.SendAsync(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
         public void Can_Auto_reconnect_with_RefreshToken_in_OnAuthenticationRequired_after_expired_token()
         {
             var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
