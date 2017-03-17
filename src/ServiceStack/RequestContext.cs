@@ -19,6 +19,7 @@ namespace ServiceStack
     {
         public static readonly RequestContext Instance = new RequestContext();
 
+#if !NETSTANDARD1_6
         /// <summary>
         /// Tell ServiceStack to use ThreadStatic Items Collection for RequestScoped items.
         /// Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
@@ -27,9 +28,16 @@ namespace ServiceStack
 
         [ThreadStatic]
         public static IDictionary RequestItems;
-
-#if NETSTANDARD1_6
+#else
         public static AsyncLocal<IDictionary> AsyncRequestItems = new AsyncLocal<IDictionary>();
+
+        /// <summary>
+        /// Start a new Request context, everything deeper in Async pipeline will get this new RequestContext dictionary.
+        /// </summary>
+        public void StartRequestContext()
+        {
+            CreateItems();
+        }
 #endif
 
         /// <summary>
