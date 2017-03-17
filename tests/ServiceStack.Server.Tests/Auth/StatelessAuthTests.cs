@@ -1292,14 +1292,8 @@ namespace ServiceStack.Server.Tests.Auth
         }
 
         [Test]
-        public void Can_Auto_reconnect_with_RefreshToken_after_expired_token()
+        public void Only_returns_Tokens_on_Requests_that_Authenticate_the_user()
         {
-            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
-                jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
-
-            jwtProvider.CreatePayloadFilter = null;
-
             var authClient = GetClient();
             var refreshToken = authClient.Send(new Authenticate
             {
@@ -1312,9 +1306,46 @@ namespace ServiceStack.Server.Tests.Auth
 
             var postAuthRefreshToken = authClient.Send(new Authenticate()).RefreshToken;
             Assert.That(postAuthRefreshToken, Is.Null); //After Auth
+        }
 
+        [Test]
+        public void Can_Auto_reconnect_with_just_RefreshToken()
+        {
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                RefreshToken = GetRefreshToken(),
+            };
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
+        public void Can_Auto_reconnect_with_just_RefreshToken_HttpClient()
+        {
+            var client = new JsonHttpClient(ListeningOn)
+            {
+                RefreshToken = GetRefreshToken(),
+            };
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
+        public void Can_Auto_reconnect_with_RefreshToken_after_expired_token()
+        {
             var client = new JsonServiceClient(ListeningOn) {
-                RefreshToken = refreshToken
+                BearerToken = CreateExpiredToken(),
+                RefreshToken = GetRefreshToken(),
             };
 
             var request = new Secured { Name = "test" };
@@ -1328,28 +1359,10 @@ namespace ServiceStack.Server.Tests.Auth
         [Test]
         public async Task Can_Auto_reconnect_with_RefreshToken_after_expired_token_Async()
         {
-            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
-                jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
-
-            jwtProvider.CreatePayloadFilter = null;
-
-            var authClient = GetClient();
-            var refreshToken = (await authClient.SendAsync(new Authenticate
-            {
-                provider = "credentials",
-                UserName = Username,
-                Password = Password,
-            })).RefreshToken;
-
-            Assert.That(refreshToken, Is.Not.Null); //On Auth using non IAuthWithRequest
-
-            var postAuthRefreshToken = (await authClient.SendAsync(new Authenticate())).RefreshToken;
-            Assert.That(postAuthRefreshToken, Is.Null); //After Auth
-
             var client = new JsonServiceClient(ListeningOn)
             {
-                RefreshToken = refreshToken
+                BearerToken = CreateExpiredToken(),
+                RefreshToken = GetRefreshToken(),
             };
 
             var request = new Secured { Name = "test" };
@@ -1363,28 +1376,10 @@ namespace ServiceStack.Server.Tests.Auth
         [Test]
         public async Task Can_Auto_reconnect_with_RefreshToken_after_expired_token_HttpClient_Async()
         {
-            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
-                jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
-
-            jwtProvider.CreatePayloadFilter = null;
-
-            var authClient = new JsonHttpClient(ListeningOn);
-            var refreshToken = (await authClient.SendAsync(new Authenticate
+            var client = new JsonServiceClient(ListeningOn)
             {
-                provider = "credentials",
-                UserName = Username,
-                Password = Password,
-            })).RefreshToken;
-
-            Assert.That(refreshToken, Is.Not.Null); //On Auth using non IAuthWithRequest
-
-            var postAuthRefreshToken = (await authClient.SendAsync(new Authenticate())).RefreshToken;
-            Assert.That(postAuthRefreshToken, Is.Null); //After Auth
-
-            var client = new JsonHttpClient(ListeningOn)
-            {
-                RefreshToken = refreshToken
+                BearerToken = CreateExpiredToken(),
+                RefreshToken = GetRefreshToken(),
             };
 
             var request = new Secured { Name = "test" };
@@ -1398,33 +1393,19 @@ namespace ServiceStack.Server.Tests.Auth
         [Test]
         public void Can_Auto_reconnect_with_RefreshToken_in_OnAuthenticationRequired_after_expired_token()
         {
-            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
-                jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
-
-            jwtProvider.CreatePayloadFilter = null;
-
-            var authClient = GetClient();
-            var refreshToken = authClient.Send(new Authenticate
-            {
-                provider = "credentials",
-                UserName = Username,
-                Password = Password,
-            }).RefreshToken;
-
-            Assert.That(refreshToken, Is.Not.Null); //On Auth using non IAuthWithRequest
-
-            var postAuthRefreshToken = authClient.Send(new Authenticate()).RefreshToken;
-            Assert.That(postAuthRefreshToken, Is.Null); //After Auth
-
             var called = 0;
-            var client = new JsonServiceClient(ListeningOn);
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = CreateExpiredToken(),
+            };
+
             client.OnAuthenticationRequired = () =>
             {
                 called++;
+                var authClient = new JsonServiceClient(ListeningOn);
                 client.BearerToken = authClient.Send(new GetAccessToken
                 {
-                    RefreshToken = refreshToken
+                    RefreshToken = GetRefreshToken(),
                 }).AccessToken;
             };
 
@@ -1444,6 +1425,7 @@ namespace ServiceStack.Server.Tests.Auth
             var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
             jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
                 jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
+
 
             jwtProvider.CreatePayloadFilter = null;
 
@@ -1605,6 +1587,36 @@ namespace ServiceStack.Server.Tests.Auth
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
             }
+        }
+
+        private string GetRefreshToken()
+        {
+            var authClient = GetClient();
+            var refreshToken = authClient.Send(new Authenticate
+                {
+                    provider = "credentials",
+                    UserName = Username,
+                    Password = Password,
+                })
+                .RefreshToken;
+            return refreshToken;
+        }
+
+        private static string CreateExpiredToken()
+        {
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+            jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
+                jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
+
+            var token = jwtProvider.CreateJwtBearerToken(new AuthUserSession
+            {
+                UserAuthId = "1",
+                DisplayName = "Test",
+                Email = "as@if.com"
+            });
+
+            jwtProvider.CreatePayloadFilter = null;
+            return token;
         }
     }
 
