@@ -1422,17 +1422,13 @@ namespace ServiceStack.Server.Tests.Auth
         [Test]
         public void Can_Auto_reconnect_with_BasicAuth_after_expired_token()
         {
-            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
-                jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
-
-
-            jwtProvider.CreatePayloadFilter = null;
-
             var authClient = GetClientWithUserPassword(alwaysSend: true);
 
             var called = 0;
-            var client = new JsonServiceClient(ListeningOn);
+            var client = new JsonServiceClient(ListeningOn)
+            {
+                BearerToken = CreateExpiredToken(),
+            };
             client.OnAuthenticationRequired = () =>
             {
                 called++;
@@ -1452,16 +1448,12 @@ namespace ServiceStack.Server.Tests.Auth
         [Test]
         public async Task Can_Auto_reconnect_with_BasicAuth_after_expired_token_Async()
         {
-            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
-                jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
-
-            jwtProvider.CreatePayloadFilter = null;
-
             var authClient = GetClientWithUserPassword(alwaysSend: true);
 
             var called = 0;
-            var client = new JsonServiceClient(ListeningOn);
+            var client = new JsonServiceClient(ListeningOn) {
+                BearerToken = CreateExpiredToken(),
+            };
             client.OnAuthenticationRequired = () =>
             {
                 called++;
