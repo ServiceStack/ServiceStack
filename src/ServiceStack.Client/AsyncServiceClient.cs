@@ -47,6 +47,10 @@ namespace ServiceStack
         /// </summary>
         public Action OnAuthenticationRequired { get; set; }
 
+        public string RefreshToken { get; set; }
+
+        public string RefreshTokenUri { get; set; }
+
         public static int BufferSize = 8192;
 
         public ICredentials Credentials { get; set; }
@@ -341,10 +345,38 @@ namespace ServiceStack
                     (!string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password))
                         || Credentials != null
                         || BearerToken != null
+                        || RefreshToken != null
                         || OnAuthenticationRequired != null))
                 {
                     try
                     {
+                        if (RefreshToken != null)
+                        {
+                            var refreshRequest = new GetAccessToken { RefreshToken = RefreshToken };
+                            var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
+                            var tokenResponse = uri.PostJsonToUrl(refreshRequest).FromJson<GetAccessTokenResponse>();
+                            var accessToken = tokenResponse?.AccessToken;
+                            if (string.IsNullOrEmpty(accessToken))
+                                throw new Exception("Could not retrieve new AccessToken from: " + uri);
+
+                            var refreshClient = requestState.WebRequest = (HttpWebRequest)WebRequest.Create(requestState.Url);
+                            if (this.CookieContainer.GetTokenCookie(BaseUri) != null)
+                            {
+                                this.CookieContainer.SetTokenCookie(accessToken, BaseUri);
+                                refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
+                            }
+                            else
+                            {
+                                refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                            }
+
+                            SendWebRequestAsync(
+                                requestState.HttpMethod, requestState.Request,
+                                requestState, requestState.WebRequest);
+
+                            return;
+                        }
+
                         OnAuthenticationRequired?.Invoke();
 
                         requestState.WebRequest = (HttpWebRequest)WebRequest.Create(requestState.Url);

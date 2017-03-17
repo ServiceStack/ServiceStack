@@ -371,7 +371,7 @@ namespace ServiceStack
         /// <summary>
         /// Called before request resend, when the initial request required authentication
         /// </summary>
-        private Action onAuthenticationRequired { get; set; }
+        private Action onAuthenticationRequired;
         public Action OnAuthenticationRequired
         {
             get
@@ -382,6 +382,35 @@ namespace ServiceStack
             {
                 onAuthenticationRequired = value;
                 asyncClient.OnAuthenticationRequired = value;
+            }
+        }
+
+        /// <summary>
+        /// If a request fails with a 401 Unauthorized and a BearerToken is present the client
+        /// will automatically fetch a new AccessToken using this RefreshToken and retry the request
+        /// </summary>
+        private string refreshToken;
+        public string RefreshToken
+        {
+            get { return refreshToken; }
+            set
+            {
+                refreshToken = value;
+                asyncClient.RefreshToken = value;
+            }
+        }
+
+        /// <summary>
+        /// Send the Request to get the AccessToken with the RefreshToken at a non-default location
+        /// </summary>
+        private string refreshTokenUri;
+        public string RefreshTokenUri
+        {
+            get { return refreshTokenUri; }
+            set
+            {
+                refreshTokenUri = value;
+                asyncClient.RefreshTokenUri = value;
             }
         }
 
@@ -578,7 +607,7 @@ namespace ServiceStack
             }
 
             var httpMethod = HttpMethod ?? DefaultHttpMethod;
-            var requestUri = ResolveUrl(httpMethod, UrlResolver == null 
+            var requestUri = ResolveUrl(httpMethod, UrlResolver == null
                 ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
                 : Format + "/reply/" + request.GetType().Name);
 
@@ -644,8 +673,34 @@ namespace ServiceStack
                     (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
                         || credentials != null
                         || bearerToken != null
+                        || refreshToken != null
                         || OnAuthenticationRequired != null))
                 {
+                    if (RefreshToken != null)
+                    {
+                        var refreshRequest = new GetAccessToken { RefreshToken = RefreshToken };
+                        var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
+                        var tokenResponse = uri.PostJsonToUrl(refreshRequest).FromJson<GetAccessTokenResponse>();
+                        var accessToken = tokenResponse?.AccessToken;
+                        if (string.IsNullOrEmpty(accessToken))
+                            throw new Exception("Could not retrieve new AccessToken from: " + uri);
+
+                        var refreshClient = (HttpWebRequest)createWebRequest();
+                        if (this.GetTokenCookie() != null)
+                        {
+                            this.SetTokenCookie(accessToken);
+                            refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
+                        }
+                        else
+                        {
+                            refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                        }
+
+                        var refreshResponse = getResponse(refreshClient);
+                        response = HandleResponse<TResponse>(refreshResponse);
+                        return true;
+                    }
+
                     if (OnAuthenticationRequired != null)
                         OnAuthenticationRequired();
 
@@ -692,7 +747,7 @@ namespace ServiceStack
         private void HandleAuthException(Exception ex, WebRequest client)
         {
             var webEx = ex as WebException;
-            if (webEx != null && webEx.Response != null)
+            if (webEx?.Response != null)
             {
                 var headers = ((HttpWebResponse)webEx.Response).Headers;
                 var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
@@ -1689,7 +1744,7 @@ namespace ServiceStack
             }
         }
 
-    
+
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
             var currentStreamPosition = fileToUpload.Position;
@@ -1735,7 +1790,7 @@ namespace ServiceStack
             var response = GetResponse<TResponse>(webResponse);
             DisposeIfRequired<TResponse>(webResponse);
 
-            return response;            
+            return response;
         }
 
         private static void DisposeIfRequired<TResponse>(WebResponse webResponse)
@@ -1745,7 +1800,7 @@ namespace ServiceStack
             if (typeof(TResponse) == typeof(Stream))
                 return;
 
-            using (webResponse) {}
+            using (webResponse) { }
         }
 
         protected TResponse GetResponse<TResponse>(WebResponse webResponse)
@@ -1941,6 +1996,13 @@ namespace ServiceStack
             if (hasCookies == null)
                 throw new NotSupportedException("Client does not implement IHasCookieContainer");
 
+            hasCookies.CookieContainer.SetCookie(baseUri, name, value, expiresAt, path, httpOnly, secure);
+        }
+
+        public static void SetCookie(this CookieContainer cookieContainer, 
+            Uri baseUri, string name, string value, DateTime? expiresAt,
+            string path = "/", bool? httpOnly = null, bool? secure = null)
+        {
             var cookie = new Cookie(name, value, path);
             if (expiresAt != null)
                 cookie.Expires = expiresAt.Value;
@@ -1951,7 +2013,7 @@ namespace ServiceStack
             if (secure != null)
                 cookie.Secure = secure.Value;
 
-            hasCookies.CookieContainer.Add(baseUri, cookie);
+            cookieContainer.Add(baseUri, cookie);
         }
 
         public static string GetSessionId(this IServiceClient client)
@@ -1981,7 +2043,7 @@ namespace ServiceStack
             if (sessionId == null)
                 return;
 
-            client.SetCookie("ss-pid", sessionId, expiresIn:TimeSpan.FromDays(365 * 20));
+            client.SetCookie("ss-pid", sessionId, expiresIn: TimeSpan.FromDays(365 * 20));
         }
 
         public static string GetTokenCookie(this IServiceClient client)
@@ -1991,12 +2053,28 @@ namespace ServiceStack
             return token;
         }
 
+        public static string GetTokenCookie(this CookieContainer cookies, string baseUri)
+        {
+            string token;
+            cookies.ToDictionary(baseUri).TryGetValue("ss-tok", out token);
+            return token;
+        }
+
         public static void SetTokenCookie(this IServiceClient client, string token)
         {
             if (token == null)
                 return;
 
             client.SetCookie("ss-tok", token, expiresIn: TimeSpan.FromDays(365 * 20));
+        }
+
+        public static void SetTokenCookie(this CookieContainer cookies, string baseUri, string token)
+        {
+            if (token == null)
+                return;
+
+            cookies.SetCookie(new Uri(baseUri), "ss-tok", token,
+                expiresAt: DateTime.UtcNow.Add(TimeSpan.FromDays(365 * 20)));
         }
 
         public static void SetUserAgent(this HttpWebRequest req, string userAgent)

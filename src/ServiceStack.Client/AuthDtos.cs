@@ -261,7 +261,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class GetAccessToken : IGet, IReturn<GetAccessTokenResponse>
+    public class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>
     {
         [DataMember(Order = 1)]
         public string RefreshToken { get; set; }
