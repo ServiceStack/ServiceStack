@@ -32,6 +32,17 @@ namespace ServiceStack
             throw new NotSupportedException(compressionType);
         }
 
+        public static Stream CompressStream(this Stream stream, string compressionType)
+        {
+            if (compressionType == CompressionTypes.Deflate)
+                return DeflateProvider.DeflateStream(stream);
+
+            if (compressionType == CompressionTypes.GZip)
+                return GZipProvider.GZipStream(stream);
+
+            throw new NotSupportedException(compressionType);
+        }
+
         /// <summary>
         /// Compresses the specified text using the default compression method: Deflate
         /// </summary>

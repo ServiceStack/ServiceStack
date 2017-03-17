@@ -73,6 +73,7 @@ namespace ServiceStack
                     "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv",
                     "flv", "swf", "xap", "xaml", "ogg", "ogv", "mp4", "webm", "eot", "ttf", "woff", "woff2", "map"
                 },
+                CompressFilesWithExtensions = new HashSet<string>(),
                 AllowFilePaths = new List<string>
                 {
                     "jspm_packages/**/*.json"
@@ -179,6 +180,7 @@ namespace ServiceStack
             this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
             this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
             this.AllowFileExtensions = instance.AllowFileExtensions;
+            this.CompressFilesWithExtensions = instance.CompressFilesWithExtensions;
             this.AllowFilePaths = instance.AllowFilePaths;
             this.EnableFeatures = instance.EnableFeatures;
             this.WriteErrorsToResponse = instance.WriteErrorsToResponse;
@@ -247,6 +249,7 @@ namespace ServiceStack
         public HashSet<string> IgnoreFormatsInMetadata { get; set; }
 
         public HashSet<string> AllowFileExtensions { get; set; }
+        public HashSet<string> CompressFilesWithExtensions { get; set; }
         public List<string> AllowFilePaths { get; set; }
 
         public string WebHostUrl { get; set; }
