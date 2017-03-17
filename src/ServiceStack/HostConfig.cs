@@ -181,6 +181,7 @@ namespace ServiceStack
             this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
             this.AllowFileExtensions = instance.AllowFileExtensions;
             this.CompressFilesWithExtensions = instance.CompressFilesWithExtensions;
+            this.CompressFilesLargerThanBytes = instance.CompressFilesLargerThanBytes;
             this.AllowFilePaths = instance.AllowFilePaths;
             this.EnableFeatures = instance.EnableFeatures;
             this.WriteErrorsToResponse = instance.WriteErrorsToResponse;
@@ -250,6 +251,7 @@ namespace ServiceStack
 
         public HashSet<string> AllowFileExtensions { get; set; }
         public HashSet<string> CompressFilesWithExtensions { get; set; }
+        public long? CompressFilesLargerThanBytes { get; set; }
         public List<string> AllowFilePaths { get; set; }
 
         public string WebHostUrl { get; set; }

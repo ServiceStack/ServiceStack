@@ -656,7 +656,9 @@ namespace ServiceStack
 
         public virtual bool ShouldCompressFile(IVirtualFile file)
         {
-            return !string.IsNullOrEmpty(file.Extension) && Config.CompressFilesWithExtensions.Contains(file.Extension);
+            return !string.IsNullOrEmpty(file.Extension) 
+                && Config.CompressFilesWithExtensions.Contains(file.Extension)
+                && (Config.CompressFilesLargerThanBytes == null || file.Length > Config.CompressFilesLargerThanBytes);
         }
     }
 

@@ -250,7 +250,6 @@ namespace ServiceStack.Host.Handlers
                     {
                         if (rangeStart != 0 || rangeEnd != file.Length - 1)
                         {
-                            r.SetContentLength(contentLength);
                             fs.WritePartialTo(outputStream, rangeStart, rangeEnd);
                         }
                         else
