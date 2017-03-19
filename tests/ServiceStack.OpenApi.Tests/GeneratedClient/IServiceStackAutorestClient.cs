@@ -43,6 +43,16 @@ namespace AutorestClient
         IReturnKeyValuePairRequest ReturnKeyValuePairRequest { get; }
 
         /// <summary>
+        /// Gets the IReturnDictionaryStringRequest.
+        /// </summary>
+        IReturnDictionaryStringRequest ReturnDictionaryStringRequest { get; }
+
+        /// <summary>
+        /// Gets the IReturnDictionaryDtoRequest.
+        /// </summary>
+        IReturnDictionaryDtoRequest ReturnDictionaryDtoRequest { get; }
+
+        /// <summary>
         /// Gets the IHelloOperations.
         /// </summary>
         IHelloOperations Hello { get; }

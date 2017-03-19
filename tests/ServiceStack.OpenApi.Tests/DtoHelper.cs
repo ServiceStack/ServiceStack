@@ -2,13 +2,10 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServiceStack.OpenApi.Tests
 {
-    class MakeDtoHelper
+    class DtoHelper
     {
         public static AllTypes GetAllTypes()
         {
@@ -124,8 +121,39 @@ namespace ServiceStack.OpenApi.Tests
         {
             Assert.That(actual.IntArray, Is.EqualTo(expected.IntArray));
             Assert.That(actual.IntList, Is.EqualTo(expected.IntList));
-            //Assert.That(actual.PocoArray, Is.EqualTo(expected.PocoArray));
+            AssertListPoco(actual.PocoArray, expected.PocoArray);
+            AssertListPoco(actual.PocoList, expected.PocoList);
 
+            Assert.That(actual.PocoLookup.Count, Is.EqualTo(expected.PocoLookup.Count));
+            foreach (var key in actual.PocoLookup.Keys)
+                AssertListPoco(actual.PocoLookup[key], expected.PocoLookup[key]);
+
+            Assert.That(actual.PocoLookupMap.Count, Is.EqualTo(expected.PocoLookupMap.Count));
+
+            foreach(var key in actual.PocoLookupMap.Keys)
+            {
+                var actualList = actual.PocoLookupMap[key];
+                var expectedList = expected.PocoLookupMap[key];
+
+                Assert.That(actualList.Count, Is.EqualTo(expectedList.Count));
+                for(int i = 0; i < actualList.Count; i++)
+                {
+                    Assert.That(actualList[i].Count, Is.EqualTo(expectedList[i].Count));
+
+                    foreach (var key2 in actualList[i].Keys)
+                    {
+                        Assert.That(actualList[i][key2].Name, Is.EqualTo(expectedList[i][key2].Name));
+                    }
+                }
+            }
+        }
+
+        public static void AssertListPoco(IList<Poco> actual, IList<Poco> expected)
+        {
+            Assert.That(actual.Count, Is.EqualTo(expected.Count));
+
+            for (int i = 0; i < actual.Count; i++)
+                Assert.That(actual[i].Name, Is.EqualTo(expected[i].Name));
         }
     }
 }

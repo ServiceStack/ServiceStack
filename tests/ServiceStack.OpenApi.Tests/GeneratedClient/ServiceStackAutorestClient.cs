@@ -46,6 +46,16 @@ namespace AutorestClient
         public virtual IReturnKeyValuePairRequest ReturnKeyValuePairRequest { get; private set; }
 
         /// <summary>
+        /// Gets the IReturnDictionaryStringRequest.
+        /// </summary>
+        public virtual IReturnDictionaryStringRequest ReturnDictionaryStringRequest { get; private set; }
+
+        /// <summary>
+        /// Gets the IReturnDictionaryDtoRequest.
+        /// </summary>
+        public virtual IReturnDictionaryDtoRequest ReturnDictionaryDtoRequest { get; private set; }
+
+        /// <summary>
         /// Gets the IHelloOperations.
         /// </summary>
         public virtual IHelloOperations Hello { get; private set; }
@@ -212,6 +222,8 @@ namespace AutorestClient
             ReturnListRequest = new ReturnListRequest(this);
             ReturnArrayRequest = new ReturnArrayRequest(this);
             ReturnKeyValuePairRequest = new ReturnKeyValuePairRequest(this);
+            ReturnDictionaryStringRequest = new ReturnDictionaryStringRequest(this);
+            ReturnDictionaryDtoRequest = new ReturnDictionaryDtoRequest(this);
             Hello = new HelloOperations(this);
             HelloList = new HelloListOperations(this);
             HelloArray = new HelloArrayOperations(this);

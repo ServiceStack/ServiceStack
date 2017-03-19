@@ -26,8 +26,8 @@ namespace ServiceStack.OpenApi.Tests
             HelloAllTypes helloAllTypes = new HelloAllTypes()
             {
                 Name = "Hello",
-                AllTypes = MakeDtoHelper.GetAllTypes(),
-                AllCollectionTypes = MakeDtoHelper.GetAllCollectionTypes()
+                AllTypes = DtoHelper.GetAllTypes(),
+                AllCollectionTypes = DtoHelper.GetAllCollectionTypes()
             };
             
             var result = client.HelloAllTypes.Post("123", null, null, helloAllTypes);
@@ -41,15 +41,15 @@ namespace ServiceStack.OpenApi.Tests
             var dto = new HelloAllTypesWithResult()
             {
                 Name = "Hello",
-                AllTypes = MakeDtoHelper.GetAllTypes(),
-                AllCollectionTypes = MakeDtoHelper.GetAllCollectionTypes()
+                AllTypes = DtoHelper.GetAllTypes(),
+                AllCollectionTypes = DtoHelper.GetAllCollectionTypes()
             };
 
             var result = client.HelloAllTypesWithResult.Post(body: dto);
 
             Assert.That(result.Result, Is.EqualTo(dto.Name));
-            MakeDtoHelper.AssertAllTypes(result.AllTypes, dto.AllTypes);
-            MakeDtoHelper.AssertAllCollectionTypes(result.AllCollectionTypes, dto.AllCollectionTypes);
+            DtoHelper.AssertAllTypes(result.AllTypes, dto.AllTypes);
+            DtoHelper.AssertAllCollectionTypes(result.AllCollectionTypes, dto.AllCollectionTypes);
             
         }
     }

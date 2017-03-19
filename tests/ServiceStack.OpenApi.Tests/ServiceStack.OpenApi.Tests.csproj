@@ -76,7 +76,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArraysTests.cs" />
+    <Compile Include="ReturnTypeTests.cs" />
+    <Compile Include="DtoHelper.cs" />
     <Compile Include="GeneratedClient\AllowedAttributesOperations.cs" />
     <Compile Include="GeneratedClient\AllowedAttributesOperationsExtensions.cs" />
     <Compile Include="GeneratedClient\AssignRolesOperations.cs" />
@@ -123,6 +124,8 @@
     <Compile Include="GeneratedClient\IHelloWithRouteOperations.cs" />
     <Compile Include="GeneratedClient\IHelloZipOperations.cs" />
     <Compile Include="GeneratedClient\IReturnArrayRequest.cs" />
+    <Compile Include="GeneratedClient\IReturnDictionaryDtoRequest.cs" />
+    <Compile Include="GeneratedClient\IReturnDictionaryStringRequest.cs" />
     <Compile Include="GeneratedClient\IReturnKeyValuePairRequest.cs" />
     <Compile Include="GeneratedClient\IReturnListRequest.cs" />
     <Compile Include="GeneratedClient\IServiceStackAutorestClient.cs" />
@@ -177,6 +180,10 @@
     <Compile Include="GeneratedClient\Models\UpdateSession.cs" />
     <Compile Include="GeneratedClient\ReturnArrayRequest.cs" />
     <Compile Include="GeneratedClient\ReturnArrayRequestExtensions.cs" />
+    <Compile Include="GeneratedClient\ReturnDictionaryDtoRequest.cs" />
+    <Compile Include="GeneratedClient\ReturnDictionaryDtoRequestExtensions.cs" />
+    <Compile Include="GeneratedClient\ReturnDictionaryStringRequest.cs" />
+    <Compile Include="GeneratedClient\ReturnDictionaryStringRequestExtensions.cs" />
     <Compile Include="GeneratedClient\ReturnKeyValuePairRequest.cs" />
     <Compile Include="GeneratedClient\ReturnKeyValuePairRequestExtensions.cs" />
     <Compile Include="GeneratedClient\ReturnListRequest.cs" />
@@ -186,7 +193,6 @@
     <Compile Include="GeneratedClient\UnAssignRolesOperationsExtensions.cs" />
     <Compile Include="GeneratedClient\UpdateSessionOperations.cs" />
     <Compile Include="GeneratedClient\UpdateSessionOperationsExtensions.cs" />
-    <Compile Include="MakeDtoHelper.cs" />
     <Compile Include="Services\AllTypes.cs" />
     <Compile Include="AllTypesTests.cs" />
     <Compile Include="Services\CodeGenTestTypes.cs" />
@@ -194,7 +200,7 @@
     <Compile Include="Host\GeneratedClientTestBase.cs" />
     <Compile Include="Services\NativeTypesTestService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\ReturnGenericListServices.cs" />
+    <Compile Include="Services\ReturnTypeServices.cs" />
     <Compile Include="Services\SessionService.cs" />
   </ItemGroup>
   <ItemGroup>
