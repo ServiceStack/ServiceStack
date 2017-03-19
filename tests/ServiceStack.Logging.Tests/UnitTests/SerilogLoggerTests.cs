@@ -64,16 +64,17 @@ namespace ServiceStack.Logging.Tests.UnitTests
 
             var messageTemplate = "Testing adding {prop2} props";
             log.ForContext("prop", "value").InfoFormat(messageTemplate, "awesome");
+            Log.CloseAndFlush();
 
             var result = dummySink.Events.SingleOrDefault();
 
             Assert.NotNull(result);
             Assert.AreEqual(LogEventLevel.Information, result.Level);
-            Assert.AreEqual(messageTemplate, result.MessageTemplate);
+            Assert.AreEqual(messageTemplate, result.MessageTemplate.Text);
             Assert.True(result.Properties.ContainsKey("prop"));
-            Assert.AreEqual("value", result.Properties["prop"]);
+            Assert.AreEqual("\"value\"", result.Properties["prop"].ToString());
             Assert.True(result.Properties.ContainsKey("prop2"));
-            Assert.AreEqual("awesome", result.Properties["prop2"]);
+            Assert.AreEqual("\"awesome\"", result.Properties["prop2"].ToString());
         }
 
 
@@ -86,6 +87,6 @@ namespace ServiceStack.Logging.Tests.UnitTests
             Events.Add(logEvent);
         }
 
-        public List<LogEvent> Events { get; }
+        public List<LogEvent> Events { get; } = new List<LogEvent>();
     }
 }
