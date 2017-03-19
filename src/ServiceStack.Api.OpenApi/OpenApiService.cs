@@ -664,57 +664,11 @@ namespace ServiceStack.Api.OpenApi
                         : "query";
 
 
-                var parameter = new OpenApiParameter
-                {
-                    Type = GetSwaggerTypeName(property.PropertyType),
-                    Format = GetSwaggerTypeFormat(property.PropertyType, route, verb),
-                    //AllowMultiple = false,
-                    Description = property.PropertyType.GetDescription(),
-                    Name = propertyName,
-                    In = paramType,
-                    Required = paramType == "path",
-                    Enum = GetEnumValues(allowableValuesAttrs.FirstOrDefault()),
-                    Nullable = IsRequiredType(property.PropertyType) ? false : (bool?)null
-                };
-
-                if (!IsSwaggerScalarType(property.PropertyType) && !IsListType(property.PropertyType))
-                {
-                    parameter.Type = null;
-                    parameter.Format = null;
-                    parameter.Schema = new OpenApiSchema() { Ref = "#/definitions/" + GetModelTypeName(property.PropertyType) };
-                }
-                else if (IsListType(property.PropertyType))
-                {
-                    parameter = new OpenApiParameter
-                    {
-                        Type = OpenApiType.Array,
-                        CollectionFormat = "multi",
-                        Description = property.PropertyType.GetDescription(),
-                        Name = propertyName,
-                        In = paramType,
-                        Required = paramType == "path"
-                    };
-
-                    var listItemType = GetListElementType(property.PropertyType);
-                    if (IsSwaggerScalarType(listItemType))
-                    {
-                        parameter.Items = new Dictionary<string, object>
-                        {
-                            { "type", GetSwaggerTypeName(listItemType) },
-                            { "format", GetSwaggerTypeFormat(listItemType, route, verb) }
-                        };
-                        if (IsRequiredType(listItemType))
-                        {
-                            parameter.Items.Add("x-nullable", false);
-                        }
-                    }
-                    else
-                    {
-                        parameter.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetModelTypeName(listItemType) } };
-                    }
-                    ParseDefinitions(models, listItemType, route, verb);
-                }
-
+                var parameter = GetParameter(models, property.PropertyType,
+                    route, verb,
+                    propertyName, paramType,
+                    allowableValuesAttrs.FirstOrDefault());
+                    
                 defaultOperationParameters.Add(parameter);
             }
 
@@ -754,44 +708,7 @@ namespace ServiceStack.Api.OpenApi
                 {
                     ParseDefinitions(models, operationType, route, verb);
 
-                    var parameter = new OpenApiParameter
-                    {
-                        In = "body",
-                        Name = "body",
-                        Type = GetSwaggerTypeName(operationType),
-                        Format = GetSwaggerTypeFormat(operationType, route, verb)
-                    };
-
-                    var dictSchema = GetDictionaryModel(models, operationType, route, verb);
-                    if (dictSchema != null)
-                    {
-                        parameter.Type = parameter.Format = null;
-                        parameter.Schema = dictSchema;
-                    } else if (!IsSwaggerScalarType(operationType) && !IsListType(operationType))
-                    {
-                        parameter.Type = parameter.Format = null;
-                        parameter.Schema = new OpenApiSchema() { Ref = "#/definitions/" + GetModelTypeName(operationType) };
-                    } else if (IsListType(operationType))
-                    {
-                        parameter.Type = OpenApiType.Array;
-                        parameter.Format = null;
-                        parameter.CollectionFormat = "multi";
-
-                        var listItemType = GetListElementType(operationType);
-                        if (IsSwaggerScalarType(listItemType))
-                        {
-                            parameter.Items = new Dictionary<string, object>
-                            {
-                                { "type", GetSwaggerTypeName(listItemType) },
-                                { "format", GetSwaggerTypeFormat(listItemType, route, verb) }
-                            };
-                        }
-                        else
-                        {
-                            parameter.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetModelTypeName(listItemType) } };
-                        }
-                        ParseDefinitions(models, listItemType, route, verb);
-                    }
+                    OpenApiParameter parameter = GetParameter(models, operationType, route, verb, "body", "body");
 
                     methodOperationParameters.Add(parameter);
                 }
@@ -799,7 +716,87 @@ namespace ServiceStack.Api.OpenApi
 
             return methodOperationParameters;
         }
-        
+
+        private OpenApiParameter GetParameter(IDictionary<string, OpenApiSchema> models, Type modelType, string route, string verb, string paramName, string paramIn, ApiAllowableValuesAttribute allowableValueAttrs = null)
+        {
+            OpenApiParameter parameter;
+
+            if (IsDictionaryType(modelType))
+            {
+                parameter = new OpenApiParameter
+                {
+                    In = paramIn,
+                    Name = paramName,
+                    Schema = GetDictionaryModel(models, modelType, route, verb)
+                };
+            }
+            else if (IsListType(modelType))
+            {
+                parameter = GetListParameter(models, modelType, route, verb, paramName, paramIn);
+            }
+            else if (IsSwaggerScalarType(modelType))
+            {
+                parameter = new OpenApiParameter
+                {
+                    In = paramIn,
+                    Name = paramName,
+                    Type = GetSwaggerTypeName(modelType),
+                    Format = GetSwaggerTypeFormat(modelType, route, verb),
+                    Enum = GetEnumValues(allowableValueAttrs),
+                    Nullable = IsRequiredType(modelType) ? false : (bool?)null
+                };
+            }
+            else
+            {
+                parameter = new OpenApiParameter
+                {
+                    In = paramIn,
+                    Name = paramName,
+                    Schema = new OpenApiSchema() { Ref = "#/definitions/" + GetModelTypeName(modelType) }
+                };
+            }
+
+            return parameter;
+        }
+
+        private OpenApiParameter GetListParameter(IDictionary<string, OpenApiSchema> models, Type listType, string route, string verb, string paramName, string paramIn)
+        {
+            if (!IsListType(listType))
+                return null;
+
+            var parameter = new OpenApiParameter
+            {
+                Type = OpenApiType.Array,
+                CollectionFormat = "multi",
+                Description = listType.GetDescription(),
+                Name = paramName,
+                In = paramIn,
+                Required = paramIn == "path"
+            };
+
+            var listItemType = GetListElementType(listType);
+            if (IsSwaggerScalarType(listItemType))
+            {
+                parameter.Items = new Dictionary<string, object>
+                        {
+                            { "type", GetSwaggerTypeName(listItemType) },
+                            { "format", GetSwaggerTypeFormat(listItemType, route, verb) }
+                        };
+                if (IsRequiredType(listItemType))
+                {
+                    parameter.Items.Add("x-nullable", false);
+                }
+            }
+            else
+            {
+                parameter.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetModelTypeName(listItemType) } };
+            }
+
+            ParseDefinitions(models, listItemType, route, verb);
+
+            return parameter;
+        }
+
         private OpenApiParameter GetFormatJsonParameter()
         {
             return new OpenApiParameter()
