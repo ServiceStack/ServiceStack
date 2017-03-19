@@ -127,6 +127,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response, Is.EquivalentTo("foo".ToUtf8Bytes()));
         }
 
+#if !NETCORE //No AutomaticDecompression
         [Test]
         public void Does_compress_file_returned_in_HttpResult()
         {
@@ -180,5 +181,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var bytes = zipBytes.DecompressBytes("deflate");
             Assert.That(bytes.FromUtf8Bytes(), Is.EqualTo("<body>foo</body>"));
         }
+#endif
     }
 }
