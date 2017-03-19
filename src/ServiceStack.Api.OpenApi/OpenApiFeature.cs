@@ -14,9 +14,9 @@ namespace ServiceStack.Api.OpenApi
         /// </summary>
         public string ResourceFilterPattern { get; set; }
 
-        public bool UseCamelCaseModelPropertyNames { get; set; }
+        public bool UseCamelCaseSchemaPropertyNames { get; set; }
 
-        public bool UseLowercaseUnderscoreModelPropertyNames { get; set; }
+        public bool UseLowercaseUnderscoreSchemaPropertyNames { get; set; }
 
         public bool DisableAutoDtoInBodyParam { get; set; }
 
@@ -31,9 +31,9 @@ namespace ServiceStack.Api.OpenApi
         /// </summary>
         public Action<string, OpenApiOperation> OperationFilter { get; set; }
 
-        public Action<OpenApiSchema> ModelFilter { get; set; }
+        public Action<OpenApiSchema> SchemaFilter { get; set; }
 
-        public Action<OpenApiProperty> ModelPropertyFilter { get; set; }
+        public Action<OpenApiProperty> SchemaPropertyFilter { get; set; }
         
         public Dictionary<string, string> RouteSummary { get; set; }
 
@@ -53,13 +53,13 @@ namespace ServiceStack.Api.OpenApi
             if (ResourceFilterPattern != null)
                 OpenApiService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
 
-            OpenApiService.UseCamelCaseModelPropertyNames = UseCamelCaseModelPropertyNames;
-            OpenApiService.UseLowercaseUnderscoreModelPropertyNames = UseLowercaseUnderscoreModelPropertyNames;
+            OpenApiService.UseCamelCaseSchemaPropertyNames = UseCamelCaseSchemaPropertyNames;
+            OpenApiService.UseLowercaseUnderscoreSchemaPropertyNames = UseLowercaseUnderscoreSchemaPropertyNames;
             OpenApiService.DisableAutoDtoInBodyParam = DisableAutoDtoInBodyParam;
             OpenApiService.ApiDeclarationFilter = ApiDeclarationFilter;
             OpenApiService.OperationFilter = OperationFilter;
-            OpenApiService.ModelFilter = ModelFilter;
-            OpenApiService.ModelPropertyFilter = ModelPropertyFilter;
+            OpenApiService.SchemaFilter = SchemaFilter;
+            OpenApiService.SchemaPropertyFilter = SchemaPropertyFilter;
 
             appHost.RegisterService(typeof(OpenApiService), new[] { "/openapi" });
 

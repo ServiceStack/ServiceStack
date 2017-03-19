@@ -27,16 +27,16 @@ namespace ServiceStack.Api.OpenApi
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class OpenApiService : Service
     {
-        internal static bool UseCamelCaseModelPropertyNames { get; set; }
-        internal static bool UseLowercaseUnderscoreModelPropertyNames { get; set; }
+        internal static bool UseCamelCaseSchemaPropertyNames { get; set; }
+        internal static bool UseLowercaseUnderscoreSchemaPropertyNames { get; set; }
         internal static bool DisableAutoDtoInBodyParam { get; set; }
 
         internal static Regex resourceFilterRegex;
 
         internal static Action<OpenApiDeclaration> ApiDeclarationFilter { get; set; }
         internal static Action<string, OpenApiOperation> OperationFilter { get; set; }
-        internal static Action<OpenApiSchema> ModelFilter { get; set; }
-        internal static Action<OpenApiProperty> ModelPropertyFilter { get; set; }
+        internal static Action<OpenApiSchema> SchemaFilter { get; set; }
+        internal static Action<OpenApiProperty> SchemaPropertyFilter { get; set; }
 
         public object Get(Swagger2Resources request)
         {
@@ -162,7 +162,7 @@ namespace ServiceStack.Api.OpenApi
 
             return ClrTypesToSwaggerScalarTypes.ContainsKey(lookupType)
                 ? ClrTypesToSwaggerScalarTypes[lookupType]
-                : GetModelTypeName(lookupType);
+                : GetSchemaTypeName(lookupType);
         }
 
         private static string GetSwaggerTypeFormat(Type type, string route = null, string verb = null)
@@ -217,20 +217,20 @@ namespace ServiceStack.Api.OpenApi
             return false;
         }
 
-        private OpenApiSchema GetDictionaryModel(IDictionary<string, OpenApiSchema> models, Type modelType, string route, string verb)
+        private OpenApiSchema GetDictionarySchema(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
         {
-            if (!IsDictionaryType(modelType))
+            if (!IsDictionaryType(schemaType))
                 return null;
 
-            var valueType = modelType.GetTypeGenericArguments()[1];
+            var valueType = schemaType.GetTypeGenericArguments()[1];
 
-            ParseDefinitions(models, valueType, route, verb);
+            ParseDefinitions(schemas, valueType, route, verb);
 
             return new OpenApiSchema()
             {
                 Type = OpenApiType.Object,
-                Description = modelType.GetDescription() ?? GetModelTypeName(modelType),
-                AdditionalProperties = GetSwaggerProperty(models, valueType, route, verb)
+                Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
+                AdditionalProperties = GetOpenApiProperty(schemas, valueType, route, verb)
             };
         }
 
@@ -239,22 +239,22 @@ namespace ServiceStack.Api.OpenApi
             return type.IsGenericType() && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
         }
 
-        private OpenApiSchema GetKeyValuePairModel(IDictionary<string, OpenApiSchema> models, Type modelType, string route, string verb)
+        private OpenApiSchema GetKeyValuePairSchema(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
         {
-            if (!IsKeyValuePairType(modelType))
+            if (!IsKeyValuePairType(schemaType))
                 return null;
 
-            var keyType = modelType.GetTypeGenericArguments()[0];
-            var valueType = modelType.GetTypeGenericArguments()[1];
+            var keyType = schemaType.GetTypeGenericArguments()[0];
+            var valueType = schemaType.GetTypeGenericArguments()[1];
 
             return new OpenApiSchema()
             {
                 Type = OpenApiType.Object,
-                Description = modelType.GetDescription() ?? GetModelTypeName(modelType),
+                Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
                 Properties = new OrderedDictionary<string, OpenApiProperty>()
                 {
-                    { "Key", GetSwaggerProperty(models, keyType, route, verb) },
-                    { "Value", GetSwaggerProperty(models, valueType, route, verb) }
+                    { "Key", GetOpenApiProperty(schemas, keyType, route, verb) },
+                    { "Value", GetOpenApiProperty(schemas, valueType, route, verb) }
                 }
             };
         }
@@ -264,49 +264,49 @@ namespace ServiceStack.Api.OpenApi
             return !type.IsNullableType() && type != typeof(string);
         }
 
-        private static string GetModelTypeName(Type modelType)
+        private static string GetSchemaTypeName(Type schemaType)
 		{
-		    if ((!IsKeyValuePairType(modelType) && modelType.IsValueType()) || modelType.IsNullableType())
+		    if ((!IsKeyValuePairType(schemaType) && schemaType.IsValueType()) || schemaType.IsNullableType())
 		        return OpenApiType.String;
 
-		    if (!modelType.IsGenericType())
-		        return modelType.Name;
+		    if (!schemaType.IsGenericType())
+		        return schemaType.Name;
 
-            var typeName = modelType.ToPrettyName();
+            var typeName = schemaType.ToPrettyName();
 		    return typeName;
 		}
 
-        private OpenApiProperty GetSwaggerProperty(IDictionary<string, OpenApiSchema> models, Type propertyType, string route, string verb)
+        private OpenApiProperty GetOpenApiProperty(IDictionary<string, OpenApiSchema> schemas, Type propertyType, string route, string verb)
         {
-            var modelProp = new OpenApiProperty();
+            var schemaProp = new OpenApiProperty();
 
             if (IsKeyValuePairType(propertyType))
             {
-                ParseDefinitions(models, propertyType, route, verb);
-                modelProp.Ref = "#/definitions/" + GetModelTypeName(propertyType);
+                ParseDefinitions(schemas, propertyType, route, verb);
+                schemaProp.Ref = "#/definitions/" + GetSchemaTypeName(propertyType);
             }
             else if (IsListType(propertyType))
             {
-                modelProp.Type = OpenApiType.Array;
+                schemaProp.Type = OpenApiType.Array;
                 var listItemType = GetListElementType(propertyType);
                 if (IsSwaggerScalarType(listItemType))
                 {
-                    modelProp.Items = new Dictionary<string, object>
+                    schemaProp.Items = new Dictionary<string, object>
                         {
                             { "type", GetSwaggerTypeName(listItemType) },
                             { "format", GetSwaggerTypeFormat(listItemType, route, verb) }
                         };
                     if (IsRequiredType(listItemType))
                     {
-                        modelProp.Items.Add("x-nullable", false);
-                        //modelProp.Items.Add("required", "true");
+                        schemaProp.Items.Add("x-nullable", false);
+                        //schemaProp.Items.Add("required", "true");
                     }
                 }
                 else
                 {
-                    modelProp.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetModelTypeName(listItemType) } };
+                    schemaProp.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetSchemaTypeName(listItemType) } };
                 }
-                ParseDefinitions(models, listItemType, route, verb);
+                ParseDefinitions(schemas, listItemType, route, verb);
             }
             else if ((Nullable.GetUnderlyingType(propertyType) ?? propertyType).IsEnum())
             {
@@ -314,64 +314,64 @@ namespace ServiceStack.Api.OpenApi
                 if (enumType.IsNumericType())
                 {
                     var underlyingType = Enum.GetUnderlyingType(enumType);
-                    modelProp.Type = GetSwaggerTypeName(underlyingType);
-                    modelProp.Format = GetSwaggerTypeFormat(underlyingType, route, verb);
-                    modelProp.Enum = GetNumericValues(enumType, underlyingType).ToList();
+                    schemaProp.Type = GetSwaggerTypeName(underlyingType);
+                    schemaProp.Format = GetSwaggerTypeFormat(underlyingType, route, verb);
+                    schemaProp.Enum = GetNumericValues(enumType, underlyingType).ToList();
                 }
                 else
                 {
-                    modelProp.Type = OpenApiType.String;
-                    modelProp.Enum = Enum.GetNames(enumType).ToList();
+                    schemaProp.Type = OpenApiType.String;
+                    schemaProp.Enum = Enum.GetNames(enumType).ToList();
                 }
             }
             else if (IsSwaggerScalarType(propertyType))
             {
-                modelProp.Type = GetSwaggerTypeName(propertyType);
-                modelProp.Format = GetSwaggerTypeFormat(propertyType, route, verb);
-                modelProp.Nullable = IsRequiredType(propertyType) ? false: (bool?)null;
-                //modelProp.Required = IsRequiredType(propertyType) ? true : (bool?)null;
+                schemaProp.Type = GetSwaggerTypeName(propertyType);
+                schemaProp.Format = GetSwaggerTypeFormat(propertyType, route, verb);
+                schemaProp.Nullable = IsRequiredType(propertyType) ? false: (bool?)null;
+                //schemaProp.Required = IsRequiredType(propertyType) ? true : (bool?)null;
             }
             else
             {
-                ParseDefinitions(models, propertyType, route, verb);
-                modelProp.Ref = "#/definitions/" + GetModelTypeName(propertyType);
+                ParseDefinitions(schemas, propertyType, route, verb);
+                schemaProp.Ref = "#/definitions/" + GetSchemaTypeName(propertyType);
             }
 
-            return modelProp;
+            return schemaProp;
         }
 
-        private void ParseResponseModel(IDictionary<string, OpenApiSchema> models, Type modelType)
+        private void ParseResponseSchema(IDictionary<string, OpenApiSchema> schemas, Type schemaType)
         {
-            ParseDefinitions(models, modelType, null, null);
+            ParseDefinitions(schemas, schemaType, null, null);
         }
 
-        private void ParseDefinitions(IDictionary<string, OpenApiSchema> models, Type modelType, string route, string verb)
+        private void ParseDefinitions(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
         {
-            if (IsSwaggerScalarType(modelType) || modelType.ExcludesFeature(Feature.Metadata)) return;
+            if (IsSwaggerScalarType(schemaType) || schemaType.ExcludesFeature(Feature.Metadata)) return;
 
-            var modelId = GetModelTypeName(modelType);
-            if (models.ContainsKey(modelId)) return;
+            var schemaId = GetSchemaTypeName(schemaType);
+            if (schemas.ContainsKey(schemaId)) return;
 
-            var model = GetDictionaryModel(models, modelType, route, verb) 
-                ?? GetKeyValuePairModel(models, modelType, route, verb)
+            var schema = GetDictionarySchema(schemas, schemaType, route, verb) 
+                ?? GetKeyValuePairSchema(schemas, schemaType, route, verb)
                 ?? new OpenApiSchema
                 {   
                     Type = OpenApiType.Object,
-                    Description = modelType.GetDescription() ?? GetModelTypeName(modelType),
+                    Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
                     Properties = new OrderedDictionary<string, OpenApiProperty>()
                 };
 
-            models[modelId] = model;
+            schemas[schemaId] = schema;
 
-            var properties = modelType.GetProperties();
+            var properties = schemaType.GetProperties();
 
-            // Order model properties by DataMember.Order if [DataContract] and [DataMember](s) defined
+            // Order schema properties by DataMember.Order if [DataContract] and [DataMember](s) defined
             // Ordering defined by: http://msdn.microsoft.com/en-us/library/ms729813.aspx
-            var dataContractAttr = modelType.FirstAttribute<DataContractAttribute>();
+            var dataContractAttr = schemaType.FirstAttribute<DataContractAttribute>();
             if (dataContractAttr != null && properties.Any(prop => prop.IsDefined(typeof(DataMemberAttribute), true)))
             {
-                var typeOrder = new List<Type> { modelType };
-                var baseType = modelType.BaseType();
+                var typeOrder = new List<Type> { schemaType };
+                var baseType = schemaType.BaseType();
                 while (baseType != null)
                 {
                     typeOrder.Add(baseType);
@@ -391,7 +391,7 @@ namespace ServiceStack.Api.OpenApi
                     }).ToArray();
             }
 
-            var parseProperties = modelType.IsUserType();
+            var parseProperties = schemaType.IsUserType();
             if (parseProperties)
             {
                 foreach (var prop in properties)
@@ -411,34 +411,34 @@ namespace ServiceStack.Api.OpenApi
                     if (apiMembers.Any(x => x.ExcludeInSchema))
                         continue;
 
-                    var modelProp = GetSwaggerProperty(models, prop.PropertyType, route, verb);
+                    var schemaProp = GetOpenApiProperty(schemas, prop.PropertyType, route, verb);
 
-                    modelProp.Description = prop.GetDescription() ?? apiDoc?.Description;
+                    schemaProp.Description = prop.GetDescription() ?? apiDoc?.Description;
 
                     //TODO: Maybe need to add new attributes for swagger2 'Type' and 'Format' properties
                     //var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
                     //if (propAttr?.DataType != null)
-                    //    modelProp.Format = propAttr.DataType;     //modelProp.Type = propAttr.DataType;
+                    //    schemaProp.Format = propAttr.DataType;     //schemaProp.Type = propAttr.DataType;
 
                     var allowableValues = prop.FirstAttribute<ApiAllowableValuesAttribute>();
                     if (allowableValues != null)
-                        modelProp.Enum = GetEnumValues(allowableValues);
+                        schemaProp.Enum = GetEnumValues(allowableValues);
 
-                    ModelPropertyFilter?.Invoke(modelProp);
+                    SchemaPropertyFilter?.Invoke(schemaProp);
 
-                    model.Properties[GetModelPropertyName(prop)] = modelProp;
+                    schema.Properties[GetSchemaPropertyName(prop)] = schemaProp;
                 }
             }
         }
 
-        private static string GetModelPropertyName(PropertyInfo prop)
+        private static string GetSchemaPropertyName(PropertyInfo prop)
         {
             var dataMemberAttr = prop.FirstAttribute<DataMemberAttribute>();
             if (dataMemberAttr != null && !dataMemberAttr.Name.IsNullOrEmpty()) 
                 return dataMemberAttr.Name;
             
-            return UseCamelCaseModelPropertyNames
-                ? (UseLowercaseUnderscoreModelPropertyNames ? prop.Name.ToLowercaseUnderscore() : prop.Name.ToCamelCase())
+            return UseCamelCaseSchemaPropertyNames
+                ? (UseLowercaseUnderscoreSchemaPropertyNames ? prop.Name.ToLowercaseUnderscore() : prop.Name.ToCamelCase())
                 : prop.Name;
         }
 
@@ -450,7 +450,7 @@ namespace ServiceStack.Api.OpenApi
             return values;
         }
 
-        private OpenApiSchema GetResponseSchema(IRestPath restPath, IDictionary<string, OpenApiSchema> models)
+        private OpenApiSchema GetResponseSchema(IRestPath restPath, IDictionary<string, OpenApiSchema> schemas)
         {
             // Given: class MyDto : IReturn<X>. Determine the type X.
             foreach (var i in restPath.RequestType.GetInterfaces())
@@ -458,7 +458,7 @@ namespace ServiceStack.Api.OpenApi
                 if (i.IsGenericType() && i.GetGenericTypeDefinition() == typeof(IReturn<>))
                 {
                     var returnType = i.GetGenericArguments()[0];
-                    ParseResponseModel(models, returnType);
+                    ParseResponseSchema(schemas, returnType);
 
                     if (IsSwaggerScalarType(returnType))
                     {
@@ -472,9 +472,7 @@ namespace ServiceStack.Api.OpenApi
                     // Handle IReturn<Dictionary<string, SomeClass>> or IReturn<IDictionary<string,SomeClass>>
                     if (IsDictionaryType(returnType))
                     {
-                        var schema = GetDictionaryModel(models, returnType, null, null);
-                        if (schema != null)
-                            return schema;
+                        return GetDictionarySchema(schemas, returnType, null, null);
                     }
 
                     // Handle IReturn<List<SomeClass>> or IReturn<SomeClass[]>
@@ -485,7 +483,7 @@ namespace ServiceStack.Api.OpenApi
                             Type = SwaggerType.Array,
                         };
                         var listItemType = GetListElementType(returnType);
-                        ParseResponseModel(models, listItemType);
+                        ParseResponseSchema(schemas, listItemType);
                         if (IsSwaggerScalarType(listItemType))
                         {
                             schema.Items = new Dictionary<string, object>
@@ -497,7 +495,7 @@ namespace ServiceStack.Api.OpenApi
                         }
                         else
                         {
-                            schema.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetModelTypeName(listItemType) } };
+                            schema.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetSchemaTypeName(listItemType) } };
                         }
 
                         return schema;
@@ -505,7 +503,7 @@ namespace ServiceStack.Api.OpenApi
 
                     return new OpenApiSchema()
                     {
-                        Ref = "#/definitions/" + GetModelTypeName(returnType)
+                        Ref = "#/definitions/" + GetSchemaTypeName(returnType)
                     };
                 }
             }
@@ -513,11 +511,11 @@ namespace ServiceStack.Api.OpenApi
             return new OpenApiSchema() { Ref = "#/definitions/Object" };
         }
 
-        private OrderedDictionary<string, OpenApiResponse> GetMethodResponseCodes(IRestPath restPath, IDictionary<string, OpenApiSchema> models, Type requestType)
+        private OrderedDictionary<string, OpenApiResponse> GetMethodResponseCodes(IRestPath restPath, IDictionary<string, OpenApiSchema> schemas, Type requestType)
         {
             var responses = new OrderedDictionary<string, OpenApiResponse>();
 
-            var responseSchema = GetResponseSchema(restPath, models);
+            var responseSchema = GetResponseSchema(restPath, schemas);
 
             responses.Add("default", new OpenApiResponse()
             {
@@ -536,7 +534,7 @@ namespace ServiceStack.Api.OpenApi
             return responses;
         }
 
-        private OrderedDictionary<string, OpenApiPath> ParseOperations(List<RestPath> restPaths, Dictionary<string, OpenApiSchema> models, List<OpenApiTag> tags)
+        private OrderedDictionary<string, OpenApiPath> ParseOperations(List<RestPath> restPaths, Dictionary<string, OpenApiSchema> schemas, List<OpenApiTag> tags)
         {
             var apiPaths = new OrderedDictionary<string, OpenApiPath>();
 
@@ -547,7 +545,7 @@ namespace ServiceStack.Api.OpenApi
                 var notes = restPath.Notes;
 
                 verbs.AddRange(restPath.AllowsAllVerbs
-                    ? new[] { "GET", "POST", "PUT", "DELETE" }
+                    ? new[] { "GET", "POST", "PUT", "PATCH", "DELETE" }
                     : restPath.AllowedVerbs.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
 
                 var routePath = restPath.Path.Replace("*", "");
@@ -573,8 +571,8 @@ namespace ServiceStack.Api.OpenApi
                         Summary = summary,
                         Description = summary,
                         OperationId = requestType.Name + GetOperationNamePostfix(verb),
-                        Parameters = ParseParameters(verb, requestType, models, routePath),
-                        Responses = GetMethodResponseCodes(restPath, models, requestType),
+                        Parameters = ParseParameters(schemas, requestType, verb, routePath),
+                        Responses = GetMethodResponseCodes(restPath, schemas, requestType),
                         Consumes = new List<string>() { "application/json" },
                         Produces = new List<string>() { "application/json" },
                         Tags = new List<string>() { restPath.Path }
@@ -621,7 +619,7 @@ namespace ServiceStack.Api.OpenApi
             return attr != null && attr.Values != null ? attr.Values.ToList() : null;
         }
         
-        private List<OpenApiParameter> ParseParameters(string verb, Type operationType, IDictionary<string, OpenApiSchema> models, string route)
+        private List<OpenApiParameter> ParseParameters(IDictionary<string, OpenApiSchema> schemas, Type operationType, string route, string verb)
         {
             var hasDataContract = operationType.HasAttribute<DataContractAttribute>();
 
@@ -664,7 +662,7 @@ namespace ServiceStack.Api.OpenApi
                         : "query";
 
 
-                var parameter = GetParameter(models, property.PropertyType,
+                var parameter = GetParameter(schemas, property.PropertyType,
                     route, verb,
                     propertyName, paramType,
                     allowableValuesAttrs.FirstOrDefault());
@@ -706,9 +704,9 @@ namespace ServiceStack.Api.OpenApi
                 if (!HttpMethods.Get.EqualsIgnoreCase(verb) && !HttpMethods.Delete.EqualsIgnoreCase(verb)
                     && !methodOperationParameters.Any(p => "body".EqualsIgnoreCase(p.In)))
                 {
-                    ParseDefinitions(models, operationType, route, verb);
+                    ParseDefinitions(schemas, operationType, route, verb);
 
-                    OpenApiParameter parameter = GetParameter(models, operationType, route, verb, "body", "body");
+                    OpenApiParameter parameter = GetParameter(schemas, operationType, route, verb, "body", "body");
 
                     methodOperationParameters.Add(parameter);
                 }
@@ -717,33 +715,33 @@ namespace ServiceStack.Api.OpenApi
             return methodOperationParameters;
         }
 
-        private OpenApiParameter GetParameter(IDictionary<string, OpenApiSchema> models, Type modelType, string route, string verb, string paramName, string paramIn, ApiAllowableValuesAttribute allowableValueAttrs = null)
+        private OpenApiParameter GetParameter(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb, string paramName, string paramIn, ApiAllowableValuesAttribute allowableValueAttrs = null)
         {
             OpenApiParameter parameter;
 
-            if (IsDictionaryType(modelType))
+            if (IsDictionaryType(schemaType))
             {
                 parameter = new OpenApiParameter
                 {
                     In = paramIn,
                     Name = paramName,
-                    Schema = GetDictionaryModel(models, modelType, route, verb)
+                    Schema = GetDictionarySchema(schemas, schemaType, route, verb)
                 };
             }
-            else if (IsListType(modelType))
+            else if (IsListType(schemaType))
             {
-                parameter = GetListParameter(models, modelType, route, verb, paramName, paramIn);
+                parameter = GetListParameter(schemas, schemaType, route, verb, paramName, paramIn);
             }
-            else if (IsSwaggerScalarType(modelType))
+            else if (IsSwaggerScalarType(schemaType))
             {
                 parameter = new OpenApiParameter
                 {
                     In = paramIn,
                     Name = paramName,
-                    Type = GetSwaggerTypeName(modelType),
-                    Format = GetSwaggerTypeFormat(modelType, route, verb),
+                    Type = GetSwaggerTypeName(schemaType),
+                    Format = GetSwaggerTypeFormat(schemaType, route, verb),
                     Enum = GetEnumValues(allowableValueAttrs),
-                    Nullable = IsRequiredType(modelType) ? false : (bool?)null
+                    Nullable = IsRequiredType(schemaType) ? false : (bool?)null
                 };
             }
             else
@@ -752,14 +750,14 @@ namespace ServiceStack.Api.OpenApi
                 {
                     In = paramIn,
                     Name = paramName,
-                    Schema = new OpenApiSchema() { Ref = "#/definitions/" + GetModelTypeName(modelType) }
+                    Schema = new OpenApiSchema() { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) }
                 };
             }
 
             return parameter;
         }
 
-        private OpenApiParameter GetListParameter(IDictionary<string, OpenApiSchema> models, Type listType, string route, string verb, string paramName, string paramIn)
+        private OpenApiParameter GetListParameter(IDictionary<string, OpenApiSchema> schemas, Type listType, string route, string verb, string paramName, string paramIn)
         {
             if (!IsListType(listType))
                 return null;
@@ -789,10 +787,10 @@ namespace ServiceStack.Api.OpenApi
             }
             else
             {
-                parameter.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetModelTypeName(listItemType) } };
+                parameter.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetSchemaTypeName(listItemType) } };
             }
 
-            ParseDefinitions(models, listItemType, route, verb);
+            ParseDefinitions(schemas, listItemType, route, verb);
 
             return parameter;
         }
