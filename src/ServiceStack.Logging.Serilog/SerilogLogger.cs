@@ -272,24 +272,11 @@ namespace ServiceStack.Logging.Serilog
                 Write(LogEventLevel.Warning, format, args);
         }
 
-        /// <summary>
-        /// Create a logger that enriches log events with the specified property.
-        /// </summary>
-        /// <param name="propertyName">The name of the property. Must be non-empty.</param>
-        /// <param name="value">The property value.</param>
-        /// <param name="destructureObjects">If true, the value will be serialized as a structured
-        /// object if possible; if false, the object will be recorded as a scalar or simple array.</param>
-        /// <returns>A logger that will enrich log events as specified.</returns>
         internal ILog ForContext(string propertyName, object value, bool destructureObjects = false)
         {
             return new SerilogLogger(_log.ForContext(propertyName, value, destructureObjects));;
         }
 
-        /// <summary>
-        /// Create a logger that enriches log events via the provided enrichers.
-        /// </summary>
-        /// <param name="enricher">Enricher that applies in the context.</param>
-        /// <returns>A logger that will enrich log events as specified.</returns>
         internal ILog ForContext(ILogEventEnricher enricher)
         {
             return new SerilogLogger(_log.ForContext(enricher));
