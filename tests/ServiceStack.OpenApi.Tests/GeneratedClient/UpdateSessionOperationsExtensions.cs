@@ -18,12 +18,14 @@ namespace AutorestClient
             /// </param>
             /// <param name='customName'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static GetSessionResponse Get(this IUpdateSessionOperations operations, string customName, string format = "json")
+            public static GetSessionResponse Get(this IUpdateSessionOperations operations, string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json")
             {
-                return operations.GetAsync(customName, format).GetAwaiter().GetResult();
+                return operations.GetAsync(customName, body, format).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -31,15 +33,17 @@ namespace AutorestClient
             /// </param>
             /// <param name='customName'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<GetSessionResponse> GetAsync(this IUpdateSessionOperations operations, string customName, string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetSessionResponse> GetAsync(this IUpdateSessionOperations operations, string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(customName, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(customName, body, format, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -55,7 +59,7 @@ namespace AutorestClient
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static GetSessionResponse Create(this IUpdateSessionOperations operations, string customName, UpdateSession body = default(UpdateSession), string format = "json")
+            public static GetSessionResponse Create(this IUpdateSessionOperations operations, string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json")
             {
                 return operations.CreateAsync(customName, body, format).GetAwaiter().GetResult();
             }
@@ -73,7 +77,7 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<GetSessionResponse> CreateAsync(this IUpdateSessionOperations operations, string customName, UpdateSession body = default(UpdateSession), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetSessionResponse> CreateAsync(this IUpdateSessionOperations operations, string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.CreateWithHttpMessagesAsync(customName, body, format, null, cancellationToken).ConfigureAwait(false))
                 {
@@ -91,7 +95,7 @@ namespace AutorestClient
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static GetSessionResponse Post(this IUpdateSessionOperations operations, string customName, UpdateSession body = default(UpdateSession), string format = "json")
+            public static GetSessionResponse Post(this IUpdateSessionOperations operations, string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json")
             {
                 return operations.PostAsync(customName, body, format).GetAwaiter().GetResult();
             }
@@ -109,7 +113,7 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<GetSessionResponse> PostAsync(this IUpdateSessionOperations operations, string customName, UpdateSession body = default(UpdateSession), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetSessionResponse> PostAsync(this IUpdateSessionOperations operations, string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.PostWithHttpMessagesAsync(customName, body, format, null, cancellationToken).ConfigureAwait(false))
                 {
@@ -122,12 +126,14 @@ namespace AutorestClient
             /// </param>
             /// <param name='customName'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static GetSessionResponse Delete(this IUpdateSessionOperations operations, string customName, string format = "json")
+            public static GetSessionResponse Delete(this IUpdateSessionOperations operations, string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json")
             {
-                return operations.DeleteAsync(customName, format).GetAwaiter().GetResult();
+                return operations.DeleteAsync(customName, body, format).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -135,15 +141,53 @@ namespace AutorestClient
             /// </param>
             /// <param name='customName'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<GetSessionResponse> DeleteAsync(this IUpdateSessionOperations operations, string customName, string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetSessionResponse> DeleteAsync(this IUpdateSessionOperations operations, string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(customName, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(customName, body, format, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='customName'>
+            /// </param>
+            /// <param name='body'>
+            /// </param>
+            /// <param name='format'>
+            /// Specifies response output format
+            /// </param>
+            public static GetSessionResponse Update(this IUpdateSessionOperations operations, string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json")
+            {
+                return operations.UpdateAsync(customName, body, format).GetAwaiter().GetResult();
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='customName'>
+            /// </param>
+            /// <param name='body'>
+            /// </param>
+            /// <param name='format'>
+            /// Specifies response output format
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<GetSessionResponse> UpdateAsync(this IUpdateSessionOperations operations, string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.UpdateWithHttpMessagesAsync(customName, body, format, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

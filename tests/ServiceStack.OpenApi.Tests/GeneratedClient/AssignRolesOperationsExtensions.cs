@@ -24,12 +24,14 @@ namespace AutorestClient
             /// </param>
             /// <param name='roles'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static AssignRolesResponse Get(this IAssignRolesOperations operations, string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), string format = "json")
+            public static AssignRolesResponse Get(this IAssignRolesOperations operations, string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), AssignRoles body = default(AssignRoles), string format = "json")
             {
-                return operations.GetAsync(userName, permissions, roles, format).GetAwaiter().GetResult();
+                return operations.GetAsync(userName, permissions, roles, body, format).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -41,15 +43,17 @@ namespace AutorestClient
             /// </param>
             /// <param name='roles'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<AssignRolesResponse> GetAsync(this IAssignRolesOperations operations, string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<AssignRolesResponse> GetAsync(this IAssignRolesOperations operations, string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), AssignRoles body = default(AssignRoles), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(userName, permissions, roles, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(userName, permissions, roles, body, format, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -152,12 +156,14 @@ namespace AutorestClient
             /// </param>
             /// <param name='roles'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static AssignRolesResponse Delete(this IAssignRolesOperations operations, string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), string format = "json")
+            public static AssignRolesResponse Delete(this IAssignRolesOperations operations, string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), AssignRoles body = default(AssignRoles), string format = "json")
             {
-                return operations.DeleteAsync(userName, permissions, roles, format).GetAwaiter().GetResult();
+                return operations.DeleteAsync(userName, permissions, roles, body, format).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -169,15 +175,61 @@ namespace AutorestClient
             /// </param>
             /// <param name='roles'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<AssignRolesResponse> DeleteAsync(this IAssignRolesOperations operations, string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<AssignRolesResponse> DeleteAsync(this IAssignRolesOperations operations, string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), AssignRoles body = default(AssignRoles), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(userName, permissions, roles, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(userName, permissions, roles, body, format, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='userName'>
+            /// </param>
+            /// <param name='permissions'>
+            /// </param>
+            /// <param name='roles'>
+            /// </param>
+            /// <param name='body'>
+            /// </param>
+            /// <param name='format'>
+            /// Specifies response output format
+            /// </param>
+            public static AssignRolesResponse Update(this IAssignRolesOperations operations, string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), AssignRoles body = default(AssignRoles), string format = "json")
+            {
+                return operations.UpdateAsync(userName, permissions, roles, body, format).GetAwaiter().GetResult();
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='userName'>
+            /// </param>
+            /// <param name='permissions'>
+            /// </param>
+            /// <param name='roles'>
+            /// </param>
+            /// <param name='body'>
+            /// </param>
+            /// <param name='format'>
+            /// Specifies response output format
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<AssignRolesResponse> UpdateAsync(this IAssignRolesOperations operations, string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), AssignRoles body = default(AssignRoles), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.UpdateWithHttpMessagesAsync(userName, permissions, roles, body, format, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

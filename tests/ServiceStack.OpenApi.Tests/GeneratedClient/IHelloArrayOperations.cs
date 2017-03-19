@@ -18,6 +18,8 @@ namespace AutorestClient
     {
         /// <param name='names'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -30,7 +32,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.HttpOperationException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<IList<ArrayResult>>> GetWithHttpMessagesAsync(IList<string> names = default(IList<string>), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<ArrayResult>>> GetWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='names'>
         /// </param>
         /// <param name='body'>
@@ -67,6 +69,8 @@ namespace AutorestClient
         Task<HttpOperationResponse<IList<ArrayResult>>> PostWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='names'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -79,6 +83,23 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.HttpOperationException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<IList<ArrayResult>>> DeleteWithHttpMessagesAsync(IList<string> names = default(IList<string>), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<ArrayResult>>> DeleteWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='names'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="Microsoft.Rest.HttpOperationException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        Task<HttpOperationResponse<IList<ArrayResult>>> UpdateWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

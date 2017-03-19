@@ -16,6 +16,8 @@ namespace AutorestClient
     /// </summary>
     public partial interface IReturnKeyValuePairRequest
     {
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -25,9 +27,9 @@ namespace AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        /// <exception cref="KeyValuePairStringStringException">
+        /// <exception cref="GetErrorModelException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<KeyValuePairStringString>> GetWithHttpMessagesAsync(string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<GetErrorModel>> GetWithHttpMessagesAsync(object body = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

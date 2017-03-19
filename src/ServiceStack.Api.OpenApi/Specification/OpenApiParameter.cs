@@ -11,8 +11,6 @@ namespace ServiceStack.Api.OpenApi.Specification
         public string In { get; set; }
         [DataMember(Name = "description")]
         public string Description { get; set; }
-        [DataMember(Name = "required")]
-        public bool Required { get; set; }
         [DataMember(Name = "schema")]
         public OpenApiSchema Schema { get; set; }
         [DataMember(Name = "allowEmptyValue")]

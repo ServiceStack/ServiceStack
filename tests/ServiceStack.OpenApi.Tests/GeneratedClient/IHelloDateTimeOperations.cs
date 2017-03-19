@@ -18,6 +18,8 @@ namespace AutorestClient
     {
         /// <param name='dateTime'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -30,7 +32,7 @@ namespace AutorestClient
         /// <exception cref="HelloDateTimeException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloDateTime>> GetWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloDateTime>> GetWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='dateTime'>
         /// </param>
         /// <param name='body'>
@@ -67,6 +69,8 @@ namespace AutorestClient
         Task<HttpOperationResponse<HelloDateTime>> PostWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='dateTime'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -79,6 +83,23 @@ namespace AutorestClient
         /// <exception cref="HelloDateTimeException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloDateTime>> DeleteWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloDateTime>> DeleteWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='dateTime'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="HelloDateTimeException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        Task<HttpOperationResponse<HelloDateTime>> UpdateWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

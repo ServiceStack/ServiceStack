@@ -49,6 +49,8 @@ namespace AutorestClient
         /// </param>
         /// <param name='roles'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -64,7 +66,7 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<UnAssignRolesResponse>> GetWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<UnAssignRolesResponse>> GetWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -76,6 +78,7 @@ namespace AutorestClient
                 tracingParameters.Add("userName", userName);
                 tracingParameters.Add("permissions", permissions);
                 tracingParameters.Add("roles", roles);
+                tracingParameters.Add("body", body);
                 tracingParameters.Add("format", format);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get", tracingParameters);
@@ -146,6 +149,12 @@ namespace AutorestClient
 
             // Serialize Request
             string _requestContent = null;
+            if(body != null)
+            {
+                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
+                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
+                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+            }
             // Send Request
             if (_shouldTrace)
             {
@@ -258,6 +267,38 @@ namespace AutorestClient
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "unassignroles").ToString();
             List<string> _queryParameters = new List<string>();
+            if (userName != null)
+            {
+                _queryParameters.Add(string.Format("UserName={0}", System.Uri.EscapeDataString(userName)));
+            }
+            if (permissions != null)
+            {
+                if (permissions.Count == 0)
+                {
+                    _queryParameters.Add(string.Format("Permissions={0}", System.Uri.EscapeDataString(string.Empty)));
+                }
+                else
+                {
+                    foreach (var _item in permissions)
+                    {
+                        _queryParameters.Add(string.Format("Permissions={0}", System.Uri.EscapeDataString(_item ?? string.Empty)));
+                    }
+                }
+            }
+            if (roles != null)
+            {
+                if (roles.Count == 0)
+                {
+                    _queryParameters.Add(string.Format("Roles={0}", System.Uri.EscapeDataString(string.Empty)));
+                }
+                else
+                {
+                    foreach (var _item in roles)
+                    {
+                        _queryParameters.Add(string.Format("Roles={0}", System.Uri.EscapeDataString(_item ?? string.Empty)));
+                    }
+                }
+            }
             if (format != null)
             {
                 _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
@@ -406,6 +447,38 @@ namespace AutorestClient
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "unassignroles").ToString();
             List<string> _queryParameters = new List<string>();
+            if (userName != null)
+            {
+                _queryParameters.Add(string.Format("UserName={0}", System.Uri.EscapeDataString(userName)));
+            }
+            if (permissions != null)
+            {
+                if (permissions.Count == 0)
+                {
+                    _queryParameters.Add(string.Format("Permissions={0}", System.Uri.EscapeDataString(string.Empty)));
+                }
+                else
+                {
+                    foreach (var _item in permissions)
+                    {
+                        _queryParameters.Add(string.Format("Permissions={0}", System.Uri.EscapeDataString(_item ?? string.Empty)));
+                    }
+                }
+            }
+            if (roles != null)
+            {
+                if (roles.Count == 0)
+                {
+                    _queryParameters.Add(string.Format("Roles={0}", System.Uri.EscapeDataString(string.Empty)));
+                }
+                else
+                {
+                    foreach (var _item in roles)
+                    {
+                        _queryParameters.Add(string.Format("Roles={0}", System.Uri.EscapeDataString(_item ?? string.Empty)));
+                    }
+                }
+            }
             if (format != null)
             {
                 _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
@@ -516,6 +589,8 @@ namespace AutorestClient
         /// </param>
         /// <param name='roles'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -531,7 +606,7 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<UnAssignRolesResponse>> DeleteWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<UnAssignRolesResponse>> DeleteWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -543,6 +618,7 @@ namespace AutorestClient
                 tracingParameters.Add("userName", userName);
                 tracingParameters.Add("permissions", permissions);
                 tracingParameters.Add("roles", roles);
+                tracingParameters.Add("body", body);
                 tracingParameters.Add("format", format);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Delete", tracingParameters);
@@ -613,6 +689,192 @@ namespace AutorestClient
 
             // Serialize Request
             string _requestContent = null;
+            if(body != null)
+            {
+                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
+                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
+                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+            }
+            // Send Request
+            if (_shouldTrace)
+            {
+                ServiceClientTracing.SendRequest(_invocationId, _httpRequest);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            _httpResponse = await Client.HttpClient.SendAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
+            if (_shouldTrace)
+            {
+                ServiceClientTracing.ReceiveResponse(_invocationId, _httpResponse);
+            }
+            HttpStatusCode _statusCode = _httpResponse.StatusCode;
+            cancellationToken.ThrowIfCancellationRequested();
+            string _responseContent = null;
+            if (!_httpResponse.IsSuccessStatusCode)
+            {
+                var ex = new UnAssignRolesResponseException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
+                try
+                {
+                    _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    UnAssignRolesResponse _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<UnAssignRolesResponse>(_responseContent, Client.DeserializationSettings);
+                    if (_errorBody != null)
+                    {
+                        ex.Body = _errorBody;
+                    }
+                }
+                catch (JsonException)
+                {
+                    // Ignore the exception
+                }
+                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
+                ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
+                if (_shouldTrace)
+                {
+                    ServiceClientTracing.Error(_invocationId, ex);
+                }
+                _httpRequest.Dispose();
+                if (_httpResponse != null)
+                {
+                    _httpResponse.Dispose();
+                }
+                throw ex;
+            }
+            // Create Result
+            var _result = new HttpOperationResponse<UnAssignRolesResponse>();
+            _result.Request = _httpRequest;
+            _result.Response = _httpResponse;
+            string _defaultResponseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            try
+            {
+                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<UnAssignRolesResponse>(_defaultResponseContent, Client.DeserializationSettings);
+            }
+            catch (JsonException ex)
+            {
+                _httpRequest.Dispose();
+                if (_httpResponse != null)
+                {
+                    _httpResponse.Dispose();
+                }
+                throw new SerializationException("Unable to deserialize the response.", _defaultResponseContent, ex);
+            }
+            if (_shouldTrace)
+            {
+                ServiceClientTracing.Exit(_invocationId, _result);
+            }
+            return _result;
+        }
+
+        /// <param name='userName'>
+        /// </param>
+        /// <param name='permissions'>
+        /// </param>
+        /// <param name='roles'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// Headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="UnAssignRolesResponseException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        /// <return>
+        /// A response object containing the response body and response headers.
+        /// </return>
+        public async Task<HttpOperationResponse<UnAssignRolesResponse>> UpdateWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // Tracing
+            bool _shouldTrace = ServiceClientTracing.IsEnabled;
+            string _invocationId = null;
+            if (_shouldTrace)
+            {
+                _invocationId = ServiceClientTracing.NextInvocationId.ToString();
+                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
+                tracingParameters.Add("userName", userName);
+                tracingParameters.Add("permissions", permissions);
+                tracingParameters.Add("roles", roles);
+                tracingParameters.Add("body", body);
+                tracingParameters.Add("format", format);
+                tracingParameters.Add("cancellationToken", cancellationToken);
+                ServiceClientTracing.Enter(_invocationId, this, "Update", tracingParameters);
+            }
+            // Construct URL
+            var _baseUrl = Client.BaseUri.AbsoluteUri;
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "unassignroles").ToString();
+            List<string> _queryParameters = new List<string>();
+            if (userName != null)
+            {
+                _queryParameters.Add(string.Format("UserName={0}", System.Uri.EscapeDataString(userName)));
+            }
+            if (permissions != null)
+            {
+                if (permissions.Count == 0)
+                {
+                    _queryParameters.Add(string.Format("Permissions={0}", System.Uri.EscapeDataString(string.Empty)));
+                }
+                else
+                {
+                    foreach (var _item in permissions)
+                    {
+                        _queryParameters.Add(string.Format("Permissions={0}", System.Uri.EscapeDataString(_item ?? string.Empty)));
+                    }
+                }
+            }
+            if (roles != null)
+            {
+                if (roles.Count == 0)
+                {
+                    _queryParameters.Add(string.Format("Roles={0}", System.Uri.EscapeDataString(string.Empty)));
+                }
+                else
+                {
+                    foreach (var _item in roles)
+                    {
+                        _queryParameters.Add(string.Format("Roles={0}", System.Uri.EscapeDataString(_item ?? string.Empty)));
+                    }
+                }
+            }
+            if (format != null)
+            {
+                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
+            }
+            if (_queryParameters.Count > 0)
+            {
+                _url += "?" + string.Join("&", _queryParameters);
+            }
+            // Create HTTP transport objects
+            var _httpRequest = new HttpRequestMessage();
+            HttpResponseMessage _httpResponse = null;
+            _httpRequest.Method = new HttpMethod("PATCH");
+            _httpRequest.RequestUri = new System.Uri(_url);
+            // Set Headers
+
+
+            if (customHeaders != null)
+            {
+                foreach(var _header in customHeaders)
+                {
+                    if (_httpRequest.Headers.Contains(_header.Key))
+                    {
+                        _httpRequest.Headers.Remove(_header.Key);
+                    }
+                    _httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
+                }
+            }
+
+            // Serialize Request
+            string _requestContent = null;
+            if(body != null)
+            {
+                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
+                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
+                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+            }
             // Send Request
             if (_shouldTrace)
             {

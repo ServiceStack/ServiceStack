@@ -22,6 +22,8 @@ namespace AutorestClient
         /// </param>
         /// <param name='allCollectionTypes'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -34,7 +36,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.HttpOperationException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<object>> GetWithHttpMessagesAsync(string name = default(string), object allTypes = default(object), object allCollectionTypes = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<object>> GetWithHttpMessagesAsync(string name = default(string), object allTypes = default(object), object allCollectionTypes = default(object), HelloAllTypes body = default(HelloAllTypes), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='allTypes'>
@@ -83,6 +85,8 @@ namespace AutorestClient
         /// </param>
         /// <param name='allCollectionTypes'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -95,6 +99,27 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.HttpOperationException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<object>> DeleteWithHttpMessagesAsync(string name = default(string), object allTypes = default(object), object allCollectionTypes = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<object>> DeleteWithHttpMessagesAsync(string name = default(string), object allTypes = default(object), object allCollectionTypes = default(object), HelloAllTypes body = default(HelloAllTypes), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='name'>
+        /// </param>
+        /// <param name='allTypes'>
+        /// </param>
+        /// <param name='allCollectionTypes'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="Microsoft.Rest.HttpOperationException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        Task<HttpOperationResponse<object>> UpdateWithHttpMessagesAsync(string name = default(string), object allTypes = default(object), object allCollectionTypes = default(object), HelloAllTypes body = default(HelloAllTypes), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

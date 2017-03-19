@@ -16,16 +16,20 @@ namespace AutorestClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static KeyValuePairStringString Get(this IReturnKeyValuePairRequest operations, string format = "json")
+            public static GetErrorModel Get(this IReturnKeyValuePairRequest operations, object body = default(object), string format = "json")
             {
-                return operations.GetAsync(format).GetAwaiter().GetResult();
+                return operations.GetAsync(body, format).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
             /// The operations group for this extension method.
+            /// </param>
+            /// <param name='body'>
             /// </param>
             /// <param name='format'>
             /// Specifies response output format
@@ -33,9 +37,9 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<KeyValuePairStringString> GetAsync(this IReturnKeyValuePairRequest operations, string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetErrorModel> GetAsync(this IReturnKeyValuePairRequest operations, object body = default(object), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(body, format, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

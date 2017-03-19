@@ -16,6 +16,8 @@ namespace AutorestClient
     /// </summary>
     public partial interface IReturnListRequest
     {
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -28,6 +30,6 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.HttpOperationException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<IList<ReturnedDto>>> GetWithHttpMessagesAsync(string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<ReturnedDto>>> GetWithHttpMessagesAsync(object body = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

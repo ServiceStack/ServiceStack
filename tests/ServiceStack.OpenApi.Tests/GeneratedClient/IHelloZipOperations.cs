@@ -20,6 +20,8 @@ namespace AutorestClient
         /// </param>
         /// <param name='test'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -32,7 +34,7 @@ namespace AutorestClient
         /// <exception cref="HelloZipResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloZipResponse>> GetWithHttpMessagesAsync(string name = default(string), IList<string> test = default(IList<string>), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloZipResponse>> GetWithHttpMessagesAsync(string name = default(string), IList<string> test = default(IList<string>), HelloZip body = default(HelloZip), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='test'>
@@ -75,6 +77,8 @@ namespace AutorestClient
         /// </param>
         /// <param name='test'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -87,6 +91,25 @@ namespace AutorestClient
         /// <exception cref="HelloZipResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloZipResponse>> DeleteWithHttpMessagesAsync(string name = default(string), IList<string> test = default(IList<string>), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloZipResponse>> DeleteWithHttpMessagesAsync(string name = default(string), IList<string> test = default(IList<string>), HelloZip body = default(HelloZip), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='name'>
+        /// </param>
+        /// <param name='test'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="HelloZipResponseException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        Task<HttpOperationResponse<HelloZipResponse>> UpdateWithHttpMessagesAsync(string name = default(string), IList<string> test = default(IList<string>), HelloZip body = default(HelloZip), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

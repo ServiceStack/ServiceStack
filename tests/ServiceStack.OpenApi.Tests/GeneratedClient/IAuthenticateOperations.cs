@@ -48,6 +48,8 @@ namespace AutorestClient
         /// </param>
         /// <param name='meta'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -60,7 +62,7 @@ namespace AutorestClient
         /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> GetWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AuthenticateResponse>> GetWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='provider'>
         /// </param>
         /// <param name='state'>
@@ -187,50 +189,7 @@ namespace AutorestClient
         /// </param>
         /// <param name='meta'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        /// <exception cref="AuthenticateResponseException">
-        /// Thrown when the operation returned an invalid status code
-        /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> DeleteWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-        /// <param name='provider'>
-        /// </param>
-        /// <param name='state'>
-        /// </param>
-        /// <param name='oauthToken'>
-        /// </param>
-        /// <param name='oauthVerifier'>
-        /// </param>
-        /// <param name='userName'>
-        /// </param>
-        /// <param name='password'>
-        /// </param>
-        /// <param name='rememberMe'>
-        /// </param>
-        /// <param name='continueParameter'>
-        /// </param>
-        /// <param name='nonce'>
-        /// </param>
-        /// <param name='uri'>
-        /// </param>
-        /// <param name='response'>
-        /// </param>
-        /// <param name='qop'>
-        /// </param>
-        /// <param name='nc'>
-        /// </param>
-        /// <param name='cnonce'>
-        /// </param>
-        /// <param name='useTokenCookie'>
-        /// </param>
-        /// <param name='meta'>
+        /// <param name='body'>
         /// </param>
         /// <param name='format'>
         /// Specifies response output format
@@ -244,10 +203,7 @@ namespace AutorestClient
         /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> Get1WithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AuthenticateResponse>> DeleteWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='provider'>
         /// </param>
         /// <param name='state'>
@@ -294,10 +250,7 @@ namespace AutorestClient
         /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> Create1WithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AuthenticateResponse>> UpdateWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='provider'>
         /// </param>
         /// <param name='state'>
@@ -344,10 +297,7 @@ namespace AutorestClient
         /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> Post1WithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AuthenticateResponse>> Get1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='provider'>
         /// </param>
         /// <param name='state'>
@@ -380,6 +330,8 @@ namespace AutorestClient
         /// </param>
         /// <param name='meta'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -392,10 +344,7 @@ namespace AutorestClient
         /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> Delete1WithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AuthenticateResponse>> Create1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='provider'>
         /// </param>
         /// <param name='state'>
@@ -428,6 +377,8 @@ namespace AutorestClient
         /// </param>
         /// <param name='meta'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -440,7 +391,148 @@ namespace AutorestClient
         /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> Get2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AuthenticateResponse>> Post1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='provider'>
+        /// </param>
+        /// <param name='state'>
+        /// </param>
+        /// <param name='oauthToken'>
+        /// </param>
+        /// <param name='oauthVerifier'>
+        /// </param>
+        /// <param name='userName'>
+        /// </param>
+        /// <param name='password'>
+        /// </param>
+        /// <param name='rememberMe'>
+        /// </param>
+        /// <param name='continueParameter'>
+        /// </param>
+        /// <param name='nonce'>
+        /// </param>
+        /// <param name='uri'>
+        /// </param>
+        /// <param name='response'>
+        /// </param>
+        /// <param name='qop'>
+        /// </param>
+        /// <param name='nc'>
+        /// </param>
+        /// <param name='cnonce'>
+        /// </param>
+        /// <param name='useTokenCookie'>
+        /// </param>
+        /// <param name='meta'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="AuthenticateResponseException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        Task<HttpOperationResponse<AuthenticateResponse>> Delete1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='provider'>
+        /// </param>
+        /// <param name='state'>
+        /// </param>
+        /// <param name='oauthToken'>
+        /// </param>
+        /// <param name='oauthVerifier'>
+        /// </param>
+        /// <param name='userName'>
+        /// </param>
+        /// <param name='password'>
+        /// </param>
+        /// <param name='rememberMe'>
+        /// </param>
+        /// <param name='continueParameter'>
+        /// </param>
+        /// <param name='nonce'>
+        /// </param>
+        /// <param name='uri'>
+        /// </param>
+        /// <param name='response'>
+        /// </param>
+        /// <param name='qop'>
+        /// </param>
+        /// <param name='nc'>
+        /// </param>
+        /// <param name='cnonce'>
+        /// </param>
+        /// <param name='useTokenCookie'>
+        /// </param>
+        /// <param name='meta'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="AuthenticateResponseException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        Task<HttpOperationResponse<AuthenticateResponse>> Update1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='provider'>
+        /// </param>
+        /// <param name='state'>
+        /// </param>
+        /// <param name='oauthToken'>
+        /// </param>
+        /// <param name='oauthVerifier'>
+        /// </param>
+        /// <param name='userName'>
+        /// </param>
+        /// <param name='password'>
+        /// </param>
+        /// <param name='rememberMe'>
+        /// </param>
+        /// <param name='continueParameter'>
+        /// </param>
+        /// <param name='nonce'>
+        /// </param>
+        /// <param name='uri'>
+        /// </param>
+        /// <param name='response'>
+        /// </param>
+        /// <param name='qop'>
+        /// </param>
+        /// <param name='nc'>
+        /// </param>
+        /// <param name='cnonce'>
+        /// </param>
+        /// <param name='useTokenCookie'>
+        /// </param>
+        /// <param name='meta'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="AuthenticateResponseException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        Task<HttpOperationResponse<AuthenticateResponse>> Get2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='provider'>
         /// </param>
         /// <param name='state'>
@@ -567,50 +659,7 @@ namespace AutorestClient
         /// </param>
         /// <param name='meta'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        /// <exception cref="AuthenticateResponseException">
-        /// Thrown when the operation returned an invalid status code
-        /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> Delete2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-        /// <param name='provider'>
-        /// </param>
-        /// <param name='state'>
-        /// </param>
-        /// <param name='oauthToken'>
-        /// </param>
-        /// <param name='oauthVerifier'>
-        /// </param>
-        /// <param name='userName'>
-        /// </param>
-        /// <param name='password'>
-        /// </param>
-        /// <param name='rememberMe'>
-        /// </param>
-        /// <param name='continueParameter'>
-        /// </param>
-        /// <param name='nonce'>
-        /// </param>
-        /// <param name='uri'>
-        /// </param>
-        /// <param name='response'>
-        /// </param>
-        /// <param name='qop'>
-        /// </param>
-        /// <param name='nc'>
-        /// </param>
-        /// <param name='cnonce'>
-        /// </param>
-        /// <param name='useTokenCookie'>
-        /// </param>
-        /// <param name='meta'>
+        /// <param name='body'>
         /// </param>
         /// <param name='format'>
         /// Specifies response output format
@@ -624,10 +673,7 @@ namespace AutorestClient
         /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> Get3WithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AuthenticateResponse>> Delete2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='provider'>
         /// </param>
         /// <param name='state'>
@@ -674,10 +720,7 @@ namespace AutorestClient
         /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> Create3WithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AuthenticateResponse>> Update2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='provider'>
         /// </param>
         /// <param name='state'>
@@ -724,10 +767,7 @@ namespace AutorestClient
         /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> Post3WithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AuthenticateResponse>> Get3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='provider'>
         /// </param>
         /// <param name='state'>
@@ -760,6 +800,8 @@ namespace AutorestClient
         /// </param>
         /// <param name='meta'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -772,9 +814,147 @@ namespace AutorestClient
         /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
+        Task<HttpOperationResponse<AuthenticateResponse>> Create3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='provider'>
+        /// </param>
+        /// <param name='state'>
+        /// </param>
+        /// <param name='oauthToken'>
+        /// </param>
+        /// <param name='oauthVerifier'>
+        /// </param>
+        /// <param name='userName'>
+        /// </param>
+        /// <param name='password'>
+        /// </param>
+        /// <param name='rememberMe'>
+        /// </param>
+        /// <param name='continueParameter'>
+        /// </param>
+        /// <param name='nonce'>
+        /// </param>
+        /// <param name='uri'>
+        /// </param>
+        /// <param name='response'>
+        /// </param>
+        /// <param name='qop'>
+        /// </param>
+        /// <param name='nc'>
+        /// </param>
+        /// <param name='cnonce'>
+        /// </param>
+        /// <param name='useTokenCookie'>
+        /// </param>
+        /// <param name='meta'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="AuthenticateResponseException">
+        /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<AuthenticateResponse>> Delete3WithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AuthenticateResponse>> Post3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='provider'>
+        /// </param>
+        /// <param name='state'>
+        /// </param>
+        /// <param name='oauthToken'>
+        /// </param>
+        /// <param name='oauthVerifier'>
+        /// </param>
+        /// <param name='userName'>
+        /// </param>
+        /// <param name='password'>
+        /// </param>
+        /// <param name='rememberMe'>
+        /// </param>
+        /// <param name='continueParameter'>
+        /// </param>
+        /// <param name='nonce'>
+        /// </param>
+        /// <param name='uri'>
+        /// </param>
+        /// <param name='response'>
+        /// </param>
+        /// <param name='qop'>
+        /// </param>
+        /// <param name='nc'>
+        /// </param>
+        /// <param name='cnonce'>
+        /// </param>
+        /// <param name='useTokenCookie'>
+        /// </param>
+        /// <param name='meta'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="AuthenticateResponseException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        Task<HttpOperationResponse<AuthenticateResponse>> Delete3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='provider'>
+        /// </param>
+        /// <param name='state'>
+        /// </param>
+        /// <param name='oauthToken'>
+        /// </param>
+        /// <param name='oauthVerifier'>
+        /// </param>
+        /// <param name='userName'>
+        /// </param>
+        /// <param name='password'>
+        /// </param>
+        /// <param name='rememberMe'>
+        /// </param>
+        /// <param name='continueParameter'>
+        /// </param>
+        /// <param name='nonce'>
+        /// </param>
+        /// <param name='uri'>
+        /// </param>
+        /// <param name='response'>
+        /// </param>
+        /// <param name='qop'>
+        /// </param>
+        /// <param name='nc'>
+        /// </param>
+        /// <param name='cnonce'>
+        /// </param>
+        /// <param name='useTokenCookie'>
+        /// </param>
+        /// <param name='meta'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="AuthenticateResponseException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        Task<HttpOperationResponse<AuthenticateResponse>> Update3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

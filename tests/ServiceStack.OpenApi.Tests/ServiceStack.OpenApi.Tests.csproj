@@ -76,8 +76,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ReturnTypeTests.cs" />
-    <Compile Include="DtoHelper.cs" />
     <Compile Include="GeneratedClient\AllowedAttributesOperations.cs" />
     <Compile Include="GeneratedClient\AllowedAttributesOperationsExtensions.cs" />
     <Compile Include="GeneratedClient\AssignRolesOperations.cs" />
@@ -135,7 +133,6 @@
     <Compile Include="GeneratedClient\Models\AllowedAttributes.cs" />
     <Compile Include="GeneratedClient\Models\AllTypes.cs" />
     <Compile Include="GeneratedClient\Models\ArrayResult.cs" />
-    <Compile Include="GeneratedClient\Models\ArrayResultSequence.cs" />
     <Compile Include="GeneratedClient\Models\AssignRoles.cs" />
     <Compile Include="GeneratedClient\Models\AssignRolesResponse.cs" />
     <Compile Include="GeneratedClient\Models\AssignRolesResponseException.cs" />
@@ -143,6 +140,8 @@
     <Compile Include="GeneratedClient\Models\AuthenticateResponse.cs" />
     <Compile Include="GeneratedClient\Models\AuthenticateResponseException.cs" />
     <Compile Include="GeneratedClient\Models\CustomUserSession.cs" />
+    <Compile Include="GeneratedClient\Models\GetErrorModel.cs" />
+    <Compile Include="GeneratedClient\Models\GetErrorModelException.cs" />
     <Compile Include="GeneratedClient\Models\GetSessionResponse.cs" />
     <Compile Include="GeneratedClient\Models\GetSessionResponseException.cs" />
     <Compile Include="GeneratedClient\Models\Hello.cs" />
@@ -165,13 +164,11 @@
     <Compile Include="GeneratedClient\Models\HelloZipResponse.cs" />
     <Compile Include="GeneratedClient\Models\HelloZipResponseException.cs" />
     <Compile Include="GeneratedClient\Models\KeyValuePairStringString.cs" />
-    <Compile Include="GeneratedClient\Models\KeyValuePairStringStringException.cs" />
     <Compile Include="GeneratedClient\Models\ListResult.cs" />
     <Compile Include="GeneratedClient\Models\Poco.cs" />
     <Compile Include="GeneratedClient\Models\ResponseError.cs" />
     <Compile Include="GeneratedClient\Models\ResponseStatus.cs" />
     <Compile Include="GeneratedClient\Models\ReturnedDto.cs" />
-    <Compile Include="GeneratedClient\Models\ReturnedDtoSequence.cs" />
     <Compile Include="GeneratedClient\Models\SubType.cs" />
     <Compile Include="GeneratedClient\Models\UnAssignRoles.cs" />
     <Compile Include="GeneratedClient\Models\UnAssignRolesResponse.cs" />
@@ -193,6 +190,8 @@
     <Compile Include="GeneratedClient\UnAssignRolesOperationsExtensions.cs" />
     <Compile Include="GeneratedClient\UpdateSessionOperations.cs" />
     <Compile Include="GeneratedClient\UpdateSessionOperationsExtensions.cs" />
+    <Compile Include="ReturnTypeTests.cs" />
+    <Compile Include="DtoHelper.cs" />
     <Compile Include="Services\AllTypes.cs" />
     <Compile Include="AllTypesTests.cs" />
     <Compile Include="Services\CodeGenTestTypes.cs" />

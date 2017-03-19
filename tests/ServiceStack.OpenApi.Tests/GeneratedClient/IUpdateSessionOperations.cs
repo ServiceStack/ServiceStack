@@ -18,6 +18,8 @@ namespace AutorestClient
     {
         /// <param name='customName'>
         /// </param>
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -30,10 +32,7 @@ namespace AutorestClient
         /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        Task<HttpOperationResponse<GetSessionResponse>> GetWithHttpMessagesAsync(string customName, string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<GetSessionResponse>> GetWithHttpMessagesAsync(string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='customName'>
         /// </param>
         /// <param name='body'>
@@ -50,10 +49,7 @@ namespace AutorestClient
         /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        Task<HttpOperationResponse<GetSessionResponse>> CreateWithHttpMessagesAsync(string customName, UpdateSession body = default(UpdateSession), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<GetSessionResponse>> CreateWithHttpMessagesAsync(string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='customName'>
         /// </param>
         /// <param name='body'>
@@ -70,11 +66,10 @@ namespace AutorestClient
         /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        Task<HttpOperationResponse<GetSessionResponse>> PostWithHttpMessagesAsync(string customName, UpdateSession body = default(UpdateSession), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<GetSessionResponse>> PostWithHttpMessagesAsync(string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='customName'>
+        /// </param>
+        /// <param name='body'>
         /// </param>
         /// <param name='format'>
         /// Specifies response output format
@@ -88,9 +83,23 @@ namespace AutorestClient
         /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
+        Task<HttpOperationResponse<GetSessionResponse>> DeleteWithHttpMessagesAsync(string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='customName'>
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='format'>
+        /// Specifies response output format
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="GetSessionResponseException">
+        /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<GetSessionResponse>> DeleteWithHttpMessagesAsync(string customName, string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<GetSessionResponse>> UpdateWithHttpMessagesAsync(string customName = default(string), UpdateSession body = default(UpdateSession), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

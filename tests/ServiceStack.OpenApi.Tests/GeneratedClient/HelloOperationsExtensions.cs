@@ -20,12 +20,14 @@ namespace AutorestClient
             /// </param>
             /// <param name='title'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static HelloResponse Get(this IHelloOperations operations, string name = default(string), string title = default(string), string format = "json")
+            public static HelloResponse Get(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json")
             {
-                return operations.GetAsync(name, title, format).GetAwaiter().GetResult();
+                return operations.GetAsync(name, title, body, format).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -35,15 +37,17 @@ namespace AutorestClient
             /// </param>
             /// <param name='title'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloResponse> GetAsync(this IHelloOperations operations, string name = default(string), string title = default(string), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloResponse> GetAsync(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(name, title, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(name, title, body, format, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -136,12 +140,14 @@ namespace AutorestClient
             /// </param>
             /// <param name='title'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static HelloResponse Delete(this IHelloOperations operations, string name = default(string), string title = default(string), string format = "json")
+            public static HelloResponse Delete(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json")
             {
-                return operations.DeleteAsync(name, title, format).GetAwaiter().GetResult();
+                return operations.DeleteAsync(name, title, body, format).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -150,6 +156,8 @@ namespace AutorestClient
             /// <param name='name'>
             /// </param>
             /// <param name='title'>
+            /// </param>
+            /// <param name='body'>
             /// </param>
             /// <param name='format'>
             /// Specifies response output format
@@ -157,45 +165,9 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloResponse> DeleteAsync(this IHelloOperations operations, string name = default(string), string title = default(string), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloResponse> DeleteAsync(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(name, title, format, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='title'>
-            /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static HelloResponse Get1(this IHelloOperations operations, string name, string title = default(string), string format = "json")
-            {
-                return operations.Get1Async(name, title, format).GetAwaiter().GetResult();
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='title'>
-            /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<HelloResponse> Get1Async(this IHelloOperations operations, string name, string title = default(string), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.Get1WithHttpMessagesAsync(name, title, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(name, title, body, format, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -213,7 +185,87 @@ namespace AutorestClient
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static HelloResponse Create1(this IHelloOperations operations, string name, string title = default(string), Hello body = default(Hello), string format = "json")
+            public static HelloResponse Update(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json")
+            {
+                return operations.UpdateAsync(name, title, body, format).GetAwaiter().GetResult();
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='name'>
+            /// </param>
+            /// <param name='title'>
+            /// </param>
+            /// <param name='body'>
+            /// </param>
+            /// <param name='format'>
+            /// Specifies response output format
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<HelloResponse> UpdateAsync(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.UpdateWithHttpMessagesAsync(name, title, body, format, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='name'>
+            /// </param>
+            /// <param name='title'>
+            /// </param>
+            /// <param name='body'>
+            /// </param>
+            /// <param name='format'>
+            /// Specifies response output format
+            /// </param>
+            public static HelloResponse Get1(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json")
+            {
+                return operations.Get1Async(name, title, body, format).GetAwaiter().GetResult();
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='name'>
+            /// </param>
+            /// <param name='title'>
+            /// </param>
+            /// <param name='body'>
+            /// </param>
+            /// <param name='format'>
+            /// Specifies response output format
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<HelloResponse> Get1Async(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.Get1WithHttpMessagesAsync(name, title, body, format, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='name'>
+            /// </param>
+            /// <param name='title'>
+            /// </param>
+            /// <param name='body'>
+            /// </param>
+            /// <param name='format'>
+            /// Specifies response output format
+            /// </param>
+            public static HelloResponse Create1(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json")
             {
                 return operations.Create1Async(name, title, body, format).GetAwaiter().GetResult();
             }
@@ -233,7 +285,7 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloResponse> Create1Async(this IHelloOperations operations, string name, string title = default(string), Hello body = default(Hello), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloResponse> Create1Async(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.Create1WithHttpMessagesAsync(name, title, body, format, null, cancellationToken).ConfigureAwait(false))
                 {
@@ -253,7 +305,7 @@ namespace AutorestClient
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static HelloResponse Post1(this IHelloOperations operations, string name, string title = default(string), Hello body = default(Hello), string format = "json")
+            public static HelloResponse Post1(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json")
             {
                 return operations.Post1Async(name, title, body, format).GetAwaiter().GetResult();
             }
@@ -273,7 +325,7 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloResponse> Post1Async(this IHelloOperations operations, string name, string title = default(string), Hello body = default(Hello), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloResponse> Post1Async(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.Post1WithHttpMessagesAsync(name, title, body, format, null, cancellationToken).ConfigureAwait(false))
                 {
@@ -288,12 +340,14 @@ namespace AutorestClient
             /// </param>
             /// <param name='title'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
-            public static HelloResponse Delete1(this IHelloOperations operations, string name, string title = default(string), string format = "json")
+            public static HelloResponse Delete1(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json")
             {
-                return operations.Delete1Async(name, title, format).GetAwaiter().GetResult();
+                return operations.Delete1Async(name, title, body, format).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -303,15 +357,57 @@ namespace AutorestClient
             /// </param>
             /// <param name='title'>
             /// </param>
+            /// <param name='body'>
+            /// </param>
             /// <param name='format'>
             /// Specifies response output format
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloResponse> Delete1Async(this IHelloOperations operations, string name, string title = default(string), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloResponse> Delete1Async(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.Delete1WithHttpMessagesAsync(name, title, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.Delete1WithHttpMessagesAsync(name, title, body, format, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='name'>
+            /// </param>
+            /// <param name='title'>
+            /// </param>
+            /// <param name='body'>
+            /// </param>
+            /// <param name='format'>
+            /// Specifies response output format
+            /// </param>
+            public static HelloResponse Update1(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json")
+            {
+                return operations.Update1Async(name, title, body, format).GetAwaiter().GetResult();
+            }
+
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='name'>
+            /// </param>
+            /// <param name='title'>
+            /// </param>
+            /// <param name='body'>
+            /// </param>
+            /// <param name='format'>
+            /// Specifies response output format
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<HelloResponse> Update1Async(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.Update1WithHttpMessagesAsync(name, title, body, format, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

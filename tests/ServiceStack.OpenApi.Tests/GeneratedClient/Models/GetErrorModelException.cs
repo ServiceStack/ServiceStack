@@ -7,13 +7,13 @@ namespace AutorestClient.Models
     using Microsoft.Rest;
 
     /// <summary>
-    /// Exception thrown for an invalid response with KeyValuePairStringString
+    /// Exception thrown for an invalid response with GetErrorModel
     /// information.
     /// </summary>
 #if LEGACY
     [System.Serializable]
 #endif
-    public class KeyValuePairStringStringException : RestException
+    public class GetErrorModelException : RestException
     {
         /// <summary>
         /// Gets information about the associated HTTP request.
@@ -28,41 +28,41 @@ namespace AutorestClient.Models
         /// <summary>
         /// Gets or sets the body object.
         /// </summary>
-        public KeyValuePairStringString Body { get; set; }
+        public GetErrorModel Body { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the KeyValuePairStringStringException class.
+        /// Initializes a new instance of the GetErrorModelException class.
         /// </summary>
-        public KeyValuePairStringStringException()
+        public GetErrorModelException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the KeyValuePairStringStringException class.
+        /// Initializes a new instance of the GetErrorModelException class.
         /// </summary>
         /// <param name="message">The exception message.</param>
-        public KeyValuePairStringStringException(string message)
+        public GetErrorModelException(string message)
             : this(message, null)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the KeyValuePairStringStringException class.
+        /// Initializes a new instance of the GetErrorModelException class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="innerException">Inner exception.</param>
-        public KeyValuePairStringStringException(string message, System.Exception innerException)
+        public GetErrorModelException(string message, System.Exception innerException)
             : base(message, innerException)
         {
         }
 
 #if LEGACY
         /// <summary>
-        /// Initializes a new instance of the KeyValuePairStringStringException class.
+        /// Initializes a new instance of the GetErrorModelException class.
         /// </summary>
         /// <param name="info">Serialization info.</param>
         /// <param name="context">Streaming context.</param>
-        protected KeyValuePairStringStringException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+        protected GetErrorModelException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
             : base(info, context)
         {
         }

@@ -43,6 +43,8 @@ namespace AutorestClient
         /// </summary>
         public ServiceStackAutorestClient Client { get; private set; }
 
+        /// <param name='body'>
+        /// </param>
         /// <param name='format'>
         /// Specifies response output format
         /// </param>
@@ -52,13 +54,13 @@ namespace AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        /// <exception cref="KeyValuePairStringStringException">
+        /// <exception cref="GetErrorModelException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<KeyValuePairStringString>> GetWithHttpMessagesAsync(string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<GetErrorModel>> GetWithHttpMessagesAsync(object body = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -67,6 +69,7 @@ namespace AutorestClient
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
+                tracingParameters.Add("body", body);
                 tracingParameters.Add("format", format);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get", tracingParameters);
@@ -105,6 +108,12 @@ namespace AutorestClient
 
             // Serialize Request
             string _requestContent = null;
+            if(body != null)
+            {
+                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
+                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
+                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+            }
             // Send Request
             if (_shouldTrace)
             {
@@ -121,11 +130,11 @@ namespace AutorestClient
             string _responseContent = null;
             if (!_httpResponse.IsSuccessStatusCode)
             {
-                var ex = new KeyValuePairStringStringException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
+                var ex = new GetErrorModelException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
                 try
                 {
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    KeyValuePairStringString _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<KeyValuePairStringString>(_responseContent, Client.DeserializationSettings);
+                    GetErrorModel _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<GetErrorModel>(_responseContent, Client.DeserializationSettings);
                     if (_errorBody != null)
                     {
                         ex.Body = _errorBody;
@@ -149,13 +158,13 @@ namespace AutorestClient
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<KeyValuePairStringString>();
+            var _result = new HttpOperationResponse<GetErrorModel>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             string _defaultResponseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
             try
             {
-                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<KeyValuePairStringString>(_defaultResponseContent, Client.DeserializationSettings);
+                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<GetErrorModel>(_defaultResponseContent, Client.DeserializationSettings);
             }
             catch (JsonException ex)
             {

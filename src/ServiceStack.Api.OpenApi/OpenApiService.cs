@@ -201,6 +201,42 @@ namespace ServiceStack.Api.OpenApi
             return GetListElementType(type) != null;
         }
 
+        private Dictionary<string, object> GetOpenApiListItems(Type listItemType, string route, string verb)
+        {
+            var items = new Dictionary<string, object>();
+
+            if (IsSwaggerScalarType(listItemType))
+            {
+                items.Add("type", GetSwaggerTypeName(listItemType));
+                items.Add("format", GetSwaggerTypeFormat(listItemType, route, verb));
+                if (IsRequiredType(listItemType))
+                {
+                    items.Add("x-nullable", false);
+                }
+            }
+            else
+            {
+                items.Add("$ref", "#/definitions/" + GetSchemaTypeName(listItemType));
+            }
+
+            return items;
+        }
+
+        private OpenApiSchema GetListSchema(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
+        {
+            if (!IsListType(schemaType))
+                return null;
+
+            var listItemType = GetListElementType(schemaType);
+            ParseDefinitions(schemas, listItemType, route, verb);
+
+            return new OpenApiSchema()
+            {
+                Type = SwaggerType.Array,
+                Items = GetOpenApiListItems(listItemType, route, verb)
+            };
+        }
+
         private static bool IsDictionaryType(Type type)
         {
             if (!type.IsGenericType()) return false;
@@ -352,15 +388,22 @@ namespace ServiceStack.Api.OpenApi
             var schemaId = GetSchemaTypeName(schemaType);
             if (schemas.ContainsKey(schemaId)) return;
 
-            var schema = GetDictionarySchema(schemas, schemaType, route, verb) 
-                ?? GetKeyValuePairSchema(schemas, schemaType, route, verb)
-                ?? new OpenApiSchema
-                {   
+            var schema = GetDictionarySchema(schemas, schemaType, route, verb)
+                    ?? GetKeyValuePairSchema(schemas, schemaType, route, verb)
+                    ?? GetListSchema(schemas, schemaType, route, verb);
+
+            bool parseProperties = false;
+
+            if (schema == null)
+            {
+                schema = new OpenApiSchema
+                {
                     Type = OpenApiType.Object,
                     Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
                     Properties = new OrderedDictionary<string, OpenApiProperty>()
                 };
-
+                parseProperties = schemaType.IsUserType();
+            }
             schemas[schemaId] = schema;
 
             var properties = schemaType.GetProperties();
@@ -391,7 +434,6 @@ namespace ServiceStack.Api.OpenApi
                     }).ToArray();
             }
 
-            var parseProperties = schemaType.IsUserType();
             if (parseProperties)
             {
                 foreach (var prop in properties)
@@ -410,7 +452,6 @@ namespace ServiceStack.Api.OpenApi
 
                     if (apiMembers.Any(x => x.ExcludeInSchema))
                         continue;
-
                     var schemaProp = GetOpenApiProperty(schemas, prop.PropertyType, route, verb);
 
                     schemaProp.Description = prop.GetDescription() ?? apiDoc?.Description;
@@ -457,54 +498,21 @@ namespace ServiceStack.Api.OpenApi
             {
                 if (i.IsGenericType() && i.GetGenericTypeDefinition() == typeof(IReturn<>))
                 {
-                    var returnType = i.GetGenericArguments()[0];
-                    ParseResponseSchema(schemas, returnType);
+                    var schemaType = i.GetGenericArguments()[0];
+                    ParseDefinitions(schemas, schemaType, null, null);
 
-                    if (IsSwaggerScalarType(returnType))
-                    {
-                        return new OpenApiSchema()
-                        {
-                            Type = GetSwaggerTypeName(returnType),
-                            Format = GetSwaggerTypeFormat(returnType)
-                        };
-                    }
+                    var schema = GetDictionarySchema(schemas, schemaType, null, null)
+                                    ?? GetKeyValuePairSchema(schemas, schemaType, null, null)
+                                    ?? GetListSchema(schemas, schemaType, null, null)
+                                    ?? (IsSwaggerScalarType(schemaType)
+                                        ? new OpenApiSchema()
+                                        {
+                                            Type = GetSwaggerTypeName(schemaType),
+                                            Format = GetSwaggerTypeFormat(schemaType)
+                                        }
+                                        : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType)});
 
-                    // Handle IReturn<Dictionary<string, SomeClass>> or IReturn<IDictionary<string,SomeClass>>
-                    if (IsDictionaryType(returnType))
-                    {
-                        return GetDictionarySchema(schemas, returnType, null, null);
-                    }
-
-                    // Handle IReturn<List<SomeClass>> or IReturn<SomeClass[]>
-                    if (IsListType(returnType))
-                    {
-                        var schema = new OpenApiSchema()
-                        {
-                            Type = SwaggerType.Array,
-                        };
-                        var listItemType = GetListElementType(returnType);
-                        ParseResponseSchema(schemas, listItemType);
-                        if (IsSwaggerScalarType(listItemType))
-                        {
-                            schema.Items = new Dictionary<string, object>
-                            {
-                                { "type", GetSwaggerTypeName(listItemType) },
-                                { "format", GetSwaggerTypeFormat(listItemType) }
-                            };
-
-                        }
-                        else
-                        {
-                            schema.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetSchemaTypeName(listItemType) } };
-                        }
-
-                        return schema;
-                    }
-
-                    return new OpenApiSchema()
-                    {
-                        Ref = "#/definitions/" + GetSchemaTypeName(returnType)
-                    };
+                    return schema;
                 }
             }
 
@@ -773,24 +781,8 @@ namespace ServiceStack.Api.OpenApi
             };
 
             var listItemType = GetListElementType(listType);
-            if (IsSwaggerScalarType(listItemType))
-            {
-                parameter.Items = new Dictionary<string, object>
-                        {
-                            { "type", GetSwaggerTypeName(listItemType) },
-                            { "format", GetSwaggerTypeFormat(listItemType, route, verb) }
-                        };
-                if (IsRequiredType(listItemType))
-                {
-                    parameter.Items.Add("x-nullable", false);
-                }
-            }
-            else
-            {
-                parameter.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetSchemaTypeName(listItemType) } };
-            }
-
             ParseDefinitions(schemas, listItemType, route, verb);
+            parameter.Items = GetOpenApiListItems(listItemType, route, verb);
 
             return parameter;
         }
