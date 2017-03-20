@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5E258282-86A6-4780-AB25-5E458F2E6F70}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceStack.Api.OpenApi</RootNamespace>
+    <AssemblyName>ServiceStack.Api.OpenApi</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\ServiceStack.Api.OpenApi.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Signed|AnyCPU'">
+    <OutputPath>bin\Signed\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Specification\OpenApiDeclaration.cs" />
+    <Compile Include="Specification\OpenApiContact.cs" />
+    <Compile Include="Specification\OpenApiDataTypeSchema.cs" />
+    <Compile Include="Specification\OpenApiExternalDocumentation.cs" />
+    <Compile Include="Specification\OpenApiInfo.cs" />
+    <Compile Include="Specification\OpenApiLicense.cs" />
+    <Compile Include="Specification\OpenApiOperation.cs" />
+    <Compile Include="Specification\OpenApiParameter.cs" />
+    <Compile Include="Specification\OpenApiPath.cs" />
+    <Compile Include="Specification\OpenApiProperty.cs" />
+    <Compile Include="Specification\OpenApiResponse.cs" />
+    <Compile Include="Specification\OpenApiSchema.cs" />
+    <Compile Include="Specification\OpenApiSecurity.cs" />
+    <Compile Include="Specification\OpenApiSecuritySchema.cs" />
+    <Compile Include="Specification\OpenApiTag.cs" />
+    <Compile Include="Specification\OpenApiType.cs" />
+    <Compile Include="Specification\OpenApiXmlObject.cs" />
+    <Compile Include="Support\IOrderedDictionary.cs" />
+    <Compile Include="Support\OrderedDictionary.cs" />
+    <Compile Include="OpenApiService.cs" />
+    <Compile Include="OpenApiFeature.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
+      <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
+      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
+      <Name>ServiceStack</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="openapi-ui-bootstrap\index.html" />
+    <EmbeddedResource Include="openapi-ui-bootstrap\jiko.js" />
+    <EmbeddedResource Include="openapi-ui-bootstrap\swagger-like-template.html" />
+    <EmbeddedResource Include="openapi-ui\css\screen.css" />
+    <EmbeddedResource Include="openapi-ui\images\logo_small.png" />
+    <EmbeddedResource Include="openapi-ui\images\pet_store_api.png" />
+    <EmbeddedResource Include="openapi-ui\images\throbber.gif" />
+    <EmbeddedResource Include="openapi-ui\images\wordnik_api.png" />
+    <EmbeddedResource Include="openapi-ui\index.html" />
+    <EmbeddedResource Include="openapi-ui\lib\backbone-min.js" />
+    <EmbeddedResource Include="openapi-ui\lib\jquery-1.8.0.min.js" />
+    <EmbeddedResource Include="openapi-ui\lib\jquery.ba-bbq.min.js" />
+    <EmbeddedResource Include="openapi-ui\lib\jquery.slideto.min.js" />
+    <EmbeddedResource Include="openapi-ui\lib\jquery.wiggle.min.js" />
+    <EmbeddedResource Include="openapi-ui\swagger-ui.js" />
+    <EmbeddedResource Include="openapi-ui\swagger-ui.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="openapi-ui\css\reset.css" />
+    <EmbeddedResource Include="openapi-ui\images\explorer_icons.png" />
+    <EmbeddedResource Include="openapi-ui\lib\swagger-oauth.js" />
+    <EmbeddedResource Include="openapi-ui\o2c.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="openapi-ui\css\typography.css" />
+    <EmbeddedResource Include="openapi-ui\lib\marked.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="openapi-ui\patch.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="openapi-ui\css\print.css" />
+    <EmbeddedResource Include="openapi-ui\css\style.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="openapi-ui\fonts\DroidSans-Bold.ttf" />
+    <EmbeddedResource Include="openapi-ui\fonts\DroidSans.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="openapi-ui\images\collapse.gif" />
+    <EmbeddedResource Include="openapi-ui\images\expand.gif" />
+    <EmbeddedResource Include="openapi-ui\images\favicon-16x16.png" />
+    <EmbeddedResource Include="openapi-ui\images\favicon-32x32.png" />
+    <EmbeddedResource Include="openapi-ui\images\favicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="openapi-ui\lib\es5-shim.js" />
+    <EmbeddedResource Include="openapi-ui\lib\handlebars-4.0.5.js" />
+    <EmbeddedResource Include="openapi-ui\lib\highlight.9.1.0.pack.js" />
+    <EmbeddedResource Include="openapi-ui\lib\highlight.9.1.0.pack_extended.js" />
+    <EmbeddedResource Include="openapi-ui\lib\js-yaml.min.js" />
+    <EmbeddedResource Include="openapi-ui\lib\jsoneditor.min.js" />
+    <EmbeddedResource Include="openapi-ui\lib\lodash.min.js" />
+    <EmbeddedResource Include="openapi-ui\lib\object-assign-pollyfill.js" />
+    <EmbeddedResource Include="openapi-ui\lib\sanitize-html.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="openapi-ui\lib\shred\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
