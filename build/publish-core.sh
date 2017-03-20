@@ -3,6 +3,7 @@
 declare -A projects=( \
  ["ServiceStack.Kestrel"]="1.6" \
  ["ServiceStack.Api.Swagger.Core"]="1.6" \
+ ["ServiceStack.Api.OpenApi.Core"]="1.6" \
  ["ServiceStack.RabbitMq.Core"]="1.6" \
  ["ServiceStack.Mvc.Core"]="1.6" \
  ["ServiceStack.Server.Core"]="1.6" \
