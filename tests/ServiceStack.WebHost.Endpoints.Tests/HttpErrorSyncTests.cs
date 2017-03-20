@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using NUnit.Framework;
-using ServiceStack.Model;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
@@ -97,10 +96,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(webEx.StatusCode, Is.EqualTo(403));
                 Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Exception).Name));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("ForbiddenErrorMessage"));
-            }
-            catch (Exception ex)
-            {
-                throw;
             }
         }
 

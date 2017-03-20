@@ -65,10 +65,19 @@ namespace ServiceStack.Core.SelfHost
         public string Result { get; set; }
     }
 
+    [FallbackRoute("/{Path*}")]
+    public class Error404
+    {
+        public string Path { get; set; }
+    }
+
     public class MyServices : Service
     {
         public object Any(Hello request) => 
             new HelloResponse { Result = $"Hello, {request.Name ?? "World"}!" };
+        
+        //Uncomment to process Unhandled requests
+        //public object Any(Error404 request) => request;
     }
 
     public class AppHost : AppHostBase

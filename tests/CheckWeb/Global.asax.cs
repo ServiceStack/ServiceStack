@@ -48,6 +48,7 @@ namespace CheckWeb
             {
                 //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Html },
+                UseCamelCase = true,
                 //AllowJsConfig = false,
 
                 // Set to return JSON if no request content type is defined
@@ -137,6 +138,8 @@ namespace CheckWeb
 
             // Configure ServiceStack Razor views.
             this.ConfigureView(container);
+
+            //this.StartUpErrors.Add(new ResponseStatus("Mock", "Startup Error"));
         }
 
         public static Rockstar[] GetRockstars()
@@ -212,6 +215,7 @@ namespace CheckWeb
             Plugins.Add(new ValidationFeature());
 
             container.RegisterValidators(typeof(AppHost).Assembly);
+            container.RegisterValidators(typeof(ThrowValidationValidator).Assembly);
         }
 
         /// <summary>
@@ -296,6 +300,16 @@ namespace CheckWeb
         protected void Application_EndRequest(object src, EventArgs e)
         {
             Profiler.Stop();
+        }
+    }
+
+    public static class HtmlHelpers
+    {
+        public static MvcHtmlString DisplayPrice(this HtmlHelper html, decimal price)
+        {
+            return MvcHtmlString.Create(price == 0
+                ? "<span>FREE!</span>"
+                : $"{price:C2}");
         }
     }
 }

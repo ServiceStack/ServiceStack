@@ -1,11 +1,9 @@
 ﻿#if NETSTANDARD1_6
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
-using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Logging;
 using ServiceStack.NetCore;
@@ -18,9 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using ServiceStack.IO;
 using ServiceStack.VirtualPath;
-using System.Linq;
 using ServiceStack.Configuration;
 
 namespace ServiceStack
@@ -93,7 +89,6 @@ namespace ServiceStack
         {
             //Keep in sync with Kestrel/AppSelfHostBase.cs
             var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
-
             var pathInfo = context.Request.Path.HasValue
                 ? context.Request.Path.Value
                 : "/";
@@ -106,6 +101,13 @@ namespace ServiceStack
 
                 pathInfo = pathInfo.Substring(mode.Length + 1);
             }
+
+#if NETSTANDARD1_6
+            // This fixes problems if the RequestContext.Instance.Items was touched on startup or outside of request context.
+            // It would turn it into a static dictionary instead flooding request with each-others values.
+            // This can already happen if I register a Funq.Container Request Scope type and Resolve it on startup.
+            RequestContext.Instance.StartRequestContext();
+#endif
 
             var httpReq = new NetCoreRequest(context, operationName, RequestAttributes.None, pathInfo);
             httpReq.RequestAttributes = httpReq.GetAttributes();

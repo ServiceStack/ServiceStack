@@ -25,7 +25,7 @@ namespace FluentValidation.Mvc
 			if (!ShouldGenerateClientSideRules()) yield break;
 
 			var formatter = new MessageFormatter().AppendPropertyName(Rule.GetDisplayName());
-			string message = formatter.BuildMessage(EmailValidator.ErrorMessageSource.GetString());
+			string message = formatter.BuildMessage(EmailValidator.ErrorMessageSource.GetString(Metadata));
 
 			yield return new ModelClientValidationRule {
 				ValidationType = "email",

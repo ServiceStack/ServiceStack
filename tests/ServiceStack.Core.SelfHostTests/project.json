@@ -34,6 +34,7 @@
     "ServiceStack.OrmLite.Sqlite": "1.0.*",
     "ServiceStack.Redis": "1.0.*",
     "ServiceStack.Text": "1.0.*",
+    "ServiceStack.Server": "1.0.*",
     "ServiceStack.Api.Swagger": "1.0.0"
   },
   "frameworks": {

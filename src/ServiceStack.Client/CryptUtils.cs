@@ -608,8 +608,8 @@ namespace ServiceStack
                 sb.Append("<Q>").Append(Convert.ToBase64String(csp.Q)).Append("</Q>");
                 sb.Append("<DP>").Append(Convert.ToBase64String(csp.DP)).Append("</DP>");
                 sb.Append("<DQ>").Append(Convert.ToBase64String(csp.DQ)).Append("</DQ>");
-                sb.Append("<InverseQ>").Append(Convert.ToBase64String(csp.Modulus)).Append("</InverseQ>");
-                sb.Append("<D>").Append(Convert.ToBase64String(csp.Modulus)).Append("</D>");
+                sb.Append("<InverseQ>").Append(Convert.ToBase64String(csp.InverseQ)).Append("</InverseQ>");
+                sb.Append("<D>").Append(Convert.ToBase64String(csp.D)).Append("</D>");
             }
 
             sb.Append("</RSAKeyValue>");

@@ -30,7 +30,10 @@ namespace ServiceStack
 
         [DataMember(Order = 15)] public bool? UseTokenCookie { get; set; }
 
-        [DataMember(Order = 16)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 16)] public string AccessToken { get; set; }
+        [DataMember(Order = 17)] public string AccessTokenSecret { get; set; }
+
+        [DataMember(Order = 18)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -47,9 +50,10 @@ namespace ServiceStack
         [DataMember(Order = 4)] public string DisplayName { get; set; }
         [DataMember(Order = 5)] public string ReferrerUrl { get; set; }
         [DataMember(Order = 6)] public string BearerToken { get; set; }
+        [DataMember(Order = 7)] public string RefreshToken { get; set; }
 
-        [DataMember(Order = 7)] public ResponseStatus ResponseStatus { get; set; }
-        [DataMember(Order = 8)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 8)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 9)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -251,6 +255,23 @@ namespace ServiceStack
     {
         [DataMember(Order = 1)]
         public Dictionary<string, string> Meta { get; set; }
+
+        [DataMember(Order = 2)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [DataContract]
+    public class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>
+    {
+        [DataMember(Order = 1)]
+        public string RefreshToken { get; set; }
+    }
+
+    [DataContract]
+    public class GetAccessTokenResponse
+    {
+        [DataMember(Order = 1)]
+        public string AccessToken { get; set; }
 
         [DataMember(Order = 2)]
         public ResponseStatus ResponseStatus { get; set; }

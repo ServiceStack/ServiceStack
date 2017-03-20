@@ -409,7 +409,14 @@ namespace ServiceStack
             local.Reset();
             using (var redis = clientsManager.GetClient())
             {
-                redis.FlushDb();
+                var keysToDelete = new List<string> { RedisIndex.ActiveSubscriptionsSet };
+
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.Subscription.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.ChannelSet.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.UserIdSet.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.UserNameSet.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.SessionSet.Replace("{0}", "*")));
+                redis.RemoveAll(keysToDelete);
             }
         }
 
@@ -541,6 +548,22 @@ namespace ServiceStack
 
         public void Dispose()
         {
+            try
+            {
+                foreach (var entry in local.Subcriptions)
+                {
+                    var info = local.GetSubscriptionInfo(entry.Key);
+                    if (info != null)
+                    {
+                        RemoveSubscriptionFromRedis(info);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("Error trying to remove local.Subcriptions during Dispose()...", ex);
+            }
+
             if (RedisPubSub != null)
                 RedisPubSub.Dispose();
 

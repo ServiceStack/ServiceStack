@@ -224,6 +224,8 @@ namespace ServiceStack
                     elapsed.TotalMilliseconds,
                     StartUpErrors.Count,
                     StartUpErrors.ToJson());
+
+                Config.GlobalResponseHeaders["X-Startup-Errors"] = StartUpErrors.Count.ToString();
             }
             else
             {

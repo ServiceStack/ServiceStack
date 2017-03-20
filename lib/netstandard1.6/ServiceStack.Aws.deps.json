@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v1.6/",
-    "signature": "0d4d565ed1746fefbe16fd009583349241bda368"
+    "signature": "c0bfdd17a36505a957d39e9cfcd9e586bcfb237b"
   },
   "compilationOptions": {},
   "targets": {
@@ -10,10 +10,10 @@
       "ServiceStack.Aws/1.0.0": {
         "dependencies": {
           "NETStandard.Library": "1.6.0",
-          "AWSSDK.Core": "3.3.2.1",
-          "AWSSDK.DynamoDBv2": "3.3.0.1",
-          "AWSSDK.S3": "3.3.1",
-          "AWSSDK.SQS": "3.3.0.1",
+          "AWSSDK.Core": "3.3.7.1",
+          "AWSSDK.DynamoDBv2": "3.3.1.5",
+          "AWSSDK.S3": "3.3.5.2",
+          "AWSSDK.SQS": "3.3.1.6",
           "System.ServiceModel.Primitives": "4.1.0",
           "System.Linq.Queryable": "4.0.1",
           "System.Threading": "4.0.11",
@@ -30,7 +30,7 @@
           "ServiceStack.Aws.dll": {}
         }
       },
-      "AWSSDK.Core/3.3.2.1": {
+      "AWSSDK.Core/3.3.7.1": {
         "dependencies": {
           "Microsoft.CSharp": "4.0.1",
           "System.Collections": "4.0.11",
@@ -58,25 +58,25 @@
           "lib/netstandard1.3/AWSSDK.Core.dll": {}
         }
       },
-      "AWSSDK.DynamoDBv2/3.3.0.1": {
+      "AWSSDK.DynamoDBv2/3.3.1.5": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.2.1"
+          "AWSSDK.Core": "3.3.7.1"
         },
         "runtime": {
           "lib/netstandard1.3/AWSSDK.DynamoDBv2.dll": {}
         }
       },
-      "AWSSDK.S3/3.3.1": {
+      "AWSSDK.S3/3.3.5.2": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.2.1"
+          "AWSSDK.Core": "3.3.7.1"
         },
         "runtime": {
           "lib/netstandard1.3/AWSSDK.S3.dll": {}
         }
       },
-      "AWSSDK.SQS/3.3.0.1": {
+      "AWSSDK.SQS/3.3.1.6": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.2.1"
+          "AWSSDK.Core": "3.3.7.1"
         },
         "runtime": {
           "lib/netstandard1.3/AWSSDK.SQS.dll": {}
@@ -1292,25 +1292,25 @@
       "serviceable": false,
       "sha512": ""
     },
-    "AWSSDK.Core/3.3.2.1": {
+    "AWSSDK.Core/3.3.7.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-CWvWry7IiKKyNc6Kjcm2PofJCSCoxnOfoCKsFl4VNg6Niq+xsCfGhxn0ZKkdV8IAxaGKZNRSoaBk2ZW3Cr5OKg=="
+      "sha512": "sha512-8rhss2QJ5xZJZgdq8xQrNyVDwSijIWhDY/crc9S+GFHCnwRDA321Et0ZGdao3QtVyN2rl2suxxeYYfDJYK+1VA=="
     },
-    "AWSSDK.DynamoDBv2/3.3.0.1": {
+    "AWSSDK.DynamoDBv2/3.3.1.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-HpCoTLC1z2TXo8ajGA9FjRU+qtIqUJL/SwnVXRw1UXUcn3y3+k7jPx4fvgvePx0YrD81RMHzHXAZ/V0oO8Jhng=="
+      "sha512": "sha512-xKbS2z5XB/AeVLkGwzytDd211kGbpc/Vzx5m8ffKlitKc5oq/98+/SniDepHg+f0K9yNCNlPjzRS+95OKTQcIw=="
     },
-    "AWSSDK.S3/3.3.1": {
+    "AWSSDK.S3/3.3.5.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-3PDKEPIPagQDBgc/gjd+rM4Q/yG0VP/b4smVJvpxtVZQiV+zJftzX1a1f0nrW+c3/8zZCkf4XFRjY7/aYuxEhg=="
+      "sha512": "sha512-tf7lTPSGz2kwvxaLPsm8tVqmHQ1RD4o0qq+2SXL49pzSs/6rULY/4RRf1JkRRtxFPh26fXuicfYc7AvNvn3lFw=="
     },
-    "AWSSDK.SQS/3.3.0.1": {
+    "AWSSDK.SQS/3.3.1.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-uP+K5wUenCJ+qrKKBB0hvh76eZkBwI+93OGQ04uHVY+xjkgn8hMMXYYFUFzuNHkD86Dkm5IsGZaL57tQYh1Y0Q=="
+      "sha512": "sha512-/Wvnw/Oo+fwI83jatMor4HwGsYMm6OjoFae6TlkM2qFtZS8lh0sE9wDZokfx1S6hYlmbciTcDrPbBKommjq1wQ=="
     },
     "Microsoft.CSharp/4.0.1": {
       "type": "package",

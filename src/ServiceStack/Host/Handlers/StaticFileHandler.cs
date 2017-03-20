@@ -85,6 +85,8 @@ namespace ServiceStack.Host.Handlers
         private static DateTime DefaultFileModified { get; set; }
         private static string DefaultFilePath { get; set; }
         private static byte[] DefaultFileContents { get; set; }
+        private static byte[] DefaultFileContentsGzip { get; set; }
+        private static byte[] DefaultFileContentsDeflate { get; set; }
         public IVirtualNode VirtualNode { get; set; }
 
         /// <summary>
@@ -175,6 +177,8 @@ namespace ServiceStack.Host.Handlers
 
                 try
                 {
+                    var encoding = request.GetCompressionType();
+                    var shouldCompress = encoding != null && HostContext.AppHost.ShouldCompressFile(file);
                     r.AddHeaderLastModified(file.LastModified);
                     r.ContentType = MimeTypes.GetMimeType(file.Name);
 
@@ -191,7 +195,33 @@ namespace ServiceStack.Host.Handlers
                         if (file.LastModified > DefaultFileModified)
                             SetDefaultFile(DefaultFilePath, file.ReadAllBytes(), file.LastModified); //reload
 
-                        r.OutputStream.Write(DefaultFileContents, 0, DefaultFileContents.Length);
+                        if (!shouldCompress)
+                        {
+                            r.OutputStream.Write(DefaultFileContents, 0, DefaultFileContents.Length);
+                        }
+                        else
+                        {
+                            byte[] zipBytes = null;
+                            if (encoding == CompressionTypes.GZip)
+                            {
+                                zipBytes = DefaultFileContentsGzip ??
+                                           (DefaultFileContentsGzip = DefaultFileContents.CompressBytes(encoding));
+                            }
+                            else if (encoding == CompressionTypes.Deflate)
+                            {
+                                zipBytes = DefaultFileContentsDeflate ??
+                                           (DefaultFileContentsDeflate = DefaultFileContents.CompressBytes(encoding));
+                            }
+                            else
+                            {
+                                zipBytes = DefaultFileContents.CompressBytes(encoding);
+                            }
+                            r.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                            r.SetContentLength(zipBytes.Length);
+                            r.OutputStream.Write(zipBytes, 0, zipBytes.Length);
+                            r.OutputStream.Flush();
+                        }
+
                         r.Close();
                         return;
                     }
@@ -214,7 +244,6 @@ namespace ServiceStack.Host.Handlers
                     {
                         rangeStart = 0;
                         rangeEnd = contentLength - 1;
-                        r.SetContentLength(contentLength); //throws with ASP.NET webdev server non-IIS pipelined mode
                     }
                     var outputStream = r.OutputStream;
                     using (var fs = file.OpenRead())
@@ -225,8 +254,20 @@ namespace ServiceStack.Host.Handlers
                         }
                         else
                         {
-                            fs.CopyTo(outputStream, BufferSize);
-                            outputStream.Flush();
+                            if (!shouldCompress)
+                            {
+                                r.SetContentLength(contentLength);
+                                fs.CopyTo(outputStream, BufferSize);
+                                outputStream.Flush();
+                            }
+                            else
+                            {
+                                r.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                                outputStream = outputStream.CompressStream(encoding);
+                                fs.CopyTo(outputStream);
+                                outputStream.Flush();
+                                outputStream.Close();
+                            }
                         }
                     }
                 }

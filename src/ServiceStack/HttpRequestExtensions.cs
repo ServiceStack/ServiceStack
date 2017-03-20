@@ -1053,5 +1053,10 @@ namespace ServiceStack
             req.Items.TryGetValue(Keywords.Route, out route);
             return route as RestPath;
         }
+
+        public static bool IsHtml(this IRequest req)
+        {
+            return req.ResponseContentType.MatchesContentType(MimeTypes.Html);
+        }
     }
 }

@@ -58,12 +58,13 @@ namespace ServiceStack.Auth
         }
     }
 
+    [Obsolete("Use normal RegistrationFeature and have your IAuthRepository implement ICustomUserAuth instead")]
     [DefaultRequest(typeof(Register))]
-    public class RegisterService : RegisterService<UserAuth> { }
+    public class RegisterService<TUserAuth> : RegisterService
+        where TUserAuth : class, IUserAuth { }
 
     [DefaultRequest(typeof(Register))]
-    public class RegisterService<TUserAuth> : Service
-        where TUserAuth : class, IUserAuth
+    public class RegisterService : Service
     {
         public static ValidateFn ValidateFn { get; set; }
 
@@ -90,11 +91,11 @@ namespace ServiceStack.Auth
 
             RegisterResponse response = null;
             var session = this.GetSession();
-            var newUserAuth = ToUserAuth(request);
             bool registerNewUser;
             IUserAuth user;
 
             var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+            var newUserAuth = ToUserAuth(authRepo, request);
             using (authRepo as IDisposable)
             {
                 var existingUser = authRepo.GetUserAuth(session, null);
@@ -174,9 +175,14 @@ namespace ServiceStack.Auth
             return response;
         }
 
-        public TUserAuth ToUserAuth(Register request)
+        public IUserAuth ToUserAuth(IAuthRepository authRepo, Register request)
         {
-            var to = request.ConvertTo<TUserAuth>();
+            var customUserAuth = authRepo as ICustomUserAuth;
+            var to = customUserAuth != null
+                ? customUserAuth.CreateUserAuth()
+                : new UserAuth();
+
+            to.PopulateInstance(request);
             to.PrimaryEmail = request.Email;
             return to;
         }
@@ -205,7 +211,7 @@ namespace ServiceStack.Auth
                 if (existingUser == null)
                     throw HttpError.NotFound(ErrorMessages.UserNotExists);
 
-                var newUserAuth = ToUserAuth(request);
+                var newUserAuth = ToUserAuth(authRepo, request);
                 authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
 
                 return new RegisterResponse

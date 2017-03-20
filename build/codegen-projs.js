@@ -34,6 +34,7 @@ var SIGN_PROJS = [
     '../src/ServiceStack.Client/ServiceStack.Client.csproj',
     '../src/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj',
     '../src/ServiceStack.Server/ServiceStack.Server.csproj',
+    '../src/ServiceStack.RabbitMq/ServiceStack.RabbitMq.csproj',
     '../src/ServiceStack.Razor/ServiceStack.Razor.csproj',
     '../src/ServiceStack.ProtoBuf/ServiceStack.ProtoBuf.csproj',
     '../src/ServiceStack.Api.Swagger/ServiceStack.Api.Swagger.csproj',

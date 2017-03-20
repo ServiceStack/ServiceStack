@@ -1,47 +1,48 @@
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-// See the License for the specific language governing permissions and 
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
 // limitations under the License.
-// 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+//
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
 namespace ServiceStack.FluentValidation.Validators
 {
-    using System;
-    using Attributes;
-    using Internal;
-    using Resources;
-    using Results;
+	using System;
+	using Attributes;
+	using Internal;
+	using Resources;
+	using Results;
 
-    public class PredicateValidator : PropertyValidator, IPredicateValidator {
+	public class PredicateValidator : PropertyValidator, IPredicateValidator {
         public delegate bool Predicate(object instanceToValidate, object propertyValue, PropertyValidatorContext propertyValidatorContext);
 
-        private readonly Predicate predicate;
+		private readonly Predicate predicate;
 
-        public PredicateValidator(Predicate predicate) : base(() => Messages.predicate_error, ValidationErrors.Predicate) {
-            predicate.Guard("A predicate must be specified.");
+		public PredicateValidator(Predicate predicate) : base(nameof(Messages.predicate_error), typeof(Messages)) {
+			predicate.Guard("A predicate must be specified.");
+            ErrorCodeSource = new StaticStringSource(ValidationErrors.Predicate);
             this.predicate = predicate;
-        }
+		}
 
-        protected override bool IsValid(PropertyValidatorContext context) {
-            if (!predicate(context.Instance, context.PropertyValue, context)) {
-                return false;
-            }
+		protected override bool IsValid(PropertyValidatorContext context) {
+			if (!predicate(context.Instance, context.PropertyValue, context)) {
+				return false;
+			}
 
-            return true;
-        }
-    }
+			return true;
+		}
+	}
 
-    public interface IPredicateValidator : IPropertyValidator { }
+	public interface IPredicateValidator : IPropertyValidator { }
 }

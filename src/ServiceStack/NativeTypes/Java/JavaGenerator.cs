@@ -37,6 +37,7 @@ namespace ServiceStack.NativeTypes.Java
             "net.servicestack.client.*",
         };
 
+        public static string JavaIoNamespace = "java.io.*";
         public static string GSonAnnotationsNamespace = "com.google.gson.annotations.*";
         public static string GSonReflectNamespace = "com.google.gson.reflect.*";
 
@@ -75,6 +76,7 @@ namespace ServiceStack.NativeTypes.Java
             {"Type", "Class"},
             {"List", "ArrayList"},
             {"Dictionary", "HashMap"},
+            {"Stream", "InputStream"},
         }.ToConcurrentDictionary();
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
@@ -93,12 +95,17 @@ namespace ServiceStack.NativeTypes.Java
             {
                 defaultImports = Config.DefaultImports;
             }
-            else if (ReferencesGson(metadata))
+            else
             {
-                if (!defaultImports.Contains(GSonAnnotationsNamespace))
-                    defaultImports.Add(GSonAnnotationsNamespace);
-                if (!defaultImports.Contains(GSonReflectNamespace))
-                    defaultImports.Add(GSonReflectNamespace);
+                if (ReferencesGson(metadata))
+                {
+                    defaultImports.AddIfNotExists(GSonAnnotationsNamespace);
+                    defaultImports.AddIfNotExists(GSonReflectNamespace);
+                }
+                if (ReferencesStream(metadata))
+                {
+                    defaultImports.AddIfNotExists(JavaIoNamespace);
+                }
             }
 
             var defaultNamespace = Config.GlobalNamespace ?? DefaultGlobalNamespace;
@@ -246,19 +253,16 @@ namespace ServiceStack.NativeTypes.Java
 
         private bool ReferencesGson(MetadataTypes metadata)
         {
-            var allTypes = GetAllMetadataTypes(metadata);
-            return allTypes.Any(x => JavaGeneratorExtensions.JavaKeyWords.Contains(x.Name)
-                || x.Properties.Safe().Any(p => p.DataMember != null && p.DataMember.Name != null)
-                || (x.ReturnMarkerTypeName != null && x.ReturnMarkerTypeName.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
+            return metadata.GetAllMetadataTypes()
+                .Any(x => x.Properties.Safe().Any(p => JavaGeneratorExtensions.JavaKeyWords.Contains(p.Name.PropertyStyle()))
+                    || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
+                    || (x.ReturnMarkerTypeName != null && x.ReturnMarkerTypeName.Name.IndexOf('`') >= 0) //uses TypeToken<T>
+                );
         }
 
-        private static List<MetadataType> GetAllMetadataTypes(MetadataTypes metadata)
+        private static bool ReferencesStream(MetadataTypes metadata)
         {
-            var allTypes = new List<MetadataType>();
-            allTypes.AddRange(metadata.Types);
-            allTypes.AddRange(metadata.Operations.Where(x => x.Request != null).Select(x => x.Request));
-            allTypes.AddRange(metadata.Operations.Where(x => x.Response != null).Select(x => x.Request));
-            return allTypes;
+            return metadata.GetAllMetadataTypes().Any(x => x.Name == "Stream" && x.Namespace == "System.IO");
         }
 
         //Use built-in types already in net.servicestack.client package

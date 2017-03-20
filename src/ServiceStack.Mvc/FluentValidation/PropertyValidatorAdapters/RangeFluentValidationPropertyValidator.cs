@@ -24,7 +24,7 @@ namespace FluentValidation.Mvc {
 				.AppendArgument("From", RangeValidator.From)
 				.AppendArgument("To", RangeValidator.To);
 
-			string message = RangeValidator.ErrorMessageSource.GetString();
+			string message = RangeValidator.ErrorMessageSource.GetString(Metadata);
 
 			if (RangeValidator.ErrorMessageSource.ResourceType == typeof(Messages)) {
 				// If we're using the default resources then the mesage for length errors will have two parts, eg:

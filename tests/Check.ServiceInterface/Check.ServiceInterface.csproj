@@ -60,7 +60,9 @@
     <Compile Include="AnonTypeService.cs" />
     <Compile Include="AutoQueryDataServices.cs" />
     <Compile Include="AutoQueryServices.cs" />
+    <Compile Include="BuiltInDtosService.cs" />
     <Compile Include="ChangeRequestService.cs" />
+    <Compile Include="CompressedServices.cs" />
     <Compile Include="CustomRoutesService.cs" />
     <Compile Include="ErrorServices.cs" />
     <Compile Include="FallbackRouteService.cs" />

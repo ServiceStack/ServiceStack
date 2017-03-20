@@ -42,7 +42,6 @@ namespace ServiceStack
         /// The request filter is called before any request.
         /// This request filter is executed globally.
         /// </summary>
-        private static Action<HttpWebRequest> globalRequestFilter;
         public static Action<HttpWebRequest> GlobalRequestFilter
         {
             get
@@ -55,6 +54,7 @@ namespace ServiceStack
                 AsyncServiceClient.GlobalRequestFilter = value;
             }
         }
+        private static Action<HttpWebRequest> globalRequestFilter;
 
         /// <summary>
         /// The response action is called once the server response is available.
@@ -62,7 +62,6 @@ namespace ServiceStack
         /// This response action is executed globally.
         /// Note that you should NOT consume the response stream as this is handled by ServiceStack
         /// </summary>
-        private static Action<HttpWebResponse> globalResponseFilter;
         public static Action<HttpWebResponse> GlobalResponseFilter
         {
             get
@@ -75,6 +74,7 @@ namespace ServiceStack
                 AsyncServiceClient.GlobalResponseFilter = value;
             }
         }
+        private static Action<HttpWebResponse> globalResponseFilter;
 
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
@@ -132,21 +132,9 @@ namespace ServiceStack
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/oneway/";
         }
 
-        private class AccessToken
-        {
-            private string token;
-            internal static readonly AccessToken __accessToken =
-                new AccessToken("lUjBZNG56eE9yd3FQdVFSTy9qeGl5dlI5RmZwamc4U05udl000");
-            private AccessToken(string token)
-            {
-                this.token = token;
-            }
-        }
-
         /// <summary>
         /// Whether to Accept Gzip,Deflate Content-Encoding and to auto decompress responses
         /// </summary>
-        private bool disableAutoCompression;
         public bool DisableAutoCompression
         {
             get { return disableAutoCompression; }
@@ -156,13 +144,13 @@ namespace ServiceStack
                 asyncClient.DisableAutoCompression = value;
             }
         }
+        private bool disableAutoCompression;
 
         public string RequestCompressionType { get; set; }
 
         /// <summary>
         /// The user name for basic authentication
         /// </summary>
-        private string username;
         public string UserName
         {
             get { return username; }
@@ -172,11 +160,11 @@ namespace ServiceStack
                 asyncClient.UserName = value;
             }
         }
+        private string username;
 
         /// <summary>
         /// The password for basic authentication
         /// </summary>
-        private string password;
         public string Password
         {
             get { return password; }
@@ -186,6 +174,7 @@ namespace ServiceStack
                 asyncClient.Password = value;
             }
         }
+        private string password;
 
         /// <summary>
         /// Sets the username and the password for basic authentication.
@@ -199,7 +188,6 @@ namespace ServiceStack
         /// <summary>
         /// The Authorization Bearer Token to send with this request
         /// </summary>
-        private string bearerToken;
         public string BearerToken
         {
             get { return bearerToken; }
@@ -209,6 +197,7 @@ namespace ServiceStack
                 asyncClient.BearerToken = value;
             }
         }
+        private string bearerToken;
 
         public string BaseUri { get; set; }
 
@@ -221,7 +210,6 @@ namespace ServiceStack
         public int Version { get; set; }
         public string SessionId { get; set; }
 
-        private string userAgent;
         public string UserAgent
         {
             get
@@ -234,8 +222,8 @@ namespace ServiceStack
                 asyncClient.UserAgent = value;
             }
         }
+        private string userAgent;
 
-        private TimeSpan? timeout;
         public TimeSpan? Timeout
         {
             get { return this.timeout; }
@@ -245,8 +233,8 @@ namespace ServiceStack
                 this.asyncClient.Timeout = value;
             }
         }
+        private TimeSpan? timeout;
 
-        private TimeSpan? readWriteTimeout;
         public TimeSpan? ReadWriteTimeout
         {
             get { return this.readWriteTimeout; }
@@ -257,11 +245,9 @@ namespace ServiceStack
                 //this.asyncClient.ReadWriteTimeout = value;
             }
         }
+        private TimeSpan? readWriteTimeout;
 
-        public virtual string Accept
-        {
-            get { return ContentType; }
-        }
+        public virtual string Accept => ContentType;
 
         public abstract string ContentType { get; }
 
@@ -332,31 +318,30 @@ namespace ServiceStack
         /// Determines if the basic auth header should be sent with every request.
         /// By default, the basic auth header is only sent when "401 Unauthorized" is returned.
         /// </summary>
-        private bool alwaysSendBasicAuthHeader;
         public bool AlwaysSendBasicAuthHeader
         {
             get { return alwaysSendBasicAuthHeader; }
             set { asyncClient.AlwaysSendBasicAuthHeader = alwaysSendBasicAuthHeader = value; }
         }
+        private bool alwaysSendBasicAuthHeader;
 
         /// <summary>
         /// Specifies if cookies should be stored
         /// </summary>
-        private bool storeCookies;
         public bool StoreCookies
         {
             get { return storeCookies; }
             set { asyncClient.StoreCookies = storeCookies = value; }
         }
+        private bool storeCookies;
 
-        private CookieContainer cookieContainer;
         public CookieContainer CookieContainer
         {
             get { return cookieContainer; }
             set { asyncClient.CookieContainer = cookieContainer = value; }
         }
+        private CookieContainer cookieContainer;
 
-        private bool allowAutoRedirect = true;
         public bool AllowAutoRedirect
         {
             get { return allowAutoRedirect; }
@@ -367,11 +352,11 @@ namespace ServiceStack
                 // asyncClient.AllowAutoRedirect = value;
             }
         }
+        private bool allowAutoRedirect = true;
 
         /// <summary>
         /// Called before request resend, when the initial request required authentication
         /// </summary>
-        private Action onAuthenticationRequired { get; set; }
         public Action OnAuthenticationRequired
         {
             get
@@ -384,12 +369,41 @@ namespace ServiceStack
                 asyncClient.OnAuthenticationRequired = value;
             }
         }
+        private Action onAuthenticationRequired;
+
+        /// <summary>
+        /// If a request fails with a 401 Unauthorized and a BearerToken is present the client
+        /// will automatically fetch a new AccessToken using this RefreshToken and retry the request
+        /// </summary>
+        public string RefreshToken
+        {
+            get { return refreshToken; }
+            set
+            {
+                refreshToken = value;
+                asyncClient.RefreshToken = value;
+            }
+        }
+        private string refreshToken;
+
+        /// <summary>
+        /// Send the Request to get the AccessToken with the RefreshToken at a non-default location
+        /// </summary>
+        public string RefreshTokenUri
+        {
+            get { return refreshTokenUri; }
+            set
+            {
+                refreshTokenUri = value;
+                asyncClient.RefreshTokenUri = value;
+            }
+        }
+        private string refreshTokenUri;
 
         /// <summary>
         /// The request filter is called before any request.
         /// This request filter only works with the instance where it was set (not global).
         /// </summary>
-        private Action<HttpWebRequest> requestFilter { get; set; }
         public Action<HttpWebRequest> RequestFilter
         {
             get
@@ -402,11 +416,11 @@ namespace ServiceStack
                 asyncClient.RequestFilter = value;
             }
         }
+        private Action<HttpWebRequest> requestFilter;
 
         /// <summary>
         /// The ResultsFilter is called before the Request is sent allowing you to return a cached response.
         /// </summary>
-        private ResultsFilterDelegate resultsFilter;
         public ResultsFilterDelegate ResultsFilter
         {
             get
@@ -419,11 +433,11 @@ namespace ServiceStack
                 asyncClient.ResultsFilter = value;
             }
         }
+        private ResultsFilterDelegate resultsFilter;
 
         /// <summary>
         /// The ResultsFilterResponse is called before returning the response allowing responses to be cached.
         /// </summary>
-        private ResultsFilterResponseDelegate resultsFilterResponse;
         public ResultsFilterResponseDelegate ResultsFilterResponse
         {
             get
@@ -436,11 +450,11 @@ namespace ServiceStack
                 asyncClient.ResultsFilterResponse = value;
             }
         }
+        private ResultsFilterResponseDelegate resultsFilterResponse;
 
         /// <summary>
         /// Called with requestUri, ResponseType when server returns 304 NotModified
         /// </summary>
-        public ExceptionFilterDelegate exceptionFilter;
         public ExceptionFilterDelegate ExceptionFilter
         {
             get
@@ -453,13 +467,13 @@ namespace ServiceStack
                 asyncClient.ExceptionFilter = value;
             }
         }
+        public ExceptionFilterDelegate exceptionFilter;
 
         /// <summary>
         /// The response action is called once the server response is available.
         /// It will allow you to access raw response information. 
         /// Note that you should NOT consume the response stream as this is handled by ServiceStack
         /// </summary>
-        private Action<HttpWebResponse> responseFilter { get; set; }
         public Action<HttpWebResponse> ResponseFilter
         {
             get
@@ -472,6 +486,7 @@ namespace ServiceStack
                 asyncClient.ResponseFilter = value;
             }
         }
+        private Action<HttpWebResponse> responseFilter;
 
         public UrlResolverDelegate UrlResolver { get; set; }
 
@@ -578,7 +593,7 @@ namespace ServiceStack
             }
 
             var httpMethod = HttpMethod ?? DefaultHttpMethod;
-            var requestUri = ResolveUrl(httpMethod, UrlResolver == null 
+            var requestUri = ResolveUrl(httpMethod, UrlResolver == null
                 ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
                 : Format + "/reply/" + request.GetType().Name);
 
@@ -644,8 +659,34 @@ namespace ServiceStack
                     (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
                         || credentials != null
                         || bearerToken != null
+                        || refreshToken != null
                         || OnAuthenticationRequired != null))
                 {
+                    if (RefreshToken != null)
+                    {
+                        var refreshRequest = new GetAccessToken { RefreshToken = RefreshToken };
+                        var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
+                        var tokenResponse = uri.PostJsonToUrl(refreshRequest).FromJson<GetAccessTokenResponse>();
+                        var accessToken = tokenResponse?.AccessToken;
+                        if (string.IsNullOrEmpty(accessToken))
+                            throw new Exception("Could not retrieve new AccessToken from: " + uri);
+
+                        var refreshClient = (HttpWebRequest)createWebRequest();
+                        if (this.GetTokenCookie() != null)
+                        {
+                            this.SetTokenCookie(accessToken);
+                            refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
+                        }
+                        else
+                        {
+                            refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                        }
+
+                        var refreshResponse = getResponse(refreshClient);
+                        response = HandleResponse<TResponse>(refreshResponse);
+                        return true;
+                    }
+
                     if (OnAuthenticationRequired != null)
                         OnAuthenticationRequired();
 
@@ -692,7 +733,7 @@ namespace ServiceStack
         private void HandleAuthException(Exception ex, WebRequest client)
         {
             var webEx = ex as WebException;
-            if (webEx != null && webEx.Response != null)
+            if (webEx?.Response != null)
             {
                 var headers = ((HttpWebResponse)webEx.Response).Headers;
                 var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
@@ -1689,7 +1730,7 @@ namespace ServiceStack
             }
         }
 
-    
+
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
             var currentStreamPosition = fileToUpload.Position;
@@ -1735,7 +1776,7 @@ namespace ServiceStack
             var response = GetResponse<TResponse>(webResponse);
             DisposeIfRequired<TResponse>(webResponse);
 
-            return response;            
+            return response;
         }
 
         private static void DisposeIfRequired<TResponse>(WebResponse webResponse)
@@ -1745,7 +1786,7 @@ namespace ServiceStack
             if (typeof(TResponse) == typeof(Stream))
                 return;
 
-            using (webResponse) {}
+            using (webResponse) { }
         }
 
         protected TResponse GetResponse<TResponse>(WebResponse webResponse)
@@ -1941,6 +1982,13 @@ namespace ServiceStack
             if (hasCookies == null)
                 throw new NotSupportedException("Client does not implement IHasCookieContainer");
 
+            hasCookies.CookieContainer.SetCookie(baseUri, name, value, expiresAt, path, httpOnly, secure);
+        }
+
+        public static void SetCookie(this CookieContainer cookieContainer, 
+            Uri baseUri, string name, string value, DateTime? expiresAt,
+            string path = "/", bool? httpOnly = null, bool? secure = null)
+        {
             var cookie = new Cookie(name, value, path);
             if (expiresAt != null)
                 cookie.Expires = expiresAt.Value;
@@ -1951,7 +1999,7 @@ namespace ServiceStack
             if (secure != null)
                 cookie.Secure = secure.Value;
 
-            hasCookies.CookieContainer.Add(baseUri, cookie);
+            cookieContainer.Add(baseUri, cookie);
         }
 
         public static string GetSessionId(this IServiceClient client)
@@ -1981,13 +2029,20 @@ namespace ServiceStack
             if (sessionId == null)
                 return;
 
-            client.SetCookie("ss-pid", sessionId, expiresIn:TimeSpan.FromDays(365 * 20));
+            client.SetCookie("ss-pid", sessionId, expiresIn: TimeSpan.FromDays(365 * 20));
         }
 
         public static string GetTokenCookie(this IServiceClient client)
         {
             string token;
             client.GetCookieValues().TryGetValue("ss-tok", out token);
+            return token;
+        }
+
+        public static string GetTokenCookie(this CookieContainer cookies, string baseUri)
+        {
+            string token;
+            cookies.ToDictionary(baseUri).TryGetValue("ss-tok", out token);
             return token;
         }
 
@@ -1999,13 +2054,18 @@ namespace ServiceStack
             client.SetCookie("ss-tok", token, expiresIn: TimeSpan.FromDays(365 * 20));
         }
 
+        public static void SetTokenCookie(this CookieContainer cookies, string baseUri, string token)
+        {
+            if (token == null)
+                return;
+
+            cookies.SetCookie(new Uri(baseUri), "ss-tok", token,
+                expiresAt: DateTime.UtcNow.Add(TimeSpan.FromDays(365 * 20)));
+        }
+
         public static void SetUserAgent(this HttpWebRequest req, string userAgent)
         {
-#if !(PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
-            req.UserAgent = userAgent;
-#else
-            req.Headers[HttpRequestHeader.UserAgent] = userAgent;
-#endif
+            PclExport.Instance.SetUserAgent(req, userAgent);
         }
     }
 

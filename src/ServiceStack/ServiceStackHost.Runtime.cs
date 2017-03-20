@@ -19,6 +19,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
@@ -191,9 +192,8 @@ namespace ServiceStack
 
         protected virtual bool ApplyResponseFiltersSingle(IRequest req, IResponse res, object response)
         {
-            var responseDto = response.GetResponseDto();
-            var attributes = responseDto != null
-                ? FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType())
+            var attributes = req.Dto != null
+                ? FilterAttributeCache.GetResponseFilterAttributes(req.Dto.GetType())
                 : null;
 
             //Exec all ResponseFilter attributes with Priority < 0
@@ -652,7 +652,14 @@ namespace ServiceStack
             return TryResolve<IAuthRepository>();
         }
 
-        public virtual ICookies GetCookies(IHttpResponse res) => Cookies.CreateCookies(res);
+        public virtual ICookies GetCookies(IHttpResponse res) => new Cookies(res);
+
+        public virtual bool ShouldCompressFile(IVirtualFile file)
+        {
+            return !string.IsNullOrEmpty(file.Extension) 
+                && Config.CompressFilesWithExtensions.Contains(file.Extension)
+                && (Config.CompressFilesLargerThanBytes == null || file.Length > Config.CompressFilesLargerThanBytes);
+        }
     }
 
 }

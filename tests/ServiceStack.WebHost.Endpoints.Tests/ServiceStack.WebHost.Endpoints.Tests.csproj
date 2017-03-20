@@ -166,9 +166,6 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Moq">
-      <HintPath>..\..\lib\tests\Moq.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Data.Sqlite">
       <HintPath>..\..\lib\tests\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
@@ -201,11 +198,16 @@
     <Compile Include="CacheServerFeatureTests.cs" />
     <Compile Include="CancellableRequestTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="CompressResponseTests.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="ContentTypeTests.cs" />
     <Compile Include="CsvServiceClientTests.cs" />
     <Compile Include="CustomerRestExample.cs" />
     <Compile Include="CustomFormatTests.cs" />
+    <Compile Include="IntegrationTests\OAuthIntegrationTests.cs" />
+    <Compile Include="CustomOrmLiteAuthRepositoryTests.cs" />
+    <Compile Include="RawRequestTests.cs" />
+    <Compile Include="UseCases\JwtAuthProviderTokenCookieExample.cs" />
     <Compile Include="VirtualFileSystemMappingTests.cs" />
     <Compile Include="ZipServiceClientTests.cs" />
     <Compile Include="HttpErrorSyncTests.cs" />
@@ -392,6 +394,7 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="App_Data\accesstokens.txt" />
     <Content Include="TestExistingDir\textfile.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -426,7 +429,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Data\" />
     <Folder Include="ServiceModel\" />
   </ItemGroup>
   <ItemGroup>

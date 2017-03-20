@@ -117,10 +117,9 @@ namespace ServiceStack.Common.Tests.OAuth
     ""full_name"":""{1}""
 }";
 
-        public string DownloadTwitterUserInfo(OAuthAccessToken oauthToken, string twitterUserId)
+        public string DownloadTwitterUserInfo(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId)
         {
             twitterUserId.ThrowIfNullOrEmpty("twitterUserId");
-
             return JsonTwitter.Fmt(Tokens.DisplayName);
         }
 
@@ -138,6 +137,27 @@ namespace ServiceStack.Common.Tests.OAuth
 
             return JsonYammer.Fmt(Tokens.UserId, Tokens.DisplayName,
                 Tokens.FirstName, Tokens.LastName, Tokens.Email);
+        }
+
+        public string DownloadGithubUserInfo(string accessToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public string DownloadGithubUserEmailsInfo(string accessToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret,
+            out string userId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public bool VerifyFacebookAccessToken(string appId, string accessToken)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

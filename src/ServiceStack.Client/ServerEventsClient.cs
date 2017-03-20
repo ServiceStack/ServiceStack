@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -138,6 +138,9 @@ namespace ServiceStack
 
         public Action<WebRequest> EventStreamRequestFilter { get; set; }
         public Action<WebRequest> HeartbeatRequestFilter { get; set; }
+
+        readonly Dictionary<string, List<Action<ServerEventMessage>>> listeners =
+            new Dictionary<string, List<Action<ServerEventMessage>>>();
 
         public ServerEventsClient(string baseUri, params string[] channels)
         {
@@ -559,6 +562,10 @@ namespace ServiceStack
                             break;
                     }
                 }
+                else if (e.Op == "trigger")
+                {
+                    RaiseEvent(e.Target, e);
+                }
 
                 ServerEventCallback receiver;
                 NamedReceivers.TryGetValue(e.Op, out receiver);
@@ -638,7 +645,7 @@ namespace ServiceStack
                 EnsureSynchronizationContext();
                 try {
                     ConnectionInfo.UnRegisterUrl.GetStringFromUrl();
-                } catch (Exception ignore) {}
+                } catch (Exception) {}
             }
 
             using (response)
@@ -667,6 +674,58 @@ namespace ServiceStack
                 snapshot.RemoveAll(unsubscribe.Contains);
             }
             this.Channels = snapshot.ToArray();
+        }
+
+        public ServerEventsClient AddListener(string eventName, Action<ServerEventMessage> handler)
+        {
+            lock (listeners)
+            {
+                List<Action<ServerEventMessage>> handlers;
+                if (!listeners.TryGetValue(eventName, out handlers))
+                {
+                    listeners[eventName] = handlers = new List<Action<ServerEventMessage>>();
+                }
+
+                handlers.Add(handler);
+            }
+
+            return this;
+        }
+
+        public ServerEventsClient RemoveListener(string eventName, Action<ServerEventMessage> handler)
+        {
+            lock (listeners)
+            {
+                List<Action<ServerEventMessage>> handlers;
+                if (listeners.TryGetValue(eventName, out handlers))
+                {
+                    handlers.Remove(handler);
+                }
+            }
+
+            return this;
+        }
+
+        public void RaiseEvent(string eventName, ServerEventMessage message)
+        {
+            lock (listeners)
+            {
+                List<Action<ServerEventMessage>> handlers;
+                if (listeners.TryGetValue(eventName, out handlers))
+                {
+                    foreach (var handler in handlers)
+                    {
+                        try
+                        {
+                            handler(message);
+                        }
+                        catch (Exception ex)
+                        {
+                            log.Error($"Error whilst executing '{eventName}' handler", ex);
+                        }
+                    }
+                }
+            }
         }
 
         public void Dispose()

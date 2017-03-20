@@ -55,6 +55,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Admin.Signed",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.HttpClient.Signed", "ServiceStack.HttpClient\ServiceStack.HttpClient.Signed.csproj", "{C05DE4A1-84C5-481B-8BD4-C837A1303B01}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.RabbitMq.Signed", "ServiceStack.RabbitMq\ServiceStack.RabbitMq.Signed.csproj", "{E940929C-9E76-41CD-BD09-08029FE9B440}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -188,6 +190,18 @@ Global
 		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|Any CPU.Build.0 = Signed|Any CPU
 		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|x86.ActiveCfg = Release|Any CPU
 		{C05DE4A1-84C5-481B-8BD4-C837A1303B01}.Signed|x86.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Debug|x86.Build.0 = Debug|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Release|x86.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Release|x86.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Signed|x86.ActiveCfg = Release|Any CPU
+		{E940929C-9E76-41CD-BD09-08029FE9B440}.Signed|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -9,7 +9,7 @@ namespace ServiceStack.Metadata
     public class CustomMetadataHandler
         : BaseMetadataHandler
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(CustomMetadataHandler));
+        private static readonly new ILog Log = LogManager.GetLogger(typeof(CustomMetadataHandler));
 
         public CustomMetadataHandler(string contentType, string format)
         {

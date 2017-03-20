@@ -262,8 +262,7 @@ namespace ServiceStack.Support.Markdown
 #if NETSTANDARD1_6
             textWriter.Write(pageContext.MarkdownPage.Contents);
             return;
-#endif
-
+#else
             MarkdownViewBase instance = null;
 			if (this.evaluator != null)
 			{
@@ -285,6 +284,7 @@ namespace ServiceStack.Support.Markdown
 			{
 				instance.OnLoad();
 			}
+#endif
 		}
 
 		private void AddDependentPages(IEnumerable<TemplateBlock> blocks)

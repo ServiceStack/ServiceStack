@@ -4,7 +4,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -574,7 +573,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 });
                 Assert.That(response.Results.Count, Is.EqualTo(3));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (!IsDynamoDb) //DynamoDb doesn't support EndsWith
                     throw;

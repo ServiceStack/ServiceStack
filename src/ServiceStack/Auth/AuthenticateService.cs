@@ -36,7 +36,7 @@ namespace ServiceStack.Auth
         public static string DefaultOAuthProvider { get; private set; }
         public static string DefaultOAuthRealm { get; private set; }
         public static string HtmlRedirect { get; internal set; }
-        public static Func<IServiceBase, Authenticate, AuthenticateResponse, object> AuthResponseDecorator { get; internal set; }
+        public static Func<AuthFilterContext, object> AuthResponseDecorator { get; internal set; }
         internal static IAuthProvider[] AuthProviders = TypeConstants<IAuthProvider>.EmptyArray;
         internal static IAuthWithRequest[] AuthWithRequestProviders = TypeConstants<IAuthWithRequest>.EmptyArray;
         internal static IAuthResponseFilter[] AuthResponseFilters = TypeConstants<IAuthResponseFilter>.EmptyArray;
@@ -170,14 +170,24 @@ namespace ServiceStack.Auth
                 var authResponse = response as AuthenticateResponse;
                 if (authResponse != null)
                 {
+                    var authCtx = new AuthFilterContext {
+                        AuthService = this,
+                        AuthProvider = authProvider,
+                        AuthRequest = request,
+                        AuthResponse = authResponse,
+                        Session = session,
+                        AlreadyAuthenticated = alreadyAuthenticated,
+                        DidAuthenticate = Request.Items.ContainsKey(Keywords.DidAuthenticate),
+                    };
+
                     foreach (var responseFilter in AuthResponseFilters)
                     {
-                        authResponse = responseFilter.Execute(this, authProvider, session, authResponse) ?? authResponse;
+                        responseFilter.Execute(authCtx);
                     }
 
                     if (AuthResponseDecorator != null)
                     {
-                        return AuthResponseDecorator(this, request, authResponse);
+                        return AuthResponseDecorator(authCtx);
                     }
                 }
 

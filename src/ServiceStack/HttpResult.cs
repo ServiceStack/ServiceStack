@@ -192,7 +192,7 @@ namespace ServiceStack
         public void SetCookie(string name, string value, DateTime expiresAt, string path, bool secure = false, bool httpOnly = false)
         {
             path = path ?? "/";
-            var cookie = $"{name}={value};expires={expiresAt.ToString("R")};path={path}";
+            var cookie = $"{name}={value};expires={expiresAt:R};path={path}";
             if (secure)
                 cookie += ";Secure";
             if (httpOnly)
@@ -203,7 +203,7 @@ namespace ServiceStack
 
         public void DeleteCookie(string name)
         {
-            var cookie = $"{name}=;expires={DateTime.UtcNow.AddDays(-1).ToString("R")};path=/";
+            var cookie = $"{name}=;expires={DateTime.UtcNow.AddDays(-1):R};path=/";
             this.Headers[HttpHeaders.SetCookie] = cookie;
         }
 

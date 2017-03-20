@@ -3,7 +3,7 @@ using ServiceStack.Configuration;
 
 namespace ServiceStack.Auth
 {
-    public class OAuthProvider : AuthProvider
+    public abstract class OAuthProvider : AuthProvider
     {
         public OAuthProvider() { }
 
@@ -41,7 +41,6 @@ namespace ServiceStack.Auth
         public string AccessTokenUrl { get; set; }
         public OAuthAuthorizer OAuthUtils { get; set; }
 
-        public bool SaveExtendedUserInfo { get; set; }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
@@ -61,48 +60,7 @@ namespace ServiceStack.Auth
         /// <param name="session"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
-        {
-            var tokens = Init(authService, ref session, request);
-
-            //Default OAuth logic based on Twitter's OAuth workflow
-            if (!tokens.RequestToken.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
-            {
-                OAuthUtils.RequestToken = tokens.RequestToken;
-                OAuthUtils.RequestTokenSecret = tokens.RequestTokenSecret;
-                OAuthUtils.AuthorizationToken = request.oauth_token;
-                OAuthUtils.AuthorizationVerifier = request.oauth_verifier;
-
-                if (OAuthUtils.AcquireAccessToken())
-                {
-                    session.IsAuthenticated = true;
-                    tokens.AccessToken = OAuthUtils.AccessToken;
-                    tokens.AccessTokenSecret = OAuthUtils.AccessTokenSecret;
-
-                    return OnAuthenticated(authService, session, tokens, OAuthUtils.AuthInfo)
-                        ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access
-                }
-
-                //No Joy :(
-                tokens.RequestToken = null;
-                tokens.RequestTokenSecret = null;
-                this.SaveSession(authService, session, SessionExpiry);
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
-            }
-            if (OAuthUtils.AcquireRequestToken())
-            {
-                tokens.RequestToken = OAuthUtils.RequestToken;
-                tokens.RequestTokenSecret = OAuthUtils.RequestTokenSecret;
-                this.SaveSession(authService, session, SessionExpiry);
-
-                //Redirect to OAuth provider to approve access
-                return authService.Redirect(AccessTokenUrlFilter(this, this.AuthorizeUrl
-                    .AddQueryParam("oauth_token", tokens.RequestToken)
-                    .AddQueryParam("oauth_callback", session.ReferrerUrl)));
-            }
-
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));
-        }
+        public abstract override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
 
         /// <summary>
         /// Sets the CallbackUrl and session.ReferrerUrl if not set and initializes the session tokens for this AuthProvider

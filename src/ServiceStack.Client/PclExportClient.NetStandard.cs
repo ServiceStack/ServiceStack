@@ -12,6 +12,7 @@ using ServiceStack;
 using ServiceStack.Web;
 using ServiceStack.Pcl;
 using System.Collections.Generic;
+using System.Globalization;
 
 
 namespace ServiceStack
@@ -52,6 +53,12 @@ namespace ServiceStack
                 {HttpHeaders.Warning,            false}
             };
 
+        static readonly Action<HttpWebRequest, DateTime> SetIfModifiedSinceDelegate = 
+                    (Action<HttpWebRequest, DateTime>)typeof(HttpWebRequest)
+                        .GetProperty("IfModifiedSince")
+                        ?.SetMethod()
+                        ?.CreateDelegate(typeof(Action<HttpWebRequest, DateTime>));
+
         public static PclExportClient Configure()
         {
             Configure(Provider ?? (Provider = new NetStandardPclExportClient()));
@@ -62,6 +69,25 @@ namespace ServiceStack
         public override INameValueCollection NewNameValueCollection()
         {
             return new NameValueCollectionWrapper(new NameValueCollection());
+        }
+
+        public override void SetIfModifiedSince(HttpWebRequest webReq, DateTime lastModified)
+        {
+            //support for Xamarin and .NET platform
+            if (SetIfModifiedSinceDelegate != null)
+            {
+                SetIfModifiedSinceDelegate(webReq, lastModified);
+            } else
+            {
+#if NETSTANDARD1_6
+                if (lastModified == DateTime.MinValue)
+                    webReq.Headers.Remove(HttpHeaders.IfModifiedSince);
+                else
+                    webReq.Headers[HttpHeaders.IfModifiedSince] = lastModified.ToUniversalTime().ToString("R", new DateTimeFormatInfo());
+#else
+                    webReq.Headers[HttpHeaders.IfModifiedSince] = lastModified.ToUniversalTime().ToString("R", new DateTimeFormatInfo());
+#endif
+            }
         }
 
         public override string GetHeader(WebHeaderCollection headers, string name, Func<string, bool> valuePredicate)

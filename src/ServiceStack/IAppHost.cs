@@ -38,6 +38,11 @@ namespace ServiceStack
         /// Called at the end of each request. Enables Request Scope.
         /// </summary>
         void OnEndRequest(IRequest request = null);
+        
+        /// <summary>
+        /// Register callbacks to be called at the end of each request.
+        /// </summary>
+        List<Action<IRequest>> OnEndRequestCallbacks { get; }
 
         /// <summary>
         /// Register user-defined custom routes.

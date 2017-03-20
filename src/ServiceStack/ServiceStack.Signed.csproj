@@ -112,6 +112,7 @@
     <Compile Include="AutoQueryMetadataFeature.cs" />
     <Compile Include="CacheInfo.cs" />
     <Compile Include="CacheResponseAttribute.cs" />
+    <Compile Include="CompressResponseAttribute.cs" />
     <Compile Include="ConnectionInfo.cs" />
     <Compile Include="ConnectionInfoAttribute.cs" />
     <Compile Include="ContainerNetCoreExtensions.cs" />
@@ -119,6 +120,30 @@
     <Compile Include="DisposableTracker.cs" />
     <Compile Include="CustomRequestFilter.cs" />
     <Compile Include="FluentValidation\Internal\CollectionPropertyRule.cs" />
+    <Compile Include="FluentValidation\Internal\Comparer.cs" />
+    <Compile Include="FluentValidation\IParameterValidatorFactory.cs" />
+    <Compile Include="FluentValidation\MemberAccessor.cs" />
+    <Compile Include="FluentValidation\PropertyRuleValidatorExtensions.cs" />
+    <Compile Include="FluentValidation\Resources\LazyStringSource.cs" />
+    <Compile Include="FluentValidation\Resources\Messages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Messages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="FluentValidation\TaskHelpers\TaskHelpers.cs" />
+    <Compile Include="FluentValidation\TaskHelpers\TaskHelpersExtensions.cs" />
+    <Compile Include="FluentValidation\TestHelper\ITestPropertyChain.cs" />
+    <Compile Include="FluentValidation\TestHelper\IValidationResultTester.cs" />
+    <Compile Include="FluentValidation\TestHelper\TestPropertyChain.cs" />
+    <Compile Include="FluentValidation\TestHelper\TestValidationResult.cs" />
+    <Compile Include="FluentValidation\TestHelper\ValidationResultTester.cs" />
+    <Compile Include="FluentValidation\TestHelper\ValidatorTester.cs" />
+    <Compile Include="FluentValidation\Validators\AsyncPredicateValidator.cs" />
+    <Compile Include="FluentValidation\Validators\AsyncValidatorBase.cs" />
+    <Compile Include="FluentValidation\Validators\EmptyValidator.cs" />
+    <Compile Include="FluentValidation\Validators\EnumValidator.cs" />
+    <Compile Include="FluentValidation\Validators\NullValidator.cs" />
+    <Compile Include="FluentValidation\Validators\ScalePrecisionValidator.cs" />
     <Compile Include="Host\Handlers\StaticContentHandler.cs" />
     <Compile Include="AppHostBase.NetCore.cs" />
     <Compile Include="Host\NetCore\NetCoreRequest.cs" />
@@ -146,6 +171,11 @@
     <Compile Include="Platforms\PlatformNetCore.cs" />
     <Compile Include="Platforms\PlatformNetCore.Web.cs" />
     <Compile Include="Platforms\PlatformNetCore.Config.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="RequiresSchemaProviders.cs" />
     <Compile Include="CancellableRequestsFeature.cs" />
     <Compile Include="Configuration\EnvironmentVariableSettings.cs" />
@@ -296,7 +326,6 @@
     <Compile Include="FluentValidation\Internal\DelegateValidator.cs" />
     <Compile Include="FluentValidation\Internal\Extensions.cs" />
     <Compile Include="FluentValidation\Internal\IConfigurable.cs" />
-    <Compile Include="FluentValidation\Internal\IFluentInterface.cs" />
     <Compile Include="FluentValidation\Internal\InstanceCache.cs" />
     <Compile Include="FluentValidation\Internal\IValidatorSelector.cs" />
     <Compile Include="FluentValidation\Internal\MemberNameValidatorSelector.cs" />
@@ -313,13 +342,11 @@
     <Compile Include="FluentValidation\Resources\IResourceAccessorBuilder.cs" />
     <Compile Include="FluentValidation\Resources\IStringSource.cs" />
     <Compile Include="FluentValidation\Resources\LocalizedStringSource.cs" />
-    <Compile Include="FluentValidation\Resources\Messages.Designer.cs" />
     <Compile Include="FluentValidation\Resources\StaticStringSource.cs" />
     <Compile Include="FluentValidation\Results\ValidationFailure.cs" />
     <Compile Include="FluentValidation\Results\ValidationResult.cs" />
     <Compile Include="FluentValidation\Syntax.cs" />
     <Compile Include="FluentValidation\TestHelper\ValidationTestException.cs" />
-    <Compile Include="FluentValidation\TestHelper\ValidatorTester.cs" />
     <Compile Include="FluentValidation\TestHelper\ValidatorTestExtensions.cs" />
     <Compile Include="FluentValidation\ValidationContext.cs" />
     <Compile Include="FluentValidation\ValidationErrors.cs" />
@@ -530,7 +557,6 @@
     <Compile Include="Html\ViewDataDictionary.cs" />
     <Compile Include="Html\ViewDataDictionary`1.cs" />
     <Compile Include="Html\ViewDataInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="Html\ITemplatePage.cs" />
     <Compile Include="FileExtensions.cs" />
     <Compile Include="Host\HttpFile.cs" />
@@ -647,7 +673,10 @@
   <ItemGroup>
     <Compile Include="Funq\Container.Adapter.cs" />
     <None Include="Funq\Container.xdoc" />
-    <EmbeddedResource Include="FluentValidation\Resources\Messages.resx" />
+    <EmbeddedResource Include="FluentValidation\Resources\Messages.resx">
+      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Include="MiniProfiler\UI\includes.tmpl">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -682,7 +711,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <CustomToolNamespace>ServiceStack.ResourceDesigner</CustomToolNamespace>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

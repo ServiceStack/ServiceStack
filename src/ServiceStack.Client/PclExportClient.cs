@@ -1792,12 +1792,7 @@ namespace ServiceStack
 
         public virtual void SetIfModifiedSince(HttpWebRequest webReq, DateTime lastModified)
         {
-#if NETSTANDARD1_6
-            if (lastModified == DateTime.MinValue)
-                webReq.Headers.Remove(HttpHeaders.IfModifiedSince);
-            else
-                webReq.Headers[HttpHeaders.IfModifiedSince] = lastModified.ToUniversalTime().ToString("R", new DateTimeFormatInfo());
-#elif !(PCL || SL5 || NETSTANDARD1_1)
+#if !(PCL || SL5 || NETSTANDARD1_1 || NETSTANDARD1_6)
             webReq.IfModifiedSince = lastModified;
 #endif
         }

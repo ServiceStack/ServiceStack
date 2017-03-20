@@ -62,7 +62,7 @@ namespace ServiceStack.Html
       {
         result = new JSMinifier().Compress(js);
       }
-      catch (Exception ex)
+      catch (Exception)
       {
         if (!ignoreErrors)
         {

@@ -3,18 +3,15 @@
 
 
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Runtime.CompilerServices;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Caching;
 using ServiceStack.Data;
-using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

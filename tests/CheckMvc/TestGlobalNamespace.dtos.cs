@@ -1,11 +1,13 @@
 /* Options:
-Date: 2015-11-23 18:41:03
+Date: 2017-02-08 03:59:46
 Version: 4.00
+Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://test.servicestack.net
 
 GlobalNamespace: testdtos
 //MakePartial: True
 //MakeVirtual: True
+//MakeInternal: False
 //MakeDataContractsExtensible: False
 //AddReturnMarker: True
 //AddDescriptionAsComments: True
@@ -15,8 +17,10 @@ GlobalNamespace: testdtos
 //AddResponseStatus: False
 //AddImplicitVersion: 
 //InitializeCollections: True
+//ExportValueTypes: False
 //IncludeTypes: 
 //ExcludeTypes: 
+//AddNamespaces: 
 //AddDefaultXmlNamespace: http://schemas.servicestack.net/types
 */
 
@@ -26,6 +30,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
+using System.IO;
 using testdtos;
 
 
@@ -125,6 +130,52 @@ namespace testdtos
         public virtual string Background { get; set; }
     }
 
+    [Route("/echo/collections")]
+    public partial class EchoCollections
+        : IReturn<EchoCollections>
+    {
+        public EchoCollections()
+        {
+            StringList = new List<string>{};
+            StringArray = new string[]{};
+            StringMap = new Dictionary<string, string>{};
+            IntStringMap = new Dictionary<int, string>{};
+        }
+
+        public virtual List<string> StringList { get; set; }
+        public virtual string[] StringArray { get; set; }
+        public virtual Dictionary<string, string> StringMap { get; set; }
+        public virtual Dictionary<int, string> IntStringMap { get; set; }
+    }
+
+    public partial class EchoComplexTypes
+        : IReturn<EchoComplexTypes>
+    {
+        public virtual SubType SubType { get; set; }
+    }
+
+    [Route("/echo/types")]
+    public partial class EchoTypes
+        : IReturn<EchoTypes>
+    {
+        public virtual byte Byte { get; set; }
+        public virtual short Short { get; set; }
+        public virtual int Int { get; set; }
+        public virtual long Long { get; set; }
+        public virtual ushort UShort { get; set; }
+        public virtual uint UInt { get; set; }
+        public virtual ulong ULong { get; set; }
+        public virtual float Float { get; set; }
+        public virtual double Double { get; set; }
+        public virtual decimal Decimal { get; set; }
+        public virtual string String { get; set; }
+        public virtual DateTime DateTime { get; set; }
+        public virtual TimeSpan TimeSpan { get; set; }
+        public virtual DateTimeOffset DateTimeOffset { get; set; }
+        public virtual Guid Guid { get; set; }
+        public virtual Char Char { get; set; }
+    }
+
     public partial class GetAccount
         : IReturn<Account>
     {
@@ -136,6 +187,18 @@ namespace testdtos
     {
         public virtual string Account { get; set; }
         public virtual string Project { get; set; }
+    }
+
+    [Route("/Request1", "GET")]
+    public partial class GetRequest1
+        : IReturn<List<ReturnedDto>>, IGet
+    {
+    }
+
+    [Route("/Request2", "GET")]
+    public partial class GetRequest2
+        : IReturn<List<ReturnedDto>>, IGet
+    {
     }
 
     [Route("/session")]
@@ -219,6 +282,11 @@ namespace testdtos
         public virtual string Name { get; set; }
     }
 
+    public partial class ReturnedDto
+    {
+        public virtual int Id { get; set; }
+    }
+
     [Route("/{Path*}")]
     public partial class RootPathRoutes
     {
@@ -261,6 +329,21 @@ namespace testdtos
         public virtual int Id { get; set; }
         public virtual string PathInfo { get; set; }
         public virtual string RequestMethod { get; set; }
+    }
+
+    [Route("/testauth")]
+    public partial class TestAuth
+        : IReturn<TestAuthResponse>
+    {
+    }
+
+    public partial class TestAuthResponse
+    {
+        public virtual string UserId { get; set; }
+        public virtual string SessionId { get; set; }
+        public virtual string UserName { get; set; }
+        public virtual string DisplayName { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
     [Route("/null-response")]
@@ -307,6 +390,9 @@ namespace testdtos
     [DataContract]
     public partial class AllowedAttributes
     {
+        ///<summary>
+        ///Range Description
+        ///</summary>
         [DataMember(Name="Aliased")]
         [ApiMember(ParameterType="path", Description="Range Description", DataType="double", IsRequired=true)]
         public virtual double Range { get; set; }
@@ -315,6 +401,12 @@ namespace testdtos
     public partial class ArrayResult
     {
         public virtual string Result { get; set; }
+    }
+
+    public partial class Channel
+    {
+        public virtual string Name { get; set; }
+        public virtual string Value { get; set; }
     }
 
     public partial class CustomHttpError
@@ -328,6 +420,19 @@ namespace testdtos
     {
         public virtual string Custom { get; set; }
         public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public partial class Device
+    {
+        public Device()
+        {
+            Channels = new List<Channel>{};
+        }
+
+        public virtual long Id { get; set; }
+        public virtual string Type { get; set; }
+        public virtual long TimeStamp { get; set; }
+        public virtual List<Channel> Channels { get; set; }
     }
 
     public partial class EmptyClass
@@ -535,6 +640,15 @@ namespace testdtos
         public virtual string Name { get; set; }
     }
 
+    [Route("/hellotypes/{Name}")]
+    public partial class HelloTypes
+        : IReturn<HelloTypes>
+    {
+        public virtual string String { get; set; }
+        public virtual bool Bool { get; set; }
+        public virtual int Int { get; set; }
+    }
+
     public partial class HelloVerbResponse
     {
         public virtual string Result { get; set; }
@@ -668,6 +782,30 @@ namespace testdtos
         public virtual HelloType Result { get; set; }
     }
 
+    [Route("/hellozip")]
+    [DataContract]
+    public partial class HelloZip
+        : IReturn<HelloZipResponse>
+    {
+        public HelloZip()
+        {
+            Test = new List<string>{};
+        }
+
+        [DataMember]
+        public virtual string Name { get; set; }
+
+        [DataMember]
+        public virtual List<string> Test { get; set; }
+    }
+
+    [DataContract]
+    public partial class HelloZipResponse
+    {
+        [DataMember]
+        public virtual string Result { get; set; }
+    }
+
     public partial interface IEmptyInterface
     {
     }
@@ -680,6 +818,17 @@ namespace testdtos
     public partial class ListResult
     {
         public virtual string Result { get; set; }
+    }
+
+    public partial class Logger
+    {
+        public Logger()
+        {
+            Devices = new List<Device>{};
+        }
+
+        public virtual long Id { get; set; }
+        public virtual List<Device> Devices { get; set; }
     }
 
     [DataContract]
@@ -795,6 +944,37 @@ namespace testdtos
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Route("/return/bytes")]
+    public partial class ReturnBytes
+        : IReturn<byte[]>
+    {
+        public ReturnBytes()
+        {
+            Data = new byte[]{};
+        }
+
+        public virtual byte[] Data { get; set; }
+    }
+
+    [Route("/return/stream")]
+    public partial class ReturnStream
+        : IReturn<Stream>
+    {
+        public ReturnStream()
+        {
+            Data = new byte[]{};
+        }
+
+        public virtual byte[] Data { get; set; }
+    }
+
+    [Route("/return/string")]
+    public partial class ReturnString
+        : IReturn<string>
+    {
+        public virtual string Data { get; set; }
+    }
+
     public partial class Rockstar
     {
         public virtual int Id { get; set; }
@@ -808,6 +988,28 @@ namespace testdtos
     {
         Global = 1,
         Sale = 2,
+    }
+
+    public partial class StoreLogs
+        : IReturn<StoreLogsResponse>
+    {
+        public StoreLogs()
+        {
+            Loggers = new List<Logger>{};
+        }
+
+        public virtual List<Logger> Loggers { get; set; }
+    }
+
+    public partial class StoreLogsResponse
+    {
+        public StoreLogsResponse()
+        {
+            ExistingLogs = new List<Logger>{};
+        }
+
+        public virtual List<Logger> ExistingLogs { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
     [Route("/throw404")]
@@ -941,6 +1143,7 @@ namespace testdtos
         public virtual DateTimeOffset DateTimeOffset { get; set; }
         public virtual Guid Guid { get; set; }
         public virtual Char Char { get; set; }
+        public virtual KeyValuePair<string, string> KeyValuePair { get; set; }
         public virtual DateTime? NullableDateTime { get; set; }
         public virtual TimeSpan? NullableTimeSpan { get; set; }
         public virtual List<string> StringList { get; set; }
