@@ -310,15 +310,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var joinMsgs = new List<ServerEventJoin>();
                 var allJoinsReceived = new TaskCompletionSource<bool>();
 
-                client.OnCommand = msg =>
+                client.OnJoin = msg =>
                 {
-                    var joinMsg = msg as ServerEventJoin;
-                    if (joinMsg != null)
-                    {
-                        joinMsgs.Add(joinMsg);
-                        if (joinMsgs.Count == channels.Length)
-                            allJoinsReceived.SetResult(true);
-                    }
+                    joinMsgs.Add(msg);
+                    if (joinMsgs.Count == channels.Length)
+                        allJoinsReceived.SetResult(true);
                 };
 
                 var connectMsg = await client.Connect().WaitAsync(2000);

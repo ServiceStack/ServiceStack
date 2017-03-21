@@ -131,6 +131,9 @@ namespace ServiceStack
         public DateTime LastPulseAt { get; set; }
 
         public Action<ServerEventConnect> OnConnect;
+        public Action<ServerEventJoin> OnJoin;
+        public Action<ServerEventLeave> OnLeave;
+        public Action<ServerEventUpdate> OnUpdate;
         public Action<ServerEventMessage> OnCommand;
         public Action<ServerEventMessage> OnMessage;
         public Action OnHeartbeat;
@@ -314,6 +317,30 @@ namespace ServiceStack
             //    log.DebugFormat("[SSE-CLIENT] SynchronizationContext.Current == null");
 
             SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        }
+
+        protected void OnJoinReceived(ServerEventJoin e)
+        {
+            if (log.IsDebugEnabled)
+                log.Debug($"[SSE-CLIENT] OnJoinReceived: ({e.GetType().Name}) #{e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
+
+            OnJoin?.Invoke(e);
+        }
+
+        protected void OnLeaveReceived(ServerEventLeave e)
+        {
+            if (log.IsDebugEnabled)
+                log.Debug($"[SSE-CLIENT] OnLeaveReceived: ({e.GetType().Name}) #{e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
+
+            OnLeave?.Invoke(e);
+        }
+
+        protected void OnUpdateReceived(ServerEventUpdate e)
+        {
+            if (log.IsDebugEnabled)
+                log.Debug($"[SSE-CLIENT] OnUpdateReceived: ({e.GetType().Name}) #{e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
+
+            OnUpdate?.Invoke(e);
         }
 
         protected void OnCommandReceived(ServerEventCommand e)
@@ -611,18 +638,21 @@ namespace ServiceStack
         private void ProcessOnJoinMessage(ServerEventMessage e)
         {
             var msg = new ServerEventJoin().Populate(e, JsonServiceClient.ParseObject(e.Json));
+            OnJoinReceived(msg);
             OnCommandReceived(msg);
         }
 
         private void ProcessOnLeaveMessage(ServerEventMessage e)
         {
             var msg = new ServerEventLeave().Populate(e, JsonServiceClient.ParseObject(e.Json));
+            OnLeaveReceived(msg);
             OnCommandReceived(msg);
         }
 
         private void ProcessOnUpdateMessage(ServerEventMessage e)
         {
             var msg = new ServerEventUpdate().Populate(e, JsonServiceClient.ParseObject(e.Json));
+            OnUpdateReceived(msg);
             OnCommandReceived(msg);
         }
 
