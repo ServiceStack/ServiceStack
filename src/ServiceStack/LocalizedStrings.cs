@@ -27,6 +27,7 @@
         public static string HasPreAuthenticated = "__haspreauth";
         public static string DidAuthenticate = "__didauth";
         public static string IRequest = "__irequest";
+        public static string RequestDuration = "_requestDurationStopwatch";
     }
 
     public static class LocalizedStrings
