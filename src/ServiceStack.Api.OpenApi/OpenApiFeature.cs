@@ -20,8 +20,6 @@ namespace ServiceStack.Api.OpenApi
 
         public bool DisableAutoDtoInBodyParam { get; set; }
 
-        public bool UseBootstrapTheme { get; set; }
-
         public string LogoUrl { get; set; }
 
         public Action<OpenApiDeclaration> ApiDeclarationFilter { get; set; }
@@ -67,12 +65,10 @@ namespace ServiceStack.Api.OpenApi
 
             appHost.RegisterService(typeof(OpenApiService), "/openapi");
 
-            var swaggerUrl = UseBootstrapTheme
-                ? "swagger-ui-bootstrap/"
-                : "swagger-ui/";
+            var swaggerUrl = "swagger-ui/";
 
             appHost.GetPlugin<MetadataFeature>()
-                .AddPluginLink(swaggerUrl, "OpenApi UI");
+                .AddPluginLink(swaggerUrl, "Swagger UI");
 
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
             {
@@ -85,11 +81,6 @@ namespace ServiceStack.Api.OpenApi
                     case "/swagger-ui/default.html":
                         indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui/index.html");
                         patchFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch.js");
-                        break;
-                    case "/swagger-ui-bootstrap":
-                    case "/swagger-ui-bootstrap/":
-                    case "/swagger-ui-bootstrap/index.html":
-                        indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui-bootstrap/index.html");
                         break;
                     default:
                         indexFile = null;

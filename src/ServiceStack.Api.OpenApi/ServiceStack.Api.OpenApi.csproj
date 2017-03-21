@@ -95,9 +95,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="swagger-ui-bootstrap\index.html" />
-    <EmbeddedResource Include="swagger-ui-bootstrap\jiko.js" />
-    <EmbeddedResource Include="swagger-ui-bootstrap\swagger-like-template.html" />
     <EmbeddedResource Include="swagger-ui\css\screen.css" />
     <EmbeddedResource Include="swagger-ui\images\logo_small.png" />
     <EmbeddedResource Include="swagger-ui\images\pet_store_api.png" />
