@@ -1429,9 +1429,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             AnnounceInstance = message;
         }
 
-        public void Toggle(string message)
+        public void Toggle()
         {
-            ToggleReceived = message;
+            ToggleReceived = "";
             ToggleRequestReceived = Request;
         }
 
