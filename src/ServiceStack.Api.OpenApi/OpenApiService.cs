@@ -564,10 +564,7 @@ namespace ServiceStack.Api.OpenApi
 
                 if (!apiPaths.TryGetValue(restPath.Path, out curPath))
                 {
-                    curPath = new OpenApiPath()
-                    {
-                        Parameters = new List<OpenApiParameter>() { GetFormatJsonParameter() }
-                    };
+                    curPath = new OpenApiPath();
                     apiPaths.Add(restPath.Path, curPath);
 
                     tags.Add(new OpenApiTag() { Name = restPath.Path, Description = summary });
@@ -578,7 +575,7 @@ namespace ServiceStack.Api.OpenApi
                     var operation = new OpenApiOperation()
                     {
                         Summary = summary,
-                        Description = summary,
+                        Description = restPath.Notes ?? summary,
                         OperationId = requestType.Name + GetOperationNamePostfix(verb),
                         Parameters = ParseParameters(schemas, requestType, verb, routePath),
                         Responses = GetMethodResponseCodes(restPath, schemas, requestType),
