@@ -99,9 +99,7 @@ namespace ServiceStack.Api.Swagger
                 if (indexFile != null)
                 {
                     var html = indexFile.ReadAllText();
-                    var injectJs = patchFile != null
-                        ? patchFile.ReadAllText()
-                        : null;
+                    var injectJs = patchFile?.ReadAllText();
 
                     return new CustomResponseHandler((req, res) =>
                     {
@@ -124,9 +122,6 @@ namespace ServiceStack.Api.Swagger
             });
         }
 
-        public static bool IsEnabled
-        {
-            get { return HostContext.HasPlugin<SwaggerFeature>(); }
-        }
+        public static bool IsEnabled => HostContext.HasPlugin<SwaggerFeature>();
     }
 }

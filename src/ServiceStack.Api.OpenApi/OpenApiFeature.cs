@@ -63,12 +63,13 @@ namespace ServiceStack.Api.OpenApi
             OpenApiService.OperationFilter = OperationFilter;
             OpenApiService.SchemaFilter = SchemaFilter;
             OpenApiService.SchemaPropertyFilter = SchemaPropertyFilter;
+            OpenApiService.AnyRouteVerbs = AnyRouteVerbs.ToArray();
 
-            appHost.RegisterService(typeof(OpenApiService), new[] { "/openapi" });
+            appHost.RegisterService(typeof(OpenApiService), "/openapi");
 
             var swaggerUrl = UseBootstrapTheme
-                ? "openapi-ui-bootstrap/"
-                : "openapi-ui/";
+                ? "swagger-ui-bootstrap/"
+                : "swagger-ui/";
 
             appHost.GetPlugin<MetadataFeature>()
                 .AddPluginLink(swaggerUrl, "OpenApi UI");
@@ -79,16 +80,16 @@ namespace ServiceStack.Api.OpenApi
                 IVirtualFile patchFile = null;
                 switch (pathInfo)
                 {
-                    case "/openapi-ui":
-                    case "/openapi-ui/":
-                    case "/openapi-ui/default.html":
-                        indexFile = appHost.VirtualFileSources.GetFile("/openapi-ui/index.html");
-                        patchFile = appHost.VirtualFileSources.GetFile("/openapi-ui/patch.js");
+                    case "/swagger-ui":
+                    case "/swagger-ui/":
+                    case "/swagger-ui/default.html":
+                        indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui/index.html");
+                        patchFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch.js");
                         break;
-                    case "/openapi-ui-bootstrap":
-                    case "/openapi-ui-bootstrap/":
-                    case "/openapi-ui-bootstrap/index.html":
-                        indexFile = appHost.VirtualFileSources.GetFile("/openapi-ui-bootstrap/index.html");
+                    case "/swagger-ui-bootstrap":
+                    case "/swagger-ui-bootstrap/":
+                    case "/swagger-ui-bootstrap/index.html":
+                        indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui-bootstrap/index.html");
                         break;
                     default:
                         indexFile = null;
@@ -97,9 +98,7 @@ namespace ServiceStack.Api.OpenApi
                 if (indexFile != null)
                 {
                     var html = indexFile.ReadAllText();
-                    var injectJs = patchFile != null
-                        ? patchFile.ReadAllText()
-                        : null;
+                    var injectJs = patchFile?.ReadAllText();
 
                     return new CustomResponseHandler((req, res) =>
                     {
@@ -118,13 +117,10 @@ namespace ServiceStack.Api.OpenApi
                         return html;
                     });
                 }
-                return pathInfo.StartsWith("/openapi-ui") ? new StaticFileHandler() : null;
+                return pathInfo.StartsWith("/swagger-ui") ? new StaticFileHandler() : null;
             });
         }
 
-        public static bool IsEnabled
-        {
-            get { return HostContext.HasPlugin<OpenApiFeature>(); }
-        }
+        public static bool IsEnabled => HostContext.HasPlugin<OpenApiFeature>();
     }
 }

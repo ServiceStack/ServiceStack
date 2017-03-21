@@ -48,11 +48,9 @@ namespace ServiceStack.Api.OpenApi
 
             var meta = HostContext.Metadata;
 
-
             var operations = HostContext.Metadata;
             var allTypes = operations.GetAllOperationTypes();
             var allOperationNames = operations.GetAllOperationNames();
-
 
             foreach (var key in map.Keys)
             {
@@ -84,7 +82,7 @@ namespace ServiceStack.Api.OpenApi
                 BasePath = basePath.AbsolutePath,
                 Schemes = new List<string> { basePath.Scheme }, //TODO: get https from config
                 Host = basePath.Authority,
-                Consumes = new List<string>() { "application/json" },
+                Consumes = new List<string> { "application/json" },
                 Definitions = definitions,
                 Tags = tags.OrderBy(t => t.Name).ToList()
             };
@@ -517,7 +515,7 @@ namespace ServiceStack.Api.OpenApi
                 }
             }
 
-            return new OpenApiSchema() { Ref = "#/definitions/Object" };
+            return new OpenApiSchema { Ref = "#/definitions/Object" };
         }
 
         private OrderedDictionary<string, OpenApiResponse> GetMethodResponseCodes(IRestPath restPath, IDictionary<string, OpenApiSchema> schemas, Type requestType)
@@ -529,7 +527,7 @@ namespace ServiceStack.Api.OpenApi
             responses.Add("default", new OpenApiResponse()
             {
                 Schema = responseSchema,
-                Description = String.Empty //TODO: description
+                Description = string.Empty //TODO: description
             });
                 
             foreach (var attr in requestType.AllAttributes<ApiResponseAttribute>())
@@ -551,7 +549,6 @@ namespace ServiceStack.Api.OpenApi
             {
                 var verbs = new List<string>();
                 var summary = restPath.Summary ?? restPath.RequestType.GetDescription();
-                var notes = restPath.Notes;
 
                 verbs.AddRange(restPath.AllowsAllVerbs
                     ? AnyRouteVerbs
@@ -567,21 +564,21 @@ namespace ServiceStack.Api.OpenApi
                     curPath = new OpenApiPath();
                     apiPaths.Add(restPath.Path, curPath);
 
-                    tags.Add(new OpenApiTag() { Name = restPath.Path, Description = summary });
+                    tags.Add(new OpenApiTag { Name = restPath.Path, Description = summary });
                 }
 
                 foreach (var verb in verbs)
                 {
-                    var operation = new OpenApiOperation()
+                    var operation = new OpenApiOperation
                     {
                         Summary = summary,
                         Description = restPath.Notes ?? summary,
                         OperationId = requestType.Name + GetOperationNamePostfix(verb),
                         Parameters = ParseParameters(schemas, requestType, verb, routePath),
                         Responses = GetMethodResponseCodes(restPath, schemas, requestType),
-                        Consumes = new List<string>() { "application/json" },
-                        Produces = new List<string>() { "application/json" },
-                        Tags = new List<string>() { restPath.Path }
+                        Consumes = new List<string> { "application/json" },
+                        Produces = new List<string> { "application/json" },
+                        Tags = new List<string> { restPath.Path }
                     };
 
                     switch(verb)
@@ -617,12 +614,12 @@ namespace ServiceStack.Api.OpenApi
 
             postfixes.TryGetValue(verb, out postfix);
 
-            return postfix ?? String.Empty;
+            return postfix ?? string.Empty;
         }
 
         private static List<string> GetEnumValues(ApiAllowableValuesAttribute attr)
         {
-            return attr != null && attr.Values != null ? attr.Values.ToList() : null;
+            return attr?.Values?.ToList();
         }
         
         private List<OpenApiParameter> ParseParameters(IDictionary<string, OpenApiSchema> schemas, Type operationType, string route, string verb)
@@ -645,9 +642,7 @@ namespace ServiceStack.Api.OpenApi
                     ? property.FirstAttribute<DataMemberAttribute>()
                     : null;
                 
-                var propertyName = attr != null && attr.Name != null
-                    ? attr.Name
-                    : property.Name;
+                var propertyName = attr?.Name ?? property.Name;
 
                 var apiMembers = property.AllAttributes<ApiMemberAttribute>();
                 if (apiMembers.Length > 0)
@@ -712,7 +707,7 @@ namespace ServiceStack.Api.OpenApi
                 {
                     ParseDefinitions(schemas, operationType, route, verb);
 
-                    OpenApiParameter parameter = GetParameter(schemas, operationType, route, verb, "body", "body");
+                    var parameter = GetParameter(schemas, operationType, route, verb, "body", "body");
 
                     methodOperationParameters.Add(parameter);
                 }
@@ -756,7 +751,7 @@ namespace ServiceStack.Api.OpenApi
                 {
                     In = paramIn,
                     Name = paramName,
-                    Schema = new OpenApiSchema() { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) }
+                    Schema = new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) }
                 };
             }
 
@@ -787,7 +782,7 @@ namespace ServiceStack.Api.OpenApi
 
         private OpenApiParameter GetFormatJsonParameter()
         {
-            return new OpenApiParameter()
+            return new OpenApiParameter
             {
                 Type = OpenApiType.String,
                 Name = "format",
