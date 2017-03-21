@@ -95,64 +95,64 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="openapi-ui-bootstrap\index.html" />
-    <EmbeddedResource Include="openapi-ui-bootstrap\jiko.js" />
-    <EmbeddedResource Include="openapi-ui-bootstrap\swagger-like-template.html" />
-    <EmbeddedResource Include="openapi-ui\css\screen.css" />
-    <EmbeddedResource Include="openapi-ui\images\logo_small.png" />
-    <EmbeddedResource Include="openapi-ui\images\pet_store_api.png" />
-    <EmbeddedResource Include="openapi-ui\images\throbber.gif" />
-    <EmbeddedResource Include="openapi-ui\images\wordnik_api.png" />
-    <EmbeddedResource Include="openapi-ui\index.html" />
-    <EmbeddedResource Include="openapi-ui\lib\backbone-min.js" />
-    <EmbeddedResource Include="openapi-ui\lib\jquery-1.8.0.min.js" />
-    <EmbeddedResource Include="openapi-ui\lib\jquery.ba-bbq.min.js" />
-    <EmbeddedResource Include="openapi-ui\lib\jquery.slideto.min.js" />
-    <EmbeddedResource Include="openapi-ui\lib\jquery.wiggle.min.js" />
-    <EmbeddedResource Include="openapi-ui\swagger-ui.js" />
-    <EmbeddedResource Include="openapi-ui\swagger-ui.min.js" />
+    <EmbeddedResource Include="swagger-ui-bootstrap\index.html" />
+    <EmbeddedResource Include="swagger-ui-bootstrap\jiko.js" />
+    <EmbeddedResource Include="swagger-ui-bootstrap\swagger-like-template.html" />
+    <EmbeddedResource Include="swagger-ui\css\screen.css" />
+    <EmbeddedResource Include="swagger-ui\images\logo_small.png" />
+    <EmbeddedResource Include="swagger-ui\images\pet_store_api.png" />
+    <EmbeddedResource Include="swagger-ui\images\throbber.gif" />
+    <EmbeddedResource Include="swagger-ui\images\wordnik_api.png" />
+    <EmbeddedResource Include="swagger-ui\index.html" />
+    <EmbeddedResource Include="swagger-ui\lib\backbone-min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\jquery-1.8.0.min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\jquery.ba-bbq.min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\jquery.slideto.min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\jquery.wiggle.min.js" />
+    <EmbeddedResource Include="swagger-ui\swagger-ui.js" />
+    <EmbeddedResource Include="swagger-ui\swagger-ui.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="openapi-ui\css\reset.css" />
-    <EmbeddedResource Include="openapi-ui\images\explorer_icons.png" />
-    <EmbeddedResource Include="openapi-ui\lib\swagger-oauth.js" />
-    <EmbeddedResource Include="openapi-ui\o2c.html" />
+    <EmbeddedResource Include="swagger-ui\css\reset.css" />
+    <EmbeddedResource Include="swagger-ui\images\explorer_icons.png" />
+    <EmbeddedResource Include="swagger-ui\lib\swagger-oauth.js" />
+    <EmbeddedResource Include="swagger-ui\o2c.html" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="openapi-ui\css\typography.css" />
-    <EmbeddedResource Include="openapi-ui\lib\marked.js" />
+    <EmbeddedResource Include="swagger-ui\css\typography.css" />
+    <EmbeddedResource Include="swagger-ui\lib\marked.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="openapi-ui\patch.js" />
+    <EmbeddedResource Include="swagger-ui\patch.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="openapi-ui\css\print.css" />
-    <EmbeddedResource Include="openapi-ui\css\style.css" />
+    <EmbeddedResource Include="swagger-ui\css\print.css" />
+    <EmbeddedResource Include="swagger-ui\css\style.css" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="openapi-ui\fonts\DroidSans-Bold.ttf" />
-    <EmbeddedResource Include="openapi-ui\fonts\DroidSans.ttf" />
+    <EmbeddedResource Include="swagger-ui\fonts\DroidSans-Bold.ttf" />
+    <EmbeddedResource Include="swagger-ui\fonts\DroidSans.ttf" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="openapi-ui\images\collapse.gif" />
-    <EmbeddedResource Include="openapi-ui\images\expand.gif" />
-    <EmbeddedResource Include="openapi-ui\images\favicon-16x16.png" />
-    <EmbeddedResource Include="openapi-ui\images\favicon-32x32.png" />
-    <EmbeddedResource Include="openapi-ui\images\favicon.ico" />
+    <EmbeddedResource Include="swagger-ui\images\collapse.gif" />
+    <EmbeddedResource Include="swagger-ui\images\expand.gif" />
+    <EmbeddedResource Include="swagger-ui\images\favicon-16x16.png" />
+    <EmbeddedResource Include="swagger-ui\images\favicon-32x32.png" />
+    <EmbeddedResource Include="swagger-ui\images\favicon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="openapi-ui\lib\es5-shim.js" />
-    <EmbeddedResource Include="openapi-ui\lib\handlebars-4.0.5.js" />
-    <EmbeddedResource Include="openapi-ui\lib\highlight.9.1.0.pack.js" />
-    <EmbeddedResource Include="openapi-ui\lib\highlight.9.1.0.pack_extended.js" />
-    <EmbeddedResource Include="openapi-ui\lib\js-yaml.min.js" />
-    <EmbeddedResource Include="openapi-ui\lib\jsoneditor.min.js" />
-    <EmbeddedResource Include="openapi-ui\lib\lodash.min.js" />
-    <EmbeddedResource Include="openapi-ui\lib\object-assign-pollyfill.js" />
-    <EmbeddedResource Include="openapi-ui\lib\sanitize-html.min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\es5-shim.js" />
+    <EmbeddedResource Include="swagger-ui\lib\handlebars-4.0.5.js" />
+    <EmbeddedResource Include="swagger-ui\lib\highlight.9.1.0.pack.js" />
+    <EmbeddedResource Include="swagger-ui\lib\highlight.9.1.0.pack_extended.js" />
+    <EmbeddedResource Include="swagger-ui\lib\js-yaml.min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\jsoneditor.min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\lodash.min.js" />
+    <EmbeddedResource Include="swagger-ui\lib\object-assign-pollyfill.js" />
+    <EmbeddedResource Include="swagger-ui\lib\sanitize-html.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="openapi-ui\lib\shred\" />
+    <Folder Include="swagger-ui\lib\shred\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
