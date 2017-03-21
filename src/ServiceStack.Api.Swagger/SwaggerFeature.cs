@@ -35,10 +35,13 @@ namespace ServiceStack.Api.Swagger
 
         public Dictionary<string, string> RouteSummary { get; set; }
 
+        public List<string> AnyRouteVerbs { get; set; }
+
         public SwaggerFeature()
         {
             LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-24.png";
             RouteSummary = new Dictionary<string, string>();
+            AnyRouteVerbs = new List<string> { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         }
 
         public void Configure(IAppHost appHost)
@@ -60,6 +63,7 @@ namespace ServiceStack.Api.Swagger
             SwaggerApiService.OperationFilter = OperationFilter;
             SwaggerApiService.ModelFilter = ModelFilter;
             SwaggerApiService.ModelPropertyFilter = ModelPropertyFilter;
+            SwaggerApiService.AnyRouteVerbs = AnyRouteVerbs.ToArray();
 
             appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
             appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });

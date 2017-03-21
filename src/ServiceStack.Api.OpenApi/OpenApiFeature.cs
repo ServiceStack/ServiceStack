@@ -37,10 +37,13 @@ namespace ServiceStack.Api.OpenApi
         
         public Dictionary<string, string> RouteSummary { get; set; }
 
+        public List<string> AnyRouteVerbs { get; set; }
+
         public OpenApiFeature()
         {
             LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-24.png";
             RouteSummary = new Dictionary<string, string>();
+            AnyRouteVerbs = new List<string> { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         }
 
         public void Configure(IAppHost appHost)

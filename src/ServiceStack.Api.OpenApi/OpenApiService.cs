@@ -37,6 +37,7 @@ namespace ServiceStack.Api.OpenApi
         internal static Action<string, OpenApiOperation> OperationFilter { get; set; }
         internal static Action<OpenApiSchema> SchemaFilter { get; set; }
         internal static Action<OpenApiProperty> SchemaPropertyFilter { get; set; }
+        internal static string[] AnyRouteVerbs { get; set; }
 
         public object Get(Swagger2Resources request)
         {
@@ -553,8 +554,8 @@ namespace ServiceStack.Api.OpenApi
                 var notes = restPath.Notes;
 
                 verbs.AddRange(restPath.AllowsAllVerbs
-                    ? new[] { "GET", "POST", "PUT", "PATCH", "DELETE" }
-                    : restPath.AllowedVerbs.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                    ? AnyRouteVerbs
+                    : restPath.Verbs);
 
                 var routePath = restPath.Path.Replace("*", "");
                 var requestType = restPath.RequestType;

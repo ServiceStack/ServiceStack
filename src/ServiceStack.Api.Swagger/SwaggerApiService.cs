@@ -195,6 +195,7 @@ namespace ServiceStack.Api.Swagger
         internal static Action<SwaggerOperation> OperationFilter { get; set; }
         internal static Action<SwaggerModel> ModelFilter { get; set; }
         internal static Action<SwaggerProperty> ModelPropertyFilter { get; set; }
+        internal static string[] AnyRouteVerbs { get; set; }
 
         public object Get(SwaggerResource request)
         {
@@ -512,8 +513,8 @@ namespace ServiceStack.Api.Swagger
             var notes = restPath.Notes;
 
             verbs.AddRange(restPath.AllowsAllVerbs
-                ? new[] {"GET", "POST", "PUT", "DELETE"}
-                : restPath.AllowedVerbs.Split(new[] {',', ' '}, StringSplitOptions.RemoveEmptyEntries));
+                ? AnyRouteVerbs
+                : restPath.Verbs);
 
             var routePath = restPath.Path.Replace("*","");
             var requestType = restPath.RequestType;
