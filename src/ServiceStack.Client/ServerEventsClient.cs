@@ -450,7 +450,18 @@ namespace ServiceStack
                         if (pos == 0)
                         {
                             if (currentMsg != null)
-                                ProcessEventMessage(currentMsg);
+                            {
+                                try
+                                {
+                                    ProcessEventMessage(currentMsg);
+                                }
+                                catch (Exception ex)
+                                {
+                                    log.Error($"Unhandled Exception processing {currentMsg.Selector}: {ex.Message}");
+                                    OnException?.Invoke(ex);
+                                }
+                            }
+
                             currentMsg = null;
 
                             text = text.Substring(pos + 1);
