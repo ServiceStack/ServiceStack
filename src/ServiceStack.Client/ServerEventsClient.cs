@@ -137,6 +137,7 @@ namespace ServiceStack
         public Action<ServerEventMessage> OnCommand;
         public Action<ServerEventMessage> OnMessage;
         public Action OnHeartbeat;
+        public Action OnReconnect;
         public Action<Exception> OnException;
 
         public Action<WebRequest> EventStreamRequestFilter { get; set; }
@@ -412,6 +413,7 @@ namespace ServiceStack
                         try
                         {
                             Start();
+                            OnReconnect?.Invoke();
                         }
                         catch (Exception ex)
                         {
