@@ -38,6 +38,7 @@ var SIGN_PROJS = [
     '../src/ServiceStack.Razor/ServiceStack.Razor.csproj',
     '../src/ServiceStack.ProtoBuf/ServiceStack.ProtoBuf.csproj',
     '../src/ServiceStack.Api.Swagger/ServiceStack.Api.Swagger.csproj',
+    '../src/ServiceStack.Api.OpenApi/ServiceStack.Api.OpenApi.csproj',
     '../src/ServiceStack.Authentication.OAuth2/ServiceStack.Authentication.OAuth2.csproj',
     '../src/ServiceStack.Mvc/ServiceStack.Mvc.csproj',
     '../../Admin/src/ServiceStack.Admin/ServiceStack.Admin.csproj',
