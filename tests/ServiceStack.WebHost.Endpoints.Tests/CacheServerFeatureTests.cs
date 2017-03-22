@@ -195,7 +195,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new SetCache { LastModified = new DateTime(2016, 1, 1, 0, 0, 0) };
 
             client.RequestFilter = req =>
-                PclExportClient.Instance.SetIfModifiedSince(req, request.LastModified.Value + TimeSpan.FromSeconds(1));
+                PclExportClient.Instance.SetIfModifiedSince(req, request.LastModified.Value + TimeSpan.FromSeconds(-1));
 
             client.ResponseFilter = res =>
                 Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=600"));
