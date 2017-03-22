@@ -20,12 +20,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static HelloDateTime Get(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json")
+            public static HelloDateTime Get(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime))
             {
-                return operations.GetAsync(dateTime, body, format).GetAwaiter().GetResult();
+                return operations.GetAsync(dateTime, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -35,15 +32,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloDateTime> GetAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloDateTime> GetAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(dateTime, body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(dateTime, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -56,12 +50,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static HelloDateTime Create(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json")
+            public static HelloDateTime Create(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime))
             {
-                return operations.CreateAsync(dateTime, body, format).GetAwaiter().GetResult();
+                return operations.CreateAsync(dateTime, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -71,15 +62,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloDateTime> CreateAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloDateTime> CreateAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.CreateWithHttpMessagesAsync(dateTime, body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.CreateWithHttpMessagesAsync(dateTime, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -92,12 +80,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static HelloDateTime Post(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json")
+            public static HelloDateTime Post(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime))
             {
-                return operations.PostAsync(dateTime, body, format).GetAwaiter().GetResult();
+                return operations.PostAsync(dateTime, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -107,15 +92,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloDateTime> PostAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloDateTime> PostAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.PostWithHttpMessagesAsync(dateTime, body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.PostWithHttpMessagesAsync(dateTime, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -128,12 +110,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static HelloDateTime Delete(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json")
+            public static HelloDateTime Delete(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime))
             {
-                return operations.DeleteAsync(dateTime, body, format).GetAwaiter().GetResult();
+                return operations.DeleteAsync(dateTime, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -142,52 +121,13 @@ namespace AutorestClient
             /// <param name='dateTime'>
             /// </param>
             /// <param name='body'>
-            /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloDateTime> DeleteAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloDateTime> DeleteAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(dateTime, body, format, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='dateTime'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static HelloDateTime Update(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json")
-            {
-                return operations.UpdateAsync(dateTime, body, format).GetAwaiter().GetResult();
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='dateTime'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<HelloDateTime> UpdateAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.UpdateWithHttpMessagesAsync(dateTime, body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(dateTime, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

@@ -20,12 +20,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static object Get(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), string format = "json")
+            public static object Get(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute))
             {
-                return operations.GetAsync(name, body, format).GetAwaiter().GetResult();
+                return operations.GetAsync(name, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -35,15 +32,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> GetAsync(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> GetAsync(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(name, body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(name, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -56,12 +50,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static object Create(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), string format = "json")
+            public static object Create(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute))
             {
-                return operations.CreateAsync(name, body, format).GetAwaiter().GetResult();
+                return operations.CreateAsync(name, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -71,15 +62,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> CreateAsync(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> CreateAsync(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.CreateWithHttpMessagesAsync(name, body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.CreateWithHttpMessagesAsync(name, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -92,12 +80,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static object Post(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), string format = "json")
+            public static object Post(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute))
             {
-                return operations.PostAsync(name, body, format).GetAwaiter().GetResult();
+                return operations.PostAsync(name, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -107,15 +92,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> PostAsync(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> PostAsync(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.PostWithHttpMessagesAsync(name, body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.PostWithHttpMessagesAsync(name, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -128,12 +110,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static object Delete(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), string format = "json")
+            public static object Delete(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute))
             {
-                return operations.DeleteAsync(name, body, format).GetAwaiter().GetResult();
+                return operations.DeleteAsync(name, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -142,52 +121,13 @@ namespace AutorestClient
             /// <param name='name'>
             /// </param>
             /// <param name='body'>
-            /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> DeleteAsync(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> DeleteAsync(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(name, body, format, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static object Update(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), string format = "json")
-            {
-                return operations.UpdateAsync(name, body, format).GetAwaiter().GetResult();
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<object> UpdateAsync(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.UpdateWithHttpMessagesAsync(name, body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(name, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

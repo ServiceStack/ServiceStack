@@ -83,6 +83,7 @@ namespace ServiceStack.Api.OpenApi
                 Schemes = new List<string> { basePath.Scheme }, //TODO: get https from config
                 Host = basePath.Authority,
                 Consumes = new List<string> { "application/json" },
+                Produces = new List<string> { "application/json" },
                 Definitions = definitions,
                 Tags = tags.OrderBy(t => t.Name).ToList()
             };
@@ -561,7 +562,7 @@ namespace ServiceStack.Api.OpenApi
 
                 if (!apiPaths.TryGetValue(restPath.Path, out curPath))
                 {
-                    curPath = new OpenApiPath();
+                    curPath = new OpenApiPath() { Parameters = new List<OpenApiParameter> { GetAcceptHeaderParameter() } };
                     apiPaths.Add(restPath.Path, curPath);
 
                     tags.Add(new OpenApiTag { Name = restPath.Path, Description = summary });
@@ -780,17 +781,17 @@ namespace ServiceStack.Api.OpenApi
             return parameter;
         }
 
-        private OpenApiParameter GetFormatJsonParameter()
+        private OpenApiParameter GetAcceptHeaderParameter()
         {
             return new OpenApiParameter
             {
                 Type = OpenApiType.String,
-                Name = "format",
-                Description = "Specifies response output format",
-                Default = "json",
-                In = "query",
+                Name = "Accept",
+                Description = "Accept Header",
+                Enum = new List<string>() { "application/json"},
+                In = "header",
+                Required = true,
             };
         }
-
     }
 }

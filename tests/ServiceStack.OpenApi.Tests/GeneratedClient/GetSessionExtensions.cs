@@ -18,12 +18,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static GetSessionResponse Get(this IGetSession operations, object body = default(object), string format = "json")
+            public static GetSessionResponse Get(this IGetSession operations, object body = default(object))
             {
-                return operations.GetAsync(body, format).GetAwaiter().GetResult();
+                return operations.GetAsync(body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -31,15 +28,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<GetSessionResponse> GetAsync(this IGetSession operations, object body = default(object), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetSessionResponse> GetAsync(this IGetSession operations, object body = default(object), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -50,12 +44,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static GetSessionResponse Create(this IGetSession operations, object body = default(object), string format = "json")
+            public static GetSessionResponse Create(this IGetSession operations, object body = default(object))
             {
-                return operations.CreateAsync(body, format).GetAwaiter().GetResult();
+                return operations.CreateAsync(body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -63,15 +54,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<GetSessionResponse> CreateAsync(this IGetSession operations, object body = default(object), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetSessionResponse> CreateAsync(this IGetSession operations, object body = default(object), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.CreateWithHttpMessagesAsync(body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.CreateWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -82,12 +70,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static GetSessionResponse Post(this IGetSession operations, object body = default(object), string format = "json")
+            public static GetSessionResponse Post(this IGetSession operations, object body = default(object))
             {
-                return operations.PostAsync(body, format).GetAwaiter().GetResult();
+                return operations.PostAsync(body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -95,15 +80,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<GetSessionResponse> PostAsync(this IGetSession operations, object body = default(object), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetSessionResponse> PostAsync(this IGetSession operations, object body = default(object), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.PostWithHttpMessagesAsync(body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.PostWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -114,60 +96,22 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static GetSessionResponse Delete(this IGetSession operations, object body = default(object), string format = "json")
+            public static GetSessionResponse Delete(this IGetSession operations, object body = default(object))
             {
-                return operations.DeleteAsync(body, format).GetAwaiter().GetResult();
+                return operations.DeleteAsync(body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
             /// <param name='body'>
-            /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<GetSessionResponse> DeleteAsync(this IGetSession operations, object body = default(object), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetSessionResponse> DeleteAsync(this IGetSession operations, object body = default(object), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(body, format, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static GetSessionResponse Update(this IGetSession operations, object body = default(object), string format = "json")
-            {
-                return operations.UpdateAsync(body, format).GetAwaiter().GetResult();
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<GetSessionResponse> UpdateAsync(this IGetSession operations, object body = default(object), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.UpdateWithHttpMessagesAsync(body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
