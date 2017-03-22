@@ -244,7 +244,7 @@ namespace ServiceStack
                 {
                     DateTime modifiedSinceDate;
                     if (DateTime.TryParse(ifModifiedSince, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out modifiedSinceDate))
-                        return modifiedSinceDate <= lastModified.Value.ToUniversalTime();
+                        return modifiedSinceDate >= lastModified.Value.ToUniversalTime();
                 }
             }
 
