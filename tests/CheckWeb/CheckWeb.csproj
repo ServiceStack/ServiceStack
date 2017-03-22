@@ -134,6 +134,9 @@
     <Content Include="Views\TestErrorView.cshtml" />
     <Content Include="folder\_new.cshtml" />
     <Content Include="folder\new.cshtml" />
+    <Content Include="Views\TestHtml.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -142,6 +145,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">
+      <Project>{5e258282-86a6-4780-ab25-5e458f2e6f70}</Project>
+      <Name>ServiceStack.Api.OpenApi</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj">
       <Project>{01d3f057-7984-498f-8b0a-eb375701e204}</Project>
       <Name>ServiceStack.Api.Swagger</Name>
