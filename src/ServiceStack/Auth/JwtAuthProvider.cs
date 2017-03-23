@@ -365,7 +365,7 @@ namespace ServiceStack.Auth
             var jwtPayload = jwtAuthProvider.GetVerifiedJwtPayload(request.RefreshToken.Split('.'));
             jwtAuthProvider.AssertJwtPayloadIsValid(jwtPayload);
 
-            if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(request.RefreshToken, jwtPayload))
+            if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(jwtPayload, Request))
                 throw new ArgumentException(ErrorMessages.RefreshTokenInvalid, nameof(request.RefreshToken));
 
             var userId = jwtPayload["sub"];

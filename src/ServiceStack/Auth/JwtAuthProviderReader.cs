@@ -174,12 +174,12 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Allow custom logic to invalidate JWT Tokens
         /// </summary>
-        public Func<string, JsonObject, bool> ValidateToken { get; set; }
+        public Func<JsonObject, IRequest, bool> ValidateToken { get; set; }
 
         /// <summary>
         /// Allow custom logic to invalidate Refresh Tokens
         /// </summary>
-        public Func<string, JsonObject, bool> ValidateRefreshToken { get; set; }
+        public Func<JsonObject, IRequest, bool> ValidateRefreshToken { get; set; }
 
         /// <summary>
         /// Convenient overload to initialize ExpireTokensIn with an Integer
@@ -334,7 +334,7 @@ namespace ServiceStack.Auth
 
                     if (ValidateToken != null)
                     {
-                        if (!ValidateToken(bearerToken, jwtPayload))
+                        if (!ValidateToken(jwtPayload, req))
                             throw HttpError.Forbidden(ErrorMessages.TokenInvalid);
                     }
 
@@ -402,7 +402,7 @@ namespace ServiceStack.Auth
 
                     if (ValidateToken != null)
                     {
-                        if (!ValidateToken(bearerToken, jwtPayload))
+                        if (!ValidateToken(jwtPayload, req))
                             throw HttpError.Forbidden(ErrorMessages.TokenInvalid);
                     }
 
