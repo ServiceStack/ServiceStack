@@ -20,12 +20,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static IList<ReturnedDto> Get(this IReturnArrayRequest operations, object body = default(object), string format = "json")
+            public static IList<ReturnedDto> Get(this IReturnArrayRequest operations, object body = default(object))
             {
-                return operations.GetAsync(body, format).GetAwaiter().GetResult();
+                return operations.GetAsync(body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -33,15 +30,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<ReturnedDto>> GetAsync(this IReturnArrayRequest operations, object body = default(object), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<ReturnedDto>> GetAsync(this IReturnArrayRequest operations, object body = default(object), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(body, format, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

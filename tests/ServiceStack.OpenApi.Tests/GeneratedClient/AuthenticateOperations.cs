@@ -77,9 +77,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -92,8 +89,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> GetWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> GetWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -118,7 +116,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get", tracingParameters);
             }
@@ -190,10 +188,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -204,6 +198,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("GET");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -328,9 +330,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -343,8 +342,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> CreateWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> CreateWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -369,7 +369,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Create", tracingParameters);
             }
@@ -441,10 +441,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -455,6 +451,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("PUT");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -579,9 +583,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -594,8 +595,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> PostWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> PostWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -620,7 +622,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Post", tracingParameters);
             }
@@ -692,10 +694,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -706,6 +704,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("POST");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -830,9 +836,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -845,8 +848,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> DeleteWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> DeleteWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -871,7 +875,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Delete", tracingParameters);
             }
@@ -943,10 +947,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -957,6 +957,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("DELETE");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -1081,9 +1089,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -1096,8 +1101,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> UpdateWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Get1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -1122,258 +1128,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
-                tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "Update", tracingParameters);
-            }
-            // Construct URL
-            var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "auth").ToString();
-            List<string> _queryParameters = new List<string>();
-            if (provider != null)
-            {
-                _queryParameters.Add(string.Format("provider={0}", System.Uri.EscapeDataString(provider)));
-            }
-            if (state != null)
-            {
-                _queryParameters.Add(string.Format("State={0}", System.Uri.EscapeDataString(state)));
-            }
-            if (oauthToken != null)
-            {
-                _queryParameters.Add(string.Format("oauth_token={0}", System.Uri.EscapeDataString(oauthToken)));
-            }
-            if (oauthVerifier != null)
-            {
-                _queryParameters.Add(string.Format("oauth_verifier={0}", System.Uri.EscapeDataString(oauthVerifier)));
-            }
-            if (userName != null)
-            {
-                _queryParameters.Add(string.Format("UserName={0}", System.Uri.EscapeDataString(userName)));
-            }
-            if (password != null)
-            {
-                _queryParameters.Add(string.Format("Password={0}", System.Uri.EscapeDataString(password)));
-            }
-            if (rememberMe != null)
-            {
-                _queryParameters.Add(string.Format("RememberMe={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(rememberMe, Client.SerializationSettings).Trim('"'))));
-            }
-            if (continueParameter != null)
-            {
-                _queryParameters.Add(string.Format("Continue={0}", System.Uri.EscapeDataString(continueParameter)));
-            }
-            if (nonce != null)
-            {
-                _queryParameters.Add(string.Format("nonce={0}", System.Uri.EscapeDataString(nonce)));
-            }
-            if (uri != null)
-            {
-                _queryParameters.Add(string.Format("uri={0}", System.Uri.EscapeDataString(uri)));
-            }
-            if (response != null)
-            {
-                _queryParameters.Add(string.Format("response={0}", System.Uri.EscapeDataString(response)));
-            }
-            if (qop != null)
-            {
-                _queryParameters.Add(string.Format("qop={0}", System.Uri.EscapeDataString(qop)));
-            }
-            if (nc != null)
-            {
-                _queryParameters.Add(string.Format("nc={0}", System.Uri.EscapeDataString(nc)));
-            }
-            if (cnonce != null)
-            {
-                _queryParameters.Add(string.Format("cnonce={0}", System.Uri.EscapeDataString(cnonce)));
-            }
-            if (useTokenCookie != null)
-            {
-                _queryParameters.Add(string.Format("UseTokenCookie={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(useTokenCookie, Client.SerializationSettings).Trim('"'))));
-            }
-            if (meta != null)
-            {
-                _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
-            }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
-            // Create HTTP transport objects
-            var _httpRequest = new HttpRequestMessage();
-            HttpResponseMessage _httpResponse = null;
-            _httpRequest.Method = new HttpMethod("PATCH");
-            _httpRequest.RequestUri = new System.Uri(_url);
-            // Set Headers
-
-
-            if (customHeaders != null)
-            {
-                foreach(var _header in customHeaders)
-                {
-                    if (_httpRequest.Headers.Contains(_header.Key))
-                    {
-                        _httpRequest.Headers.Remove(_header.Key);
-                    }
-                    _httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
-                }
-            }
-
-            // Serialize Request
-            string _requestContent = null;
-            if(body != null)
-            {
-                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-            }
-            // Send Request
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.SendRequest(_invocationId, _httpRequest);
-            }
-            cancellationToken.ThrowIfCancellationRequested();
-            _httpResponse = await Client.HttpClient.SendAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.ReceiveResponse(_invocationId, _httpResponse);
-            }
-            HttpStatusCode _statusCode = _httpResponse.StatusCode;
-            cancellationToken.ThrowIfCancellationRequested();
-            string _responseContent = null;
-            if (!_httpResponse.IsSuccessStatusCode)
-            {
-                var ex = new AuthenticateResponseException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
-                try
-                {
-                    _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    AuthenticateResponse _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_responseContent, Client.DeserializationSettings);
-                    if (_errorBody != null)
-                    {
-                        ex.Body = _errorBody;
-                    }
-                }
-                catch (JsonException)
-                {
-                    // Ignore the exception
-                }
-                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
-                ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
-                if (_shouldTrace)
-                {
-                    ServiceClientTracing.Error(_invocationId, ex);
-                }
-                _httpRequest.Dispose();
-                if (_httpResponse != null)
-                {
-                    _httpResponse.Dispose();
-                }
-                throw ex;
-            }
-            // Create Result
-            var _result = new HttpOperationResponse<AuthenticateResponse>();
-            _result.Request = _httpRequest;
-            _result.Response = _httpResponse;
-            string _defaultResponseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            try
-            {
-                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_defaultResponseContent, Client.DeserializationSettings);
-            }
-            catch (JsonException ex)
-            {
-                _httpRequest.Dispose();
-                if (_httpResponse != null)
-                {
-                    _httpResponse.Dispose();
-                }
-                throw new SerializationException("Unable to deserialize the response.", _defaultResponseContent, ex);
-            }
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.Exit(_invocationId, _result);
-            }
-            return _result;
-        }
-
-        /// <param name='provider'>
-        /// </param>
-        /// <param name='state'>
-        /// </param>
-        /// <param name='oauthToken'>
-        /// </param>
-        /// <param name='oauthVerifier'>
-        /// </param>
-        /// <param name='userName'>
-        /// </param>
-        /// <param name='password'>
-        /// </param>
-        /// <param name='rememberMe'>
-        /// </param>
-        /// <param name='continueParameter'>
-        /// </param>
-        /// <param name='nonce'>
-        /// </param>
-        /// <param name='uri'>
-        /// </param>
-        /// <param name='response'>
-        /// </param>
-        /// <param name='qop'>
-        /// </param>
-        /// <param name='nc'>
-        /// </param>
-        /// <param name='cnonce'>
-        /// </param>
-        /// <param name='useTokenCookie'>
-        /// </param>
-        /// <param name='meta'>
-        /// </param>
-        /// <param name='body'>
-        /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
-        /// <param name='customHeaders'>
-        /// Headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        /// <exception cref="AuthenticateResponseException">
-        /// Thrown when the operation returned an invalid status code
-        /// </exception>
-        /// <return>
-        /// A response object containing the response body and response headers.
-        /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Get1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            // Tracing
-            bool _shouldTrace = ServiceClientTracing.IsEnabled;
-            string _invocationId = null;
-            if (_shouldTrace)
-            {
-                _invocationId = ServiceClientTracing.NextInvocationId.ToString();
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("provider", provider);
-                tracingParameters.Add("state", state);
-                tracingParameters.Add("oauthToken", oauthToken);
-                tracingParameters.Add("oauthVerifier", oauthVerifier);
-                tracingParameters.Add("userName", userName);
-                tracingParameters.Add("password", password);
-                tracingParameters.Add("rememberMe", rememberMe);
-                tracingParameters.Add("continueParameter", continueParameter);
-                tracingParameters.Add("nonce", nonce);
-                tracingParameters.Add("uri", uri);
-                tracingParameters.Add("response", response);
-                tracingParameters.Add("qop", qop);
-                tracingParameters.Add("nc", nc);
-                tracingParameters.Add("cnonce", cnonce);
-                tracingParameters.Add("useTokenCookie", useTokenCookie);
-                tracingParameters.Add("meta", meta);
-                tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get1", tracingParameters);
             }
@@ -1445,10 +1200,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -1459,6 +1210,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("GET");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -1583,9 +1342,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -1598,8 +1354,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Create1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Create1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -1624,7 +1381,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Create1", tracingParameters);
             }
@@ -1696,10 +1453,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -1710,6 +1463,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("PUT");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -1834,9 +1595,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -1849,8 +1607,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Post1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Post1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -1875,7 +1634,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Post1", tracingParameters);
             }
@@ -1947,10 +1706,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -1961,6 +1716,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("POST");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -2085,9 +1848,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -2100,8 +1860,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Delete1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Delete1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -2126,7 +1887,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Delete1", tracingParameters);
             }
@@ -2198,10 +1959,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -2212,6 +1969,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("DELETE");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -2336,9 +2101,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -2351,8 +2113,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Update1WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Get2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -2377,258 +2140,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
-                tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "Update1", tracingParameters);
-            }
-            // Construct URL
-            var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "auth/{provider}").ToString();
-            List<string> _queryParameters = new List<string>();
-            if (provider != null)
-            {
-                _queryParameters.Add(string.Format("provider={0}", System.Uri.EscapeDataString(provider)));
-            }
-            if (state != null)
-            {
-                _queryParameters.Add(string.Format("State={0}", System.Uri.EscapeDataString(state)));
-            }
-            if (oauthToken != null)
-            {
-                _queryParameters.Add(string.Format("oauth_token={0}", System.Uri.EscapeDataString(oauthToken)));
-            }
-            if (oauthVerifier != null)
-            {
-                _queryParameters.Add(string.Format("oauth_verifier={0}", System.Uri.EscapeDataString(oauthVerifier)));
-            }
-            if (userName != null)
-            {
-                _queryParameters.Add(string.Format("UserName={0}", System.Uri.EscapeDataString(userName)));
-            }
-            if (password != null)
-            {
-                _queryParameters.Add(string.Format("Password={0}", System.Uri.EscapeDataString(password)));
-            }
-            if (rememberMe != null)
-            {
-                _queryParameters.Add(string.Format("RememberMe={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(rememberMe, Client.SerializationSettings).Trim('"'))));
-            }
-            if (continueParameter != null)
-            {
-                _queryParameters.Add(string.Format("Continue={0}", System.Uri.EscapeDataString(continueParameter)));
-            }
-            if (nonce != null)
-            {
-                _queryParameters.Add(string.Format("nonce={0}", System.Uri.EscapeDataString(nonce)));
-            }
-            if (uri != null)
-            {
-                _queryParameters.Add(string.Format("uri={0}", System.Uri.EscapeDataString(uri)));
-            }
-            if (response != null)
-            {
-                _queryParameters.Add(string.Format("response={0}", System.Uri.EscapeDataString(response)));
-            }
-            if (qop != null)
-            {
-                _queryParameters.Add(string.Format("qop={0}", System.Uri.EscapeDataString(qop)));
-            }
-            if (nc != null)
-            {
-                _queryParameters.Add(string.Format("nc={0}", System.Uri.EscapeDataString(nc)));
-            }
-            if (cnonce != null)
-            {
-                _queryParameters.Add(string.Format("cnonce={0}", System.Uri.EscapeDataString(cnonce)));
-            }
-            if (useTokenCookie != null)
-            {
-                _queryParameters.Add(string.Format("UseTokenCookie={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(useTokenCookie, Client.SerializationSettings).Trim('"'))));
-            }
-            if (meta != null)
-            {
-                _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
-            }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
-            // Create HTTP transport objects
-            var _httpRequest = new HttpRequestMessage();
-            HttpResponseMessage _httpResponse = null;
-            _httpRequest.Method = new HttpMethod("PATCH");
-            _httpRequest.RequestUri = new System.Uri(_url);
-            // Set Headers
-
-
-            if (customHeaders != null)
-            {
-                foreach(var _header in customHeaders)
-                {
-                    if (_httpRequest.Headers.Contains(_header.Key))
-                    {
-                        _httpRequest.Headers.Remove(_header.Key);
-                    }
-                    _httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
-                }
-            }
-
-            // Serialize Request
-            string _requestContent = null;
-            if(body != null)
-            {
-                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-            }
-            // Send Request
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.SendRequest(_invocationId, _httpRequest);
-            }
-            cancellationToken.ThrowIfCancellationRequested();
-            _httpResponse = await Client.HttpClient.SendAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.ReceiveResponse(_invocationId, _httpResponse);
-            }
-            HttpStatusCode _statusCode = _httpResponse.StatusCode;
-            cancellationToken.ThrowIfCancellationRequested();
-            string _responseContent = null;
-            if (!_httpResponse.IsSuccessStatusCode)
-            {
-                var ex = new AuthenticateResponseException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
-                try
-                {
-                    _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    AuthenticateResponse _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_responseContent, Client.DeserializationSettings);
-                    if (_errorBody != null)
-                    {
-                        ex.Body = _errorBody;
-                    }
-                }
-                catch (JsonException)
-                {
-                    // Ignore the exception
-                }
-                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
-                ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
-                if (_shouldTrace)
-                {
-                    ServiceClientTracing.Error(_invocationId, ex);
-                }
-                _httpRequest.Dispose();
-                if (_httpResponse != null)
-                {
-                    _httpResponse.Dispose();
-                }
-                throw ex;
-            }
-            // Create Result
-            var _result = new HttpOperationResponse<AuthenticateResponse>();
-            _result.Request = _httpRequest;
-            _result.Response = _httpResponse;
-            string _defaultResponseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            try
-            {
-                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_defaultResponseContent, Client.DeserializationSettings);
-            }
-            catch (JsonException ex)
-            {
-                _httpRequest.Dispose();
-                if (_httpResponse != null)
-                {
-                    _httpResponse.Dispose();
-                }
-                throw new SerializationException("Unable to deserialize the response.", _defaultResponseContent, ex);
-            }
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.Exit(_invocationId, _result);
-            }
-            return _result;
-        }
-
-        /// <param name='provider'>
-        /// </param>
-        /// <param name='state'>
-        /// </param>
-        /// <param name='oauthToken'>
-        /// </param>
-        /// <param name='oauthVerifier'>
-        /// </param>
-        /// <param name='userName'>
-        /// </param>
-        /// <param name='password'>
-        /// </param>
-        /// <param name='rememberMe'>
-        /// </param>
-        /// <param name='continueParameter'>
-        /// </param>
-        /// <param name='nonce'>
-        /// </param>
-        /// <param name='uri'>
-        /// </param>
-        /// <param name='response'>
-        /// </param>
-        /// <param name='qop'>
-        /// </param>
-        /// <param name='nc'>
-        /// </param>
-        /// <param name='cnonce'>
-        /// </param>
-        /// <param name='useTokenCookie'>
-        /// </param>
-        /// <param name='meta'>
-        /// </param>
-        /// <param name='body'>
-        /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
-        /// <param name='customHeaders'>
-        /// Headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        /// <exception cref="AuthenticateResponseException">
-        /// Thrown when the operation returned an invalid status code
-        /// </exception>
-        /// <return>
-        /// A response object containing the response body and response headers.
-        /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Get2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            // Tracing
-            bool _shouldTrace = ServiceClientTracing.IsEnabled;
-            string _invocationId = null;
-            if (_shouldTrace)
-            {
-                _invocationId = ServiceClientTracing.NextInvocationId.ToString();
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("provider", provider);
-                tracingParameters.Add("state", state);
-                tracingParameters.Add("oauthToken", oauthToken);
-                tracingParameters.Add("oauthVerifier", oauthVerifier);
-                tracingParameters.Add("userName", userName);
-                tracingParameters.Add("password", password);
-                tracingParameters.Add("rememberMe", rememberMe);
-                tracingParameters.Add("continueParameter", continueParameter);
-                tracingParameters.Add("nonce", nonce);
-                tracingParameters.Add("uri", uri);
-                tracingParameters.Add("response", response);
-                tracingParameters.Add("qop", qop);
-                tracingParameters.Add("nc", nc);
-                tracingParameters.Add("cnonce", cnonce);
-                tracingParameters.Add("useTokenCookie", useTokenCookie);
-                tracingParameters.Add("meta", meta);
-                tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get2", tracingParameters);
             }
@@ -2700,10 +2212,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -2714,6 +2222,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("GET");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -2838,9 +2354,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -2853,8 +2366,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Create2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Create2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -2879,7 +2393,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Create2", tracingParameters);
             }
@@ -2951,10 +2465,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -2965,6 +2475,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("PUT");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -3089,9 +2607,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -3104,8 +2619,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Post2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Post2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -3130,7 +2646,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Post2", tracingParameters);
             }
@@ -3202,10 +2718,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -3216,6 +2728,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("POST");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -3340,9 +2860,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -3355,8 +2872,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Delete2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Delete2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -3381,7 +2899,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Delete2", tracingParameters);
             }
@@ -3453,10 +2971,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -3467,6 +2981,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("DELETE");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -3591,9 +3113,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -3606,8 +3125,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Update2WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Get3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -3632,258 +3152,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
-                tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "Update2", tracingParameters);
-            }
-            // Construct URL
-            var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "authenticate").ToString();
-            List<string> _queryParameters = new List<string>();
-            if (provider != null)
-            {
-                _queryParameters.Add(string.Format("provider={0}", System.Uri.EscapeDataString(provider)));
-            }
-            if (state != null)
-            {
-                _queryParameters.Add(string.Format("State={0}", System.Uri.EscapeDataString(state)));
-            }
-            if (oauthToken != null)
-            {
-                _queryParameters.Add(string.Format("oauth_token={0}", System.Uri.EscapeDataString(oauthToken)));
-            }
-            if (oauthVerifier != null)
-            {
-                _queryParameters.Add(string.Format("oauth_verifier={0}", System.Uri.EscapeDataString(oauthVerifier)));
-            }
-            if (userName != null)
-            {
-                _queryParameters.Add(string.Format("UserName={0}", System.Uri.EscapeDataString(userName)));
-            }
-            if (password != null)
-            {
-                _queryParameters.Add(string.Format("Password={0}", System.Uri.EscapeDataString(password)));
-            }
-            if (rememberMe != null)
-            {
-                _queryParameters.Add(string.Format("RememberMe={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(rememberMe, Client.SerializationSettings).Trim('"'))));
-            }
-            if (continueParameter != null)
-            {
-                _queryParameters.Add(string.Format("Continue={0}", System.Uri.EscapeDataString(continueParameter)));
-            }
-            if (nonce != null)
-            {
-                _queryParameters.Add(string.Format("nonce={0}", System.Uri.EscapeDataString(nonce)));
-            }
-            if (uri != null)
-            {
-                _queryParameters.Add(string.Format("uri={0}", System.Uri.EscapeDataString(uri)));
-            }
-            if (response != null)
-            {
-                _queryParameters.Add(string.Format("response={0}", System.Uri.EscapeDataString(response)));
-            }
-            if (qop != null)
-            {
-                _queryParameters.Add(string.Format("qop={0}", System.Uri.EscapeDataString(qop)));
-            }
-            if (nc != null)
-            {
-                _queryParameters.Add(string.Format("nc={0}", System.Uri.EscapeDataString(nc)));
-            }
-            if (cnonce != null)
-            {
-                _queryParameters.Add(string.Format("cnonce={0}", System.Uri.EscapeDataString(cnonce)));
-            }
-            if (useTokenCookie != null)
-            {
-                _queryParameters.Add(string.Format("UseTokenCookie={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(useTokenCookie, Client.SerializationSettings).Trim('"'))));
-            }
-            if (meta != null)
-            {
-                _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
-            }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
-            // Create HTTP transport objects
-            var _httpRequest = new HttpRequestMessage();
-            HttpResponseMessage _httpResponse = null;
-            _httpRequest.Method = new HttpMethod("PATCH");
-            _httpRequest.RequestUri = new System.Uri(_url);
-            // Set Headers
-
-
-            if (customHeaders != null)
-            {
-                foreach(var _header in customHeaders)
-                {
-                    if (_httpRequest.Headers.Contains(_header.Key))
-                    {
-                        _httpRequest.Headers.Remove(_header.Key);
-                    }
-                    _httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
-                }
-            }
-
-            // Serialize Request
-            string _requestContent = null;
-            if(body != null)
-            {
-                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-            }
-            // Send Request
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.SendRequest(_invocationId, _httpRequest);
-            }
-            cancellationToken.ThrowIfCancellationRequested();
-            _httpResponse = await Client.HttpClient.SendAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.ReceiveResponse(_invocationId, _httpResponse);
-            }
-            HttpStatusCode _statusCode = _httpResponse.StatusCode;
-            cancellationToken.ThrowIfCancellationRequested();
-            string _responseContent = null;
-            if (!_httpResponse.IsSuccessStatusCode)
-            {
-                var ex = new AuthenticateResponseException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
-                try
-                {
-                    _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    AuthenticateResponse _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_responseContent, Client.DeserializationSettings);
-                    if (_errorBody != null)
-                    {
-                        ex.Body = _errorBody;
-                    }
-                }
-                catch (JsonException)
-                {
-                    // Ignore the exception
-                }
-                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
-                ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
-                if (_shouldTrace)
-                {
-                    ServiceClientTracing.Error(_invocationId, ex);
-                }
-                _httpRequest.Dispose();
-                if (_httpResponse != null)
-                {
-                    _httpResponse.Dispose();
-                }
-                throw ex;
-            }
-            // Create Result
-            var _result = new HttpOperationResponse<AuthenticateResponse>();
-            _result.Request = _httpRequest;
-            _result.Response = _httpResponse;
-            string _defaultResponseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            try
-            {
-                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_defaultResponseContent, Client.DeserializationSettings);
-            }
-            catch (JsonException ex)
-            {
-                _httpRequest.Dispose();
-                if (_httpResponse != null)
-                {
-                    _httpResponse.Dispose();
-                }
-                throw new SerializationException("Unable to deserialize the response.", _defaultResponseContent, ex);
-            }
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.Exit(_invocationId, _result);
-            }
-            return _result;
-        }
-
-        /// <param name='provider'>
-        /// </param>
-        /// <param name='state'>
-        /// </param>
-        /// <param name='oauthToken'>
-        /// </param>
-        /// <param name='oauthVerifier'>
-        /// </param>
-        /// <param name='userName'>
-        /// </param>
-        /// <param name='password'>
-        /// </param>
-        /// <param name='rememberMe'>
-        /// </param>
-        /// <param name='continueParameter'>
-        /// </param>
-        /// <param name='nonce'>
-        /// </param>
-        /// <param name='uri'>
-        /// </param>
-        /// <param name='response'>
-        /// </param>
-        /// <param name='qop'>
-        /// </param>
-        /// <param name='nc'>
-        /// </param>
-        /// <param name='cnonce'>
-        /// </param>
-        /// <param name='useTokenCookie'>
-        /// </param>
-        /// <param name='meta'>
-        /// </param>
-        /// <param name='body'>
-        /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
-        /// <param name='customHeaders'>
-        /// Headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        /// <exception cref="AuthenticateResponseException">
-        /// Thrown when the operation returned an invalid status code
-        /// </exception>
-        /// <return>
-        /// A response object containing the response body and response headers.
-        /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Get3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            // Tracing
-            bool _shouldTrace = ServiceClientTracing.IsEnabled;
-            string _invocationId = null;
-            if (_shouldTrace)
-            {
-                _invocationId = ServiceClientTracing.NextInvocationId.ToString();
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("provider", provider);
-                tracingParameters.Add("state", state);
-                tracingParameters.Add("oauthToken", oauthToken);
-                tracingParameters.Add("oauthVerifier", oauthVerifier);
-                tracingParameters.Add("userName", userName);
-                tracingParameters.Add("password", password);
-                tracingParameters.Add("rememberMe", rememberMe);
-                tracingParameters.Add("continueParameter", continueParameter);
-                tracingParameters.Add("nonce", nonce);
-                tracingParameters.Add("uri", uri);
-                tracingParameters.Add("response", response);
-                tracingParameters.Add("qop", qop);
-                tracingParameters.Add("nc", nc);
-                tracingParameters.Add("cnonce", cnonce);
-                tracingParameters.Add("useTokenCookie", useTokenCookie);
-                tracingParameters.Add("meta", meta);
-                tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get3", tracingParameters);
             }
@@ -3955,10 +3224,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -3969,6 +3234,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("GET");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -4093,9 +3366,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -4108,8 +3378,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Create3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Create3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -4134,7 +3405,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Create3", tracingParameters);
             }
@@ -4206,10 +3477,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -4220,6 +3487,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("PUT");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -4344,9 +3619,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -4359,8 +3631,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Post3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Post3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -4385,7 +3658,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Post3", tracingParameters);
             }
@@ -4457,10 +3730,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -4471,6 +3740,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("POST");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
@@ -4595,9 +3872,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -4610,8 +3884,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Delete3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> Delete3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -4636,7 +3911,7 @@ namespace AutorestClient
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Delete3", tracingParameters);
             }
@@ -4708,10 +3983,6 @@ namespace AutorestClient
             {
                 _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
             }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -4722,257 +3993,14 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("DELETE");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
-
-
-            if (customHeaders != null)
+            if (accept != null)
             {
-                foreach(var _header in customHeaders)
+                if (_httpRequest.Headers.Contains("Accept"))
                 {
-                    if (_httpRequest.Headers.Contains(_header.Key))
-                    {
-                        _httpRequest.Headers.Remove(_header.Key);
-                    }
-                    _httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
+                    _httpRequest.Headers.Remove("Accept");
                 }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
             }
-
-            // Serialize Request
-            string _requestContent = null;
-            if(body != null)
-            {
-                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-            }
-            // Send Request
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.SendRequest(_invocationId, _httpRequest);
-            }
-            cancellationToken.ThrowIfCancellationRequested();
-            _httpResponse = await Client.HttpClient.SendAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.ReceiveResponse(_invocationId, _httpResponse);
-            }
-            HttpStatusCode _statusCode = _httpResponse.StatusCode;
-            cancellationToken.ThrowIfCancellationRequested();
-            string _responseContent = null;
-            if (!_httpResponse.IsSuccessStatusCode)
-            {
-                var ex = new AuthenticateResponseException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
-                try
-                {
-                    _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    AuthenticateResponse _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_responseContent, Client.DeserializationSettings);
-                    if (_errorBody != null)
-                    {
-                        ex.Body = _errorBody;
-                    }
-                }
-                catch (JsonException)
-                {
-                    // Ignore the exception
-                }
-                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
-                ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
-                if (_shouldTrace)
-                {
-                    ServiceClientTracing.Error(_invocationId, ex);
-                }
-                _httpRequest.Dispose();
-                if (_httpResponse != null)
-                {
-                    _httpResponse.Dispose();
-                }
-                throw ex;
-            }
-            // Create Result
-            var _result = new HttpOperationResponse<AuthenticateResponse>();
-            _result.Request = _httpRequest;
-            _result.Response = _httpResponse;
-            string _defaultResponseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            try
-            {
-                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_defaultResponseContent, Client.DeserializationSettings);
-            }
-            catch (JsonException ex)
-            {
-                _httpRequest.Dispose();
-                if (_httpResponse != null)
-                {
-                    _httpResponse.Dispose();
-                }
-                throw new SerializationException("Unable to deserialize the response.", _defaultResponseContent, ex);
-            }
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.Exit(_invocationId, _result);
-            }
-            return _result;
-        }
-
-        /// <param name='provider'>
-        /// </param>
-        /// <param name='state'>
-        /// </param>
-        /// <param name='oauthToken'>
-        /// </param>
-        /// <param name='oauthVerifier'>
-        /// </param>
-        /// <param name='userName'>
-        /// </param>
-        /// <param name='password'>
-        /// </param>
-        /// <param name='rememberMe'>
-        /// </param>
-        /// <param name='continueParameter'>
-        /// </param>
-        /// <param name='nonce'>
-        /// </param>
-        /// <param name='uri'>
-        /// </param>
-        /// <param name='response'>
-        /// </param>
-        /// <param name='qop'>
-        /// </param>
-        /// <param name='nc'>
-        /// </param>
-        /// <param name='cnonce'>
-        /// </param>
-        /// <param name='useTokenCookie'>
-        /// </param>
-        /// <param name='meta'>
-        /// </param>
-        /// <param name='body'>
-        /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
-        /// <param name='customHeaders'>
-        /// Headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        /// <exception cref="AuthenticateResponseException">
-        /// Thrown when the operation returned an invalid status code
-        /// </exception>
-        /// <return>
-        /// A response object containing the response body and response headers.
-        /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> Update3WithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), object meta = default(object), Authenticate body = default(Authenticate), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            // Tracing
-            bool _shouldTrace = ServiceClientTracing.IsEnabled;
-            string _invocationId = null;
-            if (_shouldTrace)
-            {
-                _invocationId = ServiceClientTracing.NextInvocationId.ToString();
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("provider", provider);
-                tracingParameters.Add("state", state);
-                tracingParameters.Add("oauthToken", oauthToken);
-                tracingParameters.Add("oauthVerifier", oauthVerifier);
-                tracingParameters.Add("userName", userName);
-                tracingParameters.Add("password", password);
-                tracingParameters.Add("rememberMe", rememberMe);
-                tracingParameters.Add("continueParameter", continueParameter);
-                tracingParameters.Add("nonce", nonce);
-                tracingParameters.Add("uri", uri);
-                tracingParameters.Add("response", response);
-                tracingParameters.Add("qop", qop);
-                tracingParameters.Add("nc", nc);
-                tracingParameters.Add("cnonce", cnonce);
-                tracingParameters.Add("useTokenCookie", useTokenCookie);
-                tracingParameters.Add("meta", meta);
-                tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
-                tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "Update3", tracingParameters);
-            }
-            // Construct URL
-            var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "authenticate/{provider}").ToString();
-            List<string> _queryParameters = new List<string>();
-            if (provider != null)
-            {
-                _queryParameters.Add(string.Format("provider={0}", System.Uri.EscapeDataString(provider)));
-            }
-            if (state != null)
-            {
-                _queryParameters.Add(string.Format("State={0}", System.Uri.EscapeDataString(state)));
-            }
-            if (oauthToken != null)
-            {
-                _queryParameters.Add(string.Format("oauth_token={0}", System.Uri.EscapeDataString(oauthToken)));
-            }
-            if (oauthVerifier != null)
-            {
-                _queryParameters.Add(string.Format("oauth_verifier={0}", System.Uri.EscapeDataString(oauthVerifier)));
-            }
-            if (userName != null)
-            {
-                _queryParameters.Add(string.Format("UserName={0}", System.Uri.EscapeDataString(userName)));
-            }
-            if (password != null)
-            {
-                _queryParameters.Add(string.Format("Password={0}", System.Uri.EscapeDataString(password)));
-            }
-            if (rememberMe != null)
-            {
-                _queryParameters.Add(string.Format("RememberMe={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(rememberMe, Client.SerializationSettings).Trim('"'))));
-            }
-            if (continueParameter != null)
-            {
-                _queryParameters.Add(string.Format("Continue={0}", System.Uri.EscapeDataString(continueParameter)));
-            }
-            if (nonce != null)
-            {
-                _queryParameters.Add(string.Format("nonce={0}", System.Uri.EscapeDataString(nonce)));
-            }
-            if (uri != null)
-            {
-                _queryParameters.Add(string.Format("uri={0}", System.Uri.EscapeDataString(uri)));
-            }
-            if (response != null)
-            {
-                _queryParameters.Add(string.Format("response={0}", System.Uri.EscapeDataString(response)));
-            }
-            if (qop != null)
-            {
-                _queryParameters.Add(string.Format("qop={0}", System.Uri.EscapeDataString(qop)));
-            }
-            if (nc != null)
-            {
-                _queryParameters.Add(string.Format("nc={0}", System.Uri.EscapeDataString(nc)));
-            }
-            if (cnonce != null)
-            {
-                _queryParameters.Add(string.Format("cnonce={0}", System.Uri.EscapeDataString(cnonce)));
-            }
-            if (useTokenCookie != null)
-            {
-                _queryParameters.Add(string.Format("UseTokenCookie={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(useTokenCookie, Client.SerializationSettings).Trim('"'))));
-            }
-            if (meta != null)
-            {
-                _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(meta, Client.SerializationSettings).Trim('"'))));
-            }
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
-            // Create HTTP transport objects
-            var _httpRequest = new HttpRequestMessage();
-            HttpResponseMessage _httpResponse = null;
-            _httpRequest.Method = new HttpMethod("PATCH");
-            _httpRequest.RequestUri = new System.Uri(_url);
-            // Set Headers
 
 
             if (customHeaders != null)

@@ -24,9 +24,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -36,7 +33,10 @@ namespace AutorestClient
         /// <exception cref="UnAssignRolesResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<UnAssignRolesResponse>> GetWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<UnAssignRolesResponse>> GetWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='userName'>
         /// </param>
         /// <param name='permissions'>
@@ -45,9 +45,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -57,7 +54,10 @@ namespace AutorestClient
         /// <exception cref="UnAssignRolesResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<UnAssignRolesResponse>> CreateWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<UnAssignRolesResponse>> CreateWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='userName'>
         /// </param>
         /// <param name='permissions'>
@@ -66,9 +66,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -78,7 +75,10 @@ namespace AutorestClient
         /// <exception cref="UnAssignRolesResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<UnAssignRolesResponse>> PostWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<UnAssignRolesResponse>> PostWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='userName'>
         /// </param>
         /// <param name='permissions'>
@@ -87,9 +87,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -99,27 +96,9 @@ namespace AutorestClient
         /// <exception cref="UnAssignRolesResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<UnAssignRolesResponse>> DeleteWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-        /// <param name='userName'>
-        /// </param>
-        /// <param name='permissions'>
-        /// </param>
-        /// <param name='roles'>
-        /// </param>
-        /// <param name='body'>
-        /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        /// <exception cref="UnAssignRolesResponseException">
-        /// Thrown when the operation returned an invalid status code
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<UnAssignRolesResponse>> UpdateWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<UnAssignRolesResponse>> DeleteWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), UnAssignRoles body = default(UnAssignRoles), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

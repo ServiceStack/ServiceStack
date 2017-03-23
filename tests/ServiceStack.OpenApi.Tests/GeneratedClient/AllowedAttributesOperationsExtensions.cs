@@ -27,12 +27,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
-            public static void Get(this IAllowedAttributesOperations operations, int aliased, AllowedAttributes body = default(AllowedAttributes), string format = "json")
+            public static void Get(this IAllowedAttributesOperations operations, int aliased, AllowedAttributes body = default(AllowedAttributes))
             {
-                operations.GetAsync(aliased, body, format).GetAwaiter().GetResult();
+                operations.GetAsync(aliased, body).GetAwaiter().GetResult();
             }
 
             /// <summary>
@@ -49,15 +46,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            /// <param name='format'>
-            /// Specifies response output format
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task GetAsync(this IAllowedAttributesOperations operations, int aliased, AllowedAttributes body = default(AllowedAttributes), string format = "json", CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task GetAsync(this IAllowedAttributesOperations operations, int aliased, AllowedAttributes body = default(AllowedAttributes), CancellationToken cancellationToken = default(CancellationToken))
             {
-                (await operations.GetWithHttpMessagesAsync(aliased, body, format, null, cancellationToken).ConfigureAwait(false)).Dispose();
+                (await operations.GetWithHttpMessagesAsync(aliased, body, null, cancellationToken).ConfigureAwait(false)).Dispose();
             }
 
     }

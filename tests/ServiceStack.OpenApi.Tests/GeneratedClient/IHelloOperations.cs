@@ -22,9 +22,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -34,16 +31,16 @@ namespace AutorestClient
         /// <exception cref="HelloResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloResponse>> GetWithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<HelloResponse>> GetWithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='title'>
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -53,16 +50,16 @@ namespace AutorestClient
         /// <exception cref="HelloResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloResponse>> CreateWithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<HelloResponse>> CreateWithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='title'>
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -72,16 +69,16 @@ namespace AutorestClient
         /// <exception cref="HelloResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloResponse>> PostWithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<HelloResponse>> PostWithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='title'>
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -91,16 +88,16 @@ namespace AutorestClient
         /// <exception cref="HelloResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloResponse>> DeleteWithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<HelloResponse>> DeleteWithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='title'>
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -110,16 +107,16 @@ namespace AutorestClient
         /// <exception cref="HelloResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloResponse>> UpdateWithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<HelloResponse>> Get1WithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='title'>
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -129,16 +126,16 @@ namespace AutorestClient
         /// <exception cref="HelloResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloResponse>> Get1WithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<HelloResponse>> Create1WithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='title'>
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -148,16 +145,16 @@ namespace AutorestClient
         /// <exception cref="HelloResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloResponse>> Create1WithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<HelloResponse>> Post1WithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='title'>
         /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -167,44 +164,9 @@ namespace AutorestClient
         /// <exception cref="HelloResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
-        Task<HttpOperationResponse<HelloResponse>> Post1WithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-        /// <param name='name'>
-        /// </param>
-        /// <param name='title'>
-        /// </param>
-        /// <param name='body'>
-        /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        /// <exception cref="HelloResponseException">
-        /// Thrown when the operation returned an invalid status code
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<HelloResponse>> Delete1WithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-        /// <param name='name'>
-        /// </param>
-        /// <param name='title'>
-        /// </param>
-        /// <param name='body'>
-        /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        /// <exception cref="HelloResponseException">
-        /// Thrown when the operation returned an invalid status code
-        /// </exception>
-        Task<HttpOperationResponse<HelloResponse>> Update1WithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloResponse>> Delete1WithHttpMessagesAsync(string name = default(string), string title = default(string), Hello body = default(Hello), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }
