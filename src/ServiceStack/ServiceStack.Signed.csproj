@@ -163,6 +163,7 @@
     <Compile Include="NetCore\NetCoreLogFactory.cs" />
     <Compile Include="NetCore\NetCoreQueryStringCollection.cs" />
     <Compile Include="NetCore\NetCoreHeadersCollection.cs" />
+    <Compile Include="OnlyContentTypeAttributes.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="Platforms\PlatformNet.Wcf.cs" />
     <Compile Include="Platforms\PlatformNet.Config.cs" />

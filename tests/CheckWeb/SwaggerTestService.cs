@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Net;
 using System.Runtime.Serialization;
-using System.Security.Policy;
+using Check.ServiceModel.Operations;
+using ServiceStack;
 using ServiceStack.DataAnnotations;
 
-namespace ServiceStack.WebHost.IntegrationTests.Services
+namespace CheckWeb
 {
     public enum MyColor
     {

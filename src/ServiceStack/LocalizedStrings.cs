@@ -27,6 +27,7 @@
         public static string HasPreAuthenticated = "__haspreauth";
         public static string DidAuthenticate = "__didauth";
         public static string IRequest = "__irequest";
+        public static string RequestDuration = "_requestDurationStopwatch";
     }
 
     public static class LocalizedStrings
@@ -58,6 +59,7 @@
         public static string InvalidSignature = "Invalid Signature";
         public static string TokenInvalidated = "Token has been invalidated";
         public static string TokenExpired = "Token has expired";
+        public static string TokenInvalid = "Token is invalid";
         public static string RefreshTokenInvalid = "RefreshToken is Invalid";
 
         public static string InvalidRole = "Invalid Role";

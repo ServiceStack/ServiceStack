@@ -112,13 +112,13 @@
             Need to provide async request options
             http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.globalRequestFilter">
+        <member name="P:ServiceStack.ServiceClientBase.GlobalRequestFilter">
             <summary>
             The request filter is called before any request.
             This request filter is executed globally.
             </summary>
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.globalResponseFilter">
+        <member name="P:ServiceStack.ServiceClientBase.GlobalResponseFilter">
             <summary>
             The response action is called once the server response is available.
             It will allow you to access raw response information. 
@@ -137,17 +137,17 @@
             </summary>
             <param name="baseUri">Base URI of the service</param>
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.disableAutoCompression">
+        <member name="P:ServiceStack.ServiceClientBase.DisableAutoCompression">
             <summary>
             Whether to Accept Gzip,Deflate Content-Encoding and to auto decompress responses
             </summary>
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.username">
+        <member name="P:ServiceStack.ServiceClientBase.UserName">
             <summary>
             The user name for basic authentication
             </summary>
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.password">
+        <member name="P:ServiceStack.ServiceClientBase.Password">
             <summary>
             The password for basic authentication
             </summary>
@@ -157,7 +157,7 @@
             Sets the username and the password for basic authentication.
             </summary>
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.bearerToken">
+        <member name="P:ServiceStack.ServiceClientBase.BearerToken">
             <summary>
             The Authorization Bearer Token to send with this request
             </summary>
@@ -174,44 +174,55 @@
             This property is only used for IIS level authentication.
             </summary>
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.alwaysSendBasicAuthHeader">
+        <member name="P:ServiceStack.ServiceClientBase.AlwaysSendBasicAuthHeader">
             <summary>
             Determines if the basic auth header should be sent with every request.
             By default, the basic auth header is only sent when "401 Unauthorized" is returned.
             </summary>
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.storeCookies">
+        <member name="P:ServiceStack.ServiceClientBase.StoreCookies">
             <summary>
             Specifies if cookies should be stored
             </summary>
         </member>
-        <member name="P:ServiceStack.ServiceClientBase.onAuthenticationRequired">
+        <member name="P:ServiceStack.ServiceClientBase.OnAuthenticationRequired">
             <summary>
             Called before request resend, when the initial request required authentication
             </summary>
         </member>
-        <member name="P:ServiceStack.ServiceClientBase.requestFilter">
+        <member name="P:ServiceStack.ServiceClientBase.RefreshToken">
+            <summary>
+            If a request fails with a 401 Unauthorized and a BearerToken is present the client
+            will automatically fetch a new AccessToken using this RefreshToken and retry the request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.RefreshTokenUri">
+            <summary>
+            Send the Request to get the AccessToken with the RefreshToken at a non-default location
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.RequestFilter">
             <summary>
             The request filter is called before any request.
             This request filter only works with the instance where it was set (not global).
             </summary>
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.resultsFilter">
+        <member name="P:ServiceStack.ServiceClientBase.ResultsFilter">
             <summary>
             The ResultsFilter is called before the Request is sent allowing you to return a cached response.
             </summary>
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.resultsFilterResponse">
+        <member name="P:ServiceStack.ServiceClientBase.ResultsFilterResponse">
             <summary>
             The ResultsFilterResponse is called before returning the response allowing responses to be cached.
             </summary>
         </member>
-        <member name="F:ServiceStack.ServiceClientBase.exceptionFilter">
+        <member name="P:ServiceStack.ServiceClientBase.ExceptionFilter">
             <summary>
             Called with requestUri, ResponseType when server returns 304 NotModified
             </summary>
         </member>
-        <member name="P:ServiceStack.ServiceClientBase.responseFilter">
+        <member name="P:ServiceStack.ServiceClientBase.ResponseFilter">
             <summary>
             The response action is called once the server response is available.
             It will allow you to access raw response information. 

@@ -48,10 +48,6 @@ namespace ServiceStack.Api.OpenApi
 
             var meta = HostContext.Metadata;
 
-            var operations = HostContext.Metadata;
-            var allTypes = operations.GetAllOperationTypes();
-            var allOperationNames = operations.GetAllOperationNames();
-
             foreach (var key in map.Keys)
             {
                 var restPaths = map[key];
@@ -73,7 +69,7 @@ namespace ServiceStack.Api.OpenApi
 
             var result = new OpenApiDeclaration
             {
-                Info = new OpenApiInfo()
+                Info = new OpenApiInfo
                 {
                     Title = HostContext.ServiceName,
                     Version = HostContext.Config.ApiVersion,
@@ -91,7 +87,7 @@ namespace ServiceStack.Api.OpenApi
 
             if (OperationFilter != null)
                 apiPaths.Each(x => GetOperations(x.Value).Each(o => OperationFilter(o.Item1, o.Item2)));
-                
+
             ApiDeclarationFilter?.Invoke(result);
 
             return new HttpResult(result)
@@ -150,7 +146,7 @@ namespace ServiceStack.Api.OpenApi
 
         private static bool IsSwaggerScalarType(Type type)
         {
-            return ClrTypesToSwaggerScalarTypes.ContainsKey(type) 
+            return ClrTypesToSwaggerScalarTypes.ContainsKey(type)
                 || (Nullable.GetUnderlyingType(type) ?? type).IsEnum()
                 || (type.IsValueType() && !IsKeyValuePairType(type))
                 || type.IsNullableType();
@@ -169,16 +165,14 @@ namespace ServiceStack.Api.OpenApi
         {
             var lookupType = Nullable.GetUnderlyingType(type) ?? type;
 
-            string format = null;
-
             //special case for response types byte[]. If byte[] is in response
             //then we should use `binary` swagger type, because it's octet-encoded
             //otherwise we use `byte` swagger type for base64-encoded input
             if (route == null && verb == null && type == typeof(byte[]))
                 return OpenApiTypeFormat.Binary;
 
-            ClrTypesToSwaggerScalarFormats.TryGetValue(lookupType, out format);
-            return format;
+            string format;
+            return ClrTypesToSwaggerScalarFormats.TryGetValue(lookupType, out format) ? format : null;
         }
 
         private static Type GetListElementType(Type type)
@@ -230,7 +224,7 @@ namespace ServiceStack.Api.OpenApi
             var listItemType = GetListElementType(schemaType);
             ParseDefinitions(schemas, listItemType, route, verb);
 
-            return new OpenApiSchema()
+            return new OpenApiSchema
             {
                 Type = SwaggerType.Array,
                 Items = GetOpenApiListItems(listItemType, route, verb)
@@ -262,7 +256,7 @@ namespace ServiceStack.Api.OpenApi
 
             ParseDefinitions(schemas, valueType, route, verb);
 
-            return new OpenApiSchema()
+            return new OpenApiSchema
             {
                 Type = OpenApiType.Object,
                 Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
@@ -283,7 +277,7 @@ namespace ServiceStack.Api.OpenApi
             var keyType = schemaType.GetTypeGenericArguments()[0];
             var valueType = schemaType.GetTypeGenericArguments()[1];
 
-            return new OpenApiSchema()
+            return new OpenApiSchema
             {
                 Type = OpenApiType.Object,
                 Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
@@ -301,16 +295,16 @@ namespace ServiceStack.Api.OpenApi
         }
 
         private static string GetSchemaTypeName(Type schemaType)
-		{
-		    if ((!IsKeyValuePairType(schemaType) && schemaType.IsValueType()) || schemaType.IsNullableType())
-		        return OpenApiType.String;
+        {
+            if ((!IsKeyValuePairType(schemaType) && schemaType.IsValueType()) || schemaType.IsNullableType())
+                return OpenApiType.String;
 
-		    if (!schemaType.IsGenericType())
-		        return schemaType.Name;
+            if (!schemaType.IsGenericType())
+                return schemaType.Name;
 
             var typeName = schemaType.ToPrettyName();
-		    return typeName;
-		}
+            return typeName;
+        }
 
         private OpenApiProperty GetOpenApiProperty(IDictionary<string, OpenApiSchema> schemas, Type propertyType, string route, string verb)
         {
@@ -364,7 +358,7 @@ namespace ServiceStack.Api.OpenApi
             {
                 schemaProp.Type = GetSwaggerTypeName(propertyType);
                 schemaProp.Format = GetSwaggerTypeFormat(propertyType, route, verb);
-                schemaProp.Nullable = IsRequiredType(propertyType) ? false: (bool?)null;
+                schemaProp.Nullable = IsRequiredType(propertyType) ? false : (bool?)null;
                 //schemaProp.Required = IsRequiredType(propertyType) ? true : (bool?)null;
             }
             else
@@ -374,11 +368,6 @@ namespace ServiceStack.Api.OpenApi
             }
 
             return schemaProp;
-        }
-
-        private void ParseResponseSchema(IDictionary<string, OpenApiSchema> schemas, Type schemaType)
-        {
-            ParseDefinitions(schemas, schemaType, null, null);
         }
 
         private void ParseDefinitions(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
@@ -456,10 +445,15 @@ namespace ServiceStack.Api.OpenApi
 
                     schemaProp.Description = prop.GetDescription() ?? apiDoc?.Description;
 
-                    //TODO: Maybe need to add new attributes for swagger2 'Type' and 'Format' properties
-                    //var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
-                    //if (propAttr?.DataType != null)
-                    //    schemaProp.Format = propAttr.DataType;     //schemaProp.Type = propAttr.DataType;
+                    var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
+                    if (propAttr != null)
+                    {
+                        if (propAttr.DataType != null)
+                            schemaProp.Type = propAttr.DataType;
+
+                        if (propAttr.Format != null)
+                            schemaProp.Format = propAttr.Format;
+                    }
 
                     var allowableValues = prop.FirstAttribute<ApiAllowableValuesAttribute>();
                     if (allowableValues != null)
@@ -475,9 +469,9 @@ namespace ServiceStack.Api.OpenApi
         private static string GetSchemaPropertyName(PropertyInfo prop)
         {
             var dataMemberAttr = prop.FirstAttribute<DataMemberAttribute>();
-            if (dataMemberAttr != null && !dataMemberAttr.Name.IsNullOrEmpty()) 
+            if (dataMemberAttr != null && !dataMemberAttr.Name.IsNullOrEmpty())
                 return dataMemberAttr.Name;
-            
+
             return UseCamelCaseSchemaPropertyNames
                 ? (UseLowercaseUnderscoreSchemaPropertyNames ? prop.Name.ToLowercaseUnderscore() : prop.Name.ToCamelCase())
                 : prop.Name;
@@ -486,7 +480,7 @@ namespace ServiceStack.Api.OpenApi
         private static IEnumerable<string> GetNumericValues(Type propertyType, Type underlyingType)
         {
             var values = Enum.GetValues(propertyType)
-                .Map(x => "{0} ({1})".Fmt(Convert.ChangeType(x, underlyingType), x));
+                .Map(x => $"{Convert.ChangeType(x, underlyingType)} ({x})");
 
             return values;
         }
@@ -502,15 +496,14 @@ namespace ServiceStack.Api.OpenApi
                     ParseDefinitions(schemas, schemaType, null, null);
 
                     var schema = GetDictionarySchema(schemas, schemaType, null, null)
-                                    ?? GetKeyValuePairSchema(schemas, schemaType, null, null)
-                                    ?? GetListSchema(schemas, schemaType, null, null)
-                                    ?? (IsSwaggerScalarType(schemaType)
-                                        ? new OpenApiSchema()
-                                        {
-                                            Type = GetSwaggerTypeName(schemaType),
-                                            Format = GetSwaggerTypeFormat(schemaType)
-                                        }
-                                        : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType)});
+                        ?? GetKeyValuePairSchema(schemas, schemaType, null, null)
+                        ?? GetListSchema(schemas, schemaType, null, null)
+                        ?? (IsSwaggerScalarType(schemaType)
+                            ? new OpenApiSchema {
+                                  Type = GetSwaggerTypeName(schemaType),
+                                  Format = GetSwaggerTypeFormat(schemaType)
+                              }
+                            : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) });
 
                     return schema;
                 }
@@ -525,16 +518,15 @@ namespace ServiceStack.Api.OpenApi
 
             var responseSchema = GetResponseSchema(restPath, schemas);
 
-            responses.Add("default", new OpenApiResponse()
+            responses.Add("default", new OpenApiResponse
             {
                 Schema = responseSchema,
                 Description = string.Empty //TODO: description
             });
-                
+
             foreach (var attr in requestType.AllAttributes<ApiResponseAttribute>())
             {
-                responses.Add(attr.StatusCode.ToString(), new OpenApiResponse()
-                {
+                responses.Add(attr.StatusCode.ToString(), new OpenApiResponse {
                     Description = attr.Description,
                 });
             }
@@ -583,7 +575,7 @@ namespace ServiceStack.Api.OpenApi
                         Deprecated = requestType.HasAttribute<ObsoleteAttribute>()
                     };
 
-                    switch(verb)
+                    switch (verb)
                     {
                         case "GET": curPath.Get = operation; break;
                         case "POST": curPath.Post = operation; break;
@@ -608,14 +600,12 @@ namespace ServiceStack.Api.OpenApi
             { "PATCH", "_Update" }, //'Update' to pass Autorest validation
             { "DELETE", "_Delete" } //'Delete' to pass Autorest validation
         };
-            
+
         /// Returns operation postfix to make operationId unique and swagger json be validable
         private static string GetOperationNamePostfix(string verb)
         {
-            string postfix = null;
-
+            string postfix;
             postfixes.TryGetValue(verb, out postfix);
-
             return postfix ?? string.Empty;
         }
 
@@ -623,7 +613,7 @@ namespace ServiceStack.Api.OpenApi
         {
             return attr?.Values?.ToList();
         }
-        
+
         private List<OpenApiParameter> ParseParameters(IDictionary<string, OpenApiSchema> schemas, Type operationType, string route, string verb)
         {
             var hasDataContract = operationType.HasAttribute<DataContractAttribute>();
@@ -643,7 +633,7 @@ namespace ServiceStack.Api.OpenApi
                 var attr = hasDataContract
                     ? property.FirstAttribute<DataMemberAttribute>()
                     : null;
-                
+
                 var propertyName = attr?.Name ?? property.Name;
 
                 var apiMembers = property.AllAttributes<ApiMemberAttribute>();
@@ -659,8 +649,8 @@ namespace ServiceStack.Api.OpenApi
 
                 var inPath = (route ?? "").ToLower().Contains("{" + propertyName.ToLower() + "}");
                 var paramType = inPath
-                    ? "path" 
-                    : verb == HttpMethods.Post || verb == HttpMethods.Put 
+                    ? "path"
+                    : verb == HttpMethods.Post || verb == HttpMethods.Put
                         ? "formData"
                         : "query";
 
@@ -669,7 +659,7 @@ namespace ServiceStack.Api.OpenApi
                     route, verb,
                     propertyName, paramType,
                     allowableValuesAttrs.FirstOrDefault());
-                    
+
                 defaultOperationParameters.Add(parameter);
             }
 

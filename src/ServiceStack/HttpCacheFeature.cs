@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -244,7 +245,10 @@ namespace ServiceStack
                 {
                     DateTime modifiedSinceDate;
                     if (DateTime.TryParse(ifModifiedSince, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out modifiedSinceDate))
-                        return modifiedSinceDate <= lastModified.Value.ToUniversalTime();
+                    {
+                        var lastModifiedUtc = lastModified.Value.Truncate(TimeSpan.FromSeconds(1)).ToUniversalTime();
+                       return modifiedSinceDate >= lastModifiedUtc;
+                    }
                 }
             }
 
@@ -268,7 +272,7 @@ namespace ServiceStack
 
         public static bool ShouldAddLastModifiedToOptimizedResults(this HttpCacheFeature feature)
         {
-            return feature != null && feature.CacheControlForOptimizedResults != null;
+            return feature?.CacheControlForOptimizedResults != null;
         }
 
         internal static string StripWeakRef(this string eTag)

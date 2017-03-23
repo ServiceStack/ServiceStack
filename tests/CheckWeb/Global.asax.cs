@@ -8,6 +8,7 @@ using Check.ServiceModel.Types;
 using Funq;
 using ServiceStack;
 using ServiceStack.Admin;
+using ServiceStack.Api.OpenApi;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Auth;
 using ServiceStack.Data;
@@ -29,7 +30,7 @@ namespace CheckWeb
         /// Initializes a new instance of the <see cref="AppHost"/> class.
         /// </summary>
         public AppHost()
-            : base("CheckWeb", typeof(ErrorsService).Assembly) {}
+            : base("CheckWeb", typeof(ErrorsService).Assembly, typeof(HtmlServices).Assembly) {}
 
         /// <summary>
         /// Configure the Web Application host.
@@ -229,12 +230,14 @@ namespace CheckWeb
             razor.Deny.RemoveAt(0);
             Plugins.Add(razor);
 
+            Plugins.Add(new OpenApiFeature());
+
             // Enable support for Swagger API browser
-            Plugins.Add(new SwaggerFeature
-            {
-                //UseBootstrapTheme = true, 
-                //LogoUrl = "//lh6.googleusercontent.com/-lh7Gk4ZoVAM/AAAAAAAAAAI/AAAAAAAAAAA/_0CgCb4s1e0/s32-c/photo.jpg"
-            });
+            //Plugins.Add(new SwaggerFeature
+            //{
+            //    UseBootstrapTheme = true,
+            //    LogoUrl = "//lh6.googleusercontent.com/-lh7Gk4ZoVAM/AAAAAAAAAAI/AAAAAAAAAAA/_0CgCb4s1e0/s32-c/photo.jpg"
+            //});
             //Plugins.Add(new CorsFeature()); // Uncomment if the services to be available from external sites
         }
 
@@ -282,6 +285,18 @@ namespace CheckWeb
             existingProviders.Insert(0, memFs);
             return existingProviders;
         }
+    }
+
+    [Route("/test/html")]
+    public class TestHtml
+    {
+        public string Name { get; set; }
+    }
+
+    [HtmlOnly]
+    public class HtmlServices : Service
+    {
+        public object Any(TestHtml request) => request;
     }
 
     public class Global : System.Web.HttpApplication
