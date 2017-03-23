@@ -423,8 +423,13 @@ namespace ServiceStack.Api.Swagger
                         ParseModel(models, propertyType, route, verb);
 
                         var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
-                        if (propAttr?.DataType != null)
-                            modelProp.Type = propAttr.DataType;
+                        if (propAttr != null)
+                        {
+                            if (propAttr.DataType != null)
+                                modelProp.Type = propAttr.DataType;
+                            if (propAttr.Format != null)
+                                modelProp.Format = propAttr.Format;
+                        }
                     }
 
                     if (apiDoc != null && modelProp.Description == null)

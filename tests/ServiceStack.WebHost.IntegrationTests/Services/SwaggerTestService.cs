@@ -45,6 +45,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [DataMember]
         public string NotAliased { get; set; }
 
+        [ApiMember(Description = "Format as password", DataType = "string", Format = "password")]
+        [DataMember]
+        public string Password { get; set; }
+
         [DataMember]
         [ApiMember(IsRequired = false, AllowMultiple = true)]
         public DateTime[] MyDateBetween { get; set; }

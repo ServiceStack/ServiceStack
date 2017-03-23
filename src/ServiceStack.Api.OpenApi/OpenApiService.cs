@@ -455,10 +455,15 @@ namespace ServiceStack.Api.OpenApi
 
                     schemaProp.Description = prop.GetDescription() ?? apiDoc?.Description;
 
-                    //TODO: Maybe need to add new attributes for swagger2 'Type' and 'Format' properties
-                    //var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
-                    //if (propAttr?.DataType != null)
-                    //    schemaProp.Format = propAttr.DataType;     //schemaProp.Type = propAttr.DataType;
+                    var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
+                    if (propAttr != null)
+                    {
+                        if (propAttr.DataType != null)
+                            schemaProp.Type = propAttr.DataType;
+
+                        if (propAttr.Format != null)
+                            schemaProp.Format = propAttr.Format;
+                    }
 
                     var allowableValues = prop.FirstAttribute<ApiAllowableValuesAttribute>();
                     if (allowableValues != null)
