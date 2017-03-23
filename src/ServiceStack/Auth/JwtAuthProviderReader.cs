@@ -172,6 +172,11 @@ namespace ServiceStack.Auth
         public TimeSpan ExpireRefreshTokensIn { get; set; }
 
         /// <summary>
+        /// Allow custom logic to invalidate JWT Tokens
+        /// </summary>
+        public Func<string, JsonObject, bool> ValidateToken { get; set; }
+
+        /// <summary>
         /// Allow custom logic to invalidate Refresh Tokens
         /// </summary>
         public Func<string, JsonObject, bool> ValidateRefreshToken { get; set; }
@@ -327,6 +332,12 @@ namespace ServiceStack.Auth
                     if (jwtPayload == null) //not verified
                         return;
 
+                    if (ValidateToken != null)
+                    {
+                        if (!ValidateToken(bearerToken, jwtPayload))
+                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid);
+                    }
+
                     var session = CreateSessionFromPayload(req, jwtPayload);
                     req.Items[Keywords.Session] = session;
                 }
@@ -387,6 +398,12 @@ namespace ServiceStack.Auth
                     {
                         var jwtPayloadBytes = cryptStream.ReadFully();
                         jwtPayload = JsonObject.Parse(jwtPayloadBytes.FromUtf8Bytes());
+                    }
+
+                    if (ValidateToken != null)
+                    {
+                        if (!ValidateToken(bearerToken, jwtPayload))
+                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid);
                     }
 
                     var session = CreateSessionFromPayload(req, jwtPayload);
