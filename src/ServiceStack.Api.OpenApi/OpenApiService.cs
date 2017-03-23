@@ -579,7 +579,8 @@ namespace ServiceStack.Api.OpenApi
                         Responses = GetMethodResponseCodes(restPath, schemas, requestType),
                         Consumes = new List<string> { "application/json" },
                         Produces = new List<string> { "application/json" },
-                        Tags = new List<string> { restPath.Path }
+                        Tags = new List<string> { restPath.Path },
+                        Deprecated = requestType.HasAttribute<ObsoleteAttribute>()
                     };
 
                     switch(verb)

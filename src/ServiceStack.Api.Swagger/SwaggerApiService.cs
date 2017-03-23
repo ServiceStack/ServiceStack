@@ -523,7 +523,8 @@ namespace ServiceStack.Api.Swagger
                     Notes = notes,
                     Parameters = ParseParameters(verb, requestType, models, routePath),
                     ResponseClass = GetResponseClass(restPath, models),
-                    ErrorResponses = GetMethodResponseCodes(requestType)
+                    ErrorResponses = GetMethodResponseCodes(requestType),
+                    Deprecated = requestType.HasAttribute<ObsoleteAttribute>() ? "true" : null
                 })
             };
             return md;
