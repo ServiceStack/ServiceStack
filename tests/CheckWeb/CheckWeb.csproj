@@ -107,6 +107,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SwaggerTestService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="default.cshtml" />
