@@ -174,7 +174,7 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Allow custom logic to invalidate Refresh Tokens
         /// </summary>
-        public Func<string, bool> ValidateRefreshToken { get; set; }
+        public Func<string, JsonObject, bool> ValidateRefreshToken { get; set; }
 
         /// <summary>
         /// Convenient overload to initialize ExpireTokensIn with an Integer

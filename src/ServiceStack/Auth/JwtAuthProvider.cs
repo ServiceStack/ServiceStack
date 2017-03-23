@@ -358,15 +358,15 @@ namespace ServiceStack.Auth
             if (string.IsNullOrEmpty(request.RefreshToken))
                 throw new ArgumentNullException(nameof(request.RefreshToken));
 
-            if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(request.RefreshToken))
-                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid, nameof(request.RefreshToken));
-
             var userRepo = AuthRepository as IUserAuthRepository;
             if (userRepo == null)
                 throw new NotSupportedException("JWT Refresh Tokens requires a registered IUserAuthRepository");
 
             var jwtPayload = jwtAuthProvider.GetVerifiedJwtPayload(request.RefreshToken.Split('.'));
             jwtAuthProvider.AssertJwtPayloadIsValid(jwtPayload);
+
+            if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(request.RefreshToken, jwtPayload))
+                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid, nameof(request.RefreshToken));
 
             var userId = jwtPayload["sub"];
 
