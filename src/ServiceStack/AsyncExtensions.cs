@@ -36,7 +36,7 @@ namespace ServiceStack
                 Func<Task, TOut> next)
         {
             var ctxt = SynchronizationContext.Current;
-            return task.ContinueWith(innerTask =>
+            return HostContext.Async.ContinueWith(task, innerTask =>
             {
                 var tcs = new TaskCompletionSource<TOut>();
 

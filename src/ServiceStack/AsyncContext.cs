@@ -13,6 +13,11 @@ namespace ServiceStack
             return task.ContinueWith(fn);
         }
 
+        public Task<TResult> ContinueWith<TResult>(Task task, Func<Task, TResult> fn)
+        {
+            return task.ContinueWith(fn);
+        }
+
         public virtual Task ContinueWith(Task task, Action<Task> fn, TaskContinuationOptions continuationOptions)
         {
             return task.ContinueWith(fn, continuationOptions);
