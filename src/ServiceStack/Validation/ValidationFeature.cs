@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Funq;
@@ -20,10 +21,16 @@ namespace ServiceStack.Validation
         public void Register(IAppHost appHost)
         {
             if (!appHost.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter))
+            {
                 appHost.GlobalRequestFilters.Add(ValidationFilters.RequestFilter);
+                appHost.GlobalRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsync);
+            }
 
             if (!appHost.GlobalMessageRequestFilters.Contains(ValidationFilters.RequestFilter))
+            {
                 appHost.GlobalMessageRequestFilters.Add(ValidationFilters.RequestFilter);
+                appHost.GlobalMessageRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsync);
+            }
         }
        
         /// <summary>
@@ -84,6 +91,23 @@ namespace ServiceStack.Validation
             var validatorType = typeof(IValidator<>).GetCachedGenericType(dtoType);
 
             container.RegisterAutoWiredType(validator, validatorType, scope);
+        }
+
+        public static bool HasAsyncValidators(this IValidator validator, string ruleSet=null)
+        {
+            var rules = validator as IEnumerable<IValidationRule>;
+            if (rules != null)
+            {
+                foreach (var rule in rules)
+                {
+                    if (ruleSet != null && rule.RuleSet != null && rule.RuleSet != ruleSet)
+                        continue;
+
+                    if (rule.Validators.Any(x => x.IsAsync))
+                        return true;
+                }
+            }
+            return false;
         }
     }
 }

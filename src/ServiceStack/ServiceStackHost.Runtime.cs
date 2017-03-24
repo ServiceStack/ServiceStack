@@ -347,6 +347,12 @@ namespace ServiceStack
                 if (res.IsClosed) return res.IsClosed;
             }
 
+            foreach (var requestFilter in GlobalMessageRequestFiltersAsync)
+            {
+                requestFilter(req, res, requestDto).Wait();
+                if (res.IsClosed) return res.IsClosed;
+            }
+
             return res.IsClosed;
         }
 

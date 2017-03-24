@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.FluentValidation;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -24,9 +25,66 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    [Route("/test/asyncfilter")]
-    public class TestAsyncFilterRestHandler : TestAsyncFilter {}
+    [Route("/test/async-filter")]
+    public class TestAsyncFilterRestHandler : TestAsyncFilter { }
 
+    [Route("/test/async-validator")]
+    public class TestAsyncValidator : IReturn<TestAsyncValidator>
+    {
+        public int Age { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class MyTestAsyncValidator : AbstractValidator<TestAsyncValidator>
+    {
+        public MyTestAsyncValidator()
+        {
+            RuleSet(ApplyTo.Post, () =>
+            {
+                RuleFor(x => x.Name).MustAsync(async (s, token) =>
+                    {
+                        await Task.Delay(10, token);
+                        return !string.IsNullOrEmpty(s);
+                    })
+                    .WithMessage("'Name' should not be empty.")
+                    .WithErrorCode("NotEmpty");
+            });
+            RuleSet(ApplyTo.Put, () =>
+            {
+                RuleFor(x => x.Name).NotEmpty();
+            });
+            RuleFor(x => x.Age).GreaterThan(0);
+        }
+    }
+
+    [Route("/test/all-async-validator")]
+    public class TestAllAsyncValidator : IReturn<TestAsyncValidator>
+    {
+        public int Age { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class MyAllTestAsyncValidator : AbstractValidator<TestAllAsyncValidator>
+    {
+        public MyAllTestAsyncValidator()
+        {
+            RuleFor(x => x.Name).MustAsync(async (s, token) =>
+                {
+                    await Task.Delay(10, token);
+                    return !string.IsNullOrEmpty(s);
+                })
+                .WithMessage("'Name' should not be empty.")
+                .WithErrorCode("NotEmpty");
+
+            RuleFor(x => x.Age).MustAsync(async (age, token) =>
+                {
+                    await Task.Delay(10, token);
+                    return age > 0;
+                })
+                .WithMessage("'Age' must be greater than '0'.")
+                .WithErrorCode("GreaterThan");
+        }
+    }
     public class TestAsyncFilterService : Service
     {
         public object Any(TestAsyncFilter request)
@@ -40,13 +98,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             request.Results.Add("Service#" + request.GetType().Name);
             return request;
         }
+
+        public object Any(TestAsyncValidator request) => request;
+
+        public object Any(TestAllAsyncValidator request) => request;
     }
 
     public class AsyncFiltersTests
     {
         class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(AsyncFiltersTests), typeof(TestAsyncFilterService).GetAssembly()) {}
+            public AppHost() : base(nameof(AsyncFiltersTests), typeof(TestAsyncFilterService).GetAssembly()) { }
 
             public static int CancelledAt = -1;
 
@@ -55,6 +117,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 GlobalRequestFiltersAsync.Add(CreateAsyncFilter(0));
                 GlobalRequestFiltersAsync.Add(CreateAsyncFilter(1));
                 GlobalRequestFiltersAsync.Add(CreateAsyncFilter(2));
+
+                Plugins.Add(new ValidationFeature());
+                container.RegisterValidators(typeof(MyTestAsyncValidator).Assembly);
             }
 
             private static Func<IRequest, IResponse, object, Task> CreateAsyncFilter(int pos)
@@ -195,7 +260,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var responseBatch = client.SendAll(new []
+                var responseBatch = client.SendAll(new[]
                 {
                     new TestAsyncFilter { ErrorAt = 1 },
                     new TestAsyncFilter { ErrorAt = 1 },
@@ -278,6 +343,94 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(responseBatch, Is.Null);
             Assert.That(AppHost.CancelledAt, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Does_execute_mixed_async_validator_as_sync()
+        {
+            try
+            {
+                var response = client.Put(new TestAsyncValidator());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.ResponseStatus.PrintDump();
+                var status = ex.ResponseStatus;
+
+                Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Message, Is.EqualTo("'Name' should not be empty."));
+
+                Assert.That(status.Errors.Count, Is.EqualTo(2));
+                Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Errors[0].FieldName, Is.EqualTo("Name"));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'Name' should not be empty."));
+
+                Assert.That(status.Errors[1].ErrorCode, Is.EqualTo("GreaterThan"));
+                Assert.That(status.Errors[1].FieldName, Is.EqualTo("Age"));
+                Assert.That(status.Errors[1].Message, Is.EqualTo("'Age' must be greater than '0'."));
+            }
+        }
+
+        [Test]
+        public void Does_execute_mixed_async_validator_as_async()
+        {
+            try
+            {
+                var response = client.Post(new TestAsyncValidator());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.ResponseStatus.PrintDump();
+                var status = ex.ResponseStatus;
+
+                Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Message, Is.EqualTo("'Name' should not be empty."));
+
+                Assert.That(status.Errors.Count, Is.EqualTo(2));
+                Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Errors[0].FieldName, Is.EqualTo("Name"));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'Name' should not be empty."));
+
+                Assert.That(status.Errors[1].ErrorCode, Is.EqualTo("GreaterThan"));
+                Assert.That(status.Errors[1].FieldName, Is.EqualTo("Age"));
+                Assert.That(status.Errors[1].Message, Is.EqualTo("'Age' must be greater than '0'."));
+            }
+        }
+
+        [Test]
+        public void Can_send_valid_mixed_AsyncValidator_request()
+        {
+            var syncResponse = client.Put(new TestAsyncValidator { Age = 1, Name = "one" });
+            var asyncResponse = client.Post(new TestAsyncValidator { Age = 2, Name = "two" });
+        }
+
+        [Test]
+        public void Does_execute_all_async_validator()
+        {
+            try
+            {
+                var response = client.Post(new TestAllAsyncValidator());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.ResponseStatus.PrintDump();
+                var status = ex.ResponseStatus;
+
+                Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Message, Is.EqualTo("'Name' should not be empty."));
+
+                Assert.That(status.Errors.Count, Is.EqualTo(2));
+                Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Errors[0].FieldName, Is.EqualTo("Name"));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'Name' should not be empty."));
+
+                Assert.That(status.Errors[1].ErrorCode, Is.EqualTo("GreaterThan"));
+                Assert.That(status.Errors[1].FieldName, Is.EqualTo("Age"));
+                Assert.That(status.Errors[1].Message, Is.EqualTo("'Age' must be greater than '0'."));
+            }
         }
     }
 }
