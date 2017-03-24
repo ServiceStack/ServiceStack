@@ -79,6 +79,7 @@ namespace ServiceStack.Api.OpenApi
                 Schemes = new List<string> { basePath.Scheme }, //TODO: get https from config
                 Host = basePath.Authority,
                 Consumes = new List<string> { "application/json" },
+                Produces = new List<string> { "application/json" },
                 Definitions = definitions,
                 Tags = tags.OrderBy(t => t.Name).ToList()
             };
@@ -553,7 +554,7 @@ namespace ServiceStack.Api.OpenApi
 
                 if (!apiPaths.TryGetValue(restPath.Path, out curPath))
                 {
-                    curPath = new OpenApiPath();
+                    curPath = new OpenApiPath() { Parameters = new List<OpenApiParameter> { GetAcceptHeaderParameter() } };
                     apiPaths.Add(restPath.Path, curPath);
 
                     tags.Add(new OpenApiTag { Name = restPath.Path, Description = summary });
@@ -570,7 +571,8 @@ namespace ServiceStack.Api.OpenApi
                         Responses = GetMethodResponseCodes(restPath, schemas, requestType),
                         Consumes = new List<string> { "application/json" },
                         Produces = new List<string> { "application/json" },
-                        Tags = new List<string> { restPath.Path }
+                        Tags = new List<string> { restPath.Path },
+                        Deprecated = requestType.HasAttribute<ObsoleteAttribute>()
                     };
 
                     switch (verb)
@@ -768,6 +770,19 @@ namespace ServiceStack.Api.OpenApi
             parameter.Items = GetOpenApiListItems(listItemType, route, verb);
 
             return parameter;
+        }
+
+        private OpenApiParameter GetAcceptHeaderParameter()
+        {
+            return new OpenApiParameter
+            {
+                Type = OpenApiType.String,
+                Name = "Accept",
+                Description = "Accept Header",
+                Enum = new List<string>() { "application/json"},
+                In = "header",
+                Required = true,
+            };
         }
     }
 }

@@ -45,9 +45,6 @@ namespace AutorestClient
 
         /// <param name='body'>
         /// </param>
-        /// <param name='format'>
-        /// Specifies response output format
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -60,8 +57,9 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<IList<ReturnedDto>>> GetWithHttpMessagesAsync(object body = default(object), string format = "json", Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<IList<ReturnedDto>>> GetWithHttpMessagesAsync(object body = default(object), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -70,28 +68,27 @@ namespace AutorestClient
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("format", format);
+                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get", tracingParameters);
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "return-list").ToString();
-            List<string> _queryParameters = new List<string>();
-            if (format != null)
-            {
-                _queryParameters.Add(string.Format("format={0}", System.Uri.EscapeDataString(format)));
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
             _httpRequest.Method = new HttpMethod("GET");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (accept != null)
+            {
+                if (_httpRequest.Headers.Contains("Accept"))
+                {
+                    _httpRequest.Headers.Remove("Accept");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+            }
 
 
             if (customHeaders != null)
