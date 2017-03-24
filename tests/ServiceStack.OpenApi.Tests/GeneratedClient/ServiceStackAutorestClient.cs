@@ -31,6 +31,11 @@ namespace AutorestClient
         public JsonSerializerSettings DeserializationSettings { get; private set; }
 
         /// <summary>
+        /// Accept Header
+        /// </summary>
+        public string Accept { get; private set; }
+
+        /// <summary>
         /// Gets the IReturnListRequest.
         /// </summary>
         public virtual IReturnListRequest ReturnListRequest { get; private set; }
@@ -266,6 +271,7 @@ namespace AutorestClient
             AssignRoles = new AssignRolesOperations(this);
             UnAssignRoles = new UnAssignRolesOperations(this);
             BaseUri = new System.Uri("http://localhost:20000/");
+            Accept = "application/json";
             SerializationSettings = new JsonSerializerSettings
             {
                 Formatting = Newtonsoft.Json.Formatting.Indented,

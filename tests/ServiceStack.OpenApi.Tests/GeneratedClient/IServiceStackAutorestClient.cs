@@ -26,6 +26,11 @@ namespace AutorestClient
         /// </summary>
         JsonSerializerSettings DeserializationSettings { get; }
 
+        /// <summary>
+        /// Accept Header
+        /// </summary>
+        string Accept { get; }
+
 
         /// <summary>
         /// Gets the IReturnListRequest.

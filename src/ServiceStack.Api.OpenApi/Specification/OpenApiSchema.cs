@@ -6,12 +6,8 @@ namespace ServiceStack.Api.OpenApi.Specification
     [DataContract]
     public class OpenApiSchema : OpenApiDataTypeSchema
     {
-        [DataMember(Name = "$ref")]
-        public string Ref { get; set; }
         [DataMember(Name = "title")]
         public string Title { get; set; }
-        [DataMember(Name = "description")]
-        public string Description { get; set; }
         [DataMember(Name = "discriminator")]
         public string Discriminator { get; set; }
         [DataMember(Name = "readOnly")]

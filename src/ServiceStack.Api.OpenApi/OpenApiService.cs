@@ -81,7 +81,8 @@ namespace ServiceStack.Api.OpenApi
                 Consumes = new List<string> { "application/json" },
                 Produces = new List<string> { "application/json" },
                 Definitions = definitions,
-                Tags = tags.OrderBy(t => t.Name).ToList()
+                Tags = tags.OrderBy(t => t.Name).ToList(),
+                Parameters = new Dictionary<string, OpenApiParameter> { { "Accept", GetAcceptHeaderParameter() } }
             };
 
 
@@ -554,7 +555,7 @@ namespace ServiceStack.Api.OpenApi
 
                 if (!apiPaths.TryGetValue(restPath.Path, out curPath))
                 {
-                    curPath = new OpenApiPath() { Parameters = new List<OpenApiParameter> { GetAcceptHeaderParameter() } };
+                    curPath = new OpenApiPath() { Parameters = new List<OpenApiParameter> { new OpenApiParameter { Ref = "#/parameters/Accept" } } };
                     apiPaths.Add(restPath.Path, curPath);
 
                     tags.Add(new OpenApiTag { Name = restPath.Path, Description = summary });
