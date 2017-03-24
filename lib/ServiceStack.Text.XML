@@ -298,7 +298,7 @@
             Uses the standard .net ToString method of the TimeSpan class
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.JsonExtensions.Get``1(System.Collections.Generic.Dictionary{System.String,System.String},System.String)">
+        <member name="M:ServiceStack.Text.JsonExtensions.Get``1(System.Collections.Generic.Dictionary{System.String,System.String},System.String,``0)">
             <summary>
             Get JSON string value converted to T
             </summary>
