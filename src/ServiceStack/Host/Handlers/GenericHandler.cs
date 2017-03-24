@@ -71,16 +71,13 @@ namespace ServiceStack.Host.Handlers
 
                 if (appHost.ApplyRequestFilters(httpReq, httpRes, request))
                     return TypeConstants.EmptyTask;
-
+                
                 return appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request)
                     .Continue(t =>
                     {
                         if (t.IsFaulted)
                         {
-                            var taskEx = t.Exception.UnwrapIfSingleException();
-                            return !HostContext.Config.WriteErrorsToResponse
-                                ? taskEx.ApplyResponseConverters(httpReq).AsTaskException()
-                                : HandleException(httpReq, httpRes, operationName, taskEx.ApplyResponseConverters(httpReq));
+                            return t;
                         }
 
                         if (t.IsCanceled)
@@ -98,21 +95,31 @@ namespace ServiceStack.Host.Handlers
                             return TypeConstants.EmptyTask;
 
                         return HandleResponse(rawResponse, response =>
-                            {
-                                response = appHost.ApplyResponseConverters(httpReq, response);
+                        {
+                            response = appHost.ApplyResponseConverters(httpReq, response);
 
-                                if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
-                                    return TypeConstants.EmptyTask;
+                            if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
+                                return TypeConstants.EmptyTask;
 
-                                if (doJsonp && !(response is CompressedResult))
-                                    return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+                            if (doJsonp && !(response is CompressedResult))
+                                return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
 
-                                return httpRes.WriteToResponse(httpReq, response);
-                            },
-                            ex => !HostContext.Config.WriteErrorsToResponse
-                                ? ex.ApplyResponseConverters(httpReq).AsTaskException()
-                                : HandleException(httpReq, httpRes, operationName, ex.ApplyResponseConverters(httpReq)));
-                    });
+                            return httpRes.WriteToResponse(httpReq, response);
+                        });
+                    })
+                    .Unwrap()
+                    .Continue(t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            var taskEx = t.Exception.UnwrapIfSingleException();
+                            return !HostContext.Config.WriteErrorsToResponse
+                                ? taskEx.ApplyResponseConverters(httpReq).AsTaskException()
+                                : HandleException(httpReq, httpRes, operationName, taskEx.ApplyResponseConverters(httpReq));
+                        }
+                        return t;
+                    })
+                    .Unwrap();
             }
             catch (Exception ex)
             {

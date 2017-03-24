@@ -40,7 +40,7 @@ namespace ServiceStack.Host.Handlers
         public abstract object CreateRequest(IRequest request, string operationName);
         public abstract object GetResponse(IRequest request, object requestDto);
 
-        public Task HandleResponse(object response, Func<object, Task> callback, Func<Exception, Task> errorCallback)
+        public Task HandleResponse(object response, Func<object, Task> callback)
         {
             try
             {
@@ -56,10 +56,10 @@ namespace ServiceStack.Host.Handlers
                         .Continue(task =>
                         {
                             if (task.IsFaulted)
-                                return errorCallback(task.Exception.UnwrapIfSingleException());
+                                return task;
 
                             if (task.IsCanceled)
-                                return errorCallback(new OperationCanceledException("The async Task operation was cancelled"));
+                                return new OperationCanceledException("The async Task operation was cancelled").AsTaskException();
 
                             if (task.IsCompleted)
                             {
@@ -91,7 +91,7 @@ namespace ServiceStack.Host.Handlers
                                 return callback(batchedResponses);
                             }
 
-                            return errorCallback(new InvalidOperationException("Unknown Task state"));
+                            return new InvalidOperationException("Unknown Task state").AsTaskException();
                         });
                 }
 
@@ -99,7 +99,7 @@ namespace ServiceStack.Host.Handlers
             }
             catch (Exception ex)
             {
-                return errorCallback(ex);
+                return ex.AsTaskException();
             }
         }
 

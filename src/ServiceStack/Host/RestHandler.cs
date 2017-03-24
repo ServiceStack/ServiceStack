@@ -98,12 +98,7 @@ namespace ServiceStack.Host
                     .Continue(t =>
                     {
                         if (t.IsFaulted)
-                        {
-                            var taskEx = t.Exception.UnwrapIfSingleException();
-                            return !HostContext.Config.WriteErrorsToResponse
-                                ? taskEx.ApplyResponseConverters(httpReq).AsTaskException()
-                                : HandleException(httpReq, httpRes, operationName, taskEx.ApplyResponseConverters(httpReq));
-                        }
+                            return t;
 
                         if (t.IsCanceled)
                             httpRes.EndRequest();
@@ -130,11 +125,21 @@ namespace ServiceStack.Host
                                 return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
 
                             return httpRes.WriteToResponse(httpReq, response);
-                        },
-                        ex => !HostContext.Config.WriteErrorsToResponse
-                            ? ex.ApplyResponseConverters(httpReq).AsTaskException()
-                            : HandleException(httpReq, httpRes, operationName, ex.ApplyResponseConverters(httpReq)));
-                    });
+                        });
+                    })
+                    .Unwrap()
+                    .Continue(t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            var taskEx = t.Exception.UnwrapIfSingleException();
+                            return !HostContext.Config.WriteErrorsToResponse
+                                ? taskEx.ApplyResponseConverters(httpReq).AsTaskException()
+                                : HandleException(httpReq, httpRes, operationName, taskEx.ApplyResponseConverters(httpReq));
+                        }
+                        return t;
+                    })
+                    .Unwrap();
             }
             catch (Exception ex)
             {
