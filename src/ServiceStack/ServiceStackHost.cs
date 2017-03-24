@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using Funq;
 using ServiceStack.Auth;
@@ -94,6 +96,7 @@ namespace ServiceStack
             RequestConverters = new List<Func<IRequest, object, object>>();
             ResponseConverters = new List<Func<IRequest, object, object>>();
             GlobalRequestFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalRequestFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
             GlobalTypedRequestFilters = new Dictionary<Type, ITypedFilter>();
             GlobalResponseFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalTypedResponseFilters = new Dictionary<Type, ITypedFilter>();
@@ -348,6 +351,8 @@ namespace ServiceStack
         public List<Func<IRequest, object, object>> ResponseConverters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; }
+
+        public List<Func<IRequest, IResponse, object, Task>> GlobalRequestFiltersAsync { get; set; }
 
         public Dictionary<Type, ITypedFilter> GlobalTypedRequestFilters { get; set; }
 

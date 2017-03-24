@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Text;
@@ -71,26 +72,47 @@ namespace ServiceStack.Host.Handlers
                 if (appHost.ApplyRequestFilters(httpReq, httpRes, request))
                     return TypeConstants.EmptyTask;
 
-                var rawResponse = GetResponse(httpReq, request);
+                return appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request)
+                    .Continue(t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            var taskEx = t.Exception.UnwrapIfSingleException();
+                            return !HostContext.Config.WriteErrorsToResponse
+                                ? taskEx.ApplyResponseConverters(httpReq).AsTaskException()
+                                : HandleException(httpReq, httpRes, operationName, taskEx.ApplyResponseConverters(httpReq));
+                        }
 
-                if (httpRes.IsClosed)
-                    return TypeConstants.EmptyTask;
+                        if (t.IsCanceled)
+                        {
+                            httpRes.StatusCode = (int)HttpStatusCode.PartialContent;
+                            httpRes.EndRequest();
+                        }
 
-                return HandleResponse(rawResponse, response =>
-                {
-                    response = appHost.ApplyResponseConverters(httpReq, response);
+                        if (httpRes.IsClosed)
+                            return TypeConstants.EmptyTask;
 
-                    if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
-                        return TypeConstants.EmptyTask;
+                        var rawResponse = GetResponse(httpReq, request);
 
-                    if (doJsonp && !(response is CompressedResult))
-                        return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+                        if (httpRes.IsClosed)
+                            return TypeConstants.EmptyTask;
 
-                    return httpRes.WriteToResponse(httpReq, response);
-                },
-                ex => !HostContext.Config.WriteErrorsToResponse
-                    ? ex.ApplyResponseConverters(httpReq).AsTaskException()
-                    : HandleException(httpReq, httpRes, operationName, ex.ApplyResponseConverters(httpReq)));
+                        return HandleResponse(rawResponse, response =>
+                            {
+                                response = appHost.ApplyResponseConverters(httpReq, response);
+
+                                if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
+                                    return TypeConstants.EmptyTask;
+
+                                if (doJsonp && !(response is CompressedResult))
+                                    return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+
+                                return httpRes.WriteToResponse(httpReq, response);
+                            },
+                            ex => !HostContext.Config.WriteErrorsToResponse
+                                ? ex.ApplyResponseConverters(httpReq).AsTaskException()
+                                : HandleException(httpReq, httpRes, operationName, ex.ApplyResponseConverters(httpReq)));
+                    });
             }
             catch (Exception ex)
             {
