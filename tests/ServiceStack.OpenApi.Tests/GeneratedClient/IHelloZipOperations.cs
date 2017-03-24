@@ -20,8 +20,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='test'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -34,7 +32,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<HelloZipResponse>> GetWithHttpMessagesAsync(string name = default(string), IList<string> test = default(IList<string>), HelloZip body = default(HelloZip), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloZipResponse>> GetWithHttpMessagesAsync(string name = default(string), string test = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='test'>
@@ -53,7 +51,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<HelloZipResponse>> CreateWithHttpMessagesAsync(string name = default(string), IList<string> test = default(IList<string>), HelloZip body = default(HelloZip), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloZipResponse>> CreateWithHttpMessagesAsync(string name = default(string), string test = default(string), HelloZip body = default(HelloZip), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='test'>
@@ -72,12 +70,10 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<HelloZipResponse>> PostWithHttpMessagesAsync(string name = default(string), IList<string> test = default(IList<string>), HelloZip body = default(HelloZip), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloZipResponse>> PostWithHttpMessagesAsync(string name = default(string), string test = default(string), HelloZip body = default(HelloZip), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='test'>
-        /// </param>
-        /// <param name='body'>
         /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -91,6 +87,6 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<HelloZipResponse>> DeleteWithHttpMessagesAsync(string name = default(string), IList<string> test = default(IList<string>), HelloZip body = default(HelloZip), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloZipResponse>> DeleteWithHttpMessagesAsync(string name = default(string), string test = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

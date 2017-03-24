@@ -18,8 +18,6 @@ namespace AutorestClient
     {
         /// <param name='names'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -32,7 +30,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<IList<ArrayResult>>> GetWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<ArrayResult>>> GetWithHttpMessagesAsync(string names = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='names'>
         /// </param>
         /// <param name='body'>
@@ -49,7 +47,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<IList<ArrayResult>>> CreateWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<ArrayResult>>> CreateWithHttpMessagesAsync(string names = default(string), HelloArray body = default(HelloArray), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='names'>
         /// </param>
         /// <param name='body'>
@@ -66,10 +64,8 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<IList<ArrayResult>>> PostWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<ArrayResult>>> PostWithHttpMessagesAsync(string names = default(string), HelloArray body = default(HelloArray), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='names'>
-        /// </param>
-        /// <param name='body'>
         /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -83,6 +79,6 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<IList<ArrayResult>>> DeleteWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<IList<ArrayResult>>> DeleteWithHttpMessagesAsync(string names = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

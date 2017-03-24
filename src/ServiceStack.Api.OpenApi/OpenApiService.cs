@@ -226,7 +226,7 @@ namespace ServiceStack.Api.OpenApi
 
             return new OpenApiSchema
             {
-                Type = SwaggerType.Array,
+                Type = OpenApiType.Array,
                 Items = GetOpenApiListItems(listItemType, route, verb)
             };
         }
@@ -566,8 +566,8 @@ namespace ServiceStack.Api.OpenApi
                     {
                         Summary = summary,
                         Description = restPath.Notes ?? summary,
-                        OperationId = requestType.Name + GetOperationNamePostfix(verb),
-                        Parameters = ParseParameters(schemas, requestType, verb, routePath),
+                        OperationId = GetOperationName(requestType.Name, routePath, verb),
+                        Parameters = ParseParameters(schemas, requestType, routePath, verb),
                         Responses = GetMethodResponseCodes(restPath, schemas, requestType),
                         Consumes = new List<string> { "application/json" },
                         Produces = new List<string> { "application/json" },
@@ -601,12 +601,37 @@ namespace ServiceStack.Api.OpenApi
             { "DELETE", "_Delete" } //'Delete' to pass Autorest validation
         };
 
+
+        HashSet<string> operationIds = new HashSet<string>();
+
         /// Returns operation postfix to make operationId unique and swagger json be validable
-        private static string GetOperationNamePostfix(string verb)
+        private string GetOperationName(string name, string route, string verb)
         {
-            string postfix;
-            postfixes.TryGetValue(verb, out postfix);
-            return postfix ?? string.Empty;
+            string pathPostfix = string.Empty;
+
+            var entries = route.Replace("{", string.Empty)
+                .Replace("}", string.Empty)
+                .Split(new char[] { '/'}, StringSplitOptions.RemoveEmptyEntries);
+
+            if (entries.Length > 1)
+                pathPostfix = string.Join(string.Empty, entries, 1, entries.Length - 1);
+
+            string verbPostfix;
+            postfixes.TryGetValue(verb, out verbPostfix);
+            verbPostfix = verbPostfix ?? string.Empty;
+
+            var operationId = name + pathPostfix + verbPostfix;
+
+            int num = 2;
+            while (operationIds.Contains(operationId))
+            {
+                operationId = name + pathPostfix + num.ToString() + verbPostfix;
+                num++;
+            }
+
+            operationIds.Add(operationId);
+
+            return operationId;
         }
 
         private static List<string> GetEnumValues(ApiAllowableValuesAttribute attr)
@@ -710,44 +735,52 @@ namespace ServiceStack.Api.OpenApi
 
         private OpenApiParameter GetParameter(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb, string paramName, string paramIn, ApiAllowableValuesAttribute allowableValueAttrs = null)
         {
-            OpenApiParameter parameter;
-
-            if (IsDictionaryType(schemaType))
+            if (IsSwaggerScalarType(schemaType))
             {
-                parameter = new OpenApiParameter
-                {
-                    In = paramIn,
-                    Name = paramName,
-                    Schema = GetDictionarySchema(schemas, schemaType, route, verb)
-                };
-            }
-            else if (IsListType(schemaType))
-            {
-                parameter = GetListParameter(schemas, schemaType, route, verb, paramName, paramIn);
-            }
-            else if (IsSwaggerScalarType(schemaType))
-            {
-                parameter = new OpenApiParameter
+                return new OpenApiParameter
                 {
                     In = paramIn,
                     Name = paramName,
                     Type = GetSwaggerTypeName(schemaType),
                     Format = GetSwaggerTypeFormat(schemaType, route, verb),
                     Enum = GetEnumValues(allowableValueAttrs),
-                    Nullable = IsRequiredType(schemaType) ? false : (bool?)null
-                };
-            }
-            else
-            {
-                parameter = new OpenApiParameter
-                {
-                    In = paramIn,
-                    Name = paramName,
-                    Schema = new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) }
+                    Nullable = IsRequiredType(schemaType) ? false : (bool?)null,
+                    Required = paramIn == "path" ? true : (bool?)null
                 };
             }
 
-            return parameter;
+            if (paramIn != "body")
+            {
+                return new OpenApiParameter
+                {
+                    In = paramIn,
+                    Name = paramName,
+                    Type = OpenApiType.String,
+                    Required = paramIn == "path" ? true : (bool?)null
+                };
+            }
+
+            if (IsDictionaryType(schemaType))
+            {
+                return new OpenApiParameter
+                {
+                    In = paramIn,
+                    Name = paramName,
+                    Schema = GetDictionarySchema(schemas, schemaType, route, verb)
+                };
+            }
+
+            if (IsListType(schemaType))
+            {
+                return GetListParameter(schemas, schemaType, route, verb, paramName, paramIn);
+            }
+
+            return new OpenApiParameter
+            {
+                In = paramIn,
+                Name = paramName,
+                Schema = new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) }
+            };
         }
 
         private OpenApiParameter GetListParameter(IDictionary<string, OpenApiSchema> schemas, Type listType, string route, string verb, string paramName, string paramIn)

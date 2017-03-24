@@ -20,11 +20,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='names'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static IList<ListResult> Get(this IHelloListOperations operations, IList<string> names = default(IList<string>), HelloList body = default(HelloList))
+            public static IList<ListResult> Get(this IHelloListOperations operations, string names = default(string))
             {
-                return operations.GetAsync(names, body).GetAwaiter().GetResult();
+                return operations.GetAsync(names).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -32,14 +30,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='names'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<ListResult>> GetAsync(this IHelloListOperations operations, IList<string> names = default(IList<string>), HelloList body = default(HelloList), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<ListResult>> GetAsync(this IHelloListOperations operations, string names = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(names, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(names, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -52,7 +48,7 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            public static IList<ListResult> Create(this IHelloListOperations operations, IList<string> names = default(IList<string>), HelloList body = default(HelloList))
+            public static IList<ListResult> Create(this IHelloListOperations operations, string names = default(string), HelloList body = default(HelloList))
             {
                 return operations.CreateAsync(names, body).GetAwaiter().GetResult();
             }
@@ -67,7 +63,7 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<ListResult>> CreateAsync(this IHelloListOperations operations, IList<string> names = default(IList<string>), HelloList body = default(HelloList), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<ListResult>> CreateAsync(this IHelloListOperations operations, string names = default(string), HelloList body = default(HelloList), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.CreateWithHttpMessagesAsync(names, body, null, cancellationToken).ConfigureAwait(false))
                 {
@@ -82,7 +78,7 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            public static IList<ListResult> Post(this IHelloListOperations operations, IList<string> names = default(IList<string>), HelloList body = default(HelloList))
+            public static IList<ListResult> Post(this IHelloListOperations operations, string names = default(string), HelloList body = default(HelloList))
             {
                 return operations.PostAsync(names, body).GetAwaiter().GetResult();
             }
@@ -97,7 +93,7 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<ListResult>> PostAsync(this IHelloListOperations operations, IList<string> names = default(IList<string>), HelloList body = default(HelloList), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<ListResult>> PostAsync(this IHelloListOperations operations, string names = default(string), HelloList body = default(HelloList), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.PostWithHttpMessagesAsync(names, body, null, cancellationToken).ConfigureAwait(false))
                 {
@@ -110,11 +106,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='names'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static IList<ListResult> Delete(this IHelloListOperations operations, IList<string> names = default(IList<string>), HelloList body = default(HelloList))
+            public static IList<ListResult> Delete(this IHelloListOperations operations, string names = default(string))
             {
-                return operations.DeleteAsync(names, body).GetAwaiter().GetResult();
+                return operations.DeleteAsync(names).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -122,14 +116,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='names'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<ListResult>> DeleteAsync(this IHelloListOperations operations, IList<string> names = default(IList<string>), HelloList body = default(HelloList), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<ListResult>> DeleteAsync(this IHelloListOperations operations, string names = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(names, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(names, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

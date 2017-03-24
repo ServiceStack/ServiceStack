@@ -61,6 +61,11 @@ namespace AutorestClient
         public virtual IHelloOperations Hello { get; private set; }
 
         /// <summary>
+        /// Gets the IHelloName.
+        /// </summary>
+        public virtual IHelloName HelloName { get; private set; }
+
+        /// <summary>
         /// Gets the IHelloListOperations.
         /// </summary>
         public virtual IHelloListOperations HelloList { get; private set; }
@@ -121,14 +126,29 @@ namespace AutorestClient
         public virtual IGetSession GetSession { get; private set; }
 
         /// <summary>
-        /// Gets the IUpdateSessionOperations.
+        /// Gets the IUpdateSessioneditCustomName.
         /// </summary>
-        public virtual IUpdateSessionOperations UpdateSession { get; private set; }
+        public virtual IUpdateSessioneditCustomName UpdateSessioneditCustomName { get; private set; }
 
         /// <summary>
         /// Gets the IAuthenticateOperations.
         /// </summary>
         public virtual IAuthenticateOperations Authenticate { get; private set; }
+
+        /// <summary>
+        /// Gets the IAuthenticateprovider.
+        /// </summary>
+        public virtual IAuthenticateprovider Authenticateprovider { get; private set; }
+
+        /// <summary>
+        /// Gets the IAuthenticate2.
+        /// </summary>
+        public virtual IAuthenticate2 Authenticate2 { get; private set; }
+
+        /// <summary>
+        /// Gets the IAuthenticateprovider2.
+        /// </summary>
+        public virtual IAuthenticateprovider2 Authenticateprovider2 { get; private set; }
 
         /// <summary>
         /// Gets the IAssignRolesOperations.
@@ -225,6 +245,7 @@ namespace AutorestClient
             ReturnDictionaryStringRequest = new ReturnDictionaryStringRequest(this);
             ReturnDictionaryDtoRequest = new ReturnDictionaryDtoRequest(this);
             Hello = new HelloOperations(this);
+            HelloName = new HelloName(this);
             HelloList = new HelloListOperations(this);
             HelloArray = new HelloArrayOperations(this);
             AllowedAttributes = new AllowedAttributesOperations(this);
@@ -237,8 +258,11 @@ namespace AutorestClient
             HelloTypes = new HelloTypesOperations(this);
             HelloZip = new HelloZipOperations(this);
             GetSession = new GetSession(this);
-            UpdateSession = new UpdateSessionOperations(this);
+            UpdateSessioneditCustomName = new UpdateSessioneditCustomName(this);
             Authenticate = new AuthenticateOperations(this);
+            Authenticateprovider = new Authenticateprovider(this);
+            Authenticate2 = new Authenticate2(this);
+            Authenticateprovider2 = new Authenticateprovider2(this);
             AssignRoles = new AssignRolesOperations(this);
             UnAssignRoles = new UnAssignRolesOperations(this);
             BaseUri = new System.Uri("http://localhost:20000/");

@@ -18,11 +18,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='dateTime'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static HelloDateTime Get(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime))
+            public static HelloDateTime Get(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime))
             {
-                return operations.GetAsync(dateTime, body).GetAwaiter().GetResult();
+                return operations.GetAsync(dateTime).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -30,14 +28,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='dateTime'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloDateTime> GetAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloDateTime> GetAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(dateTime, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(dateTime, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -108,11 +104,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='dateTime'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static HelloDateTime Delete(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime))
+            public static HelloDateTime Delete(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime))
             {
-                return operations.DeleteAsync(dateTime, body).GetAwaiter().GetResult();
+                return operations.DeleteAsync(dateTime).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -120,14 +114,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='dateTime'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloDateTime> DeleteAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloDateTime> DeleteAsync(this IHelloDateTimeOperations operations, System.DateTime dateTime = default(System.DateTime), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(dateTime, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(dateTime, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
