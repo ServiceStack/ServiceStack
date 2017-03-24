@@ -531,6 +531,7 @@ namespace ServiceStack.Host
         {
             if (applyFilters)
             {
+                requestDto = appHost.ApplyRequestConverters(req, requestDto);
                 if (appHost.ApplyRequestFilters(req, req.Response, requestDto))
                     return null;
             }
@@ -559,6 +560,7 @@ namespace ServiceStack.Host
 
             if (applyFilters)
             {
+                requestDto = appHost.ApplyRequestConverters(req, requestDto);
                 if (appHost.ApplyRequestFilters(req, req.Response, requestDto))
                     return null;
             }
@@ -578,6 +580,13 @@ namespace ServiceStack.Host
             if (appHost.Config.EnableAccessRestrictions)
             {
                 AssertServiceRestrictions(requestType, req.RequestAttributes);
+            }
+
+            if (applyFilters)
+            {
+                requestDto = appHost.ApplyRequestConverters(req, requestDto);
+                if (appHost.ApplyRequestFilters(req, req.Response, requestDto))
+                    return TypeConstants.EmptyTask;
             }
 
             var handlerFn = GetService(requestType);
