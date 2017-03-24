@@ -106,7 +106,7 @@
     <Compile Include="AutoQueryMetadataFeature.cs" />
     <Compile Include="CacheInfo.cs" />
     <Compile Include="CacheResponseAttribute.cs" />
-    <Compile Include="Caching\CacheClientPrefixer.cs" />
+    <Compile Include="Caching\CacheClientWithPrefix.cs" />
     <Compile Include="CompressResponseAttribute.cs" />
     <Compile Include="ConnectionInfo.cs" />
     <Compile Include="ConnectionInfoAttribute.cs" />
