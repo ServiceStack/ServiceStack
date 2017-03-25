@@ -116,7 +116,7 @@ namespace ServiceStack.Auth
         {
             var jwtHeader = new JsonObject
             {
-                { "typ", "JWTR" },        //RefreshToken
+                { "typ", "JWTR" }, //RefreshToken
                 { "alg", HashAlgorithm }
             };
 
@@ -362,7 +362,20 @@ namespace ServiceStack.Auth
             if (userRepo == null)
                 throw new NotSupportedException("JWT Refresh Tokens requires a registered IUserAuthRepository");
 
-            var jwtPayload = jwtAuthProvider.GetVerifiedJwtPayload(request.RefreshToken.Split('.'));
+            JsonObject jwtPayload;
+            try
+            {
+                jwtPayload = jwtAuthProvider.GetVerifiedJwtPayload(request.RefreshToken.Split('.'));
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+
             jwtAuthProvider.AssertJwtPayloadIsValid(jwtPayload);
 
             if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(jwtPayload, Request))

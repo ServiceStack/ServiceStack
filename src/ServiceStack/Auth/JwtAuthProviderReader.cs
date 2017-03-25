@@ -414,6 +414,9 @@ namespace ServiceStack.Auth
 
         public JsonObject GetVerifiedJwtPayload(string[] jwtParts)
         {
+            if (jwtParts.Length != 3)
+                throw new ArgumentException(ErrorMessages.TokenInvalid);
+
             var header = jwtParts[0];
             var payload = jwtParts[1];
             var signatureBytes = jwtParts[2].FromBase64UrlSafe();
@@ -429,7 +432,7 @@ namespace ServiceStack.Auth
 
             //Potential Security Risk for relying on user-specified algorithm: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
             if (RequireHashAlgorithm && algorithm != HashAlgorithm)
-                throw new NotSupportedException("Invalid algoritm '{0}', expected '{1}'".Fmt(algorithm, HashAlgorithm));
+                throw new NotSupportedException($"Invalid algoritm '{algorithm}', expected '{HashAlgorithm}'");
 
             if (!VerifyPayload(algorithm, bytesToSign, signatureBytes))
                 return null;
