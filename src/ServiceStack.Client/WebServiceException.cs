@@ -3,11 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using System.Net.Mime;
-using System.Runtime.Serialization;
-using System.Text;
 using ServiceStack.Logging;
 using ServiceStack.Model;
 using ServiceStack.Text;
