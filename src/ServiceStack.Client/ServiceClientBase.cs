@@ -657,21 +657,38 @@ namespace ServiceStack
             {
                 if (WebRequestUtils.ShouldAuthenticate(webEx,
                     (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
-                        || credentials != null
-                        || bearerToken != null
-                        || refreshToken != null
-                        || OnAuthenticationRequired != null))
+                    || credentials != null
+                    || bearerToken != null
+                    || refreshToken != null
+                    || OnAuthenticationRequired != null))
                 {
                     if (RefreshToken != null)
                     {
-                        var refreshRequest = new GetAccessToken { RefreshToken = RefreshToken };
+                        var refreshRequest = new GetAccessToken {RefreshToken = RefreshToken};
                         var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
-                        var tokenResponse = uri.PostJsonToUrl(refreshRequest).FromJson<GetAccessTokenResponse>();
+
+                        GetAccessTokenResponse tokenResponse;
+                        try
+                        {
+                            tokenResponse = uri.PostJsonToUrl(refreshRequest).FromJson<GetAccessTokenResponse>();
+                        }
+                        catch (WebException refreshEx)
+                        {
+                            var webServiceEx = ToWebServiceException(refreshEx,
+                                stream => DeserializeFromStream<TResponse>(stream),
+                                ContentType);
+
+                            if (webServiceEx != null)
+                                throw new RefreshTokenException(webServiceEx);
+                            
+                            throw new RefreshTokenException(refreshEx.Message, refreshEx);
+                        }
+
                         var accessToken = tokenResponse?.AccessToken;
                         if (string.IsNullOrEmpty(accessToken))
-                            throw new Exception("Could not retrieve new AccessToken from: " + uri);
+                            throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
 
-                        var refreshClient = (HttpWebRequest)createWebRequest();
+                        var refreshClient = (HttpWebRequest) createWebRequest();
                         if (this.GetTokenCookie() != null)
                         {
                             this.SetTokenCookie(accessToken);
@@ -699,6 +716,10 @@ namespace ServiceStack
 
                     return true;
                 }
+            }
+            catch (WebServiceException /*retrhow*/)
+            {
+                throw;
             }
             catch (Exception subEx)
             {
@@ -771,16 +792,15 @@ namespace ServiceStack
             responseHandler(ex, requestUri);
         }
 
-        public void ThrowWebServiceException<TResponse>(Exception ex, string requestUri)
+        public static WebServiceException ToWebServiceException(WebException webEx, Func<Stream, object> parseDtoFn, string contentType)
         {
-            var webEx = ex as WebException;
-            if (webEx != null && webEx.Response != null
+            if (webEx?.Response != null
 #if !(SL5 || PCL || NETSTANDARD1_1)
-                 && webEx.Status == WebExceptionStatus.ProtocolError
+                && webEx.Status == WebExceptionStatus.ProtocolError
 #endif
             )
             {
-                var errorResponse = ((HttpWebResponse)webEx.Response);
+                var errorResponse = (HttpWebResponse)webEx.Response;
                 log.Error(webEx);
                 if (log.IsDebugEnabled)
                 {
@@ -797,12 +817,12 @@ namespace ServiceStack
 
                 try
                 {
-                    if (string.IsNullOrEmpty(errorResponse.ContentType) || errorResponse.ContentType.MatchesContentType(ContentType))
+                    if (string.IsNullOrEmpty(errorResponse.ContentType) || errorResponse.ContentType.MatchesContentType(contentType))
                     {
                         var bytes = errorResponse.GetResponseStream().ReadFully();
                         var stream = MemoryStreamFactory.GetStream(bytes);
                         serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                        serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
+                        serviceEx.ResponseDto = parseDtoFn?.Invoke(stream);
 
                         if (stream.CanRead)
                             stream.Dispose(); //alt ms throws when you dispose twice
@@ -815,7 +835,7 @@ namespace ServiceStack
                 catch (Exception innerEx)
                 {
                     // Oh, well, we tried
-                    throw new WebServiceException(errorResponse.StatusDescription, innerEx)
+                    return new WebServiceException(errorResponse.StatusDescription, innerEx)
                     {
                         StatusCode = (int)errorResponse.StatusCode,
                         StatusDescription = errorResponse.StatusDescription,
@@ -823,9 +843,22 @@ namespace ServiceStack
                     };
                 }
 
-                //Escape deserialize exception handling and throw here
-                throw serviceEx;
+                //Escape deserialize exception handling and return here
+                return serviceEx;
             }
+
+            return null;
+        }
+
+        public void ThrowWebServiceException<TResponse>(Exception ex, string requestUri)
+        {
+            var webEx = ToWebServiceException(
+                ex as WebException, 
+                stream => DeserializeFromStream<TResponse>(stream),
+                ContentType);
+
+            if (webEx != null)
+                throw webEx;
 
             var authEx = ex as AuthenticationException;
             if (authEx != null)
