@@ -119,7 +119,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 GlobalRequestFiltersAsync.Add(CreateAsyncFilter(2));
 
                 Plugins.Add(new ValidationFeature());
-                container.RegisterValidators(typeof(MyTestAsyncValidator).Assembly);
+                container.RegisterValidators(typeof(MyTestAsyncValidator).GetAssembly());
             }
 
             private static Func<IRequest, IResponse, object, Task> CreateAsyncFilter(int pos)
