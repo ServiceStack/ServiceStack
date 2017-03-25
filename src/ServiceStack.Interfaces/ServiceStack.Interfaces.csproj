@@ -76,6 +76,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DataAnnotations\BelongToAttribute.cs" />
+    <Compile Include="DataAnnotations\CheckConstraintAttribute.cs" />
     <Compile Include="DataAnnotations\CompositeKeyAttribute.cs" />
     <Compile Include="DataAnnotations\ComputeAttribute.cs" />
     <Compile Include="DataAnnotations\CustomFieldAttribute.cs" />
