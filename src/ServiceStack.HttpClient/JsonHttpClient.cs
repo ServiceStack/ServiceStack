@@ -271,9 +271,19 @@ namespace ServiceStack
                             return this.PostAsync<GetAccessTokenResponse>(uri, refreshDto)
                                 .ContinueWith(t =>
                                 {
+                                    if (t.IsFaulted)
+                                    {
+                                        var refreshEx = t.Exception.UnwrapIfSingleException() as WebServiceException;
+                                        if (refreshEx != null)
+                                        {
+                                            throw new RefreshTokenException(refreshEx);
+                                        }
+                                        throw t.Exception;
+                                    }
+
                                     var accessToken = t.Result?.AccessToken;
                                     if (string.IsNullOrEmpty(accessToken))
-                                        throw new Exception("Could not retrieve new AccessToken from: " + uri);
+                                        throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
 
                                     var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
                                     if (this.GetTokenCookie() != null)
@@ -518,7 +528,7 @@ namespace ServiceStack
             responseHandler(httpRes, request, requestUri, response);
         }
 
-        public byte[] GetResponseBytes(object response)
+        public static byte[] GetResponseBytes(object response)
         {
             var stream = response as Stream;
             if (stream != null)
@@ -535,7 +545,8 @@ namespace ServiceStack
             return null;
         }
 
-        public void ThrowWebServiceException<TResponse>(HttpResponseMessage httpRes, object request, string requestUri, object response)
+        public static WebServiceException ToWebServiceException(
+            HttpResponseMessage httpRes, object response, Func<Stream, object> parseDtoFn)
         {
             if (log.IsDebugEnabled)
             {
@@ -557,11 +568,11 @@ namespace ServiceStack
                 var bytes = GetResponseBytes(response);
                 if (bytes != null)
                 {
-                    if (string.IsNullOrEmpty(contentType) || contentType.MatchesContentType(ContentType))
+                    if (string.IsNullOrEmpty(contentType) || contentType.MatchesContentType(MimeTypes.Json))
                     {
                         var stream = MemoryStreamFactory.GetStream(bytes);
                         serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                        serviceEx.ResponseDto = JsonSerializer.DeserializeFromStream<TResponse>(stream);
+                        serviceEx.ResponseDto = parseDtoFn?.Invoke(stream);
 
                         if (stream.CanRead)
                             stream.Dispose(); //alt ms throws when you dispose twice
@@ -575,7 +586,7 @@ namespace ServiceStack
             catch (Exception innerEx)
             {
                 // Oh, well, we tried
-                throw new WebServiceException(httpRes.ReasonPhrase, innerEx)
+                return new WebServiceException(httpRes.ReasonPhrase, innerEx)
                 {
                     StatusCode = (int)httpRes.StatusCode,
                     StatusDescription = httpRes.ReasonPhrase,
@@ -584,7 +595,15 @@ namespace ServiceStack
             }
 
             //Escape deserialize exception handling and throw here
-            throw serviceEx;
+            return serviceEx;
+        }
+
+        public void ThrowWebServiceException<TResponse>(HttpResponseMessage httpRes, object request, string requestUri, object response)
+        {
+            var webEx = ToWebServiceException(httpRes, response,
+                stream => JsonSerializer.DeserializeFromStream<TResponse>(stream));
+
+            throw webEx;
 
             //var authEx = ex as AuthenticationException;
             //if (authEx != null)
