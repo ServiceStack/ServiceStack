@@ -14,6 +14,6 @@ namespace ServiceStack.Api.OpenApi.Specification
         [DataMember(Name = "schema")]
         public OpenApiSchema Schema { get; set; }
         [DataMember(Name = "allowEmptyValue")]
-        public bool AllowEmptyValue { get; set; }
+        public bool? AllowEmptyValue { get; set; }
     }
 }

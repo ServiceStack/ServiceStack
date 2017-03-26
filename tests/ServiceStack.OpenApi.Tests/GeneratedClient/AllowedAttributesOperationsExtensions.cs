@@ -25,11 +25,9 @@ namespace AutorestClient
             /// <param name='aliased'>
             /// Range Description
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static void Get(this IAllowedAttributesOperations operations, int aliased, AllowedAttributes body = default(AllowedAttributes))
+            public static void Get(this IAllowedAttributesOperations operations, int aliased)
             {
-                operations.GetAsync(aliased, body).GetAwaiter().GetResult();
+                operations.GetAsync(aliased).GetAwaiter().GetResult();
             }
 
             /// <summary>
@@ -44,14 +42,12 @@ namespace AutorestClient
             /// <param name='aliased'>
             /// Range Description
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task GetAsync(this IAllowedAttributesOperations operations, int aliased, AllowedAttributes body = default(AllowedAttributes), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task GetAsync(this IAllowedAttributesOperations operations, int aliased, CancellationToken cancellationToken = default(CancellationToken))
             {
-                (await operations.GetWithHttpMessagesAsync(aliased, body, null, cancellationToken).ConfigureAwait(false)).Dispose();
+                (await operations.GetWithHttpMessagesAsync(aliased, null, cancellationToken).ConfigureAwait(false)).Dispose();
             }
 
     }

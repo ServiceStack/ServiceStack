@@ -16,12 +16,12 @@ namespace AutorestClient
     using System.Threading.Tasks;
 
     /// <summary>
-    /// UpdateSessionOperations operations.
+    /// UpdateSessioneditCustomName operations.
     /// </summary>
-    public partial class UpdateSessionOperations : IServiceOperations<ServiceStackAutorestClient>, IUpdateSessionOperations
+    public partial class UpdateSessioneditCustomName : IServiceOperations<ServiceStackAutorestClient>, IUpdateSessioneditCustomName
     {
         /// <summary>
-        /// Initializes a new instance of the UpdateSessionOperations class.
+        /// Initializes a new instance of the UpdateSessioneditCustomName class.
         /// </summary>
         /// <param name='client'>
         /// Reference to the service client.
@@ -29,7 +29,7 @@ namespace AutorestClient
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        public UpdateSessionOperations(ServiceStackAutorestClient client)
+        public UpdateSessioneditCustomName(ServiceStackAutorestClient client)
         {
             if (client == null)
             {
@@ -45,8 +45,6 @@ namespace AutorestClient
 
         /// <param name='customName'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -56,11 +54,21 @@ namespace AutorestClient
         /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
+        /// <exception cref="ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when a required parameter is null
+        /// </exception>
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<GetSessionResponse>> GetWithHttpMessagesAsync(string customName = default(string), UpdateSession body = default(UpdateSession), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<GetSessionResponse>> GetWithHttpMessagesAsync(string customName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (customName == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "customName");
+            }
             string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -70,7 +78,6 @@ namespace AutorestClient
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("customName", customName);
-                tracingParameters.Add("body", body);
                 tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get", tracingParameters);
@@ -78,15 +85,7 @@ namespace AutorestClient
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "session/edit/{CustomName}").ToString();
-            List<string> _queryParameters = new List<string>();
-            if (customName != null)
-            {
-                _queryParameters.Add(string.Format("CustomName={0}", System.Uri.EscapeDataString(customName)));
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
+            _url = _url.Replace("{CustomName}", System.Uri.EscapeDataString(customName));
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
@@ -117,12 +116,6 @@ namespace AutorestClient
 
             // Serialize Request
             string _requestContent = null;
-            if(body != null)
-            {
-                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-            }
             // Send Request
             if (_shouldTrace)
             {
@@ -204,11 +197,21 @@ namespace AutorestClient
         /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
+        /// <exception cref="ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when a required parameter is null
+        /// </exception>
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<GetSessionResponse>> CreateWithHttpMessagesAsync(string customName = default(string), UpdateSession body = default(UpdateSession), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<GetSessionResponse>> CreateWithHttpMessagesAsync(string customName, UpdateSession body = default(UpdateSession), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (customName == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "customName");
+            }
             string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -226,15 +229,7 @@ namespace AutorestClient
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "session/edit/{CustomName}").ToString();
-            List<string> _queryParameters = new List<string>();
-            if (customName != null)
-            {
-                _queryParameters.Add(string.Format("CustomName={0}", System.Uri.EscapeDataString(customName)));
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
+            _url = _url.Replace("{CustomName}", System.Uri.EscapeDataString(customName));
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
@@ -352,11 +347,21 @@ namespace AutorestClient
         /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
+        /// <exception cref="ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when a required parameter is null
+        /// </exception>
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<GetSessionResponse>> PostWithHttpMessagesAsync(string customName = default(string), UpdateSession body = default(UpdateSession), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<GetSessionResponse>> PostWithHttpMessagesAsync(string customName, UpdateSession body = default(UpdateSession), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (customName == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "customName");
+            }
             string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -374,15 +379,7 @@ namespace AutorestClient
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "session/edit/{CustomName}").ToString();
-            List<string> _queryParameters = new List<string>();
-            if (customName != null)
-            {
-                _queryParameters.Add(string.Format("CustomName={0}", System.Uri.EscapeDataString(customName)));
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
+            _url = _url.Replace("{CustomName}", System.Uri.EscapeDataString(customName));
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
@@ -489,8 +486,6 @@ namespace AutorestClient
 
         /// <param name='customName'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -500,11 +495,21 @@ namespace AutorestClient
         /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
+        /// <exception cref="ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when a required parameter is null
+        /// </exception>
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<GetSessionResponse>> DeleteWithHttpMessagesAsync(string customName = default(string), UpdateSession body = default(UpdateSession), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<GetSessionResponse>> DeleteWithHttpMessagesAsync(string customName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (customName == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "customName");
+            }
             string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -514,7 +519,6 @@ namespace AutorestClient
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("customName", customName);
-                tracingParameters.Add("body", body);
                 tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Delete", tracingParameters);
@@ -522,15 +526,7 @@ namespace AutorestClient
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "session/edit/{CustomName}").ToString();
-            List<string> _queryParameters = new List<string>();
-            if (customName != null)
-            {
-                _queryParameters.Add(string.Format("CustomName={0}", System.Uri.EscapeDataString(customName)));
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
+            _url = _url.Replace("{CustomName}", System.Uri.EscapeDataString(customName));
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
@@ -561,12 +557,6 @@ namespace AutorestClient
 
             // Serialize Request
             string _requestContent = null;
-            if(body != null)
-            {
-                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-            }
             // Send Request
             if (_shouldTrace)
             {

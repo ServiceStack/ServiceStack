@@ -22,11 +22,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='intParameter'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static HelloTypes Get(this IHelloTypesOperations operations, string stringParameter = default(string), bool boolParameter = default(bool), int intParameter = default(int), HelloTypes body = default(HelloTypes))
+            public static HelloTypes Get(this IHelloTypesOperations operations, string stringParameter = default(string), bool boolParameter = default(bool), int intParameter = default(int))
             {
-                return operations.GetAsync(stringParameter, boolParameter, intParameter, body).GetAwaiter().GetResult();
+                return operations.GetAsync(stringParameter, boolParameter, intParameter).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -38,14 +36,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='intParameter'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloTypes> GetAsync(this IHelloTypesOperations operations, string stringParameter = default(string), bool boolParameter = default(bool), int intParameter = default(int), HelloTypes body = default(HelloTypes), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloTypes> GetAsync(this IHelloTypesOperations operations, string stringParameter = default(string), bool boolParameter = default(bool), int intParameter = default(int), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(stringParameter, boolParameter, intParameter, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(stringParameter, boolParameter, intParameter, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -136,11 +132,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='intParameter'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static HelloTypes Delete(this IHelloTypesOperations operations, string stringParameter = default(string), bool boolParameter = default(bool), int intParameter = default(int), HelloTypes body = default(HelloTypes))
+            public static HelloTypes Delete(this IHelloTypesOperations operations, string stringParameter = default(string), bool boolParameter = default(bool), int intParameter = default(int))
             {
-                return operations.DeleteAsync(stringParameter, boolParameter, intParameter, body).GetAwaiter().GetResult();
+                return operations.DeleteAsync(stringParameter, boolParameter, intParameter).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -152,14 +146,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='intParameter'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloTypes> DeleteAsync(this IHelloTypesOperations operations, string stringParameter = default(string), bool boolParameter = default(bool), int intParameter = default(int), HelloTypes body = default(HelloTypes), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloTypes> DeleteAsync(this IHelloTypesOperations operations, string stringParameter = default(string), bool boolParameter = default(bool), int intParameter = default(int), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(stringParameter, boolParameter, intParameter, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(stringParameter, boolParameter, intParameter, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

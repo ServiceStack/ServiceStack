@@ -24,7 +24,7 @@ namespace AutorestClient.Models
         /// Initializes a new instance of the AllowedAttributes class.
         /// </summary>
         /// <param name="aliased">Range Description</param>
-        public AllowedAttributes(double aliased = default(double))
+        public AllowedAttributes(int aliased = default(int))
         {
             Aliased = aliased;
             CustomInit();
@@ -39,7 +39,7 @@ namespace AutorestClient.Models
         /// Gets or sets range Description
         /// </summary>
         [JsonProperty(PropertyName = "Aliased")]
-        public double Aliased { get; set; }
+        public int Aliased { get; set; }
 
     }
 }

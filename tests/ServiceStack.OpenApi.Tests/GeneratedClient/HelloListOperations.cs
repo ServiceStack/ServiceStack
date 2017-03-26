@@ -45,8 +45,6 @@ namespace AutorestClient
 
         /// <param name='names'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -59,7 +57,7 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<IList<ListResult>>> GetWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloList body = default(HelloList), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<IList<ListResult>>> GetWithHttpMessagesAsync(string names = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             string accept = "application/json";
             // Tracing
@@ -70,7 +68,6 @@ namespace AutorestClient
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("names", names);
-                tracingParameters.Add("body", body);
                 tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get", tracingParameters);
@@ -81,17 +78,7 @@ namespace AutorestClient
             List<string> _queryParameters = new List<string>();
             if (names != null)
             {
-                if (names.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("Names={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in names)
-                    {
-                        _queryParameters.Add(string.Format("Names={0}", System.Uri.EscapeDataString(_item ?? string.Empty)));
-                    }
-                }
+                _queryParameters.Add(string.Format("Names={0}", System.Uri.EscapeDataString(names)));
             }
             if (_queryParameters.Count > 0)
             {
@@ -127,12 +114,6 @@ namespace AutorestClient
 
             // Serialize Request
             string _requestContent = null;
-            if(body != null)
-            {
-                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-            }
             // Send Request
             if (_shouldTrace)
             {
@@ -217,7 +198,7 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<IList<ListResult>>> CreateWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloList body = default(HelloList), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<IList<ListResult>>> CreateWithHttpMessagesAsync(string names = default(string), HelloList body = default(HelloList), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             string accept = "application/json";
             // Tracing
@@ -236,25 +217,6 @@ namespace AutorestClient
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "hello-list").ToString();
-            List<string> _queryParameters = new List<string>();
-            if (names != null)
-            {
-                if (names.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("Names={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in names)
-                    {
-                        _queryParameters.Add(string.Format("Names={0}", System.Uri.EscapeDataString(_item ?? string.Empty)));
-                    }
-                }
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
@@ -375,7 +337,7 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<IList<ListResult>>> PostWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloList body = default(HelloList), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<IList<ListResult>>> PostWithHttpMessagesAsync(string names = default(string), HelloList body = default(HelloList), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             string accept = "application/json";
             // Tracing
@@ -394,25 +356,6 @@ namespace AutorestClient
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "hello-list").ToString();
-            List<string> _queryParameters = new List<string>();
-            if (names != null)
-            {
-                if (names.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("Names={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in names)
-                    {
-                        _queryParameters.Add(string.Format("Names={0}", System.Uri.EscapeDataString(_item ?? string.Empty)));
-                    }
-                }
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
@@ -519,8 +462,6 @@ namespace AutorestClient
 
         /// <param name='names'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -533,7 +474,7 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<IList<ListResult>>> DeleteWithHttpMessagesAsync(IList<string> names = default(IList<string>), HelloList body = default(HelloList), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<IList<ListResult>>> DeleteWithHttpMessagesAsync(string names = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             string accept = "application/json";
             // Tracing
@@ -544,7 +485,6 @@ namespace AutorestClient
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("names", names);
-                tracingParameters.Add("body", body);
                 tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Delete", tracingParameters);
@@ -555,17 +495,7 @@ namespace AutorestClient
             List<string> _queryParameters = new List<string>();
             if (names != null)
             {
-                if (names.Count == 0)
-                {
-                    _queryParameters.Add(string.Format("Names={0}", System.Uri.EscapeDataString(string.Empty)));
-                }
-                else
-                {
-                    foreach (var _item in names)
-                    {
-                        _queryParameters.Add(string.Format("Names={0}", System.Uri.EscapeDataString(_item ?? string.Empty)));
-                    }
-                }
+                _queryParameters.Add(string.Format("Names={0}", System.Uri.EscapeDataString(names)));
             }
             if (_queryParameters.Count > 0)
             {
@@ -601,12 +531,6 @@ namespace AutorestClient
 
             // Serialize Request
             string _requestContent = null;
-            if(body != null)
-            {
-                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-            }
             // Send Request
             if (_shouldTrace)
             {

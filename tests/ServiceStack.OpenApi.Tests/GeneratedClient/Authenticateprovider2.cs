@@ -16,12 +16,12 @@ namespace AutorestClient
     using System.Threading.Tasks;
 
     /// <summary>
-    /// HelloDateTimeOperations operations.
+    /// Authenticateprovider2 operations.
     /// </summary>
-    public partial class HelloDateTimeOperations : IServiceOperations<ServiceStackAutorestClient>, IHelloDateTimeOperations
+    public partial class Authenticateprovider2 : IServiceOperations<ServiceStackAutorestClient>, IAuthenticateprovider2
     {
         /// <summary>
-        /// Initializes a new instance of the HelloDateTimeOperations class.
+        /// Initializes a new instance of the Authenticateprovider2 class.
         /// </summary>
         /// <param name='client'>
         /// Reference to the service client.
@@ -29,7 +29,7 @@ namespace AutorestClient
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        public HelloDateTimeOperations(ServiceStackAutorestClient client)
+        public Authenticateprovider2(ServiceStackAutorestClient client)
         {
             if (client == null)
             {
@@ -43,7 +43,37 @@ namespace AutorestClient
         /// </summary>
         public ServiceStackAutorestClient Client { get; private set; }
 
-        /// <param name='dateTime'>
+        /// <param name='provider'>
+        /// </param>
+        /// <param name='state'>
+        /// </param>
+        /// <param name='oauthToken'>
+        /// </param>
+        /// <param name='oauthVerifier'>
+        /// </param>
+        /// <param name='userName'>
+        /// </param>
+        /// <param name='password'>
+        /// </param>
+        /// <param name='rememberMe'>
+        /// </param>
+        /// <param name='continueParameter'>
+        /// </param>
+        /// <param name='nonce'>
+        /// </param>
+        /// <param name='uri'>
+        /// </param>
+        /// <param name='response'>
+        /// </param>
+        /// <param name='qop'>
+        /// </param>
+        /// <param name='nc'>
+        /// </param>
+        /// <param name='cnonce'>
+        /// </param>
+        /// <param name='useTokenCookie'>
+        /// </param>
+        /// <param name='meta'>
         /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
@@ -51,14 +81,24 @@ namespace AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        /// <exception cref="HelloDateTimeException">
+        /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        /// <exception cref="ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when a required parameter is null
         /// </exception>
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<HelloDateTime>> GetWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> GetWithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (provider == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "provider");
+            }
             string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -67,16 +107,91 @@ namespace AutorestClient
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("dateTime", dateTime);
+                tracingParameters.Add("provider", provider);
+                tracingParameters.Add("state", state);
+                tracingParameters.Add("oauthToken", oauthToken);
+                tracingParameters.Add("oauthVerifier", oauthVerifier);
+                tracingParameters.Add("userName", userName);
+                tracingParameters.Add("password", password);
+                tracingParameters.Add("rememberMe", rememberMe);
+                tracingParameters.Add("continueParameter", continueParameter);
+                tracingParameters.Add("nonce", nonce);
+                tracingParameters.Add("uri", uri);
+                tracingParameters.Add("response", response);
+                tracingParameters.Add("qop", qop);
+                tracingParameters.Add("nc", nc);
+                tracingParameters.Add("cnonce", cnonce);
+                tracingParameters.Add("useTokenCookie", useTokenCookie);
+                tracingParameters.Add("meta", meta);
                 tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get", tracingParameters);
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "hello-datetime").ToString();
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "authenticate/{provider}").ToString();
+            _url = _url.Replace("{provider}", System.Uri.EscapeDataString(provider));
             List<string> _queryParameters = new List<string>();
-            _queryParameters.Add(string.Format("DateTime={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(dateTime, Client.SerializationSettings).Trim('"'))));
+            if (state != null)
+            {
+                _queryParameters.Add(string.Format("State={0}", System.Uri.EscapeDataString(state)));
+            }
+            if (oauthToken != null)
+            {
+                _queryParameters.Add(string.Format("oauth_token={0}", System.Uri.EscapeDataString(oauthToken)));
+            }
+            if (oauthVerifier != null)
+            {
+                _queryParameters.Add(string.Format("oauth_verifier={0}", System.Uri.EscapeDataString(oauthVerifier)));
+            }
+            if (userName != null)
+            {
+                _queryParameters.Add(string.Format("UserName={0}", System.Uri.EscapeDataString(userName)));
+            }
+            if (password != null)
+            {
+                _queryParameters.Add(string.Format("Password={0}", System.Uri.EscapeDataString(password)));
+            }
+            if (rememberMe != null)
+            {
+                _queryParameters.Add(string.Format("RememberMe={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(rememberMe, Client.SerializationSettings).Trim('"'))));
+            }
+            if (continueParameter != null)
+            {
+                _queryParameters.Add(string.Format("Continue={0}", System.Uri.EscapeDataString(continueParameter)));
+            }
+            if (nonce != null)
+            {
+                _queryParameters.Add(string.Format("nonce={0}", System.Uri.EscapeDataString(nonce)));
+            }
+            if (uri != null)
+            {
+                _queryParameters.Add(string.Format("uri={0}", System.Uri.EscapeDataString(uri)));
+            }
+            if (response != null)
+            {
+                _queryParameters.Add(string.Format("response={0}", System.Uri.EscapeDataString(response)));
+            }
+            if (qop != null)
+            {
+                _queryParameters.Add(string.Format("qop={0}", System.Uri.EscapeDataString(qop)));
+            }
+            if (nc != null)
+            {
+                _queryParameters.Add(string.Format("nc={0}", System.Uri.EscapeDataString(nc)));
+            }
+            if (cnonce != null)
+            {
+                _queryParameters.Add(string.Format("cnonce={0}", System.Uri.EscapeDataString(cnonce)));
+            }
+            if (useTokenCookie != null)
+            {
+                _queryParameters.Add(string.Format("UseTokenCookie={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(useTokenCookie, Client.SerializationSettings).Trim('"'))));
+            }
+            if (meta != null)
+            {
+                _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(meta)));
+            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -127,11 +242,11 @@ namespace AutorestClient
             string _responseContent = null;
             if (!_httpResponse.IsSuccessStatusCode)
             {
-                var ex = new HelloDateTimeException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
+                var ex = new AuthenticateResponseException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
                 try
                 {
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    HelloDateTime _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<HelloDateTime>(_responseContent, Client.DeserializationSettings);
+                    AuthenticateResponse _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_responseContent, Client.DeserializationSettings);
                     if (_errorBody != null)
                     {
                         ex.Body = _errorBody;
@@ -155,13 +270,13 @@ namespace AutorestClient
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<HelloDateTime>();
+            var _result = new HttpOperationResponse<AuthenticateResponse>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             string _defaultResponseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
             try
             {
-                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<HelloDateTime>(_defaultResponseContent, Client.DeserializationSettings);
+                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_defaultResponseContent, Client.DeserializationSettings);
             }
             catch (JsonException ex)
             {
@@ -179,7 +294,37 @@ namespace AutorestClient
             return _result;
         }
 
-        /// <param name='dateTime'>
+        /// <param name='provider'>
+        /// </param>
+        /// <param name='state'>
+        /// </param>
+        /// <param name='oauthToken'>
+        /// </param>
+        /// <param name='oauthVerifier'>
+        /// </param>
+        /// <param name='userName'>
+        /// </param>
+        /// <param name='password'>
+        /// </param>
+        /// <param name='rememberMe'>
+        /// </param>
+        /// <param name='continueParameter'>
+        /// </param>
+        /// <param name='nonce'>
+        /// </param>
+        /// <param name='uri'>
+        /// </param>
+        /// <param name='response'>
+        /// </param>
+        /// <param name='qop'>
+        /// </param>
+        /// <param name='nc'>
+        /// </param>
+        /// <param name='cnonce'>
+        /// </param>
+        /// <param name='useTokenCookie'>
+        /// </param>
+        /// <param name='meta'>
         /// </param>
         /// <param name='body'>
         /// </param>
@@ -189,14 +334,24 @@ namespace AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        /// <exception cref="HelloDateTimeException">
+        /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        /// <exception cref="ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when a required parameter is null
         /// </exception>
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<HelloDateTime>> CreateWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> CreateWithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (provider == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "provider");
+            }
             string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -205,7 +360,22 @@ namespace AutorestClient
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("dateTime", dateTime);
+                tracingParameters.Add("provider", provider);
+                tracingParameters.Add("state", state);
+                tracingParameters.Add("oauthToken", oauthToken);
+                tracingParameters.Add("oauthVerifier", oauthVerifier);
+                tracingParameters.Add("userName", userName);
+                tracingParameters.Add("password", password);
+                tracingParameters.Add("rememberMe", rememberMe);
+                tracingParameters.Add("continueParameter", continueParameter);
+                tracingParameters.Add("nonce", nonce);
+                tracingParameters.Add("uri", uri);
+                tracingParameters.Add("response", response);
+                tracingParameters.Add("qop", qop);
+                tracingParameters.Add("nc", nc);
+                tracingParameters.Add("cnonce", cnonce);
+                tracingParameters.Add("useTokenCookie", useTokenCookie);
+                tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
                 tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
@@ -213,7 +383,8 @@ namespace AutorestClient
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "hello-datetime").ToString();
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "authenticate/{provider}").ToString();
+            _url = _url.Replace("{provider}", System.Uri.EscapeDataString(provider));
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
@@ -266,11 +437,11 @@ namespace AutorestClient
             string _responseContent = null;
             if (!_httpResponse.IsSuccessStatusCode)
             {
-                var ex = new HelloDateTimeException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
+                var ex = new AuthenticateResponseException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
                 try
                 {
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    HelloDateTime _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<HelloDateTime>(_responseContent, Client.DeserializationSettings);
+                    AuthenticateResponse _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_responseContent, Client.DeserializationSettings);
                     if (_errorBody != null)
                     {
                         ex.Body = _errorBody;
@@ -294,13 +465,13 @@ namespace AutorestClient
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<HelloDateTime>();
+            var _result = new HttpOperationResponse<AuthenticateResponse>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             string _defaultResponseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
             try
             {
-                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<HelloDateTime>(_defaultResponseContent, Client.DeserializationSettings);
+                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_defaultResponseContent, Client.DeserializationSettings);
             }
             catch (JsonException ex)
             {
@@ -318,7 +489,37 @@ namespace AutorestClient
             return _result;
         }
 
-        /// <param name='dateTime'>
+        /// <param name='provider'>
+        /// </param>
+        /// <param name='state'>
+        /// </param>
+        /// <param name='oauthToken'>
+        /// </param>
+        /// <param name='oauthVerifier'>
+        /// </param>
+        /// <param name='userName'>
+        /// </param>
+        /// <param name='password'>
+        /// </param>
+        /// <param name='rememberMe'>
+        /// </param>
+        /// <param name='continueParameter'>
+        /// </param>
+        /// <param name='nonce'>
+        /// </param>
+        /// <param name='uri'>
+        /// </param>
+        /// <param name='response'>
+        /// </param>
+        /// <param name='qop'>
+        /// </param>
+        /// <param name='nc'>
+        /// </param>
+        /// <param name='cnonce'>
+        /// </param>
+        /// <param name='useTokenCookie'>
+        /// </param>
+        /// <param name='meta'>
         /// </param>
         /// <param name='body'>
         /// </param>
@@ -328,14 +529,24 @@ namespace AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        /// <exception cref="HelloDateTimeException">
+        /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        /// <exception cref="ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when a required parameter is null
         /// </exception>
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<HelloDateTime>> PostWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> PostWithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (provider == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "provider");
+            }
             string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -344,7 +555,22 @@ namespace AutorestClient
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("dateTime", dateTime);
+                tracingParameters.Add("provider", provider);
+                tracingParameters.Add("state", state);
+                tracingParameters.Add("oauthToken", oauthToken);
+                tracingParameters.Add("oauthVerifier", oauthVerifier);
+                tracingParameters.Add("userName", userName);
+                tracingParameters.Add("password", password);
+                tracingParameters.Add("rememberMe", rememberMe);
+                tracingParameters.Add("continueParameter", continueParameter);
+                tracingParameters.Add("nonce", nonce);
+                tracingParameters.Add("uri", uri);
+                tracingParameters.Add("response", response);
+                tracingParameters.Add("qop", qop);
+                tracingParameters.Add("nc", nc);
+                tracingParameters.Add("cnonce", cnonce);
+                tracingParameters.Add("useTokenCookie", useTokenCookie);
+                tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
                 tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
@@ -352,7 +578,8 @@ namespace AutorestClient
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "hello-datetime").ToString();
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "authenticate/{provider}").ToString();
+            _url = _url.Replace("{provider}", System.Uri.EscapeDataString(provider));
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
@@ -405,11 +632,11 @@ namespace AutorestClient
             string _responseContent = null;
             if (!_httpResponse.IsSuccessStatusCode)
             {
-                var ex = new HelloDateTimeException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
+                var ex = new AuthenticateResponseException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
                 try
                 {
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    HelloDateTime _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<HelloDateTime>(_responseContent, Client.DeserializationSettings);
+                    AuthenticateResponse _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_responseContent, Client.DeserializationSettings);
                     if (_errorBody != null)
                     {
                         ex.Body = _errorBody;
@@ -433,13 +660,13 @@ namespace AutorestClient
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<HelloDateTime>();
+            var _result = new HttpOperationResponse<AuthenticateResponse>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             string _defaultResponseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
             try
             {
-                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<HelloDateTime>(_defaultResponseContent, Client.DeserializationSettings);
+                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_defaultResponseContent, Client.DeserializationSettings);
             }
             catch (JsonException ex)
             {
@@ -457,7 +684,37 @@ namespace AutorestClient
             return _result;
         }
 
-        /// <param name='dateTime'>
+        /// <param name='provider'>
+        /// </param>
+        /// <param name='state'>
+        /// </param>
+        /// <param name='oauthToken'>
+        /// </param>
+        /// <param name='oauthVerifier'>
+        /// </param>
+        /// <param name='userName'>
+        /// </param>
+        /// <param name='password'>
+        /// </param>
+        /// <param name='rememberMe'>
+        /// </param>
+        /// <param name='continueParameter'>
+        /// </param>
+        /// <param name='nonce'>
+        /// </param>
+        /// <param name='uri'>
+        /// </param>
+        /// <param name='response'>
+        /// </param>
+        /// <param name='qop'>
+        /// </param>
+        /// <param name='nc'>
+        /// </param>
+        /// <param name='cnonce'>
+        /// </param>
+        /// <param name='useTokenCookie'>
+        /// </param>
+        /// <param name='meta'>
         /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
@@ -465,14 +722,24 @@ namespace AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        /// <exception cref="HelloDateTimeException">
+        /// <exception cref="AuthenticateResponseException">
         /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        /// <exception cref="ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when a required parameter is null
         /// </exception>
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<HelloDateTime>> DeleteWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> DeleteWithHttpMessagesAsync(string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (provider == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "provider");
+            }
             string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -481,16 +748,91 @@ namespace AutorestClient
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("dateTime", dateTime);
+                tracingParameters.Add("provider", provider);
+                tracingParameters.Add("state", state);
+                tracingParameters.Add("oauthToken", oauthToken);
+                tracingParameters.Add("oauthVerifier", oauthVerifier);
+                tracingParameters.Add("userName", userName);
+                tracingParameters.Add("password", password);
+                tracingParameters.Add("rememberMe", rememberMe);
+                tracingParameters.Add("continueParameter", continueParameter);
+                tracingParameters.Add("nonce", nonce);
+                tracingParameters.Add("uri", uri);
+                tracingParameters.Add("response", response);
+                tracingParameters.Add("qop", qop);
+                tracingParameters.Add("nc", nc);
+                tracingParameters.Add("cnonce", cnonce);
+                tracingParameters.Add("useTokenCookie", useTokenCookie);
+                tracingParameters.Add("meta", meta);
                 tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Delete", tracingParameters);
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "hello-datetime").ToString();
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "authenticate/{provider}").ToString();
+            _url = _url.Replace("{provider}", System.Uri.EscapeDataString(provider));
             List<string> _queryParameters = new List<string>();
-            _queryParameters.Add(string.Format("DateTime={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(dateTime, Client.SerializationSettings).Trim('"'))));
+            if (state != null)
+            {
+                _queryParameters.Add(string.Format("State={0}", System.Uri.EscapeDataString(state)));
+            }
+            if (oauthToken != null)
+            {
+                _queryParameters.Add(string.Format("oauth_token={0}", System.Uri.EscapeDataString(oauthToken)));
+            }
+            if (oauthVerifier != null)
+            {
+                _queryParameters.Add(string.Format("oauth_verifier={0}", System.Uri.EscapeDataString(oauthVerifier)));
+            }
+            if (userName != null)
+            {
+                _queryParameters.Add(string.Format("UserName={0}", System.Uri.EscapeDataString(userName)));
+            }
+            if (password != null)
+            {
+                _queryParameters.Add(string.Format("Password={0}", System.Uri.EscapeDataString(password)));
+            }
+            if (rememberMe != null)
+            {
+                _queryParameters.Add(string.Format("RememberMe={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(rememberMe, Client.SerializationSettings).Trim('"'))));
+            }
+            if (continueParameter != null)
+            {
+                _queryParameters.Add(string.Format("Continue={0}", System.Uri.EscapeDataString(continueParameter)));
+            }
+            if (nonce != null)
+            {
+                _queryParameters.Add(string.Format("nonce={0}", System.Uri.EscapeDataString(nonce)));
+            }
+            if (uri != null)
+            {
+                _queryParameters.Add(string.Format("uri={0}", System.Uri.EscapeDataString(uri)));
+            }
+            if (response != null)
+            {
+                _queryParameters.Add(string.Format("response={0}", System.Uri.EscapeDataString(response)));
+            }
+            if (qop != null)
+            {
+                _queryParameters.Add(string.Format("qop={0}", System.Uri.EscapeDataString(qop)));
+            }
+            if (nc != null)
+            {
+                _queryParameters.Add(string.Format("nc={0}", System.Uri.EscapeDataString(nc)));
+            }
+            if (cnonce != null)
+            {
+                _queryParameters.Add(string.Format("cnonce={0}", System.Uri.EscapeDataString(cnonce)));
+            }
+            if (useTokenCookie != null)
+            {
+                _queryParameters.Add(string.Format("UseTokenCookie={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(useTokenCookie, Client.SerializationSettings).Trim('"'))));
+            }
+            if (meta != null)
+            {
+                _queryParameters.Add(string.Format("Meta={0}", System.Uri.EscapeDataString(meta)));
+            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -541,11 +883,11 @@ namespace AutorestClient
             string _responseContent = null;
             if (!_httpResponse.IsSuccessStatusCode)
             {
-                var ex = new HelloDateTimeException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
+                var ex = new AuthenticateResponseException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
                 try
                 {
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    HelloDateTime _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<HelloDateTime>(_responseContent, Client.DeserializationSettings);
+                    AuthenticateResponse _errorBody =  Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_responseContent, Client.DeserializationSettings);
                     if (_errorBody != null)
                     {
                         ex.Body = _errorBody;
@@ -569,13 +911,13 @@ namespace AutorestClient
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<HelloDateTime>();
+            var _result = new HttpOperationResponse<AuthenticateResponse>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             string _defaultResponseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
             try
             {
-                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<HelloDateTime>(_defaultResponseContent, Client.DeserializationSettings);
+                _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<AuthenticateResponse>(_defaultResponseContent, Client.DeserializationSettings);
             }
             catch (JsonException ex)
             {

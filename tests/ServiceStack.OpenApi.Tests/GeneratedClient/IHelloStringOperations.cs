@@ -18,8 +18,6 @@ namespace AutorestClient
     {
         /// <param name='name'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -32,7 +30,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<string>> GetWithHttpMessagesAsync(string name = default(string), HelloString body = default(HelloString), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<string>> GetWithHttpMessagesAsync(string name = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='body'>
@@ -69,8 +67,6 @@ namespace AutorestClient
         Task<HttpOperationResponse<string>> PostWithHttpMessagesAsync(string name = default(string), HelloString body = default(HelloString), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -83,6 +79,6 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<string>> DeleteWithHttpMessagesAsync(string name = default(string), HelloString body = default(HelloString), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<string>> DeleteWithHttpMessagesAsync(string name = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

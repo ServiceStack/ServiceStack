@@ -16,8 +16,6 @@ namespace AutorestClient
     /// </summary>
     public partial interface IReturnKeyValuePairRequest
     {
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -30,6 +28,6 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<GetErrorModel>> GetWithHttpMessagesAsync(object body = default(object), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<GetErrorModel>> GetWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

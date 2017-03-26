@@ -25,8 +25,6 @@ namespace AutorestClient
         /// <param name='aliased'>
         /// Range Description
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -39,6 +37,6 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse> GetWithHttpMessagesAsync(int aliased, AllowedAttributes body = default(AllowedAttributes), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse> GetWithHttpMessagesAsync(int aliased, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

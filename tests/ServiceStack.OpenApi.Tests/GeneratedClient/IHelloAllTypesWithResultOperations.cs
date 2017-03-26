@@ -22,8 +22,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='allCollectionTypes'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -36,7 +34,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<HelloAllTypesResponse>> GetWithHttpMessagesAsync(string name = default(string), object allTypes = default(object), object allCollectionTypes = default(object), HelloAllTypesWithResult body = default(HelloAllTypesWithResult), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloAllTypesResponse>> GetWithHttpMessagesAsync(string name = default(string), string allTypes = default(string), string allCollectionTypes = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='allTypes'>
@@ -57,7 +55,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<HelloAllTypesResponse>> CreateWithHttpMessagesAsync(string name = default(string), object allTypes = default(object), object allCollectionTypes = default(object), HelloAllTypesWithResult body = default(HelloAllTypesWithResult), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloAllTypesResponse>> CreateWithHttpMessagesAsync(string name = default(string), string allTypes = default(string), string allCollectionTypes = default(string), HelloAllTypesWithResult body = default(HelloAllTypesWithResult), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='allTypes'>
@@ -78,14 +76,12 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<HelloAllTypesResponse>> PostWithHttpMessagesAsync(string name = default(string), object allTypes = default(object), object allCollectionTypes = default(object), HelloAllTypesWithResult body = default(HelloAllTypesWithResult), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloAllTypesResponse>> PostWithHttpMessagesAsync(string name = default(string), string allTypes = default(string), string allCollectionTypes = default(string), HelloAllTypesWithResult body = default(HelloAllTypesWithResult), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='name'>
         /// </param>
         /// <param name='allTypes'>
         /// </param>
         /// <param name='allCollectionTypes'>
-        /// </param>
-        /// <param name='body'>
         /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -99,6 +95,6 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<HelloAllTypesResponse>> DeleteWithHttpMessagesAsync(string name = default(string), object allTypes = default(object), object allCollectionTypes = default(object), HelloAllTypesWithResult body = default(HelloAllTypesWithResult), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloAllTypesResponse>> DeleteWithHttpMessagesAsync(string name = default(string), string allTypes = default(string), string allCollectionTypes = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

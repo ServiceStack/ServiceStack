@@ -22,8 +22,6 @@ namespace AutorestClient
         /// </param>
         /// <param name='roles'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -36,7 +34,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<AssignRolesResponse>> GetWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), AssignRoles body = default(AssignRoles), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AssignRolesResponse>> GetWithHttpMessagesAsync(string userName = default(string), string permissions = default(string), string roles = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='userName'>
         /// </param>
         /// <param name='permissions'>
@@ -57,7 +55,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<AssignRolesResponse>> CreateWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), AssignRoles body = default(AssignRoles), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AssignRolesResponse>> CreateWithHttpMessagesAsync(string userName = default(string), string permissions = default(string), string roles = default(string), AssignRoles body = default(AssignRoles), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='userName'>
         /// </param>
         /// <param name='permissions'>
@@ -78,14 +76,12 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<AssignRolesResponse>> PostWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), AssignRoles body = default(AssignRoles), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AssignRolesResponse>> PostWithHttpMessagesAsync(string userName = default(string), string permissions = default(string), string roles = default(string), AssignRoles body = default(AssignRoles), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='userName'>
         /// </param>
         /// <param name='permissions'>
         /// </param>
         /// <param name='roles'>
-        /// </param>
-        /// <param name='body'>
         /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -99,6 +95,6 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<AssignRolesResponse>> DeleteWithHttpMessagesAsync(string userName = default(string), IList<string> permissions = default(IList<string>), IList<string> roles = default(IList<string>), AssignRoles body = default(AssignRoles), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AssignRolesResponse>> DeleteWithHttpMessagesAsync(string userName = default(string), string permissions = default(string), string roles = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }
