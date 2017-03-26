@@ -30,7 +30,7 @@ namespace ServiceStack.Api.OpenApi.Specification
         [DataMember(Name = "deprecated")]
         public bool Deprecated { get; set; }
         [DataMember(Name = "security")]
-        public Dictionary<string, List<string>> Security { get; set; }
+        public List<Dictionary<string, List<string>>> Security { get; set; }
     }
 
 }

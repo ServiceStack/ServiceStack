@@ -126,6 +126,21 @@ namespace AutorestClient
         public virtual IHelloZipOperations HelloZip { get; private set; }
 
         /// <summary>
+        /// Gets the ISecuredRequest.
+        /// </summary>
+        public virtual ISecuredRequest SecuredRequest { get; private set; }
+
+        /// <summary>
+        /// Gets the ISecuredDtoRequest.
+        /// </summary>
+        public virtual ISecuredDtoRequest SecuredDtoRequest { get; private set; }
+
+        /// <summary>
+        /// Gets the ISecuredOpsRequest.
+        /// </summary>
+        public virtual ISecuredOpsRequest SecuredOpsRequest { get; private set; }
+
+        /// <summary>
         /// Gets the IGetSession.
         /// </summary>
         public virtual IGetSession GetSession { get; private set; }
@@ -262,6 +277,9 @@ namespace AutorestClient
             HelloWithRoute = new HelloWithRouteOperations(this);
             HelloTypes = new HelloTypesOperations(this);
             HelloZip = new HelloZipOperations(this);
+            SecuredRequest = new SecuredRequest(this);
+            SecuredDtoRequest = new SecuredDtoRequest(this);
+            SecuredOpsRequest = new SecuredOpsRequest(this);
             GetSession = new GetSession(this);
             UpdateSessioneditCustomName = new UpdateSessioneditCustomName(this);
             Authenticate = new AuthenticateOperations(this);

@@ -123,6 +123,21 @@ namespace AutorestClient
         IHelloZipOperations HelloZip { get; }
 
         /// <summary>
+        /// Gets the ISecuredRequest.
+        /// </summary>
+        ISecuredRequest SecuredRequest { get; }
+
+        /// <summary>
+        /// Gets the ISecuredDtoRequest.
+        /// </summary>
+        ISecuredDtoRequest SecuredDtoRequest { get; }
+
+        /// <summary>
+        /// Gets the ISecuredOpsRequest.
+        /// </summary>
+        ISecuredOpsRequest SecuredOpsRequest { get; }
+
+        /// <summary>
         /// Gets the IGetSession.
         /// </summary>
         IGetSession GetSession { get; }
