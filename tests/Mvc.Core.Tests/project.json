@@ -22,16 +22,16 @@
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
     "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.0.0",
     "Microsoft.Data.SQLite": "1.0.*",
-    "ServiceStack": "1.0.0",
-    "ServiceStack.Client": "1.0.0",
-    "ServiceStack.Interfaces": "1.0.0",
-    "ServiceStack.Text": "1.0.0",
-    "ServiceStack.Common": "1.0.0",
-    "ServiceStack.Mvc": "1.0.0",
-    "ServiceStack.Redis": "1.0.0",
-    "ServiceStack.OrmLite": "1.0.0",
-    "ServiceStack.OrmLite.Sqlite": "1.0.0",
-    "ServiceStack.Server": "1.0.0"
+    "ServiceStack": "1.0.*",
+    "ServiceStack.Client": "1.0.*",
+    "ServiceStack.Interfaces": "1.0.*",
+    "ServiceStack.Text": "1.0.*",
+    "ServiceStack.Common": "1.0.*",
+    "ServiceStack.Mvc": "1.0.*",
+    "ServiceStack.Redis": "1.0.*",
+    "ServiceStack.OrmLite": "1.0.*",
+    "ServiceStack.OrmLite.Sqlite": "1.0.*",
+    "ServiceStack.Server": "1.0.*"
   },
 
   "tools": {
