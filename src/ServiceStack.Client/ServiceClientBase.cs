@@ -878,7 +878,7 @@ namespace ServiceStack
             });
         }
         
-        protected virtual void SerializeRequestToStream(object request, Stream requestStream)
+        protected virtual void SerializeRequestToStream(object request, Stream requestStream, bool keepOpen=false)
         {
             var str = request as string;
             var bytes = request as byte[];
@@ -909,7 +909,10 @@ namespace ServiceStack
 #endif
                 SerializeToStream(null, request, requestStream);
 
-                requestStream.Close();
+                if (!keepOpen)
+                {
+                    requestStream.Close();
+                }
             }
         }
 
