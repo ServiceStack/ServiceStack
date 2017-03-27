@@ -1,87 +1,116 @@
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-// See the License for the specific language governing permissions and 
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
 // limitations under the License.
-// 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+//
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
 namespace ServiceStack.FluentValidation.Validators
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Resources;
-    using Results;
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Threading;
+	using System.Threading.Tasks;
+	using Resources;
+	using Results;
 
-    public class DelegatingValidator : IPropertyValidator, IDelegatingValidator {
-        private readonly Func<object, bool> condition;
-        public IPropertyValidator InnerValidator { get; private set; }
+	public class DelegatingValidator : IPropertyValidator, IDelegatingValidator {
+		private readonly Func<object, bool> condition;
+		private readonly Func<object, Task<bool>> asyncCondition;
+		public IPropertyValidator InnerValidator { get; private set; }
 
-        public DelegatingValidator(Func<object, bool> condition, IPropertyValidator innerValidator) {
-            this.condition = condition;
-            InnerValidator = innerValidator;
-        }
+		public virtual bool IsAsync {
+			get { return InnerValidator.IsAsync || asyncCondition != null; }
+		}
 
-        public IStringSource ErrorMessageSource {
-            get { return InnerValidator.ErrorMessageSource; }
-            set { InnerValidator.ErrorMessageSource = value; }
-        }
+		public DelegatingValidator(Func<object, bool> condition, IPropertyValidator innerValidator) {
+			this.condition = condition;
+			this.asyncCondition = null;
+			InnerValidator = innerValidator;
+		}
 
-        public string ErrorCode
-        {
-            get { return InnerValidator.ErrorCode; }
-            set { InnerValidator.ErrorCode = value; }
-        }
+		public DelegatingValidator(Func<object, Task<bool>> asyncCondition, IPropertyValidator innerValidator) {
+			this.condition = _ => true;
+			this.asyncCondition = asyncCondition;
+			InnerValidator = innerValidator;
+		}
 
-        public IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) {
-            if (condition(context.Instance)) {
-                return InnerValidator.Validate(context);
-            }
-            return Enumerable.Empty<ValidationFailure>();
-        }
+		public IStringSource ErrorMessageSource {
+			get { return InnerValidator.ErrorMessageSource; }
+			set { InnerValidator.ErrorMessageSource = value; }
+		}
 
-        public ICollection<Func<object, object>> CustomMessageFormatArguments {
-            get { return InnerValidator.CustomMessageFormatArguments; }
-        }
+		public IStringSource ErrorCodeSource {
+			get { return InnerValidator.ErrorCodeSource; }
+			set { InnerValidator.ErrorCodeSource = value; }
+		}
 
-        public bool SupportsStandaloneValidation {
-            get { return false; }
-        }
+		public IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) {
+			if (condition(context.Instance)) {
+				return InnerValidator.Validate(context);
+			}
+			return Enumerable.Empty<ValidationFailure>();
+		}
 
-        public Func<object, object> CustomStateProvider {
-            get { return InnerValidator.CustomStateProvider; }
-            set { InnerValidator.CustomStateProvider = value; }
-        }
+		public async  Task<IEnumerable<ValidationFailure>> ValidateAsync(PropertyValidatorContext context, CancellationToken cancellation) {
+			if (!condition(context.Instance))
+				return Enumerable.Empty<ValidationFailure>();
 
-        public Severity Severity
-  		{
-  		    get { return InnerValidator.Severity; }
-  		    set { InnerValidator.Severity = value; }
-  		}
+			if (asyncCondition == null)
+				return await InnerValidator.ValidateAsync(context, cancellation);
 
-        IPropertyValidator IDelegatingValidator.InnerValidator {
-            get { return InnerValidator; }
-        }
+			bool shouldValidate = await asyncCondition(context.Instance);
 
-        public bool CheckCondition(object instance) {
-            return condition(instance);
-        }
-    }
+			if (shouldValidate) {
+				return await InnerValidator.ValidateAsync(context, cancellation);
+			}
 
-    public interface IDelegatingValidator : IPropertyValidator
+			return Enumerable.Empty<ValidationFailure>();
+		}
+
+		public ICollection<Func<object, object, object>> CustomMessageFormatArguments {
+			get { return InnerValidator.CustomMessageFormatArguments; }
+		}
+
+		public bool SupportsStandaloneValidation {
+			get { return false; }
+		}
+
+		public Func<object, object> CustomStateProvider {
+			get { return InnerValidator.CustomStateProvider; }
+			set { InnerValidator.CustomStateProvider = value; }
+		}
+
+		public Severity Severity
+		{
+		    get { return InnerValidator.Severity; }
+		    set { InnerValidator.Severity = value; }
+		}
+
+		IPropertyValidator IDelegatingValidator.InnerValidator {
+			get { return InnerValidator; }
+		}
+
+		public bool CheckCondition(object instance) {
+			return condition(instance);
+		}
+	}
+
+	public interface IDelegatingValidator : IPropertyValidator
     {
-        IPropertyValidator InnerValidator { get; }
-        bool CheckCondition(object instance);
-    }
+		IPropertyValidator InnerValidator { get; }
+		bool CheckCondition(object instance);
+	}
 }

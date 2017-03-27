@@ -47,6 +47,10 @@ namespace ServiceStack
         /// </summary>
         public Action OnAuthenticationRequired { get; set; }
 
+        public string RefreshToken { get; set; }
+
+        public string RefreshTokenUri { get; set; }
+
         public static int BufferSize = 8192;
 
         public ICredentials Credentials { get; set; }
@@ -341,13 +345,59 @@ namespace ServiceStack
                     (!string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password))
                         || Credentials != null
                         || BearerToken != null
+                        || RefreshToken != null
                         || OnAuthenticationRequired != null))
                 {
                     try
                     {
+                        if (RefreshToken != null)
+                        {
+                            var refreshRequest = new GetAccessToken {RefreshToken = RefreshToken};
+                            var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
+
+                            GetAccessTokenResponse tokenResponse;
+                            try
+                            {
+                                tokenResponse = uri.PostJsonToUrl(refreshRequest).FromJson<GetAccessTokenResponse>();
+                            }
+                            catch (WebException refreshEx)
+                            {
+                                var webServiceEx = ServiceClientBase.ToWebServiceException(refreshEx,
+                                    stream => StreamDeserializer(typeof(T), stream),
+                                    ContentType);
+
+                                if (webServiceEx != null)
+                                    throw new RefreshTokenException(webServiceEx);
+
+                                throw new RefreshTokenException(refreshEx.Message, refreshEx);
+                            }
+
+                            var accessToken = tokenResponse?.AccessToken;
+                            if (string.IsNullOrEmpty(accessToken))
+                                throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+
+                            var refreshClient = requestState.WebRequest =
+                                (HttpWebRequest) WebRequest.Create(requestState.Url);
+                            if (this.CookieContainer.GetTokenCookie(BaseUri) != null)
+                            {
+                                this.CookieContainer.SetTokenCookie(accessToken, BaseUri);
+                                refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
+                            }
+                            else
+                            {
+                                refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                            }
+
+                            SendWebRequestAsync(
+                                requestState.HttpMethod, requestState.Request,
+                                requestState, requestState.WebRequest);
+
+                            return;
+                        }
+
                         OnAuthenticationRequired?.Invoke();
 
-                        requestState.WebRequest = (HttpWebRequest)WebRequest.Create(requestState.Url);
+                        requestState.WebRequest = (HttpWebRequest) WebRequest.Create(requestState.Url);
 
                         if (StoreCookies)
                             requestState.WebRequest.CookieContainer = CookieContainer;
@@ -357,6 +407,10 @@ namespace ServiceStack
                         SendWebRequestAsync(
                             requestState.HttpMethod, requestState.Request,
                             requestState, requestState.WebRequest);
+                    }
+                    catch (WebServiceException rethrow)
+                    {
+                        requestState.HandleError(default(T), rethrow);
                     }
                     catch (Exception /*subEx*/)
                     {

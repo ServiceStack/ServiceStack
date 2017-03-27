@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -130,13 +131,20 @@ namespace ServiceStack
         public DateTime LastPulseAt { get; set; }
 
         public Action<ServerEventConnect> OnConnect;
+        public Action<ServerEventJoin> OnJoin;
+        public Action<ServerEventLeave> OnLeave;
+        public Action<ServerEventUpdate> OnUpdate;
         public Action<ServerEventMessage> OnCommand;
         public Action<ServerEventMessage> OnMessage;
         public Action OnHeartbeat;
+        public Action OnReconnect;
         public Action<Exception> OnException;
 
         public Action<WebRequest> EventStreamRequestFilter { get; set; }
         public Action<WebRequest> HeartbeatRequestFilter { get; set; }
+
+        readonly Dictionary<string, List<Action<ServerEventMessage>>> listeners =
+            new Dictionary<string, List<Action<ServerEventMessage>>>();
 
         public ServerEventsClient(string baseUri, params string[] channels)
         {
@@ -312,6 +320,30 @@ namespace ServiceStack
             SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
         }
 
+        protected void OnJoinReceived(ServerEventJoin e)
+        {
+            if (log.IsDebugEnabled)
+                log.Debug($"[SSE-CLIENT] OnJoinReceived: ({e.GetType().Name}) #{e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
+
+            OnJoin?.Invoke(e);
+        }
+
+        protected void OnLeaveReceived(ServerEventLeave e)
+        {
+            if (log.IsDebugEnabled)
+                log.Debug($"[SSE-CLIENT] OnLeaveReceived: ({e.GetType().Name}) #{e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
+
+            OnLeave?.Invoke(e);
+        }
+
+        protected void OnUpdateReceived(ServerEventUpdate e)
+        {
+            if (log.IsDebugEnabled)
+                log.Debug($"[SSE-CLIENT] OnUpdateReceived: ({e.GetType().Name}) #{e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
+
+            OnUpdate?.Invoke(e);
+        }
+
         protected void OnCommandReceived(ServerEventCommand e)
         {
             if (log.IsDebugEnabled)
@@ -381,6 +413,7 @@ namespace ServiceStack
                         try
                         {
                             Start();
+                            OnReconnect?.Invoke();
                         }
                         catch (Exception ex)
                         {
@@ -446,7 +479,18 @@ namespace ServiceStack
                         if (pos == 0)
                         {
                             if (currentMsg != null)
-                                ProcessEventMessage(currentMsg);
+                            {
+                                try
+                                {
+                                    ProcessEventMessage(currentMsg);
+                                }
+                                catch (Exception ex)
+                                {
+                                    log.Error($"Unhandled Exception processing {currentMsg.Selector}: {ex.Message}");
+                                    OnException?.Invoke(ex);
+                                }
+                            }
+
                             currentMsg = null;
 
                             text = text.Substring(pos + 1);
@@ -558,6 +602,10 @@ namespace ServiceStack
                             break;
                     }
                 }
+                else if (e.Op == "trigger")
+                {
+                    RaiseEvent(e.Target, e);
+                }
 
                 ServerEventCallback receiver;
                 NamedReceivers.TryGetValue(e.Op, out receiver);
@@ -592,18 +640,21 @@ namespace ServiceStack
         private void ProcessOnJoinMessage(ServerEventMessage e)
         {
             var msg = new ServerEventJoin().Populate(e, JsonServiceClient.ParseObject(e.Json));
+            OnJoinReceived(msg);
             OnCommandReceived(msg);
         }
 
         private void ProcessOnLeaveMessage(ServerEventMessage e)
         {
             var msg = new ServerEventLeave().Populate(e, JsonServiceClient.ParseObject(e.Json));
+            OnLeaveReceived(msg);
             OnCommandReceived(msg);
         }
 
         private void ProcessOnUpdateMessage(ServerEventMessage e)
         {
             var msg = new ServerEventUpdate().Populate(e, JsonServiceClient.ParseObject(e.Json));
+            OnUpdateReceived(msg);
             OnCommandReceived(msg);
         }
 
@@ -666,6 +717,58 @@ namespace ServiceStack
                 snapshot.RemoveAll(unsubscribe.Contains);
             }
             this.Channels = snapshot.ToArray();
+        }
+
+        public ServerEventsClient AddListener(string eventName, Action<ServerEventMessage> handler)
+        {
+            lock (listeners)
+            {
+                List<Action<ServerEventMessage>> handlers;
+                if (!listeners.TryGetValue(eventName, out handlers))
+                {
+                    listeners[eventName] = handlers = new List<Action<ServerEventMessage>>();
+                }
+
+                handlers.Add(handler);
+            }
+
+            return this;
+        }
+
+        public ServerEventsClient RemoveListener(string eventName, Action<ServerEventMessage> handler)
+        {
+            lock (listeners)
+            {
+                List<Action<ServerEventMessage>> handlers;
+                if (listeners.TryGetValue(eventName, out handlers))
+                {
+                    handlers.Remove(handler);
+                }
+            }
+
+            return this;
+        }
+
+        public void RaiseEvent(string eventName, ServerEventMessage message)
+        {
+            lock (listeners)
+            {
+                List<Action<ServerEventMessage>> handlers;
+                if (listeners.TryGetValue(eventName, out handlers))
+                {
+                    foreach (var handler in handlers)
+                    {
+                        try
+                        {
+                            handler(message);
+                        }
+                        catch (Exception ex)
+                        {
+                            log.Error($"Error whilst executing '{eventName}' handler", ex);
+                        }
+                    }
+                }
+            }
         }
 
         public void Dispose()

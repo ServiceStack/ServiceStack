@@ -548,6 +548,22 @@ namespace ServiceStack
 
         public void Dispose()
         {
+            try
+            {
+                foreach (var entry in local.Subcriptions)
+                {
+                    var info = local.GetSubscriptionInfo(entry.Key);
+                    if (info != null)
+                    {
+                        RemoveSubscriptionFromRedis(info);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("Error trying to remove local.Subcriptions during Dispose()...", ex);
+            }
+
             if (RedisPubSub != null)
                 RedisPubSub.Dispose();
 

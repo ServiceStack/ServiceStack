@@ -143,6 +143,8 @@
       <WireFiles Include="$(SrcDir)/ServiceStack.Wire/bin/$(Configuration)/ServiceStack.Wire.*"></WireFiles>
 
       <SwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/ServiceStack.Api.Swagger.*"></SwaggerFiles>
+
+      <OpenApiFiles Include="$(SrcDir)/ServiceStack.Api.OpenApi/bin/$(Configuration)/ServiceStack.Api.OpenApi.*"></OpenApiFiles>
     </ItemGroup>
 
 
@@ -169,6 +171,19 @@
 
     <!-- Disabled -Symbols -->
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/servicestack.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+            LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.Api.OpenApi -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Api.OpenApi/ServiceStack.Api.OpenApi.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/net45')" />
+    <Copy SourceFiles="%(OpenApiFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/net45" />
+
+    <!-- Disabled -Symbols -->
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.OpenApi/servicestack.api.openapi.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Authentication.OpenId -->

@@ -181,6 +181,11 @@
             Gets or sets a value indicating if unicode symbols should be serialized as "\uXXXX".
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig.sEscapeHtmlChars">
+            <summary>
+            Gets or sets a value indicating if HTML entity chars [&gt; &lt; &amp; = '] should be escaped as "\uXXXX".
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig.sOnDeserializationError">
             <summary>
             Gets or sets a value indicating if the framework should call an error handler when
@@ -293,7 +298,7 @@
             Uses the standard .net ToString method of the TimeSpan class
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.JsonExtensions.Get``1(System.Collections.Generic.Dictionary{System.String,System.String},System.String)">
+        <member name="M:ServiceStack.Text.JsonExtensions.Get``1(System.Collections.Generic.Dictionary{System.String,System.String},System.String,``0)">
             <summary>
             Get JSON string value converted to T
             </summary>
@@ -355,11 +360,12 @@
             Micro-optimization keep pre-built char arrays saving a .ToCharArray() + function call (see .net implementation of .Write(string))
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.Json.JsonUtils.HasAnyEscapeChars(System.String)">
+        <member name="M:ServiceStack.Text.Json.JsonUtils.HasAnyEscapeChars(System.String,System.Boolean)">
             <summary>
             Searches the string for one or more non-printable characters.
             </summary>
             <param name="value">The string to search.</param>
+            <param name="escapeHtmlChars"></param>
             <returns>True if there are any characters that require escaping. False if the value can be written verbatim.</returns>
             <remarks>
             Micro optimizations: since quote and backslash are the only printable characters requiring escaping, removed previous optimization

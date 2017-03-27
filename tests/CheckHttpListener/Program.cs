@@ -50,6 +50,11 @@ namespace CheckHttpListener
                   { typeof(AuthenticateService), new[] { "/api/auth", "/api/auth/{provider}" } },
                 }
             });
+
+            SetConfig(new HostConfig
+            {
+                CompressFilesWithExtensions = { "html", "js" }
+            });
         }
 
         public override RouteAttribute[] GetRouteAttributes(Type requestType)

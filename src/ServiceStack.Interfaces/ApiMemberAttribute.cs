@@ -42,6 +42,11 @@ namespace ServiceStack
         public string DataType { get; set; }
 
         /// <summary>
+        /// Fine-tuned primitive type definition.  
+        /// </summary>
+        public string Format { get; set; }
+
+        /// <summary>
         /// For path, this is always true. Otherwise, this field tells the client whether or not the field must be supplied.
         /// </summary>
         public bool IsRequired { get; set; }

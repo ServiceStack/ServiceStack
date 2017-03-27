@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -33,9 +32,33 @@ namespace ServiceStack.Auth
 
         public string[] Scopes { get; set; }
 
+        public string VerifyAccessTokenUrl { get; set; } = "https://api.github.com/applications/{0}/tokens/{1}";
+
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = Init(authService, ref session, request);
+
+            //Transfering AccessToken/Secret from Mobile/Desktop App to Server
+            if (request?.AccessToken != null)
+            {
+                //https://developer.github.com/v3/oauth_authorizations/#check-an-authorization
+
+                var url = VerifyAccessTokenUrl.Fmt(ClientId, request.AccessToken);
+                var json = url.GetJsonFromUrl(requestFilter: httpReq => {
+                    PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent);
+                    httpReq.AddBasicAuth(ClientId, ClientSecret);
+                });
+
+                var isHtml = authService.Request.IsHtml();
+                var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
+                if (failedResult != null)
+                    return ConvertToClientError(failedResult, isHtml);
+
+                return isHtml
+                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    : null; //return default AuthenticateResponse
+            }
+
             var httpRequest = authService.Request;
 
             //https://developer.github.com/v3/oauth/#common-errors-for-the-authorization-request
@@ -54,16 +77,16 @@ namespace ServiceStack.Auth
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={Scopes.Join(",")}&state={Guid.NewGuid().ToString("N")}";
+                var scopes = Scopes.Join("%20");
+                string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={scopes}&state={Guid.NewGuid():N}";
 
                 this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
-            string accessTokenUrl = $"{AccessTokenUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&client_secret={ClientSecret}&code={code}";
-
             try
             {
+                string accessTokenUrl = $"{AccessTokenUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&client_secret={ClientSecret}&code={code}";
                 var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
                 var authInfo = PclExportClient.Instance.ParseQueryString(contents);
 
@@ -78,11 +101,10 @@ namespace ServiceStack.Auth
                     Log.Error($"GitHub access_token error callback. {authInfo}");
                     return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
-                tokens.AccessTokenSecret = authInfo["access_token"];
 
-                session.IsAuthenticated = true;
-                
-                return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
+                var accessToken = authInfo["access_token"];
+
+                return AuthenticateWithAccessToken(authService, session, tokens, accessToken)
                     ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access!
             }
             catch (WebException webException)
@@ -97,37 +119,50 @@ namespace ServiceStack.Auth
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
-        /// <summary>
-        ///   Calling to Github API without defined Useragent throws
-        ///   exception "The server committed a protocol violation. Section=ResponseStatusLine"
-        /// </summary>
-        protected virtual void UserRequestFilter(HttpWebRequest request)
+        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken)
         {
-            request.SetUserAgent(ServiceClientBase.DefaultUserAgent);
+            tokens.AccessTokenSecret = accessToken;
+
+            var json = AuthHttpGateway.DownloadGithubUserInfo(accessToken);
+            var authInfo = JsonObject.Parse(json);
+
+            session.IsAuthenticated = true;
+
+            return OnAuthenticated(authService, session, tokens, authInfo);
         }
 
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             try
             {
-                var json = $"https://api.github.com/user?access_token={tokens.AccessTokenSecret}"
-                    .GetStringFromUrl("*/*", UserRequestFilter);
-                var obj = JsonObject.Parse(json);
-                tokens.UserId = obj.Get("id");
-                tokens.UserName = obj.Get("login");
-                tokens.DisplayName = obj.Get("name");
-                tokens.Email = obj.Get("email");
-                tokens.Company = obj.Get("company");
-                tokens.Country = obj.Get("country");
-
-                if (SaveExtendedUserInfo)
-                {
-                    obj.Each(x => authInfo[x.Key] = x.Value);
-                }
+                tokens.UserId = authInfo.Get("id");
+                tokens.UserName = authInfo.Get("login");
+                tokens.DisplayName = authInfo.Get("name");
+                tokens.Email = authInfo.Get("email");
+                tokens.Company = authInfo.Get("company");
+                tokens.Country = authInfo.Get("country");
 
                 string profileUrl;
-                if (obj.TryGetValue("avatar_url", out profileUrl))
+                if (authInfo.TryGetValue("avatar_url", out profileUrl))
                     tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+
+                if (tokens.Email == null)
+                {
+                    var json = AuthHttpGateway.DownloadGithubUserEmailsInfo(tokens.AccessTokenSecret);
+                    var objs = JsonArrayObjects.Parse(json);
+                    foreach (var obj in objs)
+                    {
+                        if (obj.Get<bool>("primary"))
+                        {
+                            tokens.Email = obj.Get("email");
+                            if (obj.Get<bool>("verified"))
+                            {
+                                tokens.Items["email_veriried"] = "true";
+                            }
+                            break;
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -143,6 +178,7 @@ namespace ServiceStack.Auth
             if (userSession == null) return;
 
             userSession.UserName = tokens.UserName ?? userSession.UserName;
+            userSession.UserAuthName = userSession.UserName;
             userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
             userSession.Company = tokens.Company ?? userSession.Company;
             userSession.Country = tokens.Country ?? userSession.Country;

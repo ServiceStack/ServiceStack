@@ -54,12 +54,22 @@ namespace ServiceStack.RabbitMq
             channel.RegisterDlq(queueNames.Dlq);
         }
 
+        private static RabbitMqServer GetRabbitMqServer()
+        {
+            if (HostContext.AppHost == null)
+                return null;
+
+            return HostContext.TryResolve<IMessageService>() as RabbitMqServer;
+        }
+
         public static void RegisterQueue(this IModel channel, string queueName)
         {
             var args = new Dictionary<string, object> {
                 {"x-dead-letter-exchange", QueueNames.ExchangeDlq },
                 {"x-dead-letter-routing-key", queueName.Replace(".inq",".dlq").Replace(".priorityq",".dlq") },
             };
+
+            GetRabbitMqServer()?.CreateQueueFilter?.Invoke(queueName, args);
 
             if (!QueueNames.IsTempQueue(queueName)) //Already declared in GetTempQueueName()
             {
@@ -71,13 +81,21 @@ namespace ServiceStack.RabbitMq
 
         public static void RegisterDlq(this IModel channel, string queueName)
         {
-            channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            var args = new Dictionary<string, object>();
+
+            GetRabbitMqServer()?.CreateQueueFilter?.Invoke(queueName, args);
+
+            channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: args);
             channel.QueueBind(queueName, QueueNames.ExchangeDlq, routingKey: queueName);
         }
 
         public static void RegisterTopic(this IModel channel, string queueName)
         {
-            channel.QueueDeclare(queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
+            var args = new Dictionary<string, object>();
+
+            GetRabbitMqServer()?.CreateTopicFilter?.Invoke(queueName, args);
+
+            channel.QueueDeclare(queueName, durable: false, exclusive: false, autoDelete: false, arguments: args);
             channel.QueueBind(queueName, QueueNames.ExchangeTopic, routingKey: queueName);
         }
 

@@ -180,6 +180,7 @@
     <Compile Include="AppHostHttpListenerLongRunningBaseTests.cs" />
     <Compile Include="AppHostListenerBaseTests.cs" />
     <Compile Include="AppSelfHostTests.cs" />
+    <Compile Include="AsyncFiltersTests.cs" />
     <Compile Include="AsyncProgressTests.cs" />
     <Compile Include="AsyncRestClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
@@ -198,13 +199,16 @@
     <Compile Include="CacheServerFeatureTests.cs" />
     <Compile Include="CancellableRequestTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="CompressResponseTests.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="ContentTypeTests.cs" />
     <Compile Include="CsvServiceClientTests.cs" />
     <Compile Include="CustomerRestExample.cs" />
     <Compile Include="CustomFormatTests.cs" />
     <Compile Include="IntegrationTests\OAuthIntegrationTests.cs" />
-    <Compile Include="UseCases\JwtAuthProviderTokenCookieExample.cs" />
+    <Compile Include="CustomOrmLiteAuthRepositoryTests.cs" />
+    <Compile Include="RawRequestTests.cs" />
+    <Compile Include="UseCases\JwtAuthProviderTests.cs" />
     <Compile Include="VirtualFileSystemMappingTests.cs" />
     <Compile Include="ZipServiceClientTests.cs" />
     <Compile Include="HttpErrorSyncTests.cs" />
@@ -391,6 +395,7 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="App_Data\accesstokens.txt" />
     <Content Include="TestExistingDir\textfile.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -425,12 +430,12 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Data\" />
     <Folder Include="ServiceModel\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="project.json" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>

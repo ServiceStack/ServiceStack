@@ -179,6 +179,12 @@ namespace ServiceStack.Metadata
                 }.ToString()
                 : "";
 
+            var errorCount = HostContext.AppHost.StartUpErrors.Count;
+            var plural = errorCount > 1 ? "s" : "";
+            var startupErrors = HostContext.DebugMode && errorCount > 0
+                ? $"<div class='error-popup'><a href='?debug=requestinfo'>Review {errorCount} Error{plural} on Startup</a></div>"
+                : "";
+
             var renderedTemplate = HtmlTemplates.Format(
                 HtmlTemplates.GetIndexOperationsTemplate(),
                 this.Title,
@@ -188,7 +194,8 @@ namespace ServiceStack.Metadata
                 StringBuilderCache.ReturnAndFree(wsdlTemplate),
                 pluginLinks,
                 debugOnlyInfo,
-                Env.VersionString);
+                Env.VersionString,
+                startupErrors);
 
             output.Write(renderedTemplate);
         }

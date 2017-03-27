@@ -52,6 +52,7 @@ namespace ServiceStack
         public Dictionary<string, ServerEventCallback> Handlers { get; set; }
         public Dictionary<string, ServerEventCallback> NamedReceivers { get; set; }
         public List<Type> ReceiverTypes { get; set; } 
+        public bool StrictMode { get; set; }
 
         public ServerEventsClient RegisterReceiver<T>()
             where T : IReceiver
@@ -88,6 +89,8 @@ namespace ServiceStack
 
             ReceiverExecContext receiverCtx;
             ReceiverExec<T>.RequestTypeExecMap.TryGetValue(target, out receiverCtx);
+            if (StrictMode && receiverCtx != null && !receiverCtx.Method.EqualsIgnoreCase(target))
+                receiverCtx = null;
 
             if (receiverCtx == null)
                 ReceiverExec<T>.MethodNameExecMap.TryGetValue(target, out receiverCtx);
@@ -116,7 +119,9 @@ namespace ServiceStack
     }
 
     internal delegate object ActionInvokerFn(object intance, object request);
+    internal delegate object ActionNoArgInvokerFn(object intance);
     internal delegate void VoidActionInvokerFn(object intance, object request);
+    internal delegate void VoidActionNoArgInvokerFn(object intance);
 
     internal class ReceiverExecContext
     {
@@ -124,7 +129,13 @@ namespace ServiceStack
         public string Id { get; set; }
         public Type RequestType { get; set; }
         public Type ServiceType { get; set; }
+        public string Method { get; set; }
         public ActionInvokerFn Exec { get; set; }
+
+        public static string Key(string method)
+        {
+            return method.ToUpper();
+        }
 
         public static string Key(string method, string requestDtoName)
         {
@@ -152,7 +163,11 @@ namespace ServiceStack
             {
                 var actionName = mi.Name;
                 var args = mi.GetParameters();
-                if (args.Length != 1) 
+                if (args.Length > 1) 
+                    continue;
+                if (mi.Name.StartsWith("get_"))
+                    continue;
+                if (mi.DeclaringType == typeof(object))
                     continue;
                 if (mi.Name == "Equals")
                     continue;
@@ -160,12 +175,27 @@ namespace ServiceStack
                 if (actionName.StartsWith("set_"))
                     actionName = actionName.Substring("set_".Length);
 
+                if (args.Length == 0)
+                {
+                    var voidExecCtx = new ReceiverExecContext
+                    {
+                        Id = ReceiverExecContext.Key(actionName),
+                        ServiceType = typeof(T),
+                        RequestType = null,
+                        Method = mi.Name
+                    };
+                    MethodNameExecMap[actionName] = voidExecCtx;
+                    voidExecCtx.Exec = CreateExecFn(mi);
+                    continue;
+                }
+
                 var requestType = args[0].ParameterType;
                 var execCtx = new ReceiverExecContext
                 {
                     Id = ReceiverExecContext.Key(actionName, requestType.GetOperationName()),
                     ServiceType = typeof(T),
                     RequestType = requestType,
+                    Method = mi.Name
                 };
 
                 try
@@ -217,6 +247,41 @@ namespace ServiceStack
                 return (service, request) =>
                 {
                     executeFunc(service, request);
+                    return null;
+                };
+            }
+#endif
+        }
+
+        private static ActionInvokerFn CreateExecFn(MethodInfo mi)
+        {
+            //TODO optimize for PCL clients
+#if PCL
+            return (instance, request) =>
+                mi.Invoke(instance, new Object[0]);
+#else
+            var receiverType = typeof(T);
+
+            var receiverParam = Expression.Parameter(typeof(object), "receiverObj");
+            var receiverStrong = Expression.Convert(receiverParam, receiverType);
+
+            Expression callExecute = Expression.Call(receiverStrong, mi);
+
+            if (mi.ReturnType != typeof(void))
+            {
+                var executeFunc = Expression.Lambda<ActionNoArgInvokerFn>
+                    (callExecute, receiverParam).Compile();
+
+                return (service, request) => executeFunc(service);
+            }
+            else
+            {
+                var executeFunc = Expression.Lambda<VoidActionNoArgInvokerFn>
+                    (callExecute, receiverParam).Compile();
+
+                return (service, request) =>
+                {
+                    executeFunc(service);
                     return null;
                 };
             }

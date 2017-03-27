@@ -35,10 +35,13 @@ namespace ServiceStack.Api.Swagger
 
         public Dictionary<string, string> RouteSummary { get; set; }
 
+        public List<string> AnyRouteVerbs { get; set; }
+
         public SwaggerFeature()
         {
             LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-24.png";
             RouteSummary = new Dictionary<string, string>();
+            AnyRouteVerbs = new List<string> { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         }
 
         public void Configure(IAppHost appHost)
@@ -60,6 +63,7 @@ namespace ServiceStack.Api.Swagger
             SwaggerApiService.OperationFilter = OperationFilter;
             SwaggerApiService.ModelFilter = ModelFilter;
             SwaggerApiService.ModelPropertyFilter = ModelPropertyFilter;
+            SwaggerApiService.AnyRouteVerbs = AnyRouteVerbs.ToArray();
 
             appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
             appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });
@@ -95,9 +99,7 @@ namespace ServiceStack.Api.Swagger
                 if (indexFile != null)
                 {
                     var html = indexFile.ReadAllText();
-                    var injectJs = patchFile != null
-                        ? patchFile.ReadAllText()
-                        : null;
+                    var injectJs = patchFile?.ReadAllText();
 
                     return new CustomResponseHandler((req, res) =>
                     {
@@ -120,9 +122,6 @@ namespace ServiceStack.Api.Swagger
             });
         }
 
-        public static bool IsEnabled
-        {
-            get { return HostContext.HasPlugin<SwaggerFeature>(); }
-        }
+        public static bool IsEnabled => HostContext.HasPlugin<SwaggerFeature>();
     }
 }

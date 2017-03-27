@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using Funq;
 using ServiceStack.Auth;
@@ -94,10 +96,12 @@ namespace ServiceStack
             RequestConverters = new List<Func<IRequest, object, object>>();
             ResponseConverters = new List<Func<IRequest, object, object>>();
             GlobalRequestFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalRequestFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
             GlobalTypedRequestFilters = new Dictionary<Type, ITypedFilter>();
             GlobalResponseFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalTypedResponseFilters = new Dictionary<Type, ITypedFilter>();
             GlobalMessageRequestFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalMessageRequestFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
             GlobalTypedMessageRequestFilters = new Dictionary<Type, ITypedFilter>();
             GlobalMessageResponseFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalTypedMessageResponseFilters = new Dictionary<Type, ITypedFilter>();
@@ -224,6 +228,8 @@ namespace ServiceStack
                     elapsed.TotalMilliseconds,
                     StartUpErrors.Count,
                     StartUpErrors.ToJson());
+
+                Config.GlobalResponseHeaders["X-Startup-Errors"] = StartUpErrors.Count.ToString();
             }
             else
             {
@@ -347,6 +353,8 @@ namespace ServiceStack
 
         public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; }
 
+        public List<Func<IRequest, IResponse, object, Task>> GlobalRequestFiltersAsync { get; set; }
+
         public Dictionary<Type, ITypedFilter> GlobalTypedRequestFilters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; set; }
@@ -354,6 +362,8 @@ namespace ServiceStack
         public Dictionary<Type, ITypedFilter> GlobalTypedResponseFilters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; }
+
+        public List<Func<IRequest, IResponse, object, Task>> GlobalMessageRequestFiltersAsync { get; }
 
         public Dictionary<Type, ITypedFilter> GlobalTypedMessageRequestFilters { get; set; }
 

@@ -61,14 +61,14 @@ namespace ServiceStack.Support.WebHost
             return attrs.ShallowCopy();
         }
 
-        public static IHasResponseFilter[] GetResponseFilterAttributes(Type responseDtoType)
+        public static IHasResponseFilter[] GetResponseFilterAttributes(Type requestDtoType)
         {
             IHasResponseFilter[] attrs;
-            if (responseFilterAttributes.TryGetValue(responseDtoType, out attrs)) return attrs.ShallowCopy();
+            if (responseFilterAttributes.TryGetValue(requestDtoType, out attrs)) return attrs.ShallowCopy();
 
-            var attributes = responseDtoType.AllAttributes().OfType<IHasResponseFilter>().ToList();
+            var attributes = requestDtoType.AllAttributes().OfType<IHasResponseFilter>().ToList();
 
-            var serviceType = HostContext.Metadata.GetServiceTypeByResponse(responseDtoType);
+            var serviceType = HostContext.Metadata.GetServiceTypeByRequest(requestDtoType);
             if (serviceType != null)
             {
                 attributes.AddRange(serviceType.AllAttributes().OfType<IHasResponseFilter>());
@@ -82,7 +82,7 @@ namespace ServiceStack.Support.WebHost
             {
                 snapshot = responseFilterAttributes;
                 newCache = new Dictionary<Type, IHasResponseFilter[]>(responseFilterAttributes) {
-                    [responseDtoType] = attrs
+                    [requestDtoType] = attrs
                 };
 
             } while (!ReferenceEquals(

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -38,6 +39,11 @@ namespace ServiceStack
         /// Called at the end of each request. Enables Request Scope.
         /// </summary>
         void OnEndRequest(IRequest request = null);
+        
+        /// <summary>
+        /// Register callbacks to be called at the end of each request.
+        /// </summary>
+        List<Action<IRequest>> OnEndRequestCallbacks { get; }
 
         /// <summary>
         /// Register user-defined custom routes.
@@ -75,6 +81,11 @@ namespace ServiceStack
         List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; }
 
         /// <summary>
+        /// Add Async Request Filters for HTTP Requests
+        /// </summary>
+        List<Func<IRequest, IResponse, object, Task>> GlobalRequestFiltersAsync { get; }
+
+        /// <summary>
         /// Add Response Filters for HTTP Responses
         /// </summary>
         List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; }
@@ -83,6 +94,11 @@ namespace ServiceStack
         /// Add Request Filters for MQ/TCP Requests
         /// </summary>
         List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; }
+
+        /// <summary>
+        /// Add Async Request Filters for MQ/TCP Requests
+        /// </summary>
+        List<Func<IRequest, IResponse, object, Task>> GlobalMessageRequestFiltersAsync { get; }
 
         /// <summary>
         /// Add Response Filters for MQ/TCP Responses

@@ -47,7 +47,7 @@ namespace ServiceStack.Host
             {
                 string contentType;
                 this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out contentType);
-                
+
                 if (contentType != null)
                     ResponseContentType = contentType;
             }
@@ -66,9 +66,9 @@ namespace ServiceStack.Host
             try
             {
                 var appHost = HostContext.AppHost;
-                if (appHost.ApplyPreRequestFilters(httpReq, httpRes)) 
+                if (appHost.ApplyPreRequestFilters(httpReq, httpRes))
                     return TypeConstants.EmptyTask;
-                
+
                 var restPath = GetRestPath(httpReq.Verb, httpReq.PathInfo);
                 if (restPath == null)
                 {
@@ -91,32 +91,55 @@ namespace ServiceStack.Host
 
                 var request = httpReq.Dto = CreateRequest(httpReq, restPath);
 
-                if (appHost.ApplyRequestFilters(httpReq, httpRes, request)) 
+                if (appHost.ApplyRequestFilters(httpReq, httpRes, request))
                     return TypeConstants.EmptyTask;
 
-                var rawResponse = GetResponse(httpReq, request);
+                return appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request)
+                    .Continue(t =>
+                    {
+                        if (t.IsFaulted)
+                            return t;
 
-                if (httpRes.IsClosed)
-                    return TypeConstants.EmptyTask;
+                        if (t.IsCanceled)
+                            httpRes.EndRequest();
 
-                return HandleResponse(rawResponse, response =>
-                {
-                    response = appHost.ApplyResponseConverters(httpReq, response);
+                        if (httpRes.IsClosed)
+                            return TypeConstants.EmptyTask;
 
-                    if (appHost.ApplyResponseFilters(httpReq, httpRes, response)) 
-                        return TypeConstants.EmptyTask;
+                        var rawResponse = GetResponse(httpReq, request);
 
-                    if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString[Keywords.Debug]))
-                        return WriteDebugResponse(httpRes, response);
+                        if (httpRes.IsClosed)
+                            return TypeConstants.EmptyTask;
 
-                    if (doJsonp && !(response is CompressedResult))
-                        return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
-                    
-                    return httpRes.WriteToResponse(httpReq, response);
-                },  
-                ex => !HostContext.Config.WriteErrorsToResponse 
-                    ? ex.ApplyResponseConverters(httpReq).AsTaskException()
-                    : HandleException(httpReq, httpRes, operationName, ex.ApplyResponseConverters(httpReq)));
+                        return HandleResponse(rawResponse, response =>
+                        {
+                            response = appHost.ApplyResponseConverters(httpReq, response);
+
+                            if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
+                                return TypeConstants.EmptyTask;
+
+                            if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString[Keywords.Debug]))
+                                return WriteDebugResponse(httpRes, response);
+
+                            if (doJsonp && !(response is CompressedResult))
+                                return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+
+                            return httpRes.WriteToResponse(httpReq, response);
+                        });
+                    })
+                    .Unwrap()
+                    .Continue(t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            var taskEx = t.Exception.UnwrapIfSingleException();
+                            return !HostContext.Config.WriteErrorsToResponse
+                                ? taskEx.ApplyResponseConverters(httpReq).AsTaskException()
+                                : HandleException(httpReq, httpRes, operationName, taskEx.ApplyResponseConverters(httpReq));
+                        }
+                        return t;
+                    })
+                    .Unwrap();
             }
             catch (Exception ex)
             {

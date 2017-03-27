@@ -25,7 +25,7 @@ namespace FluentValidation.Mvc {
 				.AppendArgument("MinLength", LengthValidator.Min)
 				.AppendArgument("MaxLength", LengthValidator.Max);
 
-			string message = LengthValidator.ErrorMessageSource.GetString();
+			string message = LengthValidator.ErrorMessageSource.GetString(Metadata);
 
 			if(LengthValidator.ErrorMessageSource.ResourceType == typeof(Messages)) {
 				// If we're using the default resources then the mesage for length errors will have two parts, eg:
