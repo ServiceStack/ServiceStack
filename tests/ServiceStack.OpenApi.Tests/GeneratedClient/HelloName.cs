@@ -71,7 +71,6 @@ namespace AutorestClient
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "name");
             }
-            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -81,7 +80,6 @@ namespace AutorestClient
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("name", name);
                 tracingParameters.Add("title", title);
-                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get", tracingParameters);
             }
@@ -104,13 +102,13 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("GET");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
-            if (accept != null)
+            if (Client.Accept != null)
             {
                 if (_httpRequest.Headers.Contains("Accept"))
                 {
                     _httpRequest.Headers.Remove("Accept");
                 }
-                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", Client.Accept);
             }
 
 
@@ -226,7 +224,6 @@ namespace AutorestClient
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "name");
             }
-            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -237,7 +234,6 @@ namespace AutorestClient
                 tracingParameters.Add("name", name);
                 tracingParameters.Add("title", title);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Create", tracingParameters);
             }
@@ -251,13 +247,13 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("PUT");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
-            if (accept != null)
+            if (Client.Accept != null)
             {
                 if (_httpRequest.Headers.Contains("Accept"))
                 {
                     _httpRequest.Headers.Remove("Accept");
                 }
-                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", Client.Accept);
             }
 
 
@@ -379,7 +375,6 @@ namespace AutorestClient
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "name");
             }
-            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -390,7 +385,6 @@ namespace AutorestClient
                 tracingParameters.Add("name", name);
                 tracingParameters.Add("title", title);
                 tracingParameters.Add("body", body);
-                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Post", tracingParameters);
             }
@@ -404,13 +398,13 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("POST");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
-            if (accept != null)
+            if (Client.Accept != null)
             {
                 if (_httpRequest.Headers.Contains("Accept"))
                 {
                     _httpRequest.Headers.Remove("Accept");
                 }
-                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", Client.Accept);
             }
 
 
@@ -530,7 +524,6 @@ namespace AutorestClient
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "name");
             }
-            string accept = "application/json";
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -540,7 +533,6 @@ namespace AutorestClient
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("name", name);
                 tracingParameters.Add("title", title);
-                tracingParameters.Add("accept", accept);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Delete", tracingParameters);
             }
@@ -563,13 +555,13 @@ namespace AutorestClient
             _httpRequest.Method = new HttpMethod("DELETE");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
-            if (accept != null)
+            if (Client.Accept != null)
             {
                 if (_httpRequest.Headers.Contains("Accept"))
                 {
                     _httpRequest.Headers.Remove("Accept");
                 }
-                _httpRequest.Headers.TryAddWithoutValidation("Accept", accept);
+                _httpRequest.Headers.TryAddWithoutValidation("Accept", Client.Accept);
             }
 
 

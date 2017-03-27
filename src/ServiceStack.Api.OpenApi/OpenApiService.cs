@@ -81,7 +81,9 @@ namespace ServiceStack.Api.OpenApi
                 Consumes = new List<string> { "application/json" },
                 Produces = new List<string> { "application/json" },
                 Definitions = definitions,
-                Tags = tags.OrderBy(t => t.Name).ToList()
+                Tags = tags.OrderBy(t => t.Name).ToList(),
+                Parameters = new Dictionary<string, OpenApiParameter> { { "Accept", GetAcceptHeaderParameter() } },
+                SecurityDefinitions = new Dictionary<string, OpenApiSecuritySchema> { { "basic", new OpenApiSecuritySchema { Type = "basic" } } }
             };
 
 
@@ -554,14 +556,31 @@ namespace ServiceStack.Api.OpenApi
 
                 if (!apiPaths.TryGetValue(restPath.Path, out curPath))
                 {
-                    curPath = new OpenApiPath() { Parameters = new List<OpenApiParameter> { GetAcceptHeaderParameter() } };
+                    curPath = new OpenApiPath() { Parameters = new List<OpenApiParameter> { new OpenApiParameter { Ref = "#/parameters/Accept" } } };
                     apiPaths.Add(restPath.Path, curPath);
 
                     tags.Add(new OpenApiTag { Name = restPath.Path, Description = summary });
                 }
 
+                var op = HostContext.Metadata.OperationsMap[requestType];
+                var actions = HostContext.Metadata.GetImplementedActions(op.ServiceType, op.RequestType);
+
+                var authAttrs = new[] { op.ServiceType, op.RequestType }
+                    .SelectMany(x => x.AllAttributes().OfType<AuthenticateAttribute>()).ToList();
+
+                authAttrs.AddRange(
+                    actions.Where(x => x.Name.ToUpperInvariant() == "ANY")
+                    .SelectMany(x => x.AllAttributes<AuthenticateAttribute>())
+                    );
+
+
                 foreach (var verb in verbs)
                 {
+                    var needAuth = authAttrs.Count > 0
+                        || actions.Where(x => x.Name.ToUpperInvariant() == verb)
+                            .SelectMany(x => x.AllAttributes<AuthenticateAttribute>())
+                            .Count() > 0;
+
                     var operation = new OpenApiOperation
                     {
                         Summary = summary,
@@ -572,7 +591,10 @@ namespace ServiceStack.Api.OpenApi
                         Consumes = new List<string> { "application/json" },
                         Produces = new List<string> { "application/json" },
                         Tags = new List<string> { restPath.Path },
-                        Deprecated = requestType.HasAttribute<ObsoleteAttribute>()
+                        Deprecated = requestType.HasAttribute<ObsoleteAttribute>(),
+                        Security = needAuth ? new List<Dictionary<string, List<string>>> {
+                            new Dictionary<string, List<string>> { { "basic", new List<string>() } }
+                        } : null
                     };
 
                     switch (verb)

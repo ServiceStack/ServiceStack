@@ -2,10 +2,13 @@
 using NUnit.Framework;
 using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
+using ServiceStack.Data;
 using ServiceStack.Logging;
 using ServiceStack.OpenApi.Tests.Services;
+using ServiceStack.OrmLite;
 using ServiceStack.Redis;
 using ServiceStack.Text;
+using System.Collections.Generic;
 
 namespace ServiceStack.OpenApi.Tests.Host
 {
@@ -51,17 +54,8 @@ namespace ServiceStack.OpenApi.Tests.Host
                 Return204NoContentForEmptyResponse = true,
             });
 
-/*            container.Register<IRedisClientsManager>(c =>
-                new RedisManagerPool("localhost:6379"));
-            container.Register(c => c.Resolve<IRedisClientsManager>().GetCacheClient());
-
             container.Register<IDbConnectionFactory>(c => new OrmLiteConnectionFactory(
-                AppSettings.GetString("AppDb"), PostgreSqlDialect.Provider));
-
-            using (var db = container.Resolve<IDbConnectionFactory>().Open())
-            {
-                db.DropAndCreateTable<Logger>();
-            }
+                ":memory:", SqliteDialect.Provider));
 
             container.Register<IAuthRepository>(c =>
                 new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>())
@@ -75,17 +69,10 @@ namespace ServiceStack.OpenApi.Tests.Host
             CreateUser(authRepo, 1, "test", "test", new List<string> { "TheRole" }, new List<string> { "ThePermission" });
             CreateUser(authRepo, 2, "test2", "test2");
 
-            Plugins.Add(new PostmanFeature());
-*/
             Plugins.Add(new CorsFeature(
                 allowOriginWhitelist: new[] { "http://localhost", "http://localhost:8080", "http://localhost:56500", "http://test.servicestack.net", "http://null.jsbin.com" },
                 allowCredentials: true,
                 allowedHeaders: "Content-Type, Allow, Authorization"));
-
-            /*Plugins.Add(new RequestLogsFeature
-            {
-                RequestLogger = new RedisRequestLogger(container.Resolve<IRedisClientsManager>()),
-            });*/
 
             Plugins.Add(new AuthFeature(() => new CustomUserSession(),
                 new IAuthProvider[]
@@ -106,10 +93,10 @@ namespace ServiceStack.OpenApi.Tests.Host
             JavaGenerator.AddGsonImport = true;
             var nativeTypes = this.GetPlugin<NativeTypesFeature>();
             nativeTypes.MetadataTypesConfig.ExportTypes.Add(typeof(DayOfWeek));
-            */
+            
 
 
-            /*this.RegisterRequestBinder<CustomRequestBinder>(
+            this.RegisterRequestBinder<CustomRequestBinder>(
                 httpReq => new CustomRequestBinder { IsFromBinder = true });
 
             Routes
@@ -123,5 +110,30 @@ namespace ServiceStack.OpenApi.Tests.Host
             ;
             */
         }
+
+        private void CreateUser(OrmLiteAuthRepository authRepo,
+    int id, string username, string password, List<string> roles = null, List<string> permissions = null)
+        {
+            string hash;
+            string salt;
+            new SaltedHash().GetHashAndSaltString(password, out hash, out salt);
+
+            authRepo.CreateUserAuth(new UserAuth
+            {
+                Id = id,
+                DisplayName = username + " DisplayName",
+                Email = username + "@gmail.com",
+                UserName = username,
+                FirstName = "First " + username,
+                LastName = "Last " + username,
+                PasswordHash = hash,
+                Salt = salt,
+                Roles = roles,
+                Permissions = permissions
+            }, password);
+
+            authRepo.AssignRoles(id.ToString(), roles, permissions);
+        }
+
     }
 }

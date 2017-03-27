@@ -25,7 +25,7 @@ namespace AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the CustomUserSession class.
         /// </summary>
-        public CustomUserSession(string customName = default(string), string customInfo = default(string), string referrerUrl = default(string), string id = default(string), string userAuthId = default(string), string userAuthName = default(string), string userName = default(string), string twitterUserId = default(string), string twitterScreenName = default(string), string facebookUserId = default(string), string facebookUserName = default(string), string firstName = default(string), string lastName = default(string), string displayName = default(string), string company = default(string), string email = default(string), string primaryEmail = default(string), string phoneNumber = default(string), System.DateTime? birthDate = default(System.DateTime?), string birthDateRaw = default(string), string address = default(string), string address2 = default(string), string city = default(string), string state = default(string), string country = default(string), string culture = default(string), string fullName = default(string), string gender = default(string), string language = default(string), string mailAddress = default(string), string nickname = default(string), string postalCode = default(string), string timeZone = default(string), string requestTokenSecret = default(string), System.DateTime createdAt = default(System.DateTime), System.DateTime lastModified = default(System.DateTime), IList<string> roles = default(IList<string>), IList<string> permissions = default(IList<string>), bool isAuthenticated = default(bool), bool fromToken = default(bool), string profileUrl = default(string), string sequence = default(string), long tag = default(long), IList<object> providerOAuthAccess = default(IList<object>))
+        public CustomUserSession(string customName = default(string), string customInfo = default(string), string referrerUrl = default(string), string id = default(string), string userAuthId = default(string), string userAuthName = default(string), string userName = default(string), string twitterUserId = default(string), string twitterScreenName = default(string), string facebookUserId = default(string), string facebookUserName = default(string), string firstName = default(string), string lastName = default(string), string displayName = default(string), string company = default(string), string email = default(string), string primaryEmail = default(string), string phoneNumber = default(string), System.DateTime? birthDate = default(System.DateTime?), string birthDateRaw = default(string), string address = default(string), string address2 = default(string), string city = default(string), string state = default(string), string country = default(string), string culture = default(string), string fullName = default(string), string gender = default(string), string language = default(string), string mailAddress = default(string), string nickname = default(string), string postalCode = default(string), string timeZone = default(string), string requestTokenSecret = default(string), System.DateTime createdAt = default(System.DateTime), System.DateTime lastModified = default(System.DateTime), IList<string> roles = default(IList<string>), IList<string> permissions = default(IList<string>), bool isAuthenticated = default(bool), bool fromToken = default(bool), string profileUrl = default(string), string sequence = default(string), long tag = default(long), string authProvider = default(string), IList<object> providerOAuthAccess = default(IList<object>))
         {
             CustomName = customName;
             CustomInfo = customInfo;
@@ -70,6 +70,7 @@ namespace AutorestClient.Models
             ProfileUrl = profileUrl;
             Sequence = sequence;
             Tag = tag;
+            AuthProvider = authProvider;
             ProviderOAuthAccess = providerOAuthAccess;
             CustomInit();
         }
@@ -293,6 +294,11 @@ namespace AutorestClient.Models
         /// </summary>
         [JsonProperty(PropertyName = "Tag")]
         public long Tag { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "AuthProvider")]
+        public string AuthProvider { get; set; }
 
         /// <summary>
         /// </summary>

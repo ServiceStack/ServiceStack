@@ -31,6 +31,11 @@ namespace AutorestClient
         public JsonSerializerSettings DeserializationSettings { get; private set; }
 
         /// <summary>
+        /// Accept Header
+        /// </summary>
+        public string Accept { get; private set; }
+
+        /// <summary>
         /// Gets the IReturnListRequest.
         /// </summary>
         public virtual IReturnListRequest ReturnListRequest { get; private set; }
@@ -119,6 +124,21 @@ namespace AutorestClient
         /// Gets the IHelloZipOperations.
         /// </summary>
         public virtual IHelloZipOperations HelloZip { get; private set; }
+
+        /// <summary>
+        /// Gets the ISecuredRequest.
+        /// </summary>
+        public virtual ISecuredRequest SecuredRequest { get; private set; }
+
+        /// <summary>
+        /// Gets the ISecuredDtoRequest.
+        /// </summary>
+        public virtual ISecuredDtoRequest SecuredDtoRequest { get; private set; }
+
+        /// <summary>
+        /// Gets the ISecuredOpsRequest.
+        /// </summary>
+        public virtual ISecuredOpsRequest SecuredOpsRequest { get; private set; }
 
         /// <summary>
         /// Gets the IGetSession.
@@ -257,6 +277,9 @@ namespace AutorestClient
             HelloWithRoute = new HelloWithRouteOperations(this);
             HelloTypes = new HelloTypesOperations(this);
             HelloZip = new HelloZipOperations(this);
+            SecuredRequest = new SecuredRequest(this);
+            SecuredDtoRequest = new SecuredDtoRequest(this);
+            SecuredOpsRequest = new SecuredOpsRequest(this);
             GetSession = new GetSession(this);
             UpdateSessioneditCustomName = new UpdateSessioneditCustomName(this);
             Authenticate = new AuthenticateOperations(this);
@@ -266,6 +289,7 @@ namespace AutorestClient
             AssignRoles = new AssignRolesOperations(this);
             UnAssignRoles = new UnAssignRolesOperations(this);
             BaseUri = new System.Uri("http://localhost:20000/");
+            Accept = "application/json";
             SerializationSettings = new JsonSerializerSettings
             {
                 Formatting = Newtonsoft.Json.Formatting.Indented,

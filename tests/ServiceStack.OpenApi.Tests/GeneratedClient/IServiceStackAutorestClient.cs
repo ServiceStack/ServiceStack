@@ -26,6 +26,11 @@ namespace AutorestClient
         /// </summary>
         JsonSerializerSettings DeserializationSettings { get; }
 
+        /// <summary>
+        /// Accept Header
+        /// </summary>
+        string Accept { get; }
+
 
         /// <summary>
         /// Gets the IReturnListRequest.
@@ -116,6 +121,21 @@ namespace AutorestClient
         /// Gets the IHelloZipOperations.
         /// </summary>
         IHelloZipOperations HelloZip { get; }
+
+        /// <summary>
+        /// Gets the ISecuredRequest.
+        /// </summary>
+        ISecuredRequest SecuredRequest { get; }
+
+        /// <summary>
+        /// Gets the ISecuredDtoRequest.
+        /// </summary>
+        ISecuredDtoRequest SecuredDtoRequest { get; }
+
+        /// <summary>
+        /// Gets the ISecuredOpsRequest.
+        /// </summary>
+        ISecuredOpsRequest SecuredOpsRequest { get; }
 
         /// <summary>
         /// Gets the IGetSession.
