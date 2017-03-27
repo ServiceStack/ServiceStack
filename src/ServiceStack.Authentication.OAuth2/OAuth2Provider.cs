@@ -34,8 +34,6 @@ namespace ServiceStack.Authentication.OAuth2
                 ?? FallbackConfig(appSettings.GetString("oauth.UserProfileUrl"));
 
             this.SaveExtendedUserInfo = appSettings.Get($"oauth.{provider}.SaveExtendedUserInfo", true);
-
-            this.VerifyAccessToken = OnVerifyAccessToken;
         }
 
         public string AccessTokenUrl { get; set; }
@@ -68,14 +66,6 @@ namespace ServiceStack.Authentication.OAuth2
                 : authClient.ProcessUserAuthorization();
         }
 
-        protected virtual bool OnVerifyAccessToken(string accessToken)
-        {
-            if (VerifyAccessToken == null)
-                throw new NotImplementedException($"VerifyAccessToken is not implemented by {Provider}");
-
-            return VerifyAccessToken(accessToken);
-        }
-
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = this.Init(authService, ref session, request);
@@ -83,7 +73,10 @@ namespace ServiceStack.Authentication.OAuth2
             //Transfering AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
             {
-                if (!OnVerifyAccessToken(request.AccessToken))
+                if (VerifyAccessToken == null)
+                    throw new NotImplementedException($"VerifyAccessToken is not implemented by {Provider}");
+
+                if (!VerifyAccessToken(request.AccessToken))
                     return HttpError.Unauthorized($"AccessToken is not for the configured {Provider} App");
 
                 var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
