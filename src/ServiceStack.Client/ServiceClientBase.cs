@@ -522,7 +522,7 @@ namespace ServiceStack
 
         internal void AsyncSerializeToStream(IRequest requestContext, object request, Stream stream)
         {
-            SerializeRequestToStream(request, stream, requestContext);
+            SerializeRequestToStream(request, stream);
         }
 
         public abstract void SerializeToStream(IRequest requestContext, object request, Stream stream);
@@ -878,7 +878,7 @@ namespace ServiceStack
             });
         }
         
-        protected virtual void SerializeRequestToStream(object request, Stream requestStream, IRequest req=null)
+        protected virtual void SerializeRequestToStream(object request, Stream requestStream)
         {
             var str = request as string;
             var bytes = request as byte[];
