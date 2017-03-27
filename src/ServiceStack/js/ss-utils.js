@@ -491,6 +491,7 @@
                 e.channel = selParts[0];
                 selector = selParts[1];
             }
+            var json = parts[1];
             var msg = json ? JSON.parse(json) : null;
 
             parts = $.ss.splitOnFirst(selector, '.');
@@ -507,17 +508,16 @@
                 cmd = tokens[0], cssSel = tokens[1],
                 $els = cssSel && $(cssSel), el = $els && $els[0];
 
-            $.extend(e, { cmd: cmd, op: op, selector: selector, target: target, cssSelector: cssSel });
-            var json = parts[1];
-            if (op == "cmd") {
-                if (cmd == "onConnect") {
+            $.extend(e, { cmd: cmd, op: op, selector: selector, target: target, cssSelector: cssSel, json: json });
+            if (op === "cmd") {
+                if (cmd === "onConnect") {
                     $.extend(opt, msg);
                     if (opt.heartbeatUrl) {
                         if (opt.heartbeat) {
                             window.clearInterval(opt.heartbeat);
                         }
                         opt.heartbeat = window.setInterval(function () {
-                            if ($.ss.eventSource.readyState == 2) //CLOSED
+                            if ($.ss.eventSource.readyState === 2) //CLOSED
                             {
                                 window.clearInterval(opt.heartbeat);
                                 var stopFn = $.ss.handlers["onStop"];
@@ -551,10 +551,10 @@
                     fn.call(el || document.body, msg, e);
                 }
             }
-            else if (op == "trigger") {
+            else if (op === "trigger") {
                 $(el || document).trigger(cmd, [msg, e]);
             }
-            else if (op == "css") {
+            else if (op === "css") {
                 $($els || document.body).css(cmd, msg, e);
             }
             else {
