@@ -522,7 +522,7 @@ namespace ServiceStack
 
         internal void AsyncSerializeToStream(IRequest requestContext, object request, Stream stream)
         {
-            SerializeRequestToStream(requestContext, request, stream);
+            SerializeRequestToStream(request, stream, requestContext);
         }
 
         public abstract void SerializeToStream(IRequest requestContext, object request, Stream stream);
@@ -873,12 +873,12 @@ namespace ServiceStack
             {
                 using (var requestStream = PclExport.Instance.GetRequestStream(client))
                 {
-                    SerializeRequestToStream(null, request, requestStream);
+                    SerializeRequestToStream(request, requestStream);
                 }
             });
         }
-
-        private void SerializeRequestToStream(IRequest requestContext, object request, Stream requestStream)
+        
+        protected virtual void SerializeRequestToStream(object request, Stream requestStream, IRequest req=null)
         {
             var str = request as string;
             var bytes = request as byte[];
