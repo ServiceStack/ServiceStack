@@ -7,8 +7,8 @@ namespace ServiceStack.Configuration
     /// </summary>
     public class MultiAppSettingsBuilder
     {
-        private readonly Queue<IAppSettings> _appSettingsQueue = new Queue<IAppSettings>();
-        private readonly string _tier;
+        private readonly Queue<IAppSettings> appSettingsQueue = new Queue<IAppSettings>();
+        private readonly string tier;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MultiAppSettingsBuilder"/> class with a specified <paramref name="tier"/>.
@@ -16,7 +16,7 @@ namespace ServiceStack.Configuration
         /// <param name="tier">The <paramref name="tier"/> of the <see cref="MultiAppSettingsBuilder"/>.</param>
         public MultiAppSettingsBuilder(string tier = null)
         {
-            _tier = tier;
+            this.tier = tier;
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace ServiceStack.Configuration
         /// <returns>The <see cref="MultiAppSettingsBuilder"/>.</returns>
         public MultiAppSettingsBuilder AddAppSettings()
         {
-            return AddAppSettings(_tier);
+            return AddAppSettings(tier);
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace ServiceStack.Configuration
         /// <returns>The <see cref="MultiAppSettingsBuilder"/>.</returns>
         public MultiAppSettingsBuilder AddAppSettings(string tier)
         {
-            _appSettingsQueue.Enqueue(
+            appSettingsQueue.Enqueue(
                 new AppSettings(tier)
             );
 
@@ -49,7 +49,7 @@ namespace ServiceStack.Configuration
         /// <returns>The <see cref="MultiAppSettingsBuilder"/>.</returns>
         public MultiAppSettingsBuilder AddDictionarySettings(Dictionary<string, string> map)
         {
-            _appSettingsQueue.Enqueue(
+            appSettingsQueue.Enqueue(
                 new DictionarySettings(map)
             );
 
@@ -62,7 +62,7 @@ namespace ServiceStack.Configuration
         /// <returns>The <see cref="MultiAppSettingsBuilder"/>.</returns>
         public MultiAppSettingsBuilder AddEnvironmentalVariables()
         {
-            return AddEnvironmentalVariables(_tier);
+            return AddEnvironmentalVariables(tier);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace ServiceStack.Configuration
         /// <returns>The <see cref="MultiAppSettingsBuilder"/>.</returns>
         public MultiAppSettingsBuilder AddEnvironmentalVariables(string tier)
         {
-            _appSettingsQueue.Enqueue(
+            appSettingsQueue.Enqueue(
                 new EnvironmentVariableSettings { Tier = tier }
             );
 
@@ -86,7 +86,7 @@ namespace ServiceStack.Configuration
         /// <returns>The <see cref="MultiAppSettingsBuilder"/>.</returns>
         public MultiAppSettingsBuilder AddTextFile(string path)
         {
-            return AddTextFile(path, " ", _tier);
+            return AddTextFile(path, " ", tier);
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace ServiceStack.Configuration
         /// <returns>The <see cref="MultiAppSettingsBuilder"/>.</returns>
         public MultiAppSettingsBuilder AddTextFile(string path, string delimeter)
         {
-            return AddTextFile(path, delimeter, _tier);
+            return AddTextFile(path, delimeter, tier);
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace ServiceStack.Configuration
         /// <returns>The <see cref="MultiAppSettingsBuilder"/>.</returns>
         public MultiAppSettingsBuilder AddTextFile(string path, string delimeter, string tier)
         {
-            _appSettingsQueue.Enqueue(
+            appSettingsQueue.Enqueue(
                 new TextFileSettings(path, delimeter) { Tier = tier }
             );
 
@@ -123,10 +123,10 @@ namespace ServiceStack.Configuration
         public IAppSettings Build()
         {
             return new MultiAppSettings(
-                _appSettingsQueue.ToArray()
+                appSettingsQueue.ToArray()
             )
             {
-                Tier = _tier
+                Tier = tier
             };
         }
     }
