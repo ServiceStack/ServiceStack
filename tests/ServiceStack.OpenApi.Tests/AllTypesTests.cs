@@ -3,7 +3,6 @@ using AutorestClient.Models;
 using NUnit.Framework;
 using ServiceStack.OpenApi.Tests.Host;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 
 namespace ServiceStack.OpenApi.Tests
@@ -21,52 +20,75 @@ namespace ServiceStack.OpenApi.Tests
         [Test]
         public void Can_post_all_types()
         {
-            var client = new ServiceStackAutorestClient(new Uri(Config.AbsoluteBaseUri));
-
-            HelloAllTypes helloAllTypes = new HelloAllTypes()
+            var dto = new HelloAllTypes
             {
                 Name = "Hello",
                 AllTypes = DtoHelper.GetAllTypes(),
                 AllCollectionTypes = DtoHelper.GetAllCollectionTypes()
             };
-            
-            var result = client.HelloAllTypes.Post("123", null, null, helloAllTypes);
+
+            using (var client = new ServiceStackAutorestClient(new Uri(Config.AbsoluteBaseUri)))
+            {
+                var result = client.HelloAllTypes.Post("123", null, null, dto);
+            }
         }
 
         [Test]
         public void Can_get_all_types()
         {
-            var client = new ServiceStackAutorestClient(new Uri(Config.AbsoluteBaseUri));
-
-            HelloAllTypes helloAllTypes = new HelloAllTypes()
+            var dto = new HelloAllTypes
             {
                 Name = "Hello",
                 AllTypes = DtoHelper.GetAllTypes(),
                 AllCollectionTypes = DtoHelper.GetAllCollectionTypes()
             };
 
-            var result = client.HelloAllTypes.Get("123", helloAllTypes.AllTypes.ToJsv(), null);
+            using (var client = new ServiceStackAutorestClient(new Uri(Config.AbsoluteBaseUri)))
+            {
+                var result = client.HelloAllTypes.Get("123", dto.AllTypes.ToJsv(), null);
+            }
         }
 
+        [Test]
+        public void Can_get_all_types_with_result()
+        {
+            var dto = new HelloAllTypesWithResult
+            {
+                Name = "Hello",
+                AllTypes = DtoHelper.GetAllTypes(),
+                AllCollectionTypes = DtoHelper.GetAllCollectionTypes()
+            };
+
+            using (var client = new ServiceStackAutorestClient(new Uri(Config.AbsoluteBaseUri)))
+            {
+                var at = dto.AllTypes.ToJsv();
+
+                var result = client.HelloAllTypesWithResult.Get(dto.Name, dto.AllTypes.ToJsv(), dto.AllCollectionTypes.ToJsv());
+
+                Assert.That(result.Result, Is.EqualTo(dto.Name));
+                DtoHelper.AssertAllTypes(result.AllTypes, dto.AllTypes);
+                DtoHelper.AssertAllCollectionTypes(result.AllCollectionTypes, dto.AllCollectionTypes);
+            }
+        }
 
         [Test]
         public void Can_post_all_types_with_result()
         {
-            var client = new ServiceStackAutorestClient(new Uri(Config.AbsoluteBaseUri));
-
-            var dto = new HelloAllTypesWithResult()
+            var dto = new HelloAllTypesWithResult
             {
                 Name = "Hello",
                 AllTypes = DtoHelper.GetAllTypes(),
                 AllCollectionTypes = DtoHelper.GetAllCollectionTypes()
             };
 
-            var result = client.HelloAllTypesWithResult.Post(body: dto);
+            using (var client = new ServiceStackAutorestClient(new Uri(Config.AbsoluteBaseUri)))
+            {
+                var result = client.HelloAllTypesWithResult.Post(body: dto);
 
-            Assert.That(result.Result, Is.EqualTo(dto.Name));
-            DtoHelper.AssertAllTypes(result.AllTypes, dto.AllTypes);
-            DtoHelper.AssertAllCollectionTypes(result.AllCollectionTypes, dto.AllCollectionTypes);
-            
+                Assert.That(result.Result, Is.EqualTo(dto.Name));
+                DtoHelper.AssertAllTypes(result.AllTypes, dto.AllTypes);
+                DtoHelper.AssertAllCollectionTypes(result.AllCollectionTypes, dto.AllCollectionTypes);
+            }
         }
     }
 }

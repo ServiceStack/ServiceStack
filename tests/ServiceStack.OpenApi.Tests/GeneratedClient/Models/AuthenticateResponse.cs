@@ -25,7 +25,7 @@ namespace AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the AuthenticateResponse class.
         /// </summary>
-        public AuthenticateResponse(string userId = default(string), string sessionId = default(string), string userName = default(string), string displayName = default(string), string referrerUrl = default(string), string bearerToken = default(string), ResponseStatus responseStatus = default(ResponseStatus), IDictionary<string, string> meta = default(IDictionary<string, string>))
+        public AuthenticateResponse(string userId = default(string), string sessionId = default(string), string userName = default(string), string displayName = default(string), string referrerUrl = default(string), string bearerToken = default(string), string refreshToken = default(string), ResponseStatus responseStatus = default(ResponseStatus), IDictionary<string, string> meta = default(IDictionary<string, string>))
         {
             UserId = userId;
             SessionId = sessionId;
@@ -33,6 +33,7 @@ namespace AutorestClient.Models
             DisplayName = displayName;
             ReferrerUrl = referrerUrl;
             BearerToken = bearerToken;
+            RefreshToken = refreshToken;
             ResponseStatus = responseStatus;
             Meta = meta;
             CustomInit();
@@ -72,6 +73,11 @@ namespace AutorestClient.Models
         /// </summary>
         [JsonProperty(PropertyName = "BearerToken")]
         public string BearerToken { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "RefreshToken")]
+        public string RefreshToken { get; set; }
 
         /// <summary>
         /// </summary>

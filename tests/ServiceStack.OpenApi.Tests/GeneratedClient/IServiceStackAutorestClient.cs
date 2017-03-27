@@ -58,6 +58,16 @@ namespace AutorestClient
         IReturnDictionaryDtoRequest ReturnDictionaryDtoRequest { get; }
 
         /// <summary>
+        /// Gets the IGetSession.
+        /// </summary>
+        IGetSession GetSession { get; }
+
+        /// <summary>
+        /// Gets the IUpdateSessioneditCustomName.
+        /// </summary>
+        IUpdateSessioneditCustomName UpdateSessioneditCustomName { get; }
+
+        /// <summary>
         /// Gets the IHelloOperations.
         /// </summary>
         IHelloOperations Hello { get; }
@@ -136,16 +146,6 @@ namespace AutorestClient
         /// Gets the ISecuredOpsRequest.
         /// </summary>
         ISecuredOpsRequest SecuredOpsRequest { get; }
-
-        /// <summary>
-        /// Gets the IGetSession.
-        /// </summary>
-        IGetSession GetSession { get; }
-
-        /// <summary>
-        /// Gets the IUpdateSessioneditCustomName.
-        /// </summary>
-        IUpdateSessioneditCustomName UpdateSessioneditCustomName { get; }
 
         /// <summary>
         /// Gets the IAuthenticateOperations.

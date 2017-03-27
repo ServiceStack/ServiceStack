@@ -25,7 +25,7 @@ namespace AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the Authenticate class.
         /// </summary>
-        public Authenticate(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueProperty = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), IDictionary<string, string> meta = default(IDictionary<string, string>))
+        public Authenticate(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueProperty = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), IDictionary<string, string> meta = default(IDictionary<string, string>))
         {
             Provider = provider;
             State = state;
@@ -42,6 +42,8 @@ namespace AutorestClient.Models
             Nc = nc;
             Cnonce = cnonce;
             UseTokenCookie = useTokenCookie;
+            AccessToken = accessToken;
+            AccessTokenSecret = accessTokenSecret;
             Meta = meta;
             CustomInit();
         }
@@ -125,6 +127,16 @@ namespace AutorestClient.Models
         /// </summary>
         [JsonProperty(PropertyName = "UseTokenCookie")]
         public bool? UseTokenCookie { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "AccessToken")]
+        public string AccessToken { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "AccessTokenSecret")]
+        public string AccessTokenSecret { get; set; }
 
         /// <summary>
         /// </summary>

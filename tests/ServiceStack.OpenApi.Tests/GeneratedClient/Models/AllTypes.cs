@@ -25,7 +25,7 @@ namespace AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the AllTypes class.
         /// </summary>
-        public AllTypes(int id = default(int), int? nullableId = default(int?), int byteProperty = default(int), int shortProperty = default(int), int intProperty = default(int), long longProperty = default(long), int uShortProperty = default(int), int uIntProperty = default(int), long uLongProperty = default(long), double floatProperty = default(double), double doubleProperty = default(double), double decimalProperty = default(double), string stringProperty = default(string), System.DateTime dateTime = default(System.DateTime), string timeSpan = default(string), string dateTimeOffset = default(string), string guid = default(string), string charProperty = default(string), KeyValuePairStringString keyValuePair = default(KeyValuePairStringString), System.DateTime? nullableDateTime = default(System.DateTime?), string nullableTimeSpan = default(string), IList<string> stringList = default(IList<string>), IList<string> stringArray = default(IList<string>), IDictionary<string, string> stringMap = default(IDictionary<string, string>), IDictionary<string, string> intStringMap = default(IDictionary<string, string>), SubType subType = default(SubType))
+        public AllTypes(int id = default(int), int? nullableId = default(int?), int byteProperty = default(int), int shortProperty = default(int), int intProperty = default(int), long longProperty = default(long), int uShortProperty = default(int), int uIntProperty = default(int), long uLongProperty = default(long), double floatProperty = default(double), double doubleProperty = default(double), double decimalProperty = default(double), string stringProperty = default(string), System.DateTime dateTimeProperty = default(System.DateTime), string timeSpanProperty = default(string), string dateTimeOffsetProperty = default(string), string guidProperty = default(string), string charProperty = default(string), KeyValuePairStringString keyValuePairProperty = default(KeyValuePairStringString), System.DateTime? nullableDateTime = default(System.DateTime?), string nullableTimeSpan = default(string), IList<string> stringList = default(IList<string>), IList<string> stringArray = default(IList<string>), IDictionary<string, string> stringMap = default(IDictionary<string, string>), IDictionary<string, string> intStringMap = default(IDictionary<string, string>), SubType subType = default(SubType))
         {
             Id = id;
             NullableId = nullableId;
@@ -40,12 +40,12 @@ namespace AutorestClient.Models
             DoubleProperty = doubleProperty;
             DecimalProperty = decimalProperty;
             StringProperty = stringProperty;
-            DateTime = dateTime;
-            TimeSpan = timeSpan;
-            DateTimeOffset = dateTimeOffset;
-            Guid = guid;
+            DateTimeProperty = dateTimeProperty;
+            TimeSpanProperty = timeSpanProperty;
+            DateTimeOffsetProperty = dateTimeOffsetProperty;
+            GuidProperty = guidProperty;
             CharProperty = charProperty;
-            KeyValuePair = keyValuePair;
+            KeyValuePairProperty = keyValuePairProperty;
             NullableDateTime = nullableDateTime;
             NullableTimeSpan = nullableTimeSpan;
             StringList = stringList;
@@ -73,88 +73,88 @@ namespace AutorestClient.Models
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Byte")]
+        [JsonProperty(PropertyName = "ByteProperty")]
         public int ByteProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Short")]
+        [JsonProperty(PropertyName = "ShortProperty")]
         public int ShortProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Int")]
+        [JsonProperty(PropertyName = "IntProperty")]
         public int IntProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Long")]
+        [JsonProperty(PropertyName = "LongProperty")]
         public long LongProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "UShort")]
+        [JsonProperty(PropertyName = "UShortProperty")]
         public int UShortProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "UInt")]
+        [JsonProperty(PropertyName = "UIntProperty")]
         public int UIntProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "ULong")]
+        [JsonProperty(PropertyName = "ULongProperty")]
         public long ULongProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Float")]
+        [JsonProperty(PropertyName = "FloatProperty")]
         public double FloatProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Double")]
+        [JsonProperty(PropertyName = "DoubleProperty")]
         public double DoubleProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Decimal")]
+        [JsonProperty(PropertyName = "DecimalProperty")]
         public double DecimalProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "String")]
+        [JsonProperty(PropertyName = "StringProperty")]
         public string StringProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "DateTime")]
-        public System.DateTime DateTime { get; set; }
+        [JsonProperty(PropertyName = "DateTimeProperty")]
+        public System.DateTime DateTimeProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "TimeSpan")]
-        public string TimeSpan { get; set; }
+        [JsonProperty(PropertyName = "TimeSpanProperty")]
+        public string TimeSpanProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "DateTimeOffset")]
-        public string DateTimeOffset { get; set; }
+        [JsonProperty(PropertyName = "DateTimeOffsetProperty")]
+        public string DateTimeOffsetProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Guid")]
-        public string Guid { get; set; }
+        [JsonProperty(PropertyName = "GuidProperty")]
+        public string GuidProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "Char")]
+        [JsonProperty(PropertyName = "CharProperty")]
         public string CharProperty { get; set; }
 
         /// <summary>
         /// </summary>
-        [JsonProperty(PropertyName = "KeyValuePair")]
-        public KeyValuePairStringString KeyValuePair { get; set; }
+        [JsonProperty(PropertyName = "KeyValuePairProperty")]
+        public KeyValuePairStringString KeyValuePairProperty { get; set; }
 
         /// <summary>
         /// </summary>

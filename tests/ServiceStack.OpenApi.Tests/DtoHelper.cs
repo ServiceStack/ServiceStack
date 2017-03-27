@@ -13,21 +13,21 @@ namespace ServiceStack.OpenApi.Tests
             {
                 ByteProperty = byte.MaxValue,
                 CharProperty = "n",
-                DateTime = DateTime.UtcNow,
+                DateTimeProperty = DateTime.UtcNow,
                 DecimalProperty = 100.123456789,
-                DateTimeOffset = new DateTimeOffset(DateTime.UtcNow.AddDays(1)).ToString(),
+                DateTimeOffsetProperty = new DateTimeOffset(DateTime.UtcNow.AddDays(1)).ToString(),
                 DoubleProperty = 123.45678901,
                 FloatProperty = 456.312f,
-                Guid = Guid.NewGuid().ToString(),
+                GuidProperty = Guid.NewGuid().ToString(),
                 Id = 1,
                 IntProperty = Int32.MaxValue,
                 IntStringMap = new Dictionary<string, string>() { { "1", "abc" }, { "2", "bcd" }, { "3", "cde" } },
-                KeyValuePair = new KeyValuePairStringString("key1", "value1"),
+                KeyValuePairProperty = new KeyValuePairStringString("key1", "value1"),
                 LongProperty = long.MaxValue,
                 NullableDateTime = DateTime.UtcNow,
                 NullableId = 2,
                 NullableTimeSpan = new TimeSpan(1, 0, 0).ToString(),
-                TimeSpan = new TimeSpan(2, 1, 3).ToString(),
+                TimeSpanProperty = new TimeSpan(2, 1, 3).ToString(),
                 ShortProperty = short.MaxValue,
                 StringProperty = "test string",
                 StringArray = new string[] { "string1", "string2", "string3" },
@@ -89,17 +89,17 @@ namespace ServiceStack.OpenApi.Tests
         {
             Assert.That(actual.ByteProperty, Is.EqualTo(expected.ByteProperty));
             Assert.That(actual.CharProperty, Is.EqualTo(expected.CharProperty));
-            Assert.That(actual.DateTime, Is.EqualTo(expected.DateTime).Within(TimeSpan.FromSeconds(1)));
+            Assert.That(actual.DateTimeProperty, Is.EqualTo(expected.DateTimeProperty).Within(TimeSpan.FromSeconds(1)));
             //Assert.That(actual.DateTimeOffset, Is.EqualTo(expected.DateTimeOffset));
             Assert.That(actual.DecimalProperty, Is.EqualTo(expected.DecimalProperty));
             Assert.That(actual.DoubleProperty, Is.EqualTo(expected.DoubleProperty));
             Assert.That(actual.FloatProperty, Is.EqualTo(expected.FloatProperty).Within(0.0001));
-            Assert.That(actual.Guid, Is.EqualTo(expected.Guid.Replace("-", String.Empty)));
+            Assert.That(actual.GuidProperty, Is.EqualTo(expected.GuidProperty.Replace("-", String.Empty)));
             Assert.That(actual.Id, Is.EqualTo(expected.Id));
             Assert.That(actual.IntProperty, Is.EqualTo(expected.IntProperty));
             Assert.That(actual.IntStringMap, Is.EquivalentTo(expected.IntStringMap));
-            Assert.That(actual.KeyValuePair.Key, Is.EquivalentTo(expected.KeyValuePair.Key));
-            Assert.That(actual.KeyValuePair.Value, Is.EquivalentTo(expected.KeyValuePair.Value));
+            Assert.That(actual.KeyValuePairProperty.Key, Is.EquivalentTo(expected.KeyValuePairProperty.Key));
+            Assert.That(actual.KeyValuePairProperty.Value, Is.EquivalentTo(expected.KeyValuePairProperty.Value));
             Assert.That(actual.LongProperty, Is.EqualTo(expected.LongProperty));
             Assert.That(actual.NullableDateTime, Is.EqualTo(expected.NullableDateTime).Within(TimeSpan.FromSeconds(1)));
             Assert.That(actual.NullableId, Is.EqualTo(expected.NullableId));
