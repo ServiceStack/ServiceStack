@@ -36,6 +36,8 @@ namespace ServiceStack.Authentication.OAuth2
                     "https://www.googleapis.com/auth/userinfo.email"
                 };
             }
+
+            this.VerifyAccessToken = OnVerifyAccessToken;
         }
 
         public string VerifyAccessTokenUrl { get; set; } = "https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={0}";
