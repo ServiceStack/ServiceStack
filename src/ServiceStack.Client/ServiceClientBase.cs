@@ -913,7 +913,7 @@ namespace ServiceStack
             }
         }
 
-        private WebRequest PrepareWebRequest(string httpMethod, string requestUri, object request, Action<HttpWebRequest> sendRequestAction)
+        protected WebRequest PrepareWebRequest(string httpMethod, string requestUri, object request, Action<HttpWebRequest> sendRequestAction)
         {
             if (httpMethod == null)
                 throw new ArgumentNullException("httpMethod");
