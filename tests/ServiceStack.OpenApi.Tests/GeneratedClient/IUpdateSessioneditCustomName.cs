@@ -12,11 +12,11 @@ namespace AutorestClient
     using System.Threading.Tasks;
 
     /// <summary>
-    /// HelloListOperations operations.
+    /// UpdateSessioneditCustomName operations.
     /// </summary>
-    public partial interface IHelloListOperations
+    public partial interface IUpdateSessioneditCustomName
     {
-        /// <param name='names'>
+        /// <param name='customName'>
         /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -24,14 +24,14 @@ namespace AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        /// <exception cref="Microsoft.Rest.HttpOperationException">
+        /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<IList<ListResult>>> GetWithHttpMessagesAsync(string names = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-        /// <param name='names'>
+        Task<HttpOperationResponse<GetSessionResponse>> GetWithHttpMessagesAsync(string customName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='customName'>
         /// </param>
         /// <param name='body'>
         /// </param>
@@ -41,14 +41,14 @@ namespace AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        /// <exception cref="Microsoft.Rest.HttpOperationException">
+        /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<IList<ListResult>>> CreateWithHttpMessagesAsync(string names = default(string), HelloList body = default(HelloList), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-        /// <param name='names'>
+        Task<HttpOperationResponse<GetSessionResponse>> CreateWithHttpMessagesAsync(string customName, UpdateSession body = default(UpdateSession), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='customName'>
         /// </param>
         /// <param name='body'>
         /// </param>
@@ -58,14 +58,14 @@ namespace AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        /// <exception cref="Microsoft.Rest.HttpOperationException">
+        /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<IList<ListResult>>> PostWithHttpMessagesAsync(string names = default(string), HelloList body = default(HelloList), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-        /// <param name='names'>
+        Task<HttpOperationResponse<GetSessionResponse>> PostWithHttpMessagesAsync(string customName, UpdateSession body = default(UpdateSession), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <param name='customName'>
         /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -73,12 +73,12 @@ namespace AutorestClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        /// <exception cref="Microsoft.Rest.HttpOperationException">
+        /// <exception cref="GetSessionResponseException">
         /// Thrown when the operation returned an invalid status code
         /// </exception>
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<IList<ListResult>>> DeleteWithHttpMessagesAsync(string names = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<GetSessionResponse>> DeleteWithHttpMessagesAsync(string customName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

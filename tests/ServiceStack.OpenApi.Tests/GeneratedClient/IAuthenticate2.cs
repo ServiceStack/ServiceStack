@@ -12,9 +12,9 @@ namespace AutorestClient
     using System.Threading.Tasks;
 
     /// <summary>
-    /// AuthenticateOperations operations.
+    /// Authenticate2 operations.
     /// </summary>
-    public partial interface IAuthenticateOperations
+    public partial interface IAuthenticate2
     {
         /// <param name='provider'>
         /// </param>

@@ -18,8 +18,6 @@ namespace AutorestClient
     {
         /// <param name='dateTime'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -32,7 +30,7 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<HelloDateTime>> GetWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloDateTime>> GetWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='dateTime'>
         /// </param>
         /// <param name='body'>
@@ -69,8 +67,6 @@ namespace AutorestClient
         Task<HttpOperationResponse<HelloDateTime>> PostWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <param name='dateTime'>
         /// </param>
-        /// <param name='body'>
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -83,6 +79,6 @@ namespace AutorestClient
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<HelloDateTime>> DeleteWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), HelloDateTime body = default(HelloDateTime), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<HelloDateTime>> DeleteWithHttpMessagesAsync(System.DateTime dateTime = default(System.DateTime), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

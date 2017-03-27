@@ -20,11 +20,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='names'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static IList<ArrayResult> Get(this IHelloArrayOperations operations, IList<string> names = default(IList<string>), HelloArray body = default(HelloArray))
+            public static IList<ArrayResult> Get(this IHelloArrayOperations operations, string names = default(string))
             {
-                return operations.GetAsync(names, body).GetAwaiter().GetResult();
+                return operations.GetAsync(names).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -32,14 +30,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='names'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<ArrayResult>> GetAsync(this IHelloArrayOperations operations, IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<ArrayResult>> GetAsync(this IHelloArrayOperations operations, string names = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(names, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(names, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -52,7 +48,7 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            public static IList<ArrayResult> Create(this IHelloArrayOperations operations, IList<string> names = default(IList<string>), HelloArray body = default(HelloArray))
+            public static IList<ArrayResult> Create(this IHelloArrayOperations operations, string names = default(string), HelloArray body = default(HelloArray))
             {
                 return operations.CreateAsync(names, body).GetAwaiter().GetResult();
             }
@@ -67,7 +63,7 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<ArrayResult>> CreateAsync(this IHelloArrayOperations operations, IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<ArrayResult>> CreateAsync(this IHelloArrayOperations operations, string names = default(string), HelloArray body = default(HelloArray), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.CreateWithHttpMessagesAsync(names, body, null, cancellationToken).ConfigureAwait(false))
                 {
@@ -82,7 +78,7 @@ namespace AutorestClient
             /// </param>
             /// <param name='body'>
             /// </param>
-            public static IList<ArrayResult> Post(this IHelloArrayOperations operations, IList<string> names = default(IList<string>), HelloArray body = default(HelloArray))
+            public static IList<ArrayResult> Post(this IHelloArrayOperations operations, string names = default(string), HelloArray body = default(HelloArray))
             {
                 return operations.PostAsync(names, body).GetAwaiter().GetResult();
             }
@@ -97,7 +93,7 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<ArrayResult>> PostAsync(this IHelloArrayOperations operations, IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<ArrayResult>> PostAsync(this IHelloArrayOperations operations, string names = default(string), HelloArray body = default(HelloArray), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.PostWithHttpMessagesAsync(names, body, null, cancellationToken).ConfigureAwait(false))
                 {
@@ -110,11 +106,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='names'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static IList<ArrayResult> Delete(this IHelloArrayOperations operations, IList<string> names = default(IList<string>), HelloArray body = default(HelloArray))
+            public static IList<ArrayResult> Delete(this IHelloArrayOperations operations, string names = default(string))
             {
-                return operations.DeleteAsync(names, body).GetAwaiter().GetResult();
+                return operations.DeleteAsync(names).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -122,14 +116,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='names'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<ArrayResult>> DeleteAsync(this IHelloArrayOperations operations, IList<string> names = default(IList<string>), HelloArray body = default(HelloArray), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<ArrayResult>> DeleteAsync(this IHelloArrayOperations operations, string names = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(names, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(names, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

@@ -14,7 +14,7 @@ namespace ServiceStack.OpenApi.Tests
         [Test]
         public void Sleep()
         {
-            Thread.Sleep(20000);
+            Thread.Sleep(10000);
         }
 
 
@@ -32,6 +32,22 @@ namespace ServiceStack.OpenApi.Tests
             
             var result = client.HelloAllTypes.Post("123", null, null, helloAllTypes);
         }
+
+        [Test]
+        public void Can_get_all_types()
+        {
+            var client = new ServiceStackAutorestClient(new Uri(Config.AbsoluteBaseUri));
+
+            HelloAllTypes helloAllTypes = new HelloAllTypes()
+            {
+                Name = "Hello",
+                AllTypes = DtoHelper.GetAllTypes(),
+                AllCollectionTypes = DtoHelper.GetAllCollectionTypes()
+            };
+
+            var result = client.HelloAllTypes.Get("123", helloAllTypes.AllTypes.ToJsv(), null);
+        }
+
 
         [Test]
         public void Can_post_all_types_with_result()

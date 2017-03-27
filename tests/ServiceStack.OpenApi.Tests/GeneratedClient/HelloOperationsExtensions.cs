@@ -20,11 +20,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='title'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static HelloResponse Get(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello))
+            public static HelloResponse Get(this IHelloOperations operations, string name = default(string), string title = default(string))
             {
-                return operations.GetAsync(name, title, body).GetAwaiter().GetResult();
+                return operations.GetAsync(name, title).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -34,14 +32,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='title'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloResponse> GetAsync(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloResponse> GetAsync(this IHelloOperations operations, string name = default(string), string title = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(name, title, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(name, title, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -122,11 +118,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='title'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static HelloResponse Delete(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello))
+            public static HelloResponse Delete(this IHelloOperations operations, string name = default(string), string title = default(string))
             {
-                return operations.DeleteAsync(name, title, body).GetAwaiter().GetResult();
+                return operations.DeleteAsync(name, title).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -135,151 +129,13 @@ namespace AutorestClient
             /// <param name='name'>
             /// </param>
             /// <param name='title'>
-            /// </param>
-            /// <param name='body'>
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloResponse> DeleteAsync(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloResponse> DeleteAsync(this IHelloOperations operations, string name = default(string), string title = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(name, title, body, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='title'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static HelloResponse Get1(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello))
-            {
-                return operations.Get1Async(name, title, body).GetAwaiter().GetResult();
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='title'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<HelloResponse> Get1Async(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.Get1WithHttpMessagesAsync(name, title, body, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='title'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static HelloResponse Create1(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello))
-            {
-                return operations.Create1Async(name, title, body).GetAwaiter().GetResult();
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='title'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<HelloResponse> Create1Async(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.Create1WithHttpMessagesAsync(name, title, body, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='title'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static HelloResponse Post1(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello))
-            {
-                return operations.Post1Async(name, title, body).GetAwaiter().GetResult();
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='title'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<HelloResponse> Post1Async(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.Post1WithHttpMessagesAsync(name, title, body, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='title'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static HelloResponse Delete1(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello))
-            {
-                return operations.Delete1Async(name, title, body).GetAwaiter().GetResult();
-            }
-
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// </param>
-            /// <param name='title'>
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<HelloResponse> Delete1Async(this IHelloOperations operations, string name = default(string), string title = default(string), Hello body = default(Hello), CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.Delete1WithHttpMessagesAsync(name, title, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(name, title, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

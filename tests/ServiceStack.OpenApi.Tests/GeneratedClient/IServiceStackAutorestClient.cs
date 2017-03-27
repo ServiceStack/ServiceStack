@@ -58,6 +58,11 @@ namespace AutorestClient
         IHelloOperations Hello { get; }
 
         /// <summary>
+        /// Gets the IHelloName.
+        /// </summary>
+        IHelloName HelloName { get; }
+
+        /// <summary>
         /// Gets the IHelloListOperations.
         /// </summary>
         IHelloListOperations HelloList { get; }
@@ -118,14 +123,29 @@ namespace AutorestClient
         IGetSession GetSession { get; }
 
         /// <summary>
-        /// Gets the IUpdateSessionOperations.
+        /// Gets the IUpdateSessioneditCustomName.
         /// </summary>
-        IUpdateSessionOperations UpdateSession { get; }
+        IUpdateSessioneditCustomName UpdateSessioneditCustomName { get; }
 
         /// <summary>
         /// Gets the IAuthenticateOperations.
         /// </summary>
         IAuthenticateOperations Authenticate { get; }
+
+        /// <summary>
+        /// Gets the IAuthenticateprovider.
+        /// </summary>
+        IAuthenticateprovider Authenticateprovider { get; }
+
+        /// <summary>
+        /// Gets the IAuthenticate2.
+        /// </summary>
+        IAuthenticate2 Authenticate2 { get; }
+
+        /// <summary>
+        /// Gets the IAuthenticateprovider2.
+        /// </summary>
+        IAuthenticateprovider2 Authenticateprovider2 { get; }
 
         /// <summary>
         /// Gets the IAssignRolesOperations.

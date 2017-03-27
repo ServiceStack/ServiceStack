@@ -9,20 +9,20 @@ namespace AutorestClient
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Extension methods for HelloZipOperations.
+    /// Extension methods for HelloName.
     /// </summary>
-    public static partial class HelloZipOperationsExtensions
+    public static partial class HelloNameExtensions
     {
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='test'>
+            /// <param name='title'>
             /// </param>
-            public static HelloZipResponse Get(this IHelloZipOperations operations, string name = default(string), string test = default(string))
+            public static HelloResponse Get(this IHelloName operations, string name, string title = default(string))
             {
-                return operations.GetAsync(name, test).GetAwaiter().GetResult();
+                return operations.GetAsync(name, title).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -30,14 +30,14 @@ namespace AutorestClient
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='test'>
+            /// <param name='title'>
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloZipResponse> GetAsync(this IHelloZipOperations operations, string name = default(string), string test = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloResponse> GetAsync(this IHelloName operations, string name, string title = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(name, test, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(name, title, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -48,13 +48,13 @@ namespace AutorestClient
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='test'>
+            /// <param name='title'>
             /// </param>
             /// <param name='body'>
             /// </param>
-            public static HelloZipResponse Create(this IHelloZipOperations operations, string name = default(string), string test = default(string), HelloZip body = default(HelloZip))
+            public static HelloResponse Create(this IHelloName operations, string name, string title = default(string), Hello body = default(Hello))
             {
-                return operations.CreateAsync(name, test, body).GetAwaiter().GetResult();
+                return operations.CreateAsync(name, title, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -62,16 +62,16 @@ namespace AutorestClient
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='test'>
+            /// <param name='title'>
             /// </param>
             /// <param name='body'>
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloZipResponse> CreateAsync(this IHelloZipOperations operations, string name = default(string), string test = default(string), HelloZip body = default(HelloZip), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloResponse> CreateAsync(this IHelloName operations, string name, string title = default(string), Hello body = default(Hello), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.CreateWithHttpMessagesAsync(name, test, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.CreateWithHttpMessagesAsync(name, title, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -82,13 +82,13 @@ namespace AutorestClient
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='test'>
+            /// <param name='title'>
             /// </param>
             /// <param name='body'>
             /// </param>
-            public static HelloZipResponse Post(this IHelloZipOperations operations, string name = default(string), string test = default(string), HelloZip body = default(HelloZip))
+            public static HelloResponse Post(this IHelloName operations, string name, string title = default(string), Hello body = default(Hello))
             {
-                return operations.PostAsync(name, test, body).GetAwaiter().GetResult();
+                return operations.PostAsync(name, title, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -96,16 +96,16 @@ namespace AutorestClient
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='test'>
+            /// <param name='title'>
             /// </param>
             /// <param name='body'>
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloZipResponse> PostAsync(this IHelloZipOperations operations, string name = default(string), string test = default(string), HelloZip body = default(HelloZip), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloResponse> PostAsync(this IHelloName operations, string name, string title = default(string), Hello body = default(Hello), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.PostWithHttpMessagesAsync(name, test, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.PostWithHttpMessagesAsync(name, title, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -116,11 +116,11 @@ namespace AutorestClient
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='test'>
+            /// <param name='title'>
             /// </param>
-            public static HelloZipResponse Delete(this IHelloZipOperations operations, string name = default(string), string test = default(string))
+            public static HelloResponse Delete(this IHelloName operations, string name, string title = default(string))
             {
-                return operations.DeleteAsync(name, test).GetAwaiter().GetResult();
+                return operations.DeleteAsync(name, title).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -128,14 +128,14 @@ namespace AutorestClient
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='test'>
+            /// <param name='title'>
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<HelloZipResponse> DeleteAsync(this IHelloZipOperations operations, string name = default(string), string test = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<HelloResponse> DeleteAsync(this IHelloName operations, string name, string title = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(name, test, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(name, title, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

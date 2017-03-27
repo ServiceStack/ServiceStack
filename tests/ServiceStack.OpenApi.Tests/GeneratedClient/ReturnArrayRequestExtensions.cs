@@ -18,24 +18,20 @@ namespace AutorestClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static IList<ReturnedDto> Get(this IReturnArrayRequest operations, object body = default(object))
+            public static IList<ReturnedDto> Get(this IReturnArrayRequest operations)
             {
-                return operations.GetAsync(body).GetAwaiter().GetResult();
+                return operations.GetAsync().GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IList<ReturnedDto>> GetAsync(this IReturnArrayRequest operations, object body = default(object), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IList<ReturnedDto>> GetAsync(this IReturnArrayRequest operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

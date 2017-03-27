@@ -16,24 +16,20 @@ namespace AutorestClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static GetSessionResponse Get(this IGetSession operations, object body = default(object))
+            public static GetSessionResponse Get(this IGetSession operations)
             {
-                return operations.GetAsync(body).GetAwaiter().GetResult();
+                return operations.GetAsync().GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<GetSessionResponse> GetAsync(this IGetSession operations, object body = default(object), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetSessionResponse> GetAsync(this IGetSession operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -94,24 +90,20 @@ namespace AutorestClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static GetSessionResponse Delete(this IGetSession operations, object body = default(object))
+            public static GetSessionResponse Delete(this IGetSession operations)
             {
-                return operations.DeleteAsync(body).GetAwaiter().GetResult();
+                return operations.DeleteAsync().GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<GetSessionResponse> DeleteAsync(this IGetSession operations, object body = default(object), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetSessionResponse> DeleteAsync(this IGetSession operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

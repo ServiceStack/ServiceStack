@@ -18,24 +18,20 @@ namespace AutorestClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static IDictionary<string, string> Get(this IReturnDictionaryStringRequest operations, object body = default(object))
+            public static IDictionary<string, string> Get(this IReturnDictionaryStringRequest operations)
             {
-                return operations.GetAsync(body).GetAwaiter().GetResult();
+                return operations.GetAsync().GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IDictionary<string, string>> GetAsync(this IReturnDictionaryStringRequest operations, object body = default(object), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<IDictionary<string, string>> GetAsync(this IReturnDictionaryStringRequest operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

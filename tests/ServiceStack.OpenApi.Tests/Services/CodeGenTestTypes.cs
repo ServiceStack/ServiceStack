@@ -122,7 +122,7 @@ namespace ServiceStack.OpenApi.Tests.Services
         [Range(1.0, 10.0)]
         [DataMember(Name = "Aliased")]
         [ApiMember(Description = "Range Description",
-                   ParameterType = "path", DataType = "integer", IsRequired = true)]
+                   ParameterType = "query", DataType = "integer", IsRequired = true)]
         public double Range { get; set; }
 
         [StringLength(20)]
@@ -380,7 +380,7 @@ namespace ServiceStack.OpenApi.Tests.Services
         Sale = 2,
     }
 
-    [Route("/hellotypes/{Name}")]
+    [Route("/hellotypes")]
     public class HelloTypes : IReturn<HelloTypes>
     {
         public string String { get; set; }

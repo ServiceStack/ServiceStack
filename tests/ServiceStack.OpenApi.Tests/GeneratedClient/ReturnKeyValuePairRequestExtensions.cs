@@ -16,24 +16,20 @@ namespace AutorestClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static GetErrorModel Get(this IReturnKeyValuePairRequest operations, object body = default(object))
+            public static GetErrorModel Get(this IReturnKeyValuePairRequest operations)
             {
-                return operations.GetAsync(body).GetAwaiter().GetResult();
+                return operations.GetAsync().GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<GetErrorModel> GetAsync(this IReturnKeyValuePairRequest operations, object body = default(object), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<GetErrorModel> GetAsync(this IReturnKeyValuePairRequest operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

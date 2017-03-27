@@ -18,11 +18,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static object Get(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute))
+            public static object Get(this IHelloWithRouteOperations operations, string name = default(string))
             {
-                return operations.GetAsync(name, body).GetAwaiter().GetResult();
+                return operations.GetAsync(name).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -30,14 +28,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> GetAsync(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> GetAsync(this IHelloWithRouteOperations operations, string name = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(name, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(name, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -108,11 +104,9 @@ namespace AutorestClient
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
-            public static object Delete(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute))
+            public static object Delete(this IHelloWithRouteOperations operations, string name = default(string))
             {
-                return operations.DeleteAsync(name, body).GetAwaiter().GetResult();
+                return operations.DeleteAsync(name).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -120,14 +114,12 @@ namespace AutorestClient
             /// </param>
             /// <param name='name'>
             /// </param>
-            /// <param name='body'>
-            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> DeleteAsync(this IHelloWithRouteOperations operations, string name = default(string), HelloWithRoute body = default(HelloWithRoute), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> DeleteAsync(this IHelloWithRouteOperations operations, string name = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(name, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(name, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
