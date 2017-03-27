@@ -106,6 +106,7 @@
     <Compile Include="AutoQueryMetadataFeature.cs" />
     <Compile Include="CacheInfo.cs" />
     <Compile Include="CacheResponseAttribute.cs" />
+    <Compile Include="Configuration\MultiAppSettingsBuilder.cs" />
     <Compile Include="ConnectionInfo.cs" />
     <Compile Include="ConnectionInfoAttribute.cs" />
     <Compile Include="ContainerNetCoreExtensions.cs" />
