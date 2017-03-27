@@ -867,7 +867,7 @@ namespace ServiceStack
             }
         }
 
-        private WebRequest SendRequest(string httpMethod, string requestUri, object request)
+        protected virtual WebRequest SendRequest(string httpMethod, string requestUri, object request)
         {
             return PrepareWebRequest(httpMethod, requestUri, request, client =>
             {
