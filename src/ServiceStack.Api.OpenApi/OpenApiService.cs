@@ -16,14 +16,14 @@ namespace ServiceStack.Api.OpenApi
 {
     [DataContract]
     [Exclude(Feature.Soap)]
-    public class Swagger2Resources : IReturn<OpenApiDeclaration>
+    public class OpenApiSpecification : IReturn<OpenApiDeclaration>
     {
         [DataMember(Name = "apiKey")]
         public string ApiKey { get; set; }
     }
 
     [AddHeader(DefaultContentType = MimeTypes.Json)]
-    [DefaultRequest(typeof(Swagger2Resources))]
+    [DefaultRequest(typeof(OpenApiSpecification))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class OpenApiService : Service
     {
@@ -39,7 +39,7 @@ namespace ServiceStack.Api.OpenApi
         internal static Action<OpenApiProperty> SchemaPropertyFilter { get; set; }
         internal static string[] AnyRouteVerbs { get; set; }
 
-        public object Get(Swagger2Resources request)
+        public object Get(OpenApiSpecification request)
         {
             var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
