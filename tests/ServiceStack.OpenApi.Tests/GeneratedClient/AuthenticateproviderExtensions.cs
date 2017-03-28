@@ -46,11 +46,15 @@ namespace AutorestClient
             /// </param>
             /// <param name='useTokenCookie'>
             /// </param>
+            /// <param name='accessToken'>
+            /// </param>
+            /// <param name='accessTokenSecret'>
+            /// </param>
             /// <param name='meta'>
             /// </param>
-            public static AuthenticateResponse Get(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string))
+            public static AuthenticateResponse Get(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string))
             {
-                return operations.GetAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, meta).GetAwaiter().GetResult();
+                return operations.GetAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, accessToken, accessTokenSecret, meta).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -86,14 +90,18 @@ namespace AutorestClient
             /// </param>
             /// <param name='useTokenCookie'>
             /// </param>
+            /// <param name='accessToken'>
+            /// </param>
+            /// <param name='accessTokenSecret'>
+            /// </param>
             /// <param name='meta'>
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<AuthenticateResponse> GetAsync(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<AuthenticateResponse> GetAsync(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetWithHttpMessagesAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, meta, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetWithHttpMessagesAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, accessToken, accessTokenSecret, meta, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -132,13 +140,17 @@ namespace AutorestClient
             /// </param>
             /// <param name='useTokenCookie'>
             /// </param>
+            /// <param name='accessToken'>
+            /// </param>
+            /// <param name='accessTokenSecret'>
+            /// </param>
             /// <param name='meta'>
             /// </param>
             /// <param name='body'>
             /// </param>
-            public static AuthenticateResponse Create(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Authenticate body = default(Authenticate))
+            public static AuthenticateResponse Create(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string), Authenticate body = default(Authenticate))
             {
-                return operations.CreateAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, meta, body).GetAwaiter().GetResult();
+                return operations.CreateAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, accessToken, accessTokenSecret, meta, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -174,6 +186,10 @@ namespace AutorestClient
             /// </param>
             /// <param name='useTokenCookie'>
             /// </param>
+            /// <param name='accessToken'>
+            /// </param>
+            /// <param name='accessTokenSecret'>
+            /// </param>
             /// <param name='meta'>
             /// </param>
             /// <param name='body'>
@@ -181,9 +197,9 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<AuthenticateResponse> CreateAsync(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Authenticate body = default(Authenticate), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<AuthenticateResponse> CreateAsync(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string), Authenticate body = default(Authenticate), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.CreateWithHttpMessagesAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, meta, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.CreateWithHttpMessagesAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, accessToken, accessTokenSecret, meta, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -222,13 +238,17 @@ namespace AutorestClient
             /// </param>
             /// <param name='useTokenCookie'>
             /// </param>
+            /// <param name='accessToken'>
+            /// </param>
+            /// <param name='accessTokenSecret'>
+            /// </param>
             /// <param name='meta'>
             /// </param>
             /// <param name='body'>
             /// </param>
-            public static AuthenticateResponse Post(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Authenticate body = default(Authenticate))
+            public static AuthenticateResponse Post(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string), Authenticate body = default(Authenticate))
             {
-                return operations.PostAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, meta, body).GetAwaiter().GetResult();
+                return operations.PostAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, accessToken, accessTokenSecret, meta, body).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -264,6 +284,10 @@ namespace AutorestClient
             /// </param>
             /// <param name='useTokenCookie'>
             /// </param>
+            /// <param name='accessToken'>
+            /// </param>
+            /// <param name='accessTokenSecret'>
+            /// </param>
             /// <param name='meta'>
             /// </param>
             /// <param name='body'>
@@ -271,9 +295,9 @@ namespace AutorestClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<AuthenticateResponse> PostAsync(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Authenticate body = default(Authenticate), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<AuthenticateResponse> PostAsync(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string), Authenticate body = default(Authenticate), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.PostWithHttpMessagesAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, meta, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.PostWithHttpMessagesAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, accessToken, accessTokenSecret, meta, body, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -312,11 +336,15 @@ namespace AutorestClient
             /// </param>
             /// <param name='useTokenCookie'>
             /// </param>
+            /// <param name='accessToken'>
+            /// </param>
+            /// <param name='accessTokenSecret'>
+            /// </param>
             /// <param name='meta'>
             /// </param>
-            public static AuthenticateResponse Delete(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string))
+            public static AuthenticateResponse Delete(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string))
             {
-                return operations.DeleteAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, meta).GetAwaiter().GetResult();
+                return operations.DeleteAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, accessToken, accessTokenSecret, meta).GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
@@ -352,14 +380,18 @@ namespace AutorestClient
             /// </param>
             /// <param name='useTokenCookie'>
             /// </param>
+            /// <param name='accessToken'>
+            /// </param>
+            /// <param name='accessTokenSecret'>
+            /// </param>
             /// <param name='meta'>
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<AuthenticateResponse> DeleteAsync(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<AuthenticateResponse> DeleteAsync(this IAuthenticateprovider operations, string provider, string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.DeleteWithHttpMessagesAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, meta, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.DeleteWithHttpMessagesAsync(provider, state, oauthToken, oauthVerifier, userName, password, rememberMe, continueParameter, nonce, uri, response, qop, nc, cnonce, useTokenCookie, accessToken, accessTokenSecret, meta, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

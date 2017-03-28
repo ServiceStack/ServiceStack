@@ -61,6 +61,16 @@ namespace AutorestClient
         public virtual IReturnDictionaryDtoRequest ReturnDictionaryDtoRequest { get; private set; }
 
         /// <summary>
+        /// Gets the IGetSession.
+        /// </summary>
+        public virtual IGetSession GetSession { get; private set; }
+
+        /// <summary>
+        /// Gets the IUpdateSessioneditCustomName.
+        /// </summary>
+        public virtual IUpdateSessioneditCustomName UpdateSessioneditCustomName { get; private set; }
+
+        /// <summary>
         /// Gets the IHelloOperations.
         /// </summary>
         public virtual IHelloOperations Hello { get; private set; }
@@ -139,16 +149,6 @@ namespace AutorestClient
         /// Gets the ISecuredOpsRequest.
         /// </summary>
         public virtual ISecuredOpsRequest SecuredOpsRequest { get; private set; }
-
-        /// <summary>
-        /// Gets the IGetSession.
-        /// </summary>
-        public virtual IGetSession GetSession { get; private set; }
-
-        /// <summary>
-        /// Gets the IUpdateSessioneditCustomName.
-        /// </summary>
-        public virtual IUpdateSessioneditCustomName UpdateSessioneditCustomName { get; private set; }
 
         /// <summary>
         /// Gets the IAuthenticateOperations.
@@ -264,6 +264,8 @@ namespace AutorestClient
             ReturnKeyValuePairRequest = new ReturnKeyValuePairRequest(this);
             ReturnDictionaryStringRequest = new ReturnDictionaryStringRequest(this);
             ReturnDictionaryDtoRequest = new ReturnDictionaryDtoRequest(this);
+            GetSession = new GetSession(this);
+            UpdateSessioneditCustomName = new UpdateSessioneditCustomName(this);
             Hello = new HelloOperations(this);
             HelloName = new HelloName(this);
             HelloList = new HelloListOperations(this);
@@ -280,8 +282,6 @@ namespace AutorestClient
             SecuredRequest = new SecuredRequest(this);
             SecuredDtoRequest = new SecuredDtoRequest(this);
             SecuredOpsRequest = new SecuredOpsRequest(this);
-            GetSession = new GetSession(this);
-            UpdateSessioneditCustomName = new UpdateSessioneditCustomName(this);
             Authenticate = new AuthenticateOperations(this);
             Authenticateprovider = new Authenticateprovider(this);
             Authenticate2 = new Authenticate2(this);

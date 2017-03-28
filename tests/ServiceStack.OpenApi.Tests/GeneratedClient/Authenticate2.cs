@@ -73,6 +73,10 @@ namespace AutorestClient
         /// </param>
         /// <param name='useTokenCookie'>
         /// </param>
+        /// <param name='accessToken'>
+        /// </param>
+        /// <param name='accessTokenSecret'>
+        /// </param>
         /// <param name='meta'>
         /// </param>
         /// <param name='customHeaders'>
@@ -87,7 +91,7 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> GetWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> GetWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -111,6 +115,8 @@ namespace AutorestClient
                 tracingParameters.Add("nc", nc);
                 tracingParameters.Add("cnonce", cnonce);
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
+                tracingParameters.Add("accessToken", accessToken);
+                tracingParameters.Add("accessTokenSecret", accessTokenSecret);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Get", tracingParameters);
@@ -178,6 +184,14 @@ namespace AutorestClient
             if (useTokenCookie != null)
             {
                 _queryParameters.Add(string.Format("UseTokenCookie={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(useTokenCookie, Client.SerializationSettings).Trim('"'))));
+            }
+            if (accessToken != null)
+            {
+                _queryParameters.Add(string.Format("AccessToken={0}", System.Uri.EscapeDataString(accessToken)));
+            }
+            if (accessTokenSecret != null)
+            {
+                _queryParameters.Add(string.Format("AccessTokenSecret={0}", System.Uri.EscapeDataString(accessTokenSecret)));
             }
             if (meta != null)
             {
@@ -315,6 +329,10 @@ namespace AutorestClient
         /// </param>
         /// <param name='useTokenCookie'>
         /// </param>
+        /// <param name='accessToken'>
+        /// </param>
+        /// <param name='accessTokenSecret'>
+        /// </param>
         /// <param name='meta'>
         /// </param>
         /// <param name='body'>
@@ -331,7 +349,7 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> CreateWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> CreateWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -355,6 +373,8 @@ namespace AutorestClient
                 tracingParameters.Add("nc", nc);
                 tracingParameters.Add("cnonce", cnonce);
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
+                tracingParameters.Add("accessToken", accessToken);
+                tracingParameters.Add("accessTokenSecret", accessTokenSecret);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
                 tracingParameters.Add("cancellationToken", cancellationToken);
@@ -497,6 +517,10 @@ namespace AutorestClient
         /// </param>
         /// <param name='useTokenCookie'>
         /// </param>
+        /// <param name='accessToken'>
+        /// </param>
+        /// <param name='accessTokenSecret'>
+        /// </param>
         /// <param name='meta'>
         /// </param>
         /// <param name='body'>
@@ -513,7 +537,7 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> PostWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> PostWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string), Authenticate body = default(Authenticate), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -537,6 +561,8 @@ namespace AutorestClient
                 tracingParameters.Add("nc", nc);
                 tracingParameters.Add("cnonce", cnonce);
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
+                tracingParameters.Add("accessToken", accessToken);
+                tracingParameters.Add("accessTokenSecret", accessTokenSecret);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("body", body);
                 tracingParameters.Add("cancellationToken", cancellationToken);
@@ -679,6 +705,10 @@ namespace AutorestClient
         /// </param>
         /// <param name='useTokenCookie'>
         /// </param>
+        /// <param name='accessToken'>
+        /// </param>
+        /// <param name='accessTokenSecret'>
+        /// </param>
         /// <param name='meta'>
         /// </param>
         /// <param name='customHeaders'>
@@ -693,7 +723,7 @@ namespace AutorestClient
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<AuthenticateResponse>> DeleteWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string meta = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<AuthenticateResponse>> DeleteWithHttpMessagesAsync(string provider = default(string), string state = default(string), string oauthToken = default(string), string oauthVerifier = default(string), string userName = default(string), string password = default(string), bool? rememberMe = default(bool?), string continueParameter = default(string), string nonce = default(string), string uri = default(string), string response = default(string), string qop = default(string), string nc = default(string), string cnonce = default(string), bool? useTokenCookie = default(bool?), string accessToken = default(string), string accessTokenSecret = default(string), string meta = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -717,6 +747,8 @@ namespace AutorestClient
                 tracingParameters.Add("nc", nc);
                 tracingParameters.Add("cnonce", cnonce);
                 tracingParameters.Add("useTokenCookie", useTokenCookie);
+                tracingParameters.Add("accessToken", accessToken);
+                tracingParameters.Add("accessTokenSecret", accessTokenSecret);
                 tracingParameters.Add("meta", meta);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "Delete", tracingParameters);
@@ -784,6 +816,14 @@ namespace AutorestClient
             if (useTokenCookie != null)
             {
                 _queryParameters.Add(string.Format("UseTokenCookie={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(useTokenCookie, Client.SerializationSettings).Trim('"'))));
+            }
+            if (accessToken != null)
+            {
+                _queryParameters.Add(string.Format("AccessToken={0}", System.Uri.EscapeDataString(accessToken)));
+            }
+            if (accessTokenSecret != null)
+            {
+                _queryParameters.Add(string.Format("AccessTokenSecret={0}", System.Uri.EscapeDataString(accessTokenSecret)));
             }
             if (meta != null)
             {
