@@ -80,6 +80,7 @@ namespace ServiceStack.Host
                 .Count(x => x.ServiceType.GetAssembly() != typeof(Service).GetAssembly()
                 && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerApiService"
                 && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerResourcesService"
+                && x.ServiceType.FullName != "ServiceStack.Api.OpenApi.OpenApiService"
                 && x.ServiceType.Name != "__AutoQueryServices");
 
             LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, nonCoreServicesCount);
