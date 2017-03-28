@@ -16,6 +16,8 @@ namespace ServiceStack.Testing
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
             this.OutputStream = new MemoryStream();
             this.TextWritten = new StringBuilder();
+            if (HostContext.AppHost == null)
+                throw new NullReferenceException("A ServiceStackHost has not been initialised in the test.");
             this.Cookies = HostContext.AppHost.GetCookies(this);
             this.Items = new Dictionary<string, object>();
         }
