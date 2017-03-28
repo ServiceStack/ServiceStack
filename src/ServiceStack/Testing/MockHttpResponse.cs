@@ -16,7 +16,7 @@ namespace ServiceStack.Testing
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
             this.OutputStream = new MemoryStream();
             this.TextWritten = new StringBuilder();
-            this.Cookies = HostContext.AppHost.GetCookies(this);
+            this.Cookies = HostContext.AssertAppHost().GetCookies(this);
             this.Items = new Dictionary<string, object>();
         }
 
