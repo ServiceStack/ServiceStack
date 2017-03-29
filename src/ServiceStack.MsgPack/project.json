@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "NETStandard.Library": "1.6.0",
-    "MsgPack.Cli": "0.8.0",
+    "MsgPack.Cli": "0.8.1",
     "ServiceStack.Text": "1.0.*",
     "ServiceStack.Interfaces": "1.0.*",
     "ServiceStack.Client": "1.0.*",
