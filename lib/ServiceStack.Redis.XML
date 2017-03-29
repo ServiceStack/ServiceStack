@@ -59,9 +59,24 @@
             Resolver strategy for resolving hosts and creating clients
             </summary>
         </member>
+        <member name="T:ServiceStack.Redis.RedisPoolConfig">
+            <summary>
+             Configuration class for the RedisManagerPool
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisPoolConfig.DefaultMaxPoolSize">
+            <summary>
+            Default pool size used by every new instance of <see cref="T:ServiceStack.Redis.RedisPoolConfig"/>. (default: 40)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Redis.RedisPoolConfig.MaxPoolSize">
+            <summary>
+            Maximum ammount of <see cref="T:ServiceStack.Caching.ICacheClient"/>s created by the <see cref="T:ServiceStack.Redis.RedisManagerPool"/>.
+            </summary>
+        </member>
         <member name="T:ServiceStack.Redis.RedisManagerPool">
             <summary>
-            Provides thread-safe pooling of redis client connections.
+            Provides thread-safe pooling of redis client connections. All connections are treaded as read and write hosts.
             </summary>
         </member>
         <member name="M:ServiceStack.Redis.RedisManagerPool.GetClient">
@@ -1474,7 +1489,11 @@
              This class contains all the common operations for the RedisClient.
              The client contains a 1:1 mapping of c# methods to redis operations of the same name.
             
-             Not threadsafe use a pooled manager
+             Not threadsafe, use a pooled manager!
+             All redis calls on a single instances write to the same Socket.
+             If used in multiple threads (or async Tasks) at the same time you will find
+             that commands are not executed properly by redis and Servicestack wont be able to (json) serialize 
+             the data that comes back.
              </summary>
         </member>
         <member name="F:ServiceStack.Redis.RedisNativeClient.active">
