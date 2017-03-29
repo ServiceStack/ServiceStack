@@ -40,6 +40,8 @@ namespace ServiceStack.FluentValidation
     {
         public virtual IRequest Request { get; set; }
 
+        public virtual IServiceGateway Gateway => HostContext.AppHost.GetServiceGateway(Request);
+
         readonly TrackingCollection<IValidationRule> nestedValidators = new TrackingCollection<IValidationRule>();
 
 		// Work-around for reflection bug in .NET 4.5

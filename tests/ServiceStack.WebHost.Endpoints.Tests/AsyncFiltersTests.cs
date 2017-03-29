@@ -64,6 +64,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
+    [Route("/test/async-validator-gateway")]
+    public class TestAsyncGatewayValidator : IReturn<TestAsyncGatewayValidator>
+    {
+        public int Age { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class MyTestAsyncGatewayValidator : AbstractValidator<TestAsyncGatewayValidator>
+    {
+        public MyTestAsyncGatewayValidator()
+        {
+            RuleFor(x => x.Name).MustAsync(async (s, token) => 
+                (await Gateway.SendAsync(new GetStringLength { Value = s })).Result > 0)
+            .WithMessage("'Name' should not be empty.")
+            .WithErrorCode("NotEmpty");
+        }
+    }
+
+    public class GetStringLength : IReturn<GetStringLengthResponse>
+    {
+        public string Value { get; set; }
+    }
+
+    public class GetStringLengthResponse
+    {
+        public int Result { get; set; }
+    }
+
     public class MyAllTestAsyncValidator : AbstractValidator<TestAllAsyncValidator>
     {
         public MyAllTestAsyncValidator()
@@ -102,6 +130,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(TestAsyncValidator request) => request;
 
         public object Any(TestAllAsyncValidator request) => request;
+
+        public object Any(TestAsyncGatewayValidator request) => request;
+
+        public async Task<GetStringLengthResponse> Any(GetStringLength request)
+        {
+            await Task.Yield();
+            return new GetStringLengthResponse
+            {
+                Result = (request.Value ?? "").Length,
+            };
+        }
     }
 
     public class AsyncFiltersTests
@@ -430,6 +469,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(status.Errors[1].ErrorCode, Is.EqualTo("GreaterThan"));
                 Assert.That(status.Errors[1].FieldName, Is.EqualTo("Age"));
                 Assert.That(status.Errors[1].Message, Is.EqualTo("'Age' must be greater than '0'."));
+            }
+        }
+
+        [Test]
+        public void Does_execute_async_validator_calling_async_Gateway()
+        {
+            try
+            {
+                var response = client.Post(new TestAsyncGatewayValidator());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                ex.ResponseStatus.PrintDump();
+                var status = ex.ResponseStatus;
+
+                Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Message, Is.EqualTo("'Name' should not be empty."));
+
+                Assert.That(status.Errors.Count, Is.EqualTo(1));
+                Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Errors[0].FieldName, Is.EqualTo("Name"));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'Name' should not be empty."));
             }
         }
     }
