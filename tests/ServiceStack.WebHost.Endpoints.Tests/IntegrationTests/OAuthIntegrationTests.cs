@@ -84,8 +84,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
         [Test]
         public void Can_authenticate_GoogleOAuth2_with_AccessToken()
         {
-            var client = new JsonServiceClient("http://localhost:11001/");
-            //var client = new JsonServiceClient("http://localhost:1337/");
+            //var client = new JsonServiceClient("http://localhost:11001/");
+            var client = new JsonServiceClient("http://localhost:1337/");
 
             var request = new Authenticate
             {
