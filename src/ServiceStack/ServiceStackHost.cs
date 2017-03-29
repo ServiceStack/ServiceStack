@@ -647,14 +647,7 @@ namespace ServiceStack
 
             foreach (var callback in AfterInitCallbacks)
             {
-                try
-                {
-                    callback(this);
-                }
-                catch (Exception ex)
-                {
-                    OnStartupException(ex);
-                }
+                callback(this);
             }
 
             ReadyAt = DateTime.UtcNow;
