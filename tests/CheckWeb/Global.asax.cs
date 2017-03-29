@@ -140,7 +140,7 @@ namespace CheckWeb
             // Configure ServiceStack Razor views.
             this.ConfigureView(container);
 
-            //this.StartUpErrors.Add(new ResponseStatus("Mock", "Startup Error"));
+            this.StartUpErrors.Add(new ResponseStatus("Mock", "Startup Error"));
         }
 
         public static Rockstar[] GetRockstars()
