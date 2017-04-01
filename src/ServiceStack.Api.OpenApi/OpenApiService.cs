@@ -11,6 +11,7 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Api.OpenApi.Support;
 using ServiceStack.Api.OpenApi.Specification;
+using ServiceStack;
 
 namespace ServiceStack.Api.OpenApi
 {
@@ -64,7 +65,7 @@ namespace ServiceStack.Api.OpenApi
                 ParseDefinitions(definitions, restPath.Value.RequestType, restPath.Value.Path, restPath.Verb);
             }
 
-            var tags = new List<OpenApiTag>();
+            var tags = new Dictionary<string, OpenApiTag>();
             var apiPaths = ParseOperations(paths, definitions, tags);
 
             var result = new OpenApiDeclaration
@@ -81,7 +82,7 @@ namespace ServiceStack.Api.OpenApi
                 Consumes = new List<string> { "application/json" },
                 Produces = new List<string> { "application/json" },
                 Definitions = definitions,
-                Tags = tags.OrderBy(t => t.Name).ToList(),
+                Tags = tags.Values.OrderBy(x => x.Name).ToList(),
                 Parameters = new Dictionary<string, OpenApiParameter> { { "Accept", GetAcceptHeaderParameter() } },
                 SecurityDefinitions = new Dictionary<string, OpenApiSecuritySchema> { { "basic", new OpenApiSecuritySchema { Type = "basic" } } }
             };
@@ -536,7 +537,7 @@ namespace ServiceStack.Api.OpenApi
             return responses;
         }
 
-        private OrderedDictionary<string, OpenApiPath> ParseOperations(List<RestPath> restPaths, Dictionary<string, OpenApiSchema> schemas, List<OpenApiTag> tags)
+        private OrderedDictionary<string, OpenApiPath> ParseOperations(List<RestPath> restPaths, Dictionary<string, OpenApiSchema> schemas, Dictionary<string, OpenApiTag> tags)
         {
             var apiPaths = new OrderedDictionary<string, OpenApiPath>();
 
@@ -558,8 +559,6 @@ namespace ServiceStack.Api.OpenApi
                 {
                     curPath = new OpenApiPath() { Parameters = new List<OpenApiParameter> { new OpenApiParameter { Ref = "#/parameters/Accept" } } };
                     apiPaths.Add(restPath.Path, curPath);
-
-                    tags.Add(new OpenApiTag { Name = restPath.Path, Description = summary });
                 }
 
                 var op = HostContext.Metadata.OperationsMap[requestType];
@@ -573,6 +572,7 @@ namespace ServiceStack.Api.OpenApi
                     .SelectMany(x => x.AllAttributes<AuthenticateAttribute>())
                     );
 
+                var annotatingTagAttributes = requestType.AllAttributes<TagAttribute>();
 
                 foreach (var verb in verbs)
                 {
@@ -580,6 +580,13 @@ namespace ServiceStack.Api.OpenApi
                         || actions.Where(x => x.Name.ToUpperInvariant() == verb)
                             .SelectMany(x => x.AllAttributes<AuthenticateAttribute>())
                             .Count() > 0;
+
+                    var userTags = new List<string>();
+                    ApplyTo applyToVerb;
+                    if (ApplyToUtils.VerbsApplyTo.TryGetValue(verb, out applyToVerb))
+                    {
+                        userTags = annotatingTagAttributes.Where(x => x.ApplyTo.HasFlag(applyToVerb)).Select(x => x.Name).ToList();
+                    }
 
                     var operation = new OpenApiOperation
                     {
@@ -590,12 +597,18 @@ namespace ServiceStack.Api.OpenApi
                         Responses = GetMethodResponseCodes(restPath, schemas, requestType),
                         Consumes = new List<string> { "application/json" },
                         Produces = new List<string> { "application/json" },
-                        Tags = new List<string> { restPath.Path },
+                        Tags = userTags.Count > 0 ? userTags : GetTags(restPath.Path),
                         Deprecated = requestType.HasAttribute<ObsoleteAttribute>(),
                         Security = needAuth ? new List<Dictionary<string, List<string>>> {
                             new Dictionary<string, List<string>> { { "basic", new List<string>() } }
                         } : null
                     };
+
+                    foreach(var tag in operation.Tags)
+                    {
+                        if (!tags.ContainsKey(tag))
+                            tags.Add(tag, new OpenApiTag { Name = tag });
+                    }
 
                     switch (verb)
                     {
@@ -803,6 +816,19 @@ namespace ServiceStack.Api.OpenApi
                 Name = paramName,
                 Schema = new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) }
             };
+        }
+
+        private List<string> GetTags(string path)
+        {
+            var tagname = GetTagName(path);
+            return tagname != null ? new List<string> { tagname } : null;
+        }
+
+        private string GetTagName(string path)
+        {
+            var tags = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            
+            return tags.Length > 0 ? tags[0] : null;
         }
 
         private OpenApiParameter GetListParameter(IDictionary<string, OpenApiSchema> schemas, Type listType, string route, string verb, string paramName, string paramIn)
