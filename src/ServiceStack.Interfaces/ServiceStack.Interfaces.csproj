@@ -42,6 +42,7 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplyTo.cs" />
     <Compile Include="AttributeBase.cs" />
     <Compile Include="Auth\IUserAuth.cs" />
     <Compile Include="AutoQueryViewerAttributes.cs" />
@@ -156,6 +157,7 @@
     <Compile Include="ISequenceSource.cs" />
     <Compile Include="IServiceGateway.cs" />
     <Compile Include="Redis\RedisGeo.cs" />
+    <Compile Include="TagAttribute.cs" />
     <Compile Include="Web\IServiceGatewayFactory.cs" />
     <Compile Include="IUrlFilter.cs" />
     <Compile Include="Logging\GenericLogFactory.cs" />
