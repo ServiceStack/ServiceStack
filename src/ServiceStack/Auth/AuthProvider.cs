@@ -22,7 +22,6 @@ namespace ServiceStack.Auth
 
         public bool PersistSession { get; set; }
         public bool SaveExtendedUserInfo { get; set; }
-        public bool IgnoreAuthRepository { get; set; }
 
         public Action<AuthUserSession, IAuthTokens, Dictionary<string, string>> LoadUserAuthFilter { get; set; }
 
