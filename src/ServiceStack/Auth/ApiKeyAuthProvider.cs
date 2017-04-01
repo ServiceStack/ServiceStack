@@ -246,7 +246,7 @@ namespace ServiceStack.Auth
 
             if (AllowInHttpParams)
             {
-                var apiKey = req.QueryString[Keywords.ApiKey] ?? req.FormData[Keywords.ApiKey];
+                var apiKey = req.QueryString[Keywords.ApiKeyParam] ?? req.FormData[Keywords.ApiKeyParam];
                 if (apiKey != null)
                 {
                     PreAuthenticateWithApiKey(req, res, GetApiKey(req, apiKey));

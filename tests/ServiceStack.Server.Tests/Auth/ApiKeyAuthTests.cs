@@ -136,7 +136,6 @@ namespace ServiceStack.Server.Tests.Auth
         [Test]
         public void Does_return_APIKey_for_ApiKey_request_in_GlobalRequestFilters_Action()
         {
-            AppHost.LastApiKey = null;
             RequiresAuthActionService.LastApiKey = null;
 
             var client = new JsonServiceClient(ListeningOn)
@@ -148,7 +147,6 @@ namespace ServiceStack.Server.Tests.Auth
             var response = client.Send(request);
             Assert.That(response.Name, Is.EqualTo(request.Name));
 
-            Assert.That(AppHost.LastApiKey?.Id, Is.EqualTo(liveKey.Id));
             Assert.That(RequiresAuthActionService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
         }
 
@@ -162,9 +160,9 @@ namespace ServiceStack.Server.Tests.Auth
                 var json = url.GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebServiceException ex)
+            catch (WebException ex)
             {
-                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+                Assert.That(ex.GetStatus().Value, Is.EqualTo(HttpStatusCode.Unauthorized));
             }
         }
 
