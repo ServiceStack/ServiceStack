@@ -128,6 +128,7 @@ namespace ServiceStack
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, Keywords.JsConfig,
                     Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version.ToPascalCase(),
+                    Keywords.ApiKeyParam,
                 },
                 XmlWriterSettings = new XmlWriterSettings
                 {

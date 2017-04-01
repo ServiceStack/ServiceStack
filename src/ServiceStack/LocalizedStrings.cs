@@ -18,6 +18,7 @@
         public static string DbInfo = "__dbinfo";
         public static string CacheInfo = "__cacheinfo";
         public static string ApiKey = "__apikey";
+        public static string ApiKeyParam = "apikey";
         public static string Session = "__session";
         public static string JsConfig = "jsconfig";
         public static string SessionId = "ss-id";

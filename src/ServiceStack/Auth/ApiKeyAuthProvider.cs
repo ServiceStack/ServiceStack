@@ -111,6 +111,11 @@ namespace ServiceStack.Auth
         /// </summary>
         public TimeSpan? SessionCacheDuration { get; set; }
 
+        /// <summary>
+        /// Whether to allow API Keys in 'apikey' QueryString or FormData
+        /// </summary>
+        public bool AllowInHttpParams { get; set; }
+
         public ApiKeyAuthProvider()
             : base(null, Realm, Name)
         {
@@ -236,6 +241,15 @@ namespace ServiceStack.Auth
                 if (apiKey != null)
                 {
                     PreAuthenticateWithApiKey(req, res, apiKey);
+                }
+            }
+
+            if (AllowInHttpParams)
+            {
+                var apiKey = req.QueryString[Keywords.ApiKey] ?? req.FormData[Keywords.ApiKey];
+                if (apiKey != null)
+                {
+                    PreAuthenticateWithApiKey(req, res, GetApiKey(req, apiKey));
                 }
             }
         }

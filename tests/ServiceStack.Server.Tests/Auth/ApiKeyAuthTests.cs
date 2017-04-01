@@ -26,6 +26,7 @@ namespace ServiceStack.Server.Tests.Auth
         }
     }
 
+    [Route("/requires-auth")]
     public class RequiresAuthAction : IReturn<RequiresAuthAction>
     {
         public string Name { get; set; }
@@ -149,6 +150,36 @@ namespace ServiceStack.Server.Tests.Auth
 
             Assert.That(AppHost.LastApiKey?.Id, Is.EqualTo(liveKey.Id));
             Assert.That(RequiresAuthActionService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+        }
+
+        [Test]
+        public void Does_not_allow_ApiKey_in_QueryString()
+        {
+            var url = ListeningOn.CombineWith("/requires-auth").AddQueryParam("apikey", liveKey.Id);
+
+            try
+            {
+                var json = url.GetJsonFromUrl();
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
+        }
+
+        [Test]
+        public void Does_allow_ApiKey_in_QueryString_when_AllowInHttpParams()
+        {
+            var apiKeyAuth = (ApiKeyAuthProvider)AuthenticateService.GetAuthProvider(ApiKeyAuthProvider.Name);
+            apiKeyAuth.AllowInHttpParams = true;
+
+            var url = ListeningOn.CombineWith("/requires-auth").AddQueryParam("apikey", liveKey.Id);
+            var json = url.GetJsonFromUrl();
+
+            Assert.That(json, Is.Not.Null);
+
+            apiKeyAuth.AllowInHttpParams = false;
         }
     }
 }
