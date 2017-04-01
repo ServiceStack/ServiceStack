@@ -22,6 +22,7 @@ namespace ServiceStack.Auth
 
         public bool PersistSession { get; set; }
         public bool SaveExtendedUserInfo { get; set; }
+        public bool IgnoreAuthRepository { get; set; }
 
         public Action<AuthUserSession, IAuthTokens, Dictionary<string, string>> LoadUserAuthFilter { get; set; }
 
@@ -160,7 +161,7 @@ namespace ServiceStack.Auth
                 authInfo.ForEach((x, y) => tokens.Items[x] = y);
             }
 
-            var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request);
+            var authRepo = GetAuthRepository(authService.Request);
             using (authRepo as IDisposable)
             {
                 if (CustomValidationFilter != null)
@@ -242,6 +243,11 @@ namespace ServiceStack.Auth
             }
 
             return null;
+        }
+
+        protected virtual IAuthRepository GetAuthRepository(IRequest req)
+        {
+            return HostContext.AppHost.GetAuthRepository(req);
         }
 
         // Keep in-memory map of userAuthId's when no IAuthRepository exists 

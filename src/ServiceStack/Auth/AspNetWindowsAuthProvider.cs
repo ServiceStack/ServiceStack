@@ -145,6 +145,11 @@ namespace ServiceStack.Auth
             throw HttpError.Unauthorized(ErrorMessages.WindowsAuthFailed);
         }
 
+        protected override IAuthRepository GetAuthRepository(IRequest req)
+        {
+            return null; //Sources User Info from Windows Auth instead of Auth Repo
+        }
+
         private void PopulateUserSessionWithIsInRole(IRequest req, IPrincipal user, IAuthSession session)
         {
             foreach (var role in AllRoles.Safe())
