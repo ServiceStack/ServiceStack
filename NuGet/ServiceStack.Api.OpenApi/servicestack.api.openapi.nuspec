@@ -2,19 +2,19 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Api.OpenApi</id>
-    <title>ServiceStack additional API for integration with OpenApi</title>
+    <title>ServiceStack Open API metadata provider and Swagger UI</title>
     <version>4.5.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
-    <summary>ServiceStack integration with OpenApi</summary>
+    <summary>ServiceStack integration with Open API v2.0</summary>
     <description>
-      Provides a set of services to be discovered by OpenApi (http://swagger.io/)
-      Swagger is a specification and complete framework implementation for describing, producing, consuming, and visualizing RESTful web services.
+      Implements v2.0 of the Open API Specification (https://www.openapis.org).
+      Open API is a specification and complete framework implementation for describing, producing, consuming, and visualizing RESTful web services.
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
-    <tags>Swagger API REST Docs ServiceStack</tags>
+    <tags>OpenAPI metadata Swagger API REST Docs ServiceStack</tags>
     <language>en-US</language>
     <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
