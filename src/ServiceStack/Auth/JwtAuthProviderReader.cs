@@ -172,16 +172,6 @@ namespace ServiceStack.Auth
         public TimeSpan ExpireRefreshTokensIn { get; set; }
 
         /// <summary>
-        /// Allow custom logic to invalidate JWT Tokens
-        /// </summary>
-        public Func<JsonObject, IRequest, bool> ValidateToken { get; set; }
-
-        /// <summary>
-        /// Allow custom logic to invalidate Refresh Tokens
-        /// </summary>
-        public Func<JsonObject, IRequest, bool> ValidateRefreshToken { get; set; }
-
-        /// <summary>
         /// Convenient overload to initialize ExpireTokensIn with an Integer
         /// </summary>
         public int ExpireTokensInDays
@@ -192,6 +182,16 @@ namespace ServiceStack.Auth
                     ExpireTokensIn = TimeSpan.FromDays(value);
             }
         }
+
+        /// <summary>
+        /// Allow custom logic to invalidate JWT Tokens
+        /// </summary>
+        public Func<JsonObject, IRequest, bool> ValidateToken { get; set; }
+
+        /// <summary>
+        /// Allow custom logic to invalidate Refresh Tokens
+        /// </summary>
+        public Func<JsonObject, IRequest, bool> ValidateRefreshToken { get; set; }
 
         /// <summary>
         /// Whether to invalidate all JWT Tokens issued before a specified date.

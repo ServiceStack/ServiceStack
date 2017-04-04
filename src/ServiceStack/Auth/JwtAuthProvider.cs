@@ -58,7 +58,9 @@ namespace ServiceStack.Auth
                     }
 
                     authContext.AuthResponse.BearerToken = CreateJwtBearerToken(session, roles, perms);
-                    authContext.AuthResponse.RefreshToken = CreateJwtRefreshToken(session.UserAuthId);
+                    authContext.AuthResponse.RefreshToken = EnableRefreshToken()
+                        ? CreateJwtRefreshToken(session.UserAuthId)
+                        : null;
                 }
             }
         }
@@ -138,6 +140,18 @@ namespace ServiceStack.Auth
             var hashAlgoritm = GetHashAlgorithm();
             var refreshToken = CreateJwt(jwtHeader, jwtPayload, hashAlgoritm);
             return refreshToken;
+        }
+
+        protected virtual bool EnableRefreshToken()
+        {
+            var authRepo = HostContext.AppHost?.TryResolve<IAuthRepository>();
+            if (authRepo == null)
+                return false;
+
+            using (authRepo as IDisposable)
+            {
+                return authRepo is IUserAuthRepository;
+            }
         }
 
         public static string CreateEncryptedJweToken(JsonObject jwtPayload, RSAParameters publicKey)
