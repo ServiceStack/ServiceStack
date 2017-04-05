@@ -2,8 +2,7 @@
   "buildOptions": {
     "embed": {
       "include": [
-          "openapi-ui/**/*.*",
-          "openapi-ui-bootstrap/**/*.*"
+          "swagger-ui/**/*.*"
       ]
     }
   },
