@@ -34,7 +34,6 @@
   <files>
     <file src="lib/**/*.*" target="lib" />
     <file src="../../src/ServiceStack.Api.OpenApi/**/*.cs" target="src" />
-    <file src="../../src/ServiceStack.Api.OpenApi/swagger2-ui/**/*.*" target="src" />
-    <file src="../../src/ServiceStack.Api.OpenApi/swagger2-ui-bootstrap/**/*.*" target="src" />
+    <file src="../../src/ServiceStack.Api.OpenApi/swagger-ui/**/*.*" target="src" />
   </files>
 </package>
