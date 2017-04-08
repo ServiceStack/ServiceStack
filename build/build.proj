@@ -14,10 +14,11 @@
     <NUnitConsoleArgs>/noshadow</NUnitConsoleArgs>
     <NuGetPath>$(SrcDir)/.nuget/nuget.exe</NuGetPath>
     <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
+    <NuGetPackageCoreDir>$(BuildSolutionDir)/NuGet.Core/</NuGetPackageCoreDir>
     <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion).0</Version>
     <UnstableTag Condition="$(RELEASE) == ''">-unstable</UnstableTag>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(UnstableTag)</PackageVersion>
-    <EnvVersion>$(MajorVersion).$(MinorVersion)$(PatchVersion)</EnvVersion>
+    <PackageCoreVersion>1.0.$(PatchCoreVersion)$(UnstableTag)</PackageCoreVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -28,6 +29,7 @@
 
   <ItemGroup>
     <NugetPackageFilesToDelete Include="$(NuGetPackageDir)/*.nupkg"/>
+    <NugetPackageFilesToDelete Include="$(NuGetPackageCoreDir)/*.nupkg"/>
   </ItemGroup>
 
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
@@ -83,6 +85,10 @@
         <Find>version="4\.5(\.\d+)?"</Find>
         <ReplaceWith>version="$(PackageVersion)"</ReplaceWith>
       </RegexTransform>
+      <RegexTransform Include="$(NuGetPackageCoreDir)/**/*.nuspec">
+        <Find>version="1\.0\.[^"]*"</Find>
+        <ReplaceWith>version="$(PackageCoreVersion)"</ReplaceWith>
+      </RegexTransform>
     </ItemGroup>
 
     <RegexTransform Items="@(RegexTransform)" />
@@ -94,57 +100,70 @@
     <Delete Files="@(NugetPackageFilesToDelete)" />
 
     <ItemGroup>
-      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/ServiceStack.dll"></ServiceStackFiles>
-      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/ServiceStack.pdb"></ServiceStackFiles>
-      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/ServiceStack.xml"></ServiceStackFiles>
+      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.dll"></ServiceStackFiles>
+      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.pdb"></ServiceStackFiles>
+      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.xml"></ServiceStackFiles>
+      <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard1.6/ServiceStack.dll"></ServiceStackCoreFiles>
+      <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard1.6/ServiceStack.pdb"></ServiceStackCoreFiles>
+      <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard1.6/ServiceStack.xml"></ServiceStackCoreFiles>
 
-      <ServerFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/ServiceStack.Server.*"></ServerFiles>
-      <RabbitMqFiles Include="$(SrcDir)/ServiceStack.RabbitMq/bin/$(Configuration)/ServiceStack.RabbitMq.*"></RabbitMqFiles>
+      <ServerFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/net45/ServiceStack.Server.*"></ServerFiles>
+      <ServerCoreFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/netstandard1.6/ServiceStack.Server.*"></ServerCoreFiles>
+      <RabbitMqFiles Include="$(SrcDir)/ServiceStack.RabbitMq/bin/$(Configuration)/net45/ServiceStack.RabbitMq.*"></RabbitMqFiles>
+      <RabbitMqCoreFiles Include="$(SrcDir)/ServiceStack.RabbitMq/bin/$(Configuration)/netstandard1.6/ServiceStack.RabbitMq.*"></RabbitMqCoreFiles>
 
-      <RazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/ServiceStack.Razor.*"></RazorFiles>
-      <RazorFiles Include="$(BuildSolutionDir)/lib/System.Web.Razor.dll"></RazorFiles>
-      <RazorFiles Include="$(BuildSolutionDir)/lib/System.Web.Razor.xml"></RazorFiles>
+      <RazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/net45/ServiceStack.Razor.*"></RazorFiles>
 
-      <RazorBuildTaskFiles Include="$(SrcDir)/ServiceStack.Razor.BuildTask/bin/$(Configuration)/*.dll"></RazorBuildTaskFiles>
+      <RazorBuildTaskFiles Include="$(SrcDir)/ServiceStack.Razor.BuildTask/bin/$(Configuration)/net45/*.dll"></RazorBuildTaskFiles>
 
-      <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ClientFiles>
+      <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/net45/ServiceStack.Client.*"></ClientFiles>
+      <ClientCoreFiles11 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/netstandard1.1/ServiceStack.Client.*"></ClientCoreFiles11>
+      <ClientCoreFiles16 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/netstandard1.6/ServiceStack.Client.*"></ClientCoreFiles16>
 
-      <HttpClientFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/ServiceStack.HttpClient.*"></HttpClientFiles>
+      <HttpClientFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/net45/ServiceStack.HttpClient.*"></HttpClientFiles>
+      <HttpClientFiles11 Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard1.1/ServiceStack.HttpClient.*"></HttpClientFiles11>
+      <HttpClientFiles16 Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard1.6/ServiceStack.HttpClient.*"></HttpClientFiles16>
 
-      <CommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Common.*"></CommonFiles>
+      <CommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/net45/ServiceStack.Common.*"></CommonFiles>
+      <CommonCoreFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/netstandard1.3/ServiceStack.Common.*"></CommonCoreFiles>
 
-      <InterfacesFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/Pcl/ServiceStack.Interfaces.*"></InterfacesFiles>
-      <InterfacesFilesSL5 Include="$(SrcDir)/ServiceStack.Interfaces/bin/SL5/ServiceStack.Interfaces.*"></InterfacesFilesSL5>
+      <InterfacesFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/portable40-net45+sl5+win8+wp8+wpa81ServiceStack.Interfaces.*"></InterfacesFiles>
 
-      <MvcFiles Include="$(SrcDir)/ServiceStack.Mvc/bin/$(Configuration)/ServiceStack.Mvc.*"></MvcFiles>
+      <MvcFiles Include="$(SrcDir)/ServiceStack.Mvc/bin/$(Configuration)/net45/ServiceStack.Mvc.*"></MvcFiles>
+      <MvcCoreFiles Include="$(SrcDir)/ServiceStack.Mvc/bin/$(Configuration)/netstandard1.6/ServiceStack.Mvc.*"></MvcCoreFiles>
 
-      <AuthenticationOpenIdFiles Include="$(SrcDir)/ServiceStack.Authentication.OpenId/bin/$(Configuration)/ServiceStack.Authentication.OpenId.*"></AuthenticationOpenIdFiles>
-      <AuthenticationOAuth2Files Include="$(SrcDir)/ServiceStack.Authentication.OAuth2/bin/$(Configuration)/ServiceStack.Authentication.OAuth2.*"></AuthenticationOAuth2Files>
+      <AuthenticationOpenIdFiles Include="$(SrcDir)/ServiceStack.Authentication.OpenId/bin/$(Configuration)/net45/ServiceStack.Authentication.OpenId.*"></AuthenticationOpenIdFiles>
+      <AuthenticationOAuth2Files Include="$(SrcDir)/ServiceStack.Authentication.OAuth2/bin/$(Configuration)/net45/ServiceStack.Authentication.OAuth2.*"></AuthenticationOAuth2Files>
 
-      <AuthenticationMongoDBFiles Include="$(SrcDir)/ServiceStack.Authentication.MongoDB/bin/$(Configuration)/ServiceStack.Authentication.MongoDB.*"></AuthenticationMongoDBFiles>
-      <AuthenticationNHibernateFiles Include="$(SrcDir)/ServiceStack.Authentication.NHibernate/bin/$(Configuration)/ServiceStack.Authentication.NHibernate.*"></AuthenticationNHibernateFiles>
-      <AuthenticationRavenDbFiles Include="$(SrcDir)/ServiceStack.Authentication.RavenDb/bin/$(Configuration)/ServiceStack.Authentication.RavenDb.*"></AuthenticationRavenDbFiles>
+      <AuthenticationMongoDBFiles Include="$(SrcDir)/ServiceStack.Authentication.MongoDB/bin/$(Configuration)/net45/ServiceStack.Authentication.MongoDB.*"></AuthenticationMongoDBFiles>
+      <AuthenticationNHibernateFiles Include="$(SrcDir)/ServiceStack.Authentication.NHibernate/bin/$(Configuration)/net45/ServiceStack.Authentication.NHibernate.*"></AuthenticationNHibernateFiles>
+      <AuthenticationRavenDbFiles Include="$(SrcDir)/ServiceStack.Authentication.RavenDb/bin/$(Configuration)/net45/ServiceStack.Authentication.RavenDb.*"></AuthenticationRavenDbFiles>
 
-      <CachingAzureFiles Include="$(SrcDir)/ServiceStack.Caching.Azure/bin/$(Configuration)/ServiceStack.Caching.Azure.*"></CachingAzureFiles>
-      <CachingMemcachedFiles Include="$(SrcDir)/ServiceStack.Caching.Memcached/bin/$(Configuration)/ServiceStack.Caching.Memcached.*"></CachingMemcachedFiles>
+      <CachingAzureFiles Include="$(SrcDir)/ServiceStack.Caching.Azure/bin/$(Configuration)/net45/ServiceStack.Caching.Azure.*"></CachingAzureFiles>
+      <CachingMemcachedFiles Include="$(SrcDir)/ServiceStack.Caching.Memcached/bin/$(Configuration)/net45/ServiceStack.Caching.Memcached.*"></CachingMemcachedFiles>
 
-      <ElmahFiles Include="$(SrcDir)/ServiceStack.Logging.Elmah/bin/$(Configuration)/ServiceStack.Logging.Elmah.*"></ElmahFiles>
-      <EntLib5Files Include="$(SrcDir)/ServiceStack.Logging.EntLib5/bin/$(Configuration)/ServiceStack.Logging.EntLib5.*"></EntLib5Files>
-      <EventLogFiles Include="$(SrcDir)/ServiceStack.Logging.EventLog/bin/$(Configuration)/ServiceStack.Logging.EventLog.*"></EventLogFiles>
-      <Log4NetFiles Include="$(SrcDir)/ServiceStack.Logging.Log4Net/bin/$(Configuration)/ServiceStack.Logging.Log4Net.*"></Log4NetFiles>
-      <NLogFiles Include="$(SrcDir)/ServiceStack.Logging.NLog/bin/$(Configuration)/ServiceStack.Logging.NLog.*"></NLogFiles>
-      <SerilogFiles Include="$(SrcDir)/ServiceStack.Logging.Serilog/bin/$(Configuration)/ServiceStack.Logging.Serilog.*"></SerilogFiles>
-      <SlackFiles Include="$(SrcDir)/ServiceStack.Logging.Slack/bin/$(Configuration)/ServiceStack.Logging.Slack.*"></SlackFiles>
+      <ElmahFiles Include="$(SrcDir)/ServiceStack.Logging.Elmah/bin/$(Configuration)/net45/ServiceStack.Logging.Elmah.*"></ElmahFiles>
+      <EntLib5Files Include="$(SrcDir)/ServiceStack.Logging.EntLib5/bin/$(Configuration)/net45/ServiceStack.Logging.EntLib5.*"></EntLib5Files>
+      <EventLogFiles Include="$(SrcDir)/ServiceStack.Logging.EventLog/bin/$(Configuration)/net45/ServiceStack.Logging.EventLog.*"></EventLogFiles>
+      <Log4NetFiles Include="$(SrcDir)/ServiceStack.Logging.Log4Net/bin/$(Configuration)/net45/ServiceStack.Logging.Log4Net.*"></Log4NetFiles>
+      <NLogFiles Include="$(SrcDir)/ServiceStack.Logging.NLog/bin/$(Configuration)/net45/ServiceStack.Logging.NLog.*"></NLogFiles>
+      <SerilogFiles Include="$(SrcDir)/ServiceStack.Logging.Serilog/bin/$(Configuration)/net45/ServiceStack.Logging.Serilog.*"></SerilogFiles>
+      <SlackFiles Include="$(SrcDir)/ServiceStack.Logging.Slack/bin/$(Configuration)/net45/ServiceStack.Logging.Slack.*"></SlackFiles>
 
-      <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
+      <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/net45/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
+      <ProtoBufCoreFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/netstandard1.6/ServiceStack.ProtoBuf.*"></ProtoBufCoreFiles>
 
-      <MsgPackFiles Include="$(SrcDir)/ServiceStack.MsgPack/bin/$(Configuration)/ServiceStack.MsgPack.*"></MsgPackFiles>
+      <MsgPackFiles Include="$(SrcDir)/ServiceStack.MsgPack/bin/$(Configuration)/net45/ServiceStack.MsgPack.*"></MsgPackFiles>
+      <MsgPackCoreFiles Include="$(SrcDir)/ServiceStack.MsgPack/bin/$(Configuration)/netstandard1.6/ServiceStack.MsgPack.*"></MsgPackCoreFiles>
 
-      <WireFiles Include="$(SrcDir)/ServiceStack.Wire/bin/$(Configuration)/ServiceStack.Wire.*"></WireFiles>
+      <WireFiles Include="$(SrcDir)/ServiceStack.Wire/bin/$(Configuration)/net45/ServiceStack.Wire.*"></WireFiles>
+      <WireCoreFiles Include="$(SrcDir)/ServiceStack.Wire/bin/$(Configuration)/netstandard1.6/ServiceStack.Wire.*"></WireCoreFiles>
 
-      <SwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/ServiceStack.Api.Swagger.*"></SwaggerFiles>
+      <SwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/net45/ServiceStack.Api.Swagger.*"></SwaggerFiles>
+      <SwaggerCoreFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/netstandard1.6/ServiceStack.Api.Swagger.*"></SwaggerCoreFiles>
 
-      <OpenApiFiles Include="$(SrcDir)/ServiceStack.Api.OpenApi/bin/$(Configuration)/ServiceStack.Api.OpenApi.*"></OpenApiFiles>
+      <OpenApiFiles Include="$(SrcDir)/ServiceStack.Api.OpenApi/bin/$(Configuration)/net45/ServiceStack.Api.OpenApi.*"></OpenApiFiles>
+      <OpenApiCoreFiles Include="$(SrcDir)/ServiceStack.Api.OpenApi/bin/$(Configuration)/netstandard1.6/ServiceStack.Api.OpenApi.*"></OpenApiCoreFiles>
     </ItemGroup>
 
 
@@ -169,9 +188,15 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net45')" />
     <Copy SourceFiles="%(SwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net45" />
 
-    <!-- Disabled -Symbols -->
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/servicestack.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
             LogStandardErrorAsError="true" />
+
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.Api.Swagger.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.Api.Swagger.Core/lib/netstandard1.6')" />
+    <Copy SourceFiles="%(SwaggerCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.Api.Swagger.Core/lib/netstandard1.6" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.Api.Swagger.Core/servicestack.api.swagger.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion)"
+          LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Api.OpenApi -->
 
@@ -182,9 +207,15 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/net45')" />
     <Copy SourceFiles="%(OpenApiFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/net45" />
 
-    <!-- Disabled -Symbols -->
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.OpenApi/servicestack.api.openapi.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
             LogStandardErrorAsError="true" />
+
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard1.6')" />
+    <Copy SourceFiles="%(OpenApiCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard1.6" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.Api.OpenApi.Core/servicestack.api.swagger.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion)"
+          LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Authentication.OpenId -->
 
@@ -377,6 +408,13 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Mvc/servicestack.mvc.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.Mvc.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.Mvc.Core/lib/netstandard1.6')" />
+    <Copy SourceFiles="%(MvcCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.Mvc.Core/lib/netstandard1.6" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.Mvc.Core/servicestack.mvc.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
+          LogStandardErrorAsError="true" />
+
     <!-- ServiceStack.MsgPack -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.MsgPack/ServiceStack.MsgPack.csproj"
@@ -388,6 +426,13 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.MsgPack/servicestack.msgpack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
+
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.MsgPack.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.MsgPack.Core/lib/netstandard1.6')" />
+    <Copy SourceFiles="%(MsgPackCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.MsgPack.Core/lib/netstandard1.6" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.MsgPack.Core/servicestack.msgpack.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
+          LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.ProtoBuf -->
 
@@ -401,6 +446,13 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.ProtoBuf/servicestack.protobuf.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.ProtoBuf.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.ProtoBuf.Core/lib/netstandard1.6')" />
+    <Copy SourceFiles="%(ProtoBufCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.ProtoBuf.Core/lib/netstandard1.6" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.ProtoBuf.Core/servicestack.protobuf.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
+          LogStandardErrorAsError="true" />
+
     <!-- ServiceStack.Wire -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Wire/ServiceStack.Wire.csproj"
@@ -412,6 +464,13 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Wire/servicestack.wire.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
+
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.Wire.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.Wire.Core/lib/netstandard1.6')" />
+    <Copy SourceFiles="%(WireCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.Wire.Core/lib/netstandard1.6" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.Wire.Core/servicestack.wire.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
+          LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Razor -->
 
@@ -457,6 +516,15 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client/servicestack.client.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.Client.Core/lib/netstandard1.1" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.Client.Core/lib/netstandard1.1')" />
+    <Copy SourceFiles="%(ClientCoreFiles11.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.Client.Core/lib/netstandard1.1" />
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.Client.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.Client.Core/lib/netstandard1.6')" />
+    <Copy SourceFiles="%(ClientCoreFiles16.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.Client.Core/lib/netstandard1.6" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.Client.Core/servicestack.client.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
+          LogStandardErrorAsError="true" />
+
     <!-- ServiceStack.HttpClient -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj"
@@ -468,6 +536,15 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.HttpClient/servicestack.httpclient.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
+
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.HttpClient.Core/lib/netstandard1.1" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.HttpClient.Core/lib/netstandard1.1')" />
+    <Copy SourceFiles="%(HttpClientCoreFiles11.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.HttpClient.Core/lib/netstandard1.1" />
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.HttpClient.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.HttpClient.Core/lib/netstandard1.6')" />
+    <Copy SourceFiles="%(HttpClientCoreFiles16.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.HttpClient.Core/lib/netstandard1.6" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.HttpClient.Core/servicestack.httpclient.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
+          LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Common -->
 
@@ -481,6 +558,13 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Common/servicestack.common.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.Common.Core/lib/netstandard1.3" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.Common.Core/lib/netstandard1.3')" />
+    <Copy SourceFiles="%(CommonCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.Common.Core/lib/netstandard1.3" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.Common.Core/servicestack.common.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
+          LogStandardErrorAsError="true" />
+
     <!-- ServiceStack.Server -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Server/ServiceStack.Server.csproj"
@@ -492,6 +576,13 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Server/servicestack.server.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
+
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.Server.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.Server.Core/lib/netstandard1.6')" />
+    <Copy SourceFiles="%(ServerCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.Server.Core/lib/netstandard1.6" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.Server.Core/servicestack.server.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
+          LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.RabbitMq -->
 
@@ -505,6 +596,13 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.RabbitMq/servicestack.rabbitmq.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.RabbitMq.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.RabbitMq.Core/lib/netstandard1.6')" />
+    <Copy SourceFiles="%(RabbitMqCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.RabbitMq.Core/lib/netstandard1.6" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.RabbitMq.Core/servicestack.server.rabbitmq.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
+          LogStandardErrorAsError="true" />
+
     <!-- ServiceStack -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.csproj"
@@ -516,6 +614,13 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack/servicestack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
+
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.Core/lib/netstandard1.6')" />
+    <Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.Core/lib/netstandard1.6" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.Core/servicestack.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
+          LogStandardErrorAsError="true" />
 
   </Target>
 
