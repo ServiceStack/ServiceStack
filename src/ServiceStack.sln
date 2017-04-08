@@ -188,11 +188,12 @@ Global
 		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Release|x86.ActiveCfg = Release|Any CPU
-		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
-		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Signed|Any CPU.Build.0 = Signed|Any CPU
-		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Signed|Mixed Platforms.ActiveCfg = Signed|Any CPU
-		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Signed|Mixed Platforms.Build.0 = Signed|Any CPU
-		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Signed|x86.ActiveCfg = Signed|Any CPU
+		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Signed|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
+		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Signed|x86.ActiveCfg = Release|Any CPU
+		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Signed|x86.Build.0 = Release|Any CPU
 		{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

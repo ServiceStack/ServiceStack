@@ -26,7 +26,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
     {
         public object Any(HelloJwt request)
         {
-            return new HelloJwtResponse { Result = $"Hello, {request.Name}"};
+            return new HelloJwtResponse { Result = $"Hello, {request.Name}" };
         }
     }
 
@@ -85,6 +85,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         {
             return new JsonHttpClient(Config.ListeningOn);
         }
+
+        protected override IJsonServiceClient GetClientWithCredentials()
+        {
+            return new JsonHttpClient(Config.ListeningOn)
+            {
+                UserName = Username,
+                Password = Password,
+            };
+        }
     }
 
     public abstract class JwtAuthProviderTests
@@ -94,8 +103,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
         class AppHost : AppSelfHostBase
         {
-            public AppHost() 
-                : base(nameof(JwtAuthProviderTests), typeof(JwtServices).GetAssembly()) {}
+            public AppHost()
+                : base(nameof(JwtAuthProviderTests), typeof(JwtServices).GetAssembly()) { }
 
             public virtual JwtAuthProvider JwtAuthProvider { get; set; }
 
@@ -143,6 +152,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         protected abstract JwtAuthProvider CreateJwtAuthProvider();
 
         protected virtual IJsonServiceClient GetClient() => new JsonServiceClient(Config.ListeningOn);
+
+        protected virtual IJsonServiceClient GetClientWithCredentials() => new JsonServiceClient(Config.ListeningOn)
+        {
+            UserName = Username,
+            Password = Password
+        };
 
         protected virtual IJsonServiceClient GetClientWithRefreshToken(string refreshToken = null, string accessToken = null)
         {
@@ -192,7 +207,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
         public JwtAuthProviderTests()
         {
-            appHost = new AppHost {
+            appHost = new AppHost
+                {
                     JwtAuthProvider = CreateJwtAuthProvider()
                 }
                 .Init()
@@ -386,6 +402,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             Assert.That(called, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Does_return_token_on_subsequent_BasicAuth_Authentication_requests()
+        {
+            var client = GetClientWithCredentials();
+
+            var response = client.Post(new Authenticate());
+            Assert.That(response.BearerToken, Is.Not.Null);
+            Assert.That(response.RefreshToken, Is.Not.Null);
+
+            response = client.Post(new Authenticate());
+            Assert.That(response.BearerToken, Is.Not.Null);
+            Assert.That(response.RefreshToken, Is.Not.Null);
         }
     }
 }

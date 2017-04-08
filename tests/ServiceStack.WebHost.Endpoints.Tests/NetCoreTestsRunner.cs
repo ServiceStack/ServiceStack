@@ -1,3 +1,4 @@
+#if false
 using NUnitLite;
 using NUnit.Common;
 using System.Reflection;
@@ -32,3 +33,4 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 }
+#endif

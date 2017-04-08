@@ -1,4 +1,4 @@
-{
+﻿{
   "configurations": {
     "Debug": {
       "buildOptions": {
@@ -18,16 +18,16 @@
     }
   },
   "dependencies": {
-    "NETStandard.Library": "1.6.0",
-    "RabbitMQ.Client": "4.1.0",
+    "NUnit": "3.6.1",
     "ServiceStack.Text": "1.0.*",
     "ServiceStack.Interfaces": "1.0.*",
     "ServiceStack.Client": "1.0.*",
     "ServiceStack.Common": "1.0.*",
+    "ServiceStack.ProtoBuf": "1.0.*",
     "ServiceStack": "1.0.*" 
   },
   "frameworks": {
-    "netstandard1.6": {
+    "net45": {
       "dependencies": {
       }
     }

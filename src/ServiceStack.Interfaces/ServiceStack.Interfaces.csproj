@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.1;portable40-net45+sl5+win8+wp8+wpa81</TargetFrameworks>
+    <TargetFrameworks>portable40-net45+sl5+win8+wp8+wpa81</TargetFrameworks>
     <AssemblyName>ServiceStack.Interfaces</AssemblyName>
     <PackageId>ServiceStack.Interfaces</PackageId>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
