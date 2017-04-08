@@ -54,6 +54,16 @@ COPY ..\lib\netstandard1.6\ServiceStack.Client.dll ..\..\ServiceStack.Aws\lib\ne
 COPY ..\lib\ServiceStack.dll ..\..\ServiceStack.Aws\lib
 COPY ..\lib\netstandard1.6\ServiceStack.dll ..\..\ServiceStack.Aws\lib\netstandard1.6
 
+COPY ..\lib\ServiceStack.Interfaces.dll ..\..\Admin\lib
+COPY ..\lib\netstandard1.1\ServiceStack.Interfaces.dll ..\..\Admin\lib\netstandard1.1
+COPY ..\lib\ServiceStack.Common.dll ..\..\Admin\lib
+COPY ..\lib\netstandard1.3\ServiceStack.Common.dll ..\..\Admin\lib\netstandard1.3
+COPY ..\lib\ServiceStack.Client.dll ..\..\Admin\lib
+COPY ..\lib\netstandard1.1\ServiceStack.Client.dll ..\..\Admin\lib\netstandard1.1
+COPY ..\lib\netstandard1.6\ServiceStack.Client.dll ..\..\Admin\lib\netstandard1.6
+COPY ..\lib\ServiceStack.dll ..\..\Admin\lib
+COPY ..\lib\netstandard1.6\ServiceStack.dll ..\..\Admin\lib\netstandard1.6
+
 COPY ..\lib\ServiceStack.Interfaces.dll ..\..\Stripe\lib
 COPY ..\lib\netstandard1.1\ServiceStack.Interfaces.dll ..\..\Stripe\lib\netstandard1.1
 COPY ..\lib\ServiceStack.Client.dll ..\..\Stripe\lib
