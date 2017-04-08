@@ -94,7 +94,6 @@
 
     <MSBuild Projects="../src/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj" Properties="Configuration=$(Configuration)"/>
     <Copy SourceFiles="%(HttpClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-
     <MakeDir Directories="$(BuildSolutionDir)/NuGet/ServiceStack.HttpClient/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" Condition="!Exists('$(BuildSolutionDir)/NuGet/ServiceStack.HttpClient/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10')" />
     <Copy SourceFiles="%(HttpClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.HttpClient/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" />
 
@@ -102,7 +101,6 @@
 
     <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.csproj" Properties="Configuration=$(Configuration)"/>
     <Copy SourceFiles="%(ClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
-
     <MakeDir Directories="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" Condition="!Exists('$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10')" />
     <Copy SourceFiles="%(ClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" />
 
