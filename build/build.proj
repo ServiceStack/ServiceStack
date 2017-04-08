@@ -55,10 +55,10 @@
   </Target>
 
   <Target Name="BuildSolutions">
-    <MSBuild Projects="$(SrcDir)/ServiceStack.sln" Targets="Build"
+    <MSBuild Projects="$(SrcDir)/ServiceStack.sln" Targets="Restore;Build"
       Properties="Configuration=$(Configuration)" />
 
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.sln" Targets="Build"
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.sln" Targets="Restore;Build"
       Properties="Configuration=$(Configuration)" />
     
     <!-- TODO re-add SL5 after re-factor -->
