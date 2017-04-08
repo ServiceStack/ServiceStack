@@ -1,40 +1,54 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v1.1/",
-    "signature": "005ca9602be990ac7584638a00274e36bbdaa3d3"
+    "signature": "2a4958d1324c3ef7c0e54a143e013623c76a58de"
   },
   "compilationOptions": {},
   "targets": {
     ".NETStandard,Version=v1.1": {},
     ".NETStandard,Version=v1.1/": {
-      "servicestack.text/1.0.0": {
+      "servicestack.client/1.0.0": {
         "dependencies": {
           "MSBuild.Sdk.Extras": "1.0.1",
-          "Microsoft.CSharp": "4.0.1",
+          "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
           "NETStandard.Library": "1.6.0",
-          "System.Dynamic.Runtime": "4.0.11",
-          "System.Linq.Expressions": "4.1.0",
           "System.Net.Requests": "4.0.11",
-          "System.Reflection.Emit": "4.0.1",
-          "System.Reflection.Emit.Lightweight": "4.0.1",
-          "System.Reflection.Extensions": "4.0.1",
-          "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
-          "System.Runtime.Serialization.Primitives": "4.1.1",
-          "System.Runtime.Serialization.Xml": "4.1.1"
+          "System.ServiceModel.Primitives": "4.1.0",
+          "System.Xml.XmlSerializer": "4.0.11"
         },
         "runtime": {
-          "ServiceStack.Text.dll": {}
+          "ServiceStack.Client.dll": {}
         }
       },
-      "microsoft.csharp/4.0.1": {
-        "dependencies": {
-          "System.Dynamic.Runtime": "4.0.11",
-          "System.Linq.Expressions": "4.1.0",
-          "System.Runtime": "4.1.0"
-        }
-      },
+      "microsoft.netcore.jit/1.0.2": {},
       "microsoft.netcore.platforms/1.0.1": {},
+      "microsoft.netcore.portable.compatibility/1.0.1": {
+        "dependencies": {
+          "Microsoft.NETCore.Runtime.CoreCLR": "1.0.2"
+        },
+        "runtime": {
+          "lib/netstandard1.0/System.ComponentModel.DataAnnotations.dll": {},
+          "lib/netstandard1.0/System.Core.dll": {},
+          "lib/netstandard1.0/System.Net.dll": {},
+          "lib/netstandard1.0/System.Numerics.dll": {},
+          "lib/netstandard1.0/System.Runtime.Serialization.dll": {},
+          "lib/netstandard1.0/System.ServiceModel.Web.dll": {},
+          "lib/netstandard1.0/System.ServiceModel.dll": {},
+          "lib/netstandard1.0/System.Windows.dll": {},
+          "lib/netstandard1.0/System.Xml.Linq.dll": {},
+          "lib/netstandard1.0/System.Xml.Serialization.dll": {},
+          "lib/netstandard1.0/System.Xml.dll": {},
+          "lib/netstandard1.0/System.dll": {}
+        }
+      },
+      "microsoft.netcore.runtime.coreclr/1.0.2": {
+        "dependencies": {
+          "Microsoft.NETCore.Jit": "1.0.2",
+          "Microsoft.NETCore.Windows.ApiSets": "1.0.1"
+        }
+      },
       "microsoft.netcore.targets/1.0.1": {},
+      "microsoft.netcore.windows.apisets/1.0.1": {},
       "msbuild.sdk.extras/1.0.1": {},
       "netstandard.library/1.6.0": {
         "dependencies": {
@@ -89,6 +103,11 @@
           "System.Threading.Tasks": "4.0.11"
         }
       },
+      "system.componentmodel.eventbasedasync/4.0.11": {
+        "dependencies": {
+          "System.Runtime": "4.1.0"
+        }
+      },
       "system.diagnostics.debug/4.0.11": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.0.1",
@@ -107,14 +126,6 @@
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.0.1",
           "Microsoft.NETCore.Targets": "1.0.1",
-          "System.Runtime": "4.1.0"
-        }
-      },
-      "system.dynamic.runtime/4.0.11": {
-        "dependencies": {
-          "System.Linq.Expressions": "4.1.0",
-          "System.ObjectModel": "4.0.12",
-          "System.Reflection": "4.1.0",
           "System.Runtime": "4.1.0"
         }
       },
@@ -187,30 +198,6 @@
           "Microsoft.NETCore.Platforms": "1.0.1",
           "Microsoft.NETCore.Targets": "1.0.1",
           "System.IO": "4.1.0",
-          "System.Reflection.Primitives": "4.0.1",
-          "System.Runtime": "4.1.0"
-        }
-      },
-      "system.reflection.emit/4.0.1": {
-        "dependencies": {
-          "System.IO": "4.1.0",
-          "System.Reflection": "4.1.0",
-          "System.Reflection.Emit.ILGeneration": "4.0.1",
-          "System.Reflection.Primitives": "4.0.1",
-          "System.Runtime": "4.1.0"
-        }
-      },
-      "system.reflection.emit.ilgeneration/4.0.1": {
-        "dependencies": {
-          "System.Reflection": "4.1.0",
-          "System.Reflection.Primitives": "4.0.1",
-          "System.Runtime": "4.1.0"
-        }
-      },
-      "system.reflection.emit.lightweight/4.0.1": {
-        "dependencies": {
-          "System.Reflection": "4.1.0",
-          "System.Reflection.Emit.ILGeneration": "4.0.1",
           "System.Reflection.Primitives": "4.0.1",
           "System.Runtime": "4.1.0"
         }
@@ -290,6 +277,31 @@
           "System.Xml.ReaderWriter": "4.0.11"
         }
       },
+      "system.security.principal/4.0.1": {
+        "dependencies": {
+          "System.Runtime": "4.1.0"
+        },
+        "runtime": {
+          "lib/netstandard1.0/System.Security.Principal.dll": {}
+        }
+      },
+      "system.servicemodel.primitives/4.1.0": {
+        "dependencies": {
+          "System.ComponentModel.EventBasedAsync": "4.0.11",
+          "System.Globalization": "4.0.11",
+          "System.IO": "4.1.0",
+          "System.Net.Primitives": "4.0.11",
+          "System.ObjectModel": "4.0.12",
+          "System.Reflection": "4.1.0",
+          "System.Runtime": "4.1.0",
+          "System.Runtime.Serialization.Primitives": "4.1.1",
+          "System.Runtime.Serialization.Xml": "4.1.1",
+          "System.Security.Principal": "4.0.1",
+          "System.Text.Encoding": "4.0.11",
+          "System.Threading": "4.0.11",
+          "System.Xml.ReaderWriter": "4.0.11"
+        }
+      },
       "system.text.encoding/4.0.11": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.0.1",
@@ -337,21 +349,28 @@
           "System.Runtime": "4.1.0",
           "System.Xml.ReaderWriter": "4.0.11"
         }
+      },
+      "system.xml.xmlserializer/4.0.11": {
+        "dependencies": {
+          "System.IO": "4.1.0",
+          "System.Runtime": "4.1.0",
+          "System.Xml.ReaderWriter": "4.0.11"
+        }
       }
     }
   },
   "libraries": {
-    "servicestack.text/1.0.0": {
+    "servicestack.client/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "microsoft.csharp/4.0.1": {
+    "microsoft.netcore.jit/1.0.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-JKETrPzYb/26Z43sqO4jNjIs1ePOOHjQ3q6iBnduH9MloJ6JPShnTqrtj6suhDhun49DtV2w8JdMnSEdQyeHTQ==",
-      "path": "microsoft.csharp/4.0.1",
-      "hashPath": "microsoft.csharp.4.0.1.nupkg.sha512"
+      "sha512": "sha512-Ok2vWofa6X8WD9vc4pfLHwvJz1/B6t3gOAoZcjrjrQf7lQOlNIuZIZtLn3wnWX28DuQGpPJkRlBxFj7Z5txNqw==",
+      "path": "microsoft.netcore.jit/1.0.2",
+      "hashPath": "microsoft.netcore.jit.1.0.2.nupkg.sha512"
     },
     "microsoft.netcore.platforms/1.0.1": {
       "type": "package",
@@ -360,12 +379,33 @@
       "path": "microsoft.netcore.platforms/1.0.1",
       "hashPath": "microsoft.netcore.platforms.1.0.1.nupkg.sha512"
     },
+    "microsoft.netcore.portable.compatibility/1.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Vd+lvLcGwvkedxtKn0U8s9uR4p0Lm+0U2QvDsLaw7g4S1W4KfPDbaW+ROhhLCSOx/gMYC72/b+z+o4fqS/oxVg==",
+      "path": "microsoft.netcore.portable.compatibility/1.0.1",
+      "hashPath": "microsoft.netcore.portable.compatibility.1.0.1.nupkg.sha512"
+    },
+    "microsoft.netcore.runtime.coreclr/1.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-A0x1xtTjYJWZr2DRzgfCOXgB0JkQg8twnmtTJ79wFje+IihlLbXtx6Z2AxyVokBM5ruwTedR6YdCmHk39QJdtQ==",
+      "path": "microsoft.netcore.runtime.coreclr/1.0.2",
+      "hashPath": "microsoft.netcore.runtime.coreclr.1.0.2.nupkg.sha512"
+    },
     "microsoft.netcore.targets/1.0.1": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-NqBvYy7a+Yi1jP4tTGIJ2OLaEpGyUF2udiu1IBaYjkGr53eW7104SyIBfXiqFWx1FpUpPRPMZ9mPnVTvDUvigg==",
       "path": "microsoft.netcore.targets/1.0.1",
       "hashPath": "microsoft.netcore.targets.1.0.1.nupkg.sha512"
+    },
+    "microsoft.netcore.windows.apisets/1.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-pFErLzJBQCQhnt11o3pEGJPORcsRf/pdQ0s5iRP/7l5sIU6Zt0hfYs7Mm3U0awFA2k4grVFohKVPIc9IMQgxNA==",
+      "path": "microsoft.netcore.windows.apisets/1.0.1",
+      "hashPath": "microsoft.netcore.windows.apisets.1.0.1.nupkg.sha512"
     },
     "msbuild.sdk.extras/1.0.1": {
       "type": "package",
@@ -402,6 +442,13 @@
       "path": "system.collections.concurrent/4.0.12",
       "hashPath": "system.collections.concurrent.4.0.12.nupkg.sha512"
     },
+    "system.componentmodel.eventbasedasync/4.0.11": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Z7SO6vvQIR84daPE4uhaNdef9CjgjDMGYkas8epUhf0U3WGuaGgZ0Mm4QuNycMdbHUY8KEdZrtgxonkAiJaAlA==",
+      "path": "system.componentmodel.eventbasedasync/4.0.11",
+      "hashPath": "system.componentmodel.eventbasedasync.4.0.11.nupkg.sha512"
+    },
     "system.diagnostics.debug/4.0.11": {
       "type": "package",
       "serviceable": true,
@@ -422,13 +469,6 @@
       "sha512": "sha512-Fnyv3m3WDKS20HB6ib1gFoxhk0AHky9y6TZ87IWPsiWRXRdCrPtR1DMe5svqVr8iA0ehn4jf1fNcW32XtEix4A==",
       "path": "system.diagnostics.tracing/4.1.0",
       "hashPath": "system.diagnostics.tracing.4.1.0.nupkg.sha512"
-    },
-    "system.dynamic.runtime/4.0.11": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-KVb/2wju9kNABzFswmQ6M+al4JSt207UUnzpvDYgg+umYVNgCNiMLX9+a0YnnKvyT17yX2K25or8twPeCG9kHg==",
-      "path": "system.dynamic.runtime/4.0.11",
-      "hashPath": "system.dynamic.runtime.4.0.11.nupkg.sha512"
     },
     "system.globalization/4.0.11": {
       "type": "package",
@@ -500,27 +540,6 @@
       "path": "system.reflection/4.1.0",
       "hashPath": "system.reflection.4.1.0.nupkg.sha512"
     },
-    "system.reflection.emit/4.0.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-MHY4dPDL/XqVld9jpTlNI+49o/Bmij6Lt/chZAclwdZEm0tVFDwg4YPYoAT29ArL1GFAxbwBI7MOj8UuvtuYDw==",
-      "path": "system.reflection.emit/4.0.1",
-      "hashPath": "system.reflection.emit.4.0.1.nupkg.sha512"
-    },
-    "system.reflection.emit.ilgeneration/4.0.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-I14Sz83V6lkBSEOtn4WwFSMjHJqAe5LS913bokFH3kOCbEnap7Df0yDMfWmRgmj2WrwdTeBOA5vkaZPgkubXWw==",
-      "path": "system.reflection.emit.ilgeneration/4.0.1",
-      "hashPath": "system.reflection.emit.ilgeneration.4.0.1.nupkg.sha512"
-    },
-    "system.reflection.emit.lightweight/4.0.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-iLYt1y470tUcNfynZJdO0qPr6CMHaMeufq+KXS2OxoAaM7jKP45LG7XcH2MmcZHCZiw5mxGuLckY3mm7SNdocg==",
-      "path": "system.reflection.emit.lightweight/4.0.1",
-      "hashPath": "system.reflection.emit.lightweight.4.0.1.nupkg.sha512"
-    },
     "system.reflection.extensions/4.0.1": {
       "type": "package",
       "serviceable": true,
@@ -591,6 +610,20 @@
       "path": "system.runtime.serialization.xml/4.1.1",
       "hashPath": "system.runtime.serialization.xml.4.1.1.nupkg.sha512"
     },
+    "system.security.principal/4.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-t6KX4u686LLlyiOqtSEt/s2Ocx136TPyFgd1+k1unCmS78h23qTP/M+24kx6JELvhSMprFIP7tQg0DCVKNsqPA==",
+      "path": "system.security.principal/4.0.1",
+      "hashPath": "system.security.principal.4.0.1.nupkg.sha512"
+    },
+    "system.servicemodel.primitives/4.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Kd65HOn/5pL9xtCUkSL8xVqpqBUYy9tsfo0qe/MTTzApY8WQ+6i4I2ts++M+m4vbOanCoEsjjUj26P6C6ilQjQ==",
+      "path": "system.servicemodel.primitives/4.1.0",
+      "hashPath": "system.servicemodel.primitives.4.1.0.nupkg.sha512"
+    },
     "system.text.encoding/4.0.11": {
       "type": "package",
       "serviceable": true,
@@ -639,6 +672,13 @@
       "sha512": "sha512-GgSXyjW23Wm5aOInCZqckFQSwumb1MOr+fu02cxZ01jE6N5jX2LRoo5mwe6Bb6DtFtt2JHOFXNszwmsX3NPrng==",
       "path": "system.xml.xdocument/4.0.11",
       "hashPath": "system.xml.xdocument.4.0.11.nupkg.sha512"
+    },
+    "system.xml.xmlserializer/4.0.11": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-FrazwwqfIXTfq23mfv4zH+BjqkSFNaNFBtjzu3I9NRmG8EELYyrv/fJnttCIwRMFRR/YKXF1hmsMmMEnl55HGw==",
+      "path": "system.xml.xmlserializer/4.0.11",
+      "hashPath": "system.xml.xmlserializer.4.0.11.nupkg.sha512"
     }
   }
 }
