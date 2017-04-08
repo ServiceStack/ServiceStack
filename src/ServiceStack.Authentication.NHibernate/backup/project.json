@@ -1,0 +1,37 @@
+﻿{
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": [
+          "DEBUG",
+          "TRACE"
+        ],
+        "debugType": "portable"
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": [
+          "TRACE"
+        ],
+        "optimize": true
+      }
+    }
+  },
+  "dependencies": {
+    "ServiceStack.Interfaces": "1.0.*",
+    "ServiceStack.Text": "1.0.*",
+    "ServiceStack.Client": "1.0.*",
+    "ServiceStack.Common": "1.0.*"
+  },
+  "frameworks": {
+    "net45": {
+      "dependencies": {
+        "FluentNHibernate": "2.0.3.0",
+        "Iesi.Collections": "4.0.1.4000",
+        "NHibernate": "4.0.4.4000"
+      }
+    }
+  },
+  "version": "1.0.0"
+}

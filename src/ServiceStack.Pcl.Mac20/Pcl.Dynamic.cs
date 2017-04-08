@@ -1,7 +1,7 @@
 //Copyright (c) Service Stack LLC. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if !(PCL || LITE)
+#if !(PCL || LITE || NO_DYNAMIC)
 
 using System;
 using System.Collections.Generic;

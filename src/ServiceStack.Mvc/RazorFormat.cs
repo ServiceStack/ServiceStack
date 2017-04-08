@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if NETSTANDARD1_6
+
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -560,3 +562,5 @@ namespace ServiceStack.Mvc
         public virtual void EndServiceStackRequest() => HostContext.AppHost.OnEndRequest(Request);
     }
 }
+
+#endif

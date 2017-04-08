@@ -73,7 +73,7 @@ namespace ServiceStack
         public bool IsStopped => stopped;
 
         byte[] buffer;
-        readonly Encoding encoding = new UTF8Encoding();
+        readonly Encoding encoding = Encoding.UTF8;
 
         HttpWebRequest httpReq;
         HttpWebResponse response;
