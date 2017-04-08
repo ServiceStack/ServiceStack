@@ -223,7 +223,7 @@
     <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard1.6')" />
     <Copy SourceFiles="%(OpenApiCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard1.6" />
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.Api.OpenApi.Core/servicestack.api.swagger.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.Api.OpenApi.Core/servicestack.api.openapi.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion)"
           LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Authentication.OpenId -->
@@ -380,7 +380,7 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45')" />
     <Copy SourceFiles="%(SerilogFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45" />
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Serilog/servicestack.logging.Serilog.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Serilog/servicestack.logging.serilog.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Logging.Slack -->
@@ -547,7 +547,7 @@
     <Copy SourceFiles="%(Ios10Files.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.iOS10" />
 
     <!-- Mac20 pcl provider -->
-    <MSBuild Projects="../src/ServiceStack.Pcl.iOS10/ServiceStack.Pcl.Mac20.csproj" Properties="Configuration=$(Configuration);DefineConstants=__MAC__;__UNIFIED__;OutputPath=bin/$(Configuration)" />
+    <MSBuild Projects="../src/ServiceStack.Pcl.Mac20/ServiceStack.Pcl.Mac20.csproj" Properties="Configuration=$(Configuration);DefineConstants=__MAC__;__UNIFIED__;OutputPath=bin/$(Configuration)" />
     <Copy SourceFiles="%(MacFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
     <Copy SourceFiles="%(MacFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.Mac20" />
 
@@ -656,7 +656,7 @@
     <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.RabbitMq.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.RabbitMq.Core/lib/netstandard1.6')" />
     <Copy SourceFiles="%(RabbitMqCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.RabbitMq.Core/lib/netstandard1.6" />
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.RabbitMq.Core/servicestack.server.rabbitmq.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.RabbitMq.Core/servicestack.rabbitmq.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion) -Symbols"
           LogStandardErrorAsError="true" />
 
     <!-- ServiceStack -->

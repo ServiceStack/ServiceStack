@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NET45;RELEASE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -45,6 +45,10 @@
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
     <DefineConstants>$(DefineConstants);NETSTANDARD1_6</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
@@ -74,6 +78,21 @@
     <PackageReference Include="System.Threading.ThreadPool" Version="4.0.10" />
     <PackageReference Include="System.Threading.Tasks" Version="4.0.11" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="AspNet\ServiceStackPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Update="Metadata\BaseWsdlPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Update="MiniProfiler\Data\ProfiledDbCommand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="MiniProfiler\Data\ProfiledDbConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
 
 </Project>

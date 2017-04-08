@@ -46,6 +46,9 @@
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Client">
+      <HintPath>..\..\lib\pcl\ServiceStack.Client.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\ServiceStack.Client\Properties\AssemblyInfo.cs">
@@ -57,12 +60,6 @@
     <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
     <Compile Include="PclExport.Net40.cs" />
     <Compile Include="PclExportClient.Net40.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.PCL.csproj">
-      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
-      <Name>ServiceStack.Client.PCL</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
