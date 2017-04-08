@@ -78,4 +78,10 @@
     <Reference Include="..\..\lib\netstandard1.6\ServiceStack.Aws.dll" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+    </None>
+  </ItemGroup>
+
 </Project>
