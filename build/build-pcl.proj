@@ -78,10 +78,10 @@
     <Delete Files="@(NugetPackageFilesToDelete)" />
 
     <ItemGroup>
-      <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/portable45-net45+win8/ServiceStack.Client.*"></ClientFiles>
-      <ClientFilesSL5 Include="$(SrcDir)/ServiceStack.Client/bin/SL5/ServiceStack.Client.*"></ClientFilesSL5>
+      <ClientPclFiles Include="$(SrcDir)/ServiceStack.Client/bin/portable45-net45+win8/ServiceStack.Client.*"></ClientPclFiles>
+      <ClientSL5Files Include="$(SrcDir)/ServiceStack.Client/bin/SL5/ServiceStack.Client.*"></ClientSL5Files>
 
-      <HttpClientFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/portable45-net45+win8/ServiceStack.HttpClient.*"></HttpClientFiles>
+      <HttpClientPclFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/portable45-net45+win8/ServiceStack.HttpClient.*"></HttpClientPclFiles>
 
       <Net45Files Include="$(SrcDir)/ServiceStack.Pcl.Net45/bin/$(Configuration)/ServiceStack.Pcl.Net45.*"></Net45Files>
       <WinStoreFiles Include="$(SrcDir)/ServiceStack.Pcl.WinStore/bin/$(Configuration)/ServiceStack.Pcl.WinStore.*"></WinStoreFiles>
@@ -92,19 +92,19 @@
 
     <!-- ServiceStack.HttpClient -->
 
-    <MSBuild Projects="../src/ServiceStack.HttpClient/ServiceStack.HttpClient.Pcl.csproj" Properties="Configuration=$(Configuration);DefineConstants=PCL"/>
-    <Copy SourceFiles="%(HttpClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
+    <MSBuild Projects="../src/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj" Properties="Configuration=$(Configuration);DefineConstants=PCL"/>
+    <Copy SourceFiles="%(HttpClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
 
     <MakeDir Directories="$(BuildSolutionDir)/NuGet/ServiceStack.HttpClient/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" Condition="!Exists('$(BuildSolutionDir)/NuGet/ServiceStack.HttpClient/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10')" />
-    <Copy SourceFiles="%(HttpClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.HttpClient/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" />
+    <Copy SourceFiles="%(HttpClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.HttpClient/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" />
 
     <!-- ServiceStack.Client -->
 
-    <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.Pcl.csproj" Properties="Configuration=$(Configuration);DefineConstants=PCL"/>
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
+    <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.csproj" Properties="Configuration=$(Configuration);DefineConstants=PCL"/>
+    <Copy SourceFiles="%(ClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
 
     <MakeDir Directories="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" Condition="!Exists('$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10')" />
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" />
+    <Copy SourceFiles="%(ClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/portable-net45+win8+monotouch+monoandroid+xamarin.ios10" />
 
     <!-- NET 4.5 pcl provider -->
 
@@ -140,10 +140,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration);Optimize=True;DebugSymbols=True;DefineConstants=SL5;Platform=Any CPU;OutputPath=bin/SL5;DocumentationFile=bin/SL5/ServiceStack.Text.xml" />
 
-    <Copy SourceFiles="%(ClientFilesSL5.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/sl5" />
-
-    <Copy SourceFiles="%(ClientFilesSL5.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Pcl/lib/sl5" />
-    <Copy SourceFiles="%(ClientFilesSL5.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/sl5" />
+    <Copy SourceFiles="%(ClientSL5Files.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/sl5" />
+    <Copy SourceFiles="%(ClientSL5Files.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/sl5" />
 
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/win" />
 
