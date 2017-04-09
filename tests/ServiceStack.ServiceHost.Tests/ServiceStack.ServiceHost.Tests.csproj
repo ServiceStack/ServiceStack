@@ -98,16 +98,16 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\lib\pcl\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite.Sqlite">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.Sqlite.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.OrmLite.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -205,10 +205,6 @@
     <None Include="Views\Template\Customer.md" />
     <None Include="Views\Template\CustomerDetailsResponse.md" />
     <None Include="AppData\Template\_Layout.cshtml" />
-    <Content Include="..\..\lib\sqlite3.dll">
-      <Link>sqlite3.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="AppData\Template\_Layout.shtml" />
     <Content Include="AppData\NoTemplate\_Layout.shtml" />
     <Content Include="Views\Shared\alt-template.shtml" />

@@ -53,11 +53,11 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\lib\pcl\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
@@ -65,10 +65,10 @@
       <HintPath>..\..\lib\tests\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite.Sqlite">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.Sqlite.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.OrmLite.Sqlite.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -141,11 +141,6 @@
     <None Include="Web.config">
       <SubType>Designer</SubType>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\..\lib\sqlite3.dll">
-      <Link>sqlite3.dll</Link>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

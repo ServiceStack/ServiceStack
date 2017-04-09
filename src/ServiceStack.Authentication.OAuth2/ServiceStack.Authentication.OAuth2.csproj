@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="..\..\lib\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
@@ -32,7 +32,7 @@
     <Reference Include="System.Web" />
     <Reference Include="Microsoft.CSharp" />
 
-    <Reference Include="..\..\lib\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
 </Project>

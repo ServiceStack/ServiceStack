@@ -34,7 +34,7 @@
     <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
     <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj" />
-    <Reference Include="..\..\lib\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -52,13 +52,13 @@
     <PackageReference Include="Mysql.Data" Version="6.9.9" />
     <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj" />
 
-    <Reference Include="..\..\lib\ServiceStack.Text.dll" />
-    <Reference Include="..\..\lib\ServiceStack.Redis.dll" />
-    <Reference Include="..\..\lib\ServiceStack.OrmLite.dll" />
-    <Reference Include="..\..\lib\ServiceStack.OrmLite.Sqlite.dll" />
-    <Reference Include="..\..\lib\ServiceStack.OrmLite.SqlServer.dll" />
-    <Reference Include="..\..\lib\ServiceStack.OrmLite.MySql.dll" />
-    <Reference Include="..\..\lib\ServiceStack.Aws.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Redis.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.Sqlite.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.SqlServer.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.MySql.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Aws.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">

@@ -52,10 +52,10 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Web.Services" />
     <Reference Include="ServiceStack.Redis">
-      <HintPath>..\..\lib\ServiceStack.Redis.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Redis.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>

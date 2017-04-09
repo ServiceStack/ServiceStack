@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="..\..\lib\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Signed.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Signed.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.Signed.csproj" />

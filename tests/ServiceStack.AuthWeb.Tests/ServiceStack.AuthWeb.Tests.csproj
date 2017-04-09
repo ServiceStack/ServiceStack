@@ -76,22 +76,22 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\lib\pcl\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite.PostgreSQL">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.PostgreSQL.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.OrmLite.PostgreSQL.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite.Sqlite">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.Sqlite.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.OrmLite.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Redis">
-      <HintPath>..\..\lib\ServiceStack.Redis.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Redis.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -113,10 +113,6 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\lib\sqlite3.dll">
-      <Link>sqlite3.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="App_Readme\DCCreative.DNOA4Glimpse.Readme.txt" />
     <Content Include="Global.asax" />
     <Content Include="img\facebook_normal.png">

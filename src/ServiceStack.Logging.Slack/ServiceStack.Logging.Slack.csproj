@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="..\..\lib\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -26,7 +26,7 @@
     <PackageReference Include="EnterpriseLibrary.Logging" Version="5.0.505.1" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="..\..\lib\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
 </Project>

@@ -75,12 +75,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signed", "Signed", "{C57AF9
 		..\NuGet.Signed\ServiceStack.Signed\servicestack.signed.nuspec = ..\NuGet.Signed\ServiceStack.Signed\servicestack.signed.nuspec
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{CA02FE0E-DA08-4781-9AB1-60542F312DD5}"
-	ProjectSection(SolutionItems) = preProject
-		Templates\ClassLibraryTemplate.csproj = Templates\ClassLibraryTemplate.csproj
-		Templates\SilverlightTemplate.csproj = Templates\SilverlightTemplate.csproj
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Tests", "..\tests\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj", "{3FA9197A-462D-44CC-9AB3-61AF414D0B45}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceHost.Tests", "..\tests\ServiceStack.ServiceHost.Tests\ServiceStack.ServiceHost.Tests.csproj", "{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA}"

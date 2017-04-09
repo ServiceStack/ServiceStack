@@ -37,7 +37,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="..\..\lib\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -45,7 +45,7 @@
     <Reference Include="System.Web" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Configuration" />
-    <Reference Include="..\..\lib\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
@@ -82,9 +82,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="AspNet\ServiceStackPage.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
     <Compile Update="Metadata\BaseWsdlPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
