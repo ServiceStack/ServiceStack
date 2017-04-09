@@ -36,7 +36,7 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using System.Text;
 
-#if PCL || SL5 || NETSTANDARD1_1
+#if (PCL || SL5 || NETSTANDARD1_1) && !NET45
 using ServiceStack.Pcl;
 #else
 using System.Collections.Specialized;

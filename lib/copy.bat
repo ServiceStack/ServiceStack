@@ -17,6 +17,7 @@ COPY ..\..\ServiceStack\src\ServiceStack.Client\bin\%BUILD%\netstandard1.1\Servi
 COPY ..\..\ServiceStack\src\ServiceStack.Client\bin\%BUILD%\netstandard1.6\ServiceStack.Client.* netstandard1.6
 COPY ..\..\ServiceStack\src\ServiceStack.Client\bin\Signed\net45\ServiceStack.Client.* signed
 COPY ..\..\ServiceStack\src\ServiceStack.Client\bin\SL5\ServiceStack.Client.* sl5
+COPY "..\..\ServiceStack\src\ServiceStack.Client\bin\%BUILD%\portable45-net45+win8\ServiceStack.Client.*" pcl
 
 COPY ..\..\ServiceStack\src\ServiceStack.Common\bin\%BUILD%\net45\ServiceStack.Common.* net45
 COPY ..\..\ServiceStack\src\ServiceStack.Common\bin\%BUILD%\netstandard1.3\ServiceStack.Common.* netstandard1.3
