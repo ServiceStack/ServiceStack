@@ -65,6 +65,11 @@
         <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
         <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
       </RegexTransform>
+      <!-- Keep ServiceStack.Interfaces AssemblyVersion at 4.0.0.0 -->
+      <RegexTransform Include="$(SrcDir)/**/ServiceStack.Interfaces/Properties/AssemblyInfo.cs">
+        <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+        <ReplaceWith>AssemblyVersion("4.0.0.0")</ReplaceWith>
+      </RegexTransform>
       <RegexTransform Include="$(BuildSolutionDir)/tests/**/*.config">
         <Find>key="servicestack:license".*</Find>
         <ReplaceWith>key="servicestack:license" value="$([System.IO.File]::ReadAllText($(MSBuildProjectDirectory)/appsettings.license.txt))" /&gt;</ReplaceWith>
