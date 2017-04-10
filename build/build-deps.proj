@@ -18,38 +18,22 @@
 
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
 
-  <Target Name="UpdateVersion">
-    <ItemGroup>
-      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
-        <Find>AssemblyFileVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
-        <ReplaceWith>AssemblyFileVersion("$(Version)")</ReplaceWith>
-      </RegexTransform>
-      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
-        <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
-        <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
-      </RegexTransform>
-      <!-- Keep ServiceStack.Interfaces AssemblyVersion at 4.0.0.0 -->
-      <RegexTransform Include="$(SrcDir)/**/ServiceStack.Interfaces/Properties/AssemblyInfo.cs">
-        <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
-        <ReplaceWith>AssemblyVersion("4.0.0.0")</ReplaceWith>
-      </RegexTransform>
-    </ItemGroup>
-
-    <RegexTransform Items="@(RegexTransform)" />
-  </Target>
-
   <Target Name="Build">
-    <CallTarget Targets="UpdateVersion" />
+    <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
+      <Find>AssemblyFileVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+      <ReplaceWith>AssemblyFileVersion("$(Version)")</ReplaceWith>
+    </RegexTransform>
 
+    <!-- Keep Signed AssemblyVersion at 4.0.0.0 -->
+    <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
+      <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+      <ReplaceWith>AssemblyVersion("4.0.0.0")</ReplaceWith>
+    </RegexTransform>
+    <RegexTransform Items="@(RegexTransform)" />
+
+    <!-- Signed .NET 4.5 -->
     <!-- ServiceStack.Interfaces -->
-
     <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Client -->
-
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.csproj"
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
@@ -57,25 +41,39 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=Signed" />
 
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Common/ServiceStack.Common.Signed.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=Signed" />
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.Signed.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=Signed" />
+
+    <!-- .NET 4.5 -->
+    <!-- Updte AssemblyVersion -->
+    <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
+      <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+      <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
+    </RegexTransform>
+    <RegexTransform Items="@(RegexTransform)" />
+
+    <!-- ServiceStack.Client -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
     <!-- ServiceStack.Common -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Common/ServiceStack.Common.csproj"
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Common/ServiceStack.Common.Signed.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=Signed" />
-
     <!-- ServiceStack -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.csproj"
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
-
-    <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.Signed.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=Signed" />
 
   </Target>
 
