@@ -11,7 +11,6 @@
     <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
     <SrcDir>$(BuildSolutionDir)/src</SrcDir>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
-    <NUnitConsoleArgs>/noshadow</NUnitConsoleArgs>
     <NuGetPath>$(SrcDir)/.nuget/nuget.exe</NuGetPath>
     <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
     <NuGetPackageCoreDir>$(BuildSolutionDir)/NuGet.Core/</NuGetPackageCoreDir>
@@ -35,17 +34,7 @@
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
 
   <Target Name="TeamCityBuild">
-    <!--<Copy SourceFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/ci.app.config" DestinationFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/app.config" />-->
     <CallTarget Targets="Default" />
-  </Target>
-
-  <Target Name="UnitTests" DependsOnTargets="$(DoBuildSolutionsDependsOn)">
-    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.ServiceHost.Tests/bin/$(Configuration)/ServiceStack.ServiceHost.Tests.dll $(NUnitConsoleArgs)" />
-    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Messaging.Tests/bin/$(Configuration)/ServiceStack.Messaging.Tests.dll $(NUnitConsoleArgs)" />
-    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Common.Tests/bin/$(Configuration)/ServiceStack.Common.Tests.dll $(NUnitConsoleArgs)" />
-    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Auth.Tests/bin/$(Configuration)/ServiceStack.Auth.Tests.dll $(NUnitConsoleArgs)" />
-    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.WebHostApp/bin/ServiceStack.WebHost.Endpoints.Tests.dll $(NUnitConsoleArgs)" />
-    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Logging.Tests/bin/ServiceStack.Logging.Tests.dll $(NUnitConsoleArgs)" />
   </Target>
 
   <Target Name="Build">
@@ -121,13 +110,13 @@
       <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/net45/ServiceStack.Client.*"></ClientFiles>
       <ClientCoreFiles11 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/netstandard1.1/ServiceStack.Client.*"></ClientCoreFiles11>
       <ClientCoreFiles16 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/netstandard1.6/ServiceStack.Client.*"></ClientCoreFiles16>
-      <ClientPclFiles Include="$(SrcDir)/ServiceStack.Client/bin/portable45-net45+win8/ServiceStack.Client.*"></ClientPclFiles>
+      <ClientPclFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/portable45-net45+win8/ServiceStack.Client.*"></ClientPclFiles>
       <ClientSL5Files Include="$(SrcDir)/ServiceStack.Client/bin/SL5/ServiceStack.Client.*"></ClientSL5Files>
 
       <HttpClientFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/net45/ServiceStack.HttpClient.*"></HttpClientFiles>
       <HttpClientFiles11 Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard1.1/ServiceStack.HttpClient.*"></HttpClientFiles11>
       <HttpClientFiles16 Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard1.6/ServiceStack.HttpClient.*"></HttpClientFiles16>
-      <HttpClientPclFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/portable45-net45+win8/ServiceStack.HttpClient.*"></HttpClientPclFiles>
+      <HttpClientPclFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/portable45-net45+win8/ServiceStack.HttpClient.*"></HttpClientPclFiles>
 
       <Net45Files Include="$(SrcDir)/ServiceStack.Pcl.Net45/bin/$(Configuration)/net45/ServiceStack.Pcl.Net45.*"></Net45Files>
       <WinStoreFiles Include="$(SrcDir)/ServiceStack.Pcl.WinStore/bin/$(Configuration)/ServiceStack.Pcl.WinStore.*"></WinStoreFiles>
