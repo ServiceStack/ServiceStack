@@ -664,7 +664,7 @@ namespace ServiceStack
                 {
                     if (RefreshToken != null)
                     {
-                        var refreshRequest = new GetAccessToken {RefreshToken = RefreshToken};
+                        var refreshRequest = new GetAccessToken { RefreshToken = RefreshToken };
                         var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
 
                         GetAccessTokenResponse tokenResponse;
@@ -764,10 +764,14 @@ namespace ServiceStack
                 {
                     client.AddBasicAuth(this.UserName, this.Password);
                 }
-                else
+                else if (authInfo?.method == "basic" || authInfo?.method == "digest")
                 {
                     this.authInfo = new AuthenticationInfo(doAuthHeader);
                     client.AddAuthInfo(this.UserName, this.Password, authInfo);
+                }
+                else if (UserName != null && Password != null)
+                {
+                    client.AddBasicAuth(this.UserName, this.Password);
                 }
             }
         }
