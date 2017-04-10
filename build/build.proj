@@ -89,7 +89,7 @@
     <Delete Files="@(NugetPackageFilesToDelete)" />
 
     <ItemGroup>
-      <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/portable40-net45+sl5+win8+wp8+wpa81/ServiceStack.Interfaces.*"></InterfaceFiles>
+      <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/portable40-net45+sl5+win8+wp8+wpa81/ServiceStack.Interfaces.*"></InterfaceFiles>
 
       <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.dll"></ServiceStackFiles>
       <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.pdb"></ServiceStackFiles>
