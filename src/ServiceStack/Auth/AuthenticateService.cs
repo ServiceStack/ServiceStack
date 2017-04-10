@@ -277,7 +277,7 @@ namespace ServiceStack.Auth
 
             object response = null;
 
-            var doAuth = !authFeature.SkipAuthenticationIfAlreadyAuthenticated
+            var doAuth = !(authFeature?.SkipAuthenticationIfAlreadyAuthenticated == true)
                 || !oAuthConfig.IsAuthorized(session, session.GetAuthTokens(provider), request);
 
             if (doAuth)
