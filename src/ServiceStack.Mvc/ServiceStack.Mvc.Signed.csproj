@@ -44,8 +44,8 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="..\..\lib\signed\ServiceStack.Text.dll" />
-    <Reference Include="..\..\lib\signed\System.Web.Razor.dll" />
-    <Reference Include="..\..\lib\System.Web.Mvc.dll" />
+    <Reference Include="..\..\lib\thirdparty\System.Web.Razor.dll" />
+    <Reference Include="..\..\lib\thirdparty\System.Web.Mvc.dll" />
   </ItemGroup>
 
 </Project>

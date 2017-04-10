@@ -41,8 +41,8 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
-    <Reference Include="..\..\lib\net45\System.Web.Razor.dll" />
-    <Reference Include="..\..\lib\net45\System.Web.Mvc.dll" />
+    <Reference Include="..\..\lib\thirdparty\System.Web.Razor.dll" />
+    <Reference Include="..\..\lib\thirdparty\System.Web.Mvc.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
