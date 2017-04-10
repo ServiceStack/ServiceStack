@@ -302,6 +302,15 @@ namespace ServiceStack
 
                                 }, token).Unwrap();
                         }
+                        if (UserName != null && Password != null && client.DefaultRequestHeaders.Authorization == null)
+                        {
+                            AddBasicAuth(client);
+                            httpReq = CreateRequest(httpMethod, absoluteUrl, request);
+                            sendAsyncTask = client.SendAsync(httpReq, token);
+                            return sendAsyncTask.ContinueWith(t =>
+                                    ConvertToResponse<TResponse>(t.Result, httpMethod, absoluteUrl, request, token),
+                                token).Unwrap();
+                        }
                     }
 
                     return ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request, token);
