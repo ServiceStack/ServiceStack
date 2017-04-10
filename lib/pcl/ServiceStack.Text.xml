@@ -1194,12 +1194,21 @@
         </member>
         <member name="M:ServiceStack.PathUtils.MapProjectPath(System.String)">
             <summary>
-            Maps the path of a file in the context of a VS project in a Consle App
+            Maps the path of a file in the context of a VS project in a Console App
             </summary>
             <param name="relativePath">the relative path</param>
             <returns>the absolute path</returns>
             <remarks>Assumes static content is two directories above the /bin/ directory,
             eg. in a unit test scenario  the assembly would be in /bin/Debug/.</remarks>
+        </member>
+        <member name="M:ServiceStack.PathUtils.MapProjectPlatformPath(System.String)">
+            <summary>
+            Maps the path of a file in the context of a VS 2017+ multi-platform project in a Console App
+            </summary>
+            <param name="relativePath">the relative path</param>
+            <returns>the absolute path</returns>
+            <remarks>Assumes static content is two directories above the /bin/ directory,
+            eg. in a unit test scenario  the assembly would be in /bin/Debug/net45</remarks>
         </member>
         <member name="M:ServiceStack.PathUtils.MapAbsolutePath(System.String)">
             <summary>

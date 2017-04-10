@@ -83,4 +83,16 @@
     <Reference Include="..\..\lib\netstandard1.6\ServiceStack.Aws.dll" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestExistingDir\default.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestExistingDir\textfile.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestExistingDir\upload.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
