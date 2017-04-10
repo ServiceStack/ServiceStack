@@ -764,14 +764,17 @@ namespace ServiceStack
                 {
                     client.AddBasicAuth(this.UserName, this.Password);
                 }
-                else if (authInfo?.method == "basic" || authInfo?.method == "digest")
+                else 
                 {
                     this.authInfo = new AuthenticationInfo(doAuthHeader);
-                    client.AddAuthInfo(this.UserName, this.Password, authInfo);
-                }
-                else if (UserName != null && Password != null)
-                {
-                    client.AddBasicAuth(this.UserName, this.Password);
+                    if (authInfo?.method == "basic" || authInfo?.method == "digest")
+                    {
+                        client.AddAuthInfo(this.UserName, this.Password, authInfo);
+                    }
+                    else if (UserName != null && Password != null)
+                    {
+                        client.AddBasicAuth(this.UserName, this.Password);
+                    }
                 }
             }
         }

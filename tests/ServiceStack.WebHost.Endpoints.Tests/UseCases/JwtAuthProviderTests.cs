@@ -419,6 +419,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         [Test]
+        public async Task Does_return_token_on_subsequent_BasicAuth_Authentication_requests_Async()
+        {
+            var client = GetClientWithBasicAuthCredentials();
+
+            var response = await client.PostAsync(new Authenticate());
+            Assert.That(response.BearerToken, Is.Not.Null);
+            Assert.That(response.RefreshToken, Is.Not.Null);
+
+            response = await client.PostAsync(new Authenticate());
+            Assert.That(response.BearerToken, Is.Not.Null);
+            Assert.That(response.RefreshToken, Is.Not.Null);
+        }
+
+        [Test]
         public void Does_return_token_on_subsequent_Credentials_Authentication_requests()
         {
             var client = GetClient();
