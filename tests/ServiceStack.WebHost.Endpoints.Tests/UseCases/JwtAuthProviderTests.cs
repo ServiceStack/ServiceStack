@@ -86,7 +86,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             return new JsonHttpClient(Config.ListeningOn);
         }
 
-        protected override IJsonServiceClient GetClientWithCredentials()
+        protected override IJsonServiceClient GetClientWithBasicAuthCredentials()
         {
             return new JsonHttpClient(Config.ListeningOn)
             {
@@ -130,10 +130,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                     new IAuthProvider[]
                     {
+                        new BasicAuthProvider(),
+                        new CredentialsAuthProvider(),
                         JwtAuthProvider,
-                        new CredentialsAuthProvider()
                     }));
-
 
                 Plugins.Add(new RegistrationFeature());
 
@@ -153,10 +153,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
         protected virtual IJsonServiceClient GetClient() => new JsonServiceClient(Config.ListeningOn);
 
-        protected virtual IJsonServiceClient GetClientWithCredentials() => new JsonServiceClient(Config.ListeningOn)
+        protected virtual IJsonServiceClient GetClientWithBasicAuthCredentials() => new JsonServiceClient(Config.ListeningOn)
         {
             UserName = Username,
-            Password = Password
+            Password = Password,
         };
 
         protected virtual IJsonServiceClient GetClientWithRefreshToken(string refreshToken = null, string accessToken = null)
@@ -407,7 +407,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         [Test]
         public void Does_return_token_on_subsequent_BasicAuth_Authentication_requests()
         {
-            var client = GetClientWithCredentials();
+            var client = GetClientWithBasicAuthCredentials();
 
             var response = client.Post(new Authenticate());
             Assert.That(response.BearerToken, Is.Not.Null);
@@ -416,6 +416,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             response = client.Post(new Authenticate());
             Assert.That(response.BearerToken, Is.Not.Null);
             Assert.That(response.RefreshToken, Is.Not.Null);
+        }
+
+        [Test]
+        public void Does_return_token_on_subsequent_Credentials_Authentication_requests()
+        {
+            var client = GetClient();
+
+            var response = client.Post(new Authenticate
+            {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password,
+                RememberMe = true,
+            });
+            Assert.That(response.BearerToken, Is.Not.Null);
+            Assert.That(response.RefreshToken, Is.Not.Null);
+
+            response = client.Post(new Authenticate
+            {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password,
+                RememberMe = true,
+            });
+            Assert.That(response.BearerToken, Is.Not.Null);
+            Assert.That(response.RefreshToken, Is.Not.Null);
+
+            response = client.Post(new Authenticate());
+            Assert.That(response.BearerToken, Is.Null);
+            Assert.That(response.RefreshToken, Is.Null);
         }
     }
 }
