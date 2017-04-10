@@ -19,16 +19,18 @@
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
 
   <Target Name="Build">
-    <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
-      <Find>AssemblyFileVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
-      <ReplaceWith>AssemblyFileVersion("$(Version)")</ReplaceWith>
-    </RegexTransform>
+    <ItemGroup>
+      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
+        <Find>AssemblyFileVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+        <ReplaceWith>AssemblyFileVersion("$(Version)")</ReplaceWith>
+      </RegexTransform>
 
-    <!-- Keep Signed AssemblyVersion at 4.0.0.0 -->
-    <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
-      <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
-      <ReplaceWith>AssemblyVersion("4.0.0.0")</ReplaceWith>
-    </RegexTransform>
+      <!-- Keep Signed AssemblyVersion at 4.0.0.0 -->
+      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
+        <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+        <ReplaceWith>AssemblyVersion("4.0.0.0")</ReplaceWith>
+      </RegexTransform>
+    </ItemGroup>
     <RegexTransform Items="@(RegexTransform)" />
 
     <!-- Signed .NET 4.5 -->
@@ -51,10 +53,12 @@
 
     <!-- .NET 4.5 -->
     <!-- Updte AssemblyVersion -->
-    <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
-      <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
-      <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
-    </RegexTransform>
+    <ItemGroup>
+      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
+        <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+        <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
+      </RegexTransform>
+    </ItemGroup>
     <RegexTransform Items="@(RegexTransform)" />
 
     <!-- ServiceStack.Client -->
