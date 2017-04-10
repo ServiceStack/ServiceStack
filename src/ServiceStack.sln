@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771-6C97-4D64-8E11-FD88AE48A41A}"
 	ProjectSection(SolutionItems) = preProject
 		..\build\appsettings.license.txt = ..\build\appsettings.license.txt
+		..\build\build-deps.proj = ..\build\build-deps.proj
 		..\build\build-pcl.proj = ..\build\build-pcl.proj
 		..\build\build-sn.proj = ..\build\build-sn.proj
 		..\build\build.bat = ..\build\build.bat
@@ -532,11 +533,12 @@ Global
 		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Release|x86.ActiveCfg = Release|Any CPU
-		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
-		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Signed|Any CPU.Build.0 = Signed|Any CPU
-		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Signed|Mixed Platforms.ActiveCfg = Signed|Any CPU
-		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Signed|Mixed Platforms.Build.0 = Signed|Any CPU
-		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Signed|x86.ActiveCfg = Signed|Any CPU
+		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Signed|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
+		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Signed|x86.ActiveCfg = Release|Any CPU
+		{BB47EC88-D61D-4B67-9491-78C7155A7798}.Signed|x86.Build.0 = Release|Any CPU
 		{16E42781-8872-4468-9B7A-9140778A4D5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{16E42781-8872-4468-9B7A-9140778A4D5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16E42781-8872-4468-9B7A-9140778A4D5E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
