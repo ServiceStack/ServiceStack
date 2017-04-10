@@ -481,7 +481,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var client = GetClient();
-                var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+                var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
                 client.PostFile<FileUploadResponse>(ListeningOn + "/securedfileupload", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
 
                 Assert.Fail("Shouldn't be allowed");
@@ -497,7 +497,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void PostFile_does_work_with_BasicAuth()
         {
             var client = GetClientWithUserPassword();
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
             var response = client.PostFile<FileUploadResponse>(ListeningOn + "/securedfileupload", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
@@ -511,7 +511,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetClientWithUserPassword();
             var request = new SecuredFileUpload { CustomerId = 123, CustomerName = "Foo" };
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
             var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/securedfileupload", uploadFile, request);
