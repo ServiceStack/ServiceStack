@@ -373,7 +373,7 @@
       <Project>{01D3F057-7984-498F-8B0A-EB375701E204}</Project>
       <Name>ServiceStack.Api.Swagger</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDB\ServiceStack.Authentication.MongoDb.csproj">
+    <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj">
       <Project>{16E42781-8872-4468-9B7A-9140778A4D5E}</Project>
       <Name>ServiceStack.Authentication.MongoDb</Name>
     </ProjectReference>

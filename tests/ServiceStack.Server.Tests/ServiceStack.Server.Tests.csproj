@@ -52,8 +52,8 @@
     <Reference Include="System.Net" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
-    <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj" />
 
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Redis.dll" />

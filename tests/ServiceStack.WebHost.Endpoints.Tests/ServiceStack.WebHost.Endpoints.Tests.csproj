@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net45;netcoreapp1.1</TargetFrameworks>
     <!--<TargetFrameworks>net45</TargetFrameworks>-->
-    <DebugType>portable</DebugType>
+    <!--<DebugType>portable</DebugType>-->
     <OutputType>Library</OutputType>
     <AssemblyName>ServiceStack.WebHost.Endpoints.Tests</AssemblyName>
     <PackageId>ServiceStack.WebHost.Endpoints.Tests</PackageId>
@@ -81,12 +81,6 @@
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.OrmLite.SqlServer.dll" />
     <Reference Include="..\..\lib\netstandard1.6\ServiceStack.OrmLite.MySql.dll" />
     <Reference Include="..\..\lib\netstandard1.6\ServiceStack.Aws.dll" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
-    <PackageReference Include="System.Data.SQLite.Core">
-      <Version>1.0.105</Version>
-    </PackageReference>
   </ItemGroup>
 
 </Project>
