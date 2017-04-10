@@ -14,6 +14,10 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
+    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.Authentication.RavenDb.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />

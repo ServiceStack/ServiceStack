@@ -15,6 +15,10 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
+    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.HttpClient.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />

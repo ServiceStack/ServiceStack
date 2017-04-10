@@ -14,6 +14,10 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
+    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="Templates\*.*;js\*.*;MiniProfiler\UI\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
@@ -30,10 +34,6 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>NET45;RELEASE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
-    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

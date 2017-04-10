@@ -17,6 +17,10 @@
     <AssemblyOriginatorKeyFile>servicestack-sn.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
+    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.Razor.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Signed.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Signed.csproj" />
