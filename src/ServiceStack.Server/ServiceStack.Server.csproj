@@ -24,7 +24,6 @@
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -36,6 +35,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
 
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Redis.dll" />
@@ -56,6 +56,7 @@
     <PackageReference Include="System.Threading.ThreadPool" Version="4.0.10" />
     <PackageReference Include="System.Threading.Tasks" Version="4.0.11" />
 
+    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.OrmLite.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Redis.dll" />

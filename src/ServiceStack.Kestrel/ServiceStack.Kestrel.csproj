@@ -45,6 +45,7 @@
     <PackageReference Include="System.Collections.Specialized" Version="4.0.1" />
     <PackageReference Include="System.Linq.Queryable" Version="4.0.1" />
     <PackageReference Include="System.Threading.ThreadPool" Version="4.0.10" />
+    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
   </ItemGroup>
 

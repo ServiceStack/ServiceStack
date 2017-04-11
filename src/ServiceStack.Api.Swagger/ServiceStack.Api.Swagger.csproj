@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
@@ -38,6 +37,7 @@
     <Reference Include="System.Net" />
     <Reference Include="System.Web" />
 
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
@@ -50,6 +50,7 @@
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.0.11" />
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.1.1" />
 
+    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
   </ItemGroup>
 

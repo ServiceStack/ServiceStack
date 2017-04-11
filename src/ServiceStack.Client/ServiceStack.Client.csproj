@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.0.1" PrivateAssets="all" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -40,6 +39,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
@@ -52,7 +52,8 @@
     <PackageReference Include="System.Net.Requests" Version="4.0.11" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.1.0" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.0.11" />
-   <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Text.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
@@ -84,6 +85,7 @@
     <PackageReference Include="System.Net.Security" Version="4.0.0" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.1.0" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.0.11" />
+    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
   </ItemGroup>
 
@@ -122,6 +124,7 @@
     <Reference Include="System.Xml.ReaderWriter" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Dynamic.Runtime" />
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\pcl\ServiceStack.Text.dll" />
   </ItemGroup>
 

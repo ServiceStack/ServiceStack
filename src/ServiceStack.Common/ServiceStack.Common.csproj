@@ -27,15 +27,12 @@
     <Compile Include="..\..\ServiceStack.Common\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
-  </ItemGroup>
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
@@ -66,6 +63,7 @@
     <PackageReference Include="System.Net.Primitives" Version="4.0.11" />
     <PackageReference Include="System.Net.NetworkInformation" Version="4.1.0" />
     <PackageReference Include="System.Net.Security" Version="4.0.0" />
+    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
   </ItemGroup>
 

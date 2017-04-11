@@ -33,7 +33,6 @@
     <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
     <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -52,6 +51,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj" />
 
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Redis.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.dll" />
@@ -74,6 +74,7 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
 
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
+    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Redis.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.OrmLite.dll" />

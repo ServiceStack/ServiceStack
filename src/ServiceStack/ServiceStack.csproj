@@ -37,15 +37,12 @@
     <DefineConstants>NET45;RELEASE</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System.Net" />
     <Reference Include="System.Web" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Configuration" />
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
@@ -79,6 +76,7 @@
     <PackageReference Include="System.Threading.Thread" Version="4.0.0" />
     <PackageReference Include="System.Threading.ThreadPool" Version="4.0.10" />
     <PackageReference Include="System.Threading.Tasks" Version="4.0.11" />
+    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
   </ItemGroup>
 
