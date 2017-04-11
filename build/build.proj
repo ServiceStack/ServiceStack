@@ -15,9 +15,8 @@
     <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
     <NuGetPackageCoreDir>$(BuildSolutionDir)/NuGet.Core/</NuGetPackageCoreDir>
     <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion).0</Version>
-    <UnstableTag Condition="$(RELEASE) == ''">-unstable</UnstableTag>
-    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(UnstableTag)</PackageVersion>
-    <PackageCoreVersion>1.0.$(PatchCoreVersion)$(UnstableTag)</PackageCoreVersion>
+    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
+    <PackageCoreVersion>1.0.$(PatchCoreVersion)</PackageCoreVersion>
   </PropertyGroup>
 
   <PropertyGroup>
