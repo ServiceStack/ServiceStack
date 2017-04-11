@@ -14,8 +14,9 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
-    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.Logging.NLog.xml</DocumentationFile>
+  <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

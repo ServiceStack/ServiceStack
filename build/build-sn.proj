@@ -10,7 +10,7 @@
   <PropertyGroup>
     <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
     <SrcDir>$(BuildSolutionDir)/src</SrcDir>
-    <Configuration Condition="$(Configuration) == ''">Signed</Configuration>
+    <Configuration>Signed</Configuration>
     <NUnitConsoleArgs>/noshadow</NUnitConsoleArgs>
     <NuGetPath>$(SrcDir)/.nuget/nuget.exe</NuGetPath>
     <NuGetPackageDir>$(BuildSolutionDir)/NuGet.Signed/</NuGetPackageDir>
@@ -33,7 +33,6 @@
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
 
   <Target Name="TeamCityBuild">
-    <!--<Copy SourceFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/ci.app.config" DestinationFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/app.config" />-->
     <CallTarget Targets="Default" />
   </Target>
 
@@ -109,7 +108,7 @@
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Api.Swagger/ServiceStack.Api.Swagger.Signed.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net45')" />
     <Copy SourceFiles="%(SwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net45" />
@@ -122,7 +121,7 @@
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Api.OpenApi/ServiceStack.Api.OpenApi.Signed.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Signed/lib/net45')" />
     <Copy SourceFiles="%(OpenApiFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Signed/lib/net45" />
@@ -133,7 +132,9 @@
 
     <!-- ServiceStack.Client -->
     
-    <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net45')" />
@@ -144,7 +145,9 @@
 
     <!-- ServiceStack.HttpClient -->
     
-    <MSBuild Projects="../src/ServiceStack.HttpClient/ServiceStack.HttpClient.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.HttpClient/ServiceStack.HttpClient.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(HttpClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.HttpClient.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.HttpClient.Signed/lib/net45')" />
@@ -155,7 +158,9 @@
 
     <!-- ServiceStack.Common -->
 
-    <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(CommonFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net45')" />
@@ -166,7 +171,9 @@
 
     <!-- ServiceStack -->
 
-    <MSBuild Projects="../src/ServiceStack/ServiceStack.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack/ServiceStack.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Signed/lib/net45')" />
@@ -177,7 +184,9 @@
 
     <!-- ServiceStack.Server -->
 
-    <MSBuild Projects="../src/ServiceStack.Server/ServiceStack.Server.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Server/ServiceStack.Server.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net45')" />
@@ -190,7 +199,7 @@
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.RabbitMq/ServiceStack.RabbitMq.Signed.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq.Signed/lib/net45')" />
     <Copy SourceFiles="%(RabbitMqFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq.Signed/lib/net45" />
@@ -200,7 +209,9 @@
 
     <!-- ServiceStack.Razor -->
 
-    <MSBuild Projects="../src/ServiceStack.Razor/ServiceStack.Razor.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Razor/ServiceStack.Razor.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(RazorFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Razor.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Razor.Signed/lib/net45')" />
@@ -213,7 +224,7 @@
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.ProtoBuf/ServiceStack.ProtoBuf.Signed.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net45')" />
     <Copy SourceFiles="%(ProtoBufFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net45" />
@@ -225,7 +236,7 @@
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Mvc/ServiceStack.Mvc.Signed.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net45')" />
     <Copy SourceFiles="%(MvcFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net45" />
@@ -237,7 +248,7 @@
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Authentication.OAuth2/ServiceStack.Authentication.OAuth2.Signed.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net45')" />
     <Copy SourceFiles="%(OAuth2Files.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net45" />

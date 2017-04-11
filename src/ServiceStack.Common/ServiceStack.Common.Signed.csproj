@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>net45</TargetFrameworks>
     <AssemblyName>ServiceStack.Common</AssemblyName>
-    <PackageId>ServiceStack.Common</PackageId>
+    <PackageId>ServiceStack.Common.Signed</PackageId>
+    <Configuration>Signed</Configuration>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
@@ -18,8 +19,9 @@
     <AssemblyOriginatorKeyFile>servicestack-sn.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
-    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.Common.xml</DocumentationFile>
+  <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">

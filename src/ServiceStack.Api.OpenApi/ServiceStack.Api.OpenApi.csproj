@@ -15,13 +15,14 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="swagger-ui\**\*.*" Exclude="bin\**;obj\**;@(EmbeddedResource)" />
   </ItemGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
-    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.Api.OpenApi.xml</DocumentationFile>
-  </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />

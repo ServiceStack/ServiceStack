@@ -4,6 +4,7 @@
     <TargetFrameworks>net45</TargetFrameworks>
     <AssemblyName>ServiceStack.Mvc</AssemblyName>
     <PackageId>ServiceStack.Mvc.Signed</PackageId>
+    <Configuration>Signed</Configuration>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -17,8 +18,9 @@
     <AssemblyOriginatorKeyFile>servicestack-sn.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
-    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.Mvc.xml</DocumentationFile>
+  <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

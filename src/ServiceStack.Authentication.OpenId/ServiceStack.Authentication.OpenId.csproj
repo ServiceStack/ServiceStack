@@ -15,8 +15,9 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
-    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.Authentication.OpenId.xml</DocumentationFile>
+  <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

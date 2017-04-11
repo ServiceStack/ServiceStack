@@ -37,22 +37,12 @@
     <CallTarget Targets="Default" />
   </Target>
 
-  <Target Name="Build">
-    <MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj" Properties="Configuration=$(Configuration)"/>
-    <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.csproj" Properties="Configuration=$(Configuration)"/>
-    <MSBuild Projects="../src/ServiceStack/ServiceStack.csproj" Properties="Configuration=$(Configuration)"/>
-  </Target>
-
   <Target Name="BuildSolutions">
-    <MSBuild Projects="$(SrcDir)/ServiceStack.sln" Targets="Restore;Build"
+    <MSBuild Projects="$(SrcDir)/ServiceStack.sln" Targets="Build"
       Properties="Configuration=$(Configuration)" />
 
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.sln" Targets="Restore;Build"
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.sln" Targets="Build"
       Properties="Configuration=$(Configuration)" />
-    
-    <!-- TODO re-add SL5 after re-factor -->
-    <!--<MSBuild Projects="$(SrcDir)/ServiceStack.SL5.sln" Targets="Build"
-      Properties="Configuration=$(Configuration)" />-->
   </Target>
 
   <Target Name="UpdateVersion">

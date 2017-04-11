@@ -5,6 +5,7 @@
     <DebugType>portable</DebugType>
     <AssemblyName>ServiceStack.Authentication.OAuth2</AssemblyName>
     <PackageId>ServiceStack.Authentication.OAuth2.Signed</PackageId>
+    <Configuration>Signed</Configuration>
     <RuntimeIdentifiers>win</RuntimeIdentifiers>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
@@ -15,8 +16,9 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'!='Debug'">
-    <DocumentationFile>bin\Release\$(Configuration)\ServiceStack.Authentication.OAuth2.xml</DocumentationFile>
+  <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
