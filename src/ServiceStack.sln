@@ -122,7 +122,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Client", "Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Server.Tests", "..\tests\ServiceStack.Server.Tests\ServiceStack.Server.Tests.csproj", "{BB47EC88-D61D-4B67-9491-78C7155A7798}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Authentication.MongoDb", "ServiceStack.Authentication.MongoDB\ServiceStack.Authentication.MongoDb.csproj", "{16E42781-8872-4468-9B7A-9140778A4D5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Authentication.MongoDb", "ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj", "{16E42781-8872-4468-9B7A-9140778A4D5E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Authentication.NHibernate", "ServiceStack.Authentication.NHibernate\ServiceStack.Authentication.NHibernate.csproj", "{E5C9B657-D8AF-4DF2-9BB8-C09AA8F5CBE2}"
 EndProject
