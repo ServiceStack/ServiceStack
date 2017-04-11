@@ -552,6 +552,7 @@ namespace ServiceStack.NativeTypes
                 .Select(pi => ToProperty(pi, attr))
                 .Where(property => property.Name != "TypeId"
                     && property.Value != null)
+                .OrderBy(property => property.Name)
                 .ToList();
         }
 

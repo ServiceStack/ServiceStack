@@ -75,6 +75,20 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
+        public void AnnotatedDtoTypes_ApiMemberNonDefaultProperties_AreSorted()
+        {
+            var result = appHost.ExecuteService(new TypesCSharp
+            {
+                IncludeTypes = new List<string> { "DtoResponse" }
+            });
+
+            var stringResult = result.ToString();
+
+            StringAssert.Contains("class DtoResponse", stringResult);
+            StringAssert.Contains("[ApiMember(Description=\"ShouldBeFirstInGeneratedCode\", IsRequired=true, Name=\"ShouldBeLastInGeneratedCode\")]", stringResult);
+        }
+
+        [Test]
         public void IncludeTypes_DoesNotReturnReferenceTypes_If_IncludeTypes_NoWildcard_Fsharp()
         {
             var result = appHost.ExecuteService(new TypesFSharp
@@ -306,6 +320,7 @@ namespace ServiceStack.Common.Tests
 
     public class DtoResponse
     {
+        [ApiMember(Name = "ShouldBeLastInGeneratedCode", Description = "ShouldBeFirstInGeneratedCode", IsRequired = true)]
         public EmbeddedRequest ReferencedType { get; set; }
     }
 
