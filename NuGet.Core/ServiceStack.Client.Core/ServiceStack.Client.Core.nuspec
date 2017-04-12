@@ -36,7 +36,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="lib/**/*.*" target="lib" />
+    <file src="lib/**/*.*" />
     <file src="../../src/ServiceStack.Client/**/*.cs" target="src" />
   </files>
 </package>
