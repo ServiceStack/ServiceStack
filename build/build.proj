@@ -84,6 +84,7 @@
 
     <ItemGroup>
       <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/portable40-net45+sl5+win8+wp8+wpa81/ServiceStack.Interfaces.*"></InterfaceFiles>
+      <InterfaceCoreFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/netstandard1.1/ServiceStack.Interfaces.*"></InterfaceCoreFiles>
 
       <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.dll"></ServiceStackFiles>
       <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.pdb"></ServiceStackFiles>
@@ -170,6 +171,13 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces/servicestack.interfaces.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
+
+    <!-- .NET Core -->
+    <MakeDir Directories="$(NuGetPackageCoreDir)/ServiceStack.Interfaces.Core/lib/netstandard1.1" Condition="!Exists('$(NuGetPackageCoreDir)/ServiceStack.Interfaces.Core/lib/netstandard1.1')" />
+    <Copy SourceFiles="%(InterfaceCoreFiles.Identity)" DestinationFolder="$(NuGetPackageCoreDir)/ServiceStack.Interfaces.Core/lib/netstandard1.1" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageCoreDir)/ServiceStack.Interfaces.Core/servicestack.interfaces.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageCoreDir)&quot; -Version $(PackageCoreVersion)"
+          LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Api.Swagger -->
 
