@@ -32,7 +32,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="lib/**/*.*" target="lib" />
+    <file src="lib/**/*.*" />
     <file src="../../src/ServiceStack.Api.OpenApi/**/*.cs" target="src" />
     <file src="../../src/ServiceStack.Api.OpenApi/swagger-ui/**/*.*" target="src" />
   </files>

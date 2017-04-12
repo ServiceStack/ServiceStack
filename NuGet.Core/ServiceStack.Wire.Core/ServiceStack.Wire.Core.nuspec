@@ -29,7 +29,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="lib/**/*.*" target="lib" />
+    <file src="lib/**/*.*" />
     <file src="../../src/ServiceStack.Wire/**/*.cs" target="src" />
   </files>
 </package>

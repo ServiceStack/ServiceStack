@@ -33,7 +33,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="lib/**/*.*" target="lib" />
+    <file src="lib/**/*.*" />
     <file src="../../src/ServiceStack.Mvc/**/*.cs" target="src" />
   </files>
 </package>

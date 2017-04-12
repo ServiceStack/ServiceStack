@@ -52,7 +52,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="lib/**/*.*" target="lib" />
+    <file src="lib/**/*.*" />
     <file src="../../src/ServiceStack.Kestrel/**/*.cs" target="src" />
   </files>
 </package>
