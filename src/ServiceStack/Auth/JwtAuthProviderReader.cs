@@ -580,7 +580,7 @@ namespace ServiceStack.Auth
 
     public static class JwtExtensions
     {
-        public string GetJwtToken(this IRequest req) =>
+        public static string GetJwtToken(this IRequest req) =>
             req.GetBearerToken() ?? 
             req.GetCookieValue(Keywords.TokenCookie);
     }
