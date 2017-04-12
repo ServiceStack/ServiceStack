@@ -317,8 +317,7 @@ namespace ServiceStack.Auth
             if (req.OperationName != null && IgnoreForOperationTypes.Contains(req.OperationName))
                 return;
 
-            var bearerToken = req.GetBearerToken()
-                ?? req.GetCookieValue(Keywords.TokenCookie);
+            var bearerToken = req.GetJwtToken();
 
             if (bearerToken != null)
             {
@@ -577,5 +576,12 @@ namespace ServiceStack.Auth
                 }
             };
         }
+    }
+
+    public static class JwtExtensions
+    {
+        public string GetJwtToken(this IRequest req) =>
+            req.GetBearerToken() ?? 
+            req.GetCookieValue(Keywords.TokenCookie);
     }
 }
