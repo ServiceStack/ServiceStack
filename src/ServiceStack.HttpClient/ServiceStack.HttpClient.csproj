@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard1.1;netstandard1.6;portable45-net45+win8</TargetFrameworks>
+    <TargetFrameworks>net45;netstandard1.1;netstandard1.6</TargetFrameworks>
     <AssemblyName>ServiceStack.HttpClient</AssemblyName>
     <PackageId>ServiceStack.HttpClient</PackageId>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
@@ -52,24 +52,6 @@
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.0.11" />
     <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
-  </ItemGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'portable45-net45+win8' ">
-    <DefineConstants>$(DefineConstants);PCL;PORTABLE7</DefineConstants>
-    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <LanguageTargets>$(MSBuildProgramFiles32)\MSBuild\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets</LanguageTargets>
-  </PropertyGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'portable45-net45+win8' ">
-    <Reference Include="System.Runtime.Serialization.Primitives" />
-    <Reference Include="System.Runtime.Serialization.Xml" />
-    <Reference Include="System.Net.Requests" />
-    <Reference Include="System.Dynamic.Runtime" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Text.dll" />
   </ItemGroup>
 
 </Project>
