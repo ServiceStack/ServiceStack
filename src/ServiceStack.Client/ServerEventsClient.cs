@@ -437,6 +437,7 @@ namespace ServiceStack
                         SleepBackOffMultiplier(Interlocked.CompareExchange(ref noOfContinuousErrors, 0, 0))
                             .ContinueWith(t =>
                             {
+                                t.ObserveTaskExceptions();
                                 if (IsStopped)
                                     return;
                                 try
@@ -487,6 +488,7 @@ namespace ServiceStack
             var task = stream.ReadAsync(buffer, 0, BufferSize, cancel.Token);
             task.ContinueWith(t =>
             {
+                t.ObserveTaskExceptions();
                 if (cancel.IsCancellationRequested || t.IsCanceled)
                 {
                     httpReq = null;
