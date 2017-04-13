@@ -191,20 +191,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-
     [TestFixture]
     public class MemoryServerEventsWithNewlineOnPublishTests : ServerEventsTests
     {
         protected override ServiceStackHost CreateAppHost()
         {
-            return new ServerEventsAppHost()
-            {
-                 
-                OnPublish = (res, msg) =>
+            return new ServerEventsAppHost
                 {
-                    res.OutputStream.Write("\n\n\n\n\n\n\n\n\n\n");
+                 
+                    OnPublish = (res, msg) =>
+                    {
+                        res.OutputStream.Write("\n\n\n\n\n\n\n\n\n\n");
+                    }
                 }
-            }
                 .Init()
                 .Start(Config.AbsoluteBaseUri);
         }
@@ -223,7 +222,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [TestFixture]
-
     public class RedisServerEventsTests : ServerEventsTests
     {
         protected override ServiceStackHost CreateAppHost()
@@ -1225,6 +1223,51 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 Assert.That(msgs1.All(x => x.Json.FromJson<string>() == "arg"));
                 Assert.That(msgs2.All(x => x.Json.FromJson<string>() == "arg"));
+            }
+        }
+
+        [Test]
+        public void Only_allows_one_Thread_through_at_a_time()
+        {
+            using (var client = CreateServerEventsClient())
+            {
+                10.Times(i =>
+                {
+                    ThreadPool.QueueUserWorkItem(_ => client.Start());
+                });
+
+                Thread.Sleep(100);
+                Assert.That(client.TimesStarted, Is.EqualTo(1));
+
+                10.Times(i =>
+                {
+                    ThreadPool.QueueUserWorkItem(_ => client.Restart());
+                });
+                Thread.Sleep(100);
+                Assert.That(client.TimesStarted, Is.EqualTo(2));
+
+                10.Times(i =>
+                {
+                    ThreadPool.QueueUserWorkItem(_ => client.Stop());
+                });
+                Thread.Sleep(100);
+                Assert.That(client.TimesStarted, Is.EqualTo(2));
+
+                // A stopped client doesn't get restarted
+                10.Times(i =>
+                {
+                    ThreadPool.QueueUserWorkItem(_ => client.Restart());
+                });
+                Thread.Sleep(100);
+                Assert.That(client.TimesStarted, Is.EqualTo(2));
+
+                // Can restart a stopped client
+                10.Times(i =>
+                {
+                    ThreadPool.QueueUserWorkItem(_ => client.Start());
+                });
+                Thread.Sleep(100);
+                Assert.That(client.TimesStarted, Is.EqualTo(3));
             }
         }
     }

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
+using ServiceStack.Messaging;
 using ServiceStack.Text;
 
 namespace ServiceStack
@@ -69,8 +70,16 @@ namespace ServiceStack
         public static int BufferSize = 1024 * 64;
         static int DefaultHeartbeatMs = 10 * 1000;
         static int DefaultIdleTimeoutMs = 30 * 1000;
-        private bool stopped = true;
-        public bool IsStopped => stopped;
+
+        private int status;
+        private int timesStarted = 0;
+        private int noOfContinuousErrors = 0;
+        private int noOfErrors = 0;
+        private string lastExMsg = null;
+
+        public bool IsStopped => Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Stopped;
+        public string Status => WorkerStatus.ToString(Interlocked.CompareExchange(ref status, 0, 0));
+        public int TimesStarted => Interlocked.CompareExchange(ref timesStarted, 0, 0);
 
         byte[] buffer;
         readonly Encoding encoding = Encoding.UTF8;
@@ -164,35 +173,49 @@ namespace ServiceStack
             if (log.IsDebugEnabled)
                 log.DebugFormat("Start()");
 
-            stopped = false;
-            httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
-            //share auth cookies
-            httpReq.CookieContainer = ((IHasCookieContainer)ServiceClient).CookieContainer;
-            httpReq.AllowReadStreamBuffering = false;
+            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
+                throw new ObjectDisposedException(GetType().Name + " has been disposed");
 
-            EventStreamRequestFilter?.Invoke(httpReq);
+            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started)
+                return this;
 
-            response = (HttpWebResponse)PclExport.Instance.GetResponse(httpReq);
-            var stream = response.GetResponseStream();
+            if (Interlocked.CompareExchange(ref status, WorkerStatus.Starting, WorkerStatus.Stopped) == WorkerStatus.Stopped ||
+                Interlocked.CompareExchange(ref status, WorkerStatus.Starting, WorkerStatus.Stopping) == WorkerStatus.Stopping)
+            {
+                Interlocked.Increment(ref timesStarted);
 
-            buffer = new byte[BufferSize];
-            cancel = new CancellationTokenSource();
+                httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
+                //share auth cookies
+                httpReq.CookieContainer = ((IHasCookieContainer)ServiceClient).CookieContainer;
+                httpReq.AllowReadStreamBuffering = false;
 
-            //maintain existing tcs so reconnecting is transparent
-            if (connectTcs == null || connectTcs.Task.IsCompleted)
-                connectTcs = new TaskCompletionSource<ServerEventConnect>();
-            if (commandTcs == null || commandTcs.Task.IsCompleted)
-                commandTcs = new TaskCompletionSource<ServerEventCommand>();
-            if (heartbeatTcs == null || heartbeatTcs.Task.IsCompleted)
-                heartbeatTcs = new TaskCompletionSource<ServerEventHeartbeat>();
-            if (messageTcs == null || messageTcs.Task.IsCompleted)
-                messageTcs = new TaskCompletionSource<ServerEventMessage>();
+                EventStreamRequestFilter?.Invoke(httpReq);
 
-            LastPulseAt = DateTime.UtcNow;
-            if (log.IsDebugEnabled)
-                log.Debug("[SSE-CLIENT] LastPulseAt: " + DateTime.UtcNow.TimeOfDay);
+                response = (HttpWebResponse)PclExport.Instance.GetResponse(httpReq);
+                var stream = response.GetResponseStream();
 
-            ProcessResponse(stream);
+                buffer = new byte[BufferSize];
+                cancel = new CancellationTokenSource();
+
+                //maintain existing tcs so reconnecting is transparent
+                if (connectTcs == null || connectTcs.Task.IsCompleted)
+                    connectTcs = new TaskCompletionSource<ServerEventConnect>();
+                if (commandTcs == null || commandTcs.Task.IsCompleted)
+                    commandTcs = new TaskCompletionSource<ServerEventCommand>();
+                if (heartbeatTcs == null || heartbeatTcs.Task.IsCompleted)
+                    heartbeatTcs = new TaskCompletionSource<ServerEventHeartbeat>();
+                if (messageTcs == null || messageTcs.Task.IsCompleted)
+                    messageTcs = new TaskCompletionSource<ServerEventMessage>();
+
+                LastPulseAt = DateTime.UtcNow;
+                if (log.IsDebugEnabled)
+                    log.Debug("[SSE-CLIENT] LastPulseAt: " + DateTime.UtcNow.TimeOfDay);
+
+                if (Interlocked.CompareExchange(ref status, WorkerStatus.Started, WorkerStatus.Starting) != WorkerStatus.Starting)
+                    return this;
+
+                ProcessResponse(stream);
+            }
 
             return this;
         }
@@ -383,10 +406,10 @@ namespace ServiceStack
             hold.SetResult(e);
         }
 
-        private int errorsCount;
         protected void OnExceptionReceived(Exception ex)
         {
-            errorsCount++;
+            Interlocked.Increment(ref noOfErrors);
+            Interlocked.Increment(ref noOfContinuousErrors);
 
             ex = ex.UnwrapIfSingleException();
             log.Error($"[SSE-CLIENT] OnExceptionReceived: {ex.Message} on #{ConnectionDisplayName}", ex);
@@ -398,27 +421,34 @@ namespace ServiceStack
 
         public void Restart()
         {
+            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
+                throw new ObjectDisposedException(GetType().Name + " has been disposed");
+
+            var statusSnapshot = Interlocked.CompareExchange(ref status, 0, 0);
+            if (statusSnapshot == WorkerStatus.Stopping || statusSnapshot == WorkerStatus.Stopped)
+                return;
+
             try
             {
-                InternalStop();
-
-                if (stopped)
-                    return;
-
-                SleepBackOffMultiplier(errorsCount)
-                    .ContinueWith(t =>
+                Interlocked.Exchange(ref status, WorkerStatus.Stopping);
+                InternalStop()
+                    .ContinueWith(task =>
                     {
-                        if (stopped)
-                            return;
-                        try
-                        {
-                            Start();
-                            OnReconnect?.Invoke();
-                        }
-                        catch (Exception ex)
-                        {
-                            OnExceptionReceived(ex);
-                        }
+                        SleepBackOffMultiplier(Interlocked.CompareExchange(ref noOfContinuousErrors, 0, 0))
+                            .ContinueWith(t =>
+                            {
+                                if (IsStopped)
+                                    return;
+                                try
+                                {
+                                    Start();
+                                    OnReconnect?.Invoke();
+                                }
+                                catch (Exception ex)
+                                {
+                                    OnExceptionReceived(ex);
+                                }
+                            });
                     });
             }
             catch (Exception ex)
@@ -449,6 +479,9 @@ namespace ServiceStack
         private string overflowText = "";
         public void ProcessResponse(Stream stream)
         {
+            if (Interlocked.CompareExchange(ref status, 0, 0) != WorkerStatus.Started)
+                return;
+            
             if (!stream.CanRead) return;
 
             var task = stream.ReadAsync(buffer, 0, BufferSize, cancel.Token);
@@ -457,6 +490,7 @@ namespace ServiceStack
                 if (cancel.IsCancellationRequested || t.IsCanceled)
                 {
                     httpReq = null;
+
                     return;
                 }
 
@@ -467,7 +501,7 @@ namespace ServiceStack
                     return;
                 }
 
-                errorsCount = 0;
+                Interlocked.Exchange(ref noOfContinuousErrors, 0);
 
                 int len = task.Result;
                 if (len > 0)
@@ -672,7 +706,7 @@ namespace ServiceStack
 
         public virtual Task Stop()
         {
-            stopped = true;
+            Interlocked.Exchange(ref status, WorkerStatus.Stopped);
             return InternalStop();
         }
 
@@ -771,12 +805,30 @@ namespace ServiceStack
             }
         }
 
+        public virtual string GetStatsDescription()
+        {
+            lock (this)
+            {
+                var sb = StringBuilderCache.Allocate().Append(GetType().Name + " SERVER STATS:\n");
+                sb.AppendLine("===============");
+                sb.AppendLine("Current Status: " + Status);
+                sb.AppendLine("Listening On: " + EventStreamUri);
+                sb.AppendLine("Times Started: " + Interlocked.CompareExchange(ref timesStarted, 0, 0));
+                sb.AppendLine("Num of Errors: " + Interlocked.CompareExchange(ref noOfErrors, 0, 0));
+                sb.AppendLine("Num of Continuous Errors: " + Interlocked.CompareExchange(ref noOfContinuousErrors, 0, 0));
+                sb.AppendLine("Last ErrorMsg: " + lastExMsg);
+                sb.AppendLine("===============");
+                return StringBuilderCache.ReturnAndFree(sb);
+            }
+        }
+
         public void Dispose()
         {
             if (log.IsDebugEnabled)
                 log.Debug("Dispose()");
 
             Stop();
+            Interlocked.Exchange(ref status, WorkerStatus.Disposed);
         }
     }
 
@@ -926,6 +978,13 @@ namespace ServiceStack
                 client.Handlers[entry.Key] = entry.Value;
             }
             return client;
+        }
+
+        internal static Task ObserveTaskExceptions(this Task t)
+        {
+            if (t.IsFaulted)
+                t.Exception.Handle(x => true);
+            return t;
         }
     }
 }
