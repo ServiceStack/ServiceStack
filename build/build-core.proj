@@ -267,7 +267,7 @@
 
     <!-- ServiceStack.Kestrel -->
 
-    <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.Kestrel.csproj"
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Kestrel/ServiceStack.Kestrel.csproj"
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
