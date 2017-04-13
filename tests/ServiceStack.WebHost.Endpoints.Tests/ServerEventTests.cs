@@ -1226,6 +1226,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
+    }
+
+    class Conf
+    {
+        public const string AbsoluteBaseUri = "http://127.0.0.1:10000/";
+    }
+
+    [TestFixture]
+    public class ServerEventConnectionTests
+    {
+        protected virtual ServiceStackHost CreateAppHost()
+        {
+            return new ServerEventsAppHost()
+                .Init()
+                .Start(Conf.AbsoluteBaseUri);
+        }
+
+        private static ServerEventsClient CreateServerEventsClient()
+        {
+            var client = new ServerEventsClient(Conf.AbsoluteBaseUri);
+            return client;
+        }
+
+        private readonly ServiceStackHost appHost;
+        public ServerEventConnectionTests()
+        {
+            appHost = CreateAppHost();
+        }
+
+        [OneTimeTearDown]
+        public void TestFixtureTearDown() => appHost.Dispose();
+
         [Test]
         public void Only_allows_one_Thread_through_at_a_time()
         {
@@ -1272,11 +1304,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    class Conf
-    {
-        public const string AbsoluteBaseUri = "http://127.0.0.1:10000/";
-    }
-
     [TestFixture]
     public class AuthMemoryServerEventsTests
     {
@@ -1293,19 +1320,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return client;
         }
 
-        private ServiceStackHost appHost;
-
+        private readonly ServiceStackHost appHost;
         public AuthMemoryServerEventsTests()
         {
-            //LogManager.LogFactory = new ConsoleLogFactory();
             appHost = CreateAppHost();
         }
 
         [OneTimeTearDown]
-        public void TestFixtureTearDown()
-        {
-            appHost.Dispose();
-        }
+        public void TestFixtureTearDown() => appHost.Dispose();
 
         [SetUp]
         public void SetUp()
