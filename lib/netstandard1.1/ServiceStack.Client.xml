@@ -55,6 +55,17 @@
             Called with requestUri, ResponseType when server returns 304 NotModified
             </summary>
         </member>
+        <member name="T:ServiceStack.GenericProxy`1">
+            <summary>
+            Generic Proxy for service calls.
+            </summary>
+            <typeparam name="T">The service Contract</typeparam>
+        </member>
+        <member name="P:ServiceStack.GenericProxy`1.Proxy">
+            <summary>
+            Returns the transparent proxy for the service call
+            </summary>
+        </member>
         <member name="M:ServiceStack.Messaging.MessageQueueClientFactory.GetMessageAsync(System.String)">
             <summary>
             Returns the next message from queueName or null if no message
@@ -198,7 +209,7 @@
             <param name="validationErrors">The validation errors.</param>
             <returns></returns>
         </member>
-        <member name="F:ServiceStack.Serialization.DataContractSerializer.Instance">
+        <member name="F:ServiceStack.Serialization.DataContractSerializer.quotas">
             <summary>
             Default MaxStringContentLength is 8k, and throws an exception when reached
             </summary>
@@ -207,6 +218,13 @@
             <summary>
             Serializer cache of delegates required to create a type from a string map (e.g. for REST urls)
             </summary>
+        </member>
+        <member name="M:ServiceStack.Serialization.XmlSerializerWrapper.GetNamespace(System.Type)">
+            <summary>
+            Gets the namespace from an attribute marked on the type's definition
+            </summary>
+            <param name="type"></param>
+            <returns>Namespace of type</returns>
         </member>
         <member name="T:ServiceStack.ServiceClientBase">
             Need to provide async request options
@@ -349,6 +367,40 @@
         <member name="M:ServiceStack.ServiceClientBase.Get(System.String)">
             <summary>
             APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.StreamExt.Compress(System.String,System.String)">
+            <summary>
+            Compresses the specified text using the default compression method: Deflate
+            </summary>
+            <param name="text">The text.</param>
+            <param name="compressionType">Type of the compression.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.StreamExt.CompressBytes(System.Byte[],System.String)">
+            <summary>
+            Compresses the specified text using the default compression method: Deflate
+            </summary>
+        </member>
+        <member name="M:ServiceStack.StreamExt.Decompress(System.Byte[],System.String)">
+            <summary>
+            Decompresses the specified gz buffer using the default compression method: Inflate
+            </summary>
+            <param name="gzBuffer">The gz buffer.</param>
+            <param name="compressionType">Type of the compression.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.StreamExt.Decompress(System.IO.Stream,System.String)">
+            <summary>
+            Decompresses the specified gz buffer using inflate or gzip method
+            </summary>
+            <param name="gzStream">Compressed stream</param>
+            <param name="compressionType">Type of the compression. Can be "gzip" or "deflate"</param>
+            <returns>Decompressed stream</returns>
+        </member>
+        <member name="M:ServiceStack.StreamExt.DecompressBytes(System.Byte[],System.String)">
+            <summary>
+            Decompresses the specified gz buffer using the default compression method: Inflate
             </summary>
         </member>
         <member name="T:ServiceStack.UrlExtensions">
