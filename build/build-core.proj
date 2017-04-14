@@ -272,7 +272,7 @@
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Kestrel/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Kestrel/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(Kestrel.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Kestrel/lib/netstandard1.6" />
+    <Copy SourceFiles="%(KestrelFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Kestrel/lib/netstandard1.6" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Kestrel/servicestack.kestrel.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
