@@ -36,9 +36,10 @@ namespace ServiceStack.FluentValidation.Validators
 		public LessThanOrEqualValidator(Func<object, object> valueToCompareFunc, MemberInfo member)
 			: base(valueToCompareFunc, member, nameof(Messages.lessthanorequal_error), typeof(Messages))
         {
+            ErrorCodeSource = new StaticStringSource(ValidationErrors.LessThanOrEqual);
 		}
 
-		public override bool IsValid(IComparable value, IComparable valueToCompare)
+        public override bool IsValid(IComparable value, IComparable valueToCompare)
         {
 			if (valueToCompare == null)
 				return false;

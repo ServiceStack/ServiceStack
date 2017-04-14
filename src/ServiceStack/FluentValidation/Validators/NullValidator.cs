@@ -22,9 +22,10 @@ namespace ServiceStack.FluentValidation.Validators
 
 	public class NullValidator : PropertyValidator, INullValidator {
 		public NullValidator() : base(nameof(Messages.null_error), typeof(Messages)) {
+		    ErrorCodeSource = new StaticStringSource(ValidationErrors.Null);
         }
 
-		protected override bool IsValid(PropertyValidatorContext context) {
+        protected override bool IsValid(PropertyValidatorContext context) {
 			if (context.PropertyValue != null) {
 				return false;
 			}

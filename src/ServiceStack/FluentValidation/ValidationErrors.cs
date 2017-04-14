@@ -9,6 +9,8 @@ namespace ServiceStack.FluentValidation
     {
         public const string CreditCard = "CreditCard";
         public const string Email = "Email";
+        public const string Enum = "Enum";
+        public const string Empty = "Empty";
         public const string Equal = "Equal";
         public const string ExclusiveBetween = "ExclusiveBetween";
         public const string GreaterThanOrEqual = "GreaterThanOrEqual";
@@ -20,7 +22,9 @@ namespace ServiceStack.FluentValidation
         public const string NotEmpty = "NotEmpty";
         public const string NotEqual = "NotEqual";
         public const string NotNull = "NotNull";
+        public const string Null = "Null";
         public const string Predicate = "Predicate";
         public const string RegularExpression = "RegularExpression";
+        public const string ScalePrecision = "ScalePrecision";
     }
 }

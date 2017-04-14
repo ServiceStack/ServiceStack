@@ -38,11 +38,13 @@ namespace ServiceStack.FluentValidation.Validators
 		}
 
 		public RegularExpressionValidator(Regex regex) : base(nameof(Messages.regex_error), typeof(Messages)) {
+		    ErrorCodeSource = new StaticStringSource(ValidationErrors.RegularExpression);
 			this.expression = regex.ToString();
 			this.regexFunc = x => regex;
 		}
 
 		public RegularExpressionValidator(string expression, RegexOptions options) : base(nameof(Messages.regex_error), typeof(Messages)) {
+		    ErrorCodeSource = new StaticStringSource(ValidationErrors.RegularExpression);
 			this.expression = expression;
 			var regex = new Regex(expression, options);
 			this.regexFunc = x => regex;
@@ -50,17 +52,20 @@ namespace ServiceStack.FluentValidation.Validators
 
 		public RegularExpressionValidator(Func<object, string> expressionFunc)
 			: base(nameof(Messages.regex_error), typeof(Messages)) {
+		    ErrorCodeSource = new StaticStringSource(ValidationErrors.RegularExpression);
 			this.regexFunc = x => new Regex(expressionFunc(x));
 		}
 
 		public RegularExpressionValidator(Func<object, Regex> regexFunc)
 			: base(nameof(Messages.regex_error), typeof(Messages)) {
+		    ErrorCodeSource = new StaticStringSource(ValidationErrors.RegularExpression);
 			this.regexFunc = regexFunc;
 		}
 
 		public RegularExpressionValidator(Func<object, string> expression, RegexOptions options)
 			: base(nameof(Messages.regex_error), typeof(Messages)) {
 
+		    ErrorCodeSource = new StaticStringSource(ValidationErrors.RegularExpression);
 			this.regexFunc = x => new Regex(expression(x), options);
 		}
 

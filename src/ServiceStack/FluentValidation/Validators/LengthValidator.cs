@@ -30,10 +30,10 @@ namespace ServiceStack.FluentValidation.Validators {
 		public Func<object, int> MaxFunc { get; set; }
 
 		public LengthValidator(int min, int max) : this(min, max, nameof(Messages.length_error), typeof(Messages)) {
-            ErrorCodeSource = new StaticStringSource(ValidationErrors.Length);
         }
 
 		public LengthValidator(int min, int max, string resourceName, Type resourceType) : base(resourceName, resourceType) {
+		    ErrorCodeSource = new StaticStringSource(ValidationErrors.Length);
 			Max = max;
 			Min = min;
 
@@ -47,6 +47,7 @@ namespace ServiceStack.FluentValidation.Validators {
 		}
 
 		public LengthValidator(Func<object, int> min, Func<object, int> max, string resourceName, Type resourceType) : base(resourceName, resourceType) {
+		    ErrorCodeSource = new StaticStringSource(ValidationErrors.Length);
 			MaxFunc = max;
 			MinFunc = min;
 		}

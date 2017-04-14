@@ -27,6 +27,7 @@ namespace ServiceStack.FluentValidation.Validators
 		private readonly Type enumType;
 
 		public EnumValidator(Type enumType) : base(nameof(Messages.enum_error), typeof(Messages)) {
+		    ErrorCodeSource = new StaticStringSource(ValidationErrors.Enum);
 			this.enumType = enumType;
 		}
 

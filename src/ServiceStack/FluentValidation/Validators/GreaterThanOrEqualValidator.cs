@@ -30,9 +30,10 @@ namespace ServiceStack.FluentValidation.Validators
 
 		public GreaterThanOrEqualValidator(Func<object, object> valueToCompareFunc, MemberInfo member)
 			: base(valueToCompareFunc, member, nameof(Messages.greaterthanorequal_error), typeof(Messages)) {
+		    ErrorCodeSource = new StaticStringSource(ValidationErrors.GreaterThanOrEqual);
 		}
 
-		public override bool IsValid(IComparable value, IComparable valueToCompare) {
+        public override bool IsValid(IComparable value, IComparable valueToCompare) {
 			if (valueToCompare == null)
 				return false;
 

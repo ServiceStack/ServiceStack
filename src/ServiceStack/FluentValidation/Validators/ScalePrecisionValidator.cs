@@ -85,6 +85,7 @@ namespace ServiceStack.FluentValidation.Validators
 
         private void Init(int scale, int precision)
         {
+            ErrorCodeSource = new StaticStringSource(ValidationErrors.ScalePrecision);
             Scale = scale;
             Precision = precision;
 

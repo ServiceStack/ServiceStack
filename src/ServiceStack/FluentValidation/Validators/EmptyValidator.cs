@@ -25,6 +25,7 @@ namespace ServiceStack.FluentValidation.Validators {
 		readonly object defaultValueForType;
 
 		public EmptyValidator(object defaultValueForType) : base(nameof(Messages.empty_error), typeof(Messages)) {
+            ErrorCodeSource = new StaticStringSource(ValidationErrors.Empty);
             this.defaultValueForType = defaultValueForType;
 		}
 
