@@ -353,7 +353,7 @@ namespace ServiceStack
 
             foreach (var key in row.Keys)
             {
-                ctx.Response.Meta[key] = row[key].ToString();
+                ctx.Response.Meta[key] = row[key]?.ToString();
             }
 
             ctx.Commands.RemoveAll(aggregateCommands.Contains);
