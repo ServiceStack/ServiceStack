@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v1.3/",
-    "signature": "0e8a89a129386bd12fa19c837608f8b6bbbf30f0"
+    "signature": "7185c99926e1abc471e940cfc8f2340190abd3f6"
   },
   "compilationOptions": {},
   "targets": {
@@ -9,7 +9,6 @@
     ".NETStandard,Version=v1.3/": {
       "servicestack.text/1.0.0": {
         "dependencies": {
-          "MSBuild.Sdk.Extras": "1.0.1",
           "Microsoft.CSharp": "4.0.1",
           "NETStandard.Library": "1.6.0",
           "System.Collections": "4.0.11",
@@ -63,7 +62,6 @@
           "System.Runtime": "4.1.0"
         }
       },
-      "msbuild.sdk.extras/1.0.1": {},
       "netstandard.library/1.6.0": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.0.1",
@@ -835,13 +833,6 @@
       "sha512": "sha512-u4AiEzfWk1X+Rcn3e31o/AwY8ViB/EFdr6YpEr3HIVG5Uxio4qf27Bd+RVC5s8gQtHHM7PFP8jVtF6emj+g1uw==",
       "path": "microsoft.win32.primitives/4.0.1",
       "hashPath": "microsoft.win32.primitives.4.0.1.nupkg.sha512"
-    },
-    "msbuild.sdk.extras/1.0.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-tI4GO2ZVTgqE991YIh0PUutyqbxOWM6BVEldZnSWprHCbbXOIgqJAbqG7r4KBs03ZJz93Se5mILxBm8RlKQv9Q==",
-      "path": "msbuild.sdk.extras/1.0.1",
-      "hashPath": "msbuild.sdk.extras.1.0.1.nupkg.sha512"
     },
     "netstandard.library/1.6.0": {
       "type": "package",

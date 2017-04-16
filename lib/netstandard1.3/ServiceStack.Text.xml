@@ -1041,6 +1041,16 @@
             Release the large buffer (either stores it for eventual release or returns it immediately).
             </summary>
         </member>
+        <member name="T:ServiceStack.Text.RuntimeSerializableAttribute">
+            <summary>
+            Allow Type to be deserialized into late-bould object Types using __type info
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Text.IRuntimeSerializable">
+            <summary>
+            Allow Type to be deserialized into late-bould object Types using __type info
+            </summary>
+        </member>
         <member name="T:ServiceStack.Text.StringBuilderCache">
             <summary>
             Reusable StringBuilder ThreadStatic Cache
