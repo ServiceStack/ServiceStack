@@ -550,7 +550,8 @@ namespace ServiceStack.Auth
             if (KeyId == null)
                 KeyId = GetKeyId();
                 
-            if(ServiceRoutes != null) {
+            if (ServiceRoutes != null) 
+            {
                 foreach (var registerService in ServiceRoutes)
                 {
                     appHost.RegisterService(registerService.Key, registerService.Value);
