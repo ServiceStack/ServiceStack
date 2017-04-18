@@ -86,7 +86,7 @@ namespace ServiceStack.Auth
 
             var session = service.GetSession();
             var referrerUrl = request?.Continue
-                ?? (feature.HtmlLogoutRedirect != null ? service.Request.ResolveAbsoluteUrl(feature.HtmlLogoutRedirect) : null)
+                ?? (feature?.HtmlLogoutRedirect != null ? service.Request.ResolveAbsoluteUrl(feature.HtmlLogoutRedirect) : null)
                 ?? session.ReferrerUrl
                 ?? service.Request.GetHeader("Referer").NotLogoutUrl()
                 ?? this.RedirectUrl;

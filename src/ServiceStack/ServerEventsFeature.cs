@@ -119,7 +119,7 @@ namespace ServiceStack
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
 
             var session = req.GetSession();
-            if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
+            if (feature.LimitToAuthenticatedUsers && session != null && !session.IsAuthenticated)
             {
                 session.ReturnFailedAuthentication(req);
                 return TypeConstants.EmptyTask;
@@ -176,7 +176,7 @@ namespace ServiceStack
                     { "isAuthenticated", session != null && session.IsAuthenticated ? "true": "false" },
                     { "displayName", displayName },
                     { "channels", string.Join(",", channels) },
-                    { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },
+                    { AuthMetadataProvider.ProfileUrlKey, session?.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },
                 }
             };
 
