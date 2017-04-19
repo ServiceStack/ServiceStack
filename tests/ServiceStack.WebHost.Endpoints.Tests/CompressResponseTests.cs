@@ -29,6 +29,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Path { get; set; }
     }
 
+    public class CompressError : IReturn<CompressError> { }
+
     [CompressResponse]
     public class CompressedServices : Service
     {
@@ -43,6 +45,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 throw HttpError.NotFound($"{request.Path} does not exist");
 
             return new HttpResult(file);
+        }
+
+        public object Any(CompressError request)
+        {
+            throw HttpError.NotFound("Always NotFound");
         }
     }
 
@@ -125,6 +132,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
 
             Assert.That(response, Is.EquivalentTo("foo".ToUtf8Bytes()));
+        }
+
+        [Test]
+        public void Does_not_compress_error_responses()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            try
+            {
+                client.Post(new CompressError());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(404));
+                Assert.That(ex.ErrorCode, Is.EqualTo("NotFound"));
+                Assert.That(ex.ErrorMessage, Is.EqualTo("Always NotFound"));
+            }
         }
 
 #if !NETCORE //No AutomaticDecompression

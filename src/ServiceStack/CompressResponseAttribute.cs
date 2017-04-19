@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -7,6 +8,9 @@ namespace ServiceStack
     {
         public override void Execute(IRequest req, IResponse res, object response)
         {
+            if (response is Exception)
+                return;
+
             var httpResult = response as IHttpResult;
             var src = httpResult != null ? httpResult.Response : response;
             if (src == null)
