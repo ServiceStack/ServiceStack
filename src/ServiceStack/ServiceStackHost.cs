@@ -631,7 +631,7 @@ namespace ServiceStack
 
             if (config.LogUnobservedTaskExceptions)
             {
-                System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (sender, args) =>
+                TaskScheduler.UnobservedTaskException += (sender, args) =>
                 {
                     args.SetObserved();
                     args.Exception.Handle(ex =>

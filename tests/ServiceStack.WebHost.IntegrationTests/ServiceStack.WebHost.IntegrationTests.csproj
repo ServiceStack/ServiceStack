@@ -176,6 +176,7 @@
     <Compile Include="Services\CustomPathServices.cs" />
     <Compile Include="Services\CustomRouteService.cs" />
     <Compile Include="Services\TemplateService.cs" />
+    <Compile Include="Services\VerbOnlyService.cs" />
     <Compile Include="Shared\IocService.cs" />
     <Compile Include="Tests\AsyncProgressTests.cs" />
     <Compile Include="PageBase.cs" />

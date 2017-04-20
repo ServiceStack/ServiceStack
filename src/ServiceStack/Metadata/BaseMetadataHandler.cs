@@ -174,7 +174,7 @@ namespace ServiceStack.Metadata
                 sb.Append("</div>");
 
                 RenderOperation(writer, httpReq, operationName, requestMessage, responseMessage,
-                    StringBuilderCache.ReturnAndFree(sb));
+                    StringBuilderCache.ReturnAndFree(sb), op);
                 return;
             }
 
@@ -268,7 +268,7 @@ namespace ServiceStack.Metadata
         protected abstract string CreateMessage(Type dtoType);
 
         protected virtual void RenderOperation(HtmlTextWriter writer, IRequest httpReq, string operationName,
-            string requestMessage, string responseMessage, string metadataHtml)
+            string requestMessage, string responseMessage, string metadataHtml, Operation operation)
         {
             var operationControl = new OperationControl
             {
@@ -281,6 +281,7 @@ namespace ServiceStack.Metadata
                 RequestMessage = requestMessage,
                 ResponseMessage = responseMessage,
                 MetadataHtml = metadataHtml,
+                Operation = operation,
             };
             if (!this.ContentType.IsNullOrEmpty())
             {
