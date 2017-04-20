@@ -65,10 +65,6 @@ namespace ServiceStack.Host
         {
             try
             {
-                var appHost = HostContext.AppHost;
-                if (appHost.ApplyPreRequestFilters(httpReq, httpRes))
-                    return TypeConstants.EmptyTask;
-
                 var restPath = GetRestPath(httpReq.Verb, httpReq.PathInfo);
                 if (restPath == null)
                 {
@@ -76,8 +72,11 @@ namespace ServiceStack.Host
                         .AsTaskException();
                 }
                 httpReq.SetRoute(restPath as RestPath);
+                httpReq.OperationName = operationName = restPath.RequestType.GetOperationName();
 
-                operationName = restPath.RequestType.GetOperationName();
+                var appHost = HostContext.AppHost;
+                if (appHost.ApplyPreRequestFilters(httpReq, httpRes))
+                    return TypeConstants.EmptyTask;
 
                 var callback = httpReq.GetJsonpCallback();
                 var doJsonp = HostContext.Config.AllowJsonpRequests

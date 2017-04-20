@@ -993,27 +993,6 @@ namespace ServiceStack
         }
 #endif
 
-        public static void SetOperationName(this IRequest httpReq, string operationName)
-        {
-            if (httpReq.OperationName == null)
-            {
-#if !NETSTANDARD1_6
-                var aspReq = httpReq as AspNetRequest;
-                if (aspReq != null)
-                {
-                    aspReq.OperationName = operationName;
-                    return;
-                }
-
-                var listenerReq = httpReq as ListenerRequest;
-                if (listenerReq != null)
-                {
-                    listenerReq.OperationName = operationName;
-                }
-#endif
-            }
-        }
-
         public static Type GetOperationType(this IRequest req)
         {
             if (req.Dto != null)
