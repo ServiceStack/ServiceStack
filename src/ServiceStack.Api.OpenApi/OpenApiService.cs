@@ -198,7 +198,7 @@ namespace ServiceStack.Api.OpenApi
             return GetListElementType(type) != null;
         }
 
-        private Dictionary<string, object> GetOpenApiListItems(Type listItemType, string route, string verb)
+        private Dictionary<string, object> GetOpenApiListItems(Type listItemType, string route, string verb, ApiAllowableValuesAttribute allowableValueAttrs = null)
         {
             var items = new Dictionary<string, object>();
 
@@ -209,6 +209,11 @@ namespace ServiceStack.Api.OpenApi
                 if (IsRequiredType(listItemType))
                 {
                     items.Add("x-nullable", false);
+                }
+                var enumValues = GetEnumValues(allowableValueAttrs);
+                if (enumValues?.Count > 0)
+                {
+                    items.Add("enum", enumValues);
                 }
             }
             else
@@ -458,9 +463,7 @@ namespace ServiceStack.Api.OpenApi
                             schemaProp.Format = propAttr.Format;
                     }
 
-                    var allowableValues = prop.FirstAttribute<ApiAllowableValuesAttribute>();
-                    if (allowableValues != null)
-                        schemaProp.Enum = GetEnumValues(allowableValues);
+                    schemaProp.Enum = GetEnumValues(prop.FirstAttribute<ApiAllowableValuesAttribute>());
 
                     SchemaPropertyFilter?.Invoke(schemaProp);
 
@@ -680,6 +683,7 @@ namespace ServiceStack.Api.OpenApi
 
             var properties = operationType.GetProperties();
             var paramAttrs = new Dictionary<string, ApiMemberAttribute[]>();
+            var propertyTypes = new Dictionary<string, Type>();
             var allowableParams = new List<ApiAllowableValuesAttribute>();
             var defaultOperationParameters = new List<OpenApiParameter>();
 
@@ -701,13 +705,14 @@ namespace ServiceStack.Api.OpenApi
                     hasApiMembers = true;
 
                 paramAttrs[propertyName] = apiMembers;
+                propertyTypes[propertyName] = property.PropertyType;
                 var allowableValuesAttrs = property.AllAttributes<ApiAllowableValuesAttribute>();
                 allowableParams.AddRange(allowableValuesAttrs);
 
                 if (hasDataContract && attr == null)
                     continue;
 
-                var inPath = (route ?? "").ToLower().Contains("{" + propertyName.ToLower() + "}");
+                var inPath = (route ?? "").ToLowerInvariant().Contains("{" + propertyName.ToLowerInvariant() + "}");
                 var paramType = inPath
                     ? "path"
                     : verb == HttpMethods.Post || verb == HttpMethods.Put
@@ -737,16 +742,17 @@ namespace ServiceStack.Api.OpenApi
                             && !string.Equals(member.ParameterType, "model")
                             && methodOperationParameters.All(x => x.Name != (member.Name ?? key)))
                         {
-                            methodOperationParameters.Add(new OpenApiParameter
-                            {
-                                Type = member.DataType ?? SwaggerType.String,
-                                //AllowMultiple = member.AllowMultiple,
-                                Description = member.Description,
-                                Name = member.Name ?? key,
-                                In = member.GetParamType(operationType, member.Verb ?? verb),
-                                Required = member.IsRequired,
-                                Enum = GetEnumValues(allowableParams.FirstOrDefault(attr => attr.Name == (member.Name ?? key)))
-                            });
+                            var p = GetParameter(schemas, propertyTypes[key], route, verb,
+                                    member.Name ?? key,
+                                    member.GetParamType(operationType, member.Verb ?? verb),
+                                    allowableParams.FirstOrDefault(attr => attr.Name == (member.Name ?? key)),
+                                    true
+                                );
+                            p.Type = member.DataType ?? p.Type;
+                            p.Format = member.Format ?? p.Format;
+                            p.Required = member.IsRequired;
+
+                            methodOperationParameters.Add(p);
                         }
                     }
                 }
@@ -768,7 +774,7 @@ namespace ServiceStack.Api.OpenApi
             return methodOperationParameters;
         }
 
-        private OpenApiParameter GetParameter(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb, string paramName, string paramIn, ApiAllowableValuesAttribute allowableValueAttrs = null)
+        private OpenApiParameter GetParameter(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb, string paramName, string paramIn, ApiAllowableValuesAttribute allowableValueAttrs = null, bool isApiMember = false)
         {
             if (IsSwaggerScalarType(schemaType))
             {
@@ -784,7 +790,7 @@ namespace ServiceStack.Api.OpenApi
                 };
             }
 
-            if (paramIn != "body")
+            if (paramIn != "body" && !isApiMember)
             {
                 return new OpenApiParameter
                 {
@@ -807,7 +813,7 @@ namespace ServiceStack.Api.OpenApi
 
             if (IsListType(schemaType))
             {
-                return GetListParameter(schemas, schemaType, route, verb, paramName, paramIn);
+                return GetListParameter(schemas, schemaType, route, verb, paramName, paramIn, allowableValueAttrs);
             }
 
             return new OpenApiParameter
@@ -831,7 +837,7 @@ namespace ServiceStack.Api.OpenApi
             return tags.Length > 0 ? tags[0] : null;
         }
 
-        private OpenApiParameter GetListParameter(IDictionary<string, OpenApiSchema> schemas, Type listType, string route, string verb, string paramName, string paramIn)
+        private OpenApiParameter GetListParameter(IDictionary<string, OpenApiSchema> schemas, Type listType, string route, string verb, string paramName, string paramIn, ApiAllowableValuesAttribute allowableValueAttrs = null)
         {
             if (!IsListType(listType))
                 return null;
@@ -848,7 +854,7 @@ namespace ServiceStack.Api.OpenApi
 
             var listItemType = GetListElementType(listType);
             ParseDefinitions(schemas, listItemType, route, verb);
-            parameter.Items = GetOpenApiListItems(listItemType, route, verb);
+            parameter.Items = GetOpenApiListItems(listItemType, route, verb, allowableValueAttrs);
 
             return parameter;
         }
