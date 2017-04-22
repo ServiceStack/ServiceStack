@@ -23,7 +23,6 @@ namespace AutorestClient
             /// The operations group for this extension method.
             /// </param>
             /// <param name='aliased'>
-            /// Range Description
             /// </param>
             public static void Get(this IAllowedAttributesOperations operations, int aliased)
             {
@@ -40,7 +39,6 @@ namespace AutorestClient
             /// The operations group for this extension method.
             /// </param>
             /// <param name='aliased'>
-            /// Range Description
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.

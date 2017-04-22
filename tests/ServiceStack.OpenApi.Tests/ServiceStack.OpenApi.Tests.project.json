@@ -1,4 +1,4 @@
-{
+﻿{
   "frameworks": {
     "net45": {}
   },
@@ -7,5 +7,6 @@
     "win-x86": {}
   },
   "dependencies": {
+    "System.Data.SQLite": "1.0.105"
   }
 }

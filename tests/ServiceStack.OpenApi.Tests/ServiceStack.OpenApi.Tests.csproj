@@ -81,6 +81,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnnotatedPropertiesTests.cs" />
     <Compile Include="GeneratedClient\AllowedAttributesOperations.cs" />
     <Compile Include="GeneratedClient\AllowedAttributesOperationsExtensions.cs" />
     <Compile Include="GeneratedClient\AssignRolesOperations.cs" />
@@ -93,6 +94,8 @@
     <Compile Include="GeneratedClient\Authenticateprovider2.cs" />
     <Compile Include="GeneratedClient\Authenticateprovider2Extensions.cs" />
     <Compile Include="GeneratedClient\AuthenticateproviderExtensions.cs" />
+    <Compile Include="GeneratedClient\GetMovieId.cs" />
+    <Compile Include="GeneratedClient\GetMovieIdExtensions.cs" />
     <Compile Include="GeneratedClient\GetSession.cs" />
     <Compile Include="GeneratedClient\GetSessionExtensions.cs" />
     <Compile Include="GeneratedClient\HelloAllTypesOperations.cs" />
@@ -125,6 +128,7 @@
     <Compile Include="GeneratedClient\IAuthenticateOperations.cs" />
     <Compile Include="GeneratedClient\IAuthenticateprovider.cs" />
     <Compile Include="GeneratedClient\IAuthenticateprovider2.cs" />
+    <Compile Include="GeneratedClient\IGetMovieId.cs" />
     <Compile Include="GeneratedClient\IGetSession.cs" />
     <Compile Include="GeneratedClient\IHelloAllTypesOperations.cs" />
     <Compile Include="GeneratedClient\IHelloAllTypesWithResultOperations.cs" />
@@ -162,6 +166,7 @@
     <Compile Include="GeneratedClient\Models\CustomUserSession.cs" />
     <Compile Include="GeneratedClient\Models\GetErrorModel.cs" />
     <Compile Include="GeneratedClient\Models\GetErrorModelException.cs" />
+    <Compile Include="GeneratedClient\Models\GetMovie.cs" />
     <Compile Include="GeneratedClient\Models\GetSessionResponse.cs" />
     <Compile Include="GeneratedClient\Models\GetSessionResponseException.cs" />
     <Compile Include="GeneratedClient\Models\Hello.cs" />
@@ -185,6 +190,8 @@
     <Compile Include="GeneratedClient\Models\HelloZipResponseException.cs" />
     <Compile Include="GeneratedClient\Models\KeyValuePairStringString.cs" />
     <Compile Include="GeneratedClient\Models\ListResult.cs" />
+    <Compile Include="GeneratedClient\Models\MovieResponse.cs" />
+    <Compile Include="GeneratedClient\Models\MovieResponseException.cs" />
     <Compile Include="GeneratedClient\Models\Poco.cs" />
     <Compile Include="GeneratedClient\Models\ResponseError.cs" />
     <Compile Include="GeneratedClient\Models\ResponseStatus.cs" />
@@ -220,6 +227,7 @@
     <Compile Include="DtoHelper.cs" />
     <Compile Include="Services\AllTypes.cs" />
     <Compile Include="AllTypesTests.cs" />
+    <Compile Include="Services\AnnotatedService.cs" />
     <Compile Include="Services\CodeGenTestTypes.cs" />
     <Compile Include="Host\Config.cs" />
     <Compile Include="Host\GeneratedClientTestBase.cs" />
