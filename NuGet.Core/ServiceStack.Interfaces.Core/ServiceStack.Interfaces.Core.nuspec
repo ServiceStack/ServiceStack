@@ -17,9 +17,9 @@
     <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
     <dependencies>
       <group targetFramework=".NETStandard1.1">
-        <dependency id="System.Runtime" version="[4.1.0, )" />
-        <dependency id="System.Runtime.Serialization.Primitives" version="[4.1.1, )" />
-        <dependency id="NETStandard.Library" version="[1.6.0, )" />
+        <dependency id="System.Runtime" version="[4.3.0, )" />
+        <dependency id="System.Runtime.Serialization.Primitives" version="[4.3.0, )" />
+        <dependency id="NETStandard.Library" version="[1.6.1, )" />
       </group>
     </dependencies>
   </metadata>
