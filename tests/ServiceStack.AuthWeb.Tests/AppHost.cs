@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+#if !MONO
 using System.DirectoryServices.AccountManagement;
+#endif
 using System.Net;
 using System.Threading;
 using System.Web;
@@ -258,7 +260,7 @@ namespace ServiceStack.AuthWeb.Tests
         {
             if (userSession == null)
                 return;
-
+#if !MONO
             try
             {
                 using (PrincipalContext pc = new PrincipalContext(ContextType.Domain))
@@ -283,6 +285,7 @@ namespace ServiceStack.AuthWeb.Tests
             {
                 Log.Error("Could not retrieve windows user info for '{0}'".Fmt(tokens.DisplayName), ex);
             }
+#endif
         }
 
         public override List<Type> ExportSoapOperationTypes(List<Type> operationTypes)
