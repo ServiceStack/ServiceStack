@@ -45,6 +45,9 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(OS)' == 'Unix' ">
+    <DefineConstants>$(DefineConstants);MONO</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="DCCreative.DNOA4Glimpse">
       <HintPath>..\..\src\packages\DCCreative.DNOA4Glimpse.1.3.0.1\lib\net40\DCCreative.DNOA4Glimpse.dll</HintPath>
