@@ -12,6 +12,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// GetMovie
     /// </summary>
+    /// <remarks>
+    /// GetMovie
+    /// </remarks>
     public partial class GetMovie
     {
         /// <summary>

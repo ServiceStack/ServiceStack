@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// HelloDateTime
     /// </summary>
+    /// <remarks>
+    /// HelloDateTime
+    /// </remarks>
     public partial class HelloDateTime
     {
         /// <summary>

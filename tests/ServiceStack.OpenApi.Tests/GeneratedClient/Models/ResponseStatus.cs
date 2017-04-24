@@ -12,6 +12,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// ResponseStatus
     /// </summary>
+    /// <remarks>
+    /// ResponseStatus
+    /// </remarks>
     public partial class ResponseStatus
     {
         /// <summary>

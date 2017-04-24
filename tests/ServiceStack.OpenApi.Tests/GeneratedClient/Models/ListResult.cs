@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// ListResult
     /// </summary>
+    /// <remarks>
+    /// ListResult
+    /// </remarks>
     public partial class ListResult
     {
         /// <summary>

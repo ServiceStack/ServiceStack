@@ -12,6 +12,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// Authenticate
     /// </summary>
+    /// <remarks>
+    /// Authenticate
+    /// </remarks>
     public partial class Authenticate
     {
         /// <summary>

@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// ReturnedDto
     /// </summary>
+    /// <remarks>
+    /// ReturnedDto
+    /// </remarks>
     public partial class ReturnedDto
     {
         /// <summary>

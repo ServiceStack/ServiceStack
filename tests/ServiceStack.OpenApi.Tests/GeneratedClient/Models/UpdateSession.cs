@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// UpdateSession
     /// </summary>
+    /// <remarks>
+    /// UpdateSession
+    /// </remarks>
     public partial class UpdateSession
     {
         /// <summary>

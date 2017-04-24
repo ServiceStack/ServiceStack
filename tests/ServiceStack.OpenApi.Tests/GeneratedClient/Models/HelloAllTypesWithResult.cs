@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// HelloAllTypesWithResult
     /// </summary>
+    /// <remarks>
+    /// HelloAllTypesWithResult
+    /// </remarks>
     public partial class HelloAllTypesWithResult
     {
         /// <summary>

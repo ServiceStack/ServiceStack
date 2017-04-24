@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// HelloZipResponse
     /// </summary>
+    /// <remarks>
+    /// HelloZipResponse
+    /// </remarks>
     public partial class HelloZipResponse
     {
         /// <summary>

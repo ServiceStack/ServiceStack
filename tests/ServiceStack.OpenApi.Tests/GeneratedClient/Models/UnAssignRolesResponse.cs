@@ -12,6 +12,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// UnAssignRolesResponse
     /// </summary>
+    /// <remarks>
+    /// UnAssignRolesResponse
+    /// </remarks>
     public partial class UnAssignRolesResponse
     {
         /// <summary>

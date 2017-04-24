@@ -12,6 +12,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// ResponseError
     /// </summary>
+    /// <remarks>
+    /// ResponseError
+    /// </remarks>
     public partial class ResponseError
     {
         /// <summary>

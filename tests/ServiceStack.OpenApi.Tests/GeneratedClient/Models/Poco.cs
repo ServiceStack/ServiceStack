@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// Poco
     /// </summary>
+    /// <remarks>
+    /// Poco
+    /// </remarks>
     public partial class Poco
     {
         /// <summary>

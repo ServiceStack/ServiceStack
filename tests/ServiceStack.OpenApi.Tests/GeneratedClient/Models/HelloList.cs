@@ -12,6 +12,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// HelloList
     /// </summary>
+    /// <remarks>
+    /// HelloList
+    /// </remarks>
     public partial class HelloList
     {
         /// <summary>

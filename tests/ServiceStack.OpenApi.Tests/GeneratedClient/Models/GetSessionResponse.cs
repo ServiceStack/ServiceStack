@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// GetSessionResponse
     /// </summary>
+    /// <remarks>
+    /// GetSessionResponse
+    /// </remarks>
     public partial class GetSessionResponse
     {
         /// <summary>

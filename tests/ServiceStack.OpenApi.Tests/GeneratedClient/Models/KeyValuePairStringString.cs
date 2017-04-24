@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// KeyValuePair&lt;String,String&gt;
     /// </summary>
+    /// <remarks>
+    /// KeyValuePair&lt;String,String&gt;
+    /// </remarks>
     public partial class KeyValuePairStringString
     {
         /// <summary>

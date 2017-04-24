@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// HelloWithRoute
     /// </summary>
+    /// <remarks>
+    /// HelloWithRoute
+    /// </remarks>
     public partial class HelloWithRoute
     {
         /// <summary>

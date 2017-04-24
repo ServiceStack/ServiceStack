@@ -12,6 +12,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// AssignRoles
     /// </summary>
+    /// <remarks>
+    /// AssignRoles
+    /// </remarks>
     public partial class AssignRoles
     {
         /// <summary>

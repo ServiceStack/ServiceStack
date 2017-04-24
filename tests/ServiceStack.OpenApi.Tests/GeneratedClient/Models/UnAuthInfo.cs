@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// UnAuthInfo
     /// </summary>
+    /// <remarks>
+    /// UnAuthInfo
+    /// </remarks>
     public partial class UnAuthInfo
     {
         /// <summary>

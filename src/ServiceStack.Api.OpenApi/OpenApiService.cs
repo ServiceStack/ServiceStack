@@ -234,6 +234,7 @@ namespace ServiceStack.Api.OpenApi
 
             return new OpenApiSchema
             {
+                Title = GetSchemaTypeName(schemaType),
                 Type = OpenApiType.Array,
                 Items = GetOpenApiListItems(listItemType, route, verb)
             };
@@ -266,6 +267,7 @@ namespace ServiceStack.Api.OpenApi
 
             return new OpenApiSchema
             {
+                Title = GetSchemaTypeName(schemaType),
                 Type = OpenApiType.Object,
                 Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
                 AdditionalProperties = GetOpenApiProperty(schemas, valueType, route, verb)
@@ -288,6 +290,7 @@ namespace ServiceStack.Api.OpenApi
             return new OpenApiSchema
             {
                 Type = OpenApiType.Object,
+                Title = GetSchemaTypeName(schemaType),
                 Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
                 Properties = new OrderedDictionary<string, OpenApiProperty>()
                 {
@@ -396,6 +399,7 @@ namespace ServiceStack.Api.OpenApi
                 schema = new OpenApiSchema
                 {
                     Type = OpenApiType.Object,
+                    Title = schemaType.Name,
                     Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
                     Properties = new OrderedDictionary<string, OpenApiProperty>()
                 };
@@ -506,9 +510,10 @@ namespace ServiceStack.Api.OpenApi
                         ?? GetListSchema(schemas, schemaType, null, null)
                         ?? (IsSwaggerScalarType(schemaType)
                             ? new OpenApiSchema {
-                                  Type = GetSwaggerTypeName(schemaType),
-                                  Format = GetSwaggerTypeFormat(schemaType)
-                              }
+                                Title = GetSchemaTypeName(schemaType),
+                                Type = GetSwaggerTypeName(schemaType),
+                                Format = GetSwaggerTypeFormat(schemaType)
+                            }
                             : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) });
 
                     return schema;

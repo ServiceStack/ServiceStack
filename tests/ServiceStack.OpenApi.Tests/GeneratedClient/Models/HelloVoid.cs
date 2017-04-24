@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// HelloVoid
     /// </summary>
+    /// <remarks>
+    /// HelloVoid
+    /// </remarks>
     public partial class HelloVoid
     {
         /// <summary>

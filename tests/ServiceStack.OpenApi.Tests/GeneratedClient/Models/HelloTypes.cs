@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// HelloTypes
     /// </summary>
+    /// <remarks>
+    /// HelloTypes
+    /// </remarks>
     public partial class HelloTypes
     {
         /// <summary>

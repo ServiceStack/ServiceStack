@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// SubType
     /// </summary>
+    /// <remarks>
+    /// SubType
+    /// </remarks>
     public partial class SubType
     {
         /// <summary>

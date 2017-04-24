@@ -10,6 +10,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// ArrayResult
     /// </summary>
+    /// <remarks>
+    /// ArrayResult
+    /// </remarks>
     public partial class ArrayResult
     {
         /// <summary>

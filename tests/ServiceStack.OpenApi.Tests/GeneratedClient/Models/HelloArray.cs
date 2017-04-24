@@ -12,6 +12,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// HelloArray
     /// </summary>
+    /// <remarks>
+    /// HelloArray
+    /// </remarks>
     public partial class HelloArray
     {
         /// <summary>

@@ -12,6 +12,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// AllCollectionTypes
     /// </summary>
+    /// <remarks>
+    /// AllCollectionTypes
+    /// </remarks>
     public partial class AllCollectionTypes
     {
         /// <summary>

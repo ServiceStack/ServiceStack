@@ -8,8 +8,11 @@ namespace AutorestClient.Models
     using System.Linq;
 
     /// <summary>
-    /// AllowedAttributes Description
+    /// AllowedAttributes
     /// </summary>
+    /// <remarks>
+    /// AllowedAttributes Description
+    /// </remarks>
     public partial class AllowedAttributes
     {
         /// <summary>

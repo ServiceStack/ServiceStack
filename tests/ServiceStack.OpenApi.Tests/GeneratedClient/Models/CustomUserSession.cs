@@ -12,6 +12,9 @@ namespace AutorestClient.Models
     /// <summary>
     /// CustomUserSession
     /// </summary>
+    /// <remarks>
+    /// CustomUserSession
+    /// </remarks>
     public partial class CustomUserSession
     {
         /// <summary>
