@@ -13,6 +13,8 @@
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,6 +63,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.ReaderWriter" />
     <Reference Include="System.Windows" />
+    <Reference Include="System.Windows.Browser" />
     <Reference Include="..\..\lib\sl5\ServiceStack.Text.dll" />
   </ItemGroup>
 
