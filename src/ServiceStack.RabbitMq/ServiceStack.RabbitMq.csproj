@@ -4,7 +4,7 @@
     <TargetFrameworks>net45;netstandard1.6</TargetFrameworks>
     <AssemblyName>ServiceStack.RabbitMq</AssemblyName>
     <PackageId>ServiceStack.RabbitMq</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>

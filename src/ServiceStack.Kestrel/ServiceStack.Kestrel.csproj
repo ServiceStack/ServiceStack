@@ -4,7 +4,7 @@
     <TargetFramework>netstandard1.6</TargetFramework>
     <AssemblyName>ServiceStack.Kestrel</AssemblyName>
     <PackageId>ServiceStack.Kestrel</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -23,28 +23,13 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="1.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.0.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.0.2" />
-    <PackageReference Include="System.Dynamic.Runtime" Version="4.0.11" />
-    <PackageReference Include="System.Data.Common" Version="4.1.0" />
-    <PackageReference Include="System.ComponentModel.Primitives" Version="4.1.0" />
-    <PackageReference Include="System.Net.Primitives" Version="4.0.11" />
-    <PackageReference Include="System.Net.NetworkInformation" Version="4.1.0" />
-    <PackageReference Include="System.Net.Security" Version="4.0.0" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.0.1" />
-    <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.0.1" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.0.1" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.1.0" />
-    <PackageReference Include="System.Xml.XmlSerializer" Version="4.0.11" />
-    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.1.1" />
-    <PackageReference Include="System.Collections.Specialized" Version="4.0.1" />
-    <PackageReference Include="System.Linq.Queryable" Version="4.0.1" />
-    <PackageReference Include="System.Threading.ThreadPool" Version="4.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.1.0" />
     <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
   </ItemGroup>

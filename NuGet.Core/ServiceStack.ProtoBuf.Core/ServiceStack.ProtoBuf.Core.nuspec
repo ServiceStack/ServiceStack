@@ -18,7 +18,6 @@
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
       <group targetFramework=".NETStandard1.6">
-        <dependency id="NETStandard.Library" version="[1.6.0, )" />
         <dependency id="protobuf-net" version="[2.1.0, )" />
         <dependency id="ServiceStack.Text.Core" version="1.0.0" />
         <dependency id="ServiceStack.Interfaces.Core" version="1.0.0" />
