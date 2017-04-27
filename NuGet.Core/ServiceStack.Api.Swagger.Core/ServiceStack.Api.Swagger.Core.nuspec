@@ -19,10 +19,10 @@
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
       <group targetFramework=".NETStandard1.6">
-        <dependency id="System.ServiceModel.Primitives" version="[4.1.0, )" />
-        <dependency id="System.Xml.XmlSerializer" version="[4.0.11, )" />
-        <dependency id="System.Runtime.Serialization.Primitives" version="[4.1.1, )" />
-        <dependency id="System.Collections.Specialized" version="[4.0.1, )" />
+        <dependency id="System.ServiceModel.Primitives" version="[4.3.0, )" />
+        <dependency id="System.Xml.XmlSerializer" version="[4.3.0, )" />
+        <dependency id="System.Runtime.Serialization.Primitives" version="[4.3.0, )" />
+        <dependency id="System.Collections.Specialized" version="[4.3.0, )" />
         <dependency id="ServiceStack.Text.Core" version="1.0.0" />
         <dependency id="ServiceStack.Interfaces.Core" version="1.0.0" />
         <dependency id="ServiceStack.Client.Core" version="1.0.0" />
