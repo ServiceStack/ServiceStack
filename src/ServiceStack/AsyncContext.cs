@@ -10,7 +10,7 @@ namespace ServiceStack
     {
         public virtual Task ContinueWith(Task task, Action<Task> fn)
         {
-            return task.ContinueWith(fn);
+            return task.ContinueWith(fn, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public Task<TResult> ContinueWith<TResult>(Task task, Func<Task, TResult> fn)
@@ -20,12 +20,12 @@ namespace ServiceStack
 
         public virtual Task ContinueWith(Task task, Action<Task> fn, TaskContinuationOptions continuationOptions)
         {
-            return task.ContinueWith(fn, continuationOptions);
+            return task.ContinueWith(fn, default(CancellationToken), continuationOptions, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public virtual Task ContinueWith(IRequest req, Task task, Action<Task> fn, CancellationToken token = default(CancellationToken))
         {
-            return task.ContinueWith(fn, token);
+            return task.ContinueWith(fn, token, TaskContinuationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public virtual Task ContinueWith(IRequest req, Task task, Action<Task> fn, TaskContinuationOptions continuationOptions)
@@ -35,22 +35,22 @@ namespace ServiceStack
 
         public virtual Task<Task<object>> ContinueWith(IRequest req, Task<object> task, Func<Task<object>, Task<object>> fn)
         {
-            return task.ContinueWith(fn);
+            return task.ContinueWith(fn, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public virtual Task<object> ContinueWith(IRequest req, Task task, Func<Task, object> fn)
         {
-            return task.ContinueWith(fn);
+            return task.ContinueWith(fn, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public virtual Task<T> ContinueWith<T>(IRequest req, Task<object> task, Func<Task<object>, T> fn)
         {
-            return task.ContinueWith(fn);
+            return task.ContinueWith(fn, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public virtual Task<T> ContinueWith<T>(IRequest req, Task<T> task, Func<Task<T>, T> fn, CancellationToken token)
         {
-            return task.ContinueWith(fn, token);
+            return task.ContinueWith(fn, token, TaskContinuationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public virtual Task<List<T>> ContinueWith<T>(IRequest req, Task<T[]> task, Func<Task<T[]>, List<T>> fn, CancellationToken token = default(CancellationToken))
