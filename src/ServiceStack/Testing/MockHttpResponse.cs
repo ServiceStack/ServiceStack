@@ -37,6 +37,11 @@ namespace ServiceStack.Testing
             this.Headers.Add(name, value);
         }
 
+        public void RemoveHeader(string name)
+        {
+            Headers.Remove(name);
+        }
+
         public string GetHeader(string name)
         {
             return this.Headers[name];

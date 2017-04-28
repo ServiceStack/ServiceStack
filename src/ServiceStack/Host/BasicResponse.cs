@@ -35,6 +35,11 @@ namespace ServiceStack.Host
             Headers[name] = value;
         }
 
+        public void RemoveHeader(string name)
+        {
+            Headers.Remove(name);
+        }
+
         public string GetHeader(string name)
         {
             string value;
