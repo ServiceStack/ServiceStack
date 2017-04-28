@@ -40,7 +40,7 @@ namespace ServiceStack
 
         public virtual Task<object> ContinueWith(IRequest req, Task task, Func<Task, object> fn)
         {
-            return task.ContinueWith(fn, TaskScheduler.FromCurrentSynchronizationContext());
+            return task.ContinueWith(fn);
         }
 
         public virtual Task<T> ContinueWith<T>(IRequest req, Task<object> task, Func<Task<object>, T> fn)
