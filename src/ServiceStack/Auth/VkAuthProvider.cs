@@ -117,11 +117,8 @@ namespace ServiceStack.Auth {
 
                 var accessToken = authInfo["access_token"];
 
-                return AuthenticateWithAccessToken(authService, session, tokens, accessToken)
-                       ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access!
-
-                //return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
-                //    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")));
+                return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
+                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")));
             } catch (WebException webException) {
                 //just in case VK will start throwing exceptions 
                 HttpStatusCode statusCode = ((HttpWebResponse)webException.Response).StatusCode;
@@ -153,7 +150,7 @@ namespace ServiceStack.Auth {
 
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo) {
             try {
-                if (!authInfo.IsNullOrEmpty()) {
+                if (!tokens.AccessToken.IsNullOrEmpty() && !tokens.AccessTokenSecret.IsNullOrEmpty()) {
                     tokens.UserName = authInfo.Get("screen_name");
                     tokens.DisplayName = authInfo.Get("screen_name");
                     tokens.FirstName = authInfo.Get("first_name");
