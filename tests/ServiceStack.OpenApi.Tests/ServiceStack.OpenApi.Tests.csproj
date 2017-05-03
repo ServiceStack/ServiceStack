@@ -231,6 +231,7 @@
     <Compile Include="Services\CodeGenTestTypes.cs" />
     <Compile Include="Host\Config.cs" />
     <Compile Include="Host\GeneratedClientTestBase.cs" />
+    <Compile Include="Services\InheritedDtoService.cs" />
     <Compile Include="Services\NativeTypesTestService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ReturnTypeServices.cs" />

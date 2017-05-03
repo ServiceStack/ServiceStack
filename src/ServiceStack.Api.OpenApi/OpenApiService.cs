@@ -603,7 +603,7 @@ namespace ServiceStack.Api.OpenApi
                         OperationId = GetOperationName(requestType.Name, routePath, verb),
                         Parameters = ParseParameters(schemas, requestType, routePath, verb),
                         Responses = GetMethodResponseCodes(restPath, schemas, requestType),
-                        Consumes = new List<string> { "application/json" },
+                        Consumes = new List<string> { IsFormData(verb) ? "application/x-www-form-urlencoded" : "application/json" },
                         Produces = new List<string> { "application/json" },
                         Tags = userTags.Count > 0 ? userTags : GetTags(restPath.Path),
                         Deprecated = requestType.HasAttribute<ObsoleteAttribute>(),
@@ -620,13 +620,13 @@ namespace ServiceStack.Api.OpenApi
 
                     switch (verb)
                     {
-                        case "GET": curPath.Get = operation; break;
-                        case "POST": curPath.Post = operation; break;
-                        case "PUT": curPath.Put = operation; break;
-                        case "DELETE": curPath.Delete = operation; break;
-                        case "PATCH": curPath.Patch = operation; break;
-                        case "HEAD": curPath.Head = operation; break;
-                        case "OPTIONS": curPath.Options = operation; break;
+                        case HttpMethods.Get: curPath.Get = operation; break;
+                        case HttpMethods.Post: curPath.Post = operation; break;
+                        case HttpMethods.Put: curPath.Put = operation; break;
+                        case HttpMethods.Delete: curPath.Delete = operation; break;
+                        case HttpMethods.Patch: curPath.Patch = operation; break;
+                        case HttpMethods.Head: curPath.Head = operation; break;
+                        case HttpMethods.Options: curPath.Options = operation; break;
                     }
                 }
             }
@@ -634,14 +634,18 @@ namespace ServiceStack.Api.OpenApi
             return apiPaths;
         }
 
+        private bool IsFormData(string verb)
+        {
+            return (verb == HttpMethods.Post || verb == HttpMethods.Put) && DisableAutoDtoInBodyParam;
+        }
 
         static readonly Dictionary<string, string> postfixes = new Dictionary<string, string>()
         {
-            { "GET", "_Get" },      //'Get' or 'List' to pass Autorest validation
-            { "PUT", "_Create" },   //'Create' to pass Autorest validation
-            { "POST", "_Post" },
-            { "PATCH", "_Update" }, //'Update' to pass Autorest validation
-            { "DELETE", "_Delete" } //'Delete' to pass Autorest validation
+            { HttpMethods.Get, "_Get" },      //'Get' or 'List' to pass Autorest validation
+            { HttpMethods.Put, "_Create" },   //'Create' to pass Autorest validation
+            { HttpMethods.Post, "_Post" },
+            { HttpMethods.Patch, "_Update" }, //'Update' to pass Autorest validation
+            { HttpMethods.Delete, "_Delete" } //'Delete' to pass Autorest validation
         };
 
 
@@ -654,7 +658,7 @@ namespace ServiceStack.Api.OpenApi
 
             var entries = route.Replace("{", string.Empty)
                 .Replace("}", string.Empty)
-                .Split(new char[] { '/'}, StringSplitOptions.RemoveEmptyEntries);
+                .Split(new [] { '/'}, StringSplitOptions.RemoveEmptyEntries);
 
             if (entries.Length > 1)
                 pathPostfix = string.Join(string.Empty, entries, 1, entries.Length - 1);
@@ -668,7 +672,7 @@ namespace ServiceStack.Api.OpenApi
             int num = 2;
             while (operationIds.Contains(operationId))
             {
-                operationId = name + pathPostfix + num.ToString() + verbPostfix;
+                operationId = name + pathPostfix + num + verbPostfix;
                 num++;
             }
 
@@ -720,9 +724,7 @@ namespace ServiceStack.Api.OpenApi
                 var inPath = (route ?? "").ToLowerInvariant().Contains("{" + propertyName.ToLowerInvariant() + "}");
                 var paramType = inPath
                     ? "path"
-                    : verb == HttpMethods.Post || verb == HttpMethods.Put
-                        ? "formData"
-                        : "query";
+                    : IsFormData(verb) ? "formData": "query";
 
 
                 var parameter = GetParameter(schemas, property.PropertyType,
