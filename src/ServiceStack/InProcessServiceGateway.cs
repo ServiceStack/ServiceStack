@@ -199,9 +199,8 @@ namespace ServiceStack
         {
             var holdDto = req.Dto;
             var holdAttrs = req.RequestAttributes;
-            string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+            var holdVerb = SetVerb(requestDto);
 
-            req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
             req.RequestAttributes &= ~RequestAttributes.Reply;
             req.RequestAttributes |= RequestAttributes.OneWay;
             req.RequestAttributes |= RequestAttributes.InProcess;
@@ -222,9 +221,8 @@ namespace ServiceStack
         {
             var holdDto = req.Dto;
             var holdAttrs = req.RequestAttributes;
-            string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
-
-            req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
+            var holdVerb = SetVerb(requestDto);
+            
             req.RequestAttributes &= ~RequestAttributes.Reply;
             req.RequestAttributes |= RequestAttributes.OneWay;
             req.RequestAttributes |= RequestAttributes.InProcess;
