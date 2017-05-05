@@ -256,7 +256,7 @@ namespace ServiceStack.RabbitMq
                         var bytes = entry.Value as byte[];
                         var value = bytes != null
                             ? bytes.FromUtf8Bytes()
-                            : entry.Value.ToString();
+                            : entry.Value?.ToString();
 
                         message.Meta[entry.Key] = value;
                     }
