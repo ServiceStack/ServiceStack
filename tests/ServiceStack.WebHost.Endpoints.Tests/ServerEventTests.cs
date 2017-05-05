@@ -152,7 +152,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public bool UseRedisServerEvents { get; set; }
         public bool LimitToAuthenticatedUsers { get; set; }
-        public Action<Web.IResponse, string> OnPublish { get; set; }
+        public Action<IEventSubscription, Web.IResponse, string> OnPublish { get; set; }
 
         public override void Configure(Container container)
         {
@@ -199,7 +199,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new ServerEventsAppHost
                 {
                  
-                    OnPublish = (res, msg) =>
+                    OnPublish = (sub, res, msg) =>
                     {
                         res.OutputStream.Write("\n\n\n\n\n\n\n\n\n\n");
                     }
