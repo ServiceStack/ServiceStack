@@ -441,7 +441,24 @@ namespace ServiceStack.Auth
             return jwtPayload;
         }
 
-        private IAuthSession CreateSessionFromPayload(IRequest req, JsonObject jwtPayload)
+        public IAuthSession ConvertJwtToSession(IRequest req, string jwt)
+        {
+            var parts = jwt.Split('.');
+            var jwtPayload = GetVerifiedJwtPayload(parts);
+            if (jwtPayload == null) //not verified
+                return null;
+
+            if (ValidateToken != null)
+            {
+                if (!ValidateToken(jwtPayload, req))
+                    return null;
+            }
+
+            var session = CreateSessionFromPayload(req, jwtPayload);
+            return session;
+        }
+
+        public IAuthSession CreateSessionFromPayload(IRequest req, JsonObject jwtPayload)
         {
             AssertJwtPayloadIsValid(jwtPayload);
 
