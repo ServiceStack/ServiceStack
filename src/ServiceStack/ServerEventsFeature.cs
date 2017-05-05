@@ -31,7 +31,7 @@ namespace ServiceStack
         public Action<IEventSubscription, Dictionary<string, string>> OnConnect { get; set; }
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
-        public Action<IResponse, string> OnPublish { get; set; }
+        public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
         public Action<IResponse, string> WriteEvent { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
@@ -406,6 +406,8 @@ namespace ServiceStack
         private readonly IResponse response;
         private long msgId;
 
+        public long LastMessageId => Interlocked.Read(ref msgId);
+
         public EventSubscription(IResponse response)
         {
             this.response = response;
@@ -421,7 +423,7 @@ namespace ServiceStack
 
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription> OnDispose { get; set; }
-        public Action<IResponse, string> OnPublish { get; set; }
+        public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
         public Action<IResponse, string> WriteEvent { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
@@ -448,7 +450,7 @@ namespace ServiceStack
                 {
                     WriteEvent(response, frame);
 
-                    OnPublish?.Invoke(response, frame);
+                    OnPublish?.Invoke(this, response, frame);
                 }
             }
             catch (Exception ex)
