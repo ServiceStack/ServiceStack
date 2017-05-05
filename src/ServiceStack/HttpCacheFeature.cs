@@ -88,7 +88,7 @@ namespace ServiceStack
                 return false;
 
             var expiresIn = cacheInfo.ExpiresIn.GetValueOrDefault(DefaultExpiresIn);
-            var cache = cacheInfo.LocalCache ? HostContext.LocalCache : HostContext.Cache;
+            var cache = cacheInfo.LocalCache ? HostContext.AppHost.GetMemoryCacheClient(req) : HostContext.AppHost.GetCacheClient(req);
 
             var responseBytes = dto as byte[];
             if (responseBytes == null)
