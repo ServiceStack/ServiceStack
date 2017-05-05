@@ -11,29 +11,19 @@ namespace ServiceStack.Messaging
     {
         static QueueNames() 
         {
-            var utf8 = new UTF8Encoding(false);
-
             Priority = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".priorityq");
-            PriorityBytes = utf8.GetBytes(Priority);
             In = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".inq");
-            InBytes = utf8.GetBytes(In);
             Out = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".outq");
-            OutBytes = utf8.GetBytes(Out);
             Dlq = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".dlq");
-            DlqBytes = utf8.GetBytes(Dlq);
         }
 
         public static string Priority { get; private set; }
-        public static byte[] PriorityBytes { get; private set; }
 
         public static string In { get; private set; }
-        public static byte[] InBytes { get; private set; }
 
         public static string Out { get; private set; }
-        public static byte[] OutBytes { get; private set; }
 
         public static string Dlq { get; private set; }
-        public static byte[] DlqBytes { get; private set; }
 
         public static string[] AllQueueNames
         {

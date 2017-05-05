@@ -36,7 +36,7 @@ namespace ServiceStack
                 Func<Task, TOut> next)
         {
             var ctxt = SynchronizationContext.Current;
-            return task.ContinueWith(innerTask =>
+            return HostContext.Async.ContinueWith(task, innerTask =>
             {
                 var tcs = new TaskCompletionSource<TOut>();
 
@@ -60,7 +60,15 @@ namespace ServiceStack
                     else
                     {
                         var res = next(innerTask);
-                        tcs.TrySetResult(res);
+                        var t = res as Task;
+                        if (t != null && t.IsFaulted)
+                        {
+                            tcs.TrySetException(t.Exception);
+                        }
+                        else
+                        {
+                            tcs.TrySetResult(res);
+                        }
                     }
                 }
                 catch (Exception ex)

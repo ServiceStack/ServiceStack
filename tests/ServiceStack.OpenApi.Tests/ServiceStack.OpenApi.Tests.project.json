@@ -1,0 +1,12 @@
+﻿{
+  "frameworks": {
+    "net45": {}
+  },
+  "runtimes": {
+    "win": {},
+    "win-x86": {}
+  },
+  "dependencies": {
+    "System.Data.SQLite": "1.0.105"
+  }
+}

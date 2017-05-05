@@ -126,7 +126,7 @@ namespace ServiceStack
                 return false;
 
             var res = req.Response;
-            var cache = cacheInfo.LocalCache ? HostContext.LocalCache : HostContext.Cache;
+            var cache = cacheInfo.LocalCache ? HostContext.AppHost.GetMemoryCacheClient(req) : HostContext.AppHost.GetCacheClient(req);
 
             DateTime? lastModified = null;
 

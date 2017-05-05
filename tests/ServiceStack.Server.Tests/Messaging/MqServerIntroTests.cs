@@ -466,7 +466,9 @@ namespace ServiceStack.Server.Tests.Messaging
             {
                 ConfigureAppHost = host =>
                 {
+#if !NETCORE_SUPPORT
                     RequestContext.UseThreadStatic = true;
+#endif
                     host.Container.Register<IDisposableDependency>(c => new DisposableDependency(() =>
                     {
                         Interlocked.Increment(ref disposeCount);

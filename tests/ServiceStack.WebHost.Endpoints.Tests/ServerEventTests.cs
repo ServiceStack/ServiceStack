@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [Route("/channels/{Channel}/object")]
-    public class PostObjectToChannel
+    public class PostObjectToChannel : IReturnVoid
     {
         public string ToUserId { get; set; }
         public string Channel { get; set; }
@@ -191,20 +191,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-
     [TestFixture]
     public class MemoryServerEventsWithNewlineOnPublishTests : ServerEventsTests
     {
         protected override ServiceStackHost CreateAppHost()
         {
-            return new ServerEventsAppHost()
-            {
-                 
-                OnPublish = (res, msg) =>
+            return new ServerEventsAppHost
                 {
-                    res.OutputStream.Write("\n\n\n\n\n\n\n\n\n\n");
+                 
+                    OnPublish = (res, msg) =>
+                    {
+                        res.OutputStream.Write("\n\n\n\n\n\n\n\n\n\n");
+                    }
                 }
-            }
                 .Init()
                 .Start(Config.AbsoluteBaseUri);
         }
@@ -223,7 +222,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [TestFixture]
-
     public class RedisServerEventsTests : ServerEventsTests
     {
         protected override ServiceStackHost CreateAppHost()
@@ -310,15 +308,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var joinMsgs = new List<ServerEventJoin>();
                 var allJoinsReceived = new TaskCompletionSource<bool>();
 
-                client.OnCommand = msg =>
+                client.OnJoin = msg =>
                 {
-                    var joinMsg = msg as ServerEventJoin;
-                    if (joinMsg != null)
-                    {
-                        joinMsgs.Add(joinMsg);
-                        if (joinMsgs.Count == channels.Length)
-                            allJoinsReceived.SetResult(true);
-                    }
+                    joinMsgs.Add(msg);
+                    if (joinMsgs.Count == channels.Length)
+                        allJoinsReceived.SetResult(true);
                 };
 
                 var connectMsg = await client.Connect().WaitAsync(2000);
@@ -694,7 +688,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 client1.Post(new CustomType { Id = 1, Name = "Foo" });
                 await msgTask.WaitAsync();
 
-                var foo = TestGlobalReceiver.FooMethodReceived;
+                var foo = TestGlobalReceiver.CustomTypeReceived;
                 Assert.That(foo, Is.Not.Null);
                 Assert.That(foo.Id, Is.EqualTo(1));
                 Assert.That(foo.Name, Is.EqualTo("Foo"));
@@ -714,7 +708,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 client1.Post(new SetterType { Id = 1, Name = "Foo" });
                 await msgTask.WaitAsync();
 
-                var foo = TestGlobalReceiver.AnyNamedSetterReceived;
+                var foo = TestGlobalReceiver.SetterTypeReceived;
                 Assert.That(foo, Is.Not.Null);
                 Assert.That(foo.Id, Is.EqualTo(1));
                 Assert.That(foo.Name, Is.EqualTo("Foo"));
@@ -814,7 +808,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 await client1.Connect();
 
                 var msgTask = client1.WaitForNextMessage();
-                client1.Post(new CustomType { Id = 1, Name = "Foo" });
+                client1.Post(new CustomType { Id = 1, Name = "Foo" }, "cmd.Custom");
                 await msgTask.WaitAsync();
 
                 var instance = (Dependency)container.Resolve<IDependency>();
@@ -824,7 +818,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(customType.Name, Is.EqualTo("Foo"));
 
                 msgTask = client1.WaitForNextMessage();
-                client1.Post(new SetterType { Id = 2, Name = "Bar" });
+                client1.Post(new SetterType { Id = 2, Name = "Bar" }, "cmd.Setter");
                 await msgTask.WaitAsync();
 
                 var setterType = instance.SetterTypeReceived;
@@ -1191,11 +1185,123 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(client2.EventStreamUri, Does.EndWith("?channels=B"));
             }
         }
+
+        [Test]
+        public async Task Does_fire_multiple_listeners_for_custom_trigger()
+        {
+            var msgs1 = new List<ServerEventMessage>();
+            var msgs2 = new List<ServerEventMessage>();
+
+            using (var client1 = CreateServerEventsClient())
+            using (var client2 = CreateServerEventsClient())
+            {
+                Action<ServerEventMessage> handler = msg => {
+                    msgs1.Add(msg);
+                };
+
+                client1.AddListener("customEvent", handler);
+                client1.AddListener("customEvent", msg => {
+                    msgs2.Add(msg);
+                });
+
+                await client1.Connect();
+                await client2.Connect();
+
+                client2.PostRaw("trigger.customEvent", "arg");
+                await Task.Delay(500);
+
+                Assert.That(msgs1.Count, Is.EqualTo(1));
+                Assert.That(msgs2.Count, Is.EqualTo(1));
+
+                client1.RemoveListener("customEvent", handler);
+
+                client2.PostRaw("trigger.customEvent", "arg");
+                await Task.Delay(500);
+
+                Assert.That(msgs1.Count, Is.EqualTo(1));
+                Assert.That(msgs2.Count, Is.EqualTo(2));
+
+                Assert.That(msgs1.All(x => x.Json.FromJson<string>() == "arg"));
+                Assert.That(msgs2.All(x => x.Json.FromJson<string>() == "arg"));
+            }
+        }
+
     }
 
     class Conf
     {
         public const string AbsoluteBaseUri = "http://127.0.0.1:10000/";
+    }
+
+    [TestFixture]
+    public class ServerEventConnectionTests
+    {
+        protected virtual ServiceStackHost CreateAppHost()
+        {
+            return new ServerEventsAppHost()
+                .Init()
+                .Start(Conf.AbsoluteBaseUri);
+        }
+
+        private static ServerEventsClient CreateServerEventsClient()
+        {
+            var client = new ServerEventsClient(Conf.AbsoluteBaseUri);
+            return client;
+        }
+
+        private readonly ServiceStackHost appHost;
+        public ServerEventConnectionTests()
+        {
+            appHost = CreateAppHost();
+        }
+
+        [OneTimeTearDown]
+        public void TestFixtureTearDown() => appHost.Dispose();
+
+        [Test]
+        public void Only_allows_one_Thread_through_at_a_time()
+        {
+            using (var client = CreateServerEventsClient())
+            {
+                10.Times(i =>
+                {
+                    ThreadPool.QueueUserWorkItem(_ => client.Start());
+                });
+
+                Thread.Sleep(100);
+                Assert.That(client.TimesStarted, Is.EqualTo(1));
+
+                10.Times(i =>
+                {
+                    ThreadPool.QueueUserWorkItem(_ => client.Restart());
+                });
+                Thread.Sleep(100);
+                Assert.That(client.TimesStarted, Is.EqualTo(2));
+
+                10.Times(i =>
+                {
+                    ThreadPool.QueueUserWorkItem(_ => client.Stop());
+                });
+                Thread.Sleep(100);
+                Assert.That(client.TimesStarted, Is.EqualTo(2));
+
+                // A stopped client doesn't get restarted
+                10.Times(i =>
+                {
+                    ThreadPool.QueueUserWorkItem(_ => client.Restart());
+                });
+                Thread.Sleep(100);
+                Assert.That(client.TimesStarted, Is.EqualTo(2));
+
+                // Can restart a stopped client
+                10.Times(i =>
+                {
+                    ThreadPool.QueueUserWorkItem(_ => client.Start());
+                });
+                Thread.Sleep(100);
+                Assert.That(client.TimesStarted, Is.EqualTo(3));
+            }
+        }
     }
 
     [TestFixture]
@@ -1214,19 +1320,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return client;
         }
 
-        private ServiceStackHost appHost;
-
+        private readonly ServiceStackHost appHost;
         public AuthMemoryServerEventsTests()
         {
-            //LogManager.LogFactory = new ConsoleLogFactory();
             appHost = CreateAppHost();
         }
 
         [OneTimeTearDown]
-        public void TestFixtureTearDown()
-        {
-            appHost.Dispose();
-        }
+        public void TestFixtureTearDown() => appHost.Dispose();
 
         [SetUp]
         public void SetUp()
@@ -1348,20 +1449,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class TestGlobalReceiver : ServerEventReceiver
     {
-        public static CustomType FooMethodReceived;
+        public static CustomType CustomTypeReceived;
         public static CustomType NoSuchMethodReceived;
         public static string NoSuchMethodSelector;
 
-        internal static SetterType AnyNamedSetterReceived;
+        internal static SetterType SetterTypeReceived;
 
-        public SetterType AnyNamedSetter
+        public SetterType SetterType
         {
-            set { AnyNamedSetterReceived = value; }
+            set { SetterTypeReceived = value; }
         }
 
-        public void AnyNamedMethod(CustomType request)
+        public void CustomType(CustomType request)
         {
-            FooMethodReceived = request;
+            CustomTypeReceived = request;
         }
 
         public override void NoSuchMethod(string selector, object message)
@@ -1393,9 +1494,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             AnnounceInstance = message;
         }
 
-        public void Toggle(string message)
+        public void Toggle()
         {
-            ToggleReceived = message;
+            ToggleReceived = "";
             ToggleRequestReceived = Request;
         }
 
@@ -1447,12 +1548,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public IDependency Dependency { get; set; }
 
-        public void AnyNamedMethod(CustomType request)
+        public void Custom(CustomType request)
         {
             Dependency.Record(request);
         }
 
-        public void AnySetter(SetterType request)
+        public void Setter(SetterType request)
         {
             Dependency.Record(request);
         }

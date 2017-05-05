@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -37,7 +38,7 @@ namespace ServiceStack
                 return;
 
             var cacheInfo = req.GetItem(Keywords.CacheInfo) as CacheInfo;
-            if (cacheInfo != null && cacheInfo.CacheKey != null)
+            if (cacheInfo?.CacheKey != null)
             {
                 if (CacheAndWriteResponse(cacheInfo, req, res, response))
                     return;
@@ -87,7 +88,7 @@ namespace ServiceStack
                 return false;
 
             var expiresIn = cacheInfo.ExpiresIn.GetValueOrDefault(DefaultExpiresIn);
-            var cache = cacheInfo.LocalCache ? HostContext.LocalCache : HostContext.Cache;
+            var cache = cacheInfo.LocalCache ? HostContext.AppHost.GetMemoryCacheClient(req) : HostContext.AppHost.GetCacheClient(req);
 
             var responseBytes = dto as byte[];
             if (responseBytes == null)
@@ -137,9 +138,9 @@ namespace ServiceStack
 
                 if (encoding != null)
                 {
+                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
                     responseBytes = responseBytes.CompressBytes(encoding);
                     cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
-                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
                 }
             }
 
@@ -244,7 +245,10 @@ namespace ServiceStack
                 {
                     DateTime modifiedSinceDate;
                     if (DateTime.TryParse(ifModifiedSince, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out modifiedSinceDate))
-                        return modifiedSinceDate <= lastModified.Value.ToUniversalTime();
+                    {
+                        var lastModifiedUtc = lastModified.Value.Truncate(TimeSpan.FromSeconds(1)).ToUniversalTime();
+                       return modifiedSinceDate >= lastModifiedUtc;
+                    }
                 }
             }
 
@@ -268,7 +272,7 @@ namespace ServiceStack
 
         public static bool ShouldAddLastModifiedToOptimizedResults(this HttpCacheFeature feature)
         {
-            return feature != null && feature.CacheControlForOptimizedResults != null;
+            return feature?.CacheControlForOptimizedResults != null;
         }
 
         internal static string StripWeakRef(this string eTag)

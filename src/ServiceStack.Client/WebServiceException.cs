@@ -4,8 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Runtime.Serialization;
-using System.Text;
+using ServiceStack.Logging;
 using ServiceStack.Model;
 using ServiceStack.Text;
 
@@ -17,6 +16,8 @@ namespace ServiceStack
     public class WebServiceException
         : Exception, IHasStatusCode, IHasStatusDescription, IResponseStatusConvertible
     {
+        public static ILog log = LogManager.GetLogger(typeof(WebServiceException));
+
         public WebServiceException() { }
         public WebServiceException(string message) : base(message) { }
         public WebServiceException(string message, Exception innerException) : base(message, innerException) { }
@@ -209,6 +210,27 @@ namespace ServiceStack
         public ResponseStatus ToResponseStatus()
         {
             return ResponseStatus;
+        }
+    }
+
+    public class RefreshTokenException : WebServiceException
+    {
+        public RefreshTokenException(string message) : base(message) {}
+
+        public RefreshTokenException(string message, Exception innerException) 
+            : base(message, innerException) {}
+
+        public RefreshTokenException(WebServiceException webEx) 
+            : base(webEx.Message)
+        {
+            if (webEx == null)
+                throw new ArgumentNullException(nameof(webEx));
+
+            this.StatusCode = webEx.StatusCode;
+            this.StatusDescription = webEx.StatusDescription;
+            this.ResponseHeaders = webEx.ResponseHeaders;
+            this.ResponseBody = webEx.ResponseBody;
+            this.ResponseDto = webEx.ResponseDto;
         }
     }
 }

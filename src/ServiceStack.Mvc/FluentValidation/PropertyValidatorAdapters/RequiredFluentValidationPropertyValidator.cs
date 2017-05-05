@@ -18,7 +18,7 @@ namespace FluentValidation.Mvc {
 			if (!ShouldGenerateClientSideRules()) yield break;
 
 			var formatter = new MessageFormatter().AppendPropertyName(Rule.GetDisplayName());
-			var message = formatter.BuildMessage(Validator.ErrorMessageSource.GetString());
+			var message = formatter.BuildMessage(Validator.ErrorMessageSource.GetString(Metadata));
 			yield return new ModelClientValidationRequiredRule(message);
 		}
 

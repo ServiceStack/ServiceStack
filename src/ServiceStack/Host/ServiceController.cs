@@ -9,6 +9,7 @@ using Funq;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
+using ServiceStack.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -169,7 +170,9 @@ namespace ServiceStack.Host
                         this.RequestTypeFactoryMap[requestType] = req =>
                         {
                             var restPath = req.GetRoute();
-                            var request = RestHandler.CreateRequest(req, restPath, req.GetRequestParams(), requestType.CreateInstance());
+                            var request = restPath != null 
+                                ? RestHandler.CreateRequest(req, restPath, req.GetRequestParams(), requestType.CreateInstance())
+                                : KeyValueDataContractDeserializer.Instance.Parse(req.QueryString, requestType);
 
                             var rawReq = (IRequiresRequestStream)request;
                             rawReq.RequestStream = req.InputStream;
@@ -528,6 +531,7 @@ namespace ServiceStack.Host
         {
             if (applyFilters)
             {
+                requestDto = appHost.ApplyRequestConverters(req, requestDto);
                 if (appHost.ApplyRequestFilters(req, req.Response, requestDto))
                     return null;
             }
@@ -556,6 +560,7 @@ namespace ServiceStack.Host
 
             if (applyFilters)
             {
+                requestDto = appHost.ApplyRequestConverters(req, requestDto);
                 if (appHost.ApplyRequestFilters(req, req.Response, requestDto))
                     return null;
             }
@@ -575,6 +580,13 @@ namespace ServiceStack.Host
             if (appHost.Config.EnableAccessRestrictions)
             {
                 AssertServiceRestrictions(requestType, req.RequestAttributes);
+            }
+
+            if (applyFilters)
+            {
+                requestDto = appHost.ApplyRequestConverters(req, requestDto);
+                if (appHost.ApplyRequestFilters(req, req.Response, requestDto))
+                    return TypeConstants.EmptyTask;
             }
 
             var handlerFn = GetService(requestType);

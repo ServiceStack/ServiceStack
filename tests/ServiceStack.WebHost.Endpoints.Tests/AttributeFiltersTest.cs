@@ -132,8 +132,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    [ResponseFilterTest]
-    [ContextualResponseFilterTest(ApplyTo.Delete | ApplyTo.Put)]
     public class AttributeFilteredResponse
     {
         public bool RequestFilterExecuted { get; set; }
@@ -194,6 +192,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class AttributeAttributeFilteredService : AttributeFilteredServiceBase
     {
+        [ResponseFilterTest]
+        [ContextualResponseFilterTest(ApplyTo.Delete | ApplyTo.Put)]
         public object Any(AttributeFiltered request)
         {
             return new AttributeFilteredResponse

@@ -37,25 +37,30 @@ namespace ServiceStack.Host.AspNet
 
         public int StatusCode
         {
-            get { return this.response.StatusCode; }
-            set { this.response.StatusCode = value; }
+            get => this.response.StatusCode;
+            set => this.response.StatusCode = value;
         }
 
         public string StatusDescription
         {
-            get { return this.response.StatusDescription; }
-            set { this.response.StatusDescription = value; }
+            get => this.response.StatusDescription;
+            set => this.response.StatusDescription = value;
         }
 
         public string ContentType
         {
-            get { return response.ContentType; }
-            set { response.ContentType = value; }
+            get => response.ContentType;
+            set => response.ContentType = value;
         }
 
         public void AddHeader(string name, string value)
         {
             response.AddHeader(name, value);
+        }
+
+        public void RemoveHeader(string name)
+        {
+            response.Headers.Remove(name);
         }
 
         public string GetHeader(string name)

@@ -92,7 +92,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_POST_upload_file()
         {
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
             var webRequest = (HttpWebRequest)WebRequest.Create(ListeningOn + "/fileuploads");
             webRequest.Accept = MimeTypes.Json;
@@ -115,7 +115,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             IServiceClient client = new JsonServiceClient(ListeningOn);
 
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
 
             var response = client.PostFile<FileUploadResponse>(
@@ -135,7 +135,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             IServiceClient client = new JsonServiceClient(ListeningOn);
 
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
             var request = new FileUpload { CustomerId = 123, CustomerName = "Foo,Bar" };
             var response = client.PostFileWithRequest<FileUploadResponse>(
@@ -157,7 +157,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             IServiceClient client = new JsonServiceClient(ListeningOn);
 
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
             var request = new FileUpload();
             var response = client.PostFileWithRequest<FileUploadResponse>(
@@ -177,7 +177,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_POST_upload_multiple_files_using_ServiceClient_with_request_and_QueryString()
         {
             IServiceClient client = new JsonServiceClient(ListeningOn);
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
             using (var stream1 = uploadFile.OpenRead())
             using (var stream2 = uploadFile.OpenRead())
@@ -216,7 +216,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task Can_POST_upload_multiple_files_using_ServiceClient_with_request_and_QueryString_JsonHttpClient()
         {
             var client = new JsonHttpClient(ListeningOn);
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
             using (var stream1 = uploadFile.OpenRead())
             using (var stream2 = uploadFile.OpenRead())
@@ -254,7 +254,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_POST_upload_file_using_ServiceClient_with_request_containing_utf8_chars()
         {
             var client = new JsonServiceClient(ListeningOn);
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
             var request = new FileUpload { CustomerId = 123, CustomerName = "Föяšč" };
             var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/fileuploads", uploadFile, request);
@@ -273,7 +273,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             IServiceClient client = new JsonServiceClient(ListeningOn);
 
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
             try
             {
@@ -295,7 +295,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_GET_upload_file()
         {
-            var uploadedFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadedFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
             var webRequest = (HttpWebRequest)WebRequest.Create(ListeningOn + "/fileuploads/TestExistingDir/upload.html");
             var expectedContents = new StreamReader(uploadedFile.OpenRead()).ReadToEnd();
 
@@ -313,7 +313,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var client = new JsonServiceClient(ListeningOn);
 
-                var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+                var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
                 bool isFilterCalled = false;
                 ServiceClientBase.GlobalRequestFilter = request => { isFilterCalled = true; };
 
@@ -342,7 +342,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var client = new JsonServiceClient(ListeningOn);
 
-                using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath()).OpenRead())
+                using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath()).OpenRead())
                 {
                     var fileName = "upload.html";
 
@@ -378,7 +378,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var client = new JsonHttpClient(ListeningOn);
 
-                using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath()).OpenRead())
+                using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath()).OpenRead())
                 {
                     var fileName = "upload.html";
 
@@ -412,7 +412,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = new JsonServiceClient(ListeningOn);
 
-            using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath()).OpenRead())
+            using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath()).OpenRead())
             {
                 var request = new FileUpload {
                     CreatedDate = new DateTime(2014, 1, 1, 1, 0, 0)
@@ -437,7 +437,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = new JsonHttpClient(ListeningOn);
 
-            using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath()).OpenRead())
+            using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath()).OpenRead())
             {
                 var request = new FileUpload
                 {

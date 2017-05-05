@@ -73,6 +73,7 @@ namespace ServiceStack
                     "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv",
                     "flv", "swf", "xap", "xaml", "ogg", "ogv", "mp4", "webm", "eot", "ttf", "woff", "woff2", "map"
                 },
+                CompressFilesWithExtensions = new HashSet<string>(),
                 AllowFilePaths = new List<string>
                 {
                     "jspm_packages/**/*.json"
@@ -125,8 +126,9 @@ namespace ServiceStack
 #endif
                 },
                 IgnoreWarningsOnPropertyNames = new List<string> {
-                    Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret,
+                    Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, Keywords.JsConfig,
                     Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version.ToPascalCase(),
+                    Keywords.ApiKeyParam,
                 },
                 XmlWriterSettings = new XmlWriterSettings
                 {
@@ -179,6 +181,8 @@ namespace ServiceStack
             this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
             this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
             this.AllowFileExtensions = instance.AllowFileExtensions;
+            this.CompressFilesWithExtensions = instance.CompressFilesWithExtensions;
+            this.CompressFilesLargerThanBytes = instance.CompressFilesLargerThanBytes;
             this.AllowFilePaths = instance.AllowFilePaths;
             this.EnableFeatures = instance.EnableFeatures;
             this.WriteErrorsToResponse = instance.WriteErrorsToResponse;
@@ -247,6 +251,8 @@ namespace ServiceStack
         public HashSet<string> IgnoreFormatsInMetadata { get; set; }
 
         public HashSet<string> AllowFileExtensions { get; set; }
+        public HashSet<string> CompressFilesWithExtensions { get; set; }
+        public long? CompressFilesLargerThanBytes { get; set; }
         public List<string> AllowFilePaths { get; set; }
 
         public string WebHostUrl { get; set; }

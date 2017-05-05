@@ -1,0 +1,462 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ServiceStack.Client</name>
+    </assembly>
+    <members>
+        <member name="T:ServiceStack.AsyncServiceClient">
+            Need to provide async request options
+            http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.GlobalRequestFilter">
+            <summary>
+            The request filter is called before any request.
+            This request filter is executed globally.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.GlobalResponseFilter">
+            <summary>
+            The response action is called once the server response is available.
+            It will allow you to access raw response information. 
+            This response action is executed globally.
+            Note that you should NOT consume the response stream as this is handled by ServiceStack
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.OnAuthenticationRequired">
+            <summary>
+            Called before request resend, when the initial request required authentication
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.RequestFilter">
+            <summary>
+            The request filter is called before any request.
+            This request filter only works with the instance where it was set (not global).
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.ResponseFilter">
+            <summary>
+            The response action is called once the server response is available.
+            It will allow you to access raw response information. 
+            Note that you should NOT consume the response stream as this is handled by ServiceStack
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.ResultsFilter">
+            <summary>
+            The ResultsFilter is called before the Request is sent allowing you to return a cached response.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.ResultsFilterResponse">
+            <summary>
+            The ResultsFilterResponse is called before returning the response allowing responses to be cached.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AsyncServiceClient.ExceptionFilter">
+            <summary>
+            Called with requestUri, ResponseType when server returns 304 NotModified
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.MessageQueueClientFactory.GetMessageAsync(System.String)">
+            <summary>
+            Returns the next message from queueName or null if no message
+            </summary>
+            <param name="queueName"></param>
+            <returns></returns>
+        </member>
+        <member name="F:ServiceStack.Pcl.NameObjectCollectionBase.m_NullKeyItem">
+            <summary>
+            Extends Hashtable based Items container to support storing null-key pairs
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Pcl.NameObjectCollectionBase._KeysEnumerator">
+            <summary>
+            Implements IEnumerable interface for KeysCollection
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Pcl.NameObjectCollectionBase.KeysCollection">
+            <summary>
+            SDK: Represents a collection of the String keys of a collection.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Pcl.NameObjectCollectionBase.KeysCollection.Count">
+            <summary>
+            Gets the number of keys in the NameObjectCollectionBase.KeysCollection
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.KeysCollection.GetEnumerator">
+            <summary>
+            SDK: Returns an enumerator that can iterate through the NameObjectCollectionBase.KeysCollection.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.#ctor">
+            <summary>
+            SDK: Initializes a new instance of the NameObjectCollectionBase class that is empty.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.GetEnumerator">
+            <summary>
+            SDK: Returns an enumerator that can iterate through the NameObjectCollectionBase.
+            
+            <remark>This enumerator returns the keys of the collection as strings.</remark>
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Pcl.NameObjectCollectionBase.IsReadOnly">
+            <summary>
+            SDK: Gets or sets a value indicating whether the NameObjectCollectionBase instance is read-only.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.BaseAdd(System.String,System.Object)">
+            <summary>
+            Adds an Item with the specified key and value into the <see cref="T:ServiceStack.Pcl.NameObjectCollectionBase"/>NameObjectCollectionBase instance.
+            </summary>
+            <param name="name"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.BaseGet(System.Int32)">
+            <summary>
+            SDK: Gets the value of the entry at the specified index of the NameObjectCollectionBase instance.
+            </summary>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.BaseGet(System.String)">
+            <summary>
+            SDK: Gets the value of the first entry with the specified key from the NameObjectCollectionBase instance.
+            </summary>
+            <remark>CAUTION: The BaseGet method does not distinguish between a null reference which is returned because the specified key is not found and a null reference which is returned because the value associated with the key is a null reference.</remark>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.BaseGetAllKeys">
+            <summary>
+            SDK:Returns a String array that contains all the keys in the NameObjectCollectionBase instance.
+            </summary>
+            <returns>A String array that contains all the keys in the NameObjectCollectionBase instance.</returns>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.BaseGetAllValues">
+            <summary>
+            SDK: Returns an Object array that contains all the values in the NameObjectCollectionBase instance.
+            </summary>
+            <returns>An Object array that contains all the values in the NameObjectCollectionBase instance.</returns>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.BaseHasKeys">
+            <summary>
+            Gets a value indicating whether the NameObjectCollectionBase instance contains entries whose keys are not a null reference 
+            </summary>
+            <returns>true if the NameObjectCollectionBase instance contains entries whose keys are not a null reference otherwise, false.</returns>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.BaseRemoveAt(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="index"></param>
+            <LAME>This function implemented the way Microsoft implemented it - 
+            item is removed from hashtable and array without considering the case when there are two items with the same key but different values in array.
+            E.g. if
+            hashtable is [("Key1","value1")] and array contains [("Key1","value1")("Key1","value2")] then
+            after RemoveAt(1) the collection will be in following state:
+            hashtable:[] 
+            array: [("Key1","value1")] 
+            It's ok only then the key is uniquely assosiated with the value
+            To fix it a comparsion of objects stored under the same key in the hashtable and in the arraylist should be added 
+            </LAME>>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.BaseSet(System.Int32,System.Object)">
+            <summary>
+            SDK: Sets the value of the entry at the specified index of the NameObjectCollectionBase instance.
+            </summary>
+            <param name="index"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameObjectCollectionBase.BaseSet(System.String,System.Object)">
+            <summary>
+            Sets the value of the first entry with the specified key in the NameObjectCollectionBase instance, if found; otherwise, adds an entry with the specified key and value into the NameObjectCollectionBase instance.
+            </summary>
+            <param name="name">The String key of the entry to set. The key can be a null reference </param>
+            <param name="value">The Object that represents the new value of the entry to set. The value can be a null reference</param>
+        </member>
+        <member name="M:ServiceStack.Pcl.NameValueCollection.Add(System.String,System.String)">
+            in SDK doc: If the same value already exists under the same key in the collection, 
+            it just adds one more value in other words after
+            <code>
+            NameValueCollection nvc;
+            nvc.Add ("LAZY","BASTARD")
+            nvc.Add ("LAZY","BASTARD")
+            </code>
+            nvc.Get ("LAZY") will be "BASTARD,BASTARD" instead of "BASTARD"
+        </member>
+        <member name="M:ServiceStack.ResponseStatusUtils.CreateResponseStatus(System.String,System.String,System.Collections.Generic.IEnumerable{ServiceStack.Validation.ValidationErrorField})">
+            <summary>
+            Creates the error response from the values provided.
+            
+            If the errorCode is empty it will use the first validation error code, 
+            if there is none it will throw an error.
+            </summary>
+            <param name="errorCode">The error code.</param>
+            <param name="errorMessage">The error message.</param>
+            <param name="validationErrors">The validation errors.</param>
+            <returns></returns>
+        </member>
+        <member name="F:ServiceStack.Serialization.DataContractSerializer.Instance">
+            <summary>
+            Default MaxStringContentLength is 8k, and throws an exception when reached
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Serialization.StringMapTypeDeserializer">
+            <summary>
+            Serializer cache of delegates required to create a type from a string map (e.g. for REST urls)
+            </summary>
+        </member>
+        <member name="T:ServiceStack.ServiceClientBase">
+            Need to provide async request options
+            http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.GlobalRequestFilter">
+            <summary>
+            The request filter is called before any request.
+            This request filter is executed globally.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.GlobalResponseFilter">
+            <summary>
+            The response action is called once the server response is available.
+            It will allow you to access raw response information. 
+            This response action is executed globally.
+            Note that you should NOT consume the response stream as this is handled by ServiceStack
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.Headers">
+            <summary>
+            Gets the collection of headers to be added to outgoing requests.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.SetBaseUri(System.String)">
+            <summary>
+            Sets all baseUri properties, using the Format property for the SyncReplyBaseUri and AsyncOneWayBaseUri
+            </summary>
+            <param name="baseUri">Base URI of the service</param>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.DisableAutoCompression">
+            <summary>
+            Whether to Accept Gzip,Deflate Content-Encoding and to auto decompress responses
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.UserName">
+            <summary>
+            The user name for basic authentication
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.Password">
+            <summary>
+            The password for basic authentication
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.SetCredentials(System.String,System.String)">
+            <summary>
+            Sets the username and the password for basic authentication.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.BearerToken">
+            <summary>
+            The Authorization Bearer Token to send with this request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.CaptureSynchronizationContext">
+            <summary>
+            Whether to execute async callbacks on the same Synchronization Context it was called from.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.Credentials">
+            <summary>
+            Gets or sets authentication information for the request.
+            Warning: It's recommened to use <see cref="P:ServiceStack.ServiceClientBase.UserName"/> and <see cref="P:ServiceStack.ServiceClientBase.Password"/> for basic auth.
+            This property is only used for IIS level authentication.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.AlwaysSendBasicAuthHeader">
+            <summary>
+            Determines if the basic auth header should be sent with every request.
+            By default, the basic auth header is only sent when "401 Unauthorized" is returned.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.StoreCookies">
+            <summary>
+            Specifies if cookies should be stored
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.OnAuthenticationRequired">
+            <summary>
+            Called before request resend, when the initial request required authentication
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.RefreshToken">
+            <summary>
+            If a request fails with a 401 Unauthorized and a BearerToken is present the client
+            will automatically fetch a new AccessToken using this RefreshToken and retry the request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.RefreshTokenUri">
+            <summary>
+            Send the Request to get the AccessToken with the RefreshToken at a non-default location
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.RequestFilter">
+            <summary>
+            The request filter is called before any request.
+            This request filter only works with the instance where it was set (not global).
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.ResultsFilter">
+            <summary>
+            The ResultsFilter is called before the Request is sent allowing you to return a cached response.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.ResultsFilterResponse">
+            <summary>
+            The ResultsFilterResponse is called before returning the response allowing responses to be cached.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.ExceptionFilter">
+            <summary>
+            Called with requestUri, ResponseType when server returns 304 NotModified
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceClientBase.ResponseFilter">
+            <summary>
+            The response action is called once the server response is available.
+            It will allow you to access raw response information. 
+            Note that you should NOT consume the response stream as this is handled by ServiceStack
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.HandleResponseException``1(System.Exception,System.Object,System.String,System.Func{System.Net.WebRequest},System.Func{System.Net.WebRequest,System.Net.WebResponse},``0@)">
+            <summary>
+            Called by Send method if an exception occurs, for instance a System.Net.WebException because the server
+            returned an HTTP error code. Override if you want to handle specific exceptions or always want to parse the
+            response to a custom ErrorResponse DTO type instead of ServiceStack's ErrorResponse class. In case ex is a
+            <c>System.Net.WebException</c>, do not use
+            <c>createWebRequest</c>/<c>getResponse</c>/<c>HandleResponse&lt;TResponse&gt;</c> to parse the response
+            because that will result in the same exception again. Use
+            <c>ThrowWebServiceException&lt;YourErrorResponseType&gt;</c> to parse the response and to throw a
+            <c>WebServiceException</c> containing the parsed DTO. Then override Send to handle that exception.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.Get(System.Object)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.Get(System.String)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
+            </summary>
+        </member>
+        <member name="T:ServiceStack.UrlExtensions">
+            <summary>
+            Donated by Ivan Korneliuk from his post:
+            http://korneliuk.blogspot.com/2012/08/servicestack-reusing-dtos.html
+            
+            Modified to only allow using routes matching the supplied HTTP Verb
+            </summary>
+        </member>
+        <member name="M:ServiceStack.UrlExtensions.ToUrl(ServiceStack.IReturn,System.String,System.String)">
+            <summary>
+            Generate a url from a Request DTO. Pretty URL generation require Routes to be defined using `[Route]` on the Request DTO
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Validation.ValidationError">
+            <summary>
+            The exception which is thrown when a validation error occurred.
+            This validation is serialized in a extra clean and human-readable way by ServiceStack.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationError.ErrorCode">
+            <summary>
+            Returns the first error code
+            </summary>
+            <value>The error code.</value>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationError.ToXml">
+            <summary>
+            Used if we need to serialize this exception to XML
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Validation.ValidationErrorResult">
+            <summary>
+            Encapsulates a validation result.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.SuccessCode">
+            <summary>
+            Gets or sets the success code.
+            </summary>
+            <value>The success code.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.ErrorCode">
+            <summary>
+            Gets or sets the error code.
+            </summary>
+            <value>The error code.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.SuccessMessage">
+            <summary>
+            Gets or sets the success message.
+            </summary>
+            <value>The success message.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.ErrorMessage">
+            <summary>
+            Gets or sets the error message.
+            </summary>
+            <value>The error message.</value>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.Errors">
+            <summary>
+            The errors generated by the validation.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Validation.ValidationErrorResult.IsValid">
+            <summary>
+            Returns True if the validation was successful (errors list is empty).
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.#ctor">
+            <summary>
+            Constructs a new ValidationResult
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.#ctor(System.Collections.Generic.IList{ServiceStack.Validation.ValidationErrorField})">
+            <summary>
+            Constructs a new ValidationResult
+            </summary>
+            <param name="errors">A list of validation results</param>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.#ctor(System.Collections.Generic.IList{ServiceStack.Validation.ValidationErrorField},System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Validation.ValidationErrorResult"/> class.
+            </summary>
+            <param name="errors">The errors.</param>
+            <param name="successCode">The success code.</param>
+            <param name="errorCode">The error code.</param>
+        </member>
+        <member name="M:ServiceStack.Validation.ValidationErrorResult.Merge(ServiceStack.Validation.ValidationErrorResult)">
+            <summary>
+            Merge errors from another <see cref="T:ServiceStack.Validation.ValidationErrorResult"/>
+            </summary>
+            <param name="result"></param>
+        </member>
+        <member name="F:ServiceStack.WebRequestUtils.ResponseDtoSuffix">
+            <summary>
+            Naming convention for the request's Response DTO
+            </summary>
+        </member>
+        <member name="M:ServiceStack.WebRequestUtils.GetResponseStatus(System.Object)">
+            <summary>
+            Shortcut to get the ResponseStatus whether it's bare or inside a IHttpResult
+            </summary>
+            <param name="response"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

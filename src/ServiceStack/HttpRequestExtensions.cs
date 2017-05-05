@@ -993,27 +993,6 @@ namespace ServiceStack
         }
 #endif
 
-        public static void SetOperationName(this IRequest httpReq, string operationName)
-        {
-            if (httpReq.OperationName == null)
-            {
-#if !NETSTANDARD1_6
-                var aspReq = httpReq as AspNetRequest;
-                if (aspReq != null)
-                {
-                    aspReq.OperationName = operationName;
-                    return;
-                }
-
-                var listenerReq = httpReq as ListenerRequest;
-                if (listenerReq != null)
-                {
-                    listenerReq.OperationName = operationName;
-                }
-#endif
-            }
-        }
-
         public static Type GetOperationType(this IRequest req)
         {
             if (req.Dto != null)
@@ -1052,6 +1031,11 @@ namespace ServiceStack
             object route;
             req.Items.TryGetValue(Keywords.Route, out route);
             return route as RestPath;
+        }
+
+        public static bool IsHtml(this IRequest req)
+        {
+            return req.ResponseContentType.MatchesContentType(MimeTypes.Html);
         }
     }
 }

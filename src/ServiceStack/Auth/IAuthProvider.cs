@@ -56,5 +56,6 @@ namespace ServiceStack.Auth
         public Authenticate AuthRequest { get; internal set; }
         public AuthenticateResponse AuthResponse { get; internal set; }
         public bool AlreadyAuthenticated { get; internal set; }
+        public bool DidAuthenticate { get; internal set; }
     }
 }

@@ -54,6 +54,11 @@ namespace ServiceStack.Host.HttpListener
             response.AddHeader(name, value);
         }
 
+        public void RemoveHeader(string name)
+        {
+            response.Headers.Remove(name);
+        }
+
         public string GetHeader(string name)
         {
             return response.Headers[name];

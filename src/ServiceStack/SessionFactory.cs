@@ -1,6 +1,4 @@
-﻿using System;
-using System.Web;
-using ServiceStack.Caching;
+﻿using ServiceStack.Caching;
 using ServiceStack.Text.Common;
 using ServiceStack.Web;
 
@@ -9,8 +7,6 @@ namespace ServiceStack
     public class SessionFactory : ISessionFactory
     {
         private readonly ICacheClient cacheClient;
-
-        public TimeSpan? SessionExpiry { get; set; }
 
         public SessionFactory(ICacheClient cacheClient)
         {

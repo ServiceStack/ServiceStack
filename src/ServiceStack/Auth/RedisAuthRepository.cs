@@ -13,7 +13,7 @@ namespace ServiceStack.Auth
         public RedisAuthRepository(IRedisClientManagerFacade factory) : base(factory) { }
     }
 
-    public class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable, IManageApiKeys
+    public class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable, IManageApiKeys, ICustomUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -480,5 +480,15 @@ namespace ServiceStack.Auth
         }
 
         public void Clear() { factory.Clear(); }
+
+        public IUserAuth CreateUserAuth()
+        {
+            return (IUserAuth)typeof(TUserAuth).CreateInstance();
+        }
+
+        public IUserAuthDetails CreateUserAuthDetails()
+        {
+            return (IUserAuthDetails)typeof(TUserAuthDetails).CreateInstance();
+        }
     }
 }

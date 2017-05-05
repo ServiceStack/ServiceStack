@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Logging.Serilog</id>
     <version>4.5.0</version>
-    <title>ServiceStack.Logging.Slack</title>
+    <title>ServiceStack.Logging.Serilog</title>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <summary>Serilog logging provider for ServiceStack</summary>

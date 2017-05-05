@@ -26,7 +26,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             return soapEnvelope;
         }
 
-        protected override void RenderOperation(System.Web.UI.HtmlTextWriter writer, IRequest httpReq, string operationName, string requestMessage, string responseMessage, string metadataHtml)
+        protected override void RenderOperation(System.Web.UI.HtmlTextWriter writer, IRequest httpReq, string operationName, string requestMessage, string responseMessage, string metadataHtml, ServiceStack.Host.Operation operation)
         {
             var operationControl = new Soap12OperationControl
             {

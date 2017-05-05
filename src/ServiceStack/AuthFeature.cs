@@ -40,6 +40,9 @@ namespace ServiceStack
 
         public bool GenerateNewSessionCookiesOnAuthentication { get; set; }
 
+        [Obsolete("Please update your App to not rely on this behavior as we plan on removing it eventually")]
+        public bool SkipAuthenticationIfAlreadyAuthenticated { get; set; }
+
         public TimeSpan? SessionExpiry { get; set; }
         public TimeSpan? PermanentSessionExpiry { get; set; }
 

@@ -163,13 +163,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		};
 
         private string[] ExpectedPostErrorCodes = new[] {
-			"NotEqual",
-			"ShouldNotBeEmpty",
-			"NotEmpty",
-			"NotNull",
-			"Predicate",
-			"Predicate",
-		};
+            "NotEqual",
+            "ShouldNotBeEmpty",
+            "NotEmpty",
+            "NotNull",
+            "Predicate",
+            "Predicate",
+        };
 
         ValidCustomers validRequest;
 

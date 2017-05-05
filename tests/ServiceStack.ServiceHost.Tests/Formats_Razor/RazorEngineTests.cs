@@ -75,6 +75,21 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         }
 
         [Test]
+        public void Can_compile_simple_view_by_name()
+        {
+            const string template = "This is my sample view, Hello @Model.Name!";
+            RazorFormat.VirtualFileSources.WriteFile("/Views/simple.cshtml", template);
+            var addedView = RazorFormat.AddPage("/Views/simple.cshtml");
+            var viewPage = RazorFormat.GetViewPage("simple");
+
+            Assert.That(addedView == viewPage);
+
+            var result = RazorFormat.RenderToHtml(viewPage, new { Name = "World" });
+
+            Assert.That(result, Is.EqualTo("This is my sample view, Hello World!"));
+        }
+
+        [Test]
         public void Can_compile_simple_template_by_name_with_layout()
         {
             const string template = "@{ Layout = \"TheLayout.cshtml\"; }This is my sample template, Hello @Model.Name!";

@@ -7,6 +7,7 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Testing;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.OAuth
@@ -201,7 +202,8 @@ namespace ServiceStack.Common.Tests.OAuth
         {
             MockAuthHttpGateway.Tokens = facebookGatewayTokens;
             var facebookAuth = GetFacebookAuthProvider();
-            facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookAuthTokens, new Dictionary<string, string>());
+            facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookAuthTokens,
+                JsonObject.Parse(facebookAuth.AuthHttpGateway.DownloadFacebookUserInfo("facebookCode")));
             Console.WriteLine("UserId: " + oAuthUserSession.UserAuthId);
         }
     }

@@ -4,6 +4,9 @@ using Serilog.Events;
 
 namespace ServiceStack.Logging.Serilog
 {
+    using System.Collections.Generic;
+    using global::Serilog.Core;
+
     /// <summary>
     /// Implementation of <see cref="ILog"/> for <see cref="Serilog"/>.
     /// </summary>
@@ -18,6 +21,11 @@ namespace ServiceStack.Logging.Serilog
         public SerilogLogger(Type type)
         {
             _log = Log.ForContext(type);
+        }
+
+        public SerilogLogger(ILogger log)
+        {
+            _log = log;
         }
 
         /// <summary>
@@ -67,6 +75,18 @@ namespace ServiceStack.Logging.Serilog
         }
 
         /// <summary>
+        /// Logs a Debug message and exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The serilog message template.</param>
+        /// <param name="propertyValues">The property values</param>
+        public void Debug(Exception exception, string messageTemplate, params object[] propertyValues)
+        {
+            if (IsDebugEnabled)
+                Write(LogEventLevel.Debug, exception, messageTemplate, propertyValues);
+        }
+
+        /// <summary>
         /// Logs a Debug format message.
         /// </summary>
         /// <param name="format">The format.</param>
@@ -96,6 +116,18 @@ namespace ServiceStack.Logging.Serilog
         {
             if (IsErrorEnabled)
                 Write(LogEventLevel.Error, message, exception);
+        }
+
+        /// <summary>
+        /// Logs a Error message and exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values</param>
+        public void Error(Exception exception, string messageTemplate, params object[] propertyValues)
+        {
+            if (IsErrorEnabled)
+                Write(LogEventLevel.Error, exception, messageTemplate, propertyValues);
         }
 
         /// <summary>
@@ -131,6 +163,17 @@ namespace ServiceStack.Logging.Serilog
         }
 
         /// <summary>
+        /// Logs a Fatal message and exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        public void Fatal(Exception exception, string messageTemplate, params object[] propertyValues)
+        {
+            if (IsFatalEnabled)
+                Write(LogEventLevel.Fatal, exception, messageTemplate, propertyValues);
+        }
+
+        /// <summary>
         /// Logs a Fatal format message.
         /// </summary>
         /// <param name="format">The format.</param>
@@ -160,6 +203,18 @@ namespace ServiceStack.Logging.Serilog
         {
             if (IsInfoEnabled)
                 Write(LogEventLevel.Information, message, exception);
+        }
+
+        /// <summary>
+        /// Logs a Info message and exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values</param>
+        public void Info(Exception exception, string messageTemplate, params object[] propertyValues)
+        {
+            if (IsInfoEnabled)
+                Write(LogEventLevel.Information, exception, messageTemplate, propertyValues);
         }
 
         /// <summary>
@@ -195,6 +250,18 @@ namespace ServiceStack.Logging.Serilog
         }
 
         /// <summary>
+        /// Logs a Warning message and exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values</param>
+        public void Warn(Exception exception, string messageTemplate, params object[] propertyValues)
+        {
+            if (IsWarnEnabled)
+                Write(LogEventLevel.Warning, exception, messageTemplate, propertyValues);
+        }
+
+        /// <summary>
         /// Logs a Warning format message.
         /// </summary>
         /// <param name="format">The format.</param>
@@ -203,6 +270,31 @@ namespace ServiceStack.Logging.Serilog
         {
             if (IsWarnEnabled)
                 Write(LogEventLevel.Warning, format, args);
+        }
+
+        internal ILog ForContext(string propertyName, object value, bool destructureObjects = false)
+        {
+            return new SerilogLogger(_log.ForContext(propertyName, value, destructureObjects));;
+        }
+
+        internal ILog ForContext(ILogEventEnricher enricher)
+        {
+            return new SerilogLogger(_log.ForContext(enricher));
+        }
+
+        internal ILog ForContext(IEnumerable<ILogEventEnricher> enrichers)
+        {
+            return new SerilogLogger(_log.ForContext(enrichers));
+        }
+
+        internal ILog ForContext(Type type)
+        {
+            return new SerilogLogger(_log.ForContext(type));
+        }
+
+        internal ILog ForContext<T>()
+        {
+            return new SerilogLogger(_log.ForContext<T>());
         }
 
         private void Write(LogEventLevel level, object message)
@@ -239,6 +331,11 @@ namespace ServiceStack.Logging.Serilog
         private void Write(LogEventLevel level, string format, params object[] args)
         {
             _log.Write(level, format, args);
+        }
+
+        private void Write(LogEventLevel level, Exception ex, string messageTemplate, params object[] propertyValues)
+        {
+            _log.Write(level, ex, messageTemplate, propertyValues);
         }
     }
 }

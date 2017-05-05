@@ -60,6 +60,11 @@ namespace ServiceStack.Host.NetCore
             }
         }
 
+        public void RemoveHeader(string name)
+        {
+            response.Headers.Remove(name);
+        }
+
         public string GetHeader(string name)
         {
             var values = response.Headers[name];

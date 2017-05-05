@@ -166,6 +166,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 this.Headers.Add(name, value);
             }
 
+            public void RemoveHeader(string name)
+            {
+                Headers.Remove(name);
+            }
+
             public string GetHeader(string name)
             {
                 string value;

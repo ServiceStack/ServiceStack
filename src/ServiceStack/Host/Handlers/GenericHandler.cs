@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Text;
@@ -33,7 +34,7 @@ namespace ServiceStack.Host.Handlers
             {
                 var requestDto = GetCustomRequestFromBinder(req, requestType) 
                     ?? (DeserializeHttpRequest(requestType, req, HandlerContentType)
-                        ?? requestType.CreateInstance());
+                    ?? requestType.CreateInstance());
 
                 return appHost.ApplyRequestConverters(req, requestDto);
             }
@@ -70,27 +71,55 @@ namespace ServiceStack.Host.Handlers
 
                 if (appHost.ApplyRequestFilters(httpReq, httpRes, request))
                     return TypeConstants.EmptyTask;
+                
+                return appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request)
+                    .Continue(t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            return t;
+                        }
 
-                var rawResponse = GetResponse(httpReq, request);
+                        if (t.IsCanceled)
+                        {
+                            httpRes.StatusCode = (int)HttpStatusCode.PartialContent;
+                            httpRes.EndRequest();
+                        }
 
-                if (httpRes.IsClosed)
-                    return TypeConstants.EmptyTask;
+                        if (httpRes.IsClosed)
+                            return TypeConstants.EmptyTask;
 
-                return HandleResponse(rawResponse, response =>
-                {
-                    response = appHost.ApplyResponseConverters(httpReq, response);
+                        var rawResponse = GetResponse(httpReq, request);
 
-                    if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
-                        return TypeConstants.EmptyTask;
+                        if (httpRes.IsClosed)
+                            return TypeConstants.EmptyTask;
 
-                    if (doJsonp && !(response is CompressedResult))
-                        return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+                        return HandleResponse(rawResponse, response =>
+                        {
+                            response = appHost.ApplyResponseConverters(httpReq, response);
 
-                    return httpRes.WriteToResponse(httpReq, response);
-                },
-                ex => !HostContext.Config.WriteErrorsToResponse
-                    ? ex.ApplyResponseConverters(httpReq).AsTaskException()
-                    : HandleException(httpReq, httpRes, operationName, ex.ApplyResponseConverters(httpReq)));
+                            if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
+                                return TypeConstants.EmptyTask;
+
+                            if (doJsonp && !(response is CompressedResult))
+                                return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+
+                            return httpRes.WriteToResponse(httpReq, response);
+                        });
+                    })
+                    .Unwrap()
+                    .Continue(t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            var taskEx = t.Exception.UnwrapIfSingleException();
+                            return !HostContext.Config.WriteErrorsToResponse
+                                ? taskEx.ApplyResponseConverters(httpReq).AsTaskException()
+                                : HandleException(httpReq, httpRes, operationName, taskEx.ApplyResponseConverters(httpReq));
+                        }
+                        return t;
+                    })
+                    .Unwrap();
             }
             catch (Exception ex)
             {

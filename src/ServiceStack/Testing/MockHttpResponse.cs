@@ -16,7 +16,7 @@ namespace ServiceStack.Testing
             this.Headers = PclExportClient.Instance.NewNameValueCollection();
             this.OutputStream = new MemoryStream();
             this.TextWritten = new StringBuilder();
-            this.Cookies = HostContext.AppHost.GetCookies(this);
+            this.Cookies = HostContext.AssertAppHost().GetCookies(this);
             this.Items = new Dictionary<string, object>();
         }
 
@@ -35,6 +35,11 @@ namespace ServiceStack.Testing
         public void AddHeader(string name, string value)
         {
             this.Headers.Add(name, value);
+        }
+
+        public void RemoveHeader(string name)
+        {
+            Headers.Remove(name);
         }
 
         public string GetHeader(string name)

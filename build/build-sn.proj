@@ -10,14 +10,12 @@
   <PropertyGroup>
     <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
     <SrcDir>$(BuildSolutionDir)/src</SrcDir>
-    <Configuration Condition="$(Configuration) == ''">Signed</Configuration>
+    <Configuration>Signed</Configuration>
     <NUnitConsoleArgs>/noshadow</NUnitConsoleArgs>
     <NuGetPath>$(SrcDir)/.nuget/nuget.exe</NuGetPath>
     <NuGetPackageDir>$(BuildSolutionDir)/NuGet.Signed/</NuGetPackageDir>
     <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion).0</Version>
-    <UnstableTag Condition="$(RELEASE) == ''">-unstable</UnstableTag>
-    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(UnstableTag)</PackageVersion>
-    <EnvVersion>$(MajorVersion).$(MinorVersion)$(PatchVersion)</EnvVersion>
+    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -33,7 +31,6 @@
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
 
   <Target Name="TeamCityBuild">
-    <!--<Copy SourceFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/ci.app.config" DestinationFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/app.config" />-->
     <CallTarget Targets="Default" />
   </Target>
 
@@ -76,48 +73,40 @@
     <Delete Files="@(NugetPackageFilesToDelete)" />
 
     <ItemGroup>
-      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/ServiceStack.dll"></ServiceStackFiles>
-      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/ServiceStack.pdb"></ServiceStackFiles>
-      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/ServiceStack.xml"></ServiceStackFiles>
+      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.dll"></ServiceStackFiles>
+      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.pdb"></ServiceStackFiles>
+      <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.xml"></ServiceStackFiles>
 
-      <ServerFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/ServiceStack.Server.*"></ServerFiles>
-      <RabbitMqFiles Include="$(SrcDir)/ServiceStack.RabbitMq/bin/$(Configuration)/ServiceStack.RabbitMq.*"></RabbitMqFiles>
+      <ServerFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/net45/ServiceStack.Server.*"></ServerFiles>
+      <RabbitMqFiles Include="$(SrcDir)/ServiceStack.RabbitMq/bin/$(Configuration)/net45/ServiceStack.RabbitMq.*"></RabbitMqFiles>
 
-      <RazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/ServiceStack.Razor.*"></RazorFiles>
-      <RazorFiles Include="$(BuildSolutionDir)/lib/System.Web.Razor.*"></RazorFiles>
+      <RazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/net45/ServiceStack.Razor.*"></RazorFiles>
 
-      <SwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/ServiceStack.Api.Swagger.*"></SwaggerFiles>
+      <SwaggerFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/net45/ServiceStack.Api.Swagger.*"></SwaggerFiles>
 
-      <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ClientFiles>
-      <ClientFilesSL5 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/ServiceStack.Client.*"></ClientFilesSL5>
+      <OpenApiFiles Include="$(SrcDir)/ServiceStack.Api.OpenApi/bin/$(Configuration)/net45/ServiceStack.Api.OpenApi.*"></OpenApiFiles>
+
+
+      <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/net45/ServiceStack.Client.*"></ClientFiles>
+      <ClientFilesSL5 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/net45/ServiceStack.Client.*"></ClientFilesSL5>
         
-      <HttpClientFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/ServiceStack.HttpClient.*"></HttpClientFiles>
+      <HttpClientFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/net45/ServiceStack.HttpClient.*"></HttpClientFiles>
 
-      <CommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/ServiceStack.Common.*"></CommonFiles>
-      <CommonFilesSL5 Include="$(SrcDir)/ServiceStack.Common.SL5/bin/$(Configuration)/ServiceStack.Common.*"></CommonFilesSL5>
+      <CommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/net45/ServiceStack.Common.*"></CommonFiles>
+      <CommonFilesSL5 Include="$(SrcDir)/ServiceStack.Common.SL5/bin/$(Configuration)/net45/ServiceStack.Common.*"></CommonFilesSL5>
 
-      <InterfacesFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/Release/ServiceStack.Interfaces.*"></InterfacesFiles>
-      <InterfacesFilesSL5 Include="$(SrcDir)/ServiceStack.Interfaces.SL5/bin/$(Configuration)/ServiceStack.Interfaces.*"></InterfacesFilesSL5>
+      <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/net45/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
 
-      <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
+      <MvcFiles Include="$(SrcDir)/ServiceStack.Mvc/bin/$(Configuration)/net45/ServiceStack.Mvc.*"></MvcFiles>
 
-      <MvcFiles Include="$(SrcDir)/ServiceStack.Mvc/bin/$(Configuration)/ServiceStack.Mvc.*"></MvcFiles>
-
-      <OAuth2Files Include="$(SrcDir)/ServiceStack.Authentication.OAuth2/bin/$(Configuration)/ServiceStack.Authentication.OAuth2.*"></OAuth2Files>
+      <OAuth2Files Include="$(SrcDir)/ServiceStack.Authentication.OAuth2/bin/$(Configuration)/net45/ServiceStack.Authentication.OAuth2.*"></OAuth2Files>
     </ItemGroup>
-
-    <!-- ServiceStack.Interfaces -->
-
-    <!-- ServiceStack.Interfaces is already signed -->
-    <!--<MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj" Properties="Configuration=$(Configuration)"/>
-    <Copy SourceFiles="%(InterfacesFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />-->
-
 
     <!-- ServiceStack.Api.Swagger -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Api.Swagger/ServiceStack.Api.Swagger.Signed.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net45')" />
     <Copy SourceFiles="%(SwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net45" />
@@ -126,9 +115,24 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/servicestack.api.swagger.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
             LogStandardErrorAsError="true" />
 
+    <!-- ServiceStack.Api.OpenApi -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Api.OpenApi/ServiceStack.Api.OpenApi.Signed.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Signed/lib/net45')" />
+    <Copy SourceFiles="%(OpenApiFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Signed/lib/net45" />
+
+    <!-- Disables -Symbols-->
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Signed/servicestack.api.openapi.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+            LogStandardErrorAsError="true" />
+
     <!-- ServiceStack.Client -->
     
-    <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Client/ServiceStack.Client.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Signed/lib/net45')" />
@@ -139,7 +143,9 @@
 
     <!-- ServiceStack.HttpClient -->
     
-    <MSBuild Projects="../src/ServiceStack.HttpClient/ServiceStack.HttpClient.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.HttpClient/ServiceStack.HttpClient.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(HttpClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.HttpClient.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.HttpClient.Signed/lib/net45')" />
@@ -150,7 +156,9 @@
 
     <!-- ServiceStack.Common -->
 
-    <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(CommonFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common.Signed/lib/net45')" />
@@ -161,7 +169,9 @@
 
     <!-- ServiceStack -->
 
-    <MSBuild Projects="../src/ServiceStack/ServiceStack.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack/ServiceStack.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Signed/lib/net45')" />
@@ -172,7 +182,9 @@
 
     <!-- ServiceStack.Server -->
 
-    <MSBuild Projects="../src/ServiceStack.Server/ServiceStack.Server.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Server/ServiceStack.Server.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server.Signed/lib/net45')" />
@@ -185,7 +197,7 @@
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.RabbitMq/ServiceStack.RabbitMq.Signed.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq.Signed/lib/net45')" />
     <Copy SourceFiles="%(RabbitMqFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq.Signed/lib/net45" />
@@ -195,7 +207,9 @@
 
     <!-- ServiceStack.Razor -->
 
-    <MSBuild Projects="../src/ServiceStack.Razor/ServiceStack.Razor.Signed.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Razor/ServiceStack.Razor.Signed.csproj" 
+             Targets="Build"
+             Properties="Version=$(PackageVersion)" />
     <Copy SourceFiles="%(RazorFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/signed" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Razor.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Razor.Signed/lib/net45')" />
@@ -208,7 +222,7 @@
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.ProtoBuf/ServiceStack.ProtoBuf.Signed.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net45')" />
     <Copy SourceFiles="%(ProtoBufFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Signed/lib/net45" />
@@ -220,7 +234,7 @@
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Mvc/ServiceStack.Mvc.Signed.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net45')" />
     <Copy SourceFiles="%(MvcFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc.Signed/lib/net45" />
@@ -232,7 +246,7 @@
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Authentication.OAuth2/ServiceStack.Authentication.OAuth2.Signed.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion)" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net45')" />
     <Copy SourceFiles="%(OAuth2Files.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Authentication.OAuth2.Signed/lib/net45" />

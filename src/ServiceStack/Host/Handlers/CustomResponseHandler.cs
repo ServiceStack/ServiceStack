@@ -22,7 +22,7 @@ namespace ServiceStack.Host.Handlers
                 return;
 
             if (httpReq.OperationName == null)
-                httpReq.SetOperationName(RequestName);
+                httpReq.OperationName = RequestName;
 
             var response = Action(httpReq, httpRes);
             httpRes.WriteToResponse(httpReq, response);

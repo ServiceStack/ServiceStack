@@ -1,128 +1,75 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack</RootNamespace>
+    <TargetFrameworks>portable45-net45+win8</TargetFrameworks>
     <AssemblyName>ServiceStack.Client</AssemblyName>
+    <PackageId>ServiceStack.Client</PackageId>
+    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.0.1" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Compile Include="..\..\ServiceStack.Client\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Compile Include="..\..\ServiceStack.Client\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'portable45-net45+win8' ">
+    <DefineConstants>$(DefineConstants);PCL;PORTABLE7</DefineConstants>
+    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <LanguageTargets>$(MSBuildProgramFiles32)\MSBuild\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets</LanguageTargets>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\PclDebug\</OutputPath>
-    <DefineConstants>PCL;DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Pcl\</OutputPath>
-    <DefineConstants>PCL;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'portable45-net45+win8' ">
+    <Reference Include="System" />
+    <Reference Include="System.IO" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Linq" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Requests" />
+    <Reference Include="System.Net.Primitives" />
+    <Reference Include="System.Globalization" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Runtime.Extensions" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Runtime.Serialization.Primitives" />
+    <Reference Include="System.Runtime.Serialization.Xml" />
+    <Reference Include="System.Runtime.InteropServices" />
+    <Reference Include="System.Reflection" />
+    <Reference Include="System.Reflection.Extensions" />
+    <Reference Include="System.Threading" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.Collections" />
+    <Reference Include="System.Collections.Concurrent" />
+    <Reference Include="System.Text.Encoding" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.ReaderWriter" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Dynamic.Runtime" />
+    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\pcl\ServiceStack.Text.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AsyncState.cs" />
-    <Compile Include="AsyncServiceClient.cs" />
-    <Compile Include="AsyncUtils.cs" />
-    <Compile Include="AuthDtos.cs" />
-    <Compile Include="CachedServiceClient.cs" />
-    <Compile Include="ClientFactory.cs" />
-    <Compile Include="ContentFormat.cs" />
-    <Compile Include="CryptUtils.cs" />
-    <Compile Include="EncryptedServiceClient.cs" />
-    <Compile Include="HttpCacheEntry.cs" />
-    <Compile Include="ICachedServiceClient.cs" />
-    <Compile Include="CsvServiceClient.cs" />
-    <Compile Include="Pcl.NameValueCollectionWrapper.cs" />
-    <Compile Include="PclExportClient.NetStandard.cs" />
-    <Compile Include="PclExportClient.Xbox.cs" />
-    <Compile Include="PclExportClient.Wp.cs" />
-    <Compile Include="PclExportClient.SL5.cs" />
-    <Compile Include="PclExportClient.Android.cs" />
-    <Compile Include="PclExportClient.Ios.cs" />
-    <Compile Include="PclExportClient.WinStore.cs" />
-    <Compile Include="PclExportClient.Net40.cs" />
-    <Compile Include="Messaging\InMemoryMessageQueueClient.cs" />
-    <Compile Include="MessageExtensions.cs" />
-    <Compile Include="Messaging\MessageQueueClientFactory.cs" />
-    <Compile Include="GenericProxy.cs" />
-    <Compile Include="IDuplex.cs" />
-    <Compile Include="IDuplexCallback.cs" />
-    <Compile Include="IOneWay.cs" />
-    <Compile Include="ISyncReply.cs" />
-    <Compile Include="IWcfServiceClient.cs" />
-    <Compile Include="JsonServiceClient.cs" />
-    <Compile Include="JsvServiceClient.cs" />
-    <Compile Include="PclExportClient.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Messaging\RedisMessageFactory.cs" />
-    <Compile Include="Messaging\RedisMessageProducer.cs" />
-    <Compile Include="Messaging\RedisMessageQueueClient.cs" />
-    <Compile Include="Messaging\RedisMessageQueueClientFactory.cs" />
-    <Compile Include="ResponseStatusUtils.cs" />
-    <Compile Include="RouteMember.cs" />
-    <Compile Include="Serialization\DataContractSerializer.Deserialize.cs" />
-    <Compile Include="Serialization\DataContractSerializer.cs" />
-    <Compile Include="Serialization\IStringStreamSerializer.cs" />
-    <Compile Include="Serialization\JsonDataContractSerializer.Deserialize.cs" />
-    <Compile Include="Serialization\JsonDataContractSerializer.cs" />
-    <Compile Include="Serialization\KeyValueDataContractDeserializer.cs" />
-    <Compile Include="Serialization\StringMapTypeDeserializer.cs" />
-    <Compile Include="Serialization\XmlSerializableSerializer.Deserialize.cs" />
-    <Compile Include="Serialization\XmlSerializableSerializer.cs" />
-    <Compile Include="Serialization\XmlSerializableWrapper.cs" />
-    <Compile Include="ServerEventsClient.cs" />
-    <Compile Include="ServerEventsClient.Receiver.cs" />
-    <Compile Include="ServiceClientBase.cs" />
-    <Compile Include="ServiceGatewayExtensions.cs" />
-    <Compile Include="Soap11ServiceClient.cs" />
-    <Compile Include="Soap12ServiceClient.cs" />
-    <Compile Include="StreamExt.cs" />
-    <Compile Include="Support\NetDeflateProvider.cs" />
-    <Compile Include="Support\NetGZipProvider.cs" />
-    <Compile Include="UrlExtensions.cs" />
-    <Compile Include="Validation\ValidationError.cs" />
-    <Compile Include="Validation\ValidationErrorField.cs" />
-    <Compile Include="Validation\ValidationErrorResult.cs" />
-    <Compile Include="WcfServiceClient.cs" />
-    <Compile Include="WebRequestUtils.cs" />
-    <Compile Include="WebServiceException.cs" />
-    <Compile Include="XmlServiceClient.cs" />
-  </ItemGroup>
-  <!--ItemGroup,Content-->
-  <!--ItemGroup,None-->
-  <ItemGroup>
-  <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-    <Project>{55942102-033A-4DA8-A6AF-1DB7B2F34A2D}</Project>
-    <Name>ServiceStack.Interfaces</Name>
-  </ProjectReference>
-</ItemGroup>
-<ItemGroup>
-  <Reference Include="ServiceStack.Text">
-    <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
-  </Reference>
-</ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
+  <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 </Project>

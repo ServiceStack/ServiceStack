@@ -1,4 +1,4 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 #if !(PCL || SL5 || NETSTANDARD1_1) || __IOS__ || ANDROID
@@ -317,7 +317,7 @@ namespace ServiceStack
         {
             using (var aes = CreateSymmetricAlgorithm())
             using (var encrypter = aes.CreateEncryptor(cryptKey, iv))
-            using (var cipherStream = MemoryStreamFactory.GetStream())
+            using (var cipherStream = new MemoryStream())
             {
                 using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
                 using (var binaryWriter = new BinaryWriter(cryptoStream))
@@ -366,7 +366,7 @@ namespace ServiceStack
         public static byte[] Authenticate(byte[] encryptedBytes, byte[] authKey, byte[] iv)
         {
             using (var hmac = CreateHashAlgorithm(authKey))
-            using (var ms = MemoryStreamFactory.GetStream())
+            using (var ms = new MemoryStream())
             {
                 using (var writer = new BinaryWriter(ms))
                 {
@@ -432,7 +432,7 @@ namespace ServiceStack
             using (var aes = AesUtils.CreateSymmetricAlgorithm())
             {
                 using (var decrypter = aes.CreateDecryptor(cryptKey, iv))
-                using (var decryptedStream = MemoryStreamFactory.GetStream())
+                using (var decryptedStream = new MemoryStream())
                 {
                     using (var decrypterStream = new CryptoStream(decryptedStream, decrypter, CryptoStreamMode.Write))
                     using (var writer = new BinaryWriter(decrypterStream))
@@ -608,8 +608,8 @@ namespace ServiceStack
                 sb.Append("<Q>").Append(Convert.ToBase64String(csp.Q)).Append("</Q>");
                 sb.Append("<DP>").Append(Convert.ToBase64String(csp.DP)).Append("</DP>");
                 sb.Append("<DQ>").Append(Convert.ToBase64String(csp.DQ)).Append("</DQ>");
-                sb.Append("<InverseQ>").Append(Convert.ToBase64String(csp.Modulus)).Append("</InverseQ>");
-                sb.Append("<D>").Append(Convert.ToBase64String(csp.Modulus)).Append("</D>");
+                sb.Append("<InverseQ>").Append(Convert.ToBase64String(csp.InverseQ)).Append("</InverseQ>");
+                sb.Append("<D>").Append(Convert.ToBase64String(csp.D)).Append("</D>");
             }
 
             sb.Append("</RSAKeyValue>");

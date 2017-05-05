@@ -102,8 +102,7 @@ namespace ServiceStack.Api.Swagger
 
             result.Apis = result.Apis.OrderBy(a => a.Path).ToList();
 
-            if (ResourcesResponseFilter != null)
-                ResourcesResponseFilter(result);
+            ResourcesResponseFilter?.Invoke(result);
 
             return new HttpResult(result) {
                 ResultScope = () => JsConfig.With(includeNullValues:false)

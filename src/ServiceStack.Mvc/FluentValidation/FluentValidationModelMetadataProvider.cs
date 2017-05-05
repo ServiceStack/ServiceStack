@@ -28,9 +28,12 @@ namespace FluentValidation.Mvc {
 	using System.ComponentModel;
 	using System.ComponentModel.DataAnnotations;
 	using System.Linq;
+	using System.Threading;
+	using System.Threading.Tasks;
 	using System.Web.Mvc;
+	using ServiceStack;
 
-	public class FluentValidationModelMetadataProvider : DataAnnotationsModelMetadataProvider {
+    public class FluentValidationModelMetadataProvider : DataAnnotationsModelMetadataProvider {
 		readonly IValidatorFactory factory;
 
 		public FluentValidationModelMetadataProvider(IValidatorFactory factory) {
@@ -115,7 +118,7 @@ namespace FluentValidation.Mvc {
             set { throw new NotImplementedException(); }
         }
 
-    	public string ErrorCode
+    	public IStringSource ErrorCodeSource
     	{
     		get { throw new NotImplementedException(); }
     		set { throw new NotImplementedException(); }
@@ -126,13 +129,18 @@ namespace FluentValidation.Mvc {
             return Enumerable.Empty<ValidationFailure>();
         }
 
+        public Task<IEnumerable<ValidationFailure>> ValidateAsync(PropertyValidatorContext context, CancellationToken cancellation)
+        {
+            return Validate(context).AsTaskResult();
+        }
+
         public string ErrorMessageTemplate
         {
             get { return null; }
             set { }
         }
 
-        public ICollection<Func<object, object>> CustomMessageFormatArguments
+        public ICollection<Func<object, object, object>> CustomMessageFormatArguments
         {
             get { return null; }
         }
@@ -154,6 +162,8 @@ namespace FluentValidation.Mvc {
         {
             return attribute;
         }
+
+        public bool IsAsync { get; }
     }
 }
 
@@ -249,6 +259,11 @@ namespace FluentValidation.Mvc.MetadataExtensions
             {
                 return builder.SetValidator(validator);
 
+            }
+
+            public IRuleBuilderOptions<T, TProperty> SetValidator<TValidator>(Func<T, TValidator> validatorProvider) where TValidator : IValidator<TProperty>
+            {
+                return builder.SetValidator(validatorProvider);
             }
 
             public IDisplayFormatBuilder<T, TProperty> NullDisplayText(string text)

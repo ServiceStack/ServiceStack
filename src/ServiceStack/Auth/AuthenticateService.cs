@@ -177,6 +177,7 @@ namespace ServiceStack.Auth
                         AuthResponse = authResponse,
                         Session = session,
                         AlreadyAuthenticated = alreadyAuthenticated,
+                        DidAuthenticate = Request.Items.ContainsKey(Keywords.DidAuthenticate),
                     };
 
                     foreach (var responseFilter in AuthResponseFilters)
@@ -275,7 +276,11 @@ namespace ServiceStack.Auth
             var generateNewCookies = authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication;
 
             object response = null;
-            if (!oAuthConfig.IsAuthorized(session, session.GetAuthTokens(provider), request))
+
+            var doAuth = !(authFeature?.SkipAuthenticationIfAlreadyAuthenticated == true)
+                || !oAuthConfig.IsAuthorized(session, session.GetAuthTokens(provider), request);
+
+            if (doAuth)
             {
                 if (generateNewCookies)
                     this.Request.GenerateNewSessionCookies(session);

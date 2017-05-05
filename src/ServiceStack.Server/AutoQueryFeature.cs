@@ -30,7 +30,7 @@ namespace ServiceStack
         public IQueryResponse Response { get; set; }
 
         [Obsolete("Use Dto")]
-        public IQueryDb Request { get { return Dto; } }
+        public IQueryDb Request => Dto;
     }
 
     public class AutoQueryFeature : IPlugin, IPostInitPlugin
@@ -235,9 +235,8 @@ namespace ServiceStack
                     parameterTypes: new[] { requestType });
 
                 var il = method.GetILGenerator();
-                
-                if (GenerateServiceFilter != null)
-                    GenerateServiceFilter(requestType, typeBuilder, method, il);
+
+                GenerateServiceFilter?.Invoke(requestType, typeBuilder, method, il);
 
                 var genericArgs = genericDef.GetGenericArguments();
                 var mi = AutoQueryServiceBaseType.GetMethods()
@@ -354,7 +353,7 @@ namespace ServiceStack
 
             foreach (var key in row.Keys)
             {
-                ctx.Response.Meta[key] = row[key].ToString();
+                ctx.Response.Meta[key] = row[key]?.ToString();
             }
 
             ctx.Commands.RemoveAll(aggregateCommands.Contains);
@@ -439,8 +438,7 @@ namespace ServiceStack
 
         public virtual void Dispose()
         {
-            if (Db != null)
-                Db.Dispose();
+            Db?.Dispose();
         }
 
         private static Dictionary<Type, ITypedQuery> TypedQueries = new Dictionary<Type, ITypedQuery>();
@@ -457,8 +455,9 @@ namespace ServiceStack
             do
             {
                 snapshot = TypedQueries;
-                newCache = new Dictionary<Type, ITypedQuery>(TypedQueries);
-                newCache[dtoType] = defaultValue;
+                newCache = new Dictionary<Type, ITypedQuery>(TypedQueries) {
+                    [dtoType] = defaultValue
+                };
 
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref TypedQueries, newCache, snapshot), snapshot));
@@ -481,8 +480,7 @@ namespace ServiceStack
                 }
             }
 
-            if (filterFn != null)
-                filterFn(q, dto, req);
+            filterFn?.Invoke(q, dto, req);
 
             return (SqlExpression<From>)q;
         }
@@ -644,7 +642,7 @@ namespace ServiceStack
             foreach (var pi in props)
             {
                 var attr = pi.FirstAttribute<DataMemberAttribute>();
-                if (attr == null || attr.Name == null) continue;
+                if (attr?.Name == null) continue;
                 aliases[attr.Name] = pi.Name;
             }
 
@@ -705,7 +703,7 @@ namespace ServiceStack
 
         private static void AppendLimits(SqlExpression<From> q, IQueryDb dto, IAutoQueryOptions options)
         {
-            var maxLimit = options != null ? options.MaxLimit : null;
+            var maxLimit = options?.MaxLimit;
             var take = dto.Take ?? maxLimit;
             if (take > maxLimit)
                 take = maxLimit;
@@ -762,15 +760,17 @@ namespace ServiceStack
                 QueryDbFieldAttribute implicitQuery;
                 QueryFieldMap.TryGetValue(name, out implicitQuery);
 
-                if (implicitQuery != null && implicitQuery.Field != null)
+                if (implicitQuery?.Field != null)
                     name = implicitQuery.Field;
 
                 var match = GetQueryMatch(q, name, options, aliases);
                 if (match == null)
                     continue;
 
-                if (implicitQuery == null)
-                    implicitQuery = match.ImplicitQuery;
+                implicitQuery = implicitQuery == null 
+                    ? match.ImplicitQuery 
+                    : implicitQuery.Combine(match.ImplicitQuery);
+
                 var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
 
                 var value = entry.Value(dto);
@@ -1002,6 +1002,23 @@ namespace ServiceStack
                     : ValueStyle.List;
             }
             return query;
+        }
+
+        public static QueryDbFieldAttribute Combine(this QueryDbFieldAttribute field, QueryDbFieldAttribute convention)
+        {
+            if (convention == null)
+                return field;
+
+            return new QueryDbFieldAttribute
+            {
+                Term = field.Term,
+                Operand = field.Operand ?? convention.Operand,
+                Template = field.Template ?? convention.Template,
+                Field = field.Field ?? convention.Field,
+                ValueFormat = field.ValueFormat ?? convention.ValueFormat,
+                ValueStyle = field.ValueStyle,
+                ValueArity = field.ValueArity != 0 ? field.ValueArity : convention.ValueArity,
+            };
         }
 
         public static SqlExpression<From> CreateQuery<From>(this IAutoQueryDb autoQuery, IQueryDb<From> model, IRequest request)
