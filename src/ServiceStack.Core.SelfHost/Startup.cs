@@ -21,6 +21,8 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using ServiceStack.Api.Swagger;
+using ServiceStack.Metadata;
+using ServiceStack.Web;
 
 namespace ServiceStack.Core.SelfHost
 {
@@ -71,14 +73,39 @@ namespace ServiceStack.Core.SelfHost
         public string Path { get; set; }
     }
 
+    [Route("/test")]
+    public class Test : IReturn<string> { }
+
     public class MyServices : Service
     {
         public object Any(Hello request) => 
             new HelloResponse { Result = $"Hello, {request.Name ?? "World"}!" };
-        
+
         //Uncomment to process Unhandled requests
         //public object Any(Error404 request) => request;
+
+        public TestResponse Any(TestRequest request)
+        {
+            return new TestResponse();
+        }
+
+        public object Any(Test request)
+        {
+            var r = new JsonMetadataHandler();
+
+            var response = r.CreateResponse(typeof(Stream));
+
+            return response;
+        }
     }
+
+    [Route("/uploadStream", "POST", Summary = "Upload stream")]
+    public class TestRequest : IReturn<TestResponse>, IRequiresRequestStream
+    {
+        public Stream RequestStream { get; set; }
+    }
+
+    public class TestResponse { }
 
     public class AppHost : AppHostBase
     {
