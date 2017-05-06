@@ -73,6 +73,7 @@
 
     <ItemGroup>
       <InterfaceCoreFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/netstandard1.1/ServiceStack.Interfaces.*"></InterfaceCoreFiles>
+      <InterfaceCoreLibFiles Include="$(BuildSolutionDir)/lib/netstandard1.1/ServiceStack.Interfaces.*"></InterfaceCoreLibFiles>
 
       <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard1.6/ServiceStack.dll"></ServiceStackCoreFiles>
       <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard1.6/ServiceStack.pdb"></ServiceStackCoreFiles>
@@ -107,12 +108,12 @@
 
     <!-- ServiceStack.Interfaces -->
 
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
+    <!--<MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />-->
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard1.1" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard1.1')" />
-    <Copy SourceFiles="%(InterfaceCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard1.1" />
+    <Copy SourceFiles="%(InterfaceCoreLibFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard1.1" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces.Core/servicestack.interfaces.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />

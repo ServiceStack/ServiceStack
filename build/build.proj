@@ -77,6 +77,7 @@
 
     <ItemGroup>
       <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/portable40-net45+sl5+win8+wp8+wpa81/ServiceStack.Interfaces.*"></InterfaceFiles>
+      <InterfaceLibFiles Include="$(BuildSolutionDir)/lib/pcl/ServiceStack.Interfaces.*"></InterfaceLibFiles>
 
       <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.dll"></ServiceStackFiles>
       <ServiceStackFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/net45/ServiceStack.pdb"></ServiceStackFiles>
@@ -138,12 +139,12 @@
 
     <!-- ServiceStack.Interfaces -->
 
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
+    <!--<MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
              Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />-->
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/portable-wp80+sl5+net45+win8+wpa81+monotouch+monoandroid+xamarin.ios10" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces/lib/portable-wp80+sl5+net45+win8+wpa81+monotouch+monoandroid+xamarin.ios10')" />
-    <Copy SourceFiles="%(InterfaceFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/portable-wp80+sl5+net45+win8+wpa81+monotouch+monoandroid+xamarin.ios10" />
+    <Copy SourceFiles="%(InterfaceLibFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/portable-wp80+sl5+net45+win8+wpa81+monotouch+monoandroid+xamarin.ios10" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces/servicestack.interfaces.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
