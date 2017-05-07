@@ -53,7 +53,8 @@ namespace CheckHttpListener
 
             SetConfig(new HostConfig
             {
-                CompressFilesWithExtensions = { "html", "js" }
+                CompressFilesWithExtensions = { "html", "js" },
+                DebugMode = false
             });
         }
 
