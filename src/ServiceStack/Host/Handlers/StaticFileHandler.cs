@@ -190,7 +190,7 @@ namespace ServiceStack.Host.Handlers
                             return;
                     }
 
-                    if (file.VirtualPath.EqualsIgnoreCase(DefaultFilePath))
+                    if (!HostContext.DebugMode && file.VirtualPath.EqualsIgnoreCase(DefaultFilePath))
                     {
                         if (file.LastModified > DefaultFileModified)
                             SetDefaultFile(DefaultFilePath, file.ReadAllBytes(), file.LastModified); //reload
