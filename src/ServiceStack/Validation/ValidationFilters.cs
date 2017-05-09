@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.FluentValidation;
 using ServiceStack.Web;
@@ -46,19 +47,20 @@ namespace ServiceStack.Validation
             if (validator == null || !validator.HasAsyncValidators(ruleSet))
                 return TypeConstants.EmptyTask;
 
-            return validator.ValidateAsync(
+            var validateTask = validator.ValidateAsync(
                 new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet))
                 {
                     Request = req
-                })
-                .ContinueWith(t =>
+                });
+
+            return HostContext.Async.ContinueWith(req, validateTask, t =>
                 {
                     var validationResult = t.Result;
                     if (validationResult.IsValid)
                         return TypeConstants.TrueTask;
 
                     var errorResponse = HostContext.RaiseServiceException(req, requestDto, validationResult.ToException())
-                        ?? DtoUtils.CreateErrorResponse(requestDto, validationResult.ToErrorResult());
+                                        ?? DtoUtils.CreateErrorResponse(requestDto, validationResult.ToErrorResult());
 
                     var validationFeature = HostContext.GetPlugin<ValidationFeature>();
                     if (validationFeature?.ErrorResponseFilter != null)

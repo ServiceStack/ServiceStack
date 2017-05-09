@@ -43,6 +43,11 @@ namespace ServiceStack
             return task.ContinueWith(fn);
         }
 
+        public virtual Task<object> ContinueWith<T>(IRequest req, Task<T> task, Func<Task<T>, object> fn)
+        {
+            return task.ContinueWith(fn);
+        }
+
         public virtual Task<T> ContinueWith<T>(IRequest req, Task<object> task, Func<Task<object>, T> fn)
         {
             return task.ContinueWith(fn);
