@@ -467,7 +467,7 @@ namespace ServiceStack
                 asyncClient.ExceptionFilter = value;
             }
         }
-        public ExceptionFilterDelegate exceptionFilter;
+        private ExceptionFilterDelegate exceptionFilter;
 
         /// <summary>
         /// The response action is called once the server response is available.
