@@ -90,7 +90,7 @@ namespace ServiceStack.Formats
                 var json = JsonDataContractSerializer.Instance.SerializeToString(dto) ?? "null";
                 json = json.Replace("<", "&lt;").Replace(">", "&gt;");
 
-                var url = req.AbsoluteUri
+                var url = req.ResolveAbsoluteUrl()
                     .Replace("format=html", "")
                     .Replace("format=shtm", "")
                     .TrimEnd('?', '&');
