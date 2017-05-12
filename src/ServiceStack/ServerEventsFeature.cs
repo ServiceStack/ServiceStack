@@ -397,8 +397,8 @@ namespace ServiceStack
         private long LastPulseAtTicks = DateTime.UtcNow.Ticks;
         public DateTime LastPulseAt
         {
-            get { return new DateTime(Interlocked.Read(ref LastPulseAtTicks), DateTimeKind.Utc); }
-            set { Interlocked.Exchange(ref LastPulseAtTicks, value.Ticks); }
+            get => new DateTime(Interlocked.Read(ref LastPulseAtTicks), DateTimeKind.Utc);
+            set => Interlocked.Exchange(ref LastPulseAtTicks, value.Ticks);
         }
 
         private long subscribed = 1;
@@ -511,6 +511,7 @@ namespace ServiceStack
     {
         DateTime CreatedAt { get; set; }
         DateTime LastPulseAt { get; set; }
+        long LastMessageId { get; }
 
         string[] Channels { get; }
         string UserId { get; }
