@@ -116,7 +116,7 @@ namespace ServiceStack
         {
             IgnoreProperties = new HashSet<string>(new[] { "Skip", "Take", "OrderBy", "OrderByDesc", "Fields", "_select", "_from", "_join", "_where" }, 
                 StringComparer.OrdinalIgnoreCase);
-            IllegalSqlFragmentTokens = new HashSet<string>();
+            IllegalSqlFragmentTokens = new HashSet<string>(OrmLiteUtils.IllegalSqlFragmentTokens);
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
             ResponseFilters = new List<Action<QueryDbFilterContext>> { IncludeAggregates };
