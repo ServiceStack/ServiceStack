@@ -21,6 +21,7 @@ namespace ServiceStack.Common.Tests
                 new BasicAppHost(typeof(Dto).Assembly, typeof(TypesCSharp).Assembly)
                 {
                     TestMode = true,
+                    Plugins = { new NativeTypesFeature() },
                     Config = new HostConfig()
                 }.Init();
         }
