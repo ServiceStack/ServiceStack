@@ -30,6 +30,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
             appHost = new BasicAppHost
             {
+                Plugins = { new MarkdownFormat() },
                 ConfigFilter = config =>
                 {
                     //Files aren't copied, set RootDirectory to ProjectPath instead.
