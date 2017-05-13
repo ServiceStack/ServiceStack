@@ -21,6 +21,7 @@ namespace ServiceStack.Testing
         {
             this.ExcludeAutoRegisteringServiceTypes = new HashSet<Type>();
             this.TestMode = true;
+            Plugins.Clear();
         }
 
         public override void Configure(Container container)
