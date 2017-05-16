@@ -57,7 +57,7 @@ namespace ServiceStack.Auth
     {
         public OrmLiteAuthRepositoryMultitenancy(IDbConnection db) : base(db) { }
 
-        public OrmLiteAuthRepositoryMultitenancy(IDbConnectionFactory dbFactory, string[] connectionStrings)
+        public OrmLiteAuthRepositoryMultitenancy(IDbConnectionFactory dbFactory, params string[] connectionStrings)
             : base(dbFactory, connectionStrings) { }
     }
 
@@ -75,7 +75,7 @@ namespace ServiceStack.Auth
         private readonly IDbConnectionFactory dbFactory;
         private readonly string[] connectionStrings;
 
-        public OrmLiteAuthRepositoryMultitenancy(IDbConnectionFactory dbFactory, string[] connectionStrings)
+        public OrmLiteAuthRepositoryMultitenancy(IDbConnectionFactory dbFactory, params string[] connectionStrings)
         {
             this.dbFactory = dbFactory;
             this.connectionStrings = connectionStrings;
