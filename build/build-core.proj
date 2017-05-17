@@ -87,8 +87,8 @@
       <ClientCoreFiles11 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/netstandard1.1/ServiceStack.Client.*"></ClientCoreFiles11>
       <ClientCoreFiles16 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/netstandard1.6/ServiceStack.Client.*"></ClientCoreFiles16>
 
-      <HttpClientFiles11 Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard1.1/ServiceStack.HttpClient.*"></HttpClientFiles11>
-      <HttpClientFiles16 Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard1.6/ServiceStack.HttpClient.*"></HttpClientFiles16>
+      <HttpClientCoreFiles11 Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard1.1/ServiceStack.HttpClient.*"></HttpClientCoreFiles11>
+      <HttpClientCoreFiles16 Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard1.6/ServiceStack.HttpClient.*"></HttpClientCoreFiles16>
 
       <CommonCoreFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/netstandard1.3/ServiceStack.Common.*"></CommonCoreFiles>
 
