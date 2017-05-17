@@ -85,8 +85,7 @@ namespace ServiceStack.Host
                 if (ResponseContentType != null)
                     httpReq.ResponseContentType = ResponseContentType;
 
-                var responseContentType = httpReq.ResponseContentType;
-                appHost.AssertContentType(responseContentType);
+                appHost.AssertContentType(httpReq.ResponseContentType);
 
                 var request = httpReq.Dto = CreateRequest(httpReq, restPath);
 
@@ -112,12 +111,13 @@ namespace ServiceStack.Host
 
                         return HandleResponse(rawResponse, response =>
                         {
+                            UpdateResponseContentType(httpReq, response);
                             response = appHost.ApplyResponseConverters(httpReq, response);
 
                             if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
                                 return TypeConstants.EmptyTask;
 
-                            if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString[Keywords.Debug]))
+                            if (httpReq.ResponseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString[Keywords.Debug]))
                                 return WriteDebugResponse(httpRes, response);
 
                             if (doJsonp && !(response is CompressedResult))

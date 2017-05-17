@@ -3,6 +3,7 @@ using System.Net;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.IO;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -31,6 +32,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class CompressError : IReturn<CompressError> { }
 
+    [Route("/compress/dto-result/{Name}")]
+    public class CompressDtoResult : IReturn<CompressDtoResult>
+    {
+        public string Name { get; set; }
+    }
+
     [CompressResponse]
     public class CompressedServices : Service
     {
@@ -46,6 +53,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             return new HttpResult(file);
         }
+
+        public object Any(CompressDtoResult request) => new HttpResult(request, MimeTypes.Xml);
 
         public object Any(CompressError request)
         {
@@ -150,6 +159,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.ErrorCode, Is.EqualTo("NotFound"));
                 Assert.That(ex.ErrorMessage, Is.EqualTo("Always NotFound"));
             }
+        }
+
+        [Test]
+        public void Does_compress_using_ContenType_in_HttpResult()
+        {
+            var url = Config.ListeningOn.CombineWith(new CompressDtoResult { Name = "foo" }.ToGetUrl());
+
+            var xml = url.GetJsonFromUrl(responseFilter: res =>
+            {
+                Assert.That(res.ContentType, Does.StartWith(MimeTypes.Xml));
+            });
+
+            Assert.That(xml, Does.StartWith("<?xml"));
         }
 
 #if !NETCORE //No AutomaticDecompression

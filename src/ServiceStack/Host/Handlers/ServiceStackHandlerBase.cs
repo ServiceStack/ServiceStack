@@ -40,6 +40,15 @@ namespace ServiceStack.Host.Handlers
         public abstract object CreateRequest(IRequest request, string operationName);
         public abstract object GetResponse(IRequest request, object requestDto);
 
+        public void UpdateResponseContentType(IRequest httpReq, object response)
+        {
+            var httpResult = response as IHttpResult;
+            if (httpResult?.ContentType != null)
+            {
+                httpReq.ResponseContentType = httpResult.ContentType;
+            }
+        }
+
         public Task HandleResponse(object response, Func<object, Task> callback)
         {
             try

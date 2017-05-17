@@ -96,6 +96,7 @@ namespace ServiceStack.Host.Handlers
 
                         return HandleResponse(rawResponse, response =>
                         {
+                            UpdateResponseContentType(httpReq, response);
                             response = appHost.ApplyResponseConverters(httpReq, response);
 
                             if (appHost.ApplyResponseFilters(httpReq, httpRes, response))

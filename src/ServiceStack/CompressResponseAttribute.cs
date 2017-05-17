@@ -1,6 +1,6 @@
-﻿using System;
+﻿using ServiceStack.Web;
+using System;
 using System.IO;
-using ServiceStack.Web;
 
 namespace ServiceStack
 {
