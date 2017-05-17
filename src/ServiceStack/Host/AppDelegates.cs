@@ -20,6 +20,11 @@ namespace ServiceStack.Host
         void Invoke(IRequest req, IResponse res, object dto);
     }
 
+    public interface ITypedFilter<in T>
+    {
+        void Invoke(IRequest req, IResponse res, T dto);
+    }
+
     public class TypedFilter<T> : ITypedFilter
     {
         private readonly Action<IRequest, IResponse, T> action;

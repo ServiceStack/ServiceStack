@@ -4,6 +4,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
+using Funq;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
@@ -111,9 +112,23 @@ namespace ServiceStack
         void RegisterTypedRequestFilter<T>(Action<IRequest, IResponse, T> filterFn);
 
         /// <summary>
+        /// Add <seealso cref="ITypedFilter{T}"/> as a Typed Request Filter for a specific Request DTO Type
+        /// </summary>
+        /// <typeparam name="T">The DTO Type.</typeparam>
+        /// <param name="filters">The <seealso cref="Container"/> methods to resolve the <seealso cref="ITypedFilter{T}"/>.</param>
+        void RegisterTypedRequestFilter<T>(params Func<Container, ITypedFilter<T>>[] filters);
+
+        /// <summary>
         /// Add Request Filter for a specific Response DTO Type
         /// </summary>
         void RegisterTypedResponseFilter<T>(Action<IRequest, IResponse, T> filterFn);
+
+        /// <summary>
+        /// Add <seealso cref="ITypedFilter{T}"/> as a Typed Request Filter for a specific Request DTO Type
+        /// </summary>
+        /// <typeparam name="T">The DTO Type.</typeparam>
+        /// <param name="filters">The <seealso cref="Container"/> methods to resolve the <seealso cref="ITypedFilter{T}"/>.</param>
+        void RegisterTypedResponseFilter<T>(params Func<Container, ITypedFilter<T>>[] filters);
 
         /// <summary>
         /// Add Request Filter for a specific MQ Request DTO Type
