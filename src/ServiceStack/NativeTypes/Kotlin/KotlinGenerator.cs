@@ -283,7 +283,7 @@ namespace ServiceStack.NativeTypes.Kotlin
 
             if (type.IsEnum.GetValueOrDefault())
             {
-                var hasIntValue = type.EnumNames.Count == (type.EnumValues?.Count ?? 0);
+                var hasIntValue = (type.EnumNames?.Count ?? 0) == (type.EnumValues?.Count ?? 0);
                 var enumConstructor = hasIntValue ? "(val value:Int)" : "";
 
                 sb.AppendLine($"enum class {typeName}{enumConstructor}");
