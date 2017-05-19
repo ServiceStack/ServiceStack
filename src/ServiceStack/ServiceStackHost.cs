@@ -966,9 +966,32 @@ namespace ServiceStack
             GlobalTypedRequestFilters[typeof(T)] = new TypedFilter<T>(filterFn);
         }
 
+        public void RegisterTypedRequestFilter<T>(params Func<Container, ITypedFilter<T>>[] filters)
+        {
+            RegisterTypedFilter(RegisterTypedRequestFilter, filters);
+        }
+
         public void RegisterTypedResponseFilter<T>(Action<IRequest, IResponse, T> filterFn)
         {
             GlobalTypedResponseFilters[typeof(T)] = new TypedFilter<T>(filterFn);
+        }
+
+        public void RegisterTypedResponseFilter<T>(params Func<Container, ITypedFilter<T>>[] filters)
+        {
+            RegisterTypedFilter(RegisterTypedResponseFilter, filters);
+        }
+
+        private void RegisterTypedFilter<T>(Action<Action<IRequest, IResponse, T>> registerTypedFilter, Func<Container, ITypedFilter<T>>[] filters)
+        {
+            registerTypedFilter.Invoke((request, response, dto) =>
+            {
+                // The filters MUST be resolved inside the RegisterTypedFilter call.
+                // Otherwise, the container will not be able to resolve some auto-wired dependencies.
+                foreach (var filter in filters)
+                    filter
+                        .Invoke(Container)
+                        .Invoke(request, response, dto);
+            });
         }
 
         public void RegisterTypedMessageRequestFilter<T>(Action<IRequest, IResponse, T> filterFn)
