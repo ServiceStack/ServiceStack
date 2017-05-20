@@ -52,9 +52,12 @@ namespace ServiceStack
         public HttpResult(FileInfo fileResponse, string contentType = null, bool asAttachment = false)
             : this(null, contentType ?? MimeTypes.GetMimeType(fileResponse.Name), HttpStatusCode.OK)
         {
+            if (fileResponse == null)
+                throw new ArgumentNullException(nameof(fileResponse));
+
             this.FileInfo = fileResponse;
             this.AllowsPartialResponse = true;
-            if (FileInfo != null && !FileInfo.Exists)
+            if (!FileInfo.Exists)
                 throw HttpError.NotFound($"{FileInfo.Name} was not found");
 
             if (!asAttachment) return;
@@ -77,6 +80,9 @@ namespace ServiceStack
         public HttpResult(IVirtualFile fileResponse, string contentType = null, bool asAttachment = false)
             : this(null, contentType ?? MimeTypes.GetMimeType(fileResponse.Name), HttpStatusCode.OK)
         {
+            if (fileResponse == null)
+                throw new ArgumentNullException(nameof(fileResponse));
+
             this.AllowsPartialResponse = true;
             this.ResponseStream = fileResponse.OpenRead();
 
