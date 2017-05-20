@@ -56,6 +56,7 @@ namespace ServiceStack
                 throw new ArgumentNullException(nameof(fileResponse));
 
             this.FileInfo = fileResponse;
+            this.LastModified = fileResponse.LastWriteTime;
             this.AllowsPartialResponse = true;
             if (!FileInfo.Exists)
                 throw HttpError.NotFound($"{FileInfo.Name} was not found");
@@ -84,6 +85,7 @@ namespace ServiceStack
                 throw new ArgumentNullException(nameof(fileResponse));
 
             this.AllowsPartialResponse = true;
+            this.LastModified = fileResponse.LastModified;
             this.ResponseStream = fileResponse.OpenRead();
 
             if (!asAttachment) return;
