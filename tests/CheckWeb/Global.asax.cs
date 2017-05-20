@@ -47,6 +47,7 @@ namespace CheckWeb
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
             {
+                DebugMode = true,
                 //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Html },
                 UseCamelCase = true,
@@ -55,10 +56,6 @@ namespace CheckWeb
                 // Set to return JSON if no request content type is defined
                 // e.g. text/html or application/json
                 //DefaultContentType = MimeTypes.Json,
-#if !DEBUG
-                // Show StackTraces in service responses during development
-                DebugMode = true,
-#endif
                 // Disable SOAP endpoints
                 //EnableFeatures = Feature.All.Remove(Feature.Soap)
                 //EnableFeatures = Feature.All.Remove(Feature.Metadata)

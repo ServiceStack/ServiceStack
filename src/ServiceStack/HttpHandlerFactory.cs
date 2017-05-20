@@ -6,6 +6,7 @@ using System.Web;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -341,7 +342,12 @@ namespace ServiceStack
                 return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
 
             var existingFile = pathParts[0].ToLower();
-            if (WebHostRootFileNames.Contains(existingFile))
+            var matchesRootDirOrFile = appHost.Config.DebugMode
+                ? appHost.VirtualFileSources.FileExists(existingFile) ||
+                  appHost.VirtualFileSources.DirectoryExists(existingFile)
+                : WebHostRootFileNames.Contains(existingFile);
+
+            if (matchesRootDirOrFile)
             {
                 var fileExt = System.IO.Path.GetExtension(filePath);
                 var isFileRequest = !string.IsNullOrEmpty(fileExt);
@@ -352,7 +358,7 @@ namespace ServiceStack
                     if (!pathInfo.EndsWith("/"))
                     {
                         var appFilePath = filePath.Substring(0, filePath.Length - requestPath.Length);
-                        var redirect = Host.Handlers.StaticFileHandler.DirectoryExists(filePath, appFilePath);
+                        var redirect = StaticFileHandler.DirectoryExists(filePath, appFilePath);
                         if (redirect)
                         {
                             return new RedirectHttpHandler
