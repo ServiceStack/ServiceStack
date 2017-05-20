@@ -244,6 +244,8 @@ namespace CheckWeb
         public override List<IVirtualPathProvider> GetVirtualFileSources()
         {
             var existingProviders = base.GetVirtualFileSources();
+            //return existingProviders;
+
             var memFs = new InMemoryVirtualPathProvider(this);
 
             //Get FileSystem Provider
@@ -297,6 +299,18 @@ namespace CheckWeb
     public class HtmlServices : Service
     {
         public object Any(TestHtml request) => request;
+    }
+
+    [Route("/index")]
+    public class IndexPage
+    {
+        public string PathInfo { get; set; }
+    }
+    public class MyServices : Service
+    {
+        //Return default.html for unmatched requests so routing is handled on client
+        public object Any(IndexPage request) =>
+            new HttpResult(VirtualFileSources.GetFile("default.html"));
     }
 
     public class Global : System.Web.HttpApplication

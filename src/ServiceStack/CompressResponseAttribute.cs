@@ -74,6 +74,7 @@ namespace ServiceStack
             }
 
             res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
+            using (response as IDisposable) {}
         }
     }
 }
