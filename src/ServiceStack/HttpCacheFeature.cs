@@ -77,6 +77,7 @@ namespace ServiceStack
             if (req.ETagMatch(httpResult.ETag) || req.NotModifiedSince(httpResult.LastModified))
             {
                 res.EndNotModified();
+                httpResult.Dispose();
             }
         }
 

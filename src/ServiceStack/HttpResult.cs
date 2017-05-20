@@ -13,7 +13,7 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     public class HttpResult
-        : IHttpResult, IStreamWriter, IPartialWriter
+        : IHttpResult, IStreamWriter, IPartialWriter, IDisposable
     {
         public HttpResult()
             : this((object)null, null) { }
@@ -268,21 +268,28 @@ namespace ServiceStack
 
             if (this.ResponseStream != null)
             {
-                if (response != null)
+                try
                 {
-                    var ms = ResponseStream as MemoryStream;
-                    if (ms != null)
+                    if (response != null)
                     {
-                        var bytes = ms.ToArray();
-                        response.SetContentLength(bytes.Length + paddingLength);
+                        var ms = ResponseStream as MemoryStream;
+                        if (ms != null)
+                        {
+                            var bytes = ms.ToArray();
+                            response.SetContentLength(bytes.Length + paddingLength);
 
-                        responseStream.Write(bytes, 0, bytes.Length);
-                        return;
+                            responseStream.Write(bytes, 0, bytes.Length);
+                            return;
+                        }
                     }
-                }
 
-                this.ResponseStream.WriteTo(responseStream);
-                return;
+                    this.ResponseStream.WriteTo(responseStream);
+                    return;
+                }
+                finally
+                {
+                    DisposeStream();
+                }
             }
 
             if (this.ResponseText != null)
@@ -295,9 +302,9 @@ namespace ServiceStack
             }
 
             if (this.ResponseFilter == null)
-                throw new ArgumentNullException("ResponseFilter");
+                throw new ArgumentNullException(nameof(ResponseFilter));
             if (this.RequestContext == null)
-                throw new ArgumentNullException("RequestContext");
+                throw new ArgumentNullException(nameof(RequestContext));
 
             var bytesResponse = this.Response as byte[];
             if (bytesResponse != null)
@@ -453,6 +460,11 @@ namespace ServiceStack
                 }
             }
             catch { /*ignore*/ }
+        }
+
+        public void Dispose()
+        {
+            DisposeStream();
         }
     }
 
