@@ -537,6 +537,9 @@ namespace ServiceStack
         void Publish(string selector, string message);
         void PublishRaw(string frame);
         void Pulse();
+
+        Dictionary<string,string> ServerArgs { get; set; }
+        Dictionary<string,string> ConnectArgs { get; set; }
     }
 
     public class SubscriptionInfo
@@ -554,6 +557,7 @@ namespace ServiceStack
 
         public Dictionary<string, string> Meta { get; set; }
         public Dictionary<string, string> ConnectArgs { get; set; }
+        public Dictionary<string, string> ServerArgs { get; set; }
     }
 
     public class MemoryServerEvents : IServerEvents
