@@ -181,6 +181,7 @@ namespace ServiceStack
                     { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },
                 }
             };
+            subscription.ConnectArgs = new Dictionary<string, string>(subscription.Meta);
 
             feature.OnCreated?.Invoke(subscription, req);
 
@@ -198,7 +199,7 @@ namespace ServiceStack
             heartbeatUrl = AddSessionParamsIfAny(heartbeatUrl, req);
             unRegisterUrl = AddSessionParamsIfAny(unRegisterUrl, req);
 
-            subscription.ConnectArgs = new Dictionary<string, string>(subscription.Meta) {
+            subscription.ConnectArgs = new Dictionary<string, string>(subscription.ConnectArgs) {
                 {"id", subscriptionId },
                 {"unRegisterUrl", unRegisterUrl},
                 {"heartbeatUrl", heartbeatUrl},
