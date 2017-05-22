@@ -935,6 +935,16 @@ namespace ServiceStack
             return ret;
         }
 
+        public List<SubscriptionInfo> GetAllSubscriptionInfos()
+        {
+            var ret = new List<SubscriptionInfo>();
+            foreach (var sub in Subcriptions.ValuesWithoutLock())
+            {
+                ret.Add(sub.GetInfo());
+            }
+            return ret;
+        }
+
         public void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null)
         {
             try
@@ -1090,6 +1100,8 @@ namespace ServiceStack
         SubscriptionInfo GetSubscriptionInfo(string id);
 
         List<SubscriptionInfo> GetSubscriptionInfosByUserId(string userId);
+
+        List<SubscriptionInfo> GetAllSubscriptionInfos();
 
         // Admin API's
         void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null);
