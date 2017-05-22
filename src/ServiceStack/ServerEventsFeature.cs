@@ -10,6 +10,7 @@ using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -176,6 +177,7 @@ namespace ServiceStack
                     { "isAuthenticated", session != null && session.IsAuthenticated ? "true": "false" },
                     { "displayName", displayName },
                     { "channels", string.Join(",", channels) },
+                    { "createdAt", now.ToUnixTimeMs().ToString() },
                     { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },
                 }
             };
