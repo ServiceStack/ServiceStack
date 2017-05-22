@@ -408,6 +408,9 @@ namespace ServiceStack
         private readonly IResponse response;
         private long msgId;
 
+        public IResponse Response => this.response;
+        public IRequest Request => this.response.Request;
+
         public long LastMessageId => Interlocked.Read(ref msgId);
 
         public EventSubscription(IResponse response)
