@@ -500,7 +500,7 @@
     <Copy SourceFiles="%(HttpClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.HttpClient/lib/net45" />
 
     <!-- PCL -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj"
+    <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.PCL.csproj"
             Targets="Build"
             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
