@@ -115,8 +115,8 @@ namespace ServiceStack
         /// Add <seealso cref="ITypedFilter{T}"/> as a Typed Request Filter for a specific Request DTO Type
         /// </summary>
         /// <typeparam name="T">The DTO Type.</typeparam>
-        /// <param name="filters">The <seealso cref="Container"/> methods to resolve the <seealso cref="ITypedFilter{T}"/>.</param>
-        void RegisterTypedRequestFilter<T>(params Func<Container, ITypedFilter<T>>[] filters);
+        /// <param name="filter">The <seealso cref="Container"/> methods to resolve the <seealso cref="ITypedFilter{T}"/>.</param>
+        void RegisterTypedRequestFilter<T>(Func<Container, ITypedFilter<T>> filter);
 
         /// <summary>
         /// Add Request Filter for a specific Response DTO Type
@@ -127,8 +127,8 @@ namespace ServiceStack
         /// Add <seealso cref="ITypedFilter{T}"/> as a Typed Request Filter for a specific Request DTO Type
         /// </summary>
         /// <typeparam name="T">The DTO Type.</typeparam>
-        /// <param name="filters">The <seealso cref="Container"/> methods to resolve the <seealso cref="ITypedFilter{T}"/>.</param>
-        void RegisterTypedResponseFilter<T>(params Func<Container, ITypedFilter<T>>[] filters);
+        /// <param name="filter">The <seealso cref="Container"/> methods to resolve the <seealso cref="ITypedFilter{T}"/>.</param>
+        void RegisterTypedResponseFilter<T>(Func<Container, ITypedFilter<T>> filter);
 
         /// <summary>
         /// Add Request Filter for a specific MQ Request DTO Type
