@@ -180,7 +180,8 @@ namespace ServiceStack
                     { "channels", string.Join(",", channels) },
                     { "createdAt", now.ToUnixTimeMs().ToString() },
                     { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },
-                }
+                },
+                ServerArgs = new Dictionary<string, string>(),
             };
             subscription.ConnectArgs = new Dictionary<string, string>(subscription.Meta);
 
@@ -1160,6 +1161,8 @@ namespace ServiceStack
                 UserAddress = sub.UserAddress,
                 IsAuthenticated = sub.IsAuthenticated,
                 Meta = sub.Meta,
+                ConnectArgs = sub.ConnectArgs,
+                ServerArgs = sub.ServerArgs,
             };
         }
 

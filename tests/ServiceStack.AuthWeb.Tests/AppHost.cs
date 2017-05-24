@@ -54,6 +54,13 @@ namespace ServiceStack.AuthWeb.Tests
             Plugins.Add(new RazorFormat());
             Plugins.Add(new ServerEventsFeature
             {
+                OnCreated = (sub, req) =>
+                {
+                    sub.ServerArgs = new Dictionary<string, string>
+                    {
+                        { "server-arg", "1" }
+                    };
+                }
             });
 
             container.Register(new DataSource());
@@ -437,6 +444,11 @@ namespace ServiceStack.AuthWeb.Tests
         public string Selector { get; set; }
     }
 
+    [Route("/subscribers")]
+    public class GetAllSubscribers : IReturn<SubscriptionInfo>
+    {        
+    }
+
     public class ServerEventsService : Service
     {
         private static long msgId;
@@ -490,6 +502,11 @@ namespace ServiceStack.AuthWeb.Tests
             {
                 ServerEvents.NotifyChannel(request.Channel, request.Selector, request.Message);
             }
+        }
+
+        public object Any(GetAllSubscribers request)
+        {
+            return ServerEvents.GetAllSubscriptionInfos();
         }
     }
 
