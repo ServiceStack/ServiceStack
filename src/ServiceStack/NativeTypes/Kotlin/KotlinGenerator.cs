@@ -378,9 +378,8 @@ namespace ServiceStack.NativeTypes.Kotlin
                     sb.AppendLine($"val {"Version".PropertyStyle()}:Int = {Config.AddImplicitVersion}");
                 }
 
-                var initCollections = feature.ShouldInitializeCollections(type, Config.InitializeCollections);
                 AddProperties(sb, type,
-                    initCollections: !type.IsInterface() && initCollections,
+                    initCollections: !type.IsInterface() && Config.InitializeCollections,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
 

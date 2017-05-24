@@ -316,8 +316,7 @@ namespace ServiceStack.NativeTypes.FSharp
         {
             var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
 
-            var initCollections = feature.ShouldInitializeCollections(type, Config.InitializeCollections);
-            if (initCollections && prop.IsCollection())
+            if (Config.InitializeCollections && prop.IsCollection())
             {
                 return prop.IsArray()
                     ? "[||]" 

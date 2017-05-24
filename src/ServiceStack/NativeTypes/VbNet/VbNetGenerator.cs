@@ -355,12 +355,12 @@ namespace ServiceStack.NativeTypes.VbNet
         {
             if (type.IsInterface())
                 return;
-            var initCollections = feature.ShouldInitializeCollections(type, Config.InitializeCollections);
-            if (Config.AddImplicitVersion == null && !initCollections)
+
+            if (Config.AddImplicitVersion == null && !Config.InitializeCollections)
                 return;
 
             var collectionProps = new List<MetadataPropertyType>();
-            if (type.Properties != null && initCollections)
+            if (type.Properties != null && Config.InitializeCollections)
                 collectionProps = type.Properties.Where(x => x.IsCollection()).ToList();
 
             var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
