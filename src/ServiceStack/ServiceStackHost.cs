@@ -966,9 +966,9 @@ namespace ServiceStack
             GlobalTypedRequestFilters[typeof(T)] = new TypedFilter<T>(filterFn);
         }
 
-        public void RegisterTypedRequestFilter<T>(params Func<Container, ITypedFilter<T>>[] filters)
+        public void RegisterTypedRequestFilter<T>(Func<Container, ITypedFilter<T>> filter)
         {
-            RegisterTypedFilter(RegisterTypedRequestFilter, filters);
+            RegisterTypedFilter(RegisterTypedRequestFilter, filter);
         }
 
         public void RegisterTypedResponseFilter<T>(Action<IRequest, IResponse, T> filterFn)
@@ -976,21 +976,20 @@ namespace ServiceStack
             GlobalTypedResponseFilters[typeof(T)] = new TypedFilter<T>(filterFn);
         }
 
-        public void RegisterTypedResponseFilter<T>(params Func<Container, ITypedFilter<T>>[] filters)
+        public void RegisterTypedResponseFilter<T>(Func<Container, ITypedFilter<T>> filter)
         {
-            RegisterTypedFilter(RegisterTypedResponseFilter, filters);
+            RegisterTypedFilter(RegisterTypedResponseFilter, filter);
         }
 
-        private void RegisterTypedFilter<T>(Action<Action<IRequest, IResponse, T>> registerTypedFilter, Func<Container, ITypedFilter<T>>[] filters)
+        private void RegisterTypedFilter<T>(Action<Action<IRequest, IResponse, T>> registerTypedFilter, Func<Container, ITypedFilter<T>> filter)
         {
             registerTypedFilter.Invoke((request, response, dto) =>
             {
-                // The filters MUST be resolved inside the RegisterTypedFilter call.
+                // The filter MUST be resolved inside the RegisterTypedFilter call.
                 // Otherwise, the container will not be able to resolve some auto-wired dependencies.
-                foreach (var filter in filters)
-                    filter
-                        .Invoke(Container)
-                        .Invoke(request, response, dto);
+                filter
+                    .Invoke(Container)
+                    .Invoke(request, response, dto);
             });
         }
 
