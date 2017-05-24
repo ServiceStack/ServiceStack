@@ -401,6 +401,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int[] IdsBetween { get; set; }
     }
 
+    public class QueryRockstarFilters : QueryDb<Rockstar>
+    {
+        public int[] Ids { get; set; }
+        public List<int> Ages { get; set; }
+        public List<string> FirstNames { get; set; }
+        public int[] IdsBetween { get; set; }
+    }
+
     [QueryDb(QueryTerm.Or)]
     public class QueryGetRockstarsDynamic : QueryDb<Rockstar> {}
 
@@ -1292,6 +1300,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             response = client.Get(new QueryGetRockstars { IdsBetween = new[] { 1, 3 } });
             Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Does_ignore_empty_collection_filters_by_default()
+        {
+            QueryResponse<Rockstar> response;
+            response = client.Get(new QueryRockstarFilters());
+            Assert.That(response.Results.Count, Is.EqualTo(AutoQueryAppHost.SeedRockstars.Length));
+
+            response = client.Get(new QueryRockstarFilters
+            {
+                Ids = new int[] {},
+                Ages = new List<int>(),
+                FirstNames = new List<string>(),
+                IdsBetween = new int[] {},               
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(AutoQueryAppHost.SeedRockstars.Length));
         }
 
         [Test]

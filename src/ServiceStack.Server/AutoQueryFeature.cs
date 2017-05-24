@@ -788,6 +788,10 @@ namespace ServiceStack
             var seq = value as IEnumerable;
             if (value is string)
                 seq = null;
+
+            if (seq != null && value is ICollection collection && collection.Count == 0)
+                return;
+
             var format = seq == null 
                 ? (value != null ? quotedColumn + " = {0}" : quotedColumn + " IS NULL")
                 : quotedColumn + " IN ({0})";
