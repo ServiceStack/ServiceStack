@@ -48,8 +48,9 @@ namespace ServiceStack
 
             WriteEvent = (res, frame) =>
             {
-                res.OutputStream.Write(frame);
-                res.Flush();
+                var bytes = frame.ToUtf8Bytes();
+                res.OutputStream.WriteAsync(bytes, 0, bytes.Length)
+                    .Then(_ => res.OutputStream.FlushAsync());
             };
 
             IdleTimeout = TimeSpan.FromSeconds(30);
