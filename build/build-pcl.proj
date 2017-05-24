@@ -141,14 +141,14 @@
     <Copy SourceFiles="%(ClientSL5Files.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/sl5" />
     <Copy SourceFiles="%(ClientSL5Files.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/sl5" />
 
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/win" />
+    <Copy SourceFiles="%(ClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/win" />
 
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoTouch" />
+    <Copy SourceFiles="%(ClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoTouch" />
 
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.iOS10" />
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.Mac20" />
+    <Copy SourceFiles="%(ClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.iOS10" />
+    <Copy SourceFiles="%(ClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.Mac20" />
 
-    <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoAndroid" />
+    <Copy SourceFiles="%(ClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoAndroid" />
     
   </Target>
 
