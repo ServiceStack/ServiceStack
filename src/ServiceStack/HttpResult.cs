@@ -121,7 +121,7 @@ namespace ServiceStack
 
         public string ResponseText { get; }
 
-        public Stream ResponseStream { get; }
+        public Stream ResponseStream { get; private set; }
 
         public FileInfo FileInfo { get; }
 
@@ -454,10 +454,9 @@ namespace ServiceStack
         {
             try
             {
-                if (ResponseStream != null)
-                {
-                    this.ResponseStream.Dispose();
-                }
+                if (ResponseStream == null) return;
+                this.ResponseStream.Dispose();
+                this.ResponseStream = null;
             }
             catch { /*ignore*/ }
         }
