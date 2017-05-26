@@ -452,6 +452,8 @@ namespace ServiceStack
 
         public void PublishRaw(string frame)
         {
+            if (response.IsClosed) return;
+
             try
             {
                 lock (response)
@@ -494,11 +496,13 @@ namespace ServiceStack
                 OnUnsubscribe = null;
                 fn?.Invoke(this);
             }
+            Dispose();
         }
 
         public void Dispose()
         {
             OnUnsubscribe = null;
+            if (response.IsClosed) return;
             try
             {
                 lock (response)
@@ -578,7 +582,6 @@ namespace ServiceStack
         public Action<IEventSubscription> NotifyHeartbeat { get; set; }
         public Func<object, string> Serialize { get; set; }
 
-
         public bool NotifyChannelOfSubscriptions { get; set; }
 
         public ConcurrentDictionary<string, IEventSubscription> Subcriptions;
@@ -588,6 +591,8 @@ namespace ServiceStack
         public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> SessionSubcriptions;
 
         public Action<IEventSubscription, Exception> OnError { get; set; }
+
+        private bool isDisposed;
 
         public MemoryServerEvents()
         {
@@ -631,6 +636,8 @@ namespace ServiceStack
 
         public void NotifyAll(string selector, object message)
         {
+            if (isDisposed) return;
+
             foreach (var sub in Subcriptions.ValuesWithoutLock())
             {
                 sub.Publish(selector, Serialize(message));
@@ -644,6 +651,8 @@ namespace ServiceStack
 
         public void NotifyChannels(string[] channels, string selector, Dictionary<string, string> meta)
         {
+            if (isDisposed) return;
+
             foreach (var channel in channels)
             {
                 NotifyChannel(channel, selector, meta);
@@ -673,6 +682,8 @@ namespace ServiceStack
         protected void Notify(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map,
             string key, string selector, object message, string channel = null)
         {
+            if (isDisposed) return;
+
             var subs = map.TryGet(key);
             if (subs == null)
                 return;
@@ -739,6 +750,8 @@ namespace ServiceStack
         protected void Notify(ConcurrentDictionary<string, IEventSubscription> map, string key, string selector,
             object message, string channel = null)
         {
+            if (isDisposed) return;
+
             var sub = map.TryGet(key);
             if (sub == null || !sub.HasChannel(channel))
                 return;
@@ -763,6 +776,8 @@ namespace ServiceStack
 
         public bool Pulse(string id)
         {
+            if (isDisposed) return false;
+
             var sub = GetSubscription(id);
             if (sub == null)
                 return false;
@@ -818,8 +833,8 @@ namespace ServiceStack
         private long lastCleanAtTicks = DateTime.UtcNow.Ticks;
         private DateTime LastCleanAt
         {
-            get { return new DateTime(Interlocked.Read(ref lastCleanAtTicks), DateTimeKind.Utc); }
-            set { Interlocked.Exchange(ref lastCleanAtTicks, value.Ticks); }
+            get => new DateTime(Interlocked.Read(ref lastCleanAtTicks), DateTimeKind.Utc);
+            set => Interlocked.Exchange(ref lastCleanAtTicks, value.Ticks);
         }
 
         public int RemoveExpiredSubscriptions()
@@ -848,6 +863,8 @@ namespace ServiceStack
 
         public void SubscribeToChannels(string subscriptionId, string[] channels)
         {
+            if (isDisposed) return;
+
             if (subscriptionId == null)
                 throw new ArgumentNullException(nameof(subscriptionId));
             if (channels == null)
@@ -878,6 +895,8 @@ namespace ServiceStack
 
         public void UnsubscribeFromChannels(string subscriptionId, string[] channels)
         {
+            if (isDisposed) return;
+
             if (subscriptionId == null)
                 throw new ArgumentNullException(nameof(subscriptionId));
             if (channels == null)
@@ -953,6 +972,8 @@ namespace ServiceStack
 
         public void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null)
         {
+            if (isDisposed) return;
+
             try
             {
                 lock (subscription)
@@ -989,6 +1010,8 @@ namespace ServiceStack
 
         public void FlushNopToChannels(string[] channels)
         {
+            if (isDisposed) return;
+
             //For some yet-to-be-determined reason we need to send something to all channels to determine
             //which subscriptions are no longer connected so we can dispose of them right then and there.
             //Failing to do this for 10 simultaneous requests on Local IIS will hang the entire Website instance
@@ -1062,6 +1085,8 @@ namespace ServiceStack
 
         void HandleUnsubscription(IEventSubscription subscription)
         {
+            if (isDisposed) return;
+
             lock (subscription)
             {
                 foreach (var channel in subscription.Channels ?? EventSubscription.UnknownChannel)
@@ -1084,6 +1109,8 @@ namespace ServiceStack
 
         public void Dispose()
         {
+            if (isDisposed) return;
+            isDisposed = true;
             Reset();
         }
     }
