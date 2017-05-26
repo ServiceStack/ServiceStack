@@ -40,7 +40,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.105" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.105.1" />
     <PackageReference Include="Mysql.Data" Version="6.9.9" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
@@ -70,7 +70,7 @@
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.1.0" />
     <PackageReference Include="System.Threading" Version="4.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="1.0.2" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="1.1.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
 
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
