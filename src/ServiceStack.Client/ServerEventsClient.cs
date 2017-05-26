@@ -37,6 +37,7 @@ namespace ServiceStack
         public string ProfileUrl { get; set; }
         public bool IsAuthenticated { get; set; }
         public string[] Channels { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 
     public class ServerEventMessage : IMeta
@@ -966,6 +967,10 @@ namespace ServiceStack
                 cmd.DisplayName = msg.Get("displayName");
                 cmd.IsAuthenticated = msg.Get("isAuthenticated") == "true";
                 cmd.ProfileUrl = msg.Get("profileUrl");
+                if (long.TryParse(msg.Get("createdAt"), out long unixTimeMs))
+                {
+                    cmd.CreatedAt = unixTimeMs.FromUnixTimeMs();
+                }
 
                 var channels = msg.Get("channels");
                 if (!string.IsNullOrEmpty(channels))
