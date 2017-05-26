@@ -30,11 +30,15 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugType>portable</DebugType>
-    <DefineConstants>TRACE;DEBUG;NET45</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DefineConstants>NET45;RELEASE</DefineConstants>
+    <DefineConstants>RELEASE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -63,18 +67,6 @@
     <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
     <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Metadata\BaseWsdlPage.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Update="MiniProfiler\Data\ProfiledDbCommand.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="MiniProfiler\Data\ProfiledDbConnection.cs">
-      <SubType>Component</SubType>
-    </Compile>
   </ItemGroup>
 
 </Project>

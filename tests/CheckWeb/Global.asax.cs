@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Check.ServiceInterface;
 using Check.ServiceModel;
 using Check.ServiceModel.Types;
@@ -21,6 +23,7 @@ using ServiceStack.Razor;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.VirtualPath;
+using ServiceStack.Web;
 
 namespace CheckWeb
 {
@@ -64,6 +67,15 @@ namespace CheckWeb
                 new JsonServiceClient("http://localhost:55799/") {
                     CaptureSynchronizationContext = true,
                 });
+
+            //ProxyFetureTests
+            Plugins.Add(new ProxyFeature(
+                matchingRequests: req => req.PathInfo.StartsWith("/test"),
+                resolveUrl: req => "http://test.servicestack.net".CombineWith(req.RawUrl.Replace("/test", "/"))));
+
+            Plugins.Add(new ProxyFeature(
+                matchingRequests: req => req.PathInfo.StartsWith("/techstacks"),
+                resolveUrl: req => "http://techstacks.io".CombineWith(req.RawUrl.Replace("/techstacks", "/"))));
 
             Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
 

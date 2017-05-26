@@ -21,17 +21,30 @@ namespace ServiceStack
             return cacheKey + ".created";
         }
 
-        private static DateTime? CheckModifiedSince(IRequest req)
+        public static DateTime? GetDate(this IRequest req)
+        {
+            var date = req.Headers[HttpHeaders.Date];
+            if (date == null)
+                return null;
+
+            DateTime value;
+            if (!DateTime.TryParse(date, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out value))
+                return null;
+
+            return value;
+        }
+
+        public static DateTime? GetIfModifiedSince(this IRequest req)
         {
             var ifModifiedSince = req.Headers[HttpHeaders.IfModifiedSince];
             if (ifModifiedSince == null)
                 return null;
 
-            DateTime checkLastModified;
-            if (!DateTime.TryParse(ifModifiedSince, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out checkLastModified))
+            DateTime value;
+            if (!DateTime.TryParse(ifModifiedSince, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out value))
                 return null;
 
-            return checkLastModified;
+            return value;
         }
 
         public static bool HasValidCache(this ICacheClient cacheClient, IRequest req, string cacheKey, DateTime? checkLastModified, out DateTime? lastModified)
@@ -59,7 +72,7 @@ namespace ServiceStack
             IRequest request)
         {
             DateTime? lastModified;
-            var checkModifiedSince = CheckModifiedSince(request);
+            var checkModifiedSince = GetIfModifiedSince(request);
 
             string modifiers = null;
             if (!request.ResponseContentType.IsBinary())
