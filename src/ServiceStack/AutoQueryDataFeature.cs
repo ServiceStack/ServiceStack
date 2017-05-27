@@ -483,7 +483,7 @@ namespace ServiceStack
 
         static DataQuery()
         {
-            var pis = TypeReflector<T>.PublicPropertyInfos;
+            var pis = TypeProperties<T>.Instance.PublicPropertyInfos;
             PrimaryKey = pis.FirstOrDefault(x => x.HasAttribute<PrimaryKeyAttribute>())
                 ?? pis.FirstOrDefault(x => x.HasAttribute<AutoIncrementAttribute>())
                 ?? pis.FirstOrDefault(x => x.Name == IdUtils.IdField)
@@ -548,7 +548,7 @@ namespace ServiceStack
                 if (string.IsNullOrEmpty(fieldName))
                     continue;
 
-                var getter = TypeReflector<T>.GetPublicGetter(fieldName.TrimStart('-'));
+                var getter = TypeProperties<T>.Instance.GetPublicGetter(fieldName.TrimStart('-'));
                 if (getter == null)
                     continue;
 
@@ -567,7 +567,7 @@ namespace ServiceStack
 
         public virtual void OrderByPrimaryKey()
         {
-            OrderBy = new OrderByExpression(PrimaryKey.Name, TypeReflector<T>.GetPublicGetter(PrimaryKey));
+            OrderBy = new OrderByExpression(PrimaryKey.Name, TypeProperties<T>.Instance.GetPublicGetter(PrimaryKey));
         }
 
         public virtual void Join(Type joinType, Type type)
@@ -584,7 +584,7 @@ namespace ServiceStack
             {
                 Term = term,
                 Field = field,
-                FieldGetter = TypeReflector<T>.GetPublicGetter(field),
+                FieldGetter = TypeProperties<T>.Instance.GetPublicGetter(field),
                 QueryCondition = condition,
                 Value = value,
             });
@@ -592,12 +592,12 @@ namespace ServiceStack
 
         public virtual void And(string field, QueryCondition condition, string value)
         {
-            AddCondition(QueryTerm.And, TypeReflector<T>.GetPublicProperty(field), condition, value);
+            AddCondition(QueryTerm.And, TypeProperties<T>.Instance.GetPublicProperty(field), condition, value);
         }
 
         public virtual void Or(string field, QueryCondition condition, string value)
         {
-            AddCondition(QueryTerm.Or, TypeReflector<T>.GetPublicProperty(field), condition, value);
+            AddCondition(QueryTerm.Or, TypeProperties<T>.Instance.GetPublicProperty(field), condition, value);
         }
     }
 
@@ -884,12 +884,12 @@ namespace ServiceStack
                 if (q.OnlyFields == null)
                     continue;
 
-                foreach (var pi in TypeReflector<Into>.PublicPropertyInfos)
+                foreach (var pi in TypeProperties<Into>.Instance.PublicPropertyInfos)
                 {
                     if (q.OnlyFields.Contains(pi.Name))
                         continue;
 
-                    var setter = TypeReflector<Into>.GetPublicSetter(pi);
+                    var setter = TypeProperties<Into>.Instance.GetPublicSetter(pi);
                     if (setter == null)
                         continue;
 
@@ -945,7 +945,7 @@ namespace ServiceStack
             if (name == "COUNT" && (firstArg == null || firstArg == "*"))
                 return Count(q);
 
-            var firstGetter = TypeReflector<T>.GetPublicGetter(firstArg);
+            var firstGetter = TypeProperties<T>.Instance.GetPublicGetter(firstArg);
             if (firstGetter == null)
                 return null;
 
