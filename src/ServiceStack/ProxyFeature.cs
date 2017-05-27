@@ -11,7 +11,6 @@ namespace ServiceStack
     {
         private readonly Func<IHttpRequest, bool> matchingRequests;
         public readonly Func<IHttpRequest, string> ResolveUrl;
-        public bool SkipIf404 { get; set; }
         public Action<IHttpRequest, HttpWebRequest> ProxyRequestFilter { get; set; }
         public Action<IHttpResponse, HttpWebResponse> ProxyResponseFilter { get; set; }
         public Func<IHttpResponse, Stream, Stream> TransformBody { get; set; }
@@ -32,7 +31,6 @@ namespace ServiceStack
                 ? new ProxyFeatureHandler
                 {
                     ResolveUrl = ResolveUrl,
-                    SkipIf404 = SkipIf404,
                     ProxyRequestFilter = ProxyRequestFilter,
                     ProxyResponseFilter = ProxyResponseFilter,
                     TransformBody = TransformBody,
@@ -46,7 +44,6 @@ namespace ServiceStack
         public override bool RunAsAsync() => true;
 
         public Func<IHttpRequest, string> ResolveUrl { get; set; }
-        public bool SkipIf404 { get; set; }
         public Action<IHttpRequest, HttpWebRequest> ProxyRequestFilter { get; set; }
         public Action<IHttpResponse, HttpWebResponse> ProxyResponseFilter { get; set; }
         public Func<IHttpResponse, Stream, Stream> TransformBody { get; set; }
@@ -115,9 +112,6 @@ namespace ServiceStack
             catch (WebException webEx)
             {
                 var status = webEx.GetStatus();
-                if (SkipIf404 && status == HttpStatusCode.NotFound)
-                    return;
-
                 using (var errorResponse = (HttpWebResponse)webEx.Response)
                 {
                     await CopyToResponse(res, errorResponse);

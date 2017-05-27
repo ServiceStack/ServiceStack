@@ -21,11 +21,11 @@ namespace ServiceStack.Server.Tests
             {
                 Plugins.Add(new ProxyFeature(
                     matchingRequests: req => req.PathInfo.StartsWith("/test"),
-                    resolveUrl: req => "http://test.servicestack.net".CombineWith(req.RawUrl.Replace("/test", "/"))));
+                    resolveUrl: req => "http://test.servicestack.net" + req.RawUrl.Replace("/test", "/")));
 
                 Plugins.Add(new ProxyFeature(
                     matchingRequests: req => req.PathInfo.StartsWith("/techstacks"),
-                    resolveUrl: req => "http://techstacks.io".CombineWith(req.RawUrl.Replace("/techstacks", "/"))));
+                    resolveUrl: req => "http://techstacks.io" + req.RawUrl.Replace("/techstacks", "/")));
             }
         }
 
