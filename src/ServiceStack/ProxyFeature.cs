@@ -7,14 +7,34 @@ using ServiceStack.Host.Handlers;
 
 namespace ServiceStack
 {
+    /// <summary>
+    /// Transparently Proxy requests through to downstream HTTP Servers
+    /// </summary>
     public class ProxyFeature : IPlugin
     {
         private readonly Func<IHttpRequest, bool> matchingRequests;
         public readonly Func<IHttpRequest, string> ResolveUrl;
+
+        /// <summary>
+        /// Customize the HTTP Request Headers that are sent to downstream server
+        /// </summary>
         public Action<IHttpRequest, HttpWebRequest> ProxyRequestFilter { get; set; }
+
+        /// <summary>
+        /// Customize the downstream HTTP Response Headers that are returned to client
+        /// </summary>
         public Action<IHttpResponse, HttpWebResponse> ProxyResponseFilter { get; set; }
+
+        /// <summary>
+        /// Inspect or Transform the downstream HTTP Response Body returned
+        /// </summary>
         public Func<IHttpResponse, Stream, Stream> TransformBody { get; set; }
 
+        /// <summary>
+        /// Required filters to specify which requests to proxy and which url to use.
+        /// </summary>
+        /// <param name="matchingRequests">Specify which requests should be proxied</param>
+        /// <param name="resolveUrl">Specify which downstream url to use</param>
         public ProxyFeature(
             Func<IHttpRequest, bool> matchingRequests,
             Func<IHttpRequest, string> resolveUrl)

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests
 {
@@ -26,6 +27,9 @@ namespace ServiceStack.Server.Tests
                 Plugins.Add(new ProxyFeature(
                     matchingRequests: req => req.PathInfo.StartsWith("/techstacks"),
                     resolveUrl: req => "http://techstacks.io" + req.RawUrl.Replace("/techstacks", "/")));
+
+                //Allow this proxy server to issue ss-id/ss-pid Session Cookies
+                //Plugins.Add(new SessionFeature());
             }
         }
 
@@ -174,6 +178,30 @@ namespace ServiceStack.Server.Tests
             var response = await client.GetAsync(request);
 
             Assert.That(response.Technology.VendorUrl, Is.EqualTo("https://servicestack.net"));
+        }
+
+        [Test]
+        public void Can_authenticate_with_downstream_server()
+        {
+            var client = new JsonServiceClient(ListeningOn.CombineWith("test"))
+            {
+                ResponseFilter = res =>
+                {
+                    var ssId = res.Cookies["ss-id"];
+                    Assert.That(ssId.Value, Is.Not.Null);
+                }
+            };
+
+            var response = client.Post(new Authenticate
+            {
+                provider = "credentials",
+                UserName = "test",
+                Password = "test",
+            });
+
+            Assert.That(response.UserId, Is.Not.EqualTo(0));
+            Assert.That(response.SessionId, Is.Not.Null);
+            Assert.That(response.UserName, Is.Not.Null);
         }
 
         [Test]
