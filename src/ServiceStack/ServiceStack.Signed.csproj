@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net45</TargetFrameworks>
@@ -44,12 +44,29 @@
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Signed|net45|AnyCPU'" />
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System.Net" />
     <Reference Include="System.Web" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Configuration" />
     <Reference Include="..\..\lib\signed\ServiceStack.Text.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="AspNet\ServiceStackPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Update="Metadata\BaseWsdlPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Update="MiniProfiler\Data\ProfiledDbCommand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="MiniProfiler\Data\ProfiledDbConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
 
 </Project>
