@@ -84,9 +84,9 @@ namespace ServiceStack.Core.SelfHost
         //Uncomment to process Unhandled requests
         //public object Any(Error404 request) => request;
 
-        public TestResponse Any(TestRequest request)
+        public UploadStreamResponse Any(UploadStream request)
         {
-            return new TestResponse();
+            return new UploadStreamResponse();
         }
 
         public object Any(Test request)
@@ -97,15 +97,31 @@ namespace ServiceStack.Core.SelfHost
 
             return response;
         }
+
+        public object Any(TestRequest request) => new TestResponse();
+    }
+
+    [Api("Test request")]
+    [Route("/test/{Input}", "GET")]
+    [Route("/test")]
+    public class TestRequest : IReturn<TestResponse>
+    {
+        [ApiMember(Name = "Parameter name", Description = "Parameter Description",
+            ParameterType = "body", DataType = "string", IsRequired = true)]
+        public string Input { get; set; }
+    }
+    public class TestResponse
+    {
+        public string Output { get; set; }
     }
 
     [Route("/uploadStream", "POST", Summary = "Upload stream")]
-    public class TestRequest : IReturn<TestResponse>, IRequiresRequestStream
+    public class UploadStream : IReturn<UploadStreamResponse>, IRequiresRequestStream
     {
         public Stream RequestStream { get; set; }
     }
 
-    public class TestResponse { }
+    public class UploadStreamResponse { }
 
     public class AppHost : AppHostBase
     {
