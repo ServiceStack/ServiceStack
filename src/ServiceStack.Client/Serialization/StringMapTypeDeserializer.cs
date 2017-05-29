@@ -19,13 +19,13 @@ namespace ServiceStack.Serialization
 
         internal class PropertySerializerEntry
         {
-            public PropertySerializerEntry(SetPropertyDelegate propertySetFn, ParseStringDelegate propertyParseStringFn)
+            public PropertySerializerEntry(SetMemberDelegate propertySetFn, ParseStringDelegate propertyParseStringFn)
             {
                 PropertySetFn = propertySetFn;
                 PropertyParseStringFn = propertyParseStringFn;
             }
 
-            public SetPropertyDelegate PropertySetFn;
+            public SetMemberDelegate PropertySetFn;
             public ParseStringDelegate PropertyParseStringFn;
             public Type PropertyType;
         }

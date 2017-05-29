@@ -373,7 +373,7 @@ namespace ServiceStack
         public QueryTerm Term { get; set; }
         public QueryCondition QueryCondition { get; set; }
         public PropertyInfo Field { get; set; }
-        public Func<object, object> FieldGetter { get; set; }
+        public GetMemberDelegate FieldGetter { get; set; }
         public object Value { get; set; }
 
         public object GetFieldValue(object instance)
@@ -419,13 +419,13 @@ namespace ServiceStack
     public class OrderByExpression : FilterExpression
     {
         public string[] FieldNames { get; private set; }
-        public Func<object, object>[] FieldGetters { get; private set; }
+        public GetMemberDelegate[] FieldGetters { get; private set; }
         public bool[] OrderAsc { get; private set; }
 
-        public OrderByExpression(string fieldName, Func<object, object> fieldGetter, bool orderAsc = true)
+        public OrderByExpression(string fieldName, GetMemberDelegate fieldGetter, bool orderAsc = true)
             : this(new[] { fieldName }, new[] { fieldGetter }, new[] { orderAsc }) { }
 
-        public OrderByExpression(string[] fieldNames, Func<object, object>[] fieldGetters, bool[] orderAsc)
+        public OrderByExpression(string[] fieldNames, GetMemberDelegate[] fieldGetters, bool[] orderAsc)
         {
             this.FieldNames = fieldNames;
             this.FieldGetters = fieldGetters;
@@ -434,10 +434,10 @@ namespace ServiceStack
 
         class OrderByComparator<T> : IComparer<T>
         {
-            readonly Func<object, object>[] getters;
+            readonly GetMemberDelegate[] getters;
             readonly bool[] orderAsc;
 
-            public OrderByComparator(Func<object, object>[] getters, bool[] orderAsc)
+            public OrderByComparator(GetMemberDelegate[] getters, bool[] orderAsc)
             {
                 this.getters = getters;
                 this.orderAsc = orderAsc;
@@ -539,7 +539,7 @@ namespace ServiceStack
 
         void OrderByFieldsImpl(string[] fieldNames, Func<string, bool> orderFn)
         {
-            var getters = new List<Func<object, object>>();
+            var getters = new List<GetMemberDelegate>();
             var orderAscs = new List<bool>();
             var fields = new List<string>();
 
@@ -884,16 +884,17 @@ namespace ServiceStack
                 if (q.OnlyFields == null)
                     continue;
 
-                foreach (var pi in TypeProperties<Into>.Instance.PublicPropertyInfos)
+                foreach (var entry in TypeProperties<Into>.Instance.PropertyMap)
                 {
-                    if (q.OnlyFields.Contains(pi.Name))
+                    var propType = entry.Value;
+                    if (q.OnlyFields.Contains(entry.Key))
                         continue;
 
-                    var setter = TypeProperties<Into>.Instance.GetPublicSetter(pi);
+                    var setter = propType.PublicSetter;
                     if (setter == null)
                         continue;
 
-                    var defaultValue = pi.PropertyType.GetDefaultValue();
+                    var defaultValue = propType.PropertyInfo.PropertyType.GetDefaultValue();
                     setter(into, defaultValue);
                 }
             }
