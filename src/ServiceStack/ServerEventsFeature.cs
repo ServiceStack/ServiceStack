@@ -569,6 +569,7 @@ namespace ServiceStack
     public class MemoryServerEvents : IServerEvents
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MemoryServerEvents));
+        public static bool FlushNopOnSubscription = true;
 
         public TimeSpan IdleTimeout { get; set; }
         public TimeSpan HouseKeepingInterval { get; set; }
@@ -995,7 +996,7 @@ namespace ServiceStack
 
                     if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyJoin != null)
                         NotifyJoin(subscription);
-                    else
+                    else if (FlushNopOnSubscription)
                         FlushNopToChannels(subscription.Channels);
                 }
             }
