@@ -290,36 +290,44 @@ namespace ServiceStack
 
         public override GetMemberDelegate GetPropertyGetterFn(PropertyInfo propertyInfo)
         {
-            return SupportsEmit
-                ? PropertyInvoker.GetEmit(propertyInfo)
-                : SupportsExpression
+            return
+#if NET45
+                SupportsEmit ? PropertyInvoker.GetEmit(propertyInfo) :
+#endif
+                SupportsExpression
                     ? PropertyInvoker.GetExpression(propertyInfo)
                     : base.GetPropertyGetterFn(propertyInfo);
         }
 
         public override SetMemberDelegate GetPropertySetterFn(PropertyInfo propertyInfo)
         {
-            return SupportsEmit
-                ? PropertyInvoker.SetEmit(propertyInfo)
-                : SupportsExpression
+            return
+#if NET45
+                SupportsEmit ? PropertyInvoker.SetEmit(propertyInfo) :
+#endif
+                SupportsExpression
                     ? PropertyInvoker.SetExpression(propertyInfo)
                     : base.GetPropertySetterFn(propertyInfo);
         }
 
         public override GetMemberDelegate GetFieldGetterFn(FieldInfo fieldInfo)
         {
-            return SupportsEmit
-                ? FieldInvoker.GetEmit(fieldInfo)
-                : SupportsExpression
+            return
+#if NET45
+                SupportsEmit ? FieldInvoker.GetEmit(fieldInfo) :
+#endif
+                SupportsExpression
                     ? FieldInvoker.GetExpression(fieldInfo)
                     : base.GetFieldGetterFn(fieldInfo);
         }
 
         public override SetMemberDelegate GetFieldSetterFn(FieldInfo fieldInfo)
         {
-            return SupportsEmit
-                ? FieldInvoker.SetEmit(fieldInfo)
-                : SupportsExpression
+            return
+#if NET45
+                SupportsEmit ? FieldInvoker.SetEmit(fieldInfo) :
+#endif
+                SupportsExpression
                     ? FieldInvoker.SetExpression(fieldInfo)
                     : base.GetFieldSetterFn(fieldInfo);
         }
