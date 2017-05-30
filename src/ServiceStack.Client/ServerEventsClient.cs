@@ -290,7 +290,7 @@ namespace ServiceStack
                 return;
             }
 
-            if (ConnectionInfo == null)
+            if (ConnectionInfo?.HeartbeatUrl == null)
                 return;
 
             var elapsedMs = (DateTime.UtcNow - LastPulseAt).TotalMilliseconds;
