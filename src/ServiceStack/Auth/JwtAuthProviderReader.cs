@@ -450,6 +450,9 @@ namespace ServiceStack.Auth
 
         public IAuthSession ConvertJwtToSession(IRequest req, string jwt)
         {
+            if (jwt == null)
+                throw new ArgumentNullException(nameof(jwt));
+
             var jwtPayload = GetVerifiedJwtPayload(jwt.Split('.'));
             if (jwtPayload == null) //not verified
                 return null;
@@ -494,6 +497,9 @@ namespace ServiceStack.Auth
 
         public void AssertJwtPayloadIsValid(JsonObject jwtPayload)
         {
+            if (jwtPayload == null)
+                throw new ArgumentNullException(nameof(jwtPayload));
+
             var expiresAt = GetUnixTime(jwtPayload, "exp");
             var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
             if (secondsSinceEpoch >= expiresAt)
