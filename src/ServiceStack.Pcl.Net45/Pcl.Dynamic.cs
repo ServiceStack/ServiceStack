@@ -11,6 +11,11 @@ using ServiceStack.Text.Common;
 using ServiceStack.Text.Json;
 using System.Linq;
 using System.Text;
+#if NETSTANDARD1_1 
+using Microsoft.Extensions.Primitives;
+#else
+using ServiceStack.Text.Support;
+#endif
 
 #if !(SL5 ||  __IOS__ || NETFX_CORE)
 using System.Reflection;
@@ -24,18 +29,19 @@ namespace ServiceStack
     {
         private static readonly ITypeSerializer Serializer = JsWriter.GetTypeSerializer<TSerializer>();
 
-        private static readonly ParseStringDelegate CachedParseFn;
+        private static readonly ParseStringSegmentDelegate CachedParseFn;
         static DeserializeDynamic()
         {
             CachedParseFn = ParseDynamic;
         }
 
-        public static ParseStringDelegate Parse
-        {
-            get { return CachedParseFn; }
-        }
+        public static ParseStringDelegate Parse => v => CachedParseFn(new StringSegment(v));
 
-        public static IDynamicMetaObjectProvider ParseDynamic(string value)
+        public static ParseStringSegmentDelegate ParseStringSegment => CachedParseFn;
+
+        public static IDynamicMetaObjectProvider ParseDynamic(string value) => ParseDynamic(new StringSegment(value));
+
+        public static IDynamicMetaObjectProvider ParseDynamic(StringSegment value)
         {
             var index = VerifyAndGetStartIndex(value, typeof(ExpandoObject));
 
@@ -54,7 +60,7 @@ namespace ServiceStack
                 Serializer.EatMapKeySeperator(value, ref index);
                 var elementValue = Serializer.EatValue(value, ref index);
 
-                var mapKey = Serializer.UnescapeString(keyValue);
+                var mapKey = Serializer.UnescapeString(keyValue).Value;
 
                 if (JsonUtils.IsJsObject(elementValue))
                 {
@@ -62,7 +68,7 @@ namespace ServiceStack
                 }
                 else if (JsonUtils.IsJsArray(elementValue))
                 {
-                    container[mapKey] = DeserializeList<List<object>, TSerializer>.Parse(elementValue);
+                    container[mapKey] = DeserializeList<List<object>, TSerializer>.ParseStringSegment(elementValue);
                 }
                 else if (tryToParsePrimitiveTypes)
                 {
@@ -79,7 +85,7 @@ namespace ServiceStack
             return result;
         }
 
-        private static int VerifyAndGetStartIndex(string value, Type createMapType)
+        private static int VerifyAndGetStartIndex(StringSegment value, Type createMapType)
         {
             var index = 0;
             if (!Serializer.EatMapStartChar(value, ref index))

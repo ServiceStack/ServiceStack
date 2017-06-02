@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
 using ServiceStack.Text.Json;
+using ServiceStack.Text.Support;
 
 #if !__IOS__
 using System.Reflection.Emit;
@@ -288,7 +289,7 @@ namespace ServiceStack
                 && t.GetGenericTypeDefinition() == typeof(ICollection<>), null).FirstOrDefault();
         }
 
-        public override GetMemberDelegate GetPropertyGetterFn(PropertyInfo propertyInfo)
+        public override GetMemberDelegate CreateGetter(PropertyInfo propertyInfo)
         {
             return
 #if NET45
@@ -296,10 +297,21 @@ namespace ServiceStack
 #endif
                 SupportsExpression
                     ? PropertyInvoker.GetExpression(propertyInfo)
-                    : base.GetPropertyGetterFn(propertyInfo);
+                    : base.CreateGetter(propertyInfo);
         }
 
-        public override SetMemberDelegate GetPropertySetterFn(PropertyInfo propertyInfo)
+        public override GetMemberDelegate<T> CreateGetter<T>(PropertyInfo propertyInfo)
+        {
+            return
+#if NET45
+                SupportsEmit ? PropertyInvoker.GetEmit<T>(propertyInfo) :
+#endif
+                    SupportsExpression
+                        ? PropertyInvoker.GetExpression<T>(propertyInfo)
+                        : base.CreateGetter<T>(propertyInfo);
+        }
+
+        public override SetMemberDelegate CreateSetter(PropertyInfo propertyInfo)
         {
             return
 #if NET45
@@ -307,10 +319,17 @@ namespace ServiceStack
 #endif
                 SupportsExpression
                     ? PropertyInvoker.SetExpression(propertyInfo)
-                    : base.GetPropertySetterFn(propertyInfo);
+                    : base.CreateSetter(propertyInfo);
         }
 
-        public override GetMemberDelegate GetFieldGetterFn(FieldInfo fieldInfo)
+        public override SetMemberDelegate<T> CreateSetter<T>(PropertyInfo propertyInfo)
+        {
+            return SupportsExpression
+                ? PropertyInvoker.SetExpression<T>(propertyInfo)
+                : base.CreateSetter<T>(propertyInfo);
+        }
+
+        public override GetMemberDelegate CreateGetter(FieldInfo fieldInfo)
         {
             return
 #if NET45
@@ -318,10 +337,21 @@ namespace ServiceStack
 #endif
                 SupportsExpression
                     ? FieldInvoker.GetExpression(fieldInfo)
-                    : base.GetFieldGetterFn(fieldInfo);
+                    : base.CreateGetter(fieldInfo);
         }
 
-        public override SetMemberDelegate GetFieldSetterFn(FieldInfo fieldInfo)
+        public override GetMemberDelegate<T> CreateGetter<T>(FieldInfo fieldInfo)
+        {
+            return
+#if NET45
+                SupportsEmit ? FieldInvoker.GetEmit<T>(fieldInfo) :
+#endif
+                SupportsExpression
+                    ? FieldInvoker.GetExpression<T>(fieldInfo)
+                    : base.CreateGetter<T>(fieldInfo);
+        }
+
+        public override SetMemberDelegate CreateSetter(FieldInfo fieldInfo)
         {
             return
 #if NET45
@@ -329,14 +359,21 @@ namespace ServiceStack
 #endif
                 SupportsExpression
                     ? FieldInvoker.SetExpression(fieldInfo)
-                    : base.GetFieldSetterFn(fieldInfo);
+                    : base.CreateSetter(fieldInfo);
         }
 
-        public override SetMemberDelegate GetSetMethod(PropertyInfo propertyInfo, FieldInfo fieldInfo)
+        public override SetMemberDelegate<T> CreateSetter<T>(FieldInfo fieldInfo)
+        {
+            return SupportsExpression
+                ? FieldInvoker.SetExpression<T>(fieldInfo)
+                : base.CreateSetter<T>(fieldInfo);
+        }
+
+        public override SetMemberDelegate CreateSetter(PropertyInfo propertyInfo, FieldInfo fieldInfo)
         {
             return propertyInfo.CanWrite
-                ? GetPropertySetterFn(propertyInfo)
-                : GetFieldSetterFn(fieldInfo);
+                ? CreateSetter(propertyInfo)
+                : CreateSetter(fieldInfo);
         }
 
         public override string ToXsdDateTimeString(DateTime dateTime)
@@ -389,6 +426,15 @@ namespace ServiceStack
             return null;
         }
 
+        public override ParseStringSegmentDelegate GetDictionaryParseStringSegmentMethod<TSerializer>(Type type)
+        {
+            if (type == typeof(Hashtable))
+            {
+                return SerializerUtils<TSerializer>.ParseHashtable;
+            }
+            return null;
+        }
+
         public override ParseStringDelegate GetSpecializedCollectionParseMethod<TSerializer>(Type type)
         {
             if (type == typeof(StringCollection))
@@ -398,6 +444,16 @@ namespace ServiceStack
             return null;
         }
 
+        public override ParseStringSegmentDelegate GetSpecializedCollectionParseStringSegmentMethod<TSerializer>(Type type)
+        {
+            if (type == typeof(StringCollection))
+            {
+                return SerializerUtils<TSerializer>.ParseStringCollection<TSerializer>;
+            }
+            return null;
+        }
+
+
         public override ParseStringDelegate GetJsReaderParseMethod<TSerializer>(Type type)
         {
 #if !(__IOS__ || LITE)
@@ -405,6 +461,18 @@ namespace ServiceStack
                 type.HasInterface(typeof(System.Dynamic.IDynamicMetaObjectProvider)))
             {
                 return DeserializeDynamic<TSerializer>.Parse;
+            }
+#endif
+            return null;
+        }
+
+        public override ParseStringSegmentDelegate GetJsReaderParseStringSegmentMethod<TSerializer>(Type type)
+        {
+#if !(__IOS__ || LITE)
+            if (type.AssignableFrom(typeof(System.Dynamic.IDynamicMetaObjectProvider)) ||
+                type.HasInterface(typeof(System.Dynamic.IDynamicMetaObjectProvider)))
+            {
+                return DeserializeDynamic<TSerializer>.ParseStringSegment;
             }
 #endif
             return null;
@@ -824,7 +892,7 @@ namespace ServiceStack
     {
         private static readonly ITypeSerializer Serializer = JsWriter.GetTypeSerializer<TSerializer>();
 
-        private static int VerifyAndGetStartIndex(string value, Type createMapType)
+        private static int VerifyAndGetStartIndex(StringSegment value, Type createMapType)
         {
             var index = 0;
             if (!Serializer.EatMapStartChar(value, ref index))
@@ -836,9 +904,11 @@ namespace ServiceStack
             return index;
         }
 
-        public static Hashtable ParseHashtable(string value)
+        public static Hashtable ParseHashtable(string value) => ParseHashtable(new StringSegment(value));
+
+        public static Hashtable ParseHashtable(StringSegment value)
         {
-            if (value == null)
+            if (!value.HasValue)
                 return null;
 
             var index = VerifyAndGetStartIndex(value, typeof(Hashtable));
@@ -853,10 +923,10 @@ namespace ServiceStack
                 var keyValue = Serializer.EatMapKey(value, ref index);
                 Serializer.EatMapKeySeperator(value, ref index);
                 var elementValue = Serializer.EatValue(value, ref index);
-                if (keyValue == null) continue;
+                if (!keyValue.HasValue) continue;
 
-                var mapKey = keyValue;
-                var mapValue = elementValue;
+                var mapKey = keyValue.Value;
+                var mapValue = elementValue.Value;
 
                 result[mapKey] = mapValue;
 
@@ -866,10 +936,13 @@ namespace ServiceStack
             return result;
         }
 
-        public static StringCollection ParseStringCollection<TS>(string value) where TS : ITypeSerializer
+        public static StringCollection ParseStringCollection<TS>(string value) where TS : ITypeSerializer => ParseStringCollection<TS>(new StringSegment(value));
+
+
+        public static StringCollection ParseStringCollection<TS>(StringSegment value) where TS : ITypeSerializer
         {
             if ((value = DeserializeListWithElements<TS>.StripList(value)) == null) return null;
-            return value == String.Empty
+            return value.Length == 0
                    ? new StringCollection()
                    : ToStringCollection(DeserializeListWithElements<TSerializer>.ParseStringList(value));
         }
@@ -1248,7 +1321,8 @@ namespace ServiceStack.Text.FastMember
         /// <summary>
         /// Does this type support new instances via a parameterless constructor?
         /// </summary>
-        public virtual bool CreateNewSupported { get { return false; } }
+        public virtual bool CreateNewSupported => false;
+
         /// <summary>
         /// Create a new instance of this type
         /// </summary>
@@ -1260,8 +1334,8 @@ namespace ServiceStack.Text.FastMember
         /// <remarks>The accessor is cached internally; a pre-existing accessor may be returned</remarks>
         public static TypeAccessor Create(Type type)
         {
-            if (type == null) throw new ArgumentNullException("type");
-            TypeAccessor obj = (TypeAccessor)typeLookyp[type];
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            var obj = (TypeAccessor)typeLookyp[type];
             if (obj != null) return obj;
 
             lock (typeLookyp)
@@ -1412,15 +1486,16 @@ namespace ServiceStack.Text.FastMember
                 this.setter = setter;
                 this.ctor = ctor;
             }
-            public override bool CreateNewSupported { get { return ctor != null; } }
+            public override bool CreateNewSupported => ctor != null;
+
             public override object CreateNew()
             {
                 return ctor != null ? ctor() : base.CreateNew();
             }
             public override object this[object target, string name]
             {
-                get { return getter(target, name); }
-                set { setter(target, name, value); }
+                get => getter(target, name);
+                set => setter(target, name, value);
             }
         }
 
@@ -1437,8 +1512,8 @@ namespace ServiceStack.Text.FastMember
             //    return DynamicAccessor.Singleton;
             //}
 
-            PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
             ConstructorInfo ctor = null;
             if (type.IsClass && !type.IsAbstract)
             {
