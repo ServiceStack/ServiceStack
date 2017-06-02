@@ -54,13 +54,13 @@ namespace ServiceStack.Serialization
 
             foreach (var propertyInfo in type.GetSerializableProperties())
             {
-                var propertySetFn = JsvDeserializeType.GetSetPropertyMethod(type, propertyInfo);
+                var propertySetFn = propertyInfo.CreateSetter();
                 var propertyType = propertyInfo.PropertyType;
                 var propertyParseStringFn = GetParseFn(propertyType);
                 var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn) { PropertyType = propertyType };
 
                 var attr = propertyInfo.FirstAttribute<DataMemberAttribute>();
-                if (attr != null && attr.Name != null)
+                if (attr?.Name != null)
                 {
                     propertySetterMap[attr.Name] = propertySerializer;
                 }
@@ -71,7 +71,7 @@ namespace ServiceStack.Serialization
             {
                 foreach (var fieldInfo in type.GetSerializableFields())
                 {
-                    var fieldSetFn = JsvDeserializeType.GetSetFieldMethod(type, fieldInfo);
+                    var fieldSetFn = fieldInfo.CreateSetter();
                     var fieldType = fieldInfo.FieldType;
                     var fieldParseStringFn = JsvReader.GetParseFn(fieldType);
                     var fieldSerializer = new PropertySerializerEntry(fieldSetFn, fieldParseStringFn) { PropertyType = fieldType };
@@ -85,8 +85,6 @@ namespace ServiceStack.Serialization
         {
             var errors = new List<RequestBindingError>();
 
-            PropertySerializerEntry propertySerializerEntry = null;
-
             if (instance == null)
                 instance = type.CreateInstance();
 
@@ -94,8 +92,8 @@ namespace ServiceStack.Serialization
             {
                 if (!string.IsNullOrEmpty(pair.Value))
                 {
-                    instance = PopulateFromKeyValue(instance, pair.Key, pair.Value, 
-                            out propertySerializerEntry, errors, ignoredWarningsOnPropertyNames);
+                    instance = PopulateFromKeyValue(instance, pair.Key, pair.Value,
+                       out PropertySerializerEntry _, errors, ignoredWarningsOnPropertyNames);
                 }
             }
 
@@ -113,8 +111,6 @@ namespace ServiceStack.Serialization
         {
             var errors = new List<RequestBindingError>();
 
-            PropertySerializerEntry propertySerializerEntry = null;
-
             if (instance == null)
                 instance = type.CreateInstance();
 
@@ -123,8 +119,8 @@ namespace ServiceStack.Serialization
                 string value = nameValues[key];
                 if (!string.IsNullOrEmpty(value))
                 {
-                    instance = PopulateFromKeyValue(instance, key, value, 
-                            out propertySerializerEntry, errors, ignoredWarningsOnPropertyNames);
+                    instance = PopulateFromKeyValue(instance, key, value,
+                        out PropertySerializerEntry _, errors, ignoredWarningsOnPropertyNames);
                 }
             }
 
