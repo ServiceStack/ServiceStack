@@ -54,7 +54,7 @@ namespace ServiceStack.Serialization
 
             foreach (var propertyInfo in type.GetSerializableProperties())
             {
-                var propertySetFn = propertyInfo.CreateSetter();
+                var propertySetFn = propertyInfo.GetPropertySetterFn();
                 var propertyType = propertyInfo.PropertyType;
                 var propertyParseStringFn = GetParseFn(propertyType);
                 var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn) { PropertyType = propertyType };
@@ -71,7 +71,7 @@ namespace ServiceStack.Serialization
             {
                 foreach (var fieldInfo in type.GetSerializableFields())
                 {
-                    var fieldSetFn = fieldInfo.CreateSetter();
+                    var fieldSetFn = fieldInfo.GetFieldSetterFn();
                     var fieldType = fieldInfo.FieldType;
                     var fieldParseStringFn = JsvReader.GetParseFn(fieldType);
                     var fieldSerializer = new PropertySerializerEntry(fieldSetFn, fieldParseStringFn) { PropertyType = fieldType };
