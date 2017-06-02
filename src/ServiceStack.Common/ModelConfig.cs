@@ -4,7 +4,7 @@ namespace ServiceStack
 {
     public class ModelConfig<T>
     {
-        public static void Id(Func<T, object> getIdFn)
+        public static void Id(GetMemberDelegate<T> getIdFn)
         {
             IdUtils<T>.CanGetId = getIdFn;
         }

@@ -9,7 +9,7 @@ namespace ServiceStack
 {
     public static class IdUtils<T>
     {
-        internal static Func<T, object> CanGetId;
+        internal static GetMemberDelegate<T> CanGetId;
 
         static IdUtils()
         {
@@ -35,7 +35,7 @@ namespace ServiceStack
                     .Where(pi => pi.AllAttributes<Attribute>()
                              .Any(attr => attr.GetType().Name == "PrimaryKeyAttribute")))
                 {
-                    CanGetId = StaticAccessors<T>.ValueUnTypedGetPropertyTypeFn(pi);
+                    CanGetId = pi.CreateGetter<T>();
                     return;
                 }
 
@@ -71,12 +71,12 @@ namespace ServiceStack
 
     internal static class HasPropertyId<TEntity>
     {
-        private static readonly Func<TEntity, object> GetIdFn;
+        private static readonly GetMemberDelegate<TEntity> GetIdFn;
 
         static HasPropertyId()
         {
             var pi = typeof(TEntity).GetIdProperty();
-            GetIdFn = StaticAccessors<TEntity>.ValueUnTypedGetPropertyTypeFn(pi);
+            GetIdFn = pi.CreateGetter<TEntity>();
         }
 
         public static object GetId(TEntity entity)

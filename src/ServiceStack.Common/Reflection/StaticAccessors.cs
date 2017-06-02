@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 
 namespace ServiceStack.Reflection
 {
+    [Obsolete("Use TypeProperties/PropertyInvoker, TypeFields/FieldsInvoker")]
     public static class StaticAccessors<TEntity>
     {
         /// <summary>

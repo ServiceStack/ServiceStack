@@ -4,7 +4,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Reflection
 {
-
+    [Obsolete("Use TypeProperties/PropertyInvoker, TypeFields/FieldsInvoker")]
     public static class PropertyAccessor
     {
         public static Func<TEntity, object> GetPropertyFn<TEntity>(string propertyName)

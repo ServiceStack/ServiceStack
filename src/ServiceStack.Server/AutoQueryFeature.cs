@@ -597,8 +597,8 @@ namespace ServiceStack
     {
         private static ILog log = LogManager.GetLogger(typeof(AutoQueryFeature));
 
-        static readonly Dictionary<string, Func<object, object>> PropertyGetters =
-            new Dictionary<string, Func<object, object>>();
+        static readonly Dictionary<string, GetMemberDelegate> PropertyGetters =
+            new Dictionary<string, GetMemberDelegate>();
 
         static readonly Dictionary<string, QueryDbFieldAttribute> QueryFieldMap =
             new Dictionary<string, QueryDbFieldAttribute>();
@@ -607,7 +607,7 @@ namespace ServiceStack
         {
             foreach (var pi in typeof(QueryModel).GetPublicProperties())
             {
-                var fn = pi.GetValueGetter(typeof(QueryModel));
+                var fn = pi.CreateGetter();
                 PropertyGetters[pi.Name] = fn;
 
                 var queryAttr = pi.FirstAttribute<QueryDbFieldAttribute>();
