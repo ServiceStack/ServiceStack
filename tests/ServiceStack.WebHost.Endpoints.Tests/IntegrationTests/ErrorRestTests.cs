@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             {
                 Assert.That(ex.StatusCode, Is.EqualTo(500));
                 Assert.That(ex.StatusDescription, Is.EqualTo("NullReferenceException"));
-                Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
+                Assert.That(ex.Message, Is.EqualTo("Object reference not set to an instance of an object."));
             }
         }
 
@@ -63,7 +63,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
                 var ex = (WebServiceException)aex.UnwrapIfSingleException();
                 Assert.That(ex.StatusCode, Is.EqualTo(500));
                 Assert.That(ex.StatusDescription, Is.EqualTo("NullReferenceException"));
-                Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
+                Assert.That(ex.Message, Is.EqualTo("Object reference not set to an instance of an object."));
             }
         }
 

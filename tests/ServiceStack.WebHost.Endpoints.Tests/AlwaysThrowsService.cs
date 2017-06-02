@@ -230,7 +230,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(400));
                 Assert.That(webEx.StatusDescription, Is.EqualTo(typeof(ArgumentNullException).Name));
-                Assert.That(webEx.Message, Is.EqualTo(typeof(ArgumentNullException).Name));
+                Assert.That(webEx.Message.Replace("\r\n", "\n"), Is.EqualTo("Value cannot be null.\nParameter name: Id"));
                 Assert.That(webEx.ErrorCode, Is.EqualTo(typeof(ArgumentNullException).Name));
                 Assert.That(webEx.ErrorMessage.Replace("\r\n", "\n"), Is.EqualTo("Value cannot be null.\nParameter name: Id"));
             }

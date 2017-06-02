@@ -293,7 +293,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.BadRequest));
                 Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
-                Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
+                Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
             }
         }
 
@@ -309,7 +309,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.BadRequest));
                 Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
-                Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
+                Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
             }
         }
 
@@ -325,7 +325,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.Forbidden));
                 Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
-                Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
+                Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
             }
         }
 
