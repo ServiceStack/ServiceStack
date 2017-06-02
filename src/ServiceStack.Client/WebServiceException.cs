@@ -32,6 +32,8 @@ namespace ServiceStack
         
         public string ResponseBody { get; set; }
 
+        public override string Message => ErrorMessage ?? base.Message;
+
         private string errorCode;
 
         private void ParseResponseDto()
