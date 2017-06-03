@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
+    <!--<Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Redis.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.OrmLite.dll" />
@@ -28,7 +28,18 @@
     <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />-->
+
+    <PackageReference Include="ServiceStack.Interface.Core" Version="1.0.42" />
+    <PackageReference Include="ServiceStack.Redis.Core" Version="1.0.42" />
+    <PackageReference Include="ServiceStack.OrmLite.Core" Version="1.0.42" />
+    <PackageReference Include="ServiceStack.OrmLite.Sqlite.Core" Version="1.0.42" />
+    <PackageReference Include="ServiceStack.Core" Version="1.0.42" />
+    <PackageReference Include="ServiceStack.Client.Core" Version="1.0.42" />
+    <PackageReference Include="ServiceStack.HttpClient.Core" Version="1.0.42" />
+    <PackageReference Include="ServiceStack.Common.Core" Version="1.0.42" />
+    <PackageReference Include="ServiceStack.Mvc.Core" Version="1.0.42" />
+    <PackageReference Include="ServiceStack.Server.Core" Version="1.0.42" />
 
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />
@@ -39,13 +50,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="1.0.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="1.1.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="1.1.0" />
   </ItemGroup>
 

@@ -105,6 +105,25 @@ namespace Mvc.Core.Tests
             new HelloResponse { Result = $"Hello, {request.Name ?? "World"}!" };
     }
 
+    public class Test
+    {
+        public string ExternalId { get; set; }
+    }
+
+    [Route("/test")]
+    public class TestGet : IGet, IReturn<Test>
+    {
+    }
+
+    public class TestService : Service
+    {
+        public Test Get(TestGet request)
+        {
+            var test = new Test { ExternalId = "abc" };
+            return test;
+        }
+    }
+
     class AppHost : AppHostBase
     {
         public AppHost() : base("ServiceStack + MVC Integration", typeof(MyServices).GetAssembly()) {}
@@ -113,7 +132,7 @@ namespace Mvc.Core.Tests
         {
             SetConfig(new HostConfig
             {
-                //HandlerFactoryPath = "api"
+                HandlerFactoryPath = "api"
             });
 
             Plugins.Add(new RazorFormat());

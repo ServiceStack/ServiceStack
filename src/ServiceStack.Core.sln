@@ -1,16 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{FA46AB18-F252-43F5-BEBC-12700EBC90A4}"
 	ProjectSection(SolutionItems) = preProject
-		..\build\build-core.sh = ..\build\build-core.sh
-		..\lib\copy-netcore.bat = ..\lib\copy-netcore.bat
-		..\lib\netstandard1.3\copy.bat = ..\lib\netstandard1.3\copy.bat
-		..\build\publish-core.sh = ..\build\publish-core.sh
+		..\lib\copy.bat = ..\lib\copy.bat
 		..\NuGet.Core\ServiceStack.Api.Swagger.Core\ServiceStack.Api.Swagger.Core.nuspec = ..\NuGet.Core\ServiceStack.Api.Swagger.Core\ServiceStack.Api.Swagger.Core.nuspec
 		..\NuGet.Core\ServiceStack.Client.Core\ServiceStack.Client.Core.nuspec = ..\NuGet.Core\ServiceStack.Client.Core\ServiceStack.Client.Core.nuspec
 		..\NuGet.Core\ServiceStack.Common.Core\ServiceStack.Common.Core.nuspec = ..\NuGet.Core\ServiceStack.Common.Core\ServiceStack.Common.Core.nuspec
