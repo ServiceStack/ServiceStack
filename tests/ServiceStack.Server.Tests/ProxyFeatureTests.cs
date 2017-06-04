@@ -1,8 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Server.Tests
 {
@@ -22,14 +24,49 @@ namespace ServiceStack.Server.Tests
             {
                 Plugins.Add(new ProxyFeature(
                     matchingRequests: req => req.PathInfo.StartsWith("/test"),
-                    resolveUrl: req => "http://test.servicestack.net" + req.RawUrl.Replace("/test", "/")));
+                    resolveUrl: req => "http://test.servicestack.net" + req.RawUrl.Replace("/test", "/"))
+                {
+                    TransformRequest = TransformRequest,
+                    TransformResponse = TransformResponse,
+                });
 
                 Plugins.Add(new ProxyFeature(
                     matchingRequests: req => req.PathInfo.StartsWith("/techstacks"),
-                    resolveUrl: req => "http://techstacks.io" + req.RawUrl.Replace("/techstacks", "/")));
+                    resolveUrl: req => "http://techstacks.io" + req.RawUrl.Replace("/techstacks", "/"))
+                {
+                    TransformRequest = TransformRequest,
+                    TransformResponse = TransformResponse,
+                });
 
                 //Allow this proxy server to issue ss-id/ss-pid Session Cookies
                 //Plugins.Add(new SessionFeature());
+            }
+
+            private Stream TransformRequest(IHttpRequest req, Stream reqStream)
+            {
+                var reqReplace = req.QueryString["reqReplace"];
+                if (reqReplace != null)
+                {
+                    var reqBody = reqStream.ReadFully().FromUtf8Bytes();
+                    var parts = reqReplace.SplitOnFirst(',');
+                    var replacedBody = reqBody.Replace(parts[0], parts[1]);
+                    return MemoryStreamFactory.GetStream(replacedBody.ToUtf8Bytes());
+                }
+                return reqStream;
+            }
+
+            private Stream TransformResponse(IHttpResponse res, Stream resStream)
+            {
+                var req = res.Request;
+                var resReplace = req.QueryString["resReplace"];
+                if (resReplace != null)
+                {
+                    var reqBody = resStream.ReadFully().FromUtf8Bytes();
+                    var parts = resReplace.SplitOnFirst(',');
+                    var replacedBody = reqBody.Replace(parts[0], parts[1]);
+                    return MemoryStreamFactory.GetStream(replacedBody.ToUtf8Bytes());
+                }
+                return resStream;
             }
         }
 
@@ -112,6 +149,62 @@ namespace ServiceStack.Server.Tests
             Assert.That(response.Long, Is.EqualTo(4));
             Assert.That(response.Float, Is.EqualTo(1.1f));
             Assert.That(response.String, Is.EqualTo("foo"));
+        }
+
+        [Test]
+        public void Can_TransformRequest_when_proxying_to_test()
+        {
+            var request = new EchoTypes
+            {
+                Byte = 1,
+                Short = 2,
+                Int = 3,
+                Long = 4,
+                Float = 1.1f,
+                String = "foo"
+            };
+
+            var url = ListeningOn.CombineWith("test")
+                .CombineWith("/echo/types")
+                .AddQueryParam("reqReplace", "foo,bar");
+
+            var response = url.PostJsonToUrl(request)
+                .FromJson<EchoTypes>();
+
+            Assert.That(response.Byte, Is.EqualTo(1));
+            Assert.That(response.Short, Is.EqualTo(2));
+            Assert.That(response.Int, Is.EqualTo(3));
+            Assert.That(response.Long, Is.EqualTo(4));
+            Assert.That(response.Float, Is.EqualTo(1.1f));
+            Assert.That(response.String, Is.EqualTo("bar"));
+        }
+
+        [Test]
+        public void Can_TransformResponse_when_proxying_to_test()
+        {
+            var request = new EchoTypes
+            {
+                Byte = 1,
+                Short = 2,
+                Int = 3,
+                Long = 4,
+                Float = 1.1f,
+                String = "foo"
+            };
+
+            var url = ListeningOn.CombineWith("test")
+                .CombineWith("/echo/types")
+                .AddQueryParam("resReplace", "foo,bar");
+
+            var response = url.PostJsonToUrl(request)
+                .FromJson<EchoTypes>();
+
+            Assert.That(response.Byte, Is.EqualTo(1));
+            Assert.That(response.Short, Is.EqualTo(2));
+            Assert.That(response.Int, Is.EqualTo(3));
+            Assert.That(response.Long, Is.EqualTo(4));
+            Assert.That(response.Float, Is.EqualTo(1.1f));
+            Assert.That(response.String, Is.EqualTo("bar"));
         }
 
         [Route("/technology/{Slug}")]

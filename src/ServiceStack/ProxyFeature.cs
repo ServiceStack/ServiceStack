@@ -26,9 +26,14 @@ namespace ServiceStack
         public Action<IHttpResponse, HttpWebResponse> ProxyResponseFilter { get; set; }
 
         /// <summary>
-        /// Inspect or Transform the downstream HTTP Response Body returned
+        /// Inspect or Transform the HTTP Request Body that's sent downstream
         /// </summary>
-        public Func<IHttpResponse, Stream, Stream> TransformBody { get; set; }
+        public Func<IHttpRequest, Stream, Stream> TransformRequest { get; set; }
+
+        /// <summary>
+        /// Inspect or Transform the downstream HTTP Response Body that's returned
+        /// </summary>
+        public Func<IHttpResponse, Stream, Stream> TransformResponse { get; set; }
 
         /// <summary>
         /// Required filters to specify which requests to proxy and which url to use.
@@ -53,7 +58,8 @@ namespace ServiceStack
                     ResolveUrl = ResolveUrl,
                     ProxyRequestFilter = ProxyRequestFilter,
                     ProxyResponseFilter = ProxyResponseFilter,
-                    TransformBody = TransformBody,
+                    TransformRequest = TransformRequest,
+                    TransformResponse = TransformResponse,
                 }
                 : null);
         }
@@ -66,7 +72,8 @@ namespace ServiceStack
         public Func<IHttpRequest, string> ResolveUrl { get; set; }
         public Action<IHttpRequest, HttpWebRequest> ProxyRequestFilter { get; set; }
         public Action<IHttpResponse, HttpWebResponse> ProxyResponseFilter { get; set; }
-        public Func<IHttpResponse, Stream, Stream> TransformBody { get; set; }
+        public Func<IHttpRequest, Stream, Stream> TransformRequest { get; set; }
+        public Func<IHttpResponse, Stream, Stream> TransformResponse { get; set; }
 
         public override Task ProcessRequestAsync(IRequest req, IResponse response, string operationName)
         {
@@ -116,9 +123,14 @@ namespace ServiceStack
 
             if (httpReq.ContentLength > 0)
             {
-                using (var reqStream = await webReq.GetRequestStreamAsync())
+                var inputStream = httpReq.InputStream;
+                if (TransformResponse != null)
+                    inputStream = TransformRequest(httpReq, inputStream) ?? inputStream;
+
+                using (inputStream)
+                using (var requestStream = await webReq.GetRequestStreamAsync())
                 {
-                    await httpReq.InputStream.CopyToAsync(reqStream);
+                    await inputStream.CopyToAsync(requestStream);
                 }
             }
             var res = (IHttpResponse)httpReq.Response;
@@ -157,8 +169,8 @@ namespace ServiceStack
             var responseStream = webRes.GetResponseStream();
             if (responseStream != null)
             {
-                if (TransformBody != null)
-                    responseStream = TransformBody(res, responseStream);
+                if (TransformResponse != null)
+                    responseStream = TransformResponse(res, responseStream) ?? responseStream;
 
                 using (responseStream)
                 {
