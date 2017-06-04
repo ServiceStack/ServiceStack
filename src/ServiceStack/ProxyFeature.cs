@@ -28,12 +28,12 @@ namespace ServiceStack
         /// <summary>
         /// Inspect or Transform the HTTP Request Body that's sent downstream
         /// </summary>
-        public Func<IHttpRequest, Stream, Stream> TransformRequest { get; set; }
+        public Func<IHttpRequest, Stream, Task<Stream>> TransformRequest { get; set; }
 
         /// <summary>
         /// Inspect or Transform the downstream HTTP Response Body that's returned
         /// </summary>
-        public Func<IHttpResponse, Stream, Stream> TransformResponse { get; set; }
+        public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
 
         /// <summary>
         /// Required filters to specify which requests to proxy and which url to use.
@@ -72,8 +72,8 @@ namespace ServiceStack
         public Func<IHttpRequest, string> ResolveUrl { get; set; }
         public Action<IHttpRequest, HttpWebRequest> ProxyRequestFilter { get; set; }
         public Action<IHttpResponse, HttpWebResponse> ProxyResponseFilter { get; set; }
-        public Func<IHttpRequest, Stream, Stream> TransformRequest { get; set; }
-        public Func<IHttpResponse, Stream, Stream> TransformResponse { get; set; }
+        public Func<IHttpRequest, Stream, Task<Stream>> TransformRequest { get; set; }
+        public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
 
         public override Task ProcessRequestAsync(IRequest req, IResponse response, string operationName)
         {
@@ -125,7 +125,7 @@ namespace ServiceStack
             {
                 var inputStream = httpReq.InputStream;
                 if (TransformResponse != null)
-                    inputStream = TransformRequest(httpReq, inputStream) ?? inputStream;
+                    inputStream = await TransformRequest(httpReq, inputStream) ?? inputStream;
 
                 using (inputStream)
                 using (var requestStream = await webReq.GetRequestStreamAsync())
@@ -143,7 +143,6 @@ namespace ServiceStack
             }
             catch (WebException webEx)
             {
-                var status = webEx.GetStatus();
                 using (var errorResponse = (HttpWebResponse)webEx.Response)
                 {
                     await CopyToResponse(res, errorResponse);
@@ -170,7 +169,7 @@ namespace ServiceStack
             if (responseStream != null)
             {
                 if (TransformResponse != null)
-                    responseStream = TransformResponse(res, responseStream) ?? responseStream;
+                    responseStream = await TransformResponse(res, responseStream) ?? responseStream;
 
                 using (responseStream)
                 {

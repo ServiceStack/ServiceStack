@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -42,29 +43,35 @@ namespace ServiceStack.Server.Tests
                 //Plugins.Add(new SessionFeature());
             }
 
-            private Stream TransformRequest(IHttpRequest req, Stream reqStream)
+            private async Task<Stream> TransformRequest(IHttpRequest req, Stream reqStream)
             {
                 var reqReplace = req.QueryString["reqReplace"];
                 if (reqReplace != null)
                 {
-                    var reqBody = reqStream.ReadFully().FromUtf8Bytes();
-                    var parts = reqReplace.SplitOnFirst(',');
-                    var replacedBody = reqBody.Replace(parts[0], parts[1]);
-                    return MemoryStreamFactory.GetStream(replacedBody.ToUtf8Bytes());
+                    using (var reader = new StreamReader(reqStream, Encoding.UTF8))
+                    {
+                        var reqBody = await reader.ReadToEndAsync();
+                        var parts = reqReplace.SplitOnFirst(',');
+                        var replacedBody = reqBody.Replace(parts[0], parts[1]);
+                        return MemoryStreamFactory.GetStream(replacedBody.ToUtf8Bytes());
+                    }
                 }
                 return reqStream;
             }
 
-            private Stream TransformResponse(IHttpResponse res, Stream resStream)
+            private async Task<Stream> TransformResponse(IHttpResponse res, Stream resStream)
             {
                 var req = res.Request;
                 var resReplace = req.QueryString["resReplace"];
                 if (resReplace != null)
                 {
-                    var reqBody = resStream.ReadFully().FromUtf8Bytes();
-                    var parts = resReplace.SplitOnFirst(',');
-                    var replacedBody = reqBody.Replace(parts[0], parts[1]);
-                    return MemoryStreamFactory.GetStream(replacedBody.ToUtf8Bytes());
+                    using (var reader = new StreamReader(resStream, Encoding.UTF8))
+                    {
+                        var resBody = await reader.ReadToEndAsync();
+                        var parts = resReplace.SplitOnFirst(',');
+                        var replacedBody = resBody.Replace(parts[0], parts[1]);
+                        return MemoryStreamFactory.GetStream(replacedBody.ToUtf8Bytes());
+                    }
                 }
                 return resStream;
             }
