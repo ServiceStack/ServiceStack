@@ -50,12 +50,6 @@
       <HintPath>..\..\src\packages\NUnit.3.6.1\lib\net45\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ServiceStack.Client">
-      <HintPath>..\..\lib\net45\ServiceStack.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Common">
-      <HintPath>..\..\lib\net45\ServiceStack.Common.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\..\lib\pcl\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
@@ -250,6 +244,14 @@
     <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">
       <Project>{5E258282-86A6-4780-AB25-5E458F2E6F70}</Project>
       <Name>ServiceStack.Api.OpenApi</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
+      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
+      <Name>ServiceStack.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
+      <Name>ServiceStack.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
       <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>

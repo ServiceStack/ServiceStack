@@ -1,5 +1,6 @@
 ﻿namespace ServiceStack.OpenApi.Tests.Services
 {
+    [Api("Gets the movie")]
     [Route("/movie/{Id}")]
     public class GetMovie : IReturn<MovieResponse>
     {
@@ -11,6 +12,7 @@
         public string[] Includes { get; set; }
     }
 
+    [Api("Movie response with includes")]
     public class MovieResponse
     {
         public string[] Includes { get; set; }

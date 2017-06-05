@@ -495,8 +495,10 @@ namespace ServiceStack.Api.OpenApi
             return values;
         }
 
-        private OpenApiSchema GetResponseSchema(IRestPath restPath, IDictionary<string, OpenApiSchema> schemas)
+        private OpenApiSchema GetResponseSchema(IRestPath restPath, IDictionary<string, OpenApiSchema> schemas, out string schemaDescription)
         {
+            schemaDescription = string.Empty;
+
             // Given: class MyDto : IReturn<X>. Determine the type X.
             foreach (var i in restPath.RequestType.GetInterfaces())
             {
@@ -516,6 +518,8 @@ namespace ServiceStack.Api.OpenApi
                             }
                             : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) });
 
+                    schemaDescription = schema.Description ?? schemaType.GetDescription();
+
                     return schema;
                 }
             }
@@ -527,12 +531,12 @@ namespace ServiceStack.Api.OpenApi
         {
             var responses = new OrderedDictionary<string, OpenApiResponse>();
 
-            var responseSchema = GetResponseSchema(restPath, schemas);
+            var responseSchema = GetResponseSchema(restPath, schemas, out string schemaDescription);
 
             responses.Add("default", new OpenApiResponse
             {
                 Schema = responseSchema,
-                Description = string.Empty //TODO: description
+                Description = schemaDescription
             });
 
             foreach (var attr in requestType.AllAttributes<ApiResponseAttribute>())
@@ -758,6 +762,7 @@ namespace ServiceStack.Api.OpenApi
                             p.Type = member.DataType ?? p.Type;
                             p.Format = member.Format ?? p.Format;
                             p.Required = member.IsRequired;
+                            p.Description = member.Description ?? p.Description;
 
                             methodOperationParameters.Add(p);
                         }

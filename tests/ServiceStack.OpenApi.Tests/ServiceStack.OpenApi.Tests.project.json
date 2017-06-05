@@ -7,6 +7,6 @@
     "win-x86": {}
   },
   "dependencies": {
-    "System.Data.SQLite": "1.0.105"
+    "System.Data.SQLite": "1.0.105.1"
   }
 }
