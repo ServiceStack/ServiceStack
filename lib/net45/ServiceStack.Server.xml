@@ -168,6 +168,77 @@
             <param name="words"></param>
             <returns></returns>
         </member>
+        <member name="T:ServiceStack.Messaging.Rcon.ProcessingClient">
+            <summary>
+            Processing client used to interface with ServiceStack and allow a message to be processed.
+            Not an actual client.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.ProcessingClient.Publish(System.String,ServiceStack.Messaging.IMessage)">
+            <summary>
+            Publish the specified message into the durable queue @queueName
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.ProcessingClient.Notify(System.String,ServiceStack.Messaging.IMessage)">
+            <summary>
+            Publish the specified message into the transient queue @queueName
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.ProcessingClient.Get``1(System.String,System.Nullable{System.TimeSpan})">
+            <summary>
+            Synchronous blocking get.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.ProcessingClient.GetAsync``1(System.String)">
+            <summary>
+            Non blocking get message
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Messaging.Rcon.Server">
+            <summary>
+            Hosting services via a binary-safe TCP-based protocol.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.Rcon.Server.MessageFactory">
+            <summary>
+            Factory to create consumers and producers that work with this service
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.Server.RegisterHandler``1(System.Func{ServiceStack.Messaging.IMessage{``0},System.Object})">
+            <summary>
+            Register DTOs and hanlders the MQ Host will process
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="processMessageFn"></param>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.Server.GetStatus">
+            <summary>
+            Get Total Current Stats for all Message Handlers
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.Server.GetStatsDescription">
+            <summary>
+            Get a Stats dump
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.Server.Start">
+            <summary>
+            Start the MQ Host. Stops the server and restarts if already started.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.Server.Stop">
+            <summary>
+            Stop the MQ Host if not already stopped. 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Messaging.Rcon.Server.ProcessPacket(System.Byte[],System.Net.Sockets.Socket,ServiceStack.Messaging.Rcon.ClientSocketState)">
+            <summary>
+            Processes a received packet.
+            </summary>
+            <param name="packet">The packet.</param>
+        </member>
         <member name="T:ServiceStack.Messaging.Redis.RedisMqServer">
             <summary>
             Creates a Redis MQ Server that processes each message on its own background thread.
@@ -229,6 +300,46 @@
             The transient service will continue to run until all messages have been 
             processed after which time it will shutdown all processing until Start() is called again.
             </summary>
+        </member>
+        <member name="T:ServiceStack.MiniProfiler.Storage.SqlServerStorage">
+            <summary>
+            Understands how to store a <see cref="T:ServiceStack.MiniProfiler.Profiler"/> to a MSSQL database.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Storage.SqlServerStorage.#ctor(System.String)">
+            <summary>
+            Returns a new <see cref="T:ServiceStack.MiniProfiler.Storage.SqlServerStorage"/>.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Storage.SqlServerStorage.Save(ServiceStack.MiniProfiler.Profiler)">
+            <summary>
+            Stores <param name="profiler"/> to dbo.MiniProfilers under its <see cref="P:ServiceStack.MiniProfiler.Profiler.Id"/>; 
+            stores all child Timings and SqlTimings to their respective tables.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Storage.SqlServerStorage.Load(System.Guid)">
+            <summary>
+            Loads the MiniProfiler identifed by 'id' from the database.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Storage.SqlServerStorage.GetUnviewedIds(System.String)">
+            <summary>
+            Returns a list of <see cref="P:ServiceStack.MiniProfiler.Profiler.Id"/>s that haven't been seen by <paramref name="user"/>.
+            </summary>
+            <param name="user">User identified by the current <see cref="!:Profiler.Settings.UserProvider"/>.</param>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Storage.SqlServerStorage.GetConnection">
+            <summary>
+            Returns a connection to Sql Server.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.MiniProfiler.Storage.SqlServerStorage.TableCreationScript">
+            <summary>
+            Creates needed tables. Run this once on your database.
+            </summary>
+            <remarks>
+            Works in sql server and sqlite (with documented removals).
+            </remarks>
         </member>
     </members>
 </doc>

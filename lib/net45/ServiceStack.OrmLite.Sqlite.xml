@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ServiceStack.OrmLite.Sqlite</name>
+    </assembly>
+    <members>
+        <member name="T:ServiceStack.OrmLite.Sqlite.Converters.SqliteSystemDataDateTimeConverter">
+            <summary>
+            New behavior from using System.Data.SQLite.Core
+            </summary>
+        </member>
+    </members>
+</doc>

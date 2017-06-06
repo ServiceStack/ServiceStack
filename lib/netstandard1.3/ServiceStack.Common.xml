@@ -255,16 +255,6 @@
             <param name="profiler"></param>
             <param name="wrappedFactory"></param>
         </member>
-        <member name="P:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CanCreateDataSourceEnumerator">
-            <summary>
-            proxy
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateDataSourceEnumerator">
-            <summary>
-            proxy
-            </summary>
-        </member>
         <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateCommand">
             <summary>
             proxy
@@ -281,21 +271,6 @@
             </summary>
         </member>
         <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateConnectionStringBuilder">
-            <summary>
-            proxy
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateCommandBuilder">
-            <summary>
-            proxy
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateDataAdapter">
-            <summary>
-            proxy
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreatePermission(System.Security.Permissions.PermissionState)">
             <summary>
             proxy
             </summary>
