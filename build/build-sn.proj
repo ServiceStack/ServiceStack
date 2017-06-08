@@ -112,7 +112,7 @@
     <Copy SourceFiles="%(SwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/lib/net45" />
 
     <!-- Disables -Symbols-->
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/servicestack.api.swagger.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger.Signed/servicestack.api.swagger.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Api.OpenApi -->
@@ -125,7 +125,7 @@
     <Copy SourceFiles="%(OpenApiFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Signed/lib/net45" />
 
     <!-- Disables -Symbols-->
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Signed/servicestack.api.openapi.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Signed/servicestack.api.openapi.signed.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Client -->
