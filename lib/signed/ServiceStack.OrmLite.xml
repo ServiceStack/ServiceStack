@@ -4164,7 +4164,7 @@
               UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("LastName" = 'Hendrix')
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.InsertOnly``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.InsertOnly``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Boolean)">
             <summary>
             Using an SqlExpression to only Insert the fields specified, e.g:
             
@@ -4175,7 +4175,7 @@
               INSERT INTO "Person" ("Id", "FirstName") VALUES (1, 'Amy');
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.InsertOnly``1(System.Data.IDbConnection,``0,System.String[])">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.InsertOnly``1(System.Data.IDbConnection,``0,System.String[],System.Boolean)">
             <summary>
             Using an SqlExpression to only Insert the fields specified, e.g:
             
@@ -4183,7 +4183,7 @@
               INSERT INTO "Person" ("FirstName") VALUES ('Amy');
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.InsertOnly``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}})">
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.InsertOnly``1(System.Data.IDbConnection,System.Linq.Expressions.Expression{System.Func{``0}},System.Boolean)">
             <summary>
             Using an SqlExpression to only Insert the fields specified, e.g:
             

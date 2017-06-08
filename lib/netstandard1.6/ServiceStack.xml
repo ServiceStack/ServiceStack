@@ -4851,10 +4851,24 @@
             Add Request Filter for a specific Request DTO Type
             </summary>
         </member>
+        <member name="M:ServiceStack.IAppHost.RegisterTypedRequestFilter``1(System.Func{Funq.Container,ServiceStack.Host.ITypedFilter{``0}})">
+            <summary>
+            Add <seealso cref="T:ServiceStack.Host.ITypedFilter`1"/> as a Typed Request Filter for a specific Request DTO Type
+            </summary>
+            <typeparam name="T">The DTO Type.</typeparam>
+            <param name="filter">The <seealso cref="T:Funq.Container"/> methods to resolve the <seealso cref="T:ServiceStack.Host.ITypedFilter`1"/>.</param>
+        </member>
         <member name="M:ServiceStack.IAppHost.RegisterTypedResponseFilter``1(System.Action{ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,``0})">
             <summary>
             Add Request Filter for a specific Response DTO Type
             </summary>
+        </member>
+        <member name="M:ServiceStack.IAppHost.RegisterTypedResponseFilter``1(System.Func{Funq.Container,ServiceStack.Host.ITypedFilter{``0}})">
+            <summary>
+            Add <seealso cref="T:ServiceStack.Host.ITypedFilter`1"/> as a Typed Request Filter for a specific Request DTO Type
+            </summary>
+            <typeparam name="T">The DTO Type.</typeparam>
+            <param name="filter">The <seealso cref="T:Funq.Container"/> methods to resolve the <seealso cref="T:ServiceStack.Host.ITypedFilter`1"/>.</param>
         </member>
         <member name="M:ServiceStack.IAppHost.RegisterTypedMessageRequestFilter``1(System.Action{ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,``0})">
             <summary>
@@ -5337,6 +5351,38 @@
             <summary>
               Looks up a localized string similar to Unknown scope..
             </summary>
+        </member>
+        <member name="T:ServiceStack.ProxyFeature">
+            <summary>
+            Transparently Proxy requests through to downstream HTTP Servers
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ProxyFeature.ProxyRequestFilter">
+            <summary>
+            Customize the HTTP Request Headers that are sent to downstream server
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ProxyFeature.ProxyResponseFilter">
+            <summary>
+            Customize the downstream HTTP Response Headers that are returned to client
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ProxyFeature.TransformRequest">
+            <summary>
+            Inspect or Transform the HTTP Request Body that's sent downstream
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ProxyFeature.TransformResponse">
+            <summary>
+            Inspect or Transform the downstream HTTP Response Body that's returned
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ProxyFeature.#ctor(System.Func{ServiceStack.Web.IHttpRequest,System.Boolean},System.Func{ServiceStack.Web.IHttpRequest,System.String})">
+            <summary>
+            Required filters to specify which requests to proxy and which url to use.
+            </summary>
+            <param name="matchingRequests">Specify which requests should be proxied</param>
+            <param name="resolveUrl">Specify which downstream url to use</param>
         </member>
         <member name="F:ServiceStack.RedisErrorLoggerFeature.UrnServiceErrorType">
             <summary>
