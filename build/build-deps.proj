@@ -32,11 +32,17 @@
     </ItemGroup>
     <RegexTransform Items="@(RegexTransform)" />
 
+    <ItemGroup>
+      <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/portable40-net45+sl5+win8+wp8+wpa81/ServiceStack.Interfaces.*"></InterfaceFiles>
+    </ItemGroup>
+
     <!-- ServiceStack.Interfaces -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <Copy SourceFiles="%(InterfaceFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
 
     <!-- ServiceStack.Client -->
 
