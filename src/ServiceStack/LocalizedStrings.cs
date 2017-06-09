@@ -29,6 +29,7 @@
         public static string DidAuthenticate = "__didauth";
         public static string IRequest = "__irequest";
         public static string RequestDuration = "_requestDurationStopwatch";
+        public static string Code = "code";
     }
 
     public static class LocalizedStrings
