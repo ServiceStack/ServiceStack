@@ -32,12 +32,6 @@
     </ItemGroup>
     <RegexTransform Items="@(RegexTransform)" />
 
-    <!-- ServiceStack.Interfaces -->
-
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
-
     <!-- ServiceStack.Client -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.csproj"
