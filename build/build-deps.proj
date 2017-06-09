@@ -33,7 +33,8 @@
     <RegexTransform Items="@(RegexTransform)" />
 
     <ItemGroup>
-      <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/portable40-net45+sl5+win8+wp8+wpa81/ServiceStack.Interfaces.*"></InterfaceFiles>
+      <InterfaceNet45Files Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/portable40-net45+sl5+win8+wp8+wpa81/ServiceStack.Interfaces.*"></InterfaceNet45Files>
+      <InterfaceCoreFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/netstandard1.1/ServiceStack.Interfaces.*"></InterfaceCoreFiles>
     </ItemGroup>
 
     <!-- ServiceStack.Interfaces -->
@@ -42,7 +43,9 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
+    <!-- Copy to /lib before building dependent projects -->
     <Copy SourceFiles="%(InterfaceFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
+    <Copy SourceFiles="%(InterfaceCoreFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/netstandard1.1" />
 
     <!-- ServiceStack.Client -->
 
