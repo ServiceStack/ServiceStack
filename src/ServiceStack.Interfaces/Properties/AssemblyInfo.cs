@@ -14,8 +14,7 @@ using System.Runtime.Serialization;
 [assembly: AssemblyTrademark("Service Stack")]
 [assembly: AssemblyCulture("")]
 
-//Keep constant to prevent breaking signed-builds (build.proj on replaces 4 digits, e.g x.x.x.x)
-[assembly: AssemblyVersion("4.0.0")]
+[assembly: AssemblyVersion("4.0.0.0")]
 [assembly: AssemblyFileVersion("4.0.0.0")]
 
 [assembly: ContractNamespace("http://schemas.servicestack.net/types", 
