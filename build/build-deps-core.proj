@@ -25,30 +25,24 @@
         <ReplaceWith>AssemblyFileVersion("$(Version)")</ReplaceWith>
       </RegexTransform>
 
-      <!-- Keep Signed AssemblyVersion at 4.0.0.0 -->
       <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
         <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
-        <ReplaceWith>AssemblyVersion("4.0.0.0")</ReplaceWith>
+        <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
       </RegexTransform>
     </ItemGroup>
     <RegexTransform Items="@(RegexTransform)" />
 
-    <!-- Signed .NET 4.5 -->
+    <ItemGroup>
+      <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/netstandard1.1/ServiceStack.Interfaces.*"></InterfaceFiles>
+    </ItemGroup>    
+
+    <!-- Interfaces .NET Core -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.Signed.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=Signed" />
+    <Copy SourceFiles="%(InterfaceFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/netstandard1.1" />
 
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Common/ServiceStack.Common.Signed.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=Signed" />
-
-    <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.Signed.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=Signed" />
   </Target>
 
 </Project>
