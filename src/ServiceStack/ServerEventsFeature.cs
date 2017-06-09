@@ -273,7 +273,7 @@ namespace ServiceStack
             if (subscription == null)
             {
                 res.StatusCode = 404;
-                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId);
+                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId.SafeInput());
                 res.EndHttpHandlerRequest(skipHeaders: true);
                 return TypeConstants.EmptyTask;
             }
@@ -289,7 +289,7 @@ namespace ServiceStack
             if (!serverEvents.Pulse(subscriptionId))
             {
                 res.StatusCode = 404;
-                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId);
+                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId.SafeInput());
             }
             res.EndHttpHandlerRequest(skipHeaders: true);
             return TypeConstants.EmptyTask;
@@ -336,11 +336,11 @@ namespace ServiceStack
             var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
 
             if (subscription == null)
-                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.Fmt(request.Id));
+                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.Fmt(request.Id).SafeInput());
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
             if (!feature.CanAccessSubscription(base.Request, subscription))
-                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id));
+                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id.SafeInput()));
 
             ServerEvents.UnRegister(subscription.SubscriptionId);
 
@@ -352,11 +352,11 @@ namespace ServiceStack
             var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
 
             if (subscription == null)
-                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.Fmt(request.Id));
+                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.Fmt(request.Id.SafeInput()));
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
             if (!feature.CanAccessSubscription(base.Request, subscription))
-                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id));
+                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id.SafeInput()));
 
             if (request.UnsubscribeChannels != null)
                 ServerEvents.UnsubscribeFromChannels(subscription.SubscriptionId, request.UnsubscribeChannels);

@@ -32,7 +32,7 @@ namespace ServiceStack.Validation
                 redis = redisManager.GetClient();
                 var exists = !redis.SetEntryInHashIfNotExists(hashKey, correlationId, Flag);
                 if (exists)
-                    throw HttpError.Conflict(ErrorMessages.RequestAlreadyProcessedFmt.Fmt(correlationId));
+                    throw HttpError.Conflict(ErrorMessages.RequestAlreadyProcessedFmt.Fmt(correlationId.SafeInput()));
             }
         }
 

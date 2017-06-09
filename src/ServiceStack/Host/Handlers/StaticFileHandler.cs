@@ -150,7 +150,7 @@ namespace ServiceStack.Host.Handlers
 
                         if (file == null)
                         {
-                            var msg = ErrorMessages.FileNotExistsFmt.Fmt(request.PathInfo);
+                            var msg = ErrorMessages.FileNotExistsFmt.Fmt(request.PathInfo.SafeInput());
                             log.Warn($"{msg} in path: {originalFileName}");
                             response.StatusCode = 404;
                             response.StatusDescription = msg;

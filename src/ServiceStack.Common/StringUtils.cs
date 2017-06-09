@@ -147,10 +147,22 @@ namespace ServiceStack
             return to;
         }
 
-#if !(SL5 || NETSTANDARD1_3)
+        /// <summary>
+        /// Protect against XSS by cleaning non-standared User Input
+        /// </summary>
+        public static string SafeInput(this string text)
+        {
+            return string.IsNullOrEmpty(text)
+                ? text
+                : SafeInputRegEx.Replace(text, "");
+        }
+
+#if !(SL5 || NETSTANDARD1_1)
         static readonly Regex StripHtmlUnicodeRegEx = new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);", RegexOptions.Compiled);
+        static readonly Regex SafeInputRegEx = new Regex(@"[^\w\s\.,@-\\+\\/]", RegexOptions.Compiled);
 #else
         static readonly Regex StripHtmlUnicodeRegEx = new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);");
+        static readonly Regex SafeInputWhitelist = new Regex(@"[^\w\s\.,@-\\+\\/]");
 #endif
 
         public static string ConvertHtmlCodes(this string html)
