@@ -33,7 +33,7 @@ namespace CheckWeb
         /// Initializes a new instance of the <see cref="AppHost"/> class.
         /// </summary>
         public AppHost()
-            : base("CheckWeb", typeof(ErrorsService).Assembly, typeof(HtmlServices).Assembly) {}
+            : base("CheckWeb", typeof(ErrorsService).Assembly, typeof(HtmlServices).Assembly) { }
 
         /// <summary>
         /// Configure the Web Application host.
@@ -64,13 +64,14 @@ namespace CheckWeb
             });
 
             container.Register<IServiceClient>(c =>
-                new JsonServiceClient("http://localhost:55799/") {
+                new JsonServiceClient("http://localhost:55799/")
+                {
                     CaptureSynchronizationContext = true,
                 });
 
             //ProxyFetureTests
             Plugins.Add(new ProxyFeature(
-                matchingRequests: req => req.PathInfo.StartsWith("/test"),
+                matchingRequests: req => req.PathInfo.StartsWith("/proxy/test"),
                 resolveUrl: req => "http://test.servicestack.net".CombineWith(req.RawUrl.Replace("/test", "/"))));
 
             Plugins.Add(new ProxyFeature(
@@ -93,7 +94,8 @@ namespace CheckWeb
                     throw new Exception(dto.GetType().Name);
             });
 
-            Plugins.Add(new RequestLogsFeature {
+            Plugins.Add(new RequestLogsFeature
+            {
                 RequestLogger = new CsvRequestLogger(),
             });
 
@@ -110,12 +112,13 @@ namespace CheckWeb
 
             var dbFactory = (OrmLiteConnectionFactory)container.Resolve<IDbConnectionFactory>();
 
-            dbFactory.RegisterConnection("SqlServer", 
+            dbFactory.RegisterConnection("SqlServer",
                 new OrmLiteConnectionFactory(
                     "Server=localhost;Database=test;User Id=test;Password=test;",
-                    SqlServerDialect.Provider) {
-                        ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
-                    });
+                    SqlServerDialect.Provider)
+                {
+                    ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+                });
 
             dbFactory.RegisterConnection("pgsql",
                 new OrmLiteConnectionFactory(
@@ -197,11 +200,11 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         private void ConfigureAuth(Container container)
         {
-            Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new IAuthProvider[]
                 {
-                    new BasicAuthProvider(AppSettings), 
-                    new ApiKeyAuthProvider(AppSettings), 
+                    new BasicAuthProvider(AppSettings),
+                    new ApiKeyAuthProvider(AppSettings),
                 })
             {
                 ServiceRoutes = new Dictionary<Type, string[]> {
@@ -304,6 +307,7 @@ namespace CheckWeb
     }
 
     [HtmlOnly]
+    [CacheResponse(Duration = 3600)]
     public class HtmlServices : Service
     {
         public object Any(TestHtml request) => request;

@@ -42,9 +42,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Npgsql, Version=3.2.2.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\Npgsql.3.2.2\lib\net45\Npgsql.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Npgsql, Version=3.2.3.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\..\src\packages\Npgsql.3.2.3\lib\net45\Npgsql.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Admin">
       <HintPath>..\..\lib\net45\ServiceStack.Admin.dll</HintPath>
