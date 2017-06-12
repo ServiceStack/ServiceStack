@@ -222,6 +222,7 @@
     <Compile Include="Services\AllTypes.cs" />
     <Compile Include="AllTypesTests.cs" />
     <Compile Include="Services\AnnotatedService.cs" />
+    <Compile Include="Services\AsyncService.cs" />
     <Compile Include="Services\CodeGenTestTypes.cs" />
     <Compile Include="Host\Config.cs" />
     <Compile Include="Host\GeneratedClientTestBase.cs" />
