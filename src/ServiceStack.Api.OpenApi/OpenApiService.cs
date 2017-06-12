@@ -518,7 +518,7 @@ namespace ServiceStack.Api.OpenApi
                             }
                             : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) });
 
-                    schemaDescription = schema.Description ?? schemaType.GetDescription();
+                    schemaDescription = schema.Description ?? schemaType.GetDescription() ?? string.Empty;
 
                     return schema;
                 }
@@ -788,6 +788,9 @@ namespace ServiceStack.Api.OpenApi
 
         private OpenApiParameter GetParameter(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb, string paramName, string paramIn, ApiAllowableValuesAttribute allowableValueAttrs = null, bool isApiMember = false)
         {
+            //Compatibility: replace old Swagger ParamType to new Open API 
+            if (paramIn == "form") paramIn = "formData";
+
             if (IsSwaggerScalarType(schemaType))
             {
                 return new OpenApiParameter
