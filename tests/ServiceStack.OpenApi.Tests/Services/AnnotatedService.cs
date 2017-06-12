@@ -1,5 +1,34 @@
-﻿namespace ServiceStack.OpenApi.Tests.Services
+﻿using System.Runtime.Serialization;
+
+namespace ServiceStack.OpenApi.Tests.Services
 {
+
+    [Api("Description of the response")]
+    public class GatewayCredentialResponse
+    {
+        public string Result { get; set; }
+    }
+
+    [Route("/gatewaycredential/{MID}", "POST, OPTIONS")]
+    [DataContract]
+    public class GatewayCredentialRequest : IReturn<GatewayCredentialResponse>
+    {
+        [ApiMember(IsRequired = true, ExcludeInSchema = true, ParameterType = "path")]
+        [DataMember]
+        public string MID { get; set; }
+
+        [ApiMember(IsRequired = true, ParameterType = "model")]
+        [DataMember]
+        public string UserName { get; set; }
+
+        [ApiMember(IsRequired = true, ParameterType = "model")]
+        [ApiAllowableValues("Type", Values = new string[] { "Merchant", "API" })]
+        [DataMember]
+        public string Type { get; set; }
+    }
+
+
+
     [Api("Gets the movie")]
     [Route("/movie/{Id}")]
     public class GetMovie : IReturn<MovieResponse>
@@ -21,5 +50,7 @@
     public class AnnotatedService : Service
     {
         public object Any(GetMovie request) => new MovieResponse {Includes = request.Includes};
+
+        public object Any(GatewayCredentialRequest request) => new GatewayCredentialResponse {Result = "hello"};
     }
 }
