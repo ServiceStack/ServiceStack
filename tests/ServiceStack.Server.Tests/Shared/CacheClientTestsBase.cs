@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Shared
@@ -244,10 +245,21 @@ namespace ServiceStack.Server.Tests.Shared
         [Test]
         public void Expired_item_returns_correct_GetTimeToLive()
         {
+            var ormliteCache = Cache as OrmLiteCacheClient;
             var key = "int:key";
 
             var value = Cache.GetOrCreate(key, TimeSpan.FromMilliseconds(100), () => 1);
             var ttl = Cache.GetTimeToLive(key);
+
+            if (ormliteCache != null)
+            {
+                using (var db = ormliteCache.DbFactory.OpenDbConnection())
+                {
+                    var row = db.SingleById<CacheEntry>(key);
+                    Assert.That(row, Is.Not.Null);
+                    Assert.That(row.ExpiryDate, Is.Not.Null);
+                }
+            }
 
             Assert.That(value, Is.EqualTo(1));
             Assert.That(ttl.Value.TotalMilliseconds, Is.GreaterThan(0));
@@ -258,6 +270,15 @@ namespace ServiceStack.Server.Tests.Shared
 
             Assert.That(value, Is.EqualTo(0));
             Assert.That(ttl, Is.Null);
+
+            if (ormliteCache != null)
+            {
+                using (var db = ormliteCache.DbFactory.OpenDbConnection())
+                {
+                    var row = db.SingleById<CacheEntry>(key);
+                    Assert.That(row, Is.Null);
+                }
+            }
         }
 
         [Test]
