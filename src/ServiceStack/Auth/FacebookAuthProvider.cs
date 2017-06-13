@@ -65,7 +65,7 @@ namespace ServiceStack.Auth
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
             }             
         
-            var code = httpRequest.QueryString["code"];
+            var code = httpRequest.QueryString[Keywords.Code];
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {

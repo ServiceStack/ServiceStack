@@ -129,7 +129,7 @@ namespace ServiceStack.Authentication.MongoDb
             var countersCollection = mongoDatabase.GetCollection<Counters>(CountersCol);
             var update = Builders<Counters>.Update.Inc(counterName, 1);
             var updatedCounters = countersCollection.FindOneAndUpdate(new BsonDocument(), update, 
-                new FindOneAndUpdateOptions<Counters>() { IsUpsert = true, ReturnDocument = ReturnDocument.After});
+                new FindOneAndUpdateOptions<Counters> { IsUpsert = true, ReturnDocument = ReturnDocument.After});
             return updatedCounters;
         }
 
@@ -140,14 +140,14 @@ namespace ServiceStack.Authentication.MongoDb
                 var existingUser = GetUserAuthByUserName(mongoDatabase, newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName));
+                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(mongoDatabase, newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email));
+                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
             }
         }
 

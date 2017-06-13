@@ -37,6 +37,8 @@ namespace ServiceStack.Api.OpenApi
 
         public List<string> AnyRouteVerbs { get; set; }
 
+        public bool DisableSwaggerUI { get; set; }
+
         public OpenApiFeature()
         {
             LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-24.png";
@@ -65,51 +67,54 @@ namespace ServiceStack.Api.OpenApi
 
             appHost.RegisterService(typeof(OpenApiService), "/openapi");
 
-            var swaggerUrl = "swagger-ui/";
-
-            appHost.GetPlugin<MetadataFeature>()
-                .AddPluginLink(swaggerUrl, "Swagger UI");
-
-            appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
+            if (!DisableSwaggerUI)
             {
-                IVirtualFile indexFile;
-                IVirtualFile patchFile = null;
-                switch (pathInfo)
-                {
-                    case "/swagger-ui":
-                    case "/swagger-ui/":
-                    case "/swagger-ui/default.html":
-                        indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui/index.html");
-                        patchFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch.js");
-                        break;
-                    default:
-                        indexFile = null;
-                        break;
-                }
-                if (indexFile != null)
-                {
-                    var html = indexFile.ReadAllText();
-                    var injectJs = patchFile?.ReadAllText();
+                var swaggerUrl = "swagger-ui/";
 
-                    return new CustomResponseHandler((req, res) =>
+                appHost.GetPlugin<MetadataFeature>()
+                    .AddPluginLink(swaggerUrl, "Swagger UI");
+
+                appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>
+                {
+                    IVirtualFile indexFile;
+                    IVirtualFile patchFile = null;
+                    switch (pathInfo)
                     {
-                        res.ContentType = MimeTypes.Html;
-                        var resourcesUrl = req.ResolveAbsoluteUrl("~/openapi");
-                        html = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)
-                            .Replace("ApiDocs", HostContext.ServiceName)
-                            .Replace("{LogoUrl}", LogoUrl);
+                        case "/swagger-ui":
+                        case "/swagger-ui/":
+                        case "/swagger-ui/default.html":
+                            indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui/index.html");
+                            patchFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch.js");
+                            break;
+                        default:
+                            indexFile = null;
+                            break;
+                    }
+                    if (indexFile != null)
+                    {
+                        var html = indexFile.ReadAllText();
+                        var injectJs = patchFile?.ReadAllText();
 
-                        if (injectJs != null)
+                        return new CustomResponseHandler((req, res) =>
                         {
-                            html = html.Replace("</body>",
-                                "<script type='text/javascript'>" + injectJs + "</script></body>");
-                        }
+                            res.ContentType = MimeTypes.Html;
+                            var resourcesUrl = req.ResolveAbsoluteUrl("~/openapi");
+                            html = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)
+                                .Replace("ApiDocs", HostContext.ServiceName)
+                                .Replace("{LogoUrl}", LogoUrl);
 
-                        return html;
-                    });
-                }
-                return pathInfo.StartsWith("/swagger-ui") ? new StaticFileHandler() : null;
-            });
+                            if (injectJs != null)
+                            {
+                                html = html.Replace("</body>",
+                                    "<script type='text/javascript'>" + injectJs + "</script></body>");
+                            }
+
+                            return html;
+                        });
+                    }
+                    return pathInfo.StartsWith("/swagger-ui") ? new StaticFileHandler() : null;
+                });
+            }
         }
 
         public static bool IsEnabled => HostContext.HasPlugin<OpenApiFeature>();

@@ -193,5 +193,14 @@ namespace ServiceStack.Common.Tests
                 "[Count:*] count", "[Min:Age] min", "[Max:Age] max", "[Sum:Id] sum"
             }));
         }
+
+        [Test]
+        public void Does_clean_input()
+        {
+            Assert.That("a.b+c@<d>&.com=|".SafeInput(), Is.EqualTo("a.b+c@d.com"));
+            Assert.That("/a/b.c".SafeInput(), Is.EqualTo("/a/b.c"));
+            Assert.That("1,000.00".SafeInput(), Is.EqualTo("1,000.00"));
+            Assert.That("a b c".SafeInput(), Is.EqualTo("a b c"));
+        }
     }
 }
