@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net45</TargetFrameworks>
     <AssemblyName>ServiceStack.Server</AssemblyName>
+    <RootNamespace>ServiceStack.Server</RootNamespace>
     <PackageId>ServiceStack.Server.Signed</PackageId>
     <Configuration>Signed</Configuration>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>

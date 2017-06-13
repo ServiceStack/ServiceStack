@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.26430.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Signed", "ServiceStack\ServiceStack.Signed.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -58,6 +58,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.RabbitMq.Signed", "ServiceStack.RabbitMq\ServiceStack.RabbitMq.Signed.csproj", "{E940929C-9E76-41CD-BD09-08029FE9B440}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.OrmLite.Sqlite.Windows.Signed", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Windows\ServiceStack.OrmLite.Sqlite.Windows.Signed.csproj", "{A5541444-70EE-4B5E-8A5F-C7D8A0048EBE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C55AB065-DCB1-4724-8266-E70A18F44EAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignedConsole.Tests", "..\tests\SignedConsole.Tests\SignedConsole.Tests.csproj", "{23B46D25-0928-4D49-BA3B-92D200A75883}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -219,8 +223,23 @@ Global
 		{A5541444-70EE-4B5E-8A5F-C7D8A0048EBE}.Signed|Any CPU.Build.0 = Signed|Any CPU
 		{A5541444-70EE-4B5E-8A5F-C7D8A0048EBE}.Signed|x86.ActiveCfg = Signed|Any CPU
 		{A5541444-70EE-4B5E-8A5F-C7D8A0048EBE}.Signed|x86.Build.0 = Signed|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Debug|x86.Build.0 = Debug|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Release|x86.ActiveCfg = Release|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Release|x86.Build.0 = Release|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Signed|x86.ActiveCfg = Release|Any CPU
+		{23B46D25-0928-4D49-BA3B-92D200A75883}.Signed|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{23B46D25-0928-4D49-BA3B-92D200A75883} = {C55AB065-DCB1-4724-8266-E70A18F44EAC}
 	EndGlobalSection
 EndGlobal
