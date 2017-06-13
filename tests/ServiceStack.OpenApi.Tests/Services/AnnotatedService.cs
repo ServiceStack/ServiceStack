@@ -3,6 +3,19 @@
 namespace ServiceStack.OpenApi.Tests.Services
 {
 
+    public class HelloDto
+    {
+        [ApiMember(IsRequired = true)]
+        public string Name { get; set; }
+    }
+
+    [Route("/annotated-hello", "POST", Summary = "Creates a new hello.")]
+    public class CreateHelloReq : IReturn<Hello>
+    {
+        [ApiMember(IsRequired = true, ParameterType = "query")]
+        public HelloDto Hello { get; set; }
+    }
+
     [Api("Description of the response")]
     public class GatewayCredentialResponse
     {
@@ -52,5 +65,8 @@ namespace ServiceStack.OpenApi.Tests.Services
         public object Any(GetMovie request) => new MovieResponse {Includes = request.Includes};
 
         public object Any(GatewayCredentialRequest request) => new GatewayCredentialResponse {Result = "hello"};
+
+        public object Any(CreateHelloReq request) => new Hello { Name = request.Hello.Name };
+
     }
 }

@@ -465,6 +465,8 @@ namespace ServiceStack.Api.OpenApi
 
                         if (propAttr.Format != null)
                             schemaProp.Format = propAttr.Format;
+
+                        schemaProp.Required = propAttr.IsRequired;
                     }
 
                     schemaProp.Enum = GetEnumValues(prop.FirstAttribute<ApiAllowableValuesAttribute>());
