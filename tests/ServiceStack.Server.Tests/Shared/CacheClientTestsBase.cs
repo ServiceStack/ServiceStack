@@ -242,6 +242,25 @@ namespace ServiceStack.Server.Tests.Shared
         }
 
         [Test]
+        public void Expired_item_returns_correct_GetTimeToLive()
+        {
+            var key = "int:key";
+
+            var value = Cache.GetOrCreate(key, TimeSpan.FromMilliseconds(100), () => 1);
+            var ttl = Cache.GetTimeToLive(key);
+
+            Assert.That(value, Is.EqualTo(1));
+            Assert.That(ttl.Value.TotalMilliseconds, Is.GreaterThan(0));
+
+            Thread.Sleep(200);
+            value = Cache.Get<int>(key);
+            ttl = Cache.GetTimeToLive(key);
+
+            Assert.That(value, Is.EqualTo(0));
+            Assert.That(ttl, Is.Null);
+        }
+
+        [Test]
         public void Can_increment_and_decrement_values()
         {
             Assert.That(Cache.Increment("incr:a", 2), Is.EqualTo(2));
