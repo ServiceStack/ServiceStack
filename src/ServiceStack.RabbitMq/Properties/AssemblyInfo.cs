@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ServiceStack.RabbitMq")]
-[assembly: AssemblyCopyright("Copyright © Service Stack 2014")]
+[assembly: AssemblyCopyright("Copyright © ServiceStack 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

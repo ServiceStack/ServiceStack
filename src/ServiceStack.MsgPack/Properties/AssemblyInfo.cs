@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("ServiceStack, Inc.")]
 [assembly: AssemblyProduct("ServiceStack")]
 [assembly: AssemblyCopyright("Copyright (c) ServiceStack 2016")]
-[assembly: AssemblyTrademark("Service Stack")]
+[assembly: AssemblyTrademark("ServiceStack")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -23,4 +23,5 @@ using System.Runtime.InteropServices;
 [assembly: Guid("02fa8940-a0c1-42ef-82f8-34593498cc6e")]
 
 [assembly: AssemblyVersion("4.0.0.0")]
+[assembly: AssemblyFileVersion("4.0.0.0")]
 

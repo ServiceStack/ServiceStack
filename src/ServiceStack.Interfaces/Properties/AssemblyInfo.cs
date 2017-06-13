@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 [assembly: AssemblyCompany("ServiceStack, Inc.")]
 [assembly: AssemblyProduct("ServiceStack")]
 [assembly: AssemblyCopyright("Copyright (c) ServiceStack 2016")]
-[assembly: AssemblyTrademark("Service Stack")]
+[assembly: AssemblyTrademark("ServiceStack")]
 [assembly: AssemblyCulture("")]
 
 [assembly: AssemblyVersion("4.0.0.0")]

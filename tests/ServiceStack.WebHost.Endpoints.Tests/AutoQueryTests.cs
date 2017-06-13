@@ -719,7 +719,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void RunFor10Mins()
         {
+#if NET45
             Process.Start(Config.ListeningOn);
+#endif
             Thread.Sleep(TimeSpan.FromMinutes(10));
         }
 
