@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>sl5</TargetFrameworks>
     <AssemblyName>ServiceStack.Client</AssemblyName>
+    <RootNamespace>ServiceStack.Client</RootNamespace>
     <PackageId>ServiceStack.Client</PackageId>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>

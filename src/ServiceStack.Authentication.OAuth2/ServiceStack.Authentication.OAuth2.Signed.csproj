@@ -4,6 +4,7 @@
     <TargetFramework>net45</TargetFramework>
     <DebugType>portable</DebugType>
     <AssemblyName>ServiceStack.Authentication.OAuth2</AssemblyName>
+    <RootNamespace>ServiceStack.Authentication.OAuth2</RootNamespace>
     <PackageId>ServiceStack.Authentication.OAuth2.Signed</PackageId>
     <Configuration>Signed</Configuration>
     <RuntimeIdentifiers>win</RuntimeIdentifiers>

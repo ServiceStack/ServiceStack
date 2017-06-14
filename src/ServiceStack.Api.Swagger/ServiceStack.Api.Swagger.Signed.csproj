@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net45</TargetFrameworks>
     <AssemblyName>ServiceStack.Api.Swagger</AssemblyName>
+    <RootNamespace>ServiceStack.Api.Swagger</RootNamespace>
     <PackageId>ServiceStack.Api.Swagger.Signed</PackageId>
     <Configuration>Signed</Configuration>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>

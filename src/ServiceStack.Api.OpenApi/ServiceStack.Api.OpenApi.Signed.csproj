@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net45</TargetFrameworks>
     <AssemblyName>ServiceStack.Api.OpenApi</AssemblyName>
+    <RootNamespace>ServiceStack.Api.OpenApi</RootNamespace>
     <PackageId>ServiceStack.Api.OpenApi.Signed</PackageId>
     <Configuration>Signed</Configuration>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>

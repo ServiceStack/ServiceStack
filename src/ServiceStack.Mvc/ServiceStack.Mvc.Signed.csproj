@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net45</TargetFrameworks>
     <AssemblyName>ServiceStack.Mvc</AssemblyName>
+    <RootNamespace>ServiceStack.Mvc</RootNamespace>
     <PackageId>ServiceStack.Mvc.Signed</PackageId>
     <Configuration>Signed</Configuration>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>

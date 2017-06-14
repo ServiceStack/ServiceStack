@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net45</TargetFrameworks>
     <AssemblyName>ServiceStack.ProtoBuf</AssemblyName>
+    <RootNamespace>ServiceStack.ProtoBuf</RootNamespace>
     <PackageId>ServiceStack.ProtoBuf.Signed</PackageId>
     <Configuration>Signed</Configuration>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
