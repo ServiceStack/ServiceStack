@@ -563,7 +563,7 @@
             }
 
             var fn = $.ss.handlers["onMessage"];
-            if (fn) fn.cal(el || document.body, msg, e);
+            if (fn) fn.call(el || document.body, msg, e);
 
             if (opt.success) opt.success(selector, msg, e); //deprecated
         }
