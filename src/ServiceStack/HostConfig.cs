@@ -228,8 +228,8 @@ namespace ServiceStack
         private RequestAttributes metadataVisibility;
         public RequestAttributes MetadataVisibility
         {
-            get { return metadataVisibility; }
-            set { metadataVisibility = value.ToAllowedFlagsSet(); }
+            get => metadataVisibility;
+            set => metadataVisibility = value.ToAllowedFlagsSet();
         }
 
         public List<Type> EmbeddedResourceBaseTypes { get; set; }

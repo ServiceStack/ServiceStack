@@ -19,6 +19,19 @@ namespace ServiceStack.Host.Handlers
 
         public HttpStatusCode StatusCode { get; set; }
 
+        public static string MakeRelative(string relativeUrl)
+        {
+            if (string.IsNullOrEmpty(relativeUrl))
+                return null;
+
+            if (relativeUrl.StartsWith("~/"))
+                return relativeUrl;
+
+            return relativeUrl.StartsWith("/") 
+                ? "~" + relativeUrl 
+                : "~/" + relativeUrl;
+        }
+
         /// <summary>
         /// Non ASP.NET requests
         /// </summary>
@@ -37,16 +50,13 @@ namespace ServiceStack.Host.Handlers
             }
             else
             {
-                var absoluteUrl = request.GetApplicationUrl();
-                if (!string.IsNullOrEmpty(RelativeUrl))
-                {
-                    if (this.RelativeUrl.StartsWith("/"))
-                        absoluteUrl = absoluteUrl.CombineWith(this.RelativeUrl);
-                    else if (this.RelativeUrl.StartsWith("~/"))
-                        absoluteUrl = absoluteUrl.CombineWith(this.RelativeUrl.Replace("~/", ""));
-                    else
-                        absoluteUrl = request.AbsoluteUri.CombineWith(this.RelativeUrl);
-                }
+                if (RelativeUrl.StartsWith("http://") || RelativeUrl.StartsWith("https://"))
+                    throw new ArgumentException($"'{RelativeUrl}' is not a RelativeUrl, use AbsoluteUrl instead");
+
+                var absoluteUrl = this.RelativeUrl.StartsWith("/")
+                    ? request.GetApplicationUrl().CombineWith(this.RelativeUrl) //preserve compat
+                    : request.ResolveAbsoluteUrl(MakeRelative(this.RelativeUrl));
+
                 response.StatusCode = (int)StatusCode;
                 response.AddHeader(HttpHeaders.Location, absoluteUrl);
             }
@@ -74,16 +84,13 @@ namespace ServiceStack.Host.Handlers
             }
             else
             {
-                var absoluteUrl = request.GetApplicationUrl();
-                if (!string.IsNullOrEmpty(RelativeUrl))
-                {
-                    if (this.RelativeUrl.StartsWith("/"))
-                        absoluteUrl = absoluteUrl.CombineWith(this.RelativeUrl);
-                    else if (this.RelativeUrl.StartsWith("~/"))
-                        absoluteUrl = absoluteUrl.CombineWith(this.RelativeUrl.Replace("~/", ""));
-                    else
-                        absoluteUrl = request.Url.AbsoluteUri.CombineWith(this.RelativeUrl);
-                }
+                if (RelativeUrl.StartsWith("http://") || RelativeUrl.StartsWith("https://"))
+                    throw new ArgumentException($"'{RelativeUrl}' is not a RelativeUrl, use AbsoluteUrl instead");
+
+                var absoluteUrl = this.RelativeUrl.StartsWith("/")
+                    ? request.GetApplicationUrl().CombineWith(this.RelativeUrl) //preserve compat
+                    : request.ToRequest(RequestName).ResolveAbsoluteUrl(MakeRelative(this.RelativeUrl));
+
                 response.StatusCode = (int)StatusCode;
                 response.AddHeader(HttpHeaders.Location, absoluteUrl);
             }
