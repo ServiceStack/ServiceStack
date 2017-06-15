@@ -609,7 +609,7 @@ namespace ServiceStack.Api.OpenApi
                         OperationId = GetOperationName(requestType.Name, routePath, verb),
                         Parameters = ParseParameters(schemas, requestType, routePath, verb),
                         Responses = GetMethodResponseCodes(restPath, schemas, requestType),
-                        Consumes = new List<string> { IsFormData(verb) ? "application/x-www-form-urlencoded" : "application/json" },
+                        Consumes = new List<string> { "application/json" },
                         Produces = new List<string> { "application/json" },
                         Tags = userTags.Count > 0 ? userTags : GetTags(restPath.Path),
                         Deprecated = requestType.HasAttribute<ObsoleteAttribute>(),
@@ -618,7 +618,10 @@ namespace ServiceStack.Api.OpenApi
                         } : null
                     };
 
-                    foreach(var tag in operation.Tags)
+                    if (HasFormData(verb, operation.Parameters))
+                        operation.Consumes = new List<string> { "application/x-www-form-urlencoded" };
+
+                    foreach (var tag in operation.Tags)
                     {
                         if (!tags.ContainsKey(tag))
                             tags.Add(tag, new OpenApiTag { Name = tag });
@@ -640,9 +643,21 @@ namespace ServiceStack.Api.OpenApi
             return apiPaths;
         }
 
-        private bool IsFormData(string verb)
+        private bool IsFormData(string verb, ApiAttribute apiAttr)
         {
-            return (verb == HttpMethods.Post || verb == HttpMethods.Put) && DisableAutoDtoInBodyParam;
+            if (verb != HttpMethods.Post && verb != HttpMethods.Put)
+                return false;
+
+            if (apiAttr?.BodyParam == GenerateBodyParam.Always
+                || (!DisableAutoDtoInBodyParam && apiAttr?.BodyParam != GenerateBodyParam.Never))
+                return false;
+
+            return true;
+        }
+
+        private bool HasFormData(string verb, List<OpenApiParameter> parameters)
+        {
+            return (verb == HttpMethods.Post || verb == HttpMethods.Put) && parameters.Any(p => p.In == "formData");
         }
 
         static readonly Dictionary<string, string> postfixes = new Dictionary<string, string>()
@@ -695,6 +710,7 @@ namespace ServiceStack.Api.OpenApi
         private List<OpenApiParameter> ParseParameters(IDictionary<string, OpenApiSchema> schemas, Type operationType, string route, string verb)
         {
             var hasDataContract = operationType.HasAttribute<DataContractAttribute>();
+            var apiAttr = operationType.FirstAttribute<ApiAttribute>();
 
             var properties = operationType.GetProperties();
             var paramAttrs = new Dictionary<string, ApiMemberAttribute[]>();
@@ -730,7 +746,7 @@ namespace ServiceStack.Api.OpenApi
                 var inPath = (route ?? "").ToLowerInvariant().Contains("{" + propertyName.ToLowerInvariant() + "}");
                 var paramType = inPath
                     ? "path"
-                    : IsFormData(verb) ? "formData": "query";
+                    : IsFormData(verb, apiAttr) ? "formData": "query";
 
 
                 var parameter = GetParameter(schemas, property.PropertyType,
@@ -766,13 +782,18 @@ namespace ServiceStack.Api.OpenApi
                             p.Required = member.IsRequired;
                             p.Description = member.Description ?? p.Description;
 
+                            //Fix old Swagger 1.2 parameter type
+                            if (p.In == "form")
+                                p.In = "formData";
+
                             methodOperationParameters.Add(p);
                         }
                     }
                 }
             }
 
-            if (!DisableAutoDtoInBodyParam)
+            if (apiAttr?.BodyParam == GenerateBodyParam.Always
+                || (!DisableAutoDtoInBodyParam && apiAttr?.BodyParam != GenerateBodyParam.Never))
             {
                 if (!HttpMethods.Get.EqualsIgnoreCase(verb) && !HttpMethods.Delete.EqualsIgnoreCase(verb)
                     && !methodOperationParameters.Any(p => "body".EqualsIgnoreCase(p.In)))
@@ -780,6 +801,9 @@ namespace ServiceStack.Api.OpenApi
                     ParseDefinitions(schemas, operationType, route, verb);
 
                     var parameter = GetParameter(schemas, operationType, route, verb, "body", "body");
+
+                    if (apiAttr?.IsRequired == true)
+                        parameter.Required = true;
 
                     methodOperationParameters.Add(parameter);
                 }
