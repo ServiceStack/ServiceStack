@@ -648,7 +648,7 @@ namespace ServiceStack.Api.OpenApi
             if (verb != HttpMethods.Post && verb != HttpMethods.Put)
                 return false;
 
-            if (apiAttr?.BodyParameter == GenerateBodyParam.Always
+            if (apiAttr?.BodyParameter == GenerateBodyParameter.Always
                 || (!DisableAutoDtoInBodyParam && apiAttr?.BodyParameter != GenerateBodyParameter.Never))
                 return false;
 
