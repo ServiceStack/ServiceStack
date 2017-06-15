@@ -9,7 +9,7 @@ namespace ServiceStack.OpenApi.Tests.Services
         public string Name { get; set; }
     }
 
-    [Api(Description = "Create new hello", BodyParam = GenerateBodyParam.Always, IsRequired = true)]
+    [Api(Description = "Create new hello", BodyParameter = GenerateBodyParameter.Always, IsRequired = true)]
     [Route("/annotated-hello", "POST", Summary = "Creates a new hello.")]
     public class CreateHelloReq : IReturn<Hello>
     {
