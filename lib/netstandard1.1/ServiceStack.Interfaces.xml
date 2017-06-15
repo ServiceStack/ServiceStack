@@ -9,9 +9,36 @@
             Gets or sets parameter name with which allowable values will be associated.
             </summary>
         </member>
+        <member name="F:ServiceStack.GenerateBodyParameter.IfNotDisabled">
+            <summary>
+            Generates body DTO parameter only if `DisableAutoDtoInBodyParam = false`
+            </summary>
+        </member>
+        <member name="F:ServiceStack.GenerateBodyParameter.Always">
+            <summary>
+            Always generate body DTO for request
+            </summary>
+        </member>
+        <member name="F:ServiceStack.GenerateBodyParameter.Never">
+            <summary>
+            Never generate body DTO for request
+            </summary>
+        </member>
         <member name="P:ServiceStack.ApiAttribute.Description">
             <summary>
             The overall description of an API. Used by Swagger.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiAttribute.BodyParameter">
+            <summary>
+            Create or not body param for request type when verb is POST or PUT.
+            Value can be one of the constants of `GenerateBodyParam` class:
+            `GenerateBodyParam.IfNotDisabled` (default value), `GenerateBodyParam.Always`, `GenerateBodyParam.Never`
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiAttribute.IsRequired">
+            <summary>
+            Tells if body param is required
             </summary>
         </member>
         <member name="P:ServiceStack.ApiMemberAttribute.Verb">

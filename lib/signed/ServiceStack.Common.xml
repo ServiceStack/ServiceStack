@@ -370,6 +370,11 @@
             Required to cast the ValueType to an object for caching
             </summary>
         </member>
+        <member name="M:ServiceStack.StringUtils.SafeInput(System.String)">
+            <summary>
+            Protect against XSS by cleaning non-standared User Input
+            </summary>
+        </member>
         <member name="T:ServiceStack.Support.AdapterBase">
             <summary>
             Common functionality when creating adapters
