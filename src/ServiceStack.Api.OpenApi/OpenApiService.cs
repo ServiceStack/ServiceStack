@@ -648,8 +648,8 @@ namespace ServiceStack.Api.OpenApi
             if (verb != HttpMethods.Post && verb != HttpMethods.Put)
                 return false;
 
-            if (apiAttr?.BodyParam == GenerateBodyParam.Always
-                || (!DisableAutoDtoInBodyParam && apiAttr?.BodyParam != GenerateBodyParam.Never))
+            if (apiAttr?.BodyParameter == GenerateBodyParam.Always
+                || (!DisableAutoDtoInBodyParam && apiAttr?.BodyParameter != GenerateBodyParameter.Never))
                 return false;
 
             return true;
@@ -792,8 +792,8 @@ namespace ServiceStack.Api.OpenApi
                 }
             }
 
-            if (apiAttr?.BodyParam == GenerateBodyParam.Always
-                || (!DisableAutoDtoInBodyParam && apiAttr?.BodyParam != GenerateBodyParam.Never))
+            if (apiAttr?.BodyParameter == GenerateBodyParameter.Always
+                || (!DisableAutoDtoInBodyParam && apiAttr?.BodyParameter != GenerateBodyParameter.Never))
             {
                 if (!HttpMethods.Get.EqualsIgnoreCase(verb) && !HttpMethods.Delete.EqualsIgnoreCase(verb)
                     && !methodOperationParameters.Any(p => "body".EqualsIgnoreCase(p.In)))

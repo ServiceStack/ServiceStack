@@ -5,7 +5,7 @@ using System;
 
 namespace ServiceStack
 {
-    public static class GenerateBodyParam
+    public static class GenerateBodyParameter
     {
         /// <summary>
         /// Generates body DTO parameter only if `DisableAutoDtoInBodyParam = false`
@@ -34,7 +34,7 @@ namespace ServiceStack
         /// Value can be one of the constants of `GenerateBodyParam` class:
         /// `GenerateBodyParam.IfNotDisabled` (default value), `GenerateBodyParam.Always`, `GenerateBodyParam.Never`
         /// </summary>
-        public int BodyParam { get; set; }
+        public int BodyParameter { get; set; }
 
         /// <summary>
         /// Tells if body param is required
@@ -43,14 +43,14 @@ namespace ServiceStack
 
         public ApiAttribute() { }
 
-        public ApiAttribute(string description) : this(description, GenerateBodyParam.IfNotDisabled) { }
+        public ApiAttribute(string description) : this(description, GenerateBodyParameter.IfNotDisabled) { }
 
-        public ApiAttribute(string description, int generateBodyParam) : this(description, generateBodyParam, false) {}
+        public ApiAttribute(string description, int generateBodyParameter) : this(description, generateBodyParameter, false) {}
 
-        public ApiAttribute(string description, int generateBodyParam, bool isRequired)
+        public ApiAttribute(string description, int generateBodyParameter, bool isRequired)
         {
             Description = description;
-            BodyParam = generateBodyParam;
+            BodyParameter = generateBodyParameter;
             IsRequired = isRequired;
         }
     }
