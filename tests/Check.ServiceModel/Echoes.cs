@@ -44,7 +44,7 @@ namespace Check.ServiceModel
         public string Sentence { get; set; }
     }
 
-    public class CachedEcho
+    public class CachedEcho : IReturn<Echo>
     {
         public bool Reload { get; set; }
         public string Sentence { get; set; }

@@ -15,7 +15,7 @@ namespace Check.ServiceInterface
         {
             if (request.PathInfo == "TestView")
             {
-                return new HttpResult(base.ExecuteRequest(new CachedEcho
+                return new HttpResult(base.Gateway.Send(new CachedEcho
                     {
                         Reload = true,
                         Sentence = "Echo Result",
