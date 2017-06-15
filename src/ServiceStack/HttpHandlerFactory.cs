@@ -98,8 +98,6 @@ namespace ServiceStack
                     ? defaultRedirectHanlder.RelativeUrl
                     : typeof(DefaultHttpHandler).GetOperationName();
 
-                SetApplicationBaseUrl(config.WebHostUrl);
-
                 ForbiddenHttpHandler = appHost.GetCustomErrorHttpHandler(HttpStatusCode.Forbidden);
                 if (ForbiddenHttpHandler == null)
                 {
@@ -173,10 +171,6 @@ namespace ServiceStack
                     }
                 }
 
-                //Exception calling context.Request.Url on Apache+mod_mono
-                var absoluteUrl = Env.IsMono ? url.ToParentPath() : context.Request.GetApplicationUrl();
-                SetApplicationBaseUrl(absoluteUrl);
-
                 //e.g. CatchAllHandler to Process Markdown files
                 var catchAllHandler = GetCatchAllHandlerIfAny(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
                 if (catchAllHandler != null) return catchAllHandler;
@@ -200,20 +194,6 @@ namespace ServiceStack
                    ?? NotFoundHttpHandler;
         }
 #endif
-        private static void SetApplicationBaseUrl(string absoluteUrl)
-        {
-            if (absoluteUrl == null) return;
-
-            var defaultRedirectUrl = DefaultHttpHandler as RedirectHttpHandler;
-            if (defaultRedirectUrl != null && defaultRedirectUrl.AbsoluteUrl == null)
-                defaultRedirectUrl.AbsoluteUrl = absoluteUrl.CombineWith(
-                defaultRedirectUrl.RelativeUrl);
-
-            if (NonRootModeDefaultHttpHandler != null && NonRootModeDefaultHttpHandler.AbsoluteUrl == null)
-                NonRootModeDefaultHttpHandler.AbsoluteUrl = absoluteUrl.CombineWith(
-                NonRootModeDefaultHttpHandler.RelativeUrl);
-        }
-
         public static string GetBaseUrl()
         {
             return HostContext.Config.WebHostUrl;
@@ -248,8 +228,6 @@ namespace ServiceStack
                         return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
                     }
                 }
-
-                SetApplicationBaseUrl(httpReq.GetPathUrl());
 
                 //e.g. CatchAllHandler to Process Markdown files
                 var catchAllHandler = GetCatchAllHandlerIfAny(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
