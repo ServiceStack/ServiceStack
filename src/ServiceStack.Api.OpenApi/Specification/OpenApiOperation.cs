@@ -7,6 +7,10 @@ namespace ServiceStack.Api.OpenApi.Specification
     [DataContract]
     public class OpenApiOperation
     {
+        //Custom: Request DTO Name to help with custom filtering
+        [IgnoreDataMember]
+        public string RequestType { get; set; } 
+
         [DataMember(Name = "tags")]
         public List<string> Tags { get; set; }
         [DataMember(Name = "summary")]

@@ -604,6 +604,7 @@ namespace ServiceStack.Api.OpenApi
 
                     var operation = new OpenApiOperation
                     {
+                        RequestType = requestType.Name,
                         Summary = summary,
                         Description = restPath.Notes ?? summary,
                         OperationId = GetOperationName(requestType.Name, routePath, verb),
@@ -614,7 +615,10 @@ namespace ServiceStack.Api.OpenApi
                         Tags = userTags.Count > 0 ? userTags : GetTags(restPath.Path),
                         Deprecated = requestType.HasAttribute<ObsoleteAttribute>(),
                         Security = needAuth ? new List<Dictionary<string, List<string>>> {
-                            new Dictionary<string, List<string>> { { "basic", new List<string>() } }
+                            new Dictionary<string, List<string>>
+                            {
+                                { "basic", new List<string>() }
+                            }
                         } : null
                     };
 
