@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Web;
 using ServiceStack.Auth;
@@ -180,8 +181,14 @@ namespace ServiceStack
         public static void UpdateSession(this IAuthSession session, IUserAuth userAuth)
         {
             if (userAuth == null || session == null) return;
-            session.Roles = userAuth.Roles;
-            session.Permissions = userAuth.Permissions;
+
+            if (session.Roles == null)
+                session.Roles = new List<string>();
+            if (session.Permissions == null)
+                session.Permissions = new List<string>();
+            
+            userAuth.Roles?.ForEach(x => session.Roles.AddIfNotExists(x));
+            userAuth.Permissions?.ForEach(x => session.Permissions.AddIfNotExists(x));
         }
 
         public static void UpdateFromUserAuthRepo(this IAuthSession session, IRequest req, IAuthRepository userAuthRepo = null)
