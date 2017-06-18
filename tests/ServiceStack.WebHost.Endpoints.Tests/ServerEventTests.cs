@@ -221,6 +221,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Explicit("Hangs in new build server")]
     [TestFixture]
     public class RedisServerEventsTests : ServerEventsTests
     {
