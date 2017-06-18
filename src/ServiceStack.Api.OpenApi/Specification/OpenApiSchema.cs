@@ -1,4 +1,5 @@
-﻿using ServiceStack.Api.OpenApi.Support;
+﻿using System.Collections.Generic;
+using ServiceStack.Api.OpenApi.Support;
 using System.Runtime.Serialization;
 
 namespace ServiceStack.Api.OpenApi.Specification
@@ -18,6 +19,9 @@ namespace ServiceStack.Api.OpenApi.Specification
         public OpenApiExternalDocumentation ExternalDocs { get; set; }
         [DataMember(Name = "example")]
         public string Example { get; set; }
+
+        [DataMember(Name = "required")]
+        public new List<string> Required { get; set; }
 
         [DataMember(Name = "allOf")]
         public OpenApiSchema AllOf { get; set; }

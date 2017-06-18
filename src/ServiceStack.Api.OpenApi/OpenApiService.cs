@@ -401,7 +401,8 @@ namespace ServiceStack.Api.OpenApi
                     Type = OpenApiType.Object,
                     Title = schemaType.Name,
                     Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
-                    Properties = new OrderedDictionary<string, OpenApiProperty>()
+                    Properties = new OrderedDictionary<string, OpenApiProperty>(),
+                    Required = new List<string>()
                 };
                 parseProperties = schemaType.IsUserType();
             }
@@ -453,27 +454,32 @@ namespace ServiceStack.Api.OpenApi
 
                     if (apiMembers.Any(x => x.ExcludeInSchema))
                         continue;
-                    var schemaProp = GetOpenApiProperty(schemas, prop.PropertyType, route, verb);
+                    var schemaProperty = GetOpenApiProperty(schemas, prop.PropertyType, route, verb);
+                    var schemaPropertyName = GetSchemaPropertyName(prop);
 
-                    schemaProp.Description = prop.GetDescription() ?? apiDoc?.Description;
+                    schemaProperty.Description = prop.GetDescription() ?? apiDoc?.Description;
 
                     var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
                     if (propAttr != null)
                     {
                         if (propAttr.DataType != null)
-                            schemaProp.Type = propAttr.DataType;
+                            schemaProperty.Type = propAttr.DataType;
 
                         if (propAttr.Format != null)
-                            schemaProp.Format = propAttr.Format;
+                            schemaProperty.Format = propAttr.Format;
 
-                        schemaProp.Required = propAttr.IsRequired;
+                        if (propAttr.IsRequired)
+                        {
+                            schemaProperty.Required = true;
+                            schema.Required.Add(schemaPropertyName);
+                        }
                     }
 
-                    schemaProp.Enum = GetEnumValues(prop.FirstAttribute<ApiAllowableValuesAttribute>());
+                    schemaProperty.Enum = GetEnumValues(prop.FirstAttribute<ApiAllowableValuesAttribute>());
 
-                    SchemaPropertyFilter?.Invoke(schemaProp);
+                    SchemaPropertyFilter?.Invoke(schemaProperty);
 
-                    schema.Properties[GetSchemaPropertyName(prop)] = schemaProp;
+                    schema.Properties[schemaPropertyName] = schemaProperty;
                 }
             }
         }
