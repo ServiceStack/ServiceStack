@@ -115,7 +115,7 @@ namespace ServiceStack
         public MetadataType Response { get; set; }
     }
 
-    public class MetadataType
+    public class MetadataType : IMeta
     {
         public string Name { get; set; }
         public string Namespace { get; set; }
@@ -145,6 +145,8 @@ namespace ServiceStack
 
         public List<string> EnumNames { get; set; }
         public List<string> EnumValues { get; set; }
+
+        public Dictionary<string, string> Meta { get; set; }
 
         public string GetFullName()
         {
