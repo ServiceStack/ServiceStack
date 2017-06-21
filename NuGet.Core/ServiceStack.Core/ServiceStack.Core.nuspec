@@ -28,7 +28,7 @@
         <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[1.1.1, )" />
         <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[1.1.1, )" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[1.1.1, )" />
-        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[1.1.0, )" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[1.1.1, )" />
         <dependency id="System.Threading.Thread" version="[4.3.0, )" />
         <dependency id="System.Reflection.Emit" version="[4.3.0, )" />
         <dependency id="System.Linq.Queryable" version="[4.3.0, )" />
