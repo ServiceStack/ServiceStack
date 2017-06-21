@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
+VisualStudioVersion = 15.0.26430.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}"
 EndProject
@@ -162,6 +162,24 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Api.OpenApi", "ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj", "{5E258282-86A6-4780-AB25-5E458F2E6F70}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Kestrel", "ServiceStack.Kestrel\ServiceStack.Kestrel.csproj", "{3170CB82-DFD4-4E65-8292-CEE38967D75F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NetCore", "NetCore", "{E6E62C04-1CD3-4278-AF15-A51853681EAD}"
+	ProjectSection(SolutionItems) = preProject
+		..\NuGet.Core\ServiceStack.Api.OpenApi.Core\ServiceStack.Api.OpenApi.Core.nuspec = ..\NuGet.Core\ServiceStack.Api.OpenApi.Core\ServiceStack.Api.OpenApi.Core.nuspec
+		..\NuGet.Core\ServiceStack.Api.Swagger.Core\ServiceStack.Api.Swagger.Core.nuspec = ..\NuGet.Core\ServiceStack.Api.Swagger.Core\ServiceStack.Api.Swagger.Core.nuspec
+		..\NuGet.Core\ServiceStack.Client.Core\ServiceStack.Client.Core.nuspec = ..\NuGet.Core\ServiceStack.Client.Core\ServiceStack.Client.Core.nuspec
+		..\NuGet.Core\ServiceStack.Common.Core\ServiceStack.Common.Core.nuspec = ..\NuGet.Core\ServiceStack.Common.Core\ServiceStack.Common.Core.nuspec
+		..\NuGet.Core\ServiceStack.Core\ServiceStack.Core.nuspec = ..\NuGet.Core\ServiceStack.Core\ServiceStack.Core.nuspec
+		..\NuGet.Core\ServiceStack.HttpClient.Core\ServiceStack.HttpClient.Core.nuspec = ..\NuGet.Core\ServiceStack.HttpClient.Core\ServiceStack.HttpClient.Core.nuspec
+		..\NuGet.Core\ServiceStack.Interfaces.Core\ServiceStack.Interfaces.Core.nuspec = ..\NuGet.Core\ServiceStack.Interfaces.Core\ServiceStack.Interfaces.Core.nuspec
+		..\NuGet.Core\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec = ..\NuGet.Core\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec
+		..\NuGet.Core\ServiceStack.MsgPack.Core\ServiceStack.MsgPack.Core.nuspec = ..\NuGet.Core\ServiceStack.MsgPack.Core\ServiceStack.MsgPack.Core.nuspec
+		..\NuGet.Core\ServiceStack.Mvc.Core\ServiceStack.Mvc.Core.nuspec = ..\NuGet.Core\ServiceStack.Mvc.Core\ServiceStack.Mvc.Core.nuspec
+		..\NuGet.Core\ServiceStack.ProtoBuf.Core\ServiceStack.ProtoBuf.Core.nuspec = ..\NuGet.Core\ServiceStack.ProtoBuf.Core\ServiceStack.ProtoBuf.Core.nuspec
+		..\NuGet.Core\ServiceStack.RabbitMq.Core\ServiceStack.RabbitMq.Core.nuspec = ..\NuGet.Core\ServiceStack.RabbitMq.Core\ServiceStack.RabbitMq.Core.nuspec
+		..\NuGet.Core\ServiceStack.Server.Core\ServiceStack.Server.Core.nuspec = ..\NuGet.Core\ServiceStack.Server.Core\ServiceStack.Server.Core.nuspec
+		..\NuGet.Core\ServiceStack.Wire.Core\ServiceStack.Wire.Core.nuspec = ..\NuGet.Core\ServiceStack.Wire.Core\ServiceStack.Wire.Core.nuspec
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -885,6 +903,7 @@ Global
 		{50971470-179A-45D1-92C9-748DEFCBD9E5} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{0428D353-CD67-481F-877A-676E3BBCF903} = {CBDE0575-D09B-4B4D-8C62-5E03E54F6BE8}
 		{CFD618DD-5DE8-42FE-8D83-CC5AB7A40FC1} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{E6E62C04-1CD3-4278-AF15-A51853681EAD} = {EB65E771-6C97-4D64-8E11-FD88AE48A41A}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ..\tests\RazorRockstars.Console\RazorRockstars.Console.csproj
